@@ -2,6 +2,22 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [2.7] - 2026-03-04
+
+- Restructured project directory by moving components and views under the `app` folder for better organization, updating related paths in `jsconfig.json` to reflect the new structure.
+- Added a new `CtaBanner` component with customizable call-to-action banners, supporting light and dark variants, animated transitions, and configurable button links.
+- Introduced a modern `Footer` component with navigation links, contact information, and a responsive grid layout for improved user experience.
+- Created a reusable `LegalPage` component to standardize the structure of legal content pages like Terms and Privacy.
+- Implemented a new `Navigation` component with enhanced styling and routing for primary site navigation.
+- Refreshed the `PageHero` component with updated styling for consistent page headers across the site.
+- Added comprehensive new views for key pages including `About`, `Pricing`, `Services`, `Work`, `License`, `Privacy`, and `Terms`, each with tailored content and layouts.
+- Updated the `Home` view with revised content and structure for a more engaging landing page experience.
+- Removed outdated components such as `Clients`, `ContactModal`, `Hero`, `Navbar`, `Offerings`, `ParticleBackground`, and `Process` to streamline the codebase.
+- Deleted legacy views for `About`, `Pricing`, `Services`, `Work`, `License`, `Privacy`, and `Terms` as they were replaced with new implementations under the `app` directory.
+- Eliminated unused hooks like `useActiveSection`, `useClipboard`, and `useReveal` to reduce complexity.
+- Removed the `ErrorBoundary` component as part of codebase cleanup.
+- Added preconnect links for Google Fonts in `index.html` to improve font loading performance.
+
 ## [2.6] - 2026-02-04
 
 - Updated the Prettier configuration in .prettierrc to format the plugins list as an array with proper indentation for better readability.

@@ -3,19 +3,19 @@
     "baseUrl": "src",
     "paths": {
       "@components/*": [
-        "components/*"
+        "app/components/*"
       ],
       "@hooks/*": [
         "app/hooks/*"
       ],
       "@views/*": [
-        "views/*"
+        "app/views/*"
+      ],
+      "@constants/*": [
+        "app/constants/*"
       ],
       "@app/*": [
         "app/*"
-      ],
-      "@styles/*": [
-        "app/styles/*"
       ]
     }
   },

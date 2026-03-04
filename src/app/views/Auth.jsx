@@ -2,16 +2,17 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { BRAND_NAME } from '@constants/navigation'
+
+const AUTH_TABS = [
+  { id: 'signin', label: 'Sign In', disabled: false },
+  { id: 'signup', label: 'Sign Up', disabled: true },
+]
 
 export default function Auth() {
   const [activeTab, setActiveTab] = useState('signin')
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    name: '',
-    confirmPassword: '',
-  })
+  const [formData, setFormData] = useState({ email: '', password: '' })
 
   const handleInputChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -19,14 +20,7 @@ export default function Auth() {
 
   const handleSubmit = e => {
     e.preventDefault()
-    if (activeTab === 'signin') {
-    }
   }
-
-  const tabs = [
-    { id: 'signin', label: 'Sign In', disabled: false },
-    { id: 'signup', label: 'Sign Up', disabled: true },
-  ]
 
   return (
     <motion.div
@@ -44,7 +38,7 @@ export default function Auth() {
           className="mb-8 text-center"
         >
           <Link to="/" className="inline-block">
-            <span className="logo-wave-dark text-3xl font-bold">TaylorURL</span>
+            <span className="logo-wave-dark text-3xl font-bold">{BRAND_NAME}</span>
           </Link>
           <p className="mt-2 text-gray-600">Client Portal</p>
         </motion.div>
@@ -56,7 +50,7 @@ export default function Auth() {
           className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
         >
           <div className="mb-6 flex rounded-lg border border-gray-200 bg-gray-100 p-1">
-            {tabs.map(tab => (
+            {AUTH_TABS.map(tab => (
               <button
                 key={tab.id}
                 onClick={() => !tab.disabled && setActiveTab(tab.id)}
@@ -90,7 +84,7 @@ export default function Auth() {
                     value={formData.email}
                     onChange={handleInputChange}
                     required
-                    className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
                     placeholder="you@example.com"
                   />
                 </div>
@@ -109,7 +103,7 @@ export default function Auth() {
                     value={formData.password}
                     onChange={handleInputChange}
                     required
-                    className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-12 text-gray-900 transition-colors focus:border-gray-900 focus:outline-none focus:ring-1 focus:ring-gray-900"
+                    className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-12 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
                     placeholder="Enter your password"
                   />
                   <button
@@ -126,7 +120,7 @@ export default function Auth() {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-900"
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
                   />
                   <span className="ml-2 text-sm text-gray-600">Remember me</span>
                 </label>
@@ -138,7 +132,7 @@ export default function Auth() {
 
               <button
                 type="submit"
-                className="w-full rounded-lg bg-gray-900 py-3 font-medium text-white transition-colors hover:bg-gray-800"
+                className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
               >
                 Sign In
               </button>
@@ -157,29 +151,10 @@ export default function Auth() {
               </p>
               <Link
                 to="/pricing"
-                className="mt-4 inline-block text-sm font-medium text-gray-900 underline hover:no-underline"
+                className="mt-4 inline-block text-sm font-medium text-blue-600 underline hover:no-underline"
               >
                 Contact Us
               </Link>
-            </div>
-          )}
-
-          {activeTab === 'forgot' && (
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                <AlertCircle className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="mb-2 text-lg font-medium text-gray-900">Password Reset Unavailable</h3>
-              <p className="text-sm text-gray-600">
-                Self-service password reset is currently disabled. Please contact support for
-                assistance.
-              </p>
-              <a
-                href="mailto:trenton@taylorurl.com"
-                className="mt-4 inline-block text-sm font-medium text-gray-900 underline hover:no-underline"
-              >
-                trenton@taylorurl.com
-              </a>
             </div>
           )}
         </motion.div>
@@ -196,7 +171,7 @@ export default function Auth() {
                 Need an account?{' '}
                 <button
                   onClick={() => setActiveTab('signup')}
-                  className="font-medium text-gray-900 hover:underline"
+                  className="font-medium text-blue-600 hover:underline"
                 >
                   Contact us
                 </button>
@@ -206,7 +181,7 @@ export default function Auth() {
                 Already have an account?{' '}
                 <button
                   onClick={() => setActiveTab('signin')}
-                  className="font-medium text-gray-900 hover:underline"
+                  className="font-medium text-blue-600 hover:underline"
                 >
                   Sign in
                 </button>
@@ -230,7 +205,7 @@ export default function Auth() {
                 services, please{' '}
                 <Link
                   to="/pricing"
-                  className="font-medium text-gray-900 underline hover:no-underline"
+                  className="font-medium text-blue-600 underline hover:no-underline"
                 >
                   get in touch
                 </Link>{' '}

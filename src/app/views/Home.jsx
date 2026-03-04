@@ -28,6 +28,7 @@ import {
 import { Circle, MapContainer, Marker, Popup, TileLayer } from 'react-leaflet'
 import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
+import { CONTACT_EMAIL } from '@constants/navigation'
 
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png'
 import markerIcon from 'leaflet/dist/images/marker-icon.png'
@@ -40,30 +41,102 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 })
 
+const CUSTOMER_DISCOVERY_DATA = [
+  { name: 'Google Search', value: 46 },
+  { name: 'Social Media', value: 24 },
+  { name: 'Word of Mouth', value: 18 },
+  { name: 'Direct Visit', value: 8 },
+  { name: 'Other', value: 4 },
+]
+
+const REVENUE_GROWTH_DATA = [
+  { month: 'Jan', withSite: 100, withoutSite: 100 },
+  { month: 'Mar', withSite: 118, withoutSite: 102 },
+  { month: 'May', withSite: 140, withoutSite: 104 },
+  { month: 'Jul', withSite: 165, withoutSite: 106 },
+  { month: 'Sep', withSite: 188, withoutSite: 108 },
+  { month: 'Nov', withSite: 210, withoutSite: 110 },
+]
+
+const MOBILE_SEARCH_DATA = [
+  { year: '2022', mobile: 58, desktop: 42 },
+  { year: '2024', mobile: 64, desktop: 36 },
+  { year: '2026', mobile: 70, desktop: 30 },
+]
+
+const WHY_WEBSITE_CARDS = [
+  {
+    title: 'Get Found on Google',
+    desc: 'Show up when customers search for services like yours in your area. No website means no visibility.',
+    icon: Search,
+  },
+  {
+    title: 'Open 24/7',
+    desc: 'Your website works while you sleep. Customers can learn about you, see your work, and contact you anytime.',
+    icon: Clock,
+  },
+  {
+    title: 'Build Trust Instantly',
+    desc: "75% of consumers judge a business's credibility based on their website design.",
+    icon: Shield,
+  },
+  {
+    title: 'Reach More Customers',
+    desc: 'Expand beyond word-of-mouth. A website lets you reach customers across your entire service area.',
+    icon: Users,
+  },
+  {
+    title: 'Mobile-First Design',
+    desc: '60% of searches happen on phones. Your site will look perfect on every device.',
+    icon: Smartphone,
+  },
+  {
+    title: 'Affordable Investment',
+    desc: 'For less than a cup of coffee per day, get a professional online presence that pays for itself.',
+    icon: DollarSign,
+  },
+]
+
+const HOW_IT_WORKS_STEPS = [
+  {
+    step: '1',
+    title: 'Free Consultation',
+    desc: "Tell me about your business and what you need. I'll give you honest advice and a clear quote.",
+  },
+  {
+    step: '2',
+    title: 'Design & Build',
+    desc: "I create your custom website. You'll see progress and can request changes along the way.",
+  },
+  {
+    step: '3',
+    title: 'Launch & Grow',
+    desc: 'Your site goes live. I handle all the technical stuff so you can focus on your business.',
+  },
+]
+
+const HOUSTON_CENTER = [29.7604, -95.3698]
+const SERVICE_RADIUS_METERS = 80467
+
+const CHART_AXIS_STYLE = { fill: '#6b7280', fontSize: 12 }
+const CHART_TOOLTIP_STYLE = { borderRadius: '8px', border: '1px solid #e5e7eb' }
+
 export default function Home() {
   const [email, setEmail] = useState('')
 
   const handleNewsletterSubmit = e => {
     e.preventDefault()
-    window.location.href = `mailto:trenton@taylorurl.com?subject=Newsletter Signup&body=Please add me to your newsletter: ${email}`
+    window.location.href = `mailto:${CONTACT_EMAIL}?subject=Newsletter Signup&body=Please add me to your newsletter: ${email}`
     setEmail('')
   }
 
   return (
     <div className="pt-20 md:pt-24">
+      {/* Hero */}
       <section className="relative flex min-h-[85vh] items-center overflow-hidden md:min-h-[90vh]">
         <div className="absolute inset-0 bg-gradient-to-br from-gray-50 via-white to-gray-50" />
-        <div
-          className="absolute inset-0 opacity-[0.02]"
-          style={{
-            backgroundImage: `
-              linear-gradient(90deg, #000 1px, transparent 1px),
-              linear-gradient(#000 1px, transparent 1px)
-            `,
-            backgroundSize: '60px 60px',
-          }}
-        />
-        <div className="absolute right-0 top-1/4 -mr-40 h-[500px] w-[500px] rounded-full bg-[#38ff6d]/10 blur-[100px]" />
+        <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
+        <div className="absolute right-0 top-1/4 -mr-40 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[100px]" />
         <div className="absolute bottom-0 left-0 -mb-40 -ml-40 h-[400px] w-[400px] rounded-full bg-gray-200/50 blur-[80px]" />
 
         <div className="relative z-10 mx-auto max-w-6xl px-6">
@@ -75,8 +148,8 @@ export default function Home() {
               className="mb-6 inline-flex items-center gap-2 rounded-full border border-gray-200 bg-white/80 px-4 py-2 text-sm text-gray-600 shadow-sm backdrop-blur-sm"
             >
               <span className="flex h-2 w-2">
-                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-[#38ff6d] opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-[#38ff6d]" />
+                <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-blue-500 opacity-75" />
+                <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-600" />
               </span>
               Serving local businesses in the Houston area
             </motion.div>
@@ -110,7 +183,7 @@ export default function Home() {
             >
               <Link
                 to="/pricing"
-                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-[#38ff6d] px-6 py-4 text-base font-semibold text-black shadow-lg shadow-[#38ff6d]/25 transition-all duration-300 hover:scale-105 hover:bg-[#2de85e] hover:shadow-xl hover:shadow-[#38ff6d]/30 sm:px-8 sm:text-lg"
+                className="group inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-6 py-4 text-base font-semibold text-white shadow-lg shadow-blue-600/25 transition-all duration-300 hover:scale-105 hover:bg-blue-700 hover:shadow-xl hover:shadow-blue-600/30 sm:px-8 sm:text-lg"
               >
                 Get Your Free Quote
                 <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
@@ -129,23 +202,18 @@ export default function Home() {
               transition={{ duration: 0.5, delay: 0.5 }}
               className="mt-12 flex flex-wrap items-center gap-4 text-sm text-gray-500 sm:gap-8"
             >
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-[#38ff6d]" />
-                No contracts
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-[#38ff6d]" />
-                Cancel anytime
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-5 w-5 text-[#38ff6d]" />
-                Free consultation
-              </div>
+              {['No contracts', 'Cancel anytime', 'Free consultation'].map(item => (
+                <div key={item} className="flex items-center gap-2">
+                  <Check className="h-5 w-5 text-blue-600" />
+                  {item}
+                </div>
+              ))}
             </motion.div>
           </div>
         </div>
       </section>
 
+      {/* Problem / Stats */}
       <section className="border-t border-gray-200 bg-gray-50 py-20">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -163,13 +231,7 @@ export default function Home() {
                 </h3>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart
-                    data={[
-                      { name: 'Google Search', value: 46 },
-                      { name: 'Social Media', value: 24 },
-                      { name: 'Word of Mouth', value: 18 },
-                      { name: 'Direct Visit', value: 8 },
-                      { name: 'Other', value: 4 },
-                    ]}
+                    data={CUSTOMER_DISCOVERY_DATA}
                     layout="vertical"
                     margin={{ top: 5, right: 30, left: 90, bottom: 5 }}
                   >
@@ -177,7 +239,7 @@ export default function Home() {
                     <XAxis
                       type="number"
                       domain={[0, 50]}
-                      tick={{ fill: '#6b7280', fontSize: 12 }}
+                      tick={CHART_AXIS_STYLE}
                       axisLine={false}
                     />
                     <YAxis
@@ -189,9 +251,9 @@ export default function Home() {
                     />
                     <Tooltip
                       formatter={value => [`${value}%`, 'Percentage']}
-                      contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                      contentStyle={CHART_TOOLTIP_STYLE}
                     />
-                    <Bar dataKey="value" fill="#111827" radius={[0, 4, 4, 0]} />
+                    <Bar dataKey="value" fill="#2563eb" radius={[0, 4, 4, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -204,24 +266,23 @@ export default function Home() {
                 </div>
               </div>
               <div className="grid grid-cols-3 gap-3 text-center sm:gap-6">
-                <div>
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">97%</div>
-                  <div className="text-xs text-gray-500 sm:text-sm">search online first</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">72%</div>
-                  <div className="text-xs text-gray-500 sm:text-sm">visit within 5 miles</div>
-                </div>
-                <div>
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">88%</div>
-                  <div className="text-xs text-gray-500 sm:text-sm">trust online reviews</div>
-                </div>
+                {[
+                  { value: '97%', label: 'search online first' },
+                  { value: '72%', label: 'visit within 5 miles' },
+                  { value: '88%', label: 'trust online reviews' },
+                ].map(stat => (
+                  <div key={stat.value}>
+                    <div className="text-xl font-bold text-gray-900 sm:text-3xl">{stat.value}</div>
+                    <div className="text-xs text-gray-500 sm:text-sm">{stat.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Service Area Map */}
       <section className="relative border-t border-gray-200 bg-white py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -237,23 +298,21 @@ export default function Home() {
                 their online presence across the entire metro area.
               </p>
               <div className="grid grid-cols-3 gap-3 sm:gap-6">
-                <div className="rounded-lg bg-gray-100 p-3 text-center sm:p-4">
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">100+</div>
-                  <div className="text-xs text-gray-600 sm:text-sm">Square Miles</div>
-                </div>
-                <div className="rounded-lg bg-gray-100 p-3 text-center sm:p-4">
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">50+</div>
-                  <div className="text-xs text-gray-600 sm:text-sm">Cities Served</div>
-                </div>
-                <div className="rounded-lg bg-gray-100 p-3 text-center sm:p-4">
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">7M+</div>
-                  <div className="text-xs text-gray-600 sm:text-sm">Population</div>
-                </div>
+                {[
+                  { value: '100+', label: 'Square Miles' },
+                  { value: '50+', label: 'Cities Served' },
+                  { value: '7M+', label: 'Population' },
+                ].map(stat => (
+                  <div key={stat.label} className="rounded-lg bg-gray-100 p-3 text-center sm:p-4">
+                    <div className="text-xl font-bold text-gray-900 sm:text-3xl">{stat.value}</div>
+                    <div className="text-xs text-gray-600 sm:text-sm">{stat.label}</div>
+                  </div>
+                ))}
               </div>
             </div>
             <div className="relative z-0 overflow-hidden rounded-xl border border-gray-200">
               <MapContainer
-                center={[29.7604, -95.3698]}
+                center={HOUSTON_CENTER}
                 zoom={9}
                 style={{ height: '300px', width: '100%', zIndex: 0 }}
                 scrollWheelZoom={false}
@@ -265,16 +324,16 @@ export default function Home() {
                   url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
                 />
                 <Circle
-                  center={[29.7604, -95.3698]}
-                  radius={80467}
+                  center={HOUSTON_CENTER}
+                  radius={SERVICE_RADIUS_METERS}
                   pathOptions={{
-                    color: '#374151',
-                    fillColor: '#6b7280',
-                    fillOpacity: 0.2,
+                    color: '#2563eb',
+                    fillColor: '#3b82f6',
+                    fillOpacity: 0.15,
                     weight: 2,
                   }}
                 />
-                <Marker position={[29.7604, -95.3698]}>
+                <Marker position={HOUSTON_CENTER}>
                   <Popup>
                     <strong>TaylorURL</strong>
                     <br />
@@ -287,6 +346,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Why Businesses Need a Website */}
       <section className="border-t border-gray-200 bg-white py-24">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div
@@ -305,38 +365,7 @@ export default function Home() {
           </motion.div>
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {[
-              {
-                title: 'Get Found on Google',
-                desc: 'Show up when customers search for services like yours in your area. No website means no visibility.',
-                icon: Search,
-              },
-              {
-                title: 'Open 24/7',
-                desc: 'Your website works while you sleep. Customers can learn about you, see your work, and contact you anytime.',
-                icon: Clock,
-              },
-              {
-                title: 'Build Trust Instantly',
-                desc: "75% of consumers judge a business's credibility based on their website design.",
-                icon: Shield,
-              },
-              {
-                title: 'Reach More Customers',
-                desc: 'Expand beyond word-of-mouth. A website lets you reach customers across your entire service area.',
-                icon: Users,
-              },
-              {
-                title: 'Mobile-First Design',
-                desc: '60% of searches happen on phones. Your site will look perfect on every device.',
-                icon: Smartphone,
-              },
-              {
-                title: 'Affordable Investment',
-                desc: 'For less than a cup of coffee per day, get a professional online presence that pays for itself.',
-                icon: DollarSign,
-              },
-            ].map((item, i) => {
+            {WHY_WEBSITE_CARDS.map((item, i) => {
               const Icon = item.icon
               return (
                 <motion.div
@@ -346,11 +375,11 @@ export default function Home() {
                   viewport={{ once: true }}
                   transition={{ delay: i * 0.1, duration: 0.5 }}
                   whileHover={{ y: -5 }}
-                  className="group rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:border-[#38ff6d]/30 hover:shadow-xl hover:shadow-[#38ff6d]/5"
+                  className="group rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5"
                 >
-                  <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 transition-all duration-300 group-hover:bg-[#38ff6d]/10">
+                  <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 transition-all duration-300 group-hover:bg-blue-50">
                     <Icon
-                      className="h-6 w-6 text-gray-900 transition-colors group-hover:text-[#38ff6d]"
+                      className="h-6 w-6 text-gray-900 transition-colors group-hover:text-blue-600"
                       strokeWidth={1.5}
                     />
                   </div>
@@ -363,6 +392,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Revenue Growth Data */}
       <section className="border-t border-gray-200 bg-gray-50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -379,7 +409,7 @@ export default function Home() {
               </p>
               <div className="grid grid-cols-2 gap-3 sm:gap-6">
                 <div className="rounded-lg border border-gray-200 bg-white p-3 sm:p-4">
-                  <div className="text-xl font-bold text-gray-900 sm:text-3xl">+110%</div>
+                  <div className="text-xl font-bold text-blue-600 sm:text-3xl">+110%</div>
                   <div className="text-xs text-gray-600 sm:text-sm">
                     Average revenue increase with website
                   </div>
@@ -398,25 +428,18 @@ export default function Home() {
               </h3>
               <ResponsiveContainer width="100%" height={300}>
                 <LineChart
-                  data={[
-                    { month: 'Jan', withSite: 100, withoutSite: 100 },
-                    { month: 'Mar', withSite: 118, withoutSite: 102 },
-                    { month: 'May', withSite: 140, withoutSite: 104 },
-                    { month: 'Jul', withSite: 165, withoutSite: 106 },
-                    { month: 'Sep', withSite: 188, withoutSite: 108 },
-                    { month: 'Nov', withSite: 210, withoutSite: 110 },
-                  ]}
+                  data={REVENUE_GROWTH_DATA}
                   margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
                   <XAxis
                     dataKey="month"
-                    tick={{ fill: '#6b7280', fontSize: 12 }}
+                    tick={CHART_AXIS_STYLE}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fill: '#6b7280', fontSize: 12 }}
+                    tick={CHART_AXIS_STYLE}
                     axisLine={false}
                     tickLine={false}
                     domain={[90, 220]}
@@ -426,12 +449,12 @@ export default function Home() {
                       `${value}%`,
                       name === 'withSite' ? 'With Website' : 'Without Website',
                     ]}
-                    contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                    contentStyle={CHART_TOOLTIP_STYLE}
                   />
                   <Line
                     type="monotone"
                     dataKey="withSite"
-                    stroke="#111827"
+                    stroke="#2563eb"
                     strokeWidth={3}
                     dot={{ fill: '#2563eb', strokeWidth: 2, r: 4 }}
                     name="withSite"
@@ -462,6 +485,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Mobile First */}
       <section className="border-t border-gray-200 bg-white py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid items-center gap-12 lg:grid-cols-2">
@@ -471,32 +495,19 @@ export default function Home() {
               </h3>
               <ResponsiveContainer width="100%" height={280}>
                 <BarChart
-                  data={[
-                    { year: '2022', mobile: 58, desktop: 42 },
-                    { year: '2024', mobile: 64, desktop: 36 },
-                    { year: '2026', mobile: 70, desktop: 30 },
-                  ]}
+                  data={MOBILE_SEARCH_DATA}
                   margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
-                  <XAxis
-                    dataKey="year"
-                    tick={{ fill: '#6b7280', fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    tick={{ fill: '#6b7280', fontSize: 12 }}
-                    axisLine={false}
-                    tickLine={false}
-                  />
+                  <XAxis dataKey="year" tick={CHART_AXIS_STYLE} axisLine={false} tickLine={false} />
+                  <YAxis tick={CHART_AXIS_STYLE} axisLine={false} tickLine={false} />
                   <Tooltip
                     formatter={value => [`${value}%`, 'Share']}
-                    contentStyle={{ borderRadius: '8px', border: '1px solid #e5e7eb' }}
+                    contentStyle={CHART_TOOLTIP_STYLE}
                   />
                   <Bar
                     dataKey="mobile"
-                    fill="#111827"
+                    fill="#2563eb"
                     name="Mobile"
                     radius={[4, 4, 0, 0]}
                     barSize={40}
@@ -512,7 +523,7 @@ export default function Home() {
               </ResponsiveContainer>
               <div className="mt-4 flex justify-center gap-8 text-sm">
                 <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded bg-gray-900" />
+                  <div className="h-3 w-3 rounded bg-blue-600" />
                   <span className="text-gray-600">Mobile</span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -534,8 +545,8 @@ export default function Home() {
               </p>
               <div className="space-y-4">
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-                    <Smartphone className="h-5 w-5 text-gray-900" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                    <Smartphone className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Mobile-First Design</div>
@@ -545,8 +556,8 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100">
-                    <Zap className="h-5 w-5 text-gray-900" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                    <Zap className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
                     <div className="font-semibold text-gray-900">Fast Load Times</div>
@@ -561,6 +572,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* How It Works */}
       <section className="border-t border-gray-200 bg-white py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mb-16 text-center">
@@ -574,23 +586,7 @@ export default function Home() {
 
           <div className="mx-auto max-w-4xl">
             <div className="grid gap-8 md:grid-cols-3">
-              {[
-                {
-                  step: '1',
-                  title: 'Free Consultation',
-                  desc: "Tell me about your business and what you need. I'll give you honest advice and a clear quote.",
-                },
-                {
-                  step: '2',
-                  title: 'Design & Build',
-                  desc: "I create your custom website. You'll see progress and can request changes along the way.",
-                },
-                {
-                  step: '3',
-                  title: 'Launch & Grow',
-                  desc: 'Your site goes live. I handle all the technical stuff so you can focus on your business.',
-                },
-              ].map((item, i) => (
+              {HOW_IT_WORKS_STEPS.map((item, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
@@ -598,7 +594,7 @@ export default function Home() {
                   transition={{ delay: i * 0.1 }}
                   className="text-center"
                 >
-                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-gray-900 text-2xl font-bold text-gray-900">
+                  <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-blue-600 text-2xl font-bold text-blue-600">
                     {item.step}
                   </div>
                   <h3 className="mb-3 text-xl font-semibold text-gray-900">{item.title}</h3>
@@ -610,10 +606,11 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Newsletter */}
       <section className="border-t border-gray-200 bg-gray-50 py-24">
         <div className="mx-auto max-w-6xl px-6">
           <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-8 text-center md:p-12">
-            <MessageSquare className="mx-auto mb-6 h-12 w-12 text-gray-400" />
+            <MessageSquare className="mx-auto mb-6 h-12 w-12 text-blue-500" />
             <h2 className="mb-4 text-2xl font-bold text-gray-900 md:text-3xl">
               Get Tips for <span className="logo-wave-dark">Your Local Business</span>
             </h2>
@@ -628,11 +625,11 @@ export default function Home() {
                 onChange={e => setEmail(e.target.value)}
                 placeholder="Enter your email"
                 required
-                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 focus:border-[#38ff6d] focus:outline-none focus:ring-1 focus:ring-[#38ff6d]"
+                className="flex-1 rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
               />
               <button
                 type="submit"
-                className="rounded-lg bg-[#38ff6d] px-6 py-3 font-medium text-black transition-colors hover:bg-[#2de85e]"
+                className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
               >
                 Subscribe
               </button>
@@ -642,6 +639,7 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Final CTA */}
       <section className="border-t border-gray-200 bg-gray-100 py-24">
         <div className="mx-auto max-w-6xl px-6 text-center">
           <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
@@ -654,7 +652,7 @@ export default function Home() {
           <div className="flex flex-wrap justify-center gap-4">
             <Link
               to="/pricing"
-              className="inline-flex items-center gap-2 rounded-lg bg-[#38ff6d] px-8 py-4 text-lg font-medium text-black transition-all duration-300 hover:scale-105 hover:bg-[#2de85e]"
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-4 text-lg font-medium text-white transition-all duration-300 hover:scale-105 hover:bg-blue-700"
             >
               Get Your Free Quote
               <ArrowRight className="h-5 w-5" />
