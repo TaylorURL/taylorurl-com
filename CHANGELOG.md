@@ -2,6 +2,24 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.0] - 2026-03-14
+
+- Overhauled SEO across all pages with location-targeted meta titles and descriptions mentioning Baytown, Houston, and surrounding Texas cities
+- Added structured data (JSON-LD) for LocalBusiness and WebSite schemas in index.html, with service area coverage for 12 Texas cities
+- Added BlogPosting schema markup to individual blog post pages
+- Added FAQPage schema markup to the FAQ page
+- Added robots.txt with crawl rules and sitemap reference
+- Added sitemap.xml covering all public routes with priority and change frequency
+- Updated the Seo component to support custom structured data via a new schema prop, and added og:site_name, og:image, and twitter card meta tags
+- Expanded the Footer with a "Serving" section listing 17 Texas cities
+- Updated Footer description to highlight specific service areas instead of generic tagline
+- Simplified the Status page by removing degraded/down states and multi-status logic, keeping all services hardcoded as operational
+- Renamed and shortened service names and descriptions on the Status page for clarity
+- Changed Status page data granularity from time-slot-based to day-based consistency
+- Removed Leaflet CSS dependency from index.html
+- Added canonical URL and geo meta tags to the HTML head
+- Added CLAUDE.md with project overview and key conventions
+
 ## [2.9] - 2026-03-14
 
 - Removed client logo images (CT, DBF, Hypixel, Mineplex, SRM, Speedway146)

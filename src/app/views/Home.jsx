@@ -14,7 +14,10 @@ import FinalCtaSection from './home/FinalCtaSection'
 export default function Home() {
   return (
     <div>
-      <Seo path="/" />
+      <Seo
+        path="/"
+        description="TaylorURL builds custom websites for businesses in Baytown, Houston, Pasadena, Deer Park, La Porte, and the greater Houston TX area. No templates. No page builders. Real code that ranks on Google."
+      />
       <div id="hero">
         <HeroSection />
       </div>

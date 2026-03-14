@@ -88,8 +88,8 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About"
-        description="We're a small web dev team out of Baytown, Texas. We build websites for local businesses and actually stick around to keep them running."
+        title="About Us"
+        description="TaylorURL is a web development team based in Baytown, Texas serving Houston and surrounding areas. We build custom websites for local businesses — no templates, no agencies, just real people who pick up the phone."
         path="/about"
       />
       <PageHero title="About Us" description="Small team. Real code. No corporate energy." />

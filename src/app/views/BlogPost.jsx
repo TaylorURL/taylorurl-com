@@ -12,7 +12,32 @@ export default function BlogPost() {
 
   return (
     <div>
-      <Seo title={post.title} description={post.excerpt} path={`/blog/${slug}`} />
+      <Seo
+        title={post.title}
+        description={post.excerpt}
+        path={`/blog/${slug}`}
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'BlogPosting',
+          headline: post.title,
+          description: post.excerpt,
+          datePublished: new Date(post.date).toISOString(),
+          author: {
+            '@type': 'Organization',
+            name: 'TaylorURL',
+            url: 'https://taylorurl.com',
+          },
+          publisher: {
+            '@type': 'Organization',
+            name: 'TaylorURL',
+            logo: {
+              '@type': 'ImageObject',
+              url: 'https://taylorurl.com/images/TaylorURL-Logo.png',
+            },
+          },
+          mainEntityOfPage: `https://taylorurl.com/blog/${slug}`,
+        }}
+      />
 
       <article className="relative overflow-hidden bg-white py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />

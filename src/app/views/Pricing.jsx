@@ -99,8 +99,8 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Get a Quote"
-        description="Tell us what you need and we'll shoot you a real number. No 'it depends' energy."
+        title="Web Development Pricing"
+        description="Affordable custom web development pricing for Baytown and Houston businesses. Most sites $1,500-$5,000 with $99/mo maintenance. No hidden fees, no contracts."
         path="/pricing"
       />
       <PageHero

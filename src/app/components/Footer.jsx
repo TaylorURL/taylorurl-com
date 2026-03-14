@@ -21,7 +21,8 @@ export default function Footer() {
               <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-28 w-auto" />
             </Link>
             <p className="mb-6 max-w-sm text-sm leading-relaxed text-gray-500">
-              Websites for real businesses. Based in Baytown, working with anyone.
+              Custom web development for businesses in Baytown, Houston, Pasadena, Deer Park, La
+              Porte, and the greater Houston area.
             </p>
             <div className="space-y-2.5">
               <div className="flex items-center gap-2.5 text-sm text-gray-500">
@@ -94,7 +95,18 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-8 sm:flex-row">
+        <div className="mt-10 border-t border-gray-200 pt-6">
+          <h3 className="mb-3 text-sm font-semibold text-gray-900">Serving</h3>
+          <p className="text-xs leading-relaxed text-gray-400">
+            Baytown, TX &middot; Houston, TX &middot; Pasadena, TX &middot; Deer Park, TX &middot;
+            La Porte, TX &middot; Mont Belvieu, TX &middot; League City, TX &middot; Pearland, TX
+            &middot; Sugar Land, TX &middot; Katy, TX &middot; Galveston, TX &middot; Texas City, TX
+            &middot; Webster, TX &middot; Friendswood, TX &middot; Humble, TX &middot; Spring, TX
+            &middot; The Woodlands, TX
+          </p>
+        </div>
+
+        <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-8 sm:flex-row">
           <p className="text-sm text-gray-400">
             &copy; {currentYear} TaylorURL. All rights reserved.
           </p>

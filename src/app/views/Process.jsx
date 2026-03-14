@@ -138,8 +138,8 @@ export default function Process() {
   return (
     <div>
       <Seo
-        title="Our Process"
-        description="No mystery. No jargon. Here's exactly what happens when you work with TaylorURL, from first call to launch and beyond."
+        title="Our Web Development Process"
+        description="How TaylorURL builds custom websites for Baytown and Houston businesses. From first call to launch in 2-4 weeks. No mystery, no jargon — just results."
         path="/process"
       />
       <PageHero

@@ -100,8 +100,8 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Services"
-        description="Custom websites, redesigns, and ongoing management. No apps, no third-party platforms — just clean websites that work."
+        title="Web Development Services"
+        description="Custom website development, redesigns, SEO, and ongoing maintenance for businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded sites that outperform templates."
         path="/services"
       />
       <PageHero

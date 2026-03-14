@@ -266,8 +266,8 @@ export default function Blog() {
   return (
     <div>
       <Seo
-        title="Blog"
-        description="Straight talk about websites, SEO, and what actually works for local businesses. No fluff, no jargon — just stuff you can use."
+        title="Web Development Blog"
+        description="Web development tips, SEO advice, and business growth strategies for small businesses in Baytown, Houston, and Texas. Learn what actually works to get more customers online."
         path="/blog"
       />
 

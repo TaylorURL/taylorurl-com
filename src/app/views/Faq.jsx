@@ -114,9 +114,23 @@ export default function Faq() {
   return (
     <div>
       <Seo
-        title="FAQ"
-        description="Answers to the most common questions about working with TaylorURL. Pricing, timelines, what's included, and how we work."
+        title="FAQ - Web Development Questions"
+        description="Common questions about web development pricing, timelines, and working with TaylorURL in Baytown and Houston TX. Get straight answers about custom websites for your business."
         path="/faq"
+        schema={{
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: FAQ_CATEGORIES.flatMap(cat =>
+            cat.questions.map(item => ({
+              '@type': 'Question',
+              name: item.q,
+              acceptedAnswer: {
+                '@type': 'Answer',
+                text: item.a,
+              },
+            }))
+          ),
+        }}
       />
       <PageHero title="Frequently Asked Questions" description="Straight answers. No runaround." />
 

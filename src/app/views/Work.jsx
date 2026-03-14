@@ -202,8 +202,8 @@ export default function Work() {
   return (
     <div>
       <Seo
-        title="Our Work"
-        description="See how TaylorURL has helped businesses grow with custom websites. Real projects, real results."
+        title="Our Work - Web Development Portfolio"
+        description="Custom websites we've built for businesses in Baytown, Houston, and beyond. Real projects with real results — PageSpeed scores above 95, top Google rankings, and more customers."
         path="/work"
       />
       <PageHero
