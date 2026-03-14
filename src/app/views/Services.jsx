@@ -1,100 +1,126 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Palette, Wrench, Zap } from 'lucide-react'
+import { ArrowRight, Check, Code2, Globe, Palette, RefreshCw, Search, Shield, Smartphone, Wrench, Zap } from 'lucide-react'
 import PageHero from '@components/PageHero'
+import BrowserMockup from '@components/BrowserMockup'
+import Seo from '@components/Seo'
+import { fadeInUp, staggerChild } from '@constants/animations'
 
 const SERVICES = [
   {
     icon: Palette,
-    title: 'Website Design & Development',
-    description: 'Custom websites built from scratch with modern technologies and best practices.',
+    title: 'Custom Websites',
+    description: 'No templates. No drag-and-drop builders. We design your site from scratch so it actually looks like your business.',
     features: [
-      'Responsive design for all devices',
-      'SEO-optimized structure',
-      'Fast page load times',
-      'Custom animations and interactions',
-      'Content management integration',
+      'Designed around your brand, not a theme',
+      'Looks great on every screen size',
+      'Smooth animations that don\'t feel cheap',
+      'Your colors, your fonts, your vibe',
     ],
+    mockup: 'default',
   },
   {
     icon: Code2,
-    title: 'React Application Development',
-    description: 'Complex web applications built with React and modern JavaScript frameworks.',
+    title: 'Website Redesigns',
+    description: 'Already have a site that looks outdated or runs like garbage? We\'ll rebuild it from the ground up with real code.',
     features: [
-      'Component-based architecture',
-      'State management solutions',
-      'API integration',
-      'Real-time features',
-      'Progressive Web Apps (PWA)',
+      'Full redesign with modern tech',
+      'Keep your content, ditch the clutter',
+      'Faster load times guaranteed',
+      'SEO cleanup so Google notices',
     ],
+    mockup: 'code',
   },
   {
     icon: Zap,
-    title: 'Performance Optimization',
-    description: 'Make your existing website faster and improve user experience.',
+    title: 'Speed That Matters',
+    description: 'Slow sites lose customers. Google penalizes them too. We make sure yours is fast — actually fast, not "fast for a website."',
     features: [
-      'Core Web Vitals improvement',
-      'Image and asset optimization',
-      'Code splitting and lazy loading',
-      'Caching strategies',
-      'Performance monitoring setup',
+      'Under 2 second load times',
+      'Google Core Web Vitals optimized',
+      'Images & assets compressed right',
+      'Code split so nothing loads that shouldn\'t',
     ],
+    mockup: 'analytics',
   },
   {
     icon: Wrench,
-    title: 'Ongoing Maintenance & Support',
-    description: 'Keep your website running smoothly with continuous support.',
+    title: 'We Handle Everything After',
+    description: 'Hosting, updates, security, backups — the boring stuff that breaks sites when nobody\'s watching. We watch it.',
     features: [
-      'Regular updates and patches',
-      'Bug fixes and troubleshooting',
-      'Content updates',
-      'Performance monitoring',
-      'Security updates',
+      'Hosting, SSL, & domain setup',
+      'Security patches as they drop',
+      'Uptime monitoring & daily backups',
+      'Direct access to the people who built it',
     ],
+    mockup: 'default',
   },
+]
+
+const CAPABILITIES = [
+  { icon: Smartphone, label: 'Responsive Design' },
+  { icon: Search, label: 'SEO Optimization' },
+  { icon: Shield, label: 'Security Hardening' },
+  { icon: Globe, label: 'Domain & DNS' },
+  { icon: RefreshCw, label: 'Content Updates' },
+  { icon: Zap, label: 'Speed Optimization' },
+]
+
+const TECH_STACK = [
+  'React', 'JavaScript', 'Tailwind CSS', 'Node.js',
+  'AWS', 'Vercel', 'Git', 'Framer Motion', 'Vite', 'HTML5', 'CSS3',
 ]
 
 export default function Services() {
   return (
     <div>
-      <PageHero
+      <Seo
         title="Services"
-        description="Comprehensive web development services tailored to your business needs."
+        description="Custom websites, redesigns, and ongoing management. No apps, no third-party platforms — just clean websites that work."
+        path="/services"
+      />
+      <PageHero
+        title="What We Do"
+        description="Custom websites and redesigns. We build it, host it, and keep it running. That's the whole pitch."
       />
 
-      <section className="bg-white py-20">
-        <div className="mx-auto max-w-5xl px-6">
-          <div className="grid gap-8 md:grid-cols-2">
+      {/* Services grid — alternating layout */}
+      <section className="relative bg-white py-20 overflow-hidden">
+        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
+        <div className="relative mx-auto max-w-6xl px-6">
+          <div className="space-y-20">
             {SERVICES.map((service, i) => {
               const Icon = service.icon
+              const isReversed = i % 2 === 1
               return (
                 <motion.div
                   key={service.title}
-                  initial={{ opacity: 0, y: 30 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: i * 0.15 }}
-                  whileHover={{ y: -5 }}
-                  className="group rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5"
+                  {...staggerChild(i, 0.15)}
+                  className={`grid items-center gap-10 lg:grid-cols-2 ${isReversed ? 'lg:direction-rtl' : ''}`}
                 >
-                  <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 transition-all duration-300 group-hover:scale-110 group-hover:bg-blue-50">
-                    <Icon
-                      className="h-6 w-6 text-gray-900 transition-colors group-hover:text-blue-600"
-                      strokeWidth={1.5}
+                  <div className={isReversed ? 'lg:order-2' : ''}>
+                    <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
+                      <Icon className="h-6 w-6 text-blue-600" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="mb-3 text-2xl font-bold text-gray-900">{service.title}</h3>
+                    <p className="mb-6 text-lg text-gray-600">{service.description}</p>
+                    <ul className="space-y-3">
+                      {service.features.map(feature => (
+                        <li key={feature} className="flex items-center gap-3 text-gray-700">
+                          <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
+                            <Check className="h-3 w-3 text-blue-600" strokeWidth={3} />
+                          </div>
+                          {feature}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className={isReversed ? 'lg:order-1' : ''}>
+                    <BrowserMockup
+                      url={`yourbusiness.com${i === 1 ? '/before-after' : i === 2 ? '/performance' : ''}`}
+                      variant={service.mockup}
                     />
                   </div>
-                  <h3 className="mb-3 text-xl font-semibold text-gray-900">{service.title}</h3>
-                  <p className="mb-5 text-gray-600">{service.description}</p>
-                  <ul className="space-y-3">
-                    {service.features.map(feature => (
-                      <li key={feature} className="flex items-start gap-3 text-sm text-gray-600">
-                        <Check
-                          className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600"
-                          strokeWidth={2}
-                        />
-                        {feature}
-                      </li>
-                    ))}
-                  </ul>
                 </motion.div>
               )
             })}
@@ -102,34 +128,76 @@ export default function Services() {
         </div>
       </section>
 
-      <section className="border-t border-gray-200 bg-gray-50 py-16">
+      {/* Capabilities strip */}
+      <section className="border-y border-gray-200 bg-gray-50 py-12">
         <div className="mx-auto max-w-6xl px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="mx-auto max-w-2xl text-center"
-          >
-            <h2 className="mb-4 text-2xl font-bold text-gray-900">
-              Ready to <span className="logo-wave-dark">Get Started</span>?
+          <motion.div {...fadeInUp} className="mb-8 text-center">
+            <h2 className="text-lg font-semibold text-gray-900">All of This Comes Standard</h2>
+          </motion.div>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+            {CAPABILITIES.map((cap, i) => {
+              const Icon = cap.icon
+              return (
+                <motion.div
+                  key={cap.label}
+                  {...staggerChild(i, 0.05)}
+                  className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center transition-all hover:border-blue-200 hover:shadow-md"
+                >
+                  <Icon className="h-5 w-5 text-blue-600" strokeWidth={1.5} />
+                  <span className="text-xs font-medium text-gray-700">{cap.label}</span>
+                </motion.div>
+              )
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* Tech stack */}
+      <section className="relative bg-gray-950 py-16 overflow-hidden">
+        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
+        <div className="relative mx-auto max-w-6xl px-6">
+          <motion.div {...fadeInUp} className="mb-8 text-center">
+            <h2 className="text-lg font-semibold text-white">Our Stack</h2>
+            <p className="mt-2 text-sm text-gray-500">The same tools the big companies use — without the big company attitude.</p>
+          </motion.div>
+          <div className="flex flex-wrap justify-center gap-3">
+            {TECH_STACK.map((tech, i) => (
+              <motion.span
+                key={tech}
+                {...staggerChild(i, 0.04)}
+                className="rounded-lg border border-gray-800 bg-gray-900 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:border-blue-500/40 hover:text-blue-300"
+              >
+                {tech}
+              </motion.span>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative border-t border-gray-200 bg-white py-20 overflow-hidden">
+        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
+        <div className="relative mx-auto max-w-6xl px-6">
+          <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
+            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+              Sounds <span className="logo-wave-dark">Good</span>?
             </h2>
-            <p className="mb-6 text-gray-600">
-              Let's discuss your project and create a custom solution for your business.
+            <p className="mb-8 text-lg text-gray-600">
+              Tell us what you need. We&apos;ll give you a straight answer and a real price.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
                 to="/pricing"
-                className="group inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105 hover:bg-blue-700"
+                className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-blue-500"
               >
                 Get a Quote
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
               <Link
                 to="/work"
-                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-900 transition-all duration-300 hover:scale-105 hover:bg-gray-100"
+                className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-7 py-3.5 font-semibold text-gray-900 transition-all duration-300 hover:bg-gray-50"
               >
-                View My Work
+                View Our Work
               </Link>
             </div>
           </motion.div>

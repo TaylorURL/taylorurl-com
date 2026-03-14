@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import PageHero from './PageHero'
+import { pageTransition, staggerChild } from '@constants/animations'
 
 /**
  * Shared layout for legal pages (Privacy, Terms, License).
@@ -23,12 +24,7 @@ export default function LegalPage({
   children,
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-    >
+    <motion.div {...pageTransition}>
       <PageHero title={title} description={description} />
 
       <section className="bg-white py-16">
@@ -44,10 +40,7 @@ export default function LegalPage({
               {sections.map((section, index) => (
                 <motion.div
                   key={section.title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.05 }}
+                  {...staggerChild(index, 0.05)}
                   className="mb-8"
                 >
                   <h2 className="mb-4 text-xl font-semibold text-gray-900">{section.title}</h2>

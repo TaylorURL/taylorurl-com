@@ -1,5 +1,6 @@
 import LegalPage from '@components/LegalPage'
-import { CONTACT_EMAIL } from '@constants/navigation'
+import Seo from '@components/Seo'
+import { SUPPORT_EMAIL } from '@constants/navigation'
 
 const SECTIONS = [
   {
@@ -24,7 +25,7 @@ const SECTIONS = [
   },
   {
     title: 'Your Rights',
-    content: `You have the right to access, correct, or delete your personal information. You may also object to or restrict certain processing of your information. To exercise these rights, please contact us at ${CONTACT_EMAIL}.`,
+    content: `You have the right to access, correct, or delete your personal information. You may also object to or restrict certain processing of your information. To exercise these rights, please contact us at ${SUPPORT_EMAIL}.`,
   },
   {
     title: 'Changes to This Policy',
@@ -34,7 +35,13 @@ const SECTIONS = [
 
 export default function Privacy() {
   return (
-    <LegalPage
+    <>
+      <Seo
+        title="Privacy Policy"
+        description="Learn how TaylorURL collects, uses, and protects your personal information."
+        path="/privacy"
+      />
+      <LegalPage
       title="Privacy Policy"
       description="How we collect, use, and protect your information."
       effectiveDate="Last Updated: February 1, 2026"
@@ -45,12 +52,13 @@ export default function Privacy() {
         body: (
           <>
             If you have any questions about this Privacy Policy, please contact us at{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 underline">
-              {CONTACT_EMAIL}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              {SUPPORT_EMAIL}
             </a>
           </>
         ),
       }}
     />
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import LegalPage from '@components/LegalPage'
-import { CONTACT_EMAIL } from '@constants/navigation'
+import Seo from '@components/Seo'
+import { SUPPORT_EMAIL } from '@constants/navigation'
 
 const RESTRICTIONS = [
   {
@@ -66,7 +67,13 @@ const SECTIONS = [
 
 export default function License() {
   return (
-    <LegalPage
+    <>
+      <Seo
+        title="License"
+        description="Software license terms governing the use of TaylorURL deliverables and code."
+        path="/license"
+      />
+      <LegalPage
       title="License"
       description="Terms governing the use of our software and deliverables."
       sections={SECTIONS}
@@ -75,8 +82,8 @@ export default function License() {
         body: (
           <>
             For licensing questions or permissions, contact us at{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 underline">
-              {CONTACT_EMAIL}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              {SUPPORT_EMAIL}
             </a>
           </>
         ),
@@ -89,5 +96,6 @@ export default function License() {
         <p className="mt-1 text-sm text-gray-500">Copyright (c) 2026 TaylorURL / Trenton Taylor</p>
       </div>
     </LegalPage>
+    </>
   )
 }

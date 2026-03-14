@@ -1,5 +1,6 @@
 import LegalPage from '@components/LegalPage'
-import { CONTACT_EMAIL } from '@constants/navigation'
+import Seo from '@components/Seo'
+import { SUPPORT_EMAIL } from '@constants/navigation'
 
 const SECTIONS = [
   {
@@ -8,7 +9,7 @@ const SECTIONS = [
   },
   {
     title: '2. Services Description',
-    content: `TaylorURL provides web development, application engineering, UI/UX design, and related digital services. The specific scope, deliverables, timeline, and pricing for each project will be outlined in a separate project agreement or statement of work.`,
+    content: `TaylorURL provides custom website development, website redesigns, and ongoing website management services. The specific scope, deliverables, timeline, and pricing for each project will be outlined in a separate project agreement or statement of work.`,
   },
   {
     title: '3. Client Responsibilities',
@@ -50,7 +51,13 @@ const SECTIONS = [
 
 export default function Terms() {
   return (
-    <LegalPage
+    <>
+      <Seo
+        title="Terms of Service"
+        description="Read the terms and conditions for using TaylorURL's web development services."
+        path="/terms"
+      />
+      <LegalPage
       title="Terms of Service"
       description="Please read these terms carefully before using our services."
       effectiveDate="Effective Date: February 1, 2026"
@@ -60,12 +67,13 @@ export default function Terms() {
         body: (
           <>
             For questions about these Terms of Service, contact us at{' '}
-            <a href={`mailto:${CONTACT_EMAIL}`} className="text-blue-600 underline">
-              {CONTACT_EMAIL}
+            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              {SUPPORT_EMAIL}
             </a>
           </>
         ),
       }}
     />
+    </>
   )
 }

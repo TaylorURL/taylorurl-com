@@ -1,19 +1,23 @@
-import { motion } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
+import { useRef } from 'react'
 
 export default function PageHero({ title, description }) {
+  const ref = useRef(null)
+  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  const y = useTransform(scrollYProgress, [0, 1], [0, 120])
+  const opacity = useTransform(scrollYProgress, [0, 0.8], [1, 0])
+
   return (
-    <section className="relative overflow-hidden border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white pb-16 pt-32 sm:pb-20 sm:pt-40">
-      <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
+    <section
+      ref={ref}
+      className="relative overflow-hidden border-b border-gray-200 bg-gradient-to-b from-gray-50 to-white pb-16 pt-32 sm:pb-20 sm:pt-40"
+    >
+      <div className="grid-pattern absolute inset-0 opacity-[0.03]" />
       <div className="absolute right-0 top-0 -mr-40 -mt-40 h-80 w-80 rounded-full bg-blue-500/5 blur-3xl" />
       <div className="absolute bottom-0 left-0 -mb-40 -ml-40 h-80 w-80 rounded-full bg-gray-200/50 blur-3xl" />
 
-      <div className="container relative mx-auto px-4 sm:px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: 'easeOut' }}
-          className="mx-auto max-w-4xl"
-        >
+      <motion.div style={{ y, opacity }} className="container relative mx-auto px-4 sm:px-6">
+        <div className="mx-auto max-w-4xl">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -32,8 +36,8 @@ export default function PageHero({ title, description }) {
               {description}
             </motion.p>
           )}
-        </motion.div>
-      </div>
+        </div>
+      </motion.div>
     </section>
   )
 }

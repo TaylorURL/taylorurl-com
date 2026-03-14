@@ -1,29 +1,31 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Mail, MapPin } from 'lucide-react'
-import { COMPANY_LOCATION, CONTACT_EMAIL, LEGAL_LINKS, PRIMARY_LINKS } from '@constants/navigation'
+import { COMPANY_LOCATION, LEGAL_LINKS, PRIMARY_LINKS, SUPPORT_EMAIL } from '@constants/navigation'
+import { fadeInUp } from '@constants/animations'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="border-t border-gray-200 bg-gray-50 px-4 pb-8 pt-16 md:px-6">
+    <footer className="relative border-t border-gray-200 bg-gray-50 px-4 pb-8 pt-16 md:px-6 overflow-hidden">
+      <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
+        {...fadeInUp}
         transition={{ duration: 0.5 }}
-        className="mx-auto max-w-6xl"
+        className="relative mx-auto max-w-6xl"
       >
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <Link to="/" className="mb-5 inline-block">
-              <span className="text-xl font-bold tracking-tight text-gray-900">
-                Taylor<span className="text-blue-600">URL</span>
-              </span>
+              <img
+                src="/images/TaylorURL-Logo.png"
+                alt="TaylorURL"
+                className="h-9 w-auto"
+              />
             </Link>
             <p className="mb-6 max-w-sm text-sm leading-relaxed text-gray-500">
-              Professional web development for businesses in the Houston area and beyond.
+              Websites for real businesses. Based in Baytown, working with anyone.
             </p>
             <div className="space-y-2.5">
               <div className="flex items-center gap-2.5 text-sm text-gray-500">
@@ -31,11 +33,11 @@ export default function Footer() {
                 <span>{COMPANY_LOCATION}</span>
               </div>
               <a
-                href={`mailto:${CONTACT_EMAIL}`}
+                href={`mailto:${SUPPORT_EMAIL}`}
                 className="flex items-center gap-2.5 text-sm text-gray-500 transition-colors hover:text-blue-600"
               >
                 <Mail className="h-4 w-4 text-gray-400" />
-                <span>{CONTACT_EMAIL}</span>
+                <span>{SUPPORT_EMAIL}</span>
               </a>
             </div>
           </div>
@@ -53,6 +55,22 @@ export default function Footer() {
                   </Link>
                 </li>
               ))}
+              <li>
+                <Link
+                  to="/faq"
+                  className="text-sm text-gray-500 transition-colors hover:text-gray-900"
+                >
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/careers"
+                  className="text-sm text-gray-500 transition-colors hover:text-gray-900"
+                >
+                  Careers
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -84,10 +102,10 @@ export default function Footer() {
           <p className="text-sm text-gray-400">
             &copy; {currentYear} TaylorURL. All rights reserved.
           </p>
-          <div className="flex items-center gap-2 text-sm text-gray-400">
+          <Link to="/status" className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-gray-600">
             <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
             <span>All systems operational</span>
-          </div>
+          </Link>
         </div>
       </motion.div>
     </footer>

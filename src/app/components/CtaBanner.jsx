@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import { fadeInUp } from '@constants/animations'
 
 /**
  * Reusable call-to-action banner used across multiple views.
@@ -30,9 +31,7 @@ export default function CtaBanner({
     <section className={`border-t border-gray-200 py-20 ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
+          {...fadeInUp}
           transition={{ duration: 0.5 }}
           className="mx-auto max-w-3xl text-center"
         >

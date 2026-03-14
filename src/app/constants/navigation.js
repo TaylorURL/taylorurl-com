@@ -3,6 +3,8 @@ export const PRIMARY_LINKS = [
   { to: '/about', label: 'About' },
   { to: '/services', label: 'Services' },
   { to: '/work', label: 'Work' },
+  { to: '/process', label: 'Process' },
+  { to: '/blog', label: 'Blog' },
 ]
 
 export const LEGAL_LINKS = [
@@ -11,6 +13,8 @@ export const LEGAL_LINKS = [
   { to: '/license', label: 'License' },
 ]
 
-export const CONTACT_EMAIL = 'trenton@taylorurl.com'
-export const COMPANY_LOCATION = 'Houston, Texas'
+export const SUPPORT_EMAIL = 'support@taylorurl.com'
+export const SALES_EMAIL = 'sales@taylorurl.com'
+export const COMPANY_LOCATION = 'Baytown, Texas'
 export const BRAND_NAME = 'TaylorURL'
+export const PHONE_NUMBER = '+18321234567'

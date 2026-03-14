@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react'
 import { BRAND_NAME } from '@constants/navigation'
+import Seo from '@components/Seo'
+import { pageTransition } from '@constants/animations'
 
 const AUTH_TABS = [
   { id: 'signin', label: 'Sign In', disabled: false },
@@ -18,18 +20,21 @@ export default function Auth() {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  // Placeholder for future backend authentication integration
   const handleSubmit = e => {
     e.preventDefault()
   }
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
+      {...pageTransition}
       className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 px-4 pb-16 pt-40"
     >
+      <Seo
+        title="Client Portal"
+        description="Sign in to your TaylorURL client portal to manage your project and communicate with your developer."
+        path="/auth"
+      />
       <div className="w-full max-w-md">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

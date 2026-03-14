@@ -2,7 +2,10 @@ import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { Check, Clock, Mail, MapPin, Send } from 'lucide-react'
 import PageHero from '@components/PageHero'
-import { COMPANY_LOCATION, CONTACT_EMAIL } from '@constants/navigation'
+import Seo from '@components/Seo'
+import { useToast } from '@components/Toast'
+import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
+import { slideInLeftMount, slideInRightMount } from '@constants/animations'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
@@ -19,16 +22,16 @@ const INCLUDED_ITEMS = [
 
 const PROCESS_STEPS = [
   {
-    title: 'Free Consultation',
-    description: 'We discuss your project requirements, goals, and timeline.',
+    title: 'Quick Chat',
+    description: 'Tell us what you need. We ask a few questions and give you a straight answer.',
   },
   {
-    title: 'Custom Quote',
-    description: 'You receive a detailed proposal tailored to your project.',
+    title: 'Real Quote',
+    description: 'You get a number — not a range, not "it depends." A real quote.',
   },
   {
-    title: 'Build & Launch',
-    description: 'I build your project and launch it with ongoing support.',
+    title: 'We Build It',
+    description: 'We get to work, you see progress, and we launch it with full support included.',
   },
 ]
 
@@ -36,6 +39,7 @@ const INPUT_CLASS =
   'w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/10'
 
 export default function Pricing() {
+  const toast = useToast()
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,8 +48,35 @@ export default function Pricing() {
     message: '',
   })
 
+  const [errors, setErrors] = useState({})
+
+  const validateForm = () => {
+    const newErrors = {}
+
+    if (!formData.name || formData.name.trim().length < 2) {
+      newErrors.name = 'Name is required and must be at least 2 characters.'
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!formData.email || !emailRegex.test(formData.email)) {
+      newErrors.email = 'A valid email address is required.'
+    }
+
+    if (!formData.message || formData.message.trim().length < 10) {
+      newErrors.message = 'Message is required and must be at least 10 characters.'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
   const handleSubmit = e => {
     e.preventDefault()
+
+    if (!validateForm()) return
+
+    setErrors({})
+
     const subject = `New Project Inquiry from ${formData.name}`
     const body = `
 Name: ${formData.name}
@@ -57,7 +88,8 @@ Message:
 ${formData.message}
     `.trim()
 
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    toast('Opening your email client — we\'ll get back to you within 24 hours!')
   }
 
   const handleChange = e => {
@@ -66,28 +98,32 @@ ${formData.message}
 
   return (
     <div>
-      <PageHero title="Get a Quote" description="Every project is unique. Let's discuss yours." />
+      <Seo
+        title="Get a Quote"
+        description="Tell us what you need and we'll shoot you a real number. No 'it depends' energy."
+        path="/pricing"
+      />
+      <PageHero title="Get a Quote" description="No sales pitch. Just tell us what you need and we'll give you a number." />
 
       <section className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-12 lg:grid-cols-5">
             <motion.div
-              initial={{ opacity: 0, x: -30 }}
-              animate={{ opacity: 1, x: 0 }}
+              {...slideInLeftMount}
               transition={{ duration: 0.5 }}
               className="lg:col-span-2"
             >
               <h2 className="mb-6 text-3xl font-bold text-gray-900">
-                Let's Build Something <span className="logo-wave-dark">Great</span>
+                Let&apos;s <span className="logo-wave-dark">Talk</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                Whether you need a new website, web application, or want to improve your existing
-                online presence, I'm here to help.
+                New site, redesign, or just need someone to take over management — tell us. We&apos;ll
+                figure out what you need and what it&apos;ll cost.
               </p>
 
               <div className="mb-8 space-y-4">
                 <a
-                  href={`mailto:${CONTACT_EMAIL}`}
+                  href={`mailto:${SALES_EMAIL}`}
                   className="group flex items-start gap-4 rounded-xl border border-gray-200 p-4 transition-all hover:border-gray-300 hover:bg-gray-50"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-900">
@@ -95,7 +131,7 @@ ${formData.message}
                   </div>
                   <div>
                     <div className="font-medium text-gray-900">Email</div>
-                    <div className="text-sm text-gray-500">{CONTACT_EMAIL}</div>
+                    <div className="text-sm text-gray-500">{SALES_EMAIL}</div>
                   </div>
                 </a>
 
@@ -139,14 +175,13 @@ ${formData.message}
             </motion.div>
 
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
+              {...slideInRightMount}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:col-span-3"
             >
               <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
                 <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                  Tell Me About Your Project
+                  Tell Us What You Need
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
@@ -167,6 +202,7 @@ ${formData.message}
                         className={INPUT_CLASS}
                         placeholder="Your name"
                       />
+                      {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
                     </div>
                     <div>
                       <label
@@ -185,6 +221,7 @@ ${formData.message}
                         className={INPUT_CLASS}
                         placeholder="you@company.com"
                       />
+                      {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
                     </div>
                   </div>
 
@@ -222,7 +259,6 @@ ${formData.message}
                       >
                         <option value="">Select type</option>
                         <option value="new-website">New Website</option>
-                        <option value="web-app">Web Application</option>
                         <option value="redesign">Website Redesign</option>
                         <option value="optimization">Performance Optimization</option>
                         <option value="maintenance">Ongoing Maintenance</option>
@@ -245,8 +281,9 @@ ${formData.message}
                       onChange={handleChange}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
-                      placeholder="Tell me about your project, goals, and timeline..."
+                      placeholder="What do you need? Any timeline or budget in mind?"
                     />
+                    {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message}</p>}
                   </div>
 
                   <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
@@ -254,7 +291,7 @@ ${formData.message}
                       type="submit"
                       className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white transition-all hover:bg-blue-700"
                     >
-                      Request Quote
+                      Send It
                       <Send className="h-4 w-4" />
                     </button>
                     <p className="text-xs text-gray-500">Opens your email client</p>
@@ -266,18 +303,19 @@ ${formData.message}
         </div>
       </section>
 
-      <section className="border-t border-gray-200 bg-gray-50 py-16">
-        <div className="mx-auto max-w-4xl px-6">
+      <section className="relative overflow-hidden bg-gray-950 py-16">
+        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
+        <div className="relative mx-auto max-w-4xl px-6">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-2xl font-bold text-gray-900">What's Included</h2>
-            <p className="text-gray-600">
-              Every project includes comprehensive support to ensure your website runs smoothly.
+            <h2 className="mb-4 text-2xl font-bold text-white">Everything&apos;s <span className="logo-wave">Included</span></h2>
+            <p className="text-gray-400">
+              You don&apos;t pay extra for any of this. It all comes with the site.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
             {INCLUDED_ITEMS.map(item => (
-              <div key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" strokeWidth={2} />
+              <div key={item} className="flex items-start gap-2 text-sm text-gray-300">
+                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" strokeWidth={2} />
                 {item}
               </div>
             ))}
