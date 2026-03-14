@@ -2,6 +2,10 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.1] - 2026-03-14
+
+- Removed CLAUDE.md configuration file from the project
+
 ## [3.0] - 2026-03-14
 
 - Overhauled SEO across all pages with location-targeted meta titles and descriptions mentioning Baytown, Houston, and surrounding Texas cities
