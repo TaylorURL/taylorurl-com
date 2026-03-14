@@ -2,6 +2,13 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [2.8] - 2026-03-14
+
+- Increased logo size in the navigation and footer for better visibility
+- Migrated release tooling from turl-release to nit release
+- Replaced turl.json config with nit.json
+- Applied consistent code formatting across all components, views, and blog data files
+
 ## [2.7] - 2026-03-04
 
 - Restructured project directory by moving components and views under the `app` folder for better organization, updating related paths in `jsconfig.json` to reflect the new structure.

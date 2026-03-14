@@ -1,6 +1,16 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowRight, Code2, Headphones, Zap, Shield, Clock, Heart, Users, Monitor } from 'lucide-react'
+import {
+  ArrowRight,
+  Code2,
+  Headphones,
+  Zap,
+  Shield,
+  Clock,
+  Heart,
+  Users,
+  Monitor,
+} from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
@@ -43,28 +53,32 @@ const PROCESS = [
   {
     num: '01',
     title: 'You reach out',
-    description: 'Tell us about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
+    description:
+      'Tell us about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
     you: 'Send us a message',
     us: 'Get back to you same day',
   },
   {
     num: '02',
     title: 'We plan it out',
-    description: 'We figure out the structure, pages, and design direction. You approve it before we write a single line of code.',
+    description:
+      'We figure out the structure, pages, and design direction. You approve it before we write a single line of code.',
     you: 'Give feedback on the plan',
     us: 'Design mockups you can actually see',
   },
   {
     num: '03',
     title: 'We build it',
-    description: 'Custom code, optimized images, fast hosting. You get progress updates and can give feedback the whole time.',
+    description:
+      'Custom code, optimized images, fast hosting. You get progress updates and can give feedback the whole time.',
     you: 'Review and request changes',
     us: 'Build, test, and refine',
   },
   {
     num: '04',
     title: 'We launch and stick around',
-    description: 'Your site goes live. We handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
+    description:
+      'Your site goes live. We handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
     you: 'Focus on your business',
     us: 'Keep everything running',
   },
@@ -78,10 +92,7 @@ export default function About() {
         description="We're a small web dev team out of Baytown, Texas. We build websites for local businesses and actually stick around to keep them running."
         path="/about"
       />
-      <PageHero
-        title="About Us"
-        description="Small team. Real code. No corporate energy."
-      />
+      <PageHero title="About Us" description="Small team. Real code. No corporate energy." />
 
       {/* Story section */}
       <section className="relative overflow-hidden bg-white py-20">
@@ -89,34 +100,35 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-16 lg:grid-cols-5">
             <motion.div {...fadeInUp} className="lg:col-span-3">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">Our Story</p>
+              <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+                Our Story
+              </p>
               <h2 className="mb-8 text-3xl font-bold text-gray-900 sm:text-4xl">
                 We got tired of watching local businesses get ripped off
               </h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  TaylorURL started in Baytown, Texas because we kept seeing the same thing everywhere — local
-                  businesses either paying some agency $10,000 for a WordPress template they could&apos;ve bought
-                  for $59, or settling for a site that looks like it was built on a free Wix plan in 2012.
+                  TaylorURL started in Baytown, Texas because we kept seeing the same thing
+                  everywhere — local businesses either paying some agency $10,000 for a WordPress
+                  template they could&apos;ve bought for $59, or settling for a site that looks like
+                  it was built on a free Wix plan in 2012.
                 </p>
                 <p>
-                  Both options suck. So we started building websites the right way — with real code, real design,
-                  and real support after launch. Not as a faceless agency with a sales team and a ticket queue,
-                  but as actual humans you can text when something needs fixing.
+                  Both options suck. So we started building websites the right way — with real code,
+                  real design, and real support after launch. Not as a faceless agency with a sales
+                  team and a ticket queue, but as actual humans you can text when something needs
+                  fixing.
                 </p>
                 <p>
-                  We use the same technology that powers sites like Netflix and Airbnb, except we don&apos;t
-                  charge like them and we don&apos;t talk like them either. Every site we build is custom,
-                  fast, and yours to keep. No lock-in, no platform fees, no surprises.
+                  We use the same technology that powers sites like Netflix and Airbnb, except we
+                  don&apos;t charge like them and we don&apos;t talk like them either. Every site we
+                  build is custom, fast, and yours to keep. No lock-in, no platform fees, no
+                  surprises.
                 </p>
               </div>
             </motion.div>
 
-            <motion.div
-              {...fadeInUp}
-              transition={{ delay: 0.15 }}
-              className="lg:col-span-2"
-            >
+            <motion.div {...fadeInUp} transition={{ delay: 0.15 }} className="lg:col-span-2">
               <div className="grid grid-cols-2 gap-4">
                 {STATS.map((stat, i) => (
                   <motion.div
@@ -128,7 +140,8 @@ export default function About() {
                     className="rounded-2xl border border-gray-200 bg-gray-50 p-5"
                   >
                     <div className="mb-1 text-2xl font-bold text-gray-900">
-                      {stat.value}<span className="text-blue-600">{stat.unit}</span>
+                      {stat.value}
+                      <span className="text-blue-600">{stat.unit}</span>
                     </div>
                     <div className="text-sm text-gray-500">{stat.label}</div>
                   </motion.div>
@@ -144,7 +157,9 @@ export default function About() {
                   <Heart className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
                   <div>
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
-                    <p className="text-sm text-gray-600">Working with businesses everywhere. Everything we do is remote-friendly.</p>
+                    <p className="text-sm text-gray-600">
+                      Working with businesses everywhere. Everything we do is remote-friendly.
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -157,7 +172,9 @@ export default function About() {
       <section className="border-y border-gray-200 bg-gray-50 py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-14">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">Why Us</p>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+              Why Us
+            </p>
             <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
               We do things differently
             </h2>
@@ -189,12 +206,15 @@ export default function About() {
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">How It Works</p>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
+              How It Works
+            </p>
             <h2 className="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl">
               Four steps. That&apos;s it.
             </h2>
             <p className="mx-auto max-w-lg text-gray-500">
-              No 12-step onboarding. No Gantt charts. No "discovery phase." Here&apos;s the whole process.
+              No 12-step onboarding. No Gantt charts. No "discovery phase." Here&apos;s the whole
+              process.
             </p>
           </motion.div>
 
@@ -204,11 +224,7 @@ export default function About() {
 
             <div className="space-y-8">
               {PROCESS.map((step, i) => (
-                <motion.div
-                  key={step.num}
-                  {...staggerChild(i, 0.1)}
-                  className="relative sm:pl-16"
-                >
+                <motion.div key={step.num} {...staggerChild(i, 0.1)} className="relative sm:pl-16">
                   {/* Step number on line */}
                   <div className="absolute left-0 top-0 hidden h-12 w-12 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-sm font-bold text-gray-900 sm:flex">
                     {step.num}
@@ -253,7 +269,8 @@ export default function About() {
               Let&apos;s <span className="logo-wave">Do This</span>
             </h2>
             <p className="mb-8 text-lg text-gray-400">
-              Tell us what you need. We&apos;ll give you a straight answer and a real quote — no &quot;discovery phase&quot; required.
+              Tell us what you need. We&apos;ll give you a straight answer and a real quote — no
+              &quot;discovery phase&quot; required.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
               <Link

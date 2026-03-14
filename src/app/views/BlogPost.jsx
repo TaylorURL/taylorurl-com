@@ -45,9 +45,7 @@ export default function BlogPost() {
               </span>
             </div>
 
-            <h1 className="mb-10 text-3xl font-bold text-gray-900 sm:text-4xl">
-              {post.title}
-            </h1>
+            <h1 className="mb-10 text-3xl font-bold text-gray-900 sm:text-4xl">{post.title}</h1>
 
             <div className="space-y-5">
               {post.content.map((block, i) => {

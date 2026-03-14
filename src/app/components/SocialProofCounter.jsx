@@ -30,8 +30,8 @@ export default function SocialProofCounter() {
           className="inline-block font-bold text-blue-600"
         >
           {count}
-        </motion.span>
-        {' '}businesses served this year
+        </motion.span>{' '}
+        businesses served this year
       </p>
     </motion.div>
   )

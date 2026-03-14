@@ -15,7 +15,7 @@ export default function NewsletterSection() {
   }
 
   return (
-    <section className="relative border-t border-gray-200 bg-gray-50 py-24 overflow-hidden">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-50 py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-8 text-center md:p-12">

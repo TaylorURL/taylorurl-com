@@ -1,7 +1,17 @@
 import { useState, useMemo } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowLeft, ArrowRight, BookOpen, Calendar, Clock, Search, Tag, X, TrendingUp } from 'lucide-react'
+import {
+  ArrowLeft,
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  Clock,
+  Search,
+  Tag,
+  X,
+  TrendingUp,
+} from 'lucide-react'
 import Seo from '@components/Seo'
 import { fadeInUp } from '@constants/animations'
 import { BLOG_POSTS } from '@data/blog'
@@ -19,7 +29,13 @@ const CATEGORY_COLORS = {
 }
 
 function getCategoryStyle(category) {
-  return CATEGORY_COLORS[category] || { bg: 'bg-gray-50', text: 'text-gray-700', border: 'border-gray-200' }
+  return (
+    CATEGORY_COLORS[category] || {
+      bg: 'bg-gray-50',
+      text: 'text-gray-700',
+      border: 'border-gray-200',
+    }
+  )
 }
 
 function FeaturedPost({ post }) {
@@ -39,7 +55,9 @@ function FeaturedPost({ post }) {
               <TrendingUp className="h-3 w-3" />
               Latest
             </span>
-            <span className={`inline-flex items-center gap-1 rounded-full ${style.bg} px-3 py-1 text-xs font-medium ${style.text}`}>
+            <span
+              className={`inline-flex items-center gap-1 rounded-full ${style.bg} px-3 py-1 text-xs font-medium ${style.text}`}
+            >
               {post.category}
             </span>
           </div>
@@ -50,9 +68,7 @@ function FeaturedPost({ post }) {
             </Link>
           </h2>
 
-          <p className="mb-6 text-base leading-relaxed text-gray-400 sm:text-lg">
-            {post.excerpt}
-          </p>
+          <p className="mb-6 text-base leading-relaxed text-gray-400 sm:text-lg">{post.excerpt}</p>
 
           <div className="mb-6 flex items-center gap-4 text-sm text-gray-500">
             <span className="flex items-center gap-1.5">
@@ -100,7 +116,9 @@ function PostCard({ post, index }) {
     >
       <Link to={`/blog/${post.slug}`} className="flex flex-1 flex-col p-6">
         <div className="mb-3 flex items-center gap-2">
-          <span className={`inline-flex items-center gap-1.5 rounded-full border ${style.border} ${style.bg} px-2.5 py-0.5 text-xs font-medium ${style.text}`}>
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full border ${style.border} ${style.bg} px-2.5 py-0.5 text-xs font-medium ${style.text}`}
+          >
             {post.category}
           </span>
           <span className="text-xs text-gray-400">{post.readTime}</span>
@@ -110,9 +128,7 @@ function PostCard({ post, index }) {
           {post.title}
         </h3>
 
-        <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-500">
-          {post.excerpt}
-        </p>
+        <p className="mb-4 flex-1 text-sm leading-relaxed text-gray-500">{post.excerpt}</p>
 
         <div className="flex items-center justify-between text-xs text-gray-400">
           <span className="flex items-center gap-1">
@@ -146,7 +162,9 @@ function PostListItem({ post, index }) {
       >
         <div className="flex-1">
           <div className="mb-1.5 flex items-center gap-2">
-            <span className={`inline-flex items-center rounded-full border ${style.border} ${style.bg} px-2 py-0.5 text-[10px] font-medium ${style.text}`}>
+            <span
+              className={`inline-flex items-center rounded-full border ${style.border} ${style.bg} px-2 py-0.5 text-[10px] font-medium ${style.text}`}
+            >
               {post.category}
             </span>
             <span className="text-xs text-gray-400">{post.date}</span>
@@ -216,7 +234,7 @@ export default function Blog() {
         p =>
           p.title.toLowerCase().includes(q) ||
           p.excerpt.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q),
+          p.category.toLowerCase().includes(q)
       )
     }
 
@@ -230,7 +248,7 @@ export default function Blog() {
   const totalPages = Math.ceil(gridPosts.length / POSTS_PER_PAGE)
   const paginated = gridPosts.slice(
     (currentPage - 1) * POSTS_PER_PAGE,
-    currentPage * POSTS_PER_PAGE,
+    currentPage * POSTS_PER_PAGE
   )
 
   const categoryCounts = useMemo(() => {
@@ -261,9 +279,7 @@ export default function Blog() {
             <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
               The <span className="logo-wave-dark">Blog</span>
             </h1>
-            <p className="mb-6 text-gray-500">
-              Real advice for real businesses. No fluff.
-            </p>
+            <p className="mb-6 text-gray-500">Real advice for real businesses. No fluff.</p>
 
             {/* Search + categories inline */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -279,7 +295,9 @@ export default function Blog() {
                     }`}
                   >
                     {cat}
-                    <span className={`ml-1 text-[10px] ${activeCategory === cat ? 'text-gray-400' : 'text-gray-400'}`}>
+                    <span
+                      className={`ml-1 text-[10px] ${activeCategory === cat ? 'text-gray-400' : 'text-gray-400'}`}
+                    >
                       {categoryCounts[cat] || 0}
                     </span>
                   </button>
@@ -313,7 +331,7 @@ export default function Blog() {
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           {/* Results count when filtering */}
-          {(!isDefaultView) && (
+          {!isDefaultView && (
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

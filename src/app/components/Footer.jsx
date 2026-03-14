@@ -8,7 +8,7 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="relative border-t border-gray-200 bg-gray-50 px-4 pb-8 pt-16 md:px-6 overflow-hidden">
+    <footer className="relative overflow-hidden border-t border-gray-200 bg-gray-50 px-4 pb-8 pt-16 md:px-6">
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <motion.div
         {...fadeInUp}
@@ -18,11 +18,7 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <Link to="/" className="mb-5 inline-block">
-              <img
-                src="/images/TaylorURL-Logo.png"
-                alt="TaylorURL"
-                className="h-9 w-auto"
-              />
+              <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-28 w-auto" />
             </Link>
             <p className="mb-6 max-w-sm text-sm leading-relaxed text-gray-500">
               Websites for real businesses. Based in Baytown, working with anyone.
@@ -102,7 +98,10 @@ export default function Footer() {
           <p className="text-sm text-gray-400">
             &copy; {currentYear} TaylorURL. All rights reserved.
           </p>
-          <Link to="/status" className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-gray-600">
+          <Link
+            to="/status"
+            className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-gray-600"
+          >
             <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
             <span>All systems operational</span>
           </Link>

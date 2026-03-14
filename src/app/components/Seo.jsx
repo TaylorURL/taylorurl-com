@@ -6,7 +6,9 @@ const DEFAULT_DESCRIPTION =
   'Professional web development for Houston-area businesses. Custom websites, React applications, and ongoing maintenance from TaylorURL.'
 
 export default function Seo({ title, description = DEFAULT_DESCRIPTION, path = '' }) {
-  const fullTitle = title ? `${title} | ${BRAND_NAME}` : `${BRAND_NAME} - Web Development for Local Businesses`
+  const fullTitle = title
+    ? `${title} | ${BRAND_NAME}`
+    : `${BRAND_NAME} - Web Development for Local Businesses`
   const url = `${BASE_URL}${path}`
 
   return (

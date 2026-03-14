@@ -38,11 +38,7 @@ export default function LegalPage({
               {children}
 
               {sections.map((section, index) => (
-                <motion.div
-                  key={section.title}
-                  {...staggerChild(index, 0.05)}
-                  className="mb-8"
-                >
+                <motion.div key={section.title} {...staggerChild(index, 0.05)} className="mb-8">
                   <h2 className="mb-4 text-xl font-semibold text-gray-900">{section.title}</h2>
                   {typeof section.content === 'string' ? (
                     <p className="text-gray-600">{section.content}</p>

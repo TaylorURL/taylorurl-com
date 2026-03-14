@@ -74,28 +74,30 @@ export default function License() {
         path="/license"
       />
       <LegalPage
-      title="License"
-      description="Terms governing the use of our software and deliverables."
-      sections={SECTIONS}
-      footer={{
-        heading: 'Licensing Inquiries',
-        body: (
-          <>
-            For licensing questions or permissions, contact us at{' '}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
-              {SUPPORT_EMAIL}
-            </a>
-          </>
-        ),
-      }}
-    >
-      <div className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6">
-        <p className="text-sm font-medium text-gray-900">
-          MIT License with Additional Restrictions
-        </p>
-        <p className="mt-1 text-sm text-gray-500">Copyright (c) 2026 TaylorURL / Trenton Taylor</p>
-      </div>
-    </LegalPage>
+        title="License"
+        description="Terms governing the use of our software and deliverables."
+        sections={SECTIONS}
+        footer={{
+          heading: 'Licensing Inquiries',
+          body: (
+            <>
+              For licensing questions or permissions, contact us at{' '}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+                {SUPPORT_EMAIL}
+              </a>
+            </>
+          ),
+        }}
+      >
+        <div className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6">
+          <p className="text-sm font-medium text-gray-900">
+            MIT License with Additional Restrictions
+          </p>
+          <p className="mt-1 text-sm text-gray-500">
+            Copyright (c) 2026 TaylorURL / Trenton Taylor
+          </p>
+        </div>
+      </LegalPage>
     </>
   )
 }

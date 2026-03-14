@@ -58,22 +58,22 @@ export default function Terms() {
         path="/terms"
       />
       <LegalPage
-      title="Terms of Service"
-      description="Please read these terms carefully before using our services."
-      effectiveDate="Effective Date: February 1, 2026"
-      sections={SECTIONS}
-      footer={{
-        heading: 'Contact',
-        body: (
-          <>
-            For questions about these Terms of Service, contact us at{' '}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
-              {SUPPORT_EMAIL}
-            </a>
-          </>
-        ),
-      }}
-    />
+        title="Terms of Service"
+        description="Please read these terms carefully before using our services."
+        effectiveDate="Effective Date: February 1, 2026"
+        sections={SECTIONS}
+        footer={{
+          heading: 'Contact',
+          body: (
+            <>
+              For questions about these Terms of Service, contact us at{' '}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+                {SUPPORT_EMAIL}
+              </a>
+            </>
+          ),
+        }}
+      />
     </>
   )
 }

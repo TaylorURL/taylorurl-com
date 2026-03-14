@@ -42,23 +42,23 @@ export default function Privacy() {
         path="/privacy"
       />
       <LegalPage
-      title="Privacy Policy"
-      description="How we collect, use, and protect your information."
-      effectiveDate="Last Updated: February 1, 2026"
-      introText='TaylorURL ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website taylorurl.com.'
-      sections={SECTIONS}
-      footer={{
-        heading: 'Questions?',
-        body: (
-          <>
-            If you have any questions about this Privacy Policy, please contact us at{' '}
-            <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
-              {SUPPORT_EMAIL}
-            </a>
-          </>
-        ),
-      }}
-    />
+        title="Privacy Policy"
+        description="How we collect, use, and protect your information."
+        effectiveDate="Last Updated: February 1, 2026"
+        introText='TaylorURL ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website taylorurl.com.'
+        sections={SECTIONS}
+        footer={{
+          heading: 'Questions?',
+          body: (
+            <>
+              If you have any questions about this Privacy Policy, please contact us at{' '}
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+                {SUPPORT_EMAIL}
+              </a>
+            </>
+          ),
+        }}
+      />
     </>
   )
 }

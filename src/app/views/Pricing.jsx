@@ -89,7 +89,7 @@ ${formData.message}
     `.trim()
 
     window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    toast('Opening your email client — we\'ll get back to you within 24 hours!')
+    toast("Opening your email client — we'll get back to you within 24 hours!")
   }
 
   const handleChange = e => {
@@ -103,7 +103,10 @@ ${formData.message}
         description="Tell us what you need and we'll shoot you a real number. No 'it depends' energy."
         path="/pricing"
       />
-      <PageHero title="Get a Quote" description="No sales pitch. Just tell us what you need and we'll give you a number." />
+      <PageHero
+        title="Get a Quote"
+        description="No sales pitch. Just tell us what you need and we'll give you a number."
+      />
 
       <section className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-6">
@@ -117,8 +120,8 @@ ${formData.message}
                 Let&apos;s <span className="logo-wave-dark">Talk</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or just need someone to take over management — tell us. We&apos;ll
-                figure out what you need and what it&apos;ll cost.
+                New site, redesign, or just need someone to take over management — tell us.
+                We&apos;ll figure out what you need and what it&apos;ll cost.
               </p>
 
               <div className="mb-8 space-y-4">
@@ -180,9 +183,7 @@ ${formData.message}
               className="lg:col-span-3"
             >
               <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
-                <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                  Tell Us What You Need
-                </h3>
+                <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Us What You Need</h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
@@ -283,7 +284,9 @@ ${formData.message}
                       className={`${INPUT_CLASS} resize-none`}
                       placeholder="What do you need? Any timeline or budget in mind?"
                     />
-                    {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message}</p>}
+                    {errors.message && (
+                      <p className="mt-1 text-sm text-red-500">{errors.message}</p>
+                    )}
                   </div>
 
                   <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
@@ -307,7 +310,9 @@ ${formData.message}
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-2xl font-bold text-white">Everything&apos;s <span className="logo-wave">Included</span></h2>
+            <h2 className="mb-4 text-2xl font-bold text-white">
+              Everything&apos;s <span className="logo-wave">Included</span>
+            </h2>
             <p className="text-gray-400">
               You don&apos;t pay extra for any of this. It all comes with the site.
             </p>

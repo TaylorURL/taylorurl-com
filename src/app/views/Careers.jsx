@@ -9,7 +9,7 @@ const BENEFITS = [
   {
     icon: Laptop,
     title: 'Flexible Remote Work',
-    description: 'Work from anywhere. We\'re a remote-first team based in Baytown, TX.',
+    description: "Work from anywhere. We're a remote-first team based in Baytown, TX.",
   },
   {
     icon: Code2,

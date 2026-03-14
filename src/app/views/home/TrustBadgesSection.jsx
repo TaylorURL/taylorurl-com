@@ -19,10 +19,7 @@ export default function TrustBadgesSection() {
           {TRUST_BADGES.map(badge => {
             const Icon = badge.icon
             return (
-              <div
-                key={badge.label}
-                className="flex items-center gap-2 text-sm text-gray-500"
-              >
+              <div key={badge.label} className="flex items-center gap-2 text-sm text-gray-500">
                 <Icon className="h-4 w-4 text-gray-400" />
                 {badge.label}
               </div>

@@ -69,12 +69,14 @@ export default function Navigation() {
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
-    return () => { document.body.style.overflow = '' }
+    return () => {
+      document.body.style.overflow = ''
+    }
   }, [mobileOpen])
 
   const isPillTransparent = isHome && !pillScrolled
 
-  const isActive = (to) => {
+  const isActive = to => {
     if (to === '/') return location.pathname === '/'
     return location.pathname.startsWith(to)
   }
@@ -87,7 +89,7 @@ export default function Navigation() {
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-        className="fixed left-0 right-0 top-0 z-50 hidden px-6 pt-5 md:block pointer-events-none"
+        className="pointer-events-none fixed left-0 right-0 top-0 z-50 hidden px-6 pt-5 md:block"
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           {/* Logo */}
@@ -95,17 +97,19 @@ export default function Navigation() {
             <img
               src="/images/TaylorURL-Logo.png"
               alt="TaylorURL"
-              className="h-9 w-auto transition-all duration-300"
+              className="h-28 w-auto transition-all duration-300"
               style={onDark ? { filter: 'brightness(0) invert(1)' } : undefined}
             />
           </Link>
 
           {/* Right side pill */}
-          <div className={`pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-1.5 transition-all duration-500 ${
-            isPillTransparent
-              ? 'border-white/15 bg-white/10 backdrop-blur-xl'
-              : 'border-gray-200 bg-white/90 shadow-lg shadow-black/[0.06] backdrop-blur-xl'
-          }`}>
+          <div
+            className={`pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-1.5 transition-all duration-500 ${
+              isPillTransparent
+                ? 'border-white/15 bg-white/10 backdrop-blur-xl'
+                : 'border-gray-200 bg-white/90 shadow-lg shadow-black/[0.06] backdrop-blur-xl'
+            }`}
+          >
             {PRIMARY_LINKS.map(link => {
               const active = isActive(link.to)
               return (
@@ -147,16 +151,18 @@ export default function Navigation() {
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
         className="fixed left-0 right-0 top-0 z-50 md:hidden"
       >
-        <div className={`flex items-center justify-between px-5 py-4 transition-all duration-500 ${
-          onDark && !mobileOpen
-            ? 'bg-transparent'
-            : 'border-b border-gray-200/60 bg-white/90 backdrop-blur-xl'
-        }`}>
+        <div
+          className={`flex items-center justify-between px-5 py-4 transition-all duration-500 ${
+            onDark && !mobileOpen
+              ? 'bg-transparent'
+              : 'border-b border-gray-200/60 bg-white/90 backdrop-blur-xl'
+          }`}
+        >
           <Link to="/" className="flex items-center">
             <img
               src="/images/TaylorURL-Logo.png"
               alt="TaylorURL"
-              className="h-8 w-auto transition-all duration-300"
+              className="h-24 w-auto transition-all duration-300"
               style={onDark && !mobileOpen ? { filter: 'brightness(0) invert(1)' } : undefined}
             />
           </Link>
@@ -171,8 +177,12 @@ export default function Navigation() {
               <X className="h-5 w-5" />
             ) : (
               <div className="flex w-5 flex-col items-end gap-[5px]">
-                <span className={`block h-[2px] w-5 rounded-full transition-colors duration-300 ${onDark ? 'bg-white' : 'bg-gray-900'}`} />
-                <span className={`block h-[2px] w-3.5 rounded-full transition-colors duration-300 ${onDark ? 'bg-white' : 'bg-gray-900'}`} />
+                <span
+                  className={`block h-[2px] w-5 rounded-full transition-colors duration-300 ${onDark ? 'bg-white' : 'bg-gray-900'}`}
+                />
+                <span
+                  className={`block h-[2px] w-3.5 rounded-full transition-colors duration-300 ${onDark ? 'bg-white' : 'bg-gray-900'}`}
+                />
               </div>
             )}
           </button>

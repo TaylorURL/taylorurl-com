@@ -27,7 +27,7 @@ export default function useCountUp(target, duration = 2000) {
           requestAnimationFrame(animate)
         }
       },
-      { threshold: 0.3 },
+      { threshold: 0.3 }
     )
 
     observer.observe(element)

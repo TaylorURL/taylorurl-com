@@ -12,7 +12,7 @@ export default function HeroSection() {
       <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-blue-600/20 blur-[120px] sm:h-[600px] sm:w-[900px]" />
       <div className="absolute bottom-0 right-0 h-[300px] w-[400px] translate-x-1/4 translate-y-1/4 rounded-full bg-blue-500/10 blur-[100px] sm:h-[400px] sm:w-[600px]" />
 
-      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-6 py-16 sm:gap-12 sm:py-20 lg:gap-16 lg:py-24 lg:grid-cols-[1fr_400px]">
+      <div className="relative z-10 mx-auto grid w-full max-w-6xl items-center gap-8 px-6 py-16 sm:gap-12 sm:py-20 lg:grid-cols-[1fr_400px] lg:gap-16 lg:py-24">
         <div>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -44,8 +44,8 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8 max-w-md text-base leading-relaxed text-gray-400 sm:mb-10 sm:text-lg"
           >
-            No jargon. No runaround. Just fast, good-looking websites
-            that actually bring in customers — built by real people who pick up the phone.
+            No jargon. No runaround. Just fast, good-looking websites that actually bring in
+            customers — built by real people who pick up the phone.
           </motion.p>
 
           <motion.div
@@ -76,16 +76,20 @@ export default function HeroSection() {
             className="mt-12 flex items-center gap-6 text-sm text-gray-500"
           >
             <div className="flex -space-x-2">
-              {['bg-orange-500', 'bg-blue-600', 'bg-emerald-500', 'bg-violet-500'].map((color, i) => (
-                <div
-                  key={i}
-                  className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-950 ${color} text-[10px] font-bold text-white`}
-                >
-                  {['MR', 'JM', 'SC', 'DK'][i]}
-                </div>
-              ))}
+              {['bg-orange-500', 'bg-blue-600', 'bg-emerald-500', 'bg-violet-500'].map(
+                (color, i) => (
+                  <div
+                    key={i}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-950 ${color} text-[10px] font-bold text-white`}
+                  >
+                    {['MR', 'JM', 'SC', 'DK'][i]}
+                  </div>
+                )
+              )}
             </div>
-            <span>Trusted by <strong className="text-gray-300">50+</strong> local businesses</span>
+            <span>
+              Trusted by <strong className="text-gray-300">50+</strong> local businesses
+            </span>
           </motion.div>
         </div>
 

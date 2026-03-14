@@ -1,12 +1,4 @@
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  ResponsiveContainer,
-  Tooltip,
-  XAxis,
-  YAxis,
-} from 'recharts'
+import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import useCountUp from '@hooks/useCountUp'
 import {
   CHART_AXIS_STYLE,
@@ -41,12 +33,7 @@ export default function StatsSection() {
                   margin={{ top: 5, right: 30, left: 90, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
-                  <XAxis
-                    type="number"
-                    domain={[0, 50]}
-                    tick={CHART_AXIS_STYLE}
-                    axisLine={false}
-                  />
+                  <XAxis type="number" domain={[0, 50]} tick={CHART_AXIS_STYLE} axisLine={false} />
                   <YAxis
                     type="category"
                     dataKey="name"
@@ -65,7 +52,9 @@ export default function StatsSection() {
           </div>
           <div className="flex flex-col items-center justify-center">
             <div ref={statRef} className="mb-8 text-center">
-              <div className="text-5xl font-bold text-gray-900 sm:text-7xl">{localSearchPercent}%</div>
+              <div className="text-5xl font-bold text-gray-900 sm:text-7xl">
+                {localSearchPercent}%
+              </div>
               <div className="mt-2 text-base text-gray-600 sm:text-lg">
                 of all searches have local intent
               </div>

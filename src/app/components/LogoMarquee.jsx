@@ -1,5 +1,16 @@
 import { motion } from 'framer-motion'
-import { Building2, Car, ChefHat, Hammer, Heart, Scale, Scissors, Stethoscope, Store, Wrench } from 'lucide-react'
+import {
+  Building2,
+  Car,
+  ChefHat,
+  Hammer,
+  Heart,
+  Scale,
+  Scissors,
+  Stethoscope,
+  Store,
+  Wrench,
+} from 'lucide-react'
 
 const INDUSTRIES = [
   { icon: Store, label: 'Retail' },
@@ -18,7 +29,7 @@ const DOUBLED = [...INDUSTRIES, ...INDUSTRIES]
 
 export default function LogoMarquee() {
   return (
-    <section className="border-t border-gray-200 bg-white py-10 overflow-hidden">
+    <section className="overflow-hidden border-t border-gray-200 bg-white py-10">
       <div className="mb-6 text-center">
         <p className="text-sm font-medium uppercase tracking-wider text-gray-400">
           Industries We Serve
@@ -38,7 +49,7 @@ export default function LogoMarquee() {
                 className="flex flex-shrink-0 items-center gap-2.5 text-gray-400 transition-colors hover:text-gray-600"
               >
                 <Icon className="h-5 w-5" strokeWidth={1.5} />
-                <span className="text-sm font-medium whitespace-nowrap">{item.label}</span>
+                <span className="whitespace-nowrap text-sm font-medium">{item.label}</span>
               </div>
             )
           })}

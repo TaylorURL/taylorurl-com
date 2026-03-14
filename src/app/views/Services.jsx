@@ -1,6 +1,18 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Check, Code2, Globe, Palette, RefreshCw, Search, Shield, Smartphone, Wrench, Zap } from 'lucide-react'
+import {
+  ArrowRight,
+  Check,
+  Code2,
+  Globe,
+  Palette,
+  RefreshCw,
+  Search,
+  Shield,
+  Smartphone,
+  Wrench,
+  Zap,
+} from 'lucide-react'
 import PageHero from '@components/PageHero'
 import BrowserMockup from '@components/BrowserMockup'
 import Seo from '@components/Seo'
@@ -10,11 +22,12 @@ const SERVICES = [
   {
     icon: Palette,
     title: 'Custom Websites',
-    description: 'No templates. No drag-and-drop builders. We design your site from scratch so it actually looks like your business.',
+    description:
+      'No templates. No drag-and-drop builders. We design your site from scratch so it actually looks like your business.',
     features: [
       'Designed around your brand, not a theme',
       'Looks great on every screen size',
-      'Smooth animations that don\'t feel cheap',
+      "Smooth animations that don't feel cheap",
       'Your colors, your fonts, your vibe',
     ],
     mockup: 'default',
@@ -22,7 +35,8 @@ const SERVICES = [
   {
     icon: Code2,
     title: 'Website Redesigns',
-    description: 'Already have a site that looks outdated or runs like garbage? We\'ll rebuild it from the ground up with real code.',
+    description:
+      "Already have a site that looks outdated or runs like garbage? We'll rebuild it from the ground up with real code.",
     features: [
       'Full redesign with modern tech',
       'Keep your content, ditch the clutter',
@@ -34,19 +48,21 @@ const SERVICES = [
   {
     icon: Zap,
     title: 'Speed That Matters',
-    description: 'Slow sites lose customers. Google penalizes them too. We make sure yours is fast — actually fast, not "fast for a website."',
+    description:
+      'Slow sites lose customers. Google penalizes them too. We make sure yours is fast — actually fast, not "fast for a website."',
     features: [
       'Under 2 second load times',
       'Google Core Web Vitals optimized',
       'Images & assets compressed right',
-      'Code split so nothing loads that shouldn\'t',
+      "Code split so nothing loads that shouldn't",
     ],
     mockup: 'analytics',
   },
   {
     icon: Wrench,
     title: 'We Handle Everything After',
-    description: 'Hosting, updates, security, backups — the boring stuff that breaks sites when nobody\'s watching. We watch it.',
+    description:
+      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. We watch it.",
     features: [
       'Hosting, SSL, & domain setup',
       'Security patches as they drop',
@@ -67,8 +83,17 @@ const CAPABILITIES = [
 ]
 
 const TECH_STACK = [
-  'React', 'JavaScript', 'Tailwind CSS', 'Node.js',
-  'AWS', 'Vercel', 'Git', 'Framer Motion', 'Vite', 'HTML5', 'CSS3',
+  'React',
+  'JavaScript',
+  'Tailwind CSS',
+  'Node.js',
+  'AWS',
+  'Vercel',
+  'Git',
+  'Framer Motion',
+  'Vite',
+  'HTML5',
+  'CSS3',
 ]
 
 export default function Services() {
@@ -85,7 +110,7 @@ export default function Services() {
       />
 
       {/* Services grid — alternating layout */}
-      <section className="relative bg-white py-20 overflow-hidden">
+      <section className="relative overflow-hidden bg-white py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="space-y-20">
@@ -153,12 +178,14 @@ export default function Services() {
       </section>
 
       {/* Tech stack */}
-      <section className="relative bg-gray-950 py-16 overflow-hidden">
+      <section className="relative overflow-hidden bg-gray-950 py-16">
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-8 text-center">
             <h2 className="text-lg font-semibold text-white">Our Stack</h2>
-            <p className="mt-2 text-sm text-gray-500">The same tools the big companies use — without the big company attitude.</p>
+            <p className="mt-2 text-sm text-gray-500">
+              The same tools the big companies use — without the big company attitude.
+            </p>
           </motion.div>
           <div className="flex flex-wrap justify-center gap-3">
             {TECH_STACK.map((tech, i) => (
@@ -175,7 +202,7 @@ export default function Services() {
       </section>
 
       {/* CTA */}
-      <section className="relative border-t border-gray-200 bg-white py-20 overflow-hidden">
+      <section className="relative overflow-hidden border-t border-gray-200 bg-white py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">

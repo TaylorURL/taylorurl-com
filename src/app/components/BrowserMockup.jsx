@@ -15,22 +15,22 @@ const PULSE_TRANSITION = {
   ease: 'easeInOut',
 }
 
-export default function BrowserMockup({ url = 'yourbusiness.com', variant = 'default', className = '' }) {
+export default function BrowserMockup({
+  url = 'yourbusiness.com',
+  variant = 'default',
+  className = '',
+}) {
   return (
-    <div className={`w-full rounded-xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/10 ${className}`}>
+    <div
+      className={`w-full rounded-xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/10 ${className}`}
+    >
       <div className="flex items-center gap-1.5 border-b border-gray-100 px-4 py-3">
-        <motion.div
-          className="h-2.5 w-2.5 rounded-full bg-red-400"
-          whileHover={{ scale: 1.4 }}
-        />
+        <motion.div className="h-2.5 w-2.5 rounded-full bg-red-400" whileHover={{ scale: 1.4 }} />
         <motion.div
           className="h-2.5 w-2.5 rounded-full bg-yellow-400"
           whileHover={{ scale: 1.4 }}
         />
-        <motion.div
-          className="h-2.5 w-2.5 rounded-full bg-green-400"
-          whileHover={{ scale: 1.4 }}
-        />
+        <motion.div className="h-2.5 w-2.5 rounded-full bg-green-400" whileHover={{ scale: 1.4 }} />
         <div className="ml-3 flex-1 rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-400">
           {url}
         </div>
@@ -113,7 +113,13 @@ function AnalyticsContent() {
         ))}
       </div>
       <div className="flex justify-between text-[9px] text-gray-400">
-        <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+        <span>Mon</span>
+        <span>Tue</span>
+        <span>Wed</span>
+        <span>Thu</span>
+        <span>Fri</span>
+        <span>Sat</span>
+        <span>Sun</span>
       </div>
     </div>
   )
@@ -131,9 +137,21 @@ function MobileContent() {
           transition={{ duration: 0.5, delay: 0.8 }}
         />
         <div className="space-y-1.5">
-          <motion.div className="h-2 w-full origin-left rounded bg-gray-100" {...BAR_VARIANTS} custom={0} />
-          <motion.div className="h-2 w-4/5 origin-left rounded bg-gray-100" {...BAR_VARIANTS} custom={1} />
-          <motion.div className="h-2 w-3/5 origin-left rounded bg-gray-100" {...BAR_VARIANTS} custom={2} />
+          <motion.div
+            className="h-2 w-full origin-left rounded bg-gray-100"
+            {...BAR_VARIANTS}
+            custom={0}
+          />
+          <motion.div
+            className="h-2 w-4/5 origin-left rounded bg-gray-100"
+            {...BAR_VARIANTS}
+            custom={1}
+          />
+          <motion.div
+            className="h-2 w-3/5 origin-left rounded bg-gray-100"
+            {...BAR_VARIANTS}
+            custom={2}
+          />
         </div>
         <motion.div
           className="mt-3 h-5 rounded bg-blue-500"

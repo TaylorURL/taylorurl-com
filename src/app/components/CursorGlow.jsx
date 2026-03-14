@@ -14,7 +14,7 @@ export default function CursorGlow() {
   useEffect(() => {
     // Only show on non-touch desktop devices
     const mediaQuery = window.matchMedia('(pointer: fine) and (min-width: 768px)')
-    const handleChange = (e) => setIsDesktop(e.matches)
+    const handleChange = e => setIsDesktop(e.matches)
 
     setIsDesktop(mediaQuery.matches)
     mediaQuery.addEventListener('change', handleChange)
@@ -25,7 +25,7 @@ export default function CursorGlow() {
   useEffect(() => {
     if (!isDesktop) return
 
-    const handleMouseMove = (e) => {
+    const handleMouseMove = e => {
       cursorX.set(e.clientX)
       cursorY.set(e.clientY)
     }

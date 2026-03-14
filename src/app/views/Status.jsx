@@ -169,7 +169,9 @@ function OverallStatus({ statuses }) {
       className={`mb-10 flex items-center justify-between rounded-2xl border ${borderClass} ${bgClass} px-6 py-5`}
     >
       <div className="flex items-center gap-3">
-        <span className={`inline-block h-3 w-3 rounded-full ${dotClass} ${status === 'operational' ? 'animate-pulse' : ''}`} />
+        <span
+          className={`inline-block h-3 w-3 rounded-full ${dotClass} ${status === 'operational' ? 'animate-pulse' : ''}`}
+        />
         <span className={`text-lg font-semibold ${textClass}`}>{message}</span>
       </div>
       <div className="hidden items-center gap-2 text-sm text-gray-500 sm:flex">
@@ -224,7 +226,9 @@ function ServiceRow({ service, timeSlot, index }) {
               <span className="font-medium text-gray-700">{uptime}%</span> uptime
             </span>
           </div>
-          <span className={`inline-flex items-center rounded-full ${config.bg} ${config.border} border px-3 py-1 text-xs font-medium ${config.color}`}>
+          <span
+            className={`inline-flex items-center rounded-full ${config.bg} ${config.border} border px-3 py-1 text-xs font-medium ${config.color}`}
+          >
             {config.label}
           </span>
         </div>
@@ -251,19 +255,47 @@ function IncidentHistory({ timeSlot }) {
       const rand = seededRandom(seed)
       if (rand < 0.15) {
         const date = new Date(now - i * dayMs)
-        const formatted = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+        const formatted = date.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+        })
         const isMinor = rand < 0.12
 
         const minorIncidents = [
-          { title: 'Elevated response times on US-East', service: 'Web Hosting (US-East)', duration: `${Math.floor(rand * 40 + 5)} minutes` },
-          { title: 'CDN cache invalidation delay', service: 'CDN & Edge Network', duration: `${Math.floor(rand * 20 + 3)} minutes` },
-          { title: 'Email delivery queue backup', service: 'Email Delivery', duration: `${Math.floor(rand * 30 + 10)} minutes` },
-          { title: 'Monitoring false positive alerts', service: 'Uptime Monitoring', duration: `${Math.floor(rand * 15 + 2)} minutes` },
+          {
+            title: 'Elevated response times on US-East',
+            service: 'Web Hosting (US-East)',
+            duration: `${Math.floor(rand * 40 + 5)} minutes`,
+          },
+          {
+            title: 'CDN cache invalidation delay',
+            service: 'CDN & Edge Network',
+            duration: `${Math.floor(rand * 20 + 3)} minutes`,
+          },
+          {
+            title: 'Email delivery queue backup',
+            service: 'Email Delivery',
+            duration: `${Math.floor(rand * 30 + 10)} minutes`,
+          },
+          {
+            title: 'Monitoring false positive alerts',
+            service: 'Uptime Monitoring',
+            duration: `${Math.floor(rand * 15 + 2)} minutes`,
+          },
         ]
 
         const majorIncidents = [
-          { title: 'Upstream provider network issue', service: 'Web Hosting (US-West)', duration: `${Math.floor(rand * 60 + 30)} minutes` },
-          { title: 'DDoS mitigation activated', service: 'DDoS Protection', duration: `${Math.floor(rand * 45 + 15)} minutes` },
+          {
+            title: 'Upstream provider network issue',
+            service: 'Web Hosting (US-West)',
+            duration: `${Math.floor(rand * 60 + 30)} minutes`,
+          },
+          {
+            title: 'DDoS mitigation activated',
+            service: 'DDoS Protection',
+            duration: `${Math.floor(rand * 45 + 15)} minutes`,
+          },
         ]
 
         const pool = isMinor ? minorIncidents : majorIncidents
@@ -286,7 +318,9 @@ function IncidentHistory({ timeSlot }) {
       <div className="rounded-2xl border border-gray-200 bg-white p-8 text-center">
         <CheckCircle2 className="mx-auto mb-3 h-8 w-8 text-green-500" />
         <p className="font-medium text-gray-900">No recent incidents</p>
-        <p className="text-sm text-gray-500">All systems have been running smoothly for the past 14 days.</p>
+        <p className="text-sm text-gray-500">
+          All systems have been running smoothly for the past 14 days.
+        </p>
       </div>
     )
   }
@@ -298,7 +332,9 @@ function IncidentHistory({ timeSlot }) {
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className={`inline-block h-2 w-2 rounded-full ${incident.severity === 'minor' ? 'bg-yellow-400' : 'bg-red-400'}`} />
+                <span
+                  className={`inline-block h-2 w-2 rounded-full ${incident.severity === 'minor' ? 'bg-yellow-400' : 'bg-red-400'}`}
+                />
                 <p className="font-medium text-gray-900">{incident.title}</p>
               </div>
               <p className="mt-1 text-sm text-gray-500">
@@ -412,7 +448,6 @@ export default function Status() {
             <h2 className="mb-4 text-xl font-bold text-gray-900">Recent Incidents</h2>
             <IncidentHistory timeSlot={timeSlot} />
           </motion.div>
-
         </div>
       </section>
 

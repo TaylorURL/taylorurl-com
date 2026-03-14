@@ -41,8 +41,11 @@ export function ToastProvider({ children }) {
               ) : (
                 <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
               )}
-              <span className="text-sm font-medium whitespace-nowrap">{toast.message}</span>
-              <button onClick={() => removeToast(toast.id)} className="ml-2 text-gray-400 hover:text-gray-600">
+              <span className="whitespace-nowrap text-sm font-medium">{toast.message}</span>
+              <button
+                onClick={() => removeToast(toast.id)}
+                className="ml-2 text-gray-400 hover:text-gray-600"
+              >
                 <X className="h-4 w-4" />
               </button>
             </motion.div>

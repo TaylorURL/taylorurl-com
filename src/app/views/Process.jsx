@@ -45,14 +45,10 @@ const TIMELINE_STEPS = [
     duration: 'Day 2-3',
     description:
       'We send you a real number. Not a range. Not "it depends." If it works, we shake hands (digitally) and get moving.',
-    client: [
-      'Review the quote',
-      'Ask any questions',
-      'Sign off when you\'re ready',
-    ],
+    client: ['Review the quote', 'Ask any questions', "Sign off when you're ready"],
     taylorurl: [
       'Send a clear, itemized quote',
-      'Explain what\'s included (and what\'s not)',
+      "Explain what's included (and what's not)",
       'Set up the project timeline',
     ],
   },
@@ -62,7 +58,7 @@ const TIMELINE_STEPS = [
     title: 'Design',
     duration: 'Week 1',
     description:
-      'We mock up your site. You tell us what you like, what you don\'t. We go back and forth until it looks right. No weird 40-page design doc.',
+      "We mock up your site. You tell us what you like, what you don't. We go back and forth until it looks right. No weird 40-page design doc.",
     client: [
       'Send us your logo, photos, and content',
       'Give feedback on mockups',
@@ -80,10 +76,10 @@ const TIMELINE_STEPS = [
     title: 'Build',
     duration: 'Week 2-3',
     description:
-      'We write the code. Real code, not drag-and-drop. You can check in anytime \u2014 we\'ll share progress as we go so there are zero surprises.',
+      "We write the code. Real code, not drag-and-drop. You can check in anytime \u2014 we'll share progress as we go so there are zero surprises.",
     client: [
       'Check in whenever you want',
-      'Flag anything that doesn\'t look right',
+      "Flag anything that doesn't look right",
       'Send over any remaining content',
     ],
     taylorurl: [
@@ -116,11 +112,11 @@ const TIMELINE_STEPS = [
     title: 'We Stick Around',
     duration: 'Ongoing',
     description:
-      'Site\'s live, but we\'re not gone. Hosting, updates, security, content changes \u2014 all handled. You just run your business.',
+      "Site's live, but we're not gone. Hosting, updates, security, content changes \u2014 all handled. You just run your business.",
     client: [
       'Run your business',
       'Text us when you need something changed',
-      'That\'s it. Seriously.',
+      "That's it. Seriously.",
     ],
     taylorurl: [
       'Keep your site fast and secure',
@@ -171,11 +167,7 @@ export default function Process() {
               {TIMELINE_STEPS.map((step, i) => {
                 const Icon = step.icon
                 return (
-                  <motion.div
-                    key={step.step}
-                    {...staggerChild(i, 0.15)}
-                    className="relative"
-                  >
+                  <motion.div key={step.step} {...staggerChild(i, 0.15)} className="relative">
                     {/* Step number + icon row */}
                     <div className="mb-6 flex items-center gap-4 lg:gap-6">
                       {/* Step circle */}
@@ -207,8 +199,14 @@ export default function Process() {
                           </h4>
                           <ul className="space-y-2">
                             {step.client.map(item => (
-                              <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" strokeWidth={2} />
+                              <li
+                                key={item}
+                                className="flex items-start gap-2 text-sm text-gray-700"
+                              >
+                                <Check
+                                  className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400"
+                                  strokeWidth={2}
+                                />
                                 {item}
                               </li>
                             ))}
@@ -220,8 +218,14 @@ export default function Process() {
                           </h4>
                           <ul className="space-y-2">
                             {step.taylorurl.map(item => (
-                              <li key={item} className="flex items-start gap-2 text-sm text-gray-700">
-                                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" strokeWidth={2} />
+                              <li
+                                key={item}
+                                className="flex items-start gap-2 text-sm text-gray-700"
+                              >
+                                <Check
+                                  className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500"
+                                  strokeWidth={2}
+                                />
                                 {item}
                               </li>
                             ))}
@@ -245,8 +249,8 @@ export default function Process() {
               What You&apos;ll Need <span className="logo-wave-dark">From Us</span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Don&apos;t stress about having everything perfect. We can work with what you&apos;ve got
-              and help fill in the gaps.
+              Don&apos;t stress about having everything perfect. We can work with what you&apos;ve
+              got and help fill in the gaps.
             </p>
           </motion.div>
 
@@ -273,7 +277,8 @@ export default function Process() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-8 text-center text-sm text-gray-500"
           >
-            Don&apos;t have a logo or photos yet? No worries — we can point you in the right direction.
+            Don&apos;t have a logo or photos yet? No worries — we can point you in the right
+            direction.
           </motion.p>
         </div>
       </section>

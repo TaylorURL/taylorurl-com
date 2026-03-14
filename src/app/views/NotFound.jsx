@@ -70,7 +70,7 @@ export default function NotFound() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4, duration: 0.5 }}
-          className="mx-auto mt-8 mb-8"
+          className="mx-auto mb-8 mt-8"
         >
           <div className="mb-3 text-sm font-medium text-gray-500">
             Bugs squashed: <span className="font-bold text-blue-600">{score}</span>

@@ -4,7 +4,7 @@ import { HOW_IT_WORKS_STEPS } from '@data/home'
 
 export default function HowItWorksSection() {
   return (
-    <section className="relative border-t border-gray-200 bg-white py-24 overflow-hidden">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-16 text-center">

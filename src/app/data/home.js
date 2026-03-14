@@ -27,31 +27,31 @@ export const WHY_WEBSITE_CARDS = [
   {
     title: 'Open While You Sleep',
     description:
-      'Your website takes calls at 2am. Answers the same questions you\'re tired of answering. Books jobs while you\'re on a job.',
+      "Your website takes calls at 2am. Answers the same questions you're tired of answering. Books jobs while you're on a job.",
     icon: Clock,
   },
   {
     title: 'People Google You',
     description:
-      'Before anyone calls, they look you up. No website? They assume you\'re either closed or not serious. That\'s just how it works now.',
+      "Before anyone calls, they look you up. No website? They assume you're either closed or not serious. That's just how it works now.",
     icon: Shield,
   },
   {
     title: 'More Than Word of Mouth',
     description:
-      'Referrals are great, but they don\'t scale. A website puts you in front of people who\'ve never heard of you — and that\'s where the growth is.',
+      "Referrals are great, but they don't scale. A website puts you in front of people who've never heard of you — and that's where the growth is.",
     icon: Users,
   },
   {
     title: 'Phones First',
     description:
-      'Your customers are searching from their truck, their couch, their kid\'s soccer game. If your site doesn\'t work on a phone, it doesn\'t work.',
+      "Your customers are searching from their truck, their couch, their kid's soccer game. If your site doesn't work on a phone, it doesn't work.",
     icon: Smartphone,
   },
   {
     title: 'It Pays for Itself',
     description:
-      'One new customer and the site has already made its money back. That\'s not a sales pitch — it\'s just math.',
+      "One new customer and the site has already made its money back. That's not a sales pitch — it's just math.",
     icon: DollarSign,
   },
 ]
@@ -61,7 +61,7 @@ export const HOW_IT_WORKS_STEPS = [
     step: '1',
     title: 'Hit Us Up',
     description:
-      'Call, text, email — whatever works. Tell us what you need and we\'ll give you a straight answer and a real quote. No 47-page proposal.',
+      "Call, text, email — whatever works. Tell us what you need and we'll give you a straight answer and a real quote. No 47-page proposal.",
   },
   {
     step: '2',
@@ -71,7 +71,7 @@ export const HOW_IT_WORKS_STEPS = [
   },
   {
     step: '3',
-    title: 'You\'re Live',
+    title: "You're Live",
     description:
       'Site goes live, we handle everything after — hosting, updates, security. You go back to running your business.',
   },
@@ -87,4 +87,3 @@ export const LOCAL_SEARCH_STATS = [
   { value: '72%', label: 'visit within 5 miles' },
   { value: '88%', label: 'trust online reviews' },
 ]
-

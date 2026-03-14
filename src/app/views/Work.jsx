@@ -29,7 +29,7 @@ const PROJECTS = [
     title: 'Local Restaurant Redesign',
     category: 'Restaurant Website',
     description:
-      'Complete website build for a local restaurant that had zero online presence. Now they\'re the top Google result in their area.',
+      "Complete website build for a local restaurant that had zero online presence. Now they're the top Google result in their area.",
     tech: ['Custom Code', 'Mobile-First', 'SEO', 'Performance'],
     metrics: [
       { value: 1, suffix: '', label: 'Google Ranking', prefix: '#' },
@@ -131,7 +131,9 @@ function AnimatedMetric({ value, suffix = '', prefix = '', label, decimal }) {
   return (
     <div ref={ref} className="rounded-lg bg-blue-50 p-2 text-center">
       <div className="text-lg font-bold text-blue-600">
-        {prefix}{display}{suffix}
+        {prefix}
+        {display}
+        {suffix}
       </div>
       <div className="text-xs text-gray-500">{label}</div>
     </div>
@@ -144,7 +146,9 @@ function StatCard({ value, suffix = '', prefix = '', label }) {
   return (
     <div ref={ref} className="text-center">
       <div className="text-3xl font-bold text-blue-600 sm:text-4xl">
-        {prefix}{count}{suffix}
+        {prefix}
+        {count}
+        {suffix}
       </div>
       <div className="mt-1 text-sm text-gray-500">{label}</div>
     </div>
@@ -184,10 +188,7 @@ function ProjectCard({ project, index }) {
         <ul className="space-y-2">
           {project.results.map(result => (
             <li key={result} className="flex items-start gap-3 text-sm text-gray-600">
-              <Check
-                className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600"
-                strokeWidth={2}
-              />
+              <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-600" strokeWidth={2} />
               {result}
             </li>
           ))}
@@ -229,7 +230,7 @@ export default function Work() {
       </section>
 
       {/* Projects */}
-      <section className="relative bg-white py-20 overflow-hidden">
+      <section className="relative overflow-hidden bg-white py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-5xl px-6">
           <div className="grid gap-8 lg:grid-cols-2">
@@ -249,7 +250,8 @@ export default function Work() {
               Like what you <span className="logo-wave">see?</span>
             </h2>
             <p className="mb-8 text-lg text-gray-400">
-              We keep things simple. You tell us what you need, we build it, and your business grows. No contracts, no nonsense.
+              We keep things simple. You tell us what you need, we build it, and your business
+              grows. No contracts, no nonsense.
             </p>
             <Link
               to="/pricing"

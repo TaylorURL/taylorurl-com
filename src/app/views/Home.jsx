@@ -15,17 +15,31 @@ export default function Home() {
   return (
     <div>
       <Seo path="/" />
-      <div id="hero"><HeroSection /></div>
+      <div id="hero">
+        <HeroSection />
+      </div>
       <SocialProofCounter />
       <TrustBadgesSection />
       <LogoMarquee />
-      <div id="stats"><StatsSection /></div>
-      <div id="why"><WhyWebsiteSection /></div>
-      <div id="data"><DataSection /></div>
-      <div id="testimonials"><TestimonialsSection /></div>
-      <div id="how"><HowItWorksSection /></div>
+      <div id="stats">
+        <StatsSection />
+      </div>
+      <div id="why">
+        <WhyWebsiteSection />
+      </div>
+      <div id="data">
+        <DataSection />
+      </div>
+      <div id="testimonials">
+        <TestimonialsSection />
+      </div>
+      <div id="how">
+        <HowItWorksSection />
+      </div>
       <NewsletterSection />
-      <div id="cta"><FinalCtaSection /></div>
+      <div id="cta">
+        <FinalCtaSection />
+      </div>
     </div>
   )
 }
