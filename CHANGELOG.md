@@ -2,6 +2,10 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [2.9] - 2026-03-14
+
+- Removed client logo images (CT, DBF, Hypixel, Mineplex, SRM, Speedway146)
+
 ## [2.8] - 2026-03-14
 
 - Increased logo size in the navigation and footer for better visibility
