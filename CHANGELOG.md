@@ -2,6 +2,10 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.5] - 2026-03-15
+
+- Increased top padding on blog post article from pt-32 to pt-40 for more breathing room
+
 ## [3.4] - 2026-03-15
 
 - Adjusted blog post article spacing by replacing uniform vertical padding with separate top and bottom values for better content positioning
