@@ -2,6 +2,10 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.4] - 2026-03-15
+
+- Adjusted blog post article spacing by replacing uniform vertical padding with separate top and bottom values for better content positioning
+
 ## [3.3] - 2026-03-15
 
 - Replaced the mobile dropdown menu with a slide-in drawer that enters from the right side of the screen
