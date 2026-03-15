@@ -2,6 +2,11 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.7] - 2026-03-15
+
+- Reduced mobile navbar padding and added overflow hidden to tighten up the header layout
+- Scaled down the mobile logo from h-24 to h-20 and added a negative bottom margin to fine-tune its positioning
+
 ## [3.6] - 2026-03-15
 
 - Replaced framer-motion page transitions in Layout with a plain main element

@@ -157,7 +157,7 @@ export default function Navigation() {
         className="fixed left-0 right-0 top-0 z-50 md:hidden"
       >
         <div
-          className={`flex items-center justify-between px-5 py-4 transition-all duration-500 ${
+          className={`flex items-center justify-between overflow-hidden px-5 py-2 transition-all duration-500 ${
             onDark && !mobileOpen
               ? 'bg-transparent'
               : 'border-b border-gray-200/60 bg-white/90 backdrop-blur-xl'
@@ -167,7 +167,7 @@ export default function Navigation() {
             <img
               src="/images/TaylorURL-Logo.png"
               alt="TaylorURL"
-              className="h-24 w-auto transition-all duration-300"
+              className="-mb-[10px] h-20 w-auto transition-all duration-300"
               style={onDark && !mobileOpen ? { filter: 'brightness(0) invert(1)' } : undefined}
             />
           </Link>
