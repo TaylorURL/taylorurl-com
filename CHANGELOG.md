@@ -2,6 +2,13 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [4.0] - 2026-03-15
+
+- Added new dashboard variant to the browser mockup with animated stat cards for visitors, leads, and revenue, a gradient chart area, and animated progress bars
+- Replaced the code mockup with the dashboard mockup in the carousel rotation
+- Increased the carousel dimensions and spacing for a larger, more spread-out layout
+- Removed unused AnimatePresence import from the carousel component
+
 ## [3.9] - 2026-03-15
 
 - Add MockupCarousel component that rotates between default, analytics, and code browser mockups in a 3D orbit layout with smooth Framer Motion transitions every 3.5 seconds

@@ -40,6 +40,7 @@ export default function BrowserMockup({
         {variant === 'analytics' && <AnalyticsContent />}
         {variant === 'mobile' && <MobileContent />}
         {variant === 'code' && <CodeContent />}
+        {variant === 'dashboard' && <DashboardContent />}
       </div>
     </div>
   )
@@ -192,6 +193,64 @@ function CodeContent() {
         animate={{ opacity: [1, 0] }}
         transition={{ repeat: Infinity, duration: 0.8 }}
       />
+    </div>
+  )
+}
+
+function DashboardContent() {
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <div className="h-3 w-24 rounded bg-gray-200" />
+        <div className="flex gap-1.5">
+          <div className="h-5 w-14 rounded bg-gray-100 text-center text-[9px] leading-5 text-gray-400">
+            Today
+          </div>
+          <div className="h-5 w-14 rounded bg-blue-50 text-center text-[9px] font-medium leading-5 text-blue-600">
+            Week
+          </div>
+        </div>
+      </div>
+      <div className="grid grid-cols-3 gap-2">
+        {[
+          { label: 'Visitors', value: '1,247', color: 'text-blue-600' },
+          { label: 'Leads', value: '38', color: 'text-emerald-600' },
+          { label: 'Revenue', value: '$4.2k', color: 'text-violet-600' },
+        ].map((stat, i) => (
+          <motion.div
+            key={stat.label}
+            className="rounded-lg border border-gray-100 bg-gray-50 p-2 text-center"
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.8 + i * 0.12 }}
+          >
+            <div className={`text-sm font-bold ${stat.color}`}>{stat.value}</div>
+            <div className="text-[9px] text-gray-400">{stat.label}</div>
+          </motion.div>
+        ))}
+      </div>
+      <motion.div
+        className="h-16 rounded-lg bg-gradient-to-r from-blue-50 via-emerald-50 to-violet-50"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 1.2 }}
+      />
+      <div className="flex gap-2">
+        <motion.div
+          className="h-2 flex-1 rounded bg-blue-200"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.6, delay: 1.4 }}
+          style={{ originX: 0 }}
+        />
+        <motion.div
+          className="h-2 w-1/4 rounded bg-emerald-200"
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ duration: 0.6, delay: 1.5 }}
+          style={{ originX: 0 }}
+        />
+      </div>
     </div>
   )
 }
