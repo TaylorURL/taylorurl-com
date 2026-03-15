@@ -3,6 +3,7 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { ArrowRight, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PRIMARY_LINKS } from '@constants/navigation'
+import { useAuth } from '@app/contexts/AuthContext'
 
 const PILL_THRESHOLD = 50
 
@@ -37,6 +38,7 @@ export default function Navigation() {
   const mobileLogoRef = useRef(null)
   const navRef = useRef(null)
   const mobileNavRef = useRef(null)
+  const { user } = useAuth()
   const isHome = location.pathname === '/'
 
   const checkBackground = useCallback(() => {
@@ -146,14 +148,14 @@ export default function Navigation() {
             </Link>
 
             <Link
-              to="/auth"
+              to={user ? '/dashboard' : '/auth'}
               className={`rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
                 isPillTransparent
                   ? 'text-gray-300 hover:text-white'
                   : 'text-gray-500 hover:text-gray-900'
               }`}
             >
-              Client Portal
+              {user ? 'Dashboard' : 'Client Portal'}
             </Link>
           </div>
         </div>
@@ -284,18 +286,18 @@ export default function Navigation() {
                       transition={{ delay: PRIMARY_LINKS.length * 0.04 + 0.05, duration: 0.25 }}
                     >
                       <Link
-                        to="/auth"
+                        to={user ? '/dashboard' : '/auth'}
                         onClick={() => setMobileOpen(false)}
                         className={`flex items-center rounded-xl px-3 py-3 text-[14px] font-medium transition-all duration-150 ${
-                          isActive('/auth')
+                          isActive(user ? '/dashboard' : '/auth')
                             ? 'bg-blue-50 font-semibold text-blue-600'
                             : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
-                        {isActive('/auth') && (
+                        {isActive(user ? '/dashboard' : '/auth') && (
                           <span className="mr-3 h-2 w-2 rounded-full bg-blue-600" />
                         )}
-                        Client Portal
+                        {user ? 'Dashboard' : 'Client Portal'}
                       </Link>
                     </motion.div>
                   </div>

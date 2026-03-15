@@ -1,28 +1,84 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { AlertCircle, Eye, EyeOff, Lock, Mail } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { AlertCircle, Eye, EyeOff, Lock, Mail, User, Loader2 } from 'lucide-react'
 import { BRAND_NAME } from '@constants/navigation'
 import Seo from '@components/Seo'
+import { useAuth } from '@app/contexts/AuthContext'
+import { useToast } from '@components/Toast'
 import { pageTransition } from '@constants/animations'
 
 const AUTH_TABS = [
-  { id: 'signin', label: 'Sign In', disabled: false },
-  { id: 'signup', label: 'Sign Up', disabled: true },
+  { id: 'signin', label: 'Sign In' },
+  { id: 'signup', label: 'Sign Up' },
 ]
 
 export default function Auth() {
+  const { user, signIn, signUp, resetPassword } = useAuth()
+  const navigate = useNavigate()
+  const toast = useToast()
   const [activeTab, setActiveTab] = useState('signin')
   const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({ email: '', password: '' })
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [formData, setFormData] = useState({ email: '', password: '', fullName: '' })
+  const [showForgot, setShowForgot] = useState(false)
+  const [forgotEmail, setForgotEmail] = useState('')
+
+  useEffect(() => {
+    if (user) navigate('/dashboard', { replace: true })
+  }, [user, navigate])
 
   const handleInputChange = e => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
+    setError('')
   }
 
-  // Placeholder for future backend authentication integration
-  const handleSubmit = e => {
+  const handleSubmit = async e => {
     e.preventDefault()
+    setSubmitting(true)
+    setError('')
+
+    if (activeTab === 'signin') {
+      const { error: err } = await signIn(formData.email, formData.password)
+      if (err) {
+        setError(
+          err.message === 'Invalid login credentials' ? 'Invalid email or password.' : err.message
+        )
+      } else {
+        toast('Signed in successfully')
+      }
+    } else {
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters.')
+        setSubmitting(false)
+        return
+      }
+      const { error: err } = await signUp(formData.email, formData.password, {
+        full_name: formData.fullName,
+      })
+      if (err) {
+        setError(err.message)
+      } else {
+        toast('Check your email to confirm your account')
+        setActiveTab('signin')
+      }
+    }
+    setSubmitting(false)
+  }
+
+  const handleForgotPassword = async e => {
+    e.preventDefault()
+    setSubmitting(true)
+    setError('')
+    const { error: err } = await resetPassword(forgotEmail)
+    if (err) {
+      setError(err.message)
+    } else {
+      toast('Password reset email sent')
+      setShowForgot(false)
+    }
+    setSubmitting(false)
   }
 
   return (
@@ -54,146 +110,230 @@ export default function Auth() {
           transition={{ delay: 0.2 }}
           className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm"
         >
-          <div className="mb-6 flex rounded-lg border border-gray-200 bg-gray-100 p-1">
-            {AUTH_TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => !tab.disabled && setActiveTab(tab.id)}
-                disabled={tab.disabled}
-                className={`relative flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : tab.disabled
-                      ? 'cursor-not-allowed text-gray-400'
-                      : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab.label}
-                {tab.disabled && <Lock className="ml-1 inline-block h-3 w-3" />}
-              </button>
-            ))}
-          </div>
-
-          {activeTab === 'signin' && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
-                  Email
-                </label>
+          {showForgot ? (
+            <div>
+              <h3 className="mb-1 text-lg font-semibold text-gray-900">Reset Password</h3>
+              <p className="mb-6 text-sm text-gray-500">
+                Enter your email and we&apos;ll send you a reset link.
+              </p>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
                   <input
                     type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
+                    value={forgotEmail}
+                    onChange={e => {
+                      setForgotEmail(e.target.value)
+                      setError('')
+                    }}
                     required
                     className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
                     placeholder="you@example.com"
                   />
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="password" className="mb-1 block text-sm font-medium text-gray-700">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-12 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
-                    placeholder="Enter your password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                  >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
-                  />
-                  <span className="ml-2 text-sm text-gray-600">Remember me</span>
-                </label>
-                <button type="button" disabled className="cursor-not-allowed text-sm text-gray-400">
-                  Forgot password?
-                  <Lock className="ml-1 inline-block h-3 w-3" />
+                {error && (
+                  <p className="flex items-center gap-1.5 text-sm text-red-600">
+                    <AlertCircle className="h-4 w-4" />
+                    {error}
+                  </p>
+                )}
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Send Reset Link
                 </button>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700"
-              >
-                Sign In
-              </button>
-            </form>
-          )}
-
-          {activeTab === 'signup' && (
-            <div className="py-8 text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-                <Lock className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="mb-2 text-lg font-medium text-gray-900">Registration Closed</h3>
-              <p className="text-sm text-gray-600">
-                New account registration is currently disabled. Please contact us directly to get
-                started.
-              </p>
-              <Link
-                to="/pricing"
-                className="mt-4 inline-block text-sm font-medium text-blue-600 underline hover:no-underline"
-              >
-                Contact Us
-              </Link>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgot(false)
+                    setError('')
+                  }}
+                  className="w-full text-center text-sm font-medium text-blue-600 hover:underline"
+                >
+                  Back to Sign In
+                </button>
+              </form>
             </div>
+          ) : (
+            <>
+              <div className="mb-6 flex rounded-lg border border-gray-200 bg-gray-100 p-1">
+                {AUTH_TABS.map(tab => (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id)
+                      setError('')
+                    }}
+                    className={`relative flex-1 rounded-md px-4 py-2 text-sm font-medium transition-all ${
+                      activeTab === tab.id
+                        ? 'bg-white text-gray-900 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-900'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {activeTab === 'signup' && (
+                  <div>
+                    <label
+                      htmlFor="fullName"
+                      className="mb-1 block text-sm font-medium text-gray-700"
+                    >
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                      <input
+                        type="text"
+                        id="fullName"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        required
+                        className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div>
+                  <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
+                    Email
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-4 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                      placeholder="you@example.com"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="mb-1 block text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      id="password"
+                      name="password"
+                      value={formData.password}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded-lg border border-gray-300 bg-white py-3 pl-10 pr-12 text-gray-900 transition-colors focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                      placeholder={
+                        activeTab === 'signup' ? 'At least 6 characters' : 'Enter your password'
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    </button>
+                  </div>
+                </div>
+
+                {activeTab === 'signin' && (
+                  <div className="flex items-center justify-between">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+                      />
+                      <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowForgot(true)
+                        setForgotEmail(formData.email)
+                        setError('')
+                      }}
+                      className="text-sm font-medium text-blue-600 hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+
+                {error && (
+                  <p className="flex items-center gap-1.5 text-sm text-red-600">
+                    <AlertCircle className="h-4 w-4 flex-shrink-0" />
+                    {error}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-60"
+                >
+                  {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {activeTab === 'signin' ? 'Sign In' : 'Create Account'}
+                </button>
+              </form>
+            </>
           )}
         </motion.div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mt-6 text-center"
-        >
-          <p className="text-sm text-gray-600">
-            {activeTab === 'signin' ? (
-              <>
-                Need an account?{' '}
-                <button
-                  onClick={() => setActiveTab('signup')}
-                  className="font-medium text-blue-600 hover:underline"
-                >
-                  Contact us
-                </button>
-              </>
-            ) : (
-              <>
-                Already have an account?{' '}
-                <button
-                  onClick={() => setActiveTab('signin')}
-                  className="font-medium text-blue-600 hover:underline"
-                >
-                  Sign in
-                </button>
-              </>
-            )}
-          </p>
-        </motion.div>
+        {!showForgot && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6 text-center"
+          >
+            <p className="text-sm text-gray-600">
+              {activeTab === 'signin' ? (
+                <>
+                  Need an account?{' '}
+                  <button
+                    onClick={() => {
+                      setActiveTab('signup')
+                      setError('')
+                    }}
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    Sign up
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{' '}
+                  <button
+                    onClick={() => {
+                      setActiveTab('signin')
+                      setError('')
+                    }}
+                    className="font-medium text-blue-600 hover:underline"
+                  >
+                    Sign in
+                  </button>
+                </>
+              )}
+            </p>
+          </motion.div>
+        )}
 
         <motion.div
           initial={{ opacity: 0 }}

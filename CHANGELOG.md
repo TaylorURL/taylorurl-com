@@ -2,6 +2,20 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [4.1] - 2026-03-15
+
+- Add Supabase authentication with sign in, sign up, password reset, and session management
+- Create AuthContext provider with useAuth hook for app-wide auth state
+- Initialize Supabase client library with environment variable configuration
+- Enable sign up flow on the auth page, replacing the previous "Registration Closed" placeholder
+- Wire up the auth form to actually authenticate against Supabase instead of being a static placeholder
+- Add forgot password flow with email reset link support
+- Add loading and error states with inline validation to the auth forms
+- Create a protected Dashboard view for authenticated clients with website status, analytics, and uptime tracking
+- Add ProtectedRoute component that redirects unauthenticated users to the auth page
+- Add database schema with websites and website_stats tables, row-level security policies, and auto-updating timestamps
+- Update navigation to show "Dashboard" instead of "Client Portal" when the user is signed in, linking to the dashboard route
+
 ## [4.0] - 2026-03-15
 
 - Added new dashboard variant to the browser mockup with animated stat cards for visitors, leads, and revenue, a gradient chart area, and animated progress bars

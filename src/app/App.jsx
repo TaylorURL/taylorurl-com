@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import Layout from '@components/Layout'
 import ScrollToTop from '@components/ScrollToTop'
+import ProtectedRoute from '@components/ProtectedRoute'
 
 const Home = lazy(() => import('@views/Home'))
 const About = lazy(() => import('@views/About'))
@@ -13,6 +14,7 @@ const Privacy = lazy(() => import('@views/Privacy'))
 const Terms = lazy(() => import('@views/Terms'))
 const License = lazy(() => import('@views/License'))
 const Auth = lazy(() => import('@views/Auth'))
+const Dashboard = lazy(() => import('@views/Dashboard'))
 const Careers = lazy(() => import('@views/Careers'))
 const Process = lazy(() => import('@views/Process'))
 const Blog = lazy(() => import('@views/Blog'))
@@ -38,6 +40,14 @@ export default function App() {
               <Route path="terms" element={<Terms />} />
               <Route path="license" element={<License />} />
               <Route path="auth" element={<Auth />} />
+              <Route
+                path="dashboard"
+                element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="careers" element={<Careers />} />
               <Route path="process" element={<Process />} />
               <Route path="blog" element={<Blog />} />
