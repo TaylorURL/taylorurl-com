@@ -17,10 +17,10 @@ function isDarkColor(rgb) {
   return luminance < 0.45
 }
 
-function getBackgroundAtPoint(x, y, ignore) {
+function getBackgroundAtPoint(x, y, ...ignoreEls) {
   const els = document.elementsFromPoint(x, y)
   for (const el of els) {
-    if (ignore && ignore.contains(el)) continue
+    if (ignoreEls.some(ref => ref && ref.contains(el))) continue
     const bg = window.getComputedStyle(el).backgroundColor
     const dark = isDarkColor(bg)
     if (dark !== null) return dark
@@ -34,15 +34,19 @@ export default function Navigation() {
   const [pillScrolled, setPillScrolled] = useState(false)
   const [onDark, setOnDark] = useState(false)
   const logoRef = useRef(null)
+  const mobileLogoRef = useRef(null)
   const navRef = useRef(null)
+  const mobileNavRef = useRef(null)
   const isHome = location.pathname === '/'
 
   const checkBackground = useCallback(() => {
-    if (!logoRef.current) return
-    const rect = logoRef.current.getBoundingClientRect()
+    const el =
+      mobileLogoRef.current?.offsetParent !== null ? mobileLogoRef.current : logoRef.current
+    if (!el) return
+    const rect = el.getBoundingClientRect()
     const x = rect.left + rect.width / 2
     const y = rect.top + rect.height / 2
-    setOnDark(getBackgroundAtPoint(x, y, navRef.current))
+    setOnDark(getBackgroundAtPoint(x, y, navRef.current, mobileNavRef.current))
   }, [])
 
   useEffect(() => {
@@ -146,6 +150,7 @@ export default function Navigation() {
 
       {/* Mobile top bar */}
       <motion.nav
+        ref={mobileNavRef}
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
@@ -158,7 +163,7 @@ export default function Navigation() {
               : 'border-b border-gray-200/60 bg-white/90 backdrop-blur-xl'
           }`}
         >
-          <Link to="/" className="flex items-center">
+          <Link ref={mobileLogoRef} to="/" className="flex items-center">
             <img
               src="/images/TaylorURL-Logo.png"
               alt="TaylorURL"

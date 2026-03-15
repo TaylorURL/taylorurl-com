@@ -2,6 +2,12 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.2] - 2026-03-15
+
+- Fix navigation background detection on mobile by using the mobile logo element when it's visible instead of always using the desktop logo
+- Add separate refs for the mobile nav bar and mobile logo link so background checks target the correct element per viewport
+- Update getBackgroundAtPoint to accept multiple elements to ignore via rest params, so both desktop and mobile nav are excluded from background sampling
+
 ## [3.1] - 2026-03-14
 
 - Removed CLAUDE.md configuration file from the project
