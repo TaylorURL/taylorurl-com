@@ -2,6 +2,18 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.3] - 2026-03-15
+
+- Replaced the mobile dropdown menu with a slide-in drawer that enters from the right side of the screen
+- Added a drawer header with the TaylorURL logo and a close button
+- Changed mobile navigation layout from a 2-column grid to a vertical list with section labels ("Navigation" and "Account")
+- Added active-state indicator dots next to the current page link in mobile nav
+- Updated active link styling from dark background (gray-900) to a blue highlight (blue-50 with blue text)
+- Moved the "Get a Quote" CTA to a pinned section at the bottom of the drawer
+- Changed link animations from scale-in to slide-in-from-right
+- Increased backdrop opacity from 30% to 50% and raised z-index values for proper layering
+- Moved "Sign In" into its own "Account" section within the drawer instead of sharing a row with "Get a Quote"
+
 ## [3.2] - 2026-03-15
 
 - Fix navigation background detection on mobile by using the mobile logo element when it's visible instead of always using the desktop logo

@@ -194,71 +194,119 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* Mobile menu */}
+      {/* Mobile drawer */}
       <AnimatePresence>
         {mobileOpen && (
           <>
+            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-30 bg-black/30 backdrop-blur-sm md:hidden"
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm md:hidden"
               onClick={() => setMobileOpen(false)}
             />
+
+            {/* Drawer */}
             <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed left-0 right-0 top-[57px] z-40 overflow-hidden border-b border-gray-200 bg-white md:hidden"
+              className="fixed right-0 top-0 z-[201] flex h-full w-[280px] flex-col overflow-y-auto bg-white shadow-2xl md:hidden"
+              onClick={e => e.stopPropagation()}
             >
-              <div className="px-5 pb-6 pt-4">
-                <div className="grid grid-cols-2 gap-2">
+              {/* Drawer header */}
+              <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
+                <Link to="/" onClick={() => setMobileOpen(false)}>
+                  <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-16 w-auto" />
+                </Link>
+                <button
+                  onClick={() => setMobileOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Navigation section */}
+              <div className="flex-1 px-4 py-5">
+                <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                  Navigation
+                </p>
+                <div className="space-y-1">
                   {PRIMARY_LINKS.map((link, i) => (
                     <motion.div
                       key={link.to}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: i * 0.03, duration: 0.2 }}
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.25 }}
                     >
                       <Link
                         to={link.to}
                         onClick={() => setMobileOpen(false)}
-                        className={`flex items-center justify-center rounded-xl px-4 py-4 text-sm font-semibold transition-colors ${
+                        className={`flex items-center rounded-xl px-3 py-3 text-[14px] font-medium transition-all duration-150 ${
                           isActive(link.to)
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-blue-50 font-semibold text-blue-600'
+                            : 'text-gray-700 hover:bg-gray-50'
                         }`}
                       >
+                        {isActive(link.to) && (
+                          <span className="mr-3 h-2 w-2 rounded-full bg-blue-600" />
+                        )}
                         {link.label}
                       </Link>
                     </motion.div>
                   ))}
                 </div>
 
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="mt-4 grid grid-cols-2 gap-2"
-                >
-                  <Link
-                    to="/auth"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-center rounded-xl border border-gray-200 px-4 py-4 text-sm font-semibold text-gray-600 hover:bg-gray-50"
-                  >
-                    Sign In
-                  </Link>
-                  <Link
-                    to="/pricing"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-4 text-sm font-semibold text-white hover:bg-blue-500"
-                  >
-                    Get a Quote
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </Link>
-                </motion.div>
+                {/* Account section */}
+                <div className="mt-6">
+                  <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                    Account
+                  </p>
+                  <div className="space-y-1">
+                    <motion.div
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: PRIMARY_LINKS.length * 0.04 + 0.05, duration: 0.25 }}
+                    >
+                      <Link
+                        to="/auth"
+                        onClick={() => setMobileOpen(false)}
+                        className={`flex items-center rounded-xl px-3 py-3 text-[14px] font-medium transition-all duration-150 ${
+                          isActive('/auth')
+                            ? 'bg-blue-50 font-semibold text-blue-600'
+                            : 'text-gray-700 hover:bg-gray-50'
+                        }`}
+                      >
+                        {isActive('/auth') && (
+                          <span className="mr-3 h-2 w-2 rounded-full bg-blue-600" />
+                        )}
+                        Sign In
+                      </Link>
+                    </motion.div>
+                  </div>
+                </div>
               </div>
+
+              {/* CTA at bottom */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3, duration: 0.25 }}
+                className="border-t border-gray-100 px-4 py-5"
+              >
+                <Link
+                  to="/pricing"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+                >
+                  Get a Quote
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+              </motion.div>
             </motion.div>
           </>
         )}
