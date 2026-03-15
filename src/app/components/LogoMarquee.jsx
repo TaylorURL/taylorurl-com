@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import {
   Building2,
   Car,
@@ -36,11 +35,7 @@ export default function LogoMarquee() {
         </p>
       </div>
       <div className="marquee-fade">
-        <motion.div
-          className="flex gap-12"
-          animate={{ x: ['0%', '-50%'] }}
-          transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
-        >
+        <div className="animate-marquee flex gap-12">
           {DOUBLED.map((item, i) => {
             const Icon = item.icon
             return (
@@ -53,7 +48,7 @@ export default function LogoMarquee() {
               </div>
             )
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

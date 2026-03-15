@@ -16,26 +16,30 @@ export default function SectionIndicator() {
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
-    const handleScroll = () => {
-      setVisible(window.scrollY > 400)
-
-      const sections = SECTIONS.map(s => ({
-        ...s,
-        el: document.getElementById(s.id),
-      })).filter(s => s.el)
-
-      const viewportCenter = window.scrollY + window.innerHeight / 3
-
-      for (let i = sections.length - 1; i >= 0; i--) {
-        if (sections[i].el.offsetTop <= viewportCenter) {
-          setActive(sections[i].id)
-          return
-        }
-      }
-    }
-
+    const handleScroll = () => setVisible(window.scrollY > 400)
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    handleScroll()
+
+    const observer = new IntersectionObserver(
+      entries => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setActive(entry.target.id)
+          }
+        }
+      },
+      { rootMargin: '-33% 0px -66% 0px' }
+    )
+
+    SECTIONS.forEach(s => {
+      const el = document.getElementById(s.id)
+      if (el) observer.observe(el)
+    })
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      observer.disconnect()
+    }
   }, [])
 
   const scrollTo = id => {

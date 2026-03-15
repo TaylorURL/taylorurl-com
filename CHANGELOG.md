@@ -2,6 +2,15 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.6] - 2026-03-15
+
+- Replaced framer-motion page transitions in Layout with a plain main element
+- Rewrote ScrollProgress to use a native scroll listener and direct DOM updates instead of framer-motion springs
+- Swapped framer-motion animated marquee in LogoMarquee for a CSS keyframe animation
+- Switched SectionIndicator from scroll-based offset calculation to IntersectionObserver for detecting the active section
+- Added responsive top padding to the Auth view for smaller screens
+- Added marquee keyframe animation and utility class in index.css
+
 ## [3.5] - 2026-03-15
 
 - Increased top padding on blog post article from pt-32 to pt-40 for more breathing room

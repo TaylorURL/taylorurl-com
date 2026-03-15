@@ -28,7 +28,7 @@ export default function Auth() {
   return (
     <motion.div
       {...pageTransition}
-      className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 px-4 pb-16 pt-40"
+      className="flex min-h-[calc(100vh-80px)] items-center justify-center bg-gray-50 px-4 pb-16 pt-28 md:pt-40"
     >
       <Seo
         title="Client Portal"
