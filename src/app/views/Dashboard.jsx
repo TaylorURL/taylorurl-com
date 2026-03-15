@@ -40,7 +40,7 @@ const STATUS_CONFIG = {
 }
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, isStaff, isAdmin } = useAuth()
   const toast = useToast()
   const [websites, setWebsites] = useState([])
   const [stats, setStats] = useState({ totalVisitors: 0, totalPageViews: 0, avgUptime: 0 })
@@ -119,6 +119,15 @@ export default function Dashboard() {
             <p className="mt-1 text-gray-500">Here&apos;s an overview of your websites.</p>
           </div>
           <div className="flex items-center gap-3">
+            {(isStaff() || isAdmin()) && (
+              <Link
+                to="/admin"
+                className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
+              >
+                <Settings className="h-4 w-4" />
+                Admin Panel
+              </Link>
+            )}
             <button
               onClick={loadWebsites}
               className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50"

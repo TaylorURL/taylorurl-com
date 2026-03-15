@@ -15,6 +15,7 @@ const Terms = lazy(() => import('@views/Terms'))
 const License = lazy(() => import('@views/License'))
 const Auth = lazy(() => import('@views/Auth'))
 const Dashboard = lazy(() => import('@views/Dashboard'))
+const Admin = lazy(() => import('@views/Admin'))
 const Careers = lazy(() => import('@views/Careers'))
 const Process = lazy(() => import('@views/Process'))
 const Blog = lazy(() => import('@views/Blog'))
@@ -45,6 +46,14 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <Dashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="admin"
+                element={
+                  <ProtectedRoute>
+                    <Admin />
                   </ProtectedRoute>
                 }
               />

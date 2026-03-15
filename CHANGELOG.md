@@ -2,6 +2,18 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [4.2] - 2026-03-15
+
+- Added admin panel with full CRUD management for client websites and user roles
+- Introduced role-based access control with client, staff, and admin roles
+- Added profiles table to the database schema with automatic profile creation on signup via trigger
+- AuthContext now loads user profiles and exposes isStaff() and isAdmin() helper functions
+- Added websites and website_stats tables with row-level security policies
+- Created migration script for adding roles, profiles columns, and new tables to existing databases
+- Added protected /admin route in the app router
+- Dashboard now shows an Admin Panel link for staff and admin users
+- Added SQL helper script to promote a user to admin role
+
 ## [4.1] - 2026-03-15
 
 - Add Supabase authentication with sign in, sign up, password reset, and session management
