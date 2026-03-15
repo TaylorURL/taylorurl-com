@@ -2,6 +2,11 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.8] - 2026-03-15
+
+- Added a Client Portal link to the desktop navigation bar next to Get a Quote
+- Renamed "Sign In" to "Client Portal" in the mobile navigation menu
+
 ## [3.7] - 2026-03-15
 
 - Reduced mobile navbar padding and added overflow hidden to tighten up the header layout

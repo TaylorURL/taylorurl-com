@@ -144,6 +144,17 @@ export default function Navigation() {
               Get a Quote
               <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
+
+            <Link
+              to="/auth"
+              className={`rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
+                isPillTransparent
+                  ? 'text-gray-300 hover:text-white'
+                  : 'text-gray-500 hover:text-gray-900'
+              }`}
+            >
+              Client Portal
+            </Link>
           </div>
         </div>
       </motion.nav>
@@ -284,7 +295,7 @@ export default function Navigation() {
                         {isActive('/auth') && (
                           <span className="mr-3 h-2 w-2 rounded-full bg-blue-600" />
                         )}
-                        Sign In
+                        Client Portal
                       </Link>
                     </motion.div>
                   </div>
