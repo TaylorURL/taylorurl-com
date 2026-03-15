@@ -2,6 +2,12 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [3.9] - 2026-03-15
+
+- Add MockupCarousel component that rotates between default, analytics, and code browser mockups in a 3D orbit layout with smooth Framer Motion transitions every 3.5 seconds
+- Replace the static single BrowserMockup in HeroSection with the new MockupCarousel
+- Update HeroSection desktop layout to use flexbox centering for the carousel
+
 ## [3.8] - 2026-03-15
 
 - Added a Client Portal link to the desktop navigation bar next to Get a Quote
