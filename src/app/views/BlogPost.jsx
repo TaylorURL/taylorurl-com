@@ -1,3 +1,4 @@
+import DOMPurify from 'dompurify'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Calendar, Clock, Tag } from 'lucide-react'
@@ -85,7 +86,7 @@ export default function BlogPost() {
                   <p
                     key={i}
                     className="text-base leading-relaxed text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: block.text }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.text) }}
                   />
                 )
               })}
