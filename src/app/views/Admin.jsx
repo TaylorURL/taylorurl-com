@@ -43,7 +43,7 @@ const STATUS_CONFIG = {
 const EMPTY_SITE = { name: '', domain: '', status: 'development', notes: '', user_id: '' }
 
 export default function Admin() {
-  const { user, signOut, isAdmin, isStaff } = useAuth()
+  const { user, profile, signOut, isAdmin, isStaff } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
   const [websites, setWebsites] = useState([])
@@ -147,7 +147,6 @@ export default function Admin() {
     // to a server-side edge function with RLS enforcement to prevent privilege
     // escalation via client-side token manipulation (OWASP A01:2021).
     if (!profile || profile.role !== 'admin') {
-      console.error('Unauthorized: role update attempted by non-admin user')
       toast('Unauthorized', 'error')
       return
     }
