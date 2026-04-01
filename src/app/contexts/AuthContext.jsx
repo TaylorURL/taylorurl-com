@@ -14,12 +14,19 @@ export function AuthProvider({ children }) {
   }
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      const u = session?.user ?? null
-      setUser(u)
-      if (u) await loadProfile(u.id)
-      setLoading(false)
-    })
+    const initSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        const u = session?.user ?? null
+        setUser(u)
+        if (u) await loadProfile(u.id)
+      } catch (err) {
+        console.error('Failed to initialize session:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    initSession()
 
     const {
       data: { subscription },

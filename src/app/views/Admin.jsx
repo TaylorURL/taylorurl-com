@@ -143,6 +143,15 @@ export default function Admin() {
   }
 
   const handleRoleChange = async (userId, newRole) => {
+    // Guard: only confirmed admins may update roles. This call must be migrated
+    // to a server-side edge function with RLS enforcement to prevent privilege
+    // escalation via client-side token manipulation (OWASP A01:2021).
+    if (!profile || profile.role !== 'admin') {
+      console.error('Unauthorized: role update attempted by non-admin user')
+      toast('Unauthorized', 'error')
+      return
+    }
+
     const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId)
     if (error) {
       toast(error.message, 'error')
