@@ -6,6 +6,10 @@ All notable changes to TaylorURL will be documented in this file.
 
 - TaylorURL Release v4.3.1
 
+## [4.3.1] - 2026-04-01
+
+- TaylorURL Release v4.3.1
+
 ## [4.3] - 2026-04-01
 
 - Reformatted the Supabase missing environment variable error to use multi-line throw syntax for better readability
