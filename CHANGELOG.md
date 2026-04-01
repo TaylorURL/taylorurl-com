@@ -2,6 +2,10 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [4.3] - 2026-04-01
+
+- Reformatted the Supabase missing environment variable error to use multi-line throw syntax for better readability
+
 ## [4.2] - 2026-03-15
 
 - Added admin panel with full CRUD management for client websites and user roles
