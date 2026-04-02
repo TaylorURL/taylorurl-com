@@ -124,7 +124,13 @@ async function flush() {
   try {
     await fetch(configuration.endpoint, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(configuration.apiKey && {
+          apikey: configuration.apiKey,
+          Authorization: `Bearer ${configuration.apiKey}`,
+        }),
+      },
       body,
       keepalive: true,
     })
@@ -258,6 +264,7 @@ const ErrorReporterUtility = {
    */
   init({
     project,
+    apiKey,
     endpoint = REPORTING_ENDPOINT,
     batchSize = DEFAULT_BATCH_SIZE,
     flushIntervalMs = DEFAULT_FLUSH_INTERVAL_MS,
@@ -265,7 +272,7 @@ const ErrorReporterUtility = {
   }) {
     if (configuration) return
 
-    configuration = { project, endpoint, batchSize, flushIntervalMs, enabled }
+    configuration = { project, apiKey, endpoint, batchSize, flushIntervalMs, enabled }
 
     if (!enabled) return
 

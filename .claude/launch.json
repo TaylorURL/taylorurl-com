@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "TaylorURL Dev",
+      "runtimeExecutable": "/bin/bash",
+      "runtimeArgs": ["-c", "cd /Users/trentontaylor/WebstormProjects/taylorurl-com && /Users/trentontaylor/.nvm/versions/node/v22.21.1/bin/npx vite --port 5173"],
+      "port": 5173
+    }
+  ]
+}

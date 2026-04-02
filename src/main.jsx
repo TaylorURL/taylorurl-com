@@ -7,7 +7,10 @@ import './index.css'
 import App from './app/App'
 import ErrorReporterUtility, { ErrorBoundary } from './app/lib/ErrorReporterUtility'
 
-ErrorReporterUtility.init({ project: 'taylorurl.com' })
+ErrorReporterUtility.init({
+  project: 'taylorurl.com',
+  apiKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

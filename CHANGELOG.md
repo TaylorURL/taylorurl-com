@@ -4,6 +4,10 @@ All notable changes to TaylorURL will be documented in this file.
 
 ## [4.3.1] - 2026-04-02
 
+- TaylorURL Release v4.3.1
+
+## [4.3.1] - 2026-04-02
+
 - Add Error Tracker page (staff/admin only) with real-time Supabase updates, GitHub issue links, and fix commit links
 - Fix signup 500 error caused by rogue `on_auth_user_updated` trigger referencing non-existent profile columns
 - Fix AuthContext race condition where profile wasn't loaded before role checks ran

@@ -1,183 +1,235 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle,
+  Bug,
   CheckCircle2,
-  SkipForward,
   ChevronDown,
   ChevronUp,
   ExternalLink,
+  FolderGit2,
   GitCommit,
   Github,
-  RefreshCw,
+  LayoutDashboard,
   Loader2,
-  Bug,
-  Filter,
+  RefreshCw,
+  Search,
+  Settings,
+  SkipForward,
 } from 'lucide-react'
 import Seo from '@components/Seo'
 import { useAuth } from '@app/contexts/AuthContext'
 import { supabase } from '@app/lib/supabase'
-import { pageTransition } from '@constants/animations'
+import { pageTransition, staggerChildMount } from '@constants/animations'
 
-const STATUS_TABS = [
-  { id: 'open', label: 'Open' },
-  { id: 'fixed', label: 'Fixed' },
-  { id: 'skipped', label: 'Skipped' },
-  { id: 'all', label: 'All' },
-]
+const STATUS_TABS = ['open', 'fixed', 'skipped', 'all']
 
 const STATUS_CONFIG = {
   open: {
     label: 'Open',
-    color: 'text-red-600',
-    bg: 'bg-red-50',
-    border: 'border-red-100',
     icon: AlertTriangle,
+    pill: 'bg-red-500/10 text-red-400',
+    dot: 'bg-red-500',
   },
   fixed: {
     label: 'Fixed',
-    color: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    border: 'border-emerald-100',
     icon: CheckCircle2,
+    pill: 'bg-emerald-500/10 text-emerald-400',
+    dot: 'bg-emerald-500',
   },
   skipped: {
     label: 'Skipped',
-    color: 'text-gray-500',
-    bg: 'bg-gray-100',
-    border: 'border-gray-200',
     icon: SkipForward,
+    pill: 'bg-gray-500/10 text-gray-400',
+    dot: 'bg-gray-500',
   },
 }
 
-function getErrorStatus(error) {
+const METRIC_CARDS = [
+  {
+    key: 'open',
+    label: 'Open Errors',
+    accent: 'text-red-400',
+    ring: 'ring-red-500/20',
+    icon: AlertTriangle,
+  },
+  {
+    key: 'fixed',
+    label: 'Fixed Errors',
+    accent: 'text-emerald-400',
+    ring: 'ring-emerald-500/20',
+    icon: CheckCircle2,
+  },
+  {
+    key: 'total',
+    label: 'Total Errors',
+    accent: 'text-blue-400',
+    ring: 'ring-blue-500/20',
+    icon: Bug,
+  },
+  {
+    key: 'projects',
+    label: 'Projects',
+    accent: 'text-purple-400',
+    ring: 'ring-purple-500/20',
+    icon: FolderGit2,
+  },
+]
+
+/** Derive display status from fixed/skipped booleans. */
+function deriveStatus(error) {
   if (error.fixed) return 'fixed'
   if (error.skipped) return 'skipped'
   return 'open'
 }
 
-function formatTimeAgo(dateString) {
-  const diff = Date.now() - new Date(dateString).getTime()
-  const minutes = Math.floor(diff / 60_000)
-  if (minutes < 60) return `${minutes}m ago`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours}h ago`
-  return `${Math.floor(hours / 24)}d ago`
+/** Format a timestamp into a human-readable relative string. */
+function formatRelativeTime(dateString) {
+  const elapsedMinutes = Math.floor((Date.now() - new Date(dateString).getTime()) / 60_000)
+  if (elapsedMinutes < 1) return 'just now'
+  if (elapsedMinutes < 60) return `${elapsedMinutes}m ago`
+  const elapsedHours = Math.floor(elapsedMinutes / 60)
+  if (elapsedHours < 24) return `${elapsedHours}h ago`
+  return `${Math.floor(elapsedHours / 24)}d ago`
 }
 
-function CommitLink({ commitHash, repo }) {
-  if (!commitHash || !repo) return null
-  const shortHash = commitHash.slice(0, 7)
+function MetricsStrip({ errors }) {
+  const openCount = errors.filter(e => deriveStatus(e) === 'open').length
+  const fixedCount = errors.filter(e => deriveStatus(e) === 'fixed').length
+  const projectCount = new Set(errors.map(e => e.project)).size
+
+  const valueMap = {
+    open: openCount,
+    fixed: fixedCount,
+    total: errors.length,
+    projects: projectCount,
+  }
+
   return (
-    <a
-      href={`https://github.com/${repo}/commit/${commitHash}`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-1 font-mono text-xs text-gray-700 hover:bg-gray-200"
-    >
-      <GitCommit className="h-3 w-3" />
-      {shortHash}
-    </a>
+    <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      {METRIC_CARDS.map(({ key, label, accent, ring, icon: Icon }, index) => (
+        <motion.div
+          key={key}
+          {...staggerChildMount(index, 0.07)}
+          className={`rounded-xl border border-gray-800 bg-gray-900 p-4 ring-1 ${ring}`}
+        >
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
+              {label}
+            </span>
+            <Icon className={`h-4 w-4 ${accent}`} />
+          </div>
+          <p className={`text-2xl font-bold ${accent}`}>{valueMap[key]}</p>
+        </motion.div>
+      ))}
+    </div>
   )
 }
 
 function ErrorCard({ error }) {
   const [expanded, setExpanded] = useState(false)
-  const status = getErrorStatus(error)
-  const { label, color, bg, border, icon: StatusIcon } = STATUS_CONFIG[status]
+  const status = deriveStatus(error)
+  const { label, pill, dot, icon: StatusIcon } = STATUS_CONFIG[status]
   const hasStackInfo = error.stack_trace || error.component_stack
 
   return (
-    <div className={`rounded-xl border bg-white ${border} overflow-hidden`}>
+    <div className="overflow-hidden rounded-xl border border-gray-800 bg-gray-900 transition-colors hover:border-gray-700">
       <div className="p-5">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          {/* Left: message + meta */}
-          <div className="min-w-0 flex-1">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${bg} ${color}`}
-              >
-                <StatusIcon className="h-3 w-3" />
-                {label}
-              </span>
-              <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-600">
-                {error.project}
-              </span>
-              {error.error_count > 1 && (
-                <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-xs font-medium text-amber-600">
-                  {error.error_count}x
-                </span>
-              )}
-              <span className="text-xs text-gray-400">{formatTimeAgo(error.created_at)}</span>
-            </div>
-
-            <p className="mb-1 font-medium leading-snug text-gray-900">{error.error_message}</p>
-
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-              {error.source_file && (
-                <span className="font-mono">
-                  {error.source_file.split('/').pop()}
-                  {error.line_number ? `:${error.line_number}` : ''}
-                </span>
-              )}
-              {error.browser && <span>{error.browser}</span>}
-              {error.os && <span>{error.os}</span>}
-              {error.url && (
-                <a
-                  href={error.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 hover:text-blue-600"
-                >
-                  {new URL(error.url).pathname}
-                  <ExternalLink className="h-3 w-3" />
-                </a>
-              )}
-            </div>
-          </div>
-
-          {/* Right: links */}
-          <div className="flex flex-shrink-0 flex-wrap items-center gap-2">
-            {error.github_issue_url && (
-              <a
-                href={error.github_issue_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
-              >
-                <Github className="h-3.5 w-3.5" />
-                Issue #{error.github_issue_number}
-              </a>
-            )}
-            {error.fix_commit_hash && (
-              <CommitLink commitHash={error.fix_commit_hash} repo={error.github_repo} />
-            )}
-            {hasStackInfo && (
-              <button
-                onClick={() => setExpanded(v => !v)}
-                className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-600 hover:bg-gray-50"
-              >
-                {expanded ? (
-                  <ChevronUp className="h-3.5 w-3.5" />
-                ) : (
-                  <ChevronDown className="h-3.5 w-3.5" />
-                )}
-                Stack
-              </button>
-            )}
-          </div>
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <span
+            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${pill}`}
+          >
+            <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
+            {label}
+          </span>
+          <span className="rounded-full bg-blue-500/10 px-2.5 py-1 text-xs font-semibold text-blue-400">
+            {error.project}
+          </span>
+          {error.error_count > 1 && (
+            <span className="rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-semibold text-amber-400">
+              {error.error_count}x
+            </span>
+          )}
+          <span className="ml-auto text-xs text-gray-500">
+            {formatRelativeTime(error.created_at)}
+          </span>
         </div>
 
-        {/* Fix / skip notes */}
+        <p
+          className={`mb-3 font-semibold leading-snug text-gray-100 ${expanded ? '' : 'line-clamp-2'}`}
+        >
+          {error.error_message}
+        </p>
+
+        <div className="mb-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-500">
+          {error.source_file && (
+            <span className="font-mono text-gray-400">
+              {error.source_file.split('/').pop()}
+              {error.line_number ? `:${error.line_number}` : ''}
+              {error.column_number ? `:${error.column_number}` : ''}
+            </span>
+          )}
+          {error.browser && <span>{error.browser}</span>}
+          {error.os && <span>{error.os}</span>}
+          {error.url && (
+            <a
+              href={error.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1 text-gray-400 hover:text-blue-400"
+            >
+              {new URL(error.url).pathname}
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          )}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          {error.github_issue_url && (
+            <a
+              href={error.github_issue_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-300 hover:border-gray-600 hover:text-white"
+            >
+              <Github className="h-3.5 w-3.5" />
+              Issue #{error.github_issue_number}
+            </a>
+          )}
+          {error.fix_commit_hash && error.github_repo && (
+            <a
+              href={`https://github.com/${error.github_repo}/commit/${error.fix_commit_hash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 font-mono text-xs font-medium text-gray-300 hover:border-gray-600 hover:text-white"
+            >
+              <GitCommit className="h-3.5 w-3.5" />
+              {error.fix_commit_hash.slice(0, 7)}
+            </a>
+          )}
+          {hasStackInfo && (
+            <button
+              onClick={() => setExpanded(prev => !prev)}
+              className="ml-auto inline-flex items-center gap-1.5 rounded-lg border border-gray-700 bg-gray-800 px-3 py-1.5 text-xs font-medium text-gray-400 hover:border-gray-600 hover:text-white"
+            >
+              {expanded ? (
+                <ChevronUp className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5" />
+              )}
+              Stack Trace
+            </button>
+          )}
+        </div>
+
         {(error.fix_notes || error.skip_reason) && (
-          <p className="mt-3 rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
+          <p className="mt-3 rounded-lg border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-400">
             {error.fix_notes || error.skip_reason}
           </p>
         )}
       </div>
 
-      {/* Expandable stack trace */}
       <AnimatePresence initial={false}>
         {expanded && hasStackInfo && (
           <motion.div
@@ -185,18 +237,20 @@ function ErrorCard({ error }) {
             animate={{ height: 'auto' }}
             exit={{ height: 0 }}
             transition={{ duration: 0.2 }}
-            className="overflow-hidden border-t border-gray-100"
+            className="overflow-hidden border-t border-gray-800"
           >
             <div className="bg-gray-950 p-4">
               {error.stack_trace && (
-                <pre className="overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-gray-300">
+                <pre className="overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-gray-400">
                   {error.stack_trace}
                 </pre>
               )}
               {error.component_stack && (
                 <>
-                  <p className="mb-1 mt-3 text-xs font-medium text-gray-500">Component Stack</p>
-                  <pre className="overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-gray-300">
+                  <p className="mb-1 mt-4 text-xs font-semibold uppercase tracking-wider text-gray-600">
+                    Component Stack
+                  </p>
+                  <pre className="overflow-x-auto whitespace-pre-wrap break-all font-mono text-xs leading-relaxed text-gray-400">
                     {error.component_stack}
                   </pre>
                 </>
@@ -216,6 +270,7 @@ export default function Errors() {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState('open')
   const [projectFilter, setProjectFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
 
   useEffect(() => {
     if (profile === null) return
@@ -265,103 +320,152 @@ export default function Errors() {
     setLoading(false)
   }
 
-  const projects = ['all', ...new Set(errors.map(e => e.project))].sort()
+  const projects = useMemo(
+    () => ['all', ...new Set(errors.map(e => e.project).filter(Boolean))].sort(),
+    [errors]
+  )
 
-  const visibleErrors = errors.filter(error => {
-    const statusMatch = activeTab === 'all' || getErrorStatus(error) === activeTab
-    const projectMatch = projectFilter === 'all' || error.project === projectFilter
-    return statusMatch && projectMatch
-  })
+  const countByStatus = useMemo(() => {
+    const counts = { open: 0, fixed: 0, skipped: 0 }
+    errors.forEach(e => {
+      counts[deriveStatus(e)]++
+    })
+    return counts
+  }, [errors])
 
-  const countByStatus = status => errors.filter(e => getErrorStatus(e) === status).length
+  const normalizedQuery = searchQuery.toLowerCase().trim()
+
+  const visibleErrors = useMemo(
+    () =>
+      errors.filter(error => {
+        if (activeTab !== 'all' && deriveStatus(error) !== activeTab) return false
+        if (projectFilter !== 'all' && error.project !== projectFilter) return false
+        if (normalizedQuery && !error.error_message?.toLowerCase().includes(normalizedQuery))
+          return false
+        return true
+      }),
+    [errors, activeTab, projectFilter, normalizedQuery]
+  )
+
+  const emptyMessage = activeTab !== 'all' ? `No ${activeTab} errors` : 'No errors found'
 
   return (
-    <motion.div {...pageTransition} className="min-h-screen bg-gray-50 pb-20 pt-28 md:pt-36">
-      <Seo title="Error Tracker" description="Client-side error log." path="/errors" noIndex />
+    <motion.div {...pageTransition} className="min-h-screen bg-gray-950 pb-20 pt-28 md:pt-36">
+      <Seo
+        title="Error Tracker"
+        description="Client-side error monitoring."
+        path="/errors"
+        noIndex
+      />
 
-      <div className="mx-auto max-w-5xl px-6">
+      <div className="mx-auto max-w-6xl px-6">
         {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-600">
-              <Bug className="h-5 w-5 text-white" />
+        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 ring-1 ring-red-500/20">
+              <Bug className="h-5 w-5 text-red-400" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Error Tracker</h1>
+              <h1 className="text-2xl font-bold text-white">Error Tracker</h1>
               <p className="text-sm text-gray-500">
-                {errors.length} total errors across all projects
+                {errors.length} error{errors.length !== 1 ? 's' : ''} across all projects
               </p>
             </div>
           </div>
-          <button
-            onClick={loadErrors}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-            Refresh
-          </button>
-        </div>
+
+          <div className="flex items-center gap-2">
+            <a
+              href="/dashboard"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm font-medium text-gray-400 hover:border-gray-700 hover:text-white"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+              Dashboard
+            </a>
+            <a
+              href="/admin"
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm font-medium text-gray-400 hover:border-gray-700 hover:text-white"
+            >
+              <Settings className="h-4 w-4" />
+              Admin
+            </a>
+            <button
+              onClick={loadErrors}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm font-medium text-gray-400 hover:border-gray-700 hover:text-white"
+            >
+              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+              Refresh
+            </button>
+          </div>
+        </header>
+
+        {/* Metrics */}
+        <MetricsStrip errors={errors} />
 
         {/* Filters */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Status tabs */}
-          <div className="flex gap-1 rounded-lg border border-gray-200 bg-gray-100 p-1">
-            {STATUS_TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-1.5 rounded-md px-3 py-2 text-sm font-medium transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-600 hover:text-gray-900'
-                }`}
-              >
-                {tab.label}
-                {tab.id !== 'all' && (
-                  <span
-                    className={`rounded-full px-1.5 py-0.5 text-xs ${
-                      activeTab === tab.id
-                        ? 'bg-gray-100 text-gray-600'
-                        : 'bg-gray-200 text-gray-500'
-                    }`}
-                  >
-                    {countByStatus(tab.id)}
-                  </span>
-                )}
-              </button>
-            ))}
+        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex gap-1 rounded-xl border border-gray-800 bg-gray-900 p-1">
+            {STATUS_TABS.map(tabId => {
+              const isActive = activeTab === tabId
+              const tabLabel = tabId === 'all' ? 'All' : STATUS_CONFIG[tabId].label
+              return (
+                <button
+                  key={tabId}
+                  onClick={() => setActiveTab(tabId)}
+                  className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
+                    isActive ? 'bg-gray-800 text-white shadow' : 'text-gray-500 hover:text-gray-300'
+                  }`}
+                >
+                  {tabLabel}
+                  {tabId !== 'all' && (
+                    <span
+                      className={`rounded-full px-1.5 py-0.5 text-xs ${
+                        isActive ? 'bg-gray-700 text-gray-300' : 'bg-gray-800 text-gray-500'
+                      }`}
+                    >
+                      {countByStatus[tabId]}
+                    </span>
+                  )}
+                </button>
+              )
+            })}
           </div>
 
-          {/* Project filter */}
-          {projects.length > 2 && (
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-gray-400" />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                placeholder="Search errors..."
+                className="w-56 rounded-lg border border-gray-800 bg-gray-900 py-2 pl-9 pr-3 text-sm text-gray-300 placeholder-gray-600 focus:border-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-700"
+              />
+            </div>
+            {projects.length > 2 && (
               <select
                 value={projectFilter}
                 onChange={e => setProjectFilter(e.target.value)}
-                className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+                className="rounded-lg border border-gray-800 bg-gray-900 px-3 py-2 text-sm text-gray-300 focus:border-gray-700 focus:outline-none focus:ring-1 focus:ring-gray-700"
               >
-                {projects.map(p => (
-                  <option key={p} value={p}>
-                    {p === 'all' ? 'All Projects' : p}
+                {projects.map(projectName => (
+                  <option key={projectName} value={projectName}>
+                    {projectName === 'all' ? 'All Projects' : projectName}
                   </option>
                 ))}
               </select>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* Error list */}
         {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-gray-600" />
           </div>
         ) : visibleErrors.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center">
-            <CheckCircle2 className="mx-auto mb-4 h-12 w-12 text-gray-300" />
-            <p className="font-medium text-gray-500">
-              No {activeTab !== 'all' ? activeTab : ''} errors
-            </p>
+          <div className="rounded-xl border border-dashed border-gray-800 py-20 text-center">
+            <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-gray-700" />
+            <p className="text-sm font-medium text-gray-500">{emptyMessage}</p>
           </div>
         ) : (
           <div className="space-y-3">
