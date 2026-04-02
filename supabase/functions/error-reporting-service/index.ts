@@ -7,6 +7,7 @@ const MAX_STACK_LENGTH = 10000
 const DEDUP_WINDOW_HOURS = 24
 const GITHUB_API_BASE = "https://api.github.com"
 const GITHUB_OWNER = "bradley-t-t"
+const ATTENTION_KEYWORDS = /\b(attention|review|look\s?at|investigate|check|revisit|todo|reopen|urgent|important|manual|needs?\s?fix)\b/i
 
 const PROJECT_TO_GITHUB_REPO: Record<string, string> = {
     "smyrnatools.com": "smyrnatools-com",
@@ -186,6 +187,53 @@ Deno.serve(async (req) => {
         return errorResponse("Method not allowed", headers, 405)
     }
 
+    const supabase = getAdminClient()
+
+    if (endpoint === "create-attention-issue") {
+        const body = await req.json().catch(() => null)
+        if (!body?.id) return errorResponse("Error ID required", headers)
+
+        const { data: row, error: fetchErr } = await supabase
+            .from("client_errors")
+            .select("*")
+            .eq("id", body.id)
+            .single()
+
+        if (fetchErr || !row) return errorResponse("Error not found", headers, 404)
+        if (row.github_issue_url) return jsonResponse({ skipped: true, reason: "Issue already exists" }, headers)
+        if (!row.skipped || !row.skip_reason || !ATTENTION_KEYWORDS.test(row.skip_reason)) {
+            return jsonResponse({ skipped: true, reason: "Does not require attention" }, headers)
+        }
+
+        const report: ErrorReport = {
+            project: row.project,
+            error_message: row.error_message,
+            stack_trace: row.stack_trace,
+            source_file: row.source_file,
+            line_number: row.line_number,
+            column_number: row.column_number,
+            component_stack: row.component_stack,
+            url: row.url,
+            user_agent: row.user_agent,
+            browser: row.browser,
+            os: row.os,
+        }
+
+        const errorHash = row.error_hash ?? await computeErrorHash(report.project, report.error_message, report.source_file ?? null, report.line_number ?? null)
+        const githubIssue = await createGithubIssue(report, errorHash)
+
+        if (!githubIssue) return errorResponse("Failed to create GitHub issue", headers, 500)
+
+        await supabase.from("client_errors").update({
+            github_issue_number: githubIssue.issueNumber,
+            github_issue_url: githubIssue.issueUrl,
+            github_repo: githubIssue.repo,
+            updated_at: new Date().toISOString(),
+        }).eq("id", body.id)
+
+        return jsonResponse({ created: true, issue: githubIssue }, headers)
+    }
+
     if (endpoint !== "report-batch") {
         return errorResponse("Invalid endpoint", headers, 404)
     }
@@ -199,7 +247,6 @@ Deno.serve(async (req) => {
         return errorResponse(`Batch size exceeds maximum of ${MAX_BATCH_SIZE}`, headers)
     }
 
-    const supabase = getAdminClient()
     let insertedCount = 0
     let incrementedCount = 0
     let invalidCount = 0

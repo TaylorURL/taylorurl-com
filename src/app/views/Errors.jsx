@@ -330,6 +330,50 @@ export default function Errors() {
       .order('created_at', { ascending: false })
     setErrors(data || [])
     setLoading(false)
+
+    // Auto-create GitHub issues for "needs attention" errors that don't have one yet
+    const attentionWithoutIssue = (data || []).filter(
+      e =>
+        e.skipped && !e.github_issue_url && e.skip_reason && ATTENTION_KEYWORDS.test(e.skip_reason)
+    )
+    for (const errorRow of attentionWithoutIssue) {
+      try {
+        const { data: session } = await supabase.auth.getSession()
+        const token = session?.session?.access_token
+        if (!token) break
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/create-attention-issue`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({ id: errorRow.id }),
+          }
+        )
+        if (response.ok) {
+          const result = await response.json()
+          if (result.created) {
+            setErrors(prev =>
+              prev.map(e =>
+                e.id === errorRow.id
+                  ? {
+                      ...e,
+                      github_issue_number: result.issue.issueNumber,
+                      github_issue_url: result.issue.issueUrl,
+                      github_repo: result.issue.repo,
+                    }
+                  : e
+              )
+            )
+          }
+        }
+      } catch {
+        // Silently continue — issue creation is best-effort
+      }
+    }
   }
 
   const projects = useMemo(
