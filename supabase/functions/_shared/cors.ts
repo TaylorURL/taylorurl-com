@@ -25,6 +25,7 @@ export function getCorsHeaders(origin: string | null): Record<string, string> {
         "Access-Control-Allow-Origin": origin && ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[DEFAULT_ORIGIN_INDEX],
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization, apikey",
+        "Access-Control-Allow-Credentials": "true",
         "Access-Control-Max-Age": "86400",
     }
 }

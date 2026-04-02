@@ -122,18 +122,12 @@ async function flush() {
   const body = JSON.stringify({ errors: batch })
 
   try {
-    const sendViaBeacon = navigator.sendBeacon?.(
-      configuration.endpoint,
-      new Blob([body], { type: 'application/json' })
-    )
-    if (!sendViaBeacon) {
-      await fetch(configuration.endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        keepalive: true,
-      })
-    }
+    await fetch(configuration.endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+      keepalive: true,
+    })
   } catch {
     // Silently drop — prevent recursive reporting of network failures
   } finally {

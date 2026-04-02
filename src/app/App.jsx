@@ -22,6 +22,7 @@ const Blog = lazy(() => import('@views/Blog'))
 const BlogPost = lazy(() => import('@views/BlogPost'))
 const Faq = lazy(() => import('@views/Faq'))
 const Status = lazy(() => import('@views/Status'))
+const Errors = lazy(() => import('@views/Errors'))
 const NotFound = lazy(() => import('@views/NotFound'))
 
 export default function App() {
@@ -63,6 +64,14 @@ export default function App() {
               <Route path="blog/:slug" element={<BlogPost />} />
               <Route path="faq" element={<Faq />} />
               <Route path="status" element={<Status />} />
+              <Route
+                path="errors"
+                element={
+                  <ProtectedRoute>
+                    <Errors />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

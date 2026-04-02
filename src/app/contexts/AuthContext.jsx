@@ -19,7 +19,9 @@ export function AuthProvider({ children }) {
         const {
           data: { session },
         } = await supabase.auth.getSession()
-        setUser(session?.user ?? null)
+        const u = session?.user ?? null
+        setUser(u)
+        if (u) await loadProfile(u.id)
       } finally {
         setLoading(false)
       }
