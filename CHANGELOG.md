@@ -2,6 +2,10 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [4.3.4] - 2026-04-02
+
+- TaylorURL Release v4.3.4
+
 ## [4.3.3] - 2026-04-02
 
 - TaylorURL Release v4.3.3

@@ -107,12 +107,12 @@ function buildIssueBody(report: ErrorReport, errorHash: string): string {
     return sections.join("\n")
 }
 
-async function createGithubIssue(report: ErrorReport, errorHash: string): Promise<{ issueNumber: number, issueUrl: string, repo: string } | null> {
+async function createGithubIssue(report: ErrorReport, errorHash: string): Promise<{ issueNumber: number, issueUrl: string, repo: string, error?: string } | null> {
     const githubToken = Deno.env.get("GITHUB_TOKEN")
-    if (!githubToken) return null
+    if (!githubToken) return { error: "GITHUB_TOKEN not set" } as any
 
     const repo = PROJECT_TO_GITHUB_REPO[report.project]
-    if (!repo) return null
+    if (!repo) return { error: `No GitHub repo mapped for project: ${report.project}` } as any
 
     const title = `Client Error: ${report.error_message.slice(0, 120)}`
     const body = buildIssueBody(report, errorHash)
@@ -132,12 +132,15 @@ async function createGithubIssue(report: ErrorReport, errorHash: string): Promis
             }),
         })
 
-        if (!response.ok) return null
+        if (!response.ok) {
+            const errorBody = await response.text().catch(() => "")
+            return { error: `GitHub API ${response.status}: ${errorBody.slice(0, 200)}` } as any
+        }
 
         const issue = await response.json()
         return { issueNumber: issue.number, issueUrl: issue.html_url, repo: `${GITHUB_OWNER}/${repo}` }
-    } catch {
-        return null
+    } catch (err) {
+        return { error: `Fetch failed: ${(err as Error).message}` } as any
     }
 }
 
@@ -162,13 +165,14 @@ async function upsertError(supabase: ReturnType<typeof createClient>, report: Er
     }
 
     const githubIssue = await createGithubIssue(report, errorHash)
+    const issueCreated = githubIssue && !("error" in githubIssue)
 
     const { error } = await supabase.from("client_errors").insert({
         ...report,
         error_hash: errorHash,
-        github_issue_number: githubIssue?.issueNumber ?? null,
-        github_issue_url: githubIssue?.issueUrl ?? null,
-        github_repo: githubIssue?.repo ?? null,
+        github_issue_number: issueCreated ? githubIssue.issueNumber : null,
+        github_issue_url: issueCreated ? githubIssue.issueUrl : null,
+        github_repo: issueCreated ? githubIssue.repo : null,
     })
 
     if (error) throw error
@@ -205,6 +209,20 @@ Deno.serve(async (req) => {
             return jsonResponse({ skipped: true, reason: "Does not require attention" }, headers)
         }
 
+        // Atomic claim: set a placeholder URL to prevent concurrent duplicate creation.
+        // If another request already claimed this row, the update matches 0 rows.
+        const PLACEHOLDER_URL = "pending"
+        const { data: claimed } = await supabase
+            .from("client_errors")
+            .update({ github_issue_url: PLACEHOLDER_URL })
+            .eq("id", body.id)
+            .is("github_issue_url", null)
+            .select("id")
+
+        if (!claimed?.length) {
+            return jsonResponse({ skipped: true, reason: "Issue creation already in progress" }, headers)
+        }
+
         const report: ErrorReport = {
             project: row.project,
             error_message: row.error_message,
@@ -222,7 +240,11 @@ Deno.serve(async (req) => {
         const errorHash = row.error_hash ?? await computeErrorHash(report.project, report.error_message, report.source_file ?? null, report.line_number ?? null)
         const githubIssue = await createGithubIssue(report, errorHash)
 
-        if (!githubIssue) return errorResponse("Failed to create GitHub issue", headers, 500)
+        if (!githubIssue || (githubIssue as any).error) {
+            // Roll back the placeholder so it can be retried
+            await supabase.from("client_errors").update({ github_issue_url: null }).eq("id", body.id)
+            return errorResponse((githubIssue as any)?.error ?? "Failed to create GitHub issue", headers, 500)
+        }
 
         await supabase.from("client_errors").update({
             github_issue_number: githubIssue.issueNumber,
