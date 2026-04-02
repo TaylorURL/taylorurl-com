@@ -9,4 +9,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+  auth: {
+    storageKey: 'taylorurl-auth',
+    flowType: 'pkce',
+    detectSessionInUrl: true,
+  },
+})
