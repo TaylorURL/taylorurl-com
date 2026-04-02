@@ -5,6 +5,9 @@ import PageHero from '@components/PageHero'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 
+const FADE_DURATION = 0.5
+const GENERAL_APPLICATION_DELAY = 0.2
+
 const BENEFITS = [
   {
     icon: Laptop,
@@ -52,6 +55,23 @@ const POSITIONS = [
   },
 ]
 
+function buildMailtoHref(subject) {
+  return `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(subject)}`
+}
+
+function CheckList({ items, iconColor = 'text-blue-600' }) {
+  return (
+    <ul className="space-y-2">
+      {items.map(label => (
+        <li key={label} className="flex items-start gap-2.5 text-sm text-gray-600">
+          <Check className={`mt-0.5 h-4 w-4 shrink-0 ${iconColor}`} />
+          <span>{label}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 export default function Careers() {
   return (
     <>
@@ -66,10 +86,13 @@ export default function Careers() {
         description="Join our team and help local businesses succeed online."
       />
 
-      {/* Why Work With Us */}
       <section className="bg-white px-4 py-20 sm:px-6 md:py-28">
         <div className="mx-auto max-w-6xl">
-          <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-14 text-center">
+          <motion.div
+            {...fadeInUp}
+            transition={{ duration: FADE_DURATION }}
+            className="mb-14 text-center"
+          >
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Why Work With Us
             </h2>
@@ -80,30 +103,30 @@ export default function Careers() {
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {BENEFITS.map((benefit, index) => {
-              const Icon = benefit.icon
-              return (
-                <motion.div
-                  key={benefit.title}
-                  {...staggerChild(index)}
-                  className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
-                >
-                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                    <Icon className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <h3 className="mb-2 text-lg font-semibold text-gray-900">{benefit.title}</h3>
-                  <p className="text-sm leading-relaxed text-gray-600">{benefit.description}</p>
-                </motion.div>
-              )
-            })}
+            {BENEFITS.map(({ icon: Icon, title, description }, index) => (
+              <motion.div
+                key={title}
+                {...staggerChild(index)}
+                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+              >
+                <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
+                  <Icon className="h-5 w-5 text-blue-600" />
+                </div>
+                <h3 className="mb-2 text-lg font-semibold text-gray-900">{title}</h3>
+                <p className="text-sm leading-relaxed text-gray-600">{description}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Open Positions */}
       <section className="bg-gray-50 px-4 py-20 sm:px-6 md:py-28">
         <div className="mx-auto max-w-4xl">
-          <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-14 text-center">
+          <motion.div
+            {...fadeInUp}
+            transition={{ duration: FADE_DURATION }}
+            className="mb-14 text-center"
+          >
             <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
               Open Positions
             </h2>
@@ -132,30 +155,16 @@ export default function Careers() {
 
                 <div className="mb-6">
                   <h4 className="mb-3 text-sm font-semibold text-gray-900">Requirements</h4>
-                  <ul className="space-y-2">
-                    {position.requirements.map(req => (
-                      <li key={req} className="flex items-start gap-2.5 text-sm text-gray-600">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-blue-600" />
-                        <span>{req}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <CheckList items={position.requirements} />
                 </div>
 
                 <div className="mb-8">
                   <h4 className="mb-3 text-sm font-semibold text-gray-900">Nice to Have</h4>
-                  <ul className="space-y-2">
-                    {position.niceToHave.map(item => (
-                      <li key={item} className="flex items-start gap-2.5 text-sm text-gray-600">
-                        <Check className="mt-0.5 h-4 w-4 shrink-0 text-gray-400" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <CheckList items={position.niceToHave} iconColor="text-gray-400" />
                 </div>
 
                 <a
-                  href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent(`Application: ${position.title}`)}`}
+                  href={buildMailtoHref(`Application: ${position.title}`)}
                   className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
                 >
                   <Mail className="h-4 w-4" />
@@ -165,10 +174,9 @@ export default function Careers() {
             ))}
           </div>
 
-          {/* General Application */}
           <motion.div
             {...fadeInUp}
-            transition={{ duration: 0.5, delay: 0.2 }}
+            transition={{ duration: FADE_DURATION, delay: GENERAL_APPLICATION_DELAY }}
             className="mt-8 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm"
           >
             <p className="mb-4 text-gray-600">
@@ -176,7 +184,7 @@ export default function Careers() {
               developers.
             </p>
             <a
-              href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('General Application')}`}
+              href={buildMailtoHref('General Application')}
               className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 transition-colors hover:text-blue-700"
             >
               <Mail className="h-4 w-4" />
@@ -186,11 +194,10 @@ export default function Careers() {
         </div>
       </section>
 
-      {/* CTA Section */}
       <section className="bg-gray-900 px-4 py-20 sm:px-6 md:py-28">
         <motion.div
           {...fadeInUp}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: FADE_DURATION }}
           className="mx-auto max-w-3xl text-center"
         >
           <h2 className="mb-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
@@ -200,7 +207,7 @@ export default function Careers() {
             Send us your resume and portfolio. We&apos;d love to hear from you.
           </p>
           <a
-            href={`mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Career Inquiry')}`}
+            href={buildMailtoHref('Career Inquiry')}
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-blue-700"
           >
             <Mail className="h-5 w-5" />
