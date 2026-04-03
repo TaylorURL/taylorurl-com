@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/taylorurl-beacon.js",
+      "destination": "/taylorurl-beacon.js"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
