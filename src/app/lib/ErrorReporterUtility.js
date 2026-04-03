@@ -155,6 +155,11 @@ function isReportingEndpoint(url) {
   return typeof url === 'string' && url.includes('error-reporting-service')
 }
 
+/** Auth endpoints return expected 400s (expired tokens, wrong password) — not application errors. */
+function isAuthEndpoint(url) {
+  return typeof url === 'string' && url.includes('/auth/v1/')
+}
+
 /** Wraps window.fetch to capture HTTP error responses (4xx/5xx). */
 function interceptFetch() {
   const originalFetch = window.fetch
@@ -165,7 +170,7 @@ function interceptFetch() {
     if (isReportingEndpoint(requestUrl)) return originalFetch.apply(this, args)
 
     const response = await originalFetch.apply(this, args)
-    if (response.status >= HTTP_ERROR_THRESHOLD) {
+    if (response.status >= HTTP_ERROR_THRESHOLD && !isAuthEndpoint(requestUrl)) {
       const endpointName = extractEndpointFromUrl(requestUrl)
       const payload = buildErrorPayload(
         `HTTP ${response.status} ${response.statusText} — ${endpointName}`,
@@ -192,6 +197,7 @@ function interceptXmlHttpRequest() {
   XMLHttpRequest.prototype.send = function patchedSend(...args) {
     this.addEventListener('loadend', function onLoadEnd() {
       if (isReportingEndpoint(this._errorReporterUrl)) return
+      if (isAuthEndpoint(this._errorReporterUrl)) return
       if (this.status >= HTTP_ERROR_THRESHOLD) {
         const endpointName = extractEndpointFromUrl(this._errorReporterUrl)
         const payload = buildErrorPayload(
