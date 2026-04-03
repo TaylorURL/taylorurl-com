@@ -128,8 +128,9 @@ async function handleCheckUptime(headers: Record<string, string>) {
             const controller = new AbortController()
             const timeout = setTimeout(() => controller.abort(), UPTIME_TIMEOUT_MS)
 
+            // Use GET — some hosts (e.g. Vercel) return 405 for HEAD
             const response = await fetch(`https://${site.domain}`, {
-                method: "HEAD",
+                method: "GET",
                 signal: controller.signal,
                 redirect: "follow",
             })

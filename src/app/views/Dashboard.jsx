@@ -44,6 +44,7 @@ export default function Dashboard() {
   const [stats, setStats] = useState(INITIAL_STATS)
   const [errorCountsByDomain, setErrorCountsByDomain] = useState({})
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [sortKey, setSortKey] = useState('name')
   const [sortDir, setSortDir] = useState('asc')
 
@@ -61,10 +62,11 @@ export default function Dashboard() {
     if (user?.id) fetchWebsites()
   }, [user?.id])
 
-  async function fetchWebsites() {
+  async function fetchWebsites({ silent = false } = {}) {
     if (!user?.id) return
 
-    setLoading(true)
+    if (silent) setRefreshing(true)
+    else setLoading(true)
     try {
       const [{ data, error }, { data: openErrors }] = await Promise.all([
         supabase
@@ -91,6 +93,7 @@ export default function Dashboard() {
       setErrorCountsByDomain(counts)
     } finally {
       setLoading(false)
+      setRefreshing(false)
     }
   }
 
@@ -155,11 +158,11 @@ export default function Dashboard() {
               </h1>
             </div>
             <button
-              onClick={fetchWebsites}
-              disabled={loading}
+              onClick={() => fetchWebsites({ silent: true })}
+              disabled={refreshing}
               className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900 disabled:opacity-50"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
               Refresh
             </button>
           </div>

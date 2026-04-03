@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
@@ -14,6 +14,7 @@ import {
 } from 'recharts'
 import { ArrowLeft, ExternalLink } from 'lucide-react'
 import Seo from '@components/Seo'
+import { ErrorCard, deriveErrorStatus } from '@components/ErrorCard'
 import { useAuth } from '@app/contexts/AuthContext'
 import { useToast } from '@components/Toast'
 import { supabase } from '@app/lib/supabase'
@@ -122,7 +123,26 @@ export default function WebsiteView() {
   const [site, setSite] = useState(null)
   const [pageViews, setPageViews] = useState([])
   const [uptimeChecks, setUptimeChecks] = useState([])
+  const [errors, setErrors] = useState([])
+  const [errorTab, setErrorTab] = useState('open')
   const [loading, setLoading] = useState(true)
+
+  const ERROR_TABS = ['open', 'closed', 'fixed', 'skipped', 'all']
+
+  const tabCounts = useMemo(
+    () =>
+      ERROR_TABS.reduce((acc, tab) => {
+        acc[tab] =
+          tab === 'all' ? errors.length : errors.filter(e => deriveErrorStatus(e) === tab).length
+        return acc
+      }, {}),
+    [errors]
+  )
+
+  const visibleErrors = useMemo(
+    () => (errorTab === 'all' ? errors : errors.filter(e => deriveErrorStatus(e) === errorTab)),
+    [errors, errorTab]
+  )
 
   useEffect(() => {
     if (user?.id && id) fetchData()
@@ -133,25 +153,27 @@ export default function WebsiteView() {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
     const fortyEightHoursAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
 
-    const [{ data: siteData, error }, { data: views }, { data: uptime }] = await Promise.all([
-      supabase
-        .from('websites')
-        .select('*, website_stats(*)')
-        .eq('id', id)
-        .eq('user_id', user.id)
-        .single(),
-      supabase
-        .from('page_views')
-        .select('visitor_id, page_url, created_at')
-        .eq('website_id', id)
-        .gte('created_at', thirtyDaysAgo),
-      supabase
-        .from('uptime_checks')
-        .select('is_up, response_time_ms, created_at')
-        .eq('website_id', id)
-        .gte('created_at', fortyEightHoursAgo)
-        .order('created_at', { ascending: true }),
-    ])
+    const [{ data: siteData, error }, { data: views }, { data: uptime }, { data: siteErrors }] =
+      await Promise.all([
+        supabase
+          .from('websites')
+          .select('*, website_stats(*)')
+          .eq('id', id)
+          .eq('user_id', user.id)
+          .single(),
+        supabase
+          .from('page_views')
+          .select('visitor_id, page_url, created_at')
+          .eq('website_id', id)
+          .gte('created_at', thirtyDaysAgo),
+        supabase
+          .from('uptime_checks')
+          .select('is_up, response_time_ms, created_at')
+          .eq('website_id', id)
+          .gte('created_at', fortyEightHoursAgo)
+          .order('created_at', { ascending: true }),
+        supabase.from('client_errors').select('*').order('created_at', { ascending: false }),
+      ])
 
     if (error || !siteData) {
       toast('Site not found', 'error')
@@ -162,8 +184,18 @@ export default function WebsiteView() {
     setSite(siteData)
     setPageViews(views || [])
     setUptimeChecks(uptime || [])
+    setErrors((siteErrors || []).filter(e => e.project === siteData.domain))
     setLoading(false)
   }
+
+  const stats = site?.website_stats?.[0]
+  const dailyViews = useMemo(() => buildDailyViews(pageViews), [pageViews])
+  const uptimeHistory = useMemo(() => buildUptimeHistory(uptimeChecks), [uptimeChecks])
+  const topPages = useMemo(() => buildTopPages(pageViews), [pageViews])
+  const uniqueVisitors = useMemo(() => new Set(pageViews.map(r => r.visitor_id)).size, [pageViews])
+  const uptimePct = stats?.uptime_pct != null ? `${stats.uptime_pct}%` : '--'
+  const statusDot = STATUS_DOT[site?.status] || STATUS_DOT.active
+  const maxViews = Math.max(...topPages.map(p => p.count), 1)
 
   if (loading) {
     return (
@@ -185,15 +217,6 @@ export default function WebsiteView() {
       </div>
     )
   }
-
-  const stats = site.website_stats?.[0]
-  const dailyViews = buildDailyViews(pageViews)
-  const uptimeHistory = buildUptimeHistory(uptimeChecks)
-  const topPages = buildTopPages(pageViews)
-  const uniqueVisitors = new Set(pageViews.map(r => r.visitor_id)).size
-  const uptimePct = stats?.uptime_pct != null ? `${stats.uptime_pct}%` : '--'
-  const statusDot = STATUS_DOT[site.status] || STATUS_DOT.active
-  const maxViews = Math.max(...topPages.map(p => p.count), 1)
 
   return (
     <>
@@ -401,6 +424,52 @@ export default function WebsiteView() {
             )}
           </ChartCard>
         </div>
+
+        {/* Errors */}
+        <section className="mt-8">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-[15px] font-semibold text-gray-900">Errors</h2>
+            <span className="text-sm text-gray-400">{errors.length} total</span>
+          </div>
+
+          {/* Tabs */}
+          <div className="mb-4 flex gap-1 overflow-x-auto">
+            {ERROR_TABS.map(tab => (
+              <button
+                key={tab}
+                onClick={() => setErrorTab(tab)}
+                className={`inline-flex shrink-0 items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium capitalize transition-colors ${
+                  errorTab === tab
+                    ? 'bg-gray-900 text-white'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+                }`}
+              >
+                {tab}
+                <span
+                  className={`rounded-full px-1.5 py-0.5 text-[11px] font-semibold tabular-nums ${
+                    errorTab === tab ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-500'
+                  }`}
+                >
+                  {tabCounts[tab]}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          {visibleErrors.length === 0 ? (
+            <div className="rounded-xl border border-gray-200 bg-white px-6 py-10 text-center">
+              <p className="text-sm text-gray-400">
+                No {errorTab === 'all' ? '' : errorTab} errors for this site
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {visibleErrors.map(error => (
+                <ErrorCard key={error.id} error={error} hideProject />
+              ))}
+            </div>
+          )}
+        </section>
       </motion.div>
     </>
   )
