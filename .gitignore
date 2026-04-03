@@ -22,3 +22,4 @@ key/
 taylorurl.key
 .env
 .env.local
+supabase/.temp/
