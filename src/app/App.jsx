@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import Layout from '@components/Layout'
+import DashboardLayout from '@components/DashboardLayout'
 import ScrollToTop from '@components/ScrollToTop'
 import ProtectedRoute from '@components/ProtectedRoute'
 
@@ -32,6 +33,7 @@ export default function App() {
       <AnimatePresence mode="wait">
         <Suspense fallback={<div className="flex min-h-screen items-center justify-center" />}>
           <Routes>
+            {/* Marketing shell */}
             <Route path="/" element={<Layout />}>
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
@@ -42,37 +44,26 @@ export default function App() {
               <Route path="terms" element={<Terms />} />
               <Route path="license" element={<License />} />
               <Route path="auth" element={<Auth />} />
-              <Route
-                path="dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="admin"
-                element={
-                  <ProtectedRoute>
-                    <Admin />
-                  </ProtectedRoute>
-                }
-              />
               <Route path="careers" element={<Careers />} />
               <Route path="process" element={<Process />} />
               <Route path="blog" element={<Blog />} />
               <Route path="blog/:slug" element={<BlogPost />} />
               <Route path="faq" element={<Faq />} />
               <Route path="status" element={<Status />} />
-              <Route
-                path="errors"
-                element={
-                  <ProtectedRoute>
-                    <Errors />
-                  </ProtectedRoute>
-                }
-              />
               <Route path="*" element={<NotFound />} />
+            </Route>
+
+            {/* Dashboard shell — auth-gated, sidebar layout */}
+            <Route
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="admin" element={<Admin />} />
+              <Route path="errors" element={<Errors />} />
             </Route>
           </Routes>
         </Suspense>

@@ -3,27 +3,25 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import {
   AlertTriangle,
+  Archive,
   Bug,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   ExternalLink,
-  FolderGit2,
   GitCommit,
   Github,
-  LayoutDashboard,
   Loader2,
   RefreshCw,
   Search,
-  Settings,
   SkipForward,
 } from 'lucide-react'
 import Seo from '@components/Seo'
 import { useAuth } from '@app/contexts/AuthContext'
 import { supabase } from '@app/lib/supabase'
-import { pageTransition, staggerChildMount } from '@constants/animations'
+import { pageTransition } from '@constants/animations'
 
-const STATUS_TABS = ['open', 'fixed', 'skipped', 'all']
+const STATUS_TABS = ['open', 'closed', 'fixed', 'skipped', 'all']
 
 const STATUS_CONFIG = {
   open: {
@@ -31,6 +29,12 @@ const STATUS_CONFIG = {
     icon: AlertTriangle,
     pill: 'bg-red-50 text-red-600',
     dot: 'bg-red-500',
+  },
+  closed: {
+    label: 'Closed',
+    icon: Archive,
+    pill: 'bg-blue-50 text-blue-600',
+    dot: 'bg-blue-500',
   },
   fixed: {
     label: 'Fixed',
@@ -46,41 +50,18 @@ const STATUS_CONFIG = {
   },
 }
 
-const METRIC_CARDS = [
-  {
-    key: 'open',
-    label: 'Open Errors',
-    accent: 'text-red-600',
-    bg: 'bg-red-50',
-    icon: AlertTriangle,
-  },
-  {
-    key: 'fixed',
-    label: 'Fixed Errors',
-    accent: 'text-emerald-600',
-    bg: 'bg-emerald-50',
-    icon: CheckCircle2,
-  },
-  { key: 'total', label: 'Total Errors', accent: 'text-blue-600', bg: 'bg-blue-50', icon: Bug },
-  {
-    key: 'projects',
-    label: 'Projects',
-    accent: 'text-violet-600',
-    bg: 'bg-violet-50',
-    icon: FolderGit2,
-  },
-]
-
 /** Keywords in skip_reason that indicate the error still needs human attention. */
 const ATTENTION_KEYWORDS =
   /\b(attention|review|look\s?at|investigate|check|revisit|todo|reopen|urgent|important|manual|needs?\s?fix)\b/i
 
 /**
- * Derive display status from fixed/skipped booleans.
- * A skipped error whose skip_reason contains attention keywords is treated as open.
+ * Derive display status from fixed/skipped booleans and GitHub issue state.
+ * Priority: fixed > GitHub issue closed > skipped (with attention keyword check) > open.
+ * An error marked fixed always shows as fixed, even if the GitHub issue is also closed.
  */
 function deriveStatus(error) {
   if (error.fixed) return 'fixed'
+  if (error.github_issue_state === 'closed') return 'closed'
   if (error.skipped) {
     if (error.skip_reason && ATTENTION_KEYWORDS.test(error.skip_reason)) return 'open'
     return 'skipped'
@@ -103,31 +84,24 @@ function MetricsStrip({ errors }) {
   const fixedCount = errors.filter(e => deriveStatus(e) === 'fixed').length
   const projectCount = new Set(errors.map(e => e.project)).size
 
-  const valueMap = {
-    open: openCount,
-    fixed: fixedCount,
-    total: errors.length,
-    projects: projectCount,
-  }
+  const metrics = [
+    { label: 'Open', value: openCount },
+    { label: 'Fixed', value: fixedCount },
+    { label: 'Total', value: errors.length },
+    { label: 'Projects', value: projectCount },
+  ]
 
   return (
-    <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-      {METRIC_CARDS.map(({ key, label, accent, bg, icon: Icon }, index) => (
-        <motion.div
-          key={key}
-          {...staggerChildMount(index, 0.07)}
-          className="rounded-xl border border-gray-200 bg-white p-4"
-        >
-          <div className="mb-2 flex items-center justify-between">
-            <span className="text-xs font-medium uppercase tracking-wider text-gray-500">
-              {label}
-            </span>
-            <div className={`rounded-lg p-1.5 ${bg}`}>
-              <Icon className={`h-4 w-4 ${accent}`} />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-gray-900">{valueMap[key]}</p>
-        </motion.div>
+    <div className="mb-8 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-200 lg:grid-cols-4">
+      {metrics.map(({ label, value }) => (
+        <div key={label} className="bg-white px-6 py-5">
+          <p className="text-[11px] font-semibold uppercase tracking-widest text-gray-400">
+            {label}
+          </p>
+          <p className="mt-1 text-2xl font-bold tabular-nums tracking-tight text-gray-900">
+            {value}
+          </p>
+        </div>
       ))}
     </div>
   )
@@ -321,8 +295,31 @@ export default function Errors() {
     return () => supabase.removeChannel(subscription)
   }, [profile])
 
+  const syncGithubIssueStates = async () => {
+    try {
+      await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/sync-issue-states`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({}),
+        }
+      )
+    } catch {
+      // Best-effort sync — don't block the UI
+    }
+  }
+
   const loadErrors = async () => {
     setLoading(true)
+
+    // Sync GitHub issue states in background before fetching
+    await syncGithubIssueStates()
+
     const { data } = await supabase
       .from('client_errors')
       .select('*')
@@ -382,7 +379,7 @@ export default function Errors() {
   )
 
   const countByStatus = useMemo(() => {
-    const counts = { open: 0, fixed: 0, skipped: 0 }
+    const counts = { open: 0, closed: 0, fixed: 0, skipped: 0 }
     errors.forEach(e => {
       counts[deriveStatus(e)]++
     })
@@ -406,7 +403,7 @@ export default function Errors() {
   const emptyMessage = activeTab !== 'all' ? `No ${activeTab} errors` : 'No errors found'
 
   return (
-    <motion.div {...pageTransition} className="min-h-screen bg-gray-50 pb-20 pt-28 md:pt-36">
+    <motion.div {...pageTransition}>
       <Seo
         title="Error Tracker"
         description="Client-side error monitoring."
@@ -414,125 +411,103 @@ export default function Errors() {
         noIndex
       />
 
-      <div className="mx-auto max-w-6xl px-6">
-        {/* Header */}
-        <header className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50">
-              <Bug className="h-5 w-5 text-red-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Error Tracker</h1>
-              <p className="text-sm text-gray-500">
-                {errors.length} error{errors.length !== 1 ? 's' : ''} across all projects
-              </p>
-            </div>
-          </div>
+      {/* Header */}
+      <header className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-400">
+            {errors.length} error{errors.length !== 1 ? 's' : ''} across all projects
+          </p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+            Error Tracker
+          </h1>
+        </div>
+        <button
+          onClick={loadErrors}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900"
+        >
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
+      </header>
 
-          <div className="flex items-center gap-2">
-            <a
-              href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </a>
-            <a
-              href="/admin"
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <Settings className="h-4 w-4" />
-              Admin
-            </a>
-            <button
-              onClick={loadErrors}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-          </div>
-        </header>
+      {/* Metrics */}
+      <MetricsStrip errors={errors} />
 
-        {/* Metrics */}
-        <MetricsStrip errors={errors} />
-
-        {/* Filters */}
-        <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex gap-1 rounded-xl border border-gray-200 bg-gray-100 p-1">
-            {STATUS_TABS.map(tabId => {
-              const isActive = activeTab === tabId
-              const tabLabel = tabId === 'all' ? 'All' : STATUS_CONFIG[tabId].label
-              return (
-                <button
-                  key={tabId}
-                  onClick={() => setActiveTab(tabId)}
-                  className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-white text-gray-900 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-900'
-                  }`}
-                >
-                  {tabLabel}
-                  {tabId !== 'all' && (
-                    <span
-                      className={`rounded-full px-1.5 py-0.5 text-xs ${
-                        isActive ? 'bg-gray-100 text-gray-600' : 'bg-gray-200 text-gray-500'
-                      }`}
-                    >
-                      {countByStatus[tabId]}
-                    </span>
-                  )}
-                </button>
-              )
-            })}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                placeholder="Search errors..."
-                className="w-56 rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
-              />
-            </div>
-            {projects.length > 2 && (
-              <select
-                value={projectFilter}
-                onChange={e => setProjectFilter(e.target.value)}
-                className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-700 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+      {/* Filters */}
+      <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="inline-flex rounded-lg border border-gray-200 bg-gray-200 p-px">
+          {STATUS_TABS.map(tabId => {
+            const isActive = activeTab === tabId
+            const tabLabel = tabId === 'all' ? 'All' : STATUS_CONFIG[tabId].label
+            return (
+              <button
+                key={tabId}
+                onClick={() => setActiveTab(tabId)}
+                className={`flex items-center gap-1.5 rounded-[7px] px-4 py-2 text-sm font-medium transition-all ${
+                  isActive
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
               >
-                {projects.map(projectName => (
-                  <option key={projectName} value={projectName}>
-                    {projectName === 'all' ? 'All Projects' : projectName}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+                {tabLabel}
+                {tabId !== 'all' && (
+                  <span
+                    className={`rounded-full px-1.5 py-0.5 text-[11px] tabular-nums ${
+                      isActive ? 'bg-gray-100 text-gray-600' : 'bg-gray-300/60 text-gray-500'
+                    }`}
+                  >
+                    {countByStatus[tabId]}
+                  </span>
+                )}
+              </button>
+            )
+          })}
         </div>
 
-        {/* Error list */}
-        {loading ? (
-          <div className="flex items-center justify-center py-24">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Search errors..."
+              className="w-56 rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-3 text-sm text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
           </div>
-        ) : visibleErrors.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-gray-300 bg-white py-20 text-center">
-            <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-gray-300" />
-            <p className="text-sm font-medium text-gray-500">{emptyMessage}</p>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {visibleErrors.map(error => (
-              <ErrorCard key={error.id} error={error} />
-            ))}
-          </div>
-        )}
+          {projects.length > 2 && (
+            <select
+              value={projectFilter}
+              onChange={e => setProjectFilter(e.target.value)}
+              className="appearance-none rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 shadow-sm transition-colors hover:border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {projects.map(projectName => (
+                <option key={projectName} value={projectName}>
+                  {projectName === 'all' ? 'All Projects' : projectName}
+                </option>
+              ))}
+            </select>
+          )}
+        </div>
       </div>
+
+      {/* Error list */}
+      {loading ? (
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+        </div>
+      ) : visibleErrors.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-300 bg-white py-20 text-center">
+          <CheckCircle2 className="mx-auto mb-3 h-10 w-10 text-gray-300" />
+          <p className="text-sm font-medium text-gray-500">{emptyMessage}</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visibleErrors.map(error => (
+            <ErrorCard key={error.id} error={error} />
+          ))}
+        </div>
+      )}
     </motion.div>
   )
 }

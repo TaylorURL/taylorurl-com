@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useCallback } from 'react'
 import { supabase } from '@app/lib/supabase'
 
 const AuthContext = createContext(null)
@@ -13,38 +13,46 @@ export function AuthProvider({ children }) {
     setProfile(data)
   }
 
-  useEffect(() => {
-    const initSession = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession()
-        const u = session?.user ?? null
-        setUser(u)
-        if (u) await loadProfile(u.id)
-      } finally {
-        setLoading(false)
-      }
-    }
-    initSession()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      const u = session?.user ?? null
-      setUser(u)
-      if (u) {
-        await loadProfile(u.id)
+  const refreshSession = useCallback(async () => {
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
+      const currentUser = session?.user ?? null
+      setUser(currentUser)
+      if (currentUser) {
+        await loadProfile(currentUser.id)
       } else {
         setProfile(null)
       }
-    })
-
-    return () => subscription.unsubscribe()
+    } catch {
+      setUser(null)
+      setProfile(null)
+    }
   }, [])
+
+  useEffect(() => {
+    const init = async () => {
+      await refreshSession()
+      setLoading(false)
+    }
+    init()
+
+    // Re-check session when tab becomes visible again
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') refreshSession()
+    }
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [refreshSession])
 
   const signIn = async (email, password) => {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (!error && data?.user) {
+      setUser(data.user)
+      await loadProfile(data.user.id)
+    }
     return { data, error }
   }
 
@@ -59,6 +67,7 @@ export function AuthProvider({ children }) {
 
   const signOut = async () => {
     const { error } = await supabase.auth.signOut()
+    setUser(null)
     setProfile(null)
     return { error }
   }

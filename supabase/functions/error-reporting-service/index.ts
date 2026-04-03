@@ -37,7 +37,7 @@ interface ErrorReport {
 function getAdminClient() {
     return createClient(
         Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!,
+        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!,
     )
 }
 
@@ -173,6 +173,7 @@ async function upsertError(supabase: ReturnType<typeof createClient>, report: Er
         github_issue_number: issueCreated ? githubIssue.issueNumber : null,
         github_issue_url: issueCreated ? githubIssue.issueUrl : null,
         github_repo: issueCreated ? githubIssue.repo : null,
+        github_issue_state: issueCreated ? "open" : null,
     })
 
     if (error) throw error
@@ -250,10 +251,62 @@ Deno.serve(async (req) => {
             github_issue_number: githubIssue.issueNumber,
             github_issue_url: githubIssue.issueUrl,
             github_repo: githubIssue.repo,
+            github_issue_state: "open",
             updated_at: new Date().toISOString(),
         }).eq("id", body.id)
 
         return jsonResponse({ created: true, issue: githubIssue }, headers)
+    }
+
+    if (endpoint === "sync-issue-states") {
+        const githubToken = Deno.env.get("GITHUB_TOKEN")
+        if (!githubToken) return errorResponse("GITHUB_TOKEN not set", headers, 500)
+
+        // Fetch errors with linked GitHub issues whose state is stale (null or open)
+        const { data: staleErrors, error: fetchErr } = await supabase
+            .from("client_errors")
+            .select("id, github_repo, github_issue_number, github_issue_state")
+            .not("github_issue_url", "is", null)
+            .not("github_issue_url", "eq", "pending")
+            .not("github_issue_number", "is", null)
+            .or("github_issue_state.is.null,github_issue_state.eq.open")
+            .limit(100)
+
+        if (fetchErr) return errorResponse(fetchErr.message, headers, 500)
+        if (!staleErrors?.length) return jsonResponse({ synced: 0, message: "All issue states up to date" }, headers)
+
+        let syncedCount = 0
+
+        for (const row of staleErrors) {
+            try {
+                const response = await fetch(
+                    `${GITHUB_API_BASE}/repos/${row.github_repo}/issues/${row.github_issue_number}`,
+                    {
+                        headers: {
+                            "Authorization": `Bearer ${githubToken}`,
+                            "Accept": "application/vnd.github+json",
+                        },
+                    }
+                )
+
+                if (!response.ok) continue
+
+                const issue = await response.json()
+                const issueState = issue.state as string
+
+                if (issueState !== row.github_issue_state) {
+                    await supabase
+                        .from("client_errors")
+                        .update({ github_issue_state: issueState, updated_at: new Date().toISOString() })
+                        .eq("id", row.id)
+                    syncedCount++
+                }
+            } catch {
+                // Skip individual failures — best-effort sync
+            }
+        }
+
+        return jsonResponse({ synced: syncedCount, checked: staleErrors.length }, headers)
     }
 
     if (endpoint !== "report-batch") {

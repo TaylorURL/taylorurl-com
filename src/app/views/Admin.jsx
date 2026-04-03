@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import {
   Globe,
   Users,
@@ -10,7 +10,6 @@ import {
   Save,
   X,
   Loader2,
-  LogOut,
   RefreshCw,
   ExternalLink,
   CheckCircle2,
@@ -18,8 +17,6 @@ import {
   Clock,
   XCircle,
   Shield,
-  LayoutDashboard,
-  Bug,
   Eye,
   BarChart3,
   Activity,
@@ -75,22 +72,17 @@ const ROLE_OPTIONS = ['client', 'staff', 'admin']
 const EMPTY_SITE = { name: '', domain: '', status: 'development', notes: '', user_id: '' }
 
 const INPUT_CLASS =
-  'w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20'
+  'w-full appearance-none rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 shadow-sm transition-colors focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20'
 const HEADER_BTN =
-  'inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50'
+  'inline-flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3.5 py-2 text-sm font-medium text-gray-600 transition-colors hover:border-gray-300 hover:text-gray-900'
 const PRIMARY_BTN =
   'inline-flex items-center gap-1.5 rounded-lg bg-gray-900 text-sm font-medium text-white shadow-sm transition-colors hover:bg-gray-800 disabled:opacity-50'
 const TH_CLASS =
-  'whitespace-nowrap px-5 py-3 text-xs font-medium uppercase tracking-wide text-gray-500'
+  'whitespace-nowrap px-5 py-3 text-[11px] font-semibold uppercase tracking-widest text-gray-400'
 
 const TAB_ITEMS = [
   { id: 'websites', label: 'Websites', icon: Globe },
   { id: 'users', label: 'Users', icon: Users },
-]
-
-const NAV_LINKS = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/errors', label: 'Errors', icon: Bug },
 ]
 
 /** Compact stat display for website table cells */
@@ -149,7 +141,7 @@ function StatusBadge({ status }) {
 }
 
 export default function Admin() {
-  const { user, profile, signOut, isAdmin, isStaff } = useAuth()
+  const { user, profile, isAdmin, isStaff } = useAuth()
   const navigate = useNavigate()
   const toast = useToast()
 
@@ -165,28 +157,42 @@ export default function Admin() {
 
   const loadData = useCallback(async () => {
     setLoading(true)
-    const [{ data: sites }, { data: profiles }] = await Promise.all([
-      supabase
-        .from('websites')
-        .select('*, website_stats(*), profiles(full_name)')
-        .order('created_at', { ascending: false }),
-      supabase
-        .from('profiles')
-        .select('id, full_name, role, created_at')
-        .order('created_at', { ascending: false }),
-    ])
-    setWebsites(sites ?? [])
-    setUsers(profiles ?? [])
-    setLoading(false)
+    try {
+      const [{ data: sites }, { data: profiles }] = await Promise.all([
+        supabase
+          .from('websites')
+          .select('*, website_stats(*)')
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('profiles')
+          .select('id, full_name, role, created_at')
+          .order('created_at', { ascending: false }),
+      ])
+
+      // Map profile names onto websites since there's no FK join
+      const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
+      const sitesWithOwner = (sites ?? []).map(site => ({
+        ...site,
+        profiles: profileMap[site.user_id] ?? null,
+      }))
+
+      setWebsites(sitesWithOwner)
+      setUsers(profiles ?? [])
+    } catch {
+      toast('Failed to load data', 'error')
+    } finally {
+      setLoading(false)
+    }
   }, [])
 
   useEffect(() => {
+    if (!profile) return
     if (!isStaff() && !isAdmin()) {
       navigate('/dashboard', { replace: true })
       return
     }
     loadData()
-  }, [])
+  }, [profile])
 
   const handleAdd = async () => {
     if (!addForm.name || !addForm.domain) {
@@ -267,103 +273,78 @@ export default function Admin() {
     }
   }
 
-  const handleSignOut = async () => {
-    await signOut()
-    toast('Signed out')
-  }
-
   const cancelAdd = () => {
     setShowAdd(false)
     setAddForm({ ...EMPTY_SITE })
   }
 
   return (
-    <div className="min-h-screen bg-gray-50/80 pb-20 pt-28 md:pt-36">
+    <>
       <Seo title="Admin Panel" description="Manage websites and users." path="/admin" />
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* --- Header --- */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gray-900">
-              <Shield className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-xl font-semibold tracking-tight text-gray-900">Admin Panel</h1>
-              <p className="text-sm text-gray-500">Manage client websites and users</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {NAV_LINKS.map(({ to, label, icon: Icon }) => (
-              <Link key={to} to={to} className={HEADER_BTN}>
-                <Icon className="h-3.5 w-3.5" />
-                {label}
-              </Link>
-            ))}
-            <button onClick={loadData} className={HEADER_BTN}>
-              <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
-            <button onClick={handleSignOut} className={HEADER_BTN}>
-              <LogOut className="h-3.5 w-3.5" />
-              Sign Out
-            </button>
-          </div>
+      {/* Header */}
+      <div className="mb-10 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-sm font-medium text-gray-400">Administration</p>
+          <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">
+            Admin Panel
+          </h1>
         </div>
-
-        {/* --- Tab Switcher --- */}
-        <div className="mb-6 inline-flex rounded-lg border border-gray-200 bg-gray-100 p-1 shadow-sm">
-          {TAB_ITEMS.map(({ id, label, icon: Icon }) => (
-            <button
-              key={id}
-              onClick={() => setTab(id)}
-              className={`flex items-center gap-2 rounded-md px-5 py-2 text-sm font-medium transition-all ${
-                tab === id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* --- Content --- */}
-        {loading ? (
-          <div className="flex items-center justify-center py-32">
-            <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-          </div>
-        ) : tab === 'websites' ? (
-          <WebsitesTab
-            websites={websites}
-            users={users}
-            showAdd={showAdd}
-            setShowAdd={setShowAdd}
-            addForm={addForm}
-            setAddForm={setAddForm}
-            editingId={editingId}
-            editForm={editForm}
-            setEditForm={setEditForm}
-            saving={saving}
-            onAdd={handleAdd}
-            onEdit={handleEdit}
-            onSave={handleSave}
-            onDelete={handleDelete}
-            onCancelEdit={() => setEditingId(null)}
-            onCancelAdd={cancelAdd}
-          />
-        ) : (
-          <UsersTab
-            users={users}
-            currentUserId={user?.id}
-            isCurrentUserAdmin={isAdmin()}
-            onRoleChange={handleRoleChange}
-          />
-        )}
+        <button onClick={loadData} className={HEADER_BTN}>
+          <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
+          Refresh
+        </button>
       </div>
-    </div>
+
+      {/* Tab Switcher */}
+      <div className="mb-6 inline-flex rounded-lg border border-gray-200 bg-gray-200 p-px">
+        {TAB_ITEMS.map(({ id, label, icon: Icon }) => (
+          <button
+            key={id}
+            onClick={() => setTab(id)}
+            className={`flex items-center gap-2 rounded-[7px] px-5 py-2 text-sm font-medium transition-all ${
+              tab === id ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900'
+            }`}
+          >
+            <Icon className="h-4 w-4" />
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* --- Content --- */}
+      {loading ? (
+        <div className="flex items-center justify-center py-32">
+          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+        </div>
+      ) : tab === 'websites' ? (
+        <WebsitesTab
+          websites={websites}
+          users={users}
+          showAdd={showAdd}
+          setShowAdd={setShowAdd}
+          addForm={addForm}
+          setAddForm={setAddForm}
+          editingId={editingId}
+          editForm={editForm}
+          setEditForm={setEditForm}
+          saving={saving}
+          onAdd={handleAdd}
+          onEdit={handleEdit}
+          onSave={handleSave}
+          onDelete={handleDelete}
+          onCancelEdit={() => setEditingId(null)}
+          onCancelAdd={cancelAdd}
+        />
+      ) : (
+        <UsersTab
+          users={users}
+          currentUserId={user?.id}
+          isCurrentUserAdmin={isAdmin()}
+          onRoleChange={handleRoleChange}
+        />
+      )}
+    </>
   )
 }
 
