@@ -35,10 +35,11 @@ interface ErrorReport {
 }
 
 function getAdminClient() {
-    return createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!,
-    )
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+    if (!serviceRoleKey) {
+        throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set — refusing to fall back to anon key")
+    }
+    return createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey)
 }
 
 function truncate(value: string | undefined | null, maxLength: number): string | null {

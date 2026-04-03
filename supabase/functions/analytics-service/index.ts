@@ -6,10 +6,11 @@ const UPTIME_TIMEOUT_MS = 10_000
 const ACTIVE_VISITOR_WINDOW_MINUTES = 5
 
 function getAdminClient() {
-    return createClient(
-        Deno.env.get("SUPABASE_URL")!,
-        Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!,
-    )
+    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
+    if (!serviceRoleKey) {
+        throw new Error("SUPABASE_SERVICE_ROLE_KEY is not set — refusing to fall back to anon key")
+    }
+    return createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey)
 }
 
 async function computeVisitorHash(ip: string, userAgent: string): Promise<string> {
