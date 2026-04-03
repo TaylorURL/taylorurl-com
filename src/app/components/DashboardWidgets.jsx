@@ -31,8 +31,10 @@ export function aggregateWebsiteStats(websites) {
       if (siteStats) {
         acc.visitors += siteStats.visitors_now || 0
         acc.pageViews += siteStats.page_views_30d || 0
-        acc.uptimeSum += siteStats.uptime_pct || 0
-        acc.uptimeCount++
+        if (site.status === 'active' && siteStats.uptime_pct != null) {
+          acc.uptimeSum += siteStats.uptime_pct
+          acc.uptimeCount++
+        }
       }
       return acc
     },
