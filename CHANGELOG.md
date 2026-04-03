@@ -6,6 +6,10 @@ All notable changes to TaylorURL will be documented in this file.
 
 - TaylorURL Release v4.3.8
 
+## [4.3.8] - 2026-04-03
+
+- TaylorURL Release v4.3.8
+
 ## [4.3.7] - 2026-04-03
 
 - Fix uptime percentage to only include active sites with non-null values in dashboard aggregation
