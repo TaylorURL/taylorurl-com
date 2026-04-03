@@ -75,14 +75,14 @@ export default function DashboardSidebar({ isOpen, onClose }) {
   const sidebarContent = (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 px-5">
-        <Link to="/" className="flex items-center">
-          <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-7 w-auto" />
+      <div className="relative flex shrink-0 flex-col items-center justify-center border-b border-gray-200 py-6">
+        <Link to="/" className="flex items-center justify-center">
+          <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-56 w-auto" />
         </Link>
         {/* Mobile close button */}
         <button
           onClick={onClose}
-          className="rounded-md p-1 text-gray-400 hover:text-gray-600 lg:hidden"
+          className="absolute right-3 top-3 rounded-md p-1 text-gray-400 hover:text-gray-600 lg:hidden"
           aria-label="Close sidebar"
         >
           <X className="h-5 w-5" />
