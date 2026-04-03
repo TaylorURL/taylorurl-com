@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { motion } from 'framer-motion'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, ChevronUp, ChevronDown } from 'lucide-react'
 import Seo from '@components/Seo'
 import { useAuth } from '@app/contexts/AuthContext'
 import { useToast } from '@components/Toast'
@@ -14,6 +14,21 @@ import {
 } from '@components/DashboardWidgets'
 
 const INITIAL_STATS = { totalOnlineNow: 0, totalPageViews: 0, avgUptime: 0, totalSites: 0 }
+
+function SortButton({ label, active, dir, onClick }) {
+  const Icon = active ? (dir === 'asc' ? ChevronUp : ChevronDown) : null
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-0.5 rounded px-2 py-0.5 text-[11px] font-medium transition-colors ${
+        active ? 'bg-gray-200 text-gray-800' : 'text-gray-400 hover:text-gray-600'
+      }`}
+    >
+      {label}
+      {Icon && <Icon className="h-3 w-3" />}
+    </button>
+  )
+}
 
 function getTimeOfDayGreeting() {
   const hour = new Date().getHours()
@@ -29,6 +44,8 @@ export default function Dashboard() {
   const [stats, setStats] = useState(INITIAL_STATS)
   const [errorCountsByDomain, setErrorCountsByDomain] = useState({})
   const [loading, setLoading] = useState(true)
+  const [sortKey, setSortKey] = useState('name')
+  const [sortDir, setSortDir] = useState('asc')
 
   const displayName =
     profile?.full_name || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Client'
@@ -74,6 +91,42 @@ export default function Dashboard() {
       setErrorCountsByDomain(counts)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const sortedWebsites = useMemo(() => {
+    const getValue = site => {
+      const s = site.website_stats?.[0]
+      switch (sortKey) {
+        case 'name':
+          return (site.name || '').toLowerCase()
+        case 'status':
+          return site.status || ''
+        case 'online':
+          return s?.visitors_now ?? -1
+        case 'views':
+          return s?.page_views_30d ?? -1
+        case 'uptime':
+          return s?.uptime_pct ?? -1
+        case 'errors':
+          return errorCountsByDomain[site.domain] || 0
+        default:
+          return ''
+      }
+    }
+    return [...websites].sort((a, b) => {
+      const av = getValue(a)
+      const bv = getValue(b)
+      const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv
+      return sortDir === 'asc' ? cmp : -cmp
+    })
+  }, [websites, sortKey, sortDir, errorCountsByDomain])
+
+  function handleSort(key) {
+    if (sortKey === key) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
+    else {
+      setSortKey(key)
+      setSortDir('asc')
     }
   }
 
@@ -133,7 +186,7 @@ export default function Dashboard() {
 
           {/* Websites */}
           <section>
-            <div className="mb-4 flex items-baseline justify-between">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-[15px] font-semibold text-gray-900">Websites</h2>
               <span className="text-sm text-gray-400">
                 {websites.length} site{websites.length !== 1 ? 's' : ''}
@@ -144,12 +197,45 @@ export default function Dashboard() {
               <EmptyState />
             ) : (
               <div className="overflow-hidden rounded-xl border border-gray-200">
-                {websites.map((site, index) => (
+                {/* Sort header */}
+                <div className="flex items-center justify-between border-b border-gray-100 bg-gray-50 px-5 py-2">
+                  <div className="flex gap-2">
+                    {[
+                      { key: 'name', label: 'Name' },
+                      { key: 'status', label: 'Status' },
+                    ].map(({ key, label }) => (
+                      <SortButton
+                        key={key}
+                        label={label}
+                        active={sortKey === key}
+                        dir={sortDir}
+                        onClick={() => handleSort(key)}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    {[
+                      { key: 'online', label: 'Online' },
+                      { key: 'views', label: 'Views' },
+                      { key: 'uptime', label: 'Uptime' },
+                      { key: 'errors', label: 'Errors' },
+                    ].map(({ key, label }) => (
+                      <SortButton
+                        key={key}
+                        label={label}
+                        active={sortKey === key}
+                        dir={sortDir}
+                        onClick={() => handleSort(key)}
+                      />
+                    ))}
+                  </div>
+                </div>
+                {sortedWebsites.map((site, index) => (
                   <WebsiteRow
                     key={site.id}
                     site={site}
                     errorCount={errorCountsByDomain[site.domain] || 0}
-                    isLast={index === websites.length - 1}
+                    isLast={index === sortedWebsites.length - 1}
                   />
                 ))}
               </div>

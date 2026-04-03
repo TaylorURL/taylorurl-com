@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   Globe,
   CheckCircle2,
@@ -76,6 +76,7 @@ function InlineMetric({ label, value, highlight }) {
 
 /** A single website as a table-like row inside a bordered container. */
 export function WebsiteRow({ site, errorCount = 0, isLast }) {
+  const navigate = useNavigate()
   const siteStats = site.website_stats?.[0]
   const statusConfig = STATUS_CONFIG[site.status] || STATUS_CONFIG.active
   const uptimeDisplay = siteStats?.uptime_pct != null ? `${siteStats.uptime_pct}%` : '--'
@@ -83,7 +84,8 @@ export function WebsiteRow({ site, errorCount = 0, isLast }) {
 
   return (
     <div
-      className={`flex flex-col gap-3 bg-white px-5 py-4 transition-colors hover:bg-gray-50/80 sm:flex-row sm:items-center sm:justify-between ${isLast ? '' : 'border-b border-gray-100'}`}
+      onClick={() => navigate(`/dashboard/site/${site.id}`)}
+      className={`flex cursor-pointer flex-col gap-3 bg-white px-5 py-4 transition-colors hover:bg-gray-50/80 sm:flex-row sm:items-center sm:justify-between ${isLast ? '' : 'border-b border-gray-100'}`}
     >
       {/* Left: identity + status */}
       <div className="flex items-center gap-3.5 sm:min-w-0 sm:flex-1">
@@ -109,6 +111,7 @@ export function WebsiteRow({ site, errorCount = 0, isLast }) {
             href={`https://${site.domain}`}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={e => e.stopPropagation()}
             className="inline-flex items-center gap-1 text-xs text-gray-400 transition-colors hover:text-brand-600"
           >
             {site.domain}
