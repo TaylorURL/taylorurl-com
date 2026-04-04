@@ -17,7 +17,6 @@ const PROJECT_TO_GITHUB_REPO: Record<string, string> = {
     "taylorurl.com": "taylorurl-com",
     "setxfootball.com": "setxfootball-com",
     "kildred.com": "kildred-com",
-    "charliets.com": "charliets",
 }
 
 interface ErrorReport {

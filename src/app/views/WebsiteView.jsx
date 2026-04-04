@@ -144,6 +144,11 @@ export default function WebsiteView() {
     [errors, errorTab]
   )
 
+  const dailyViews = useMemo(() => buildDailyViews(pageViews), [pageViews])
+  const uptimeHistory = useMemo(() => buildUptimeHistory(uptimeChecks), [uptimeChecks])
+  const topPages = useMemo(() => buildTopPages(pageViews), [pageViews])
+  const uniqueVisitors = useMemo(() => new Set(pageViews.map(r => r.visitor_id)).size, [pageViews])
+
   useEffect(() => {
     if (user?.id && id) fetchData()
   }, [user?.id, id])
@@ -189,10 +194,6 @@ export default function WebsiteView() {
   }
 
   const stats = site?.website_stats?.[0]
-  const dailyViews = useMemo(() => buildDailyViews(pageViews), [pageViews])
-  const uptimeHistory = useMemo(() => buildUptimeHistory(uptimeChecks), [uptimeChecks])
-  const topPages = useMemo(() => buildTopPages(pageViews), [pageViews])
-  const uniqueVisitors = useMemo(() => new Set(pageViews.map(r => r.visitor_id)).size, [pageViews])
   const uptimePct = stats?.uptime_pct != null ? `${stats.uptime_pct}%` : '--'
   const statusDot = STATUS_DOT[site?.status] || STATUS_DOT.active
   const maxViews = Math.max(...topPages.map(p => p.count), 1)
