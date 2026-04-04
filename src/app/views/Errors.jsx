@@ -95,7 +95,7 @@ export default function Errors() {
       .subscribe()
 
     return () => supabase.removeChannel(subscription)
-  }, [profile])
+  }, [profile, navigate])
 
   const syncGithubIssueStates = async () => {
     try {
