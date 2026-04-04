@@ -40,7 +40,7 @@ export const ERROR_STATUS_CONFIG = {
 }
 
 /** Keywords in skip_reason that indicate the error still needs human attention. */
-const ATTENTION_KEYWORDS =
+export const ATTENTION_KEYWORDS =
   /\b(attention|review|look\s?at|investigate|check|revisit|todo|reopen|urgent|important|manual|needs?\s?fix)\b/i
 
 /**

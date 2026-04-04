@@ -12,7 +12,7 @@ import {
   SkipForward,
 } from 'lucide-react'
 import Seo from '@components/Seo'
-import { ErrorCard, ERROR_STATUS_CONFIG, deriveErrorStatus } from '@components/ErrorCard'
+import { ErrorCard, ERROR_STATUS_CONFIG, ATTENTION_KEYWORDS, deriveErrorStatus } from '@components/ErrorCard'
 import { useAuth } from '@app/contexts/AuthContext'
 import { supabase } from '@app/lib/supabase'
 import { pageTransition } from '@constants/animations'
@@ -99,6 +99,8 @@ export default function Errors() {
 
   const syncGithubIssueStates = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
       await fetch(
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/sync-issue-states`,
         {
@@ -106,7 +108,7 @@ export default function Errors() {
           headers: {
             'Content-Type': 'application/json',
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
           body: JSON.stringify({}),
         }
@@ -132,13 +134,12 @@ export default function Errors() {
 
     // Auto-create GitHub issues for "needs attention" errors that don't have one yet
     const attentionWithoutIssue = (data || []).filter(
-      e => e.skipped && !e.github_issue_url && deriveStatus(e) === 'open'
+      e => e.skipped && !e.github_issue_url && e.skip_reason && ATTENTION_KEYWORDS.test(e.skip_reason)
     )
     for (const errorRow of attentionWithoutIssue) {
       try {
-        const { data: session } = await supabase.auth.getSession()
-        const token = session?.session?.access_token
-        if (!token) break
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!session?.access_token) break
         const response = await fetch(
           `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/create-attention-issue`,
           {
@@ -146,7 +147,7 @@ export default function Errors() {
             headers: {
               'Content-Type': 'application/json',
               apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+              Authorization: `Bearer ${session.access_token}`,
             },
             body: JSON.stringify({ id: errorRow.id }),
           }
