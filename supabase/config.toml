@@ -1,0 +1,18 @@
+# Per-function runtime config. Mirrored by `supabase functions deploy`.
+#
+# Both services are public by design:
+#   - `analytics-service` serves `/beacon.js` via a plain <script src> on every
+#     tracked site (browsers can't attach an apikey to a script tag), and its
+#     `/track` / `/heartbeat` endpoints are called from third-party origins
+#     with the anon key in the body.
+#   - `error-reporting-service` receives client-side crash reports from every
+#     tracked site over the same constraints.
+#
+# Without `verify_jwt = false`, the Supabase gateway returns 401 for the
+# <script src> fetch and the entire analytics pipeline silently breaks.
+
+[functions.analytics-service]
+verify_jwt = false
+
+[functions.error-reporting-service]
+verify_jwt = false
