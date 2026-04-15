@@ -289,9 +289,12 @@ Deno.serve(async (req) => {
         const functionUrl = `${supabaseUrl}/functions/v1`
         const apiKey = Deno.env.get("SUPABASE_ANON_KEY") ?? ""
 
+        // replaceAll, not replace — placeholders also appear in comments, and a
+        // single .replace() would only swap the first occurrence (leaving the
+        // actual `var BASE_URL = '__BASE_URL__'` declaration broken).
         const beaconScript = BEACON_SOURCE
-            .replace("__BASE_URL__", functionUrl)
-            .replace("__API_KEY__", apiKey)
+            .replaceAll("__BASE_URL__", functionUrl)
+            .replaceAll("__API_KEY__", apiKey)
 
         return new Response(beaconScript, {
             headers: {
