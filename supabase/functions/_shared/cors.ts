@@ -17,6 +17,13 @@ const ALLOWED_ORIGINS = [
     "https://www.charliets.com",
     "https://scapeclient.com",
     "https://www.scapeclient.com",
+    "https://hollingsheadharbor.com",
+    "https://www.hollingsheadharbor.com",
+    "https://dickinsonbayoufleeting.com",
+    "https://www.dickinsonbayoufleeting.com",
+    // setxfootball.org is an alias — same project as setxfootball.com
+    "https://setxfootball.org",
+    "https://www.setxfootball.org",
 ]
 
 const DEFAULT_ORIGIN_INDEX = 2

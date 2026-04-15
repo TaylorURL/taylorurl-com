@@ -1,5 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2"
 import { getCorsHeaders, handleOptions, jsonResponse, errorResponse } from "../_shared/cors.ts"
+import { BEACON_SOURCE } from "./beacon-source.ts"
 
 const DEDUP_WINDOW_SECONDS = 30
 const UPTIME_TIMEOUT_MS = 10_000
@@ -281,11 +282,17 @@ Deno.serve(async (req) => {
     const url = new URL(req.url)
     const endpoint = url.pathname.split("/").pop()
 
-    // Serve beacon script via GET — no auth required
+    // Serve the full-SDK beacon script via GET — no auth required.
+    // Bot/crawler traffic can hit this too; caching softens repeat hits.
     if (req.method === "GET" && endpoint === "beacon.js") {
-        const FUNCTION_URL = `https://${Deno.env.get("SUPABASE_URL")!.replace("https://", "").split(".")[0]}.supabase.co/functions/v1/analytics-service`
-        const API_KEY = Deno.env.get("SUPABASE_ANON_KEY") ?? ""
-        const beaconScript = `(function(){\"use strict\";var B=\"${FUNCTION_URL}\",K=\"${API_KEY}\",I=30000,s=document.currentScript,p=s&&s.getAttribute(\"data-project\");if(!p)return;function post(e,b){fetch(B+\"/\"+e,{method:\"POST\",headers:{\"Content-Type\":\"application/json\",\"apikey\":K,\"Authorization\":\"Bearer \"+K},body:JSON.stringify(b),keepalive:true}).catch(function(){});}function track(){post(\"track\",{project:p,page_url:location.pathname+location.search,referrer:document.referrer||null});}function heartbeat(){post(\"heartbeat\",{project:p});}if(document.readyState===\"loading\"){document.addEventListener(\"DOMContentLoaded\",track);}else{track();}setInterval(heartbeat,I);})();`
+        const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? ""
+        const functionUrl = `${supabaseUrl}/functions/v1`
+        const apiKey = Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+
+        const beaconScript = BEACON_SOURCE
+            .replace("__BASE_URL__", functionUrl)
+            .replace("__API_KEY__", apiKey)
+
         return new Response(beaconScript, {
             headers: {
                 "Content-Type": "application/javascript",

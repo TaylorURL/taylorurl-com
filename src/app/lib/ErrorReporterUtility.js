@@ -1,334 +1,83 @@
 import { Component } from 'react'
 
-const REPORTING_ENDPOINT =
-  'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/error-reporting-service/report-batch'
-
-const DEFAULT_BATCH_SIZE = 10
-const DEFAULT_FLUSH_INTERVAL_MS = 30_000
-const MAX_QUEUE_SIZE = 100
-const DEDUP_WINDOW_MS = 60_000
-const HTTP_ERROR_THRESHOLD = 400
-
-const BROWSER_PATTERNS = [
-  [/Edg\/(\d+)/, 'Edge'],
-  [/OPR\/(\d+)/, 'Opera'],
-  [/Chrome\/(\d+)/, 'Chrome'],
-  [/Firefox\/(\d+)/, 'Firefox'],
-  [/Version\/(\d+).*Safari/, 'Safari'],
-]
-
-const OS_PATTERNS = [
-  [/Windows NT 10/, 'Windows 10/11'],
-  [/Mac OS X (\d+[._]\d+)/, 'macOS'],
-  [/Android (\d+)/, 'Android'],
-  [/iPhone OS (\d+)/, 'iOS'],
-  [/Linux/, 'Linux'],
-]
-
-/** @param {string} userAgent */
-function parseBrowserFromUserAgent(userAgent) {
-  for (const [pattern, name] of BROWSER_PATTERNS) {
-    const match = userAgent.match(pattern)
-    if (match) return `${name} ${match[1]}`
-  }
-  return 'Unknown'
-}
-
-/** @param {string} userAgent */
-function parseOperatingSystemFromUserAgent(userAgent) {
-  for (const [pattern, name] of OS_PATTERNS) {
-    const match = userAgent.match(pattern)
-    if (match) return match[1] ? `${name} ${match[1].replace(/_/g, '.')}` : name
-  }
-  return 'Unknown'
-}
-
 /**
- * Generates a simple hash string for client-side deduplication.
- * Not cryptographic — just enough to identify duplicate errors within a short window.
- * @param {string} project
- * @param {string} message
- * @param {string|null} file
- * @param {number|null} line
- * @returns {string}
+ * Thin shim that preserves the legacy ErrorReporterUtility public API but
+ * delegates all work to the TaylorURL beacon (window.__taylorURL).
+ *
+ * The beacon is loaded via the <script src="…/analytics-service/beacon.js">
+ * tag in public/index.html — it installs window.onerror, fetch/XHR wrappers,
+ * and unhandledrejection handlers once and exposes window.__taylorURL for
+ * React ErrorBoundary wiring.
+ *
+ * Keeping this shim means existing imports (`ErrorReporterUtility`,
+ * `ErrorBoundary`) keep compiling unchanged while the actual reporter lives
+ * in a single place (TaylorURL's beacon) that every site shares.
+ *
+ * Canonical copy lives in taylorurl-com/supabase/functions/analytics-service/beacon-source.js.
+ * All sites should mirror THIS shim verbatim.
  */
-function generateClientDedupKey(project, message, file, line) {
-  return `${project}|${message}|${file ?? ''}|${line ?? ''}`
+
+const PENDING_TIMEOUT_MS = 10_000
+const POLL_INTERVAL_MS = 100
+
+const pendingCalls = []
+let drainTimer = null
+
+function getBeacon() {
+  return typeof window !== 'undefined' ? window.__taylorURL : null
 }
 
-/** @type {{ project: string, endpoint: string, batchSize: number, flushIntervalMs: number, enabled: boolean } | null} */
-let configuration = null
-
-/** @type {Array<Record<string, unknown>>} */
-let errorQueue = []
-
-/** @type {Map<string, { count: number, lastSeen: number }>} */
-const recentErrorDedupMap = new Map()
-
-let flushTimerId = null
-let isFlushing = false
-
-function buildErrorPayload(message, source, line, column, componentStack) {
-  const userAgent = navigator.userAgent ?? ''
-  return {
-    project: configuration.project,
-    error_message: String(message ?? 'Unknown error'),
-    source_file: source ?? null,
-    line_number: typeof line === 'number' ? line : null,
-    column_number: typeof column === 'number' ? column : null,
-    component_stack: componentStack ?? null,
-    url: window.location.href,
-    user_agent: userAgent,
-    browser: parseBrowserFromUserAgent(userAgent),
-    os: parseOperatingSystemFromUserAgent(userAgent),
-  }
-}
-
-function enqueueError(payload) {
-  if (!configuration?.enabled) return
-
-  const dedupKey = generateClientDedupKey(
-    payload.project,
-    payload.error_message,
-    payload.source_file,
-    payload.line_number
-  )
-
-  const now = Date.now()
-  const existingDedupEntry = recentErrorDedupMap.get(dedupKey)
-  if (existingDedupEntry && now - existingDedupEntry.lastSeen < DEDUP_WINDOW_MS) {
-    existingDedupEntry.count++
-    existingDedupEntry.lastSeen = now
+function runOrDefer(call) {
+  const beacon = getBeacon()
+  if (beacon) {
+    call(beacon)
     return
   }
-
-  recentErrorDedupMap.set(dedupKey, { count: 1, lastSeen: now })
-
-  if (errorQueue.length >= MAX_QUEUE_SIZE) {
-    errorQueue.shift()
-  }
-  errorQueue.push(payload)
-
-  if (errorQueue.length >= configuration.batchSize) {
-    flush()
-  }
+  pendingCalls.push(call)
+  scheduleDrain()
 }
 
-async function flush() {
-  if (isFlushing || errorQueue.length === 0 || !configuration) return
-
-  isFlushing = true
-  const batch = errorQueue.splice(0, configuration.batchSize)
-  const body = JSON.stringify({ errors: batch })
-
-  try {
-    await fetch(configuration.endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...(configuration.apiKey && {
-          apikey: configuration.apiKey,
-          Authorization: `Bearer ${configuration.apiKey}`,
-        }),
-      },
-      body,
-      keepalive: true,
-    })
-  } catch {
-    // Silently drop — prevent recursive reporting of network failures
-  } finally {
-    isFlushing = false
-  }
-}
-
-/** Extracts the endpoint name from a URL path (e.g. '/functions/v1/verify-password' → 'verify-password'). */
-function extractEndpointFromUrl(url) {
-  try {
-    const pathname = new URL(url, window.location.origin).pathname
-    return pathname.split('/').filter(Boolean).pop() ?? pathname
-  } catch {
-    return url
-  }
-}
-
-function isReportingEndpoint(url) {
-  return typeof url === 'string' && url.includes('error-reporting-service')
-}
-
-/** Auth endpoints return expected 400s (expired tokens, wrong password) — not application errors. */
-function isAuthEndpoint(url) {
-  return typeof url === 'string' && url.includes('/auth/v1/')
-}
-
-/** Wraps window.fetch to capture HTTP error responses (4xx/5xx). */
-function interceptFetch() {
-  const originalFetch = window.fetch
-  window.fetch = async function patchedFetch(...args) {
-    const [input] = args
-    const requestUrl = typeof input === 'string' ? input : (input?.url ?? '')
-
-    if (isReportingEndpoint(requestUrl)) return originalFetch.apply(this, args)
-
-    const response = await originalFetch.apply(this, args)
-    if (response.status >= HTTP_ERROR_THRESHOLD && !isAuthEndpoint(requestUrl)) {
-      const endpointName = extractEndpointFromUrl(requestUrl)
-      const payload = buildErrorPayload(
-        `HTTP ${response.status} ${response.statusText} — ${endpointName}`,
-        requestUrl,
-        null,
-        null,
-        null
-      )
-      enqueueError(payload)
+function scheduleDrain() {
+  if (drainTimer !== null) return
+  const startedAt = Date.now()
+  drainTimer = setInterval(() => {
+    const beacon = getBeacon()
+    if (beacon) {
+      clearInterval(drainTimer)
+      drainTimer = null
+      while (pendingCalls.length) pendingCalls.shift()(beacon)
+    } else if (Date.now() - startedAt > PENDING_TIMEOUT_MS) {
+      clearInterval(drainTimer)
+      drainTimer = null
+      pendingCalls.length = 0
     }
-    return response
-  }
+  }, POLL_INTERVAL_MS)
 }
 
-/** Wraps XMLHttpRequest to capture HTTP error responses (4xx/5xx). */
-function interceptXmlHttpRequest() {
-  const OriginalXhrOpen = XMLHttpRequest.prototype.open
-  XMLHttpRequest.prototype.open = function patchedOpen(method, url, ...rest) {
-    this._errorReporterUrl = typeof url === 'string' ? url : String(url)
-    return OriginalXhrOpen.call(this, method, url, ...rest)
-  }
-
-  const OriginalXhrSend = XMLHttpRequest.prototype.send
-  XMLHttpRequest.prototype.send = function patchedSend(...args) {
-    this.addEventListener('loadend', function onLoadEnd() {
-      if (isReportingEndpoint(this._errorReporterUrl)) return
-      if (isAuthEndpoint(this._errorReporterUrl)) return
-      if (this.status >= HTTP_ERROR_THRESHOLD) {
-        const endpointName = extractEndpointFromUrl(this._errorReporterUrl)
-        const payload = buildErrorPayload(
-          `HTTP ${this.status} ${this.statusText} — ${endpointName}`,
-          this._errorReporterUrl,
-          null,
-          null,
-          null
-        )
-        enqueueError(payload)
-      }
-    })
-    return OriginalXhrSend.apply(this, args)
-  }
-}
-
-function handleWindowError(message, source, lineno, colno, error) {
-  // Prevent recursive reporting if the error involves our own endpoint
-  if (typeof message === 'string' && message.includes('error-reporting-service')) return
-
-  const payload = buildErrorPayload(
-    error?.message ?? message,
-    source,
-    lineno,
-    colno,
-    error?.stack ?? null
-  )
-  enqueueError(payload)
-}
-
-function handleUnhandledRejection(event) {
-  const reason = event.reason
-  const message =
-    reason instanceof Error ? reason.message : String(reason ?? 'Unhandled promise rejection')
-  const stack = reason instanceof Error ? reason.stack : null
-
-  if (message.includes('error-reporting-service')) return
-
-  const payload = buildErrorPayload(message, null, null, null, stack)
-  enqueueError(payload)
-}
-
-function handleVisibilityChange() {
-  if (document.visibilityState === 'hidden') flush()
-}
-
-function startFlushTimer() {
-  stopFlushTimer()
-  flushTimerId = setInterval(flush, configuration?.flushIntervalMs ?? DEFAULT_FLUSH_INTERVAL_MS)
-}
-
-function stopFlushTimer() {
-  if (flushTimerId !== null) {
-    clearInterval(flushTimerId)
-    flushTimerId = null
-  }
-}
-
-/**
- * Cross-project client-side error reporter.
- * Captures browser errors, batches them, and sends to the centralized error-reporting-service.
- *
- * @example
- * ErrorReporterUtility.init({ project: 'mysite.com' })
- */
 const ErrorReporterUtility = {
   /**
-   * Initialize the error reporter. Call once in the app entry point.
-   * @param {{ project: string, endpoint?: string, batchSize?: number, flushIntervalMs?: number, enabled?: boolean }} options
+   * No-op: the beacon auto-initializes from its <script data-project="…"> tag.
+   * Accepted for backwards compatibility with older call sites.
    */
-  init({
-    project,
-    apiKey,
-    endpoint = REPORTING_ENDPOINT,
-    batchSize = DEFAULT_BATCH_SIZE,
-    flushIntervalMs = DEFAULT_FLUSH_INTERVAL_MS,
-    enabled = true,
-  }) {
-    if (configuration) return
+  init() {},
 
-    configuration = { project, apiKey, endpoint, batchSize, flushIntervalMs, enabled }
-
-    if (!enabled) return
-
-    window.addEventListener('error', event => {
-      handleWindowError(event.message, event.filename, event.lineno, event.colno, event.error)
-    })
-    window.addEventListener('unhandledrejection', handleUnhandledRejection)
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    interceptFetch()
-    interceptXmlHttpRequest()
-
-    startFlushTimer()
-  },
-
-  /**
-   * Manually report an error.
-   * @param {Error} error
-   * @param {{ context?: string }} [metadata]
-   */
+  /** Manually report an error. Delegates to the beacon once it's available. */
   reportError(error, metadata) {
-    if (!configuration?.enabled) return
-
-    const payload = buildErrorPayload(error.message, null, null, null, error.stack ?? null)
-    if (metadata?.context) {
-      payload.component_stack = `Context: ${metadata.context}\n${payload.component_stack ?? ''}`
-    }
-    enqueueError(payload)
+    runOrDefer(beacon => beacon.reportError?.(error, metadata))
   },
 
-  /** Force flush all queued errors immediately. */
-  flush,
-
-  /** Tear down all listeners and timers. */
-  destroy() {
-    stopFlushTimer()
-    flush()
-    configuration = null
-    errorQueue = []
-    recentErrorDedupMap.clear()
+  /** Force-flush queued errors. */
+  flush() {
+    runOrDefer(beacon => beacon.flush?.())
   },
+
+  /** No-op: the beacon handlers are installed for the page's lifetime. */
+  destroy() {},
 }
 
 /**
- * React ErrorBoundary that captures render errors and reports them.
- * Wrap your top-level `<App />` with this component.
- *
- * @example
- * <ErrorBoundary fallback={<p>Something went wrong.</p>}>
- *   <App />
- * </ErrorBoundary>
+ * React ErrorBoundary that captures render errors and forwards them to the
+ * beacon. Wrap your top-level <App /> with this.
  */
 class ErrorBoundary extends Component {
   constructor(props) {
@@ -340,19 +89,14 @@ class ErrorBoundary extends Component {
     return { hasError: true }
   }
 
-  componentDidCatch(error, errorInfo) {
-    if (!configuration?.enabled) return
-
-    const payload = buildErrorPayload(error.message, null, null, null, null)
-    payload.component_stack = errorInfo?.componentStack ?? null
-    payload.stack_trace = error.stack ?? null
-    enqueueError(payload)
+  componentDidCatch(error, info) {
+    runOrDefer(beacon =>
+      beacon.reportError?.(error, { component_stack: info?.componentStack })
+    )
   }
 
   render() {
-    if (this.state.hasError) {
-      return this.props.fallback ?? null
-    }
+    if (this.state.hasError) return this.props.fallback ?? null
     return this.props.children
   }
 }

@@ -17,6 +17,10 @@ const PROJECT_TO_GITHUB_REPO: Record<string, string> = {
     "taylorurl.com": "taylorurl-com",
     "setxfootball.com": "setxfootball-com",
     "kildred.com": "kildred-com",
+    "scapeclient.com": "ScapeClient",
+    "charliets.com": "charliets",
+    "hollingsheadharbor.com": "hollingsheadharbor-com",
+    "dickinsonbayoufleeting.com": "dickinsonbayoufleeting-com",
 }
 
 interface ErrorReport {
