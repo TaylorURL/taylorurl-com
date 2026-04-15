@@ -15,6 +15,13 @@ import {
 
 const INITIAL_STATS = { totalOnlineNow: 0, totalPageViews: 0, avgUptime: 0, totalSites: 0 }
 
+/** Return a new site object with `visitors_now` overridden by the live count. */
+function applyLiveVisitorCount(site, liveCount) {
+  const existingStats = site.website_stats?.[0]
+  const nextStats = { ...(existingStats ?? {}), visitors_now: liveCount }
+  return { ...site, website_stats: [nextStats] }
+}
+
 function SortButton({ label, active, dir, onClick }) {
   const Icon = active ? (dir === 'asc' ? ChevronUp : ChevronDown) : null
   return (
@@ -62,6 +69,45 @@ export default function Dashboard() {
     if (user?.id) fetchWebsites()
   }, [user?.id])
 
+  // Poll live visitor counts every 30s so "Online Now" stays fresh between
+  // full refreshes (the hourly aggregate-stats cron only writes visitors_now once per hour).
+  useEffect(() => {
+    if (!user?.id || loading) return
+    const interval = setInterval(() => refreshLiveVisitors(), 30_000)
+    return () => clearInterval(interval)
+  }, [user?.id, loading])
+
+  /** Fetch live visitor counts from active_visitors and overlay onto the hourly snapshot. */
+  async function refreshLiveVisitors() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session?.access_token) return
+
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analytics-service/live-visitors`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({}),
+        }
+      )
+      if (!response.ok) return
+
+      const { counts } = await response.json()
+      setWebsites(prev => {
+        const merged = prev.map(site => applyLiveVisitorCount(site, counts[site.id] ?? 0))
+        setStats(aggregateWebsiteStats(merged))
+        return merged
+      })
+    } catch {
+      // Best-effort — leave snapshot in place on failure
+    }
+  }
+
   async function fetchWebsites({ silent = false } = {}) {
     if (!user?.id) return
 
@@ -91,6 +137,10 @@ export default function Dashboard() {
         counts[row.project] = (counts[row.project] || 0) + 1
       }
       setErrorCountsByDomain(counts)
+
+      // Overlay live visitor counts immediately so "Online Now" reflects reality,
+      // not the hour-old snapshot.
+      refreshLiveVisitors()
     } finally {
       setLoading(false)
       setRefreshing(false)

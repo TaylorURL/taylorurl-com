@@ -245,6 +245,32 @@ async function handleAggregateStats(headers: Record<string, string>) {
     return jsonResponse({ aggregated: aggregatedCount }, headers)
 }
 
+// ─── /live-visitors ──────────────────────────────────────────────────────────
+
+/**
+ * Returns a real-time count of active visitors per website by querying
+ * `active_visitors` directly. Bypasses the hourly `website_stats` snapshot
+ * so the dashboard's "Online Now" reflects the live 5-minute window.
+ */
+async function handleLiveVisitors(headers: Record<string, string>) {
+    const supabase = getAdminClient()
+    const cutoff = new Date(Date.now() - ACTIVE_VISITOR_WINDOW_MINUTES * 60 * 1000).toISOString()
+
+    const { data, error } = await supabase
+        .from("active_visitors")
+        .select("website_id")
+        .gte("last_seen", cutoff)
+
+    if (error) return errorResponse(error.message, headers, 500)
+
+    const counts: Record<string, number> = {}
+    for (const row of data ?? []) {
+        counts[row.website_id as string] = (counts[row.website_id as string] ?? 0) + 1
+    }
+
+    return jsonResponse({ counts }, headers)
+}
+
 // ─── Router ──────────────────────────────────────────────────────────────────
 
 Deno.serve(async (req) => {
@@ -272,10 +298,11 @@ Deno.serve(async (req) => {
     if (req.method !== "POST") return errorResponse("Method not allowed", headers, 405)
 
     switch (endpoint) {
-        case "track":          return handleTrack(req, headers)
-        case "heartbeat":      return handleHeartbeat(req, headers)
-        case "check-uptime":   return handleCheckUptime(headers)
+        case "track":           return handleTrack(req, headers)
+        case "heartbeat":       return handleHeartbeat(req, headers)
+        case "check-uptime":    return handleCheckUptime(headers)
         case "aggregate-stats": return handleAggregateStats(headers)
-        default:               return errorResponse("Invalid endpoint", headers, 404)
+        case "live-visitors":   return handleLiveVisitors(headers)
+        default:                return errorResponse("Invalid endpoint", headers, 404)
     }
 })

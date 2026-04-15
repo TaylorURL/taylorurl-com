@@ -309,6 +309,46 @@ Deno.serve(async (req) => {
         return jsonResponse({ synced: syncedCount, checked: staleErrors.length }, headers)
     }
 
+    if (endpoint === "prune-deleted-repos") {
+        const githubToken = Deno.env.get("GITHUB_TOKEN")
+        if (!githubToken) return errorResponse("GITHUB_TOKEN not set", headers, 500)
+
+        const prunedRepos: string[] = []
+        let deletedErrorCount = 0
+
+        for (const [project, repo] of Object.entries(PROJECT_TO_GITHUB_REPO)) {
+            const fullRepo = `${GITHUB_OWNER}/${repo}`
+
+            try {
+                const response = await fetch(`${GITHUB_API_BASE}/repos/${fullRepo}`, {
+                    headers: {
+                        "Authorization": `Bearer ${githubToken}`,
+                        "Accept": "application/vnd.github+json",
+                    },
+                })
+
+                // Only prune on a definitive 404. Skip on any other status (network errors,
+                // rate limits, 301 renames, transient 5xx) so we don't delete errors over a blip.
+                if (response.status !== 404) continue
+
+                const { count } = await supabase
+                    .from("client_errors")
+                    .delete({ count: "exact" })
+                    .eq("project", project)
+
+                prunedRepos.push(fullRepo)
+                deletedErrorCount += count ?? 0
+            } catch {
+                // Network failure — skip this repo for this run
+            }
+        }
+
+        return jsonResponse(
+            { prunedRepos, prunedRepoCount: prunedRepos.length, deletedErrorCount },
+            headers
+        )
+    }
+
     if (endpoint !== "report-batch") {
         return errorResponse("Invalid endpoint", headers, 404)
     }

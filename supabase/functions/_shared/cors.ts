@@ -15,6 +15,8 @@ const ALLOWED_ORIGINS = [
     "https://www.kildred.com",
     "https://charliets.com",
     "https://www.charliets.com",
+    "https://scapeclient.com",
+    "https://www.scapeclient.com",
 ]
 
 const DEFAULT_ORIGIN_INDEX = 2

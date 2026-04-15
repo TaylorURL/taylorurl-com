@@ -97,12 +97,12 @@ export default function Errors() {
     return () => supabase.removeChannel(subscription)
   }, [profile, navigate])
 
-  const syncGithubIssueStates = async () => {
+  const callErrorService = async (endpoint, body = {}) => {
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session?.access_token) return null
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session?.access_token) return
-      await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/sync-issue-states`,
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/${endpoint}`,
         {
           method: 'POST',
           headers: {
@@ -110,19 +110,22 @@ export default function Errors() {
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${session.access_token}`,
           },
-          body: JSON.stringify({}),
+          body: JSON.stringify(body),
         }
       )
+      return response.ok ? response : null
     } catch {
-      // Best-effort sync — don't block the UI
+      return null
     }
   }
 
   const loadErrors = async () => {
     setLoading(true)
 
-    // Sync GitHub issue states in background before fetching
-    await syncGithubIssueStates()
+    // Prune errors from repos that no longer exist on GitHub, then sync remaining issue states.
+    // Pruning first avoids wasted GitHub API calls for issues in repos we're about to delete.
+    await callErrorService('prune-deleted-repos')
+    await callErrorService('sync-issue-states')
 
     const { data } = await supabase
       .from('client_errors')
@@ -137,41 +140,22 @@ export default function Errors() {
       e => e.skipped && !e.github_issue_url && e.skip_reason && ATTENTION_KEYWORDS.test(e.skip_reason)
     )
     for (const errorRow of attentionWithoutIssue) {
-      try {
-        const { data: { session } } = await supabase.auth.getSession()
-        if (!session?.access_token) break
-        const response = await fetch(
-          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/error-reporting-service/create-attention-issue`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${session.access_token}`,
-            },
-            body: JSON.stringify({ id: errorRow.id }),
-          }
+      const response = await callErrorService('create-attention-issue', { id: errorRow.id })
+      if (!response) continue
+      const result = await response.json().catch(() => null)
+      if (!result?.created) continue
+      setErrors(prev =>
+        prev.map(e =>
+          e.id === errorRow.id
+            ? {
+                ...e,
+                github_issue_number: result.issue.issueNumber,
+                github_issue_url: result.issue.issueUrl,
+                github_repo: result.issue.repo,
+              }
+            : e
         )
-        if (response.ok) {
-          const result = await response.json()
-          if (result.created) {
-            setErrors(prev =>
-              prev.map(e =>
-                e.id === errorRow.id
-                  ? {
-                      ...e,
-                      github_issue_number: result.issue.issueNumber,
-                      github_issue_url: result.issue.issueUrl,
-                      github_repo: result.issue.repo,
-                    }
-                  : e
-              )
-            )
-          }
-        }
-      } catch {
-        // Silently continue — issue creation is best-effort
-      }
+      )
     }
   }
 
