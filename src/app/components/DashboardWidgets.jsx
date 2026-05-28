@@ -75,7 +75,7 @@ function InlineMetric({ label, value, highlight }) {
 }
 
 /** A single website as a table-like row inside a bordered container. */
-export function WebsiteRow({ site, errorCount = 0, isLast }) {
+export function WebsiteRow({ site, isLast }) {
   const navigate = useNavigate()
   const siteStats = site.website_stats?.[0]
   const statusConfig = STATUS_CONFIG[site.status] || STATUS_CONFIG.active
@@ -132,7 +132,6 @@ export function WebsiteRow({ site, errorCount = 0, isLast }) {
           value={(siteStats?.page_views_30d || 0).toLocaleString()}
         />
         <InlineMetric label="Uptime" value={uptimeDisplay} />
-        <InlineMetric label="Errors" value={errorCount} highlight={errorCount > 0} />
       </div>
     </div>
   )

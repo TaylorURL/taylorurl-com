@@ -49,7 +49,6 @@ export default function Dashboard() {
   const toast = useToast()
   const [websites, setWebsites] = useState([])
   const [stats, setStats] = useState(INITIAL_STATS)
-  const [errorCountsByDomain, setErrorCountsByDomain] = useState({})
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [sortKey, setSortKey] = useState('name')
@@ -80,7 +79,9 @@ export default function Dashboard() {
   /** Fetch live visitor counts from active_visitors and overlay onto the hourly snapshot. */
   async function refreshLiveVisitors() {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
       if (!session?.access_token) return
 
       const response = await fetch(
@@ -114,14 +115,11 @@ export default function Dashboard() {
     if (silent) setRefreshing(true)
     else setLoading(true)
     try {
-      const [{ data, error }, { data: openErrors }] = await Promise.all([
-        supabase
-          .from('websites')
-          .select('*, website_stats(*)')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false }),
-        supabase.from('client_errors').select('project').eq('fixed', false).eq('skipped', false),
-      ])
+      const { data, error } = await supabase
+        .from('websites')
+        .select('*, website_stats(*)')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
 
       if (error) {
         toast('Failed to load websites', 'error')
@@ -131,12 +129,6 @@ export default function Dashboard() {
       const siteData = data || []
       setWebsites(siteData)
       setStats(aggregateWebsiteStats(siteData))
-
-      const counts = {}
-      for (const row of openErrors || []) {
-        counts[row.project] = (counts[row.project] || 0) + 1
-      }
-      setErrorCountsByDomain(counts)
 
       // Overlay live visitor counts immediately so "Online Now" reflects reality,
       // not the hour-old snapshot.
@@ -161,8 +153,6 @@ export default function Dashboard() {
           return s?.page_views_30d ?? -1
         case 'uptime':
           return s?.uptime_pct ?? -1
-        case 'errors':
-          return errorCountsByDomain[site.domain] || 0
         default:
           return ''
       }
@@ -173,7 +163,7 @@ export default function Dashboard() {
       const cmp = typeof av === 'string' ? av.localeCompare(bv) : av - bv
       return sortDir === 'asc' ? cmp : -cmp
     })
-  }, [websites, sortKey, sortDir, errorCountsByDomain])
+  }, [websites, sortKey, sortDir])
 
   function handleSort(key) {
     if (sortKey === key) setSortDir(d => (d === 'asc' ? 'desc' : 'asc'))
@@ -271,7 +261,6 @@ export default function Dashboard() {
                       { key: 'online', label: 'Online' },
                       { key: 'views', label: 'Views' },
                       { key: 'uptime', label: 'Uptime' },
-                      { key: 'errors', label: 'Errors' },
                     ].map(({ key, label }) => (
                       <SortButton
                         key={key}
@@ -287,7 +276,6 @@ export default function Dashboard() {
                   <WebsiteRow
                     key={site.id}
                     site={site}
-                    errorCount={errorCountsByDomain[site.domain] || 0}
                     isLast={index === sortedWebsites.length - 1}
                   />
                 ))}

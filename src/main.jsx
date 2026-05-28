@@ -5,21 +5,13 @@ import { ToastProvider } from './app/components/Toast'
 import { AuthProvider } from './app/contexts/AuthContext'
 import './index.css'
 import App from './app/App'
-import ErrorReporterUtility, { ErrorBoundary } from './app/lib/ErrorReporterUtility'
-
-ErrorReporterUtility.init({
-  project: 'taylorurl.com',
-  apiKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-})
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>
       <AuthProvider>
         <ToastProvider>
-          <ErrorBoundary>
-            <App />
-          </ErrorBoundary>
+          <App />
         </ToastProvider>
       </AuthProvider>
     </HelmetProvider>

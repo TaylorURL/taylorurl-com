@@ -2,6 +2,15 @@
 
 All notable changes to TaylorURL will be documented in this file.
 
+## [4.3.12] - 2026-05-27
+
+- Removed the entire client error reporting feature: deleted the `error-reporting-service` edge function and stripped all error capture (window.onerror, unhandledrejection, fetch/XHR 4xx wrapping, errorQueue, reportError API) from the analytics beacon. Beacon is now analytics-only (page views + heartbeat).
+- Bumped beacon version to `3.0.0` to signal the breaking contract change — `window.__taylorURL.reportError` and `flush` are gone.
+- Deleted the admin Error Tracker UI: `src/app/views/Errors.jsx`, `src/app/components/ErrorCard.jsx`, and the `src/app/lib/ErrorReporterUtility.js` shim.
+- Removed the `/errors` route, the Error Tracker sidebar nav entry, and the `Bug` icon import from `DashboardSidebar.jsx`.
+- Removed `client_errors` table queries and the per-site error count display from `Dashboard.jsx`, `WebsiteView.jsx`, and `DashboardWidgets.jsx`. The "Errors" sort column and per-row metric are also gone.
+- The `client_errors` table itself is left in place — historical data is preserved.
+
 ## [4.3.11] - 2026-04-03
 
 - TaylorURL Release v4.3.11

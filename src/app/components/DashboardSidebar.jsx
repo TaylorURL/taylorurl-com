@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Shield, Bug, LogOut, Loader2, ExternalLink, X } from 'lucide-react'
+import { LayoutDashboard, Shield, LogOut, Loader2, ExternalLink, X } from 'lucide-react'
 import { useAuth } from '@app/contexts/AuthContext'
 import { useToast } from '@components/Toast'
 
@@ -64,12 +64,7 @@ export default function DashboardSidebar({ isOpen, onClose }) {
 
   const navLinks = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Overview' },
-    ...(hasElevatedAccess
-      ? [
-          { to: '/admin', icon: Shield, label: 'Admin Panel' },
-          { to: '/errors', icon: Bug, label: 'Error Tracker' },
-        ]
-      : []),
+    ...(hasElevatedAccess ? [{ to: '/admin', icon: Shield, label: 'Admin Panel' }] : []),
   ]
 
   const sidebarContent = (

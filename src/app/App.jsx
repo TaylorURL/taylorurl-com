@@ -23,7 +23,6 @@ const Blog = lazy(() => import('@views/Blog'))
 const BlogPost = lazy(() => import('@views/BlogPost'))
 const Faq = lazy(() => import('@views/Faq'))
 const Status = lazy(() => import('@views/Status'))
-const Errors = lazy(() => import('@views/Errors'))
 const WebsiteView = lazy(() => import('@views/WebsiteView'))
 const NotFound = lazy(() => import('@views/NotFound'))
 
@@ -65,7 +64,6 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="dashboard/site/:id" element={<WebsiteView />} />
               <Route path="admin" element={<Admin />} />
-              <Route path="errors" element={<Errors />} />
             </Route>
           </Routes>
         </Suspense>
