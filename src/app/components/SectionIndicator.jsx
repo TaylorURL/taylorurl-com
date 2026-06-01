@@ -60,6 +60,8 @@ export default function SectionIndicator() {
               key={section.id}
               onClick={() => scrollTo(section.id)}
               className="group flex items-center gap-2"
+              aria-label={`Go to ${section.label} section`}
+              aria-current={active === section.id ? 'true' : undefined}
             >
               <span
                 className={`text-[10px] font-medium uppercase tracking-wider transition-all ${
@@ -71,6 +73,7 @@ export default function SectionIndicator() {
                 {section.label}
               </span>
               <span
+                aria-hidden="true"
                 className={`block rounded-full transition-all ${
                   active === section.id
                     ? 'h-3 w-3 bg-blue-600'

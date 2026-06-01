@@ -17,6 +17,7 @@ import PageHero from '@components/PageHero'
 import BrowserMockup from '@components/BrowserMockup'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
+import { BTN_PRIMARY, BTN_SECONDARY, SECTION_H2 } from '@constants/ui'
 
 const SERVICES = [
   {
@@ -206,24 +207,18 @@ export default function Services() {
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+            <h2 className={`mb-4 ${SECTION_H2}`}>
               Sounds <span className="logo-wave-dark">Good</span>?
             </h2>
             <p className="mb-8 text-lg text-gray-600">
               Tell us what you need. We&apos;ll give you a straight answer and a real price.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <Link
-                to="/pricing"
-                className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-blue-500"
-              >
+              <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
                 Get a Quote
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link
-                to="/work"
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-300 px-7 py-3.5 font-semibold text-gray-900 transition-all duration-300 hover:bg-gray-50"
-              >
+              <Link to="/work" className={BTN_SECONDARY}>
                 View Our Work
               </Link>
             </div>

@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowRight, Mail, MapPin } from 'lucide-react'
 import { COMPANY_LOCATION, LEGAL_LINKS, PRIMARY_LINKS, SUPPORT_EMAIL } from '@constants/navigation'
 import { fadeInUp } from '@constants/animations'
+import { BTN_PRIMARY_SM } from '@constants/ui'
 
 export default function Footer() {
   const currentYear = new Date().getFullYear()
@@ -85,10 +86,7 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <Link
-              to="/pricing"
-              className="group inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
-            >
+            <Link to="/pricing" className={`group ${BTN_PRIMARY_SM}`}>
               Get a Quote
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>

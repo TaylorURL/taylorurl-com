@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, Activity } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount, staggerChildMount } from '@constants/animations'
+import { SECTION_H2_DARK } from '@constants/ui'
 
 const SERVICES = [
   {
@@ -121,7 +122,7 @@ function OverallStatus() {
 
 function UptimeBar() {
   return (
-    <div className="flex gap-px">
+    <div role="img" aria-label="90-day uptime history, all operational" className="flex gap-px">
       {Array.from({ length: 90 }, (_, i) => (
         <div
           key={i}
@@ -258,7 +259,7 @@ export default function Status() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-4xl px-6 text-center">
           <motion.div {...fadeInUp}>
-            <h2 className="mb-3 text-2xl font-bold text-white">Need Help?</h2>
+            <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need Help?</h2>
             <p className="mb-6 text-gray-400">
               Experiencing issues? Let us know and we&apos;ll get on it.
             </p>

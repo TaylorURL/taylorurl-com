@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowRight, Phone } from 'lucide-react'
 import { PHONE_NUMBER } from '@constants/navigation'
+import { BTN_PRIMARY_LG, BTN_SECONDARY_DARK_LG } from '@constants/ui'
 
 export default function FinalCtaSection() {
   return (
@@ -15,17 +16,11 @@ export default function FinalCtaSection() {
           Just tell us what you need and we&apos;ll take it from there.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
-          <Link
-            to="/pricing"
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-4 text-lg font-medium text-white transition-all duration-300 hover:scale-105 hover:bg-blue-700"
-          >
+          <Link to="/pricing" className={`group ${BTN_PRIMARY_LG}`}>
             Get Your Free Quote
-            <ArrowRight className="h-5 w-5" />
+            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Link>
-          <a
-            href={`tel:${PHONE_NUMBER}`}
-            className="inline-flex items-center gap-2 rounded-lg border-2 border-gray-600 px-8 py-4 text-lg font-medium text-white transition-all duration-300 hover:scale-105 hover:border-gray-400 hover:bg-gray-800"
-          >
+          <a href={`tel:${PHONE_NUMBER}`} className={BTN_SECONDARY_DARK_LG}>
             <Phone className="h-5 w-5" />
             Call Us
           </a>

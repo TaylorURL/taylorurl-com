@@ -18,6 +18,7 @@ import PageHero from '@components/PageHero'
 import CtaBanner from '@components/CtaBanner'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
+import { BADGE, SECTION_H2 } from '@constants/ui'
 
 const TIMELINE_STEPS = [
   {
@@ -151,7 +152,7 @@ export default function Process() {
       <section className="bg-white py-20">
         <div className="mx-auto max-w-5xl px-6">
           <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-16 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+            <h2 className={`mb-4 ${SECTION_H2}`}>
               From <span className="logo-wave-dark">Hello</span> to Live Site
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
@@ -179,9 +180,7 @@ export default function Process() {
                           <span className="text-sm font-semibold tracking-wider text-blue-600">
                             STEP {step.step}
                           </span>
-                          <span className="rounded-full bg-gray-100 px-3 py-0.5 text-xs font-medium text-gray-600">
-                            {step.duration}
-                          </span>
+                          <span className={BADGE}>{step.duration}</span>
                         </div>
                         <h3 className="text-2xl font-bold text-gray-900">{step.title}</h3>
                       </div>
@@ -245,7 +244,7 @@ export default function Process() {
       <section className="border-y border-gray-200 bg-gray-50 py-20">
         <div className="mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-900">
+            <h2 className={`mb-4 ${SECTION_H2}`}>
               What You&apos;ll Need <span className="logo-wave-dark">From Us</span>
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">

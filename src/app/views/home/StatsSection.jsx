@@ -6,6 +6,7 @@ import {
   CUSTOMER_DISCOVERY_DATA,
   LOCAL_SEARCH_STATS,
 } from '@data/home'
+import { SECTION_H2 } from '@constants/ui'
 
 export default function StatsSection() {
   const { count: localSearchPercent, ref: statRef } = useCountUp(46, 2500)
@@ -15,14 +16,14 @@ export default function StatsSection() {
       <div className="mx-auto max-w-6xl px-6">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+            <h2 className={`mb-4 ${SECTION_H2}`}>
               Can People Actually <span className="logo-wave-dark">Find You?</span>
             </h2>
             <p className="mb-8 text-lg text-gray-600">
               Almost every customer starts with a Google search. No website means they&apos;re
               calling the other guy.
             </p>
-            <div className="rounded-xl border border-gray-200 bg-white p-6">
+            <div className="rounded-2xl border border-gray-200 bg-white p-6">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
                 How Customers Find Local Businesses
               </h3>

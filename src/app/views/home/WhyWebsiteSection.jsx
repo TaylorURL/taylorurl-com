@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { WHY_WEBSITE_CARDS } from '@data/home'
+import { SECTION_H2 } from '@constants/ui'
 
 export default function WhyWebsiteSection() {
   return (
@@ -8,7 +9,7 @@ export default function WhyWebsiteSection() {
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <motion.div {...fadeInUp} className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className={`mb-4 ${SECTION_H2}`}>
             Why You <span className="logo-wave-dark">Need a Website</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">

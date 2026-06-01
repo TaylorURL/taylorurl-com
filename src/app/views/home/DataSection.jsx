@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fadeInUp } from '@constants/animations'
 import { REVENUE_GROWTH_DATA } from '@data/home'
+import { BTN_PRIMARY, SECTION_H2_DARK } from '@constants/ui'
 
 const TOOLTIP_STYLE = {
   backgroundColor: '#111827',
@@ -43,7 +44,7 @@ export default function DataSection() {
         {/* Top: message + chart */}
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <motion.div {...fadeInUp}>
-            <h2 className="mb-5 text-3xl font-bold text-white md:text-4xl">
+            <h2 className={`mb-5 ${SECTION_H2_DARK}`}>
               A Website Isn&apos;t a Nice-to-Have.{' '}
               <span className="logo-wave">It&apos;s the Difference.</span>
             </h2>
@@ -55,10 +56,7 @@ export default function DataSection() {
               This isn&apos;t theory — it&apos;s what happens every time. A professional site puts
               you where your customers are already looking.
             </p>
-            <Link
-              to="/pricing"
-              className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-500"
-            >
+            <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
               Get Started
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>

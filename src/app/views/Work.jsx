@@ -5,6 +5,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import useCountUp from '@hooks/useCountUp'
 import { fadeInUp, staggerChildMount } from '@constants/animations'
+import { BADGE, BTN_PRIMARY_LG, SECTION_H2_DARK } from '@constants/ui'
 
 const PROJECTS = [
   {
@@ -162,9 +163,7 @@ function ProjectCard({ project, index }) {
       className="group overflow-hidden rounded-2xl border border-gray-200 bg-white transition-colors duration-300 hover:border-blue-200"
     >
       <div className="p-8">
-        <div className="mb-4 inline-flex items-center rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-          {project.category}
-        </div>
+        <div className={`mb-4 ${BADGE}`}>{project.category}</div>
         <h3 className="mb-3 text-2xl font-semibold text-gray-900">{project.title}</h3>
         <p className="mb-5 text-gray-600">{project.description}</p>
 
@@ -246,17 +245,14 @@ export default function Work() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-white">
+            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
               Like what you <span className="logo-wave">see?</span>
             </h2>
             <p className="mb-8 text-lg text-gray-400">
               We keep things simple. You tell us what you need, we build it, and your business
               grows. No contracts, no nonsense.
             </p>
-            <Link
-              to="/pricing"
-              className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-8 py-4 font-semibold text-white transition-all duration-300 hover:bg-blue-500"
-            >
+            <Link to="/pricing" className={`group ${BTN_PRIMARY_LG}`}>
               Let's Talk
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
             </Link>

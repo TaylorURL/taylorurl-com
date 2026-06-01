@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { MessageSquare } from 'lucide-react'
 import { useToast } from '@components/Toast'
 import { SUPPORT_EMAIL } from '@constants/navigation'
+import { BTN_PRIMARY, INPUT, SECTION_H2 } from '@constants/ui'
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -19,8 +20,8 @@ export default function NewsletterSection() {
       <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-8 text-center md:p-12">
-          <MessageSquare className="mx-auto mb-6 h-12 w-12 text-blue-500" />
-          <h2 className="mb-4 text-2xl font-bold text-gray-900 md:text-3xl">
+          <MessageSquare aria-hidden="true" className="mx-auto mb-6 h-12 w-12 text-blue-500" />
+          <h2 className={`mb-4 ${SECTION_H2}`}>
             Free Stuff for <span className="logo-wave-dark">Your Business</span>
           </h2>
           <p className="mb-8 text-gray-600">
@@ -34,12 +35,10 @@ export default function NewsletterSection() {
               onChange={e => setEmail(e.target.value)}
               placeholder="Enter your email"
               required
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-3 focus:border-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-600"
+              aria-label="Email address"
+              className={`flex-1 ${INPUT}`}
             />
-            <button
-              type="submit"
-              className="rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-colors hover:bg-blue-700"
-            >
+            <button type="submit" className={BTN_PRIMARY}>
               Subscribe
             </button>
           </form>

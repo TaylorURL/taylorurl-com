@@ -4,6 +4,14 @@ import Seo from '@components/Seo'
 import PageHero from '@components/PageHero'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
+import {
+  BADGE,
+  BADGE_BLUE,
+  BTN_PRIMARY_LG,
+  BTN_PRIMARY_SM,
+  SECTION_H2,
+  SECTION_H2_DARK,
+} from '@constants/ui'
 
 const FADE_DURATION = 0.5
 const GENERAL_APPLICATION_DELAY = 0.2
@@ -93,9 +101,7 @@ export default function Careers() {
             transition={{ duration: FADE_DURATION }}
             className="mb-14 text-center"
           >
-            <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Why Work With Us
-            </h2>
+            <h2 className={`mb-4 ${SECTION_H2}`}>Why Work With Us</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
               We believe great work comes from great teams. Here&apos;s what makes TaylorURL a place
               you&apos;ll love.
@@ -127,9 +133,7 @@ export default function Careers() {
             transition={{ duration: FADE_DURATION }}
             className="mb-14 text-center"
           >
-            <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
-              Open Positions
-            </h2>
+            <h2 className={`mb-4 ${SECTION_H2}`}>Open Positions</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
               We&apos;re looking for talented developers to join our growing team.
             </p>
@@ -144,12 +148,8 @@ export default function Careers() {
               >
                 <h3 className="mb-3 text-2xl font-bold text-gray-900">{position.title}</h3>
                 <div className="mb-5 flex flex-wrap gap-2">
-                  <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-600">
-                    {position.type}
-                  </span>
-                  <span className="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-600">
-                    {position.location}
-                  </span>
+                  <span className={BADGE_BLUE}>{position.type}</span>
+                  <span className={BADGE}>{position.location}</span>
                 </div>
                 <p className="mb-6 leading-relaxed text-gray-600">{position.description}</p>
 
@@ -165,7 +165,7 @@ export default function Careers() {
 
                 <a
                   href={buildMailtoHref(`Application: ${position.title}`)}
-                  className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-blue-700"
+                  className={BTN_PRIMARY_SM}
                 >
                   <Mail className="h-4 w-4" />
                   Apply Now
@@ -200,16 +200,13 @@ export default function Careers() {
           transition={{ duration: FADE_DURATION }}
           className="mx-auto max-w-3xl text-center"
         >
-          <h2 className="mb-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+          <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
             Ready to <span className="logo-wave">Join Us?</span>
           </h2>
           <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
             Send us your resume and portfolio. We&apos;d love to hear from you.
           </p>
-          <a
-            href={buildMailtoHref('Career Inquiry')}
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-3 text-base font-semibold text-white transition-colors hover:bg-blue-700"
-          >
+          <a href={buildMailtoHref('Career Inquiry')} className={BTN_PRIMARY_LG}>
             <Mail className="h-5 w-5" />
             Apply Now
           </a>

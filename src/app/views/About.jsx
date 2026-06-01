@@ -14,6 +14,14 @@ import {
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
+import {
+  BTN_PRIMARY,
+  BTN_SECONDARY_DARK,
+  CARD,
+  EYEBROW,
+  SECTION_H2,
+  SECTION_H2_DARK,
+} from '@constants/ui'
 
 const VALUES = [
   {
@@ -100,10 +108,8 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-16 lg:grid-cols-5">
             <motion.div {...fadeInUp} className="lg:col-span-3">
-              <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
-                Our Story
-              </p>
-              <h2 className="mb-8 text-3xl font-bold text-gray-900 sm:text-4xl">
+              <p className={`mb-2 ${EYEBROW}`}>Our Story</p>
+              <h2 className={`mb-8 ${SECTION_H2}`}>
                 We got tired of watching local businesses get ripped off
               </h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
@@ -172,23 +178,15 @@ export default function About() {
       <section className="border-y border-gray-200 bg-gray-50 py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-14">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
-              Why Us
-            </p>
-            <h2 className="text-3xl font-bold text-gray-900 sm:text-4xl">
-              We do things differently
-            </h2>
+            <p className={`mb-2 ${EYEBROW}`}>Why Us</p>
+            <h2 className={SECTION_H2}>We do things differently</h2>
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2">
             {VALUES.map((item, i) => {
               const Icon = item.icon
               return (
-                <motion.div
-                  key={item.title}
-                  {...staggerChild(i, 0.08)}
-                  className="group rounded-2xl border border-gray-200 bg-white p-7 transition-all duration-300 hover:border-blue-200 hover:shadow-lg"
-                >
+                <motion.div key={item.title} {...staggerChild(i, 0.08)} className={`group ${CARD}`}>
                   <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
                     <Icon className="h-5 w-5" strokeWidth={1.5} />
                   </div>
@@ -206,12 +204,8 @@ export default function About() {
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
-            <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-blue-600">
-              How It Works
-            </p>
-            <h2 className="mb-3 text-3xl font-bold text-gray-900 sm:text-4xl">
-              Four steps. That&apos;s it.
-            </h2>
+            <p className={`mb-2 ${EYEBROW}`}>How It Works</p>
+            <h2 className={`mb-3 ${SECTION_H2}`}>Four steps. That&apos;s it.</h2>
             <p className="mx-auto max-w-lg text-gray-500">
               No 12-step onboarding. No Gantt charts. No "discovery phase." Here&apos;s the whole
               process.
@@ -265,7 +259,7 @@ export default function About() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-white sm:text-4xl">
+            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
               Let&apos;s <span className="logo-wave">Do This</span>
             </h2>
             <p className="mb-8 text-lg text-gray-400">
@@ -273,17 +267,11 @@ export default function About() {
               &quot;discovery phase&quot; required.
             </p>
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Link
-                to="/pricing"
-                className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-blue-500"
-              >
+              <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
                 Get a Quote
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <Link
-                to="/work"
-                className="inline-flex items-center gap-2 rounded-xl border border-gray-700 px-7 py-3.5 font-semibold text-gray-300 transition-all duration-300 hover:border-gray-500 hover:text-white"
-              >
+              <Link to="/work" className={BTN_SECONDARY_DARK}>
                 View Our Work
               </Link>
             </div>

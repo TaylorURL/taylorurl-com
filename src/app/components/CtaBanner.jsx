@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
+import { BTN_PRIMARY_LG, BTN_SECONDARY_DARK_LG, BTN_SECONDARY_LG } from '@constants/ui'
 
 /**
  * Reusable call-to-action banner used across multiple views.
@@ -47,22 +48,12 @@ export default function CtaBanner({
             {description}
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-            <Link
-              to={primaryTo}
-              className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white transition-all hover:bg-blue-700"
-            >
+            <Link to={primaryTo} className={BTN_PRIMARY_LG}>
               {primaryLabel}
               <ArrowRight className="h-5 w-5" />
             </Link>
             {secondaryLabel && secondaryTo && (
-              <Link
-                to={secondaryTo}
-                className={`inline-flex items-center gap-2 rounded-lg border px-8 py-4 font-semibold transition-all ${
-                  isDark
-                    ? 'border-gray-700 text-white hover:border-gray-500 hover:bg-gray-800'
-                    : 'border-gray-900 text-gray-900 hover:scale-105 hover:bg-gray-200'
-                }`}
-              >
+              <Link to={secondaryTo} className={isDark ? BTN_SECONDARY_DARK_LG : BTN_SECONDARY_LG}>
                 {secondaryLabel}
               </Link>
             )}

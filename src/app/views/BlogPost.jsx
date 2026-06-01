@@ -3,6 +3,7 @@ import { Link, useParams, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
+import { BADGE_BLUE, BTN_PRIMARY } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
 
 export default function BlogPost() {
@@ -57,7 +58,7 @@ export default function BlogPost() {
             </Link>
 
             <div className="mb-6 flex flex-wrap items-center gap-4 text-sm text-gray-500">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+              <span className={BADGE_BLUE}>
                 <Tag className="h-3 w-3" />
                 {post.category}
               </span>
@@ -103,10 +104,7 @@ export default function BlogPost() {
           <p className="mb-6 text-gray-400">
             We build fast, custom websites for local businesses. No templates, no page builders.
           </p>
-          <Link
-            to="/pricing"
-            className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-500"
-          >
+          <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
             Get a Quote
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>

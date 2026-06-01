@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Bug } from 'lucide-react'
 import Seo from '@components/Seo'
+import { BTN_PRIMARY, BTN_SECONDARY } from '@constants/ui'
 
 const GRID_SIZE = 280
 const BUG_SIZE = 32
@@ -100,17 +101,11 @@ export default function NotFound() {
           transition={{ delay: 0.5, duration: 0.5 }}
           className="flex flex-wrap justify-center gap-4"
         >
-          <Link
-            to="/"
-            className="group inline-flex items-center gap-2 rounded-lg bg-blue-600 px-6 py-3 font-medium text-white transition-all duration-300 hover:scale-105 hover:bg-blue-700"
-          >
+          <Link to="/" className={`group ${BTN_PRIMARY}`}>
             Go Home
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link
-            to="/pricing"
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-6 py-3 font-medium text-gray-900 transition-all duration-300 hover:scale-105 hover:bg-gray-100"
-          >
+          <Link to="/pricing" className={BTN_SECONDARY}>
             Get a Quote
           </Link>
         </motion.div>

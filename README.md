@@ -5,7 +5,7 @@
 <p align="center"><strong>Web Development Agency & Client Portal for Southeast Texas Businesses</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/v4.3-release-1e3a5f" alt="Version 4.3" />
+  <img src="https://img.shields.io/badge/v5.0-release-1e3a5f" alt="Version 5.0" />
   <img src="https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white" alt="React 19.1" />
   <img src="https://img.shields.io/badge/Vite-7.1-646CFF?logo=vite&logoColor=white" alt="Vite 7.1" />
   <img src="https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />

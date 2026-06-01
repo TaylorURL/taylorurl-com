@@ -1,9 +1,0 @@
-{
-  "version": "4.3.11",
-  "projectName": "TaylorURL",
-  "branch": "master",
-  "provider": "claude-code",
-  "cleanLogs": true,
-  "cleanCss": false,
-  "hooks": {}
-}

@@ -4,6 +4,7 @@ import { ChevronDown } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
+import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 
 const FAQ_CATEGORIES = [
   {
@@ -71,11 +72,13 @@ const FAQ_CATEGORIES = [
   },
 ]
 
-function FaqItem({ question, answer, isOpen, onToggle, index }) {
+function FaqItem({ question, answer, isOpen, onToggle, index, panelId }) {
   return (
     <motion.div {...staggerChild(index, 0.05)} className="border-b border-gray-200 last:border-b-0">
       <button
         onClick={onToggle}
+        aria-expanded={isOpen}
+        aria-controls={panelId}
         className="flex w-full items-center justify-between gap-4 py-5 text-left transition-colors hover:text-gray-900"
       >
         <span className="text-lg font-medium text-gray-900">{question}</span>
@@ -84,12 +87,14 @@ function FaqItem({ question, answer, isOpen, onToggle, index }) {
           transition={{ duration: 0.25 }}
           className="flex-shrink-0"
         >
-          <ChevronDown className="h-5 w-5 text-gray-400" />
+          <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
         </motion.span>
       </button>
       <AnimatePresence initial={false}>
         {isOpen && (
           <motion.div
+            id={panelId}
+            role="region"
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
@@ -144,7 +149,7 @@ export default function Faq() {
               transition={{ duration: 0.5, delay: catIndex * 0.15 }}
               className={catIndex > 0 ? 'mt-16' : ''}
             >
-              <h2 className="mb-6 text-2xl font-bold text-gray-900">
+              <h2 className={`mb-6 ${SECTION_H2}`}>
                 <span className="logo-wave-dark">{category.title}</span>
               </h2>
               <div className="rounded-2xl border border-gray-200 bg-gray-50/50 px-6">
@@ -158,6 +163,7 @@ export default function Faq() {
                       isOpen={!!openItems[key]}
                       onToggle={() => toggleItem(key)}
                       index={qIndex}
+                      panelId={`faq-panel-${key}`}
                     />
                   )
                 })}
@@ -177,10 +183,7 @@ export default function Faq() {
             <p className="mb-8 text-lg text-gray-400">
               We don&apos;t bite. Shoot us a message and we&apos;ll get back to you fast.
             </p>
-            <a
-              href="/pricing"
-              className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition-all hover:bg-blue-500"
-            >
+            <a href="/pricing" className={BTN_PRIMARY}>
               Get in Touch
             </a>
           </motion.div>

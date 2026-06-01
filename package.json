@@ -1,19 +1,17 @@
 {
   "name": "taylorurl",
   "private": true,
-  "version": "4.3.12",
+  "version": "5.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
+    "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,css}\"",
-    "format:check": "prettier --check \"src/**/*.{js,jsx,css}\"",
-    "release": "nit release"
+    "format:check": "prettier --check \"src/**/*.{js,jsx,css}\""
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.99.1",
     "dompurify": "^3.2.6",
     "framer-motion": "^12.29.2",
     "leaflet": "^1.9.4",

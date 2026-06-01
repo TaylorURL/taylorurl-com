@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Star } from 'lucide-react'
 import { staggerChild } from '@constants/animations'
+import { SECTION_H2 } from '@constants/ui'
 
 const TESTIMONIALS = [
   {
@@ -31,9 +32,9 @@ const TESTIMONIALS = [
 
 function StarRating() {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5" role="img" aria-label="Rated 5 out of 5 stars">
       {Array.from({ length: 5 }).map((_, i) => (
-        <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+        <Star key={i} aria-hidden="true" className="h-4 w-4 fill-yellow-400 text-yellow-400" />
       ))}
     </div>
   )
@@ -59,7 +60,7 @@ export default function TestimonialsSection() {
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className={`mb-4 ${SECTION_H2}`}>
             Don&apos;t Take Our <span className="logo-wave-dark">Word for It</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">

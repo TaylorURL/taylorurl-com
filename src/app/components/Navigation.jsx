@@ -3,7 +3,6 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import { ArrowRight, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PRIMARY_LINKS } from '@constants/navigation'
-import { useAuth } from '@app/contexts/AuthContext'
 
 const PILL_THRESHOLD = 50
 
@@ -38,7 +37,6 @@ export default function Navigation() {
   const mobileLogoRef = useRef(null)
   const navRef = useRef(null)
   const mobileNavRef = useRef(null)
-  const { user } = useAuth()
   const isHome = location.pathname === '/'
 
   const checkBackground = useCallback(() => {
@@ -146,17 +144,6 @@ export default function Navigation() {
               Get a Quote
               <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
-
-            <Link
-              to={user ? '/dashboard' : '/auth'}
-              className={`rounded-full px-4 py-2 text-[13px] font-medium transition-all duration-200 ${
-                isPillTransparent
-                  ? 'text-gray-300 hover:text-white'
-                  : 'text-gray-500 hover:text-gray-900'
-              }`}
-            >
-              {user ? 'Dashboard' : 'Client Portal'}
-            </Link>
           </div>
         </div>
       </motion.nav>
@@ -187,6 +174,8 @@ export default function Navigation() {
 
           <button
             onClick={() => setMobileOpen(prev => !prev)}
+            aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileOpen}
             className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors ${
               onDark && !mobileOpen ? 'text-white' : 'text-gray-700'
             }`}
@@ -272,35 +261,6 @@ export default function Navigation() {
                       </Link>
                     </motion.div>
                   ))}
-                </div>
-
-                {/* Account section */}
-                <div className="mt-6">
-                  <p className="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-                    Account
-                  </p>
-                  <div className="space-y-1">
-                    <motion.div
-                      initial={{ opacity: 0, x: 20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: PRIMARY_LINKS.length * 0.04 + 0.05, duration: 0.25 }}
-                    >
-                      <Link
-                        to={user ? '/dashboard' : '/auth'}
-                        onClick={() => setMobileOpen(false)}
-                        className={`flex items-center rounded-xl px-3 py-3 text-[14px] font-medium transition-all duration-150 ${
-                          isActive(user ? '/dashboard' : '/auth')
-                            ? 'bg-blue-50 font-semibold text-blue-600'
-                            : 'text-gray-700 hover:bg-gray-50'
-                        }`}
-                      >
-                        {isActive(user ? '/dashboard' : '/auth') && (
-                          <span className="mr-3 h-2 w-2 rounded-full bg-blue-600" />
-                        )}
-                        {user ? 'Dashboard' : 'Client Portal'}
-                      </Link>
-                    </motion.div>
-                  </div>
                 </div>
               </div>
 

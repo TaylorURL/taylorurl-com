@@ -6,6 +6,7 @@ import Seo from '@components/Seo'
 import { useToast } from '@components/Toast'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { slideInLeftMount, slideInRightMount } from '@constants/animations'
+import { BTN_PRIMARY_LG, INPUT, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
@@ -35,8 +36,7 @@ const PROCESS_STEPS = [
   },
 ]
 
-const INPUT_CLASS =
-  'w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 transition-all placeholder:text-gray-400 focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/10'
+const INPUT_CLASS = INPUT
 
 export default function Pricing() {
   const toast = useToast()
@@ -116,7 +116,7 @@ ${formData.message}
               transition={{ duration: 0.5 }}
               className="lg:col-span-2"
             >
-              <h2 className="mb-6 text-3xl font-bold text-gray-900">
+              <h2 className={`mb-6 ${SECTION_H2}`}>
                 Let&apos;s <span className="logo-wave-dark">Talk</span>
               </h2>
               <p className="mb-8 text-gray-600">
@@ -202,8 +202,14 @@ ${formData.message}
                         onChange={handleChange}
                         className={INPUT_CLASS}
                         placeholder="Your name"
+                        aria-invalid={errors.name ? true : undefined}
+                        aria-describedby={errors.name ? 'name-error' : undefined}
                       />
-                      {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+                      {errors.name && (
+                        <p id="name-error" className="mt-1 text-sm text-red-500">
+                          {errors.name}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label
@@ -221,8 +227,14 @@ ${formData.message}
                         onChange={handleChange}
                         className={INPUT_CLASS}
                         placeholder="you@company.com"
+                        aria-invalid={errors.email ? true : undefined}
+                        aria-describedby={errors.email ? 'email-error' : undefined}
                       />
-                      {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                      {errors.email && (
+                        <p id="email-error" className="mt-1 text-sm text-red-500">
+                          {errors.email}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -256,7 +268,7 @@ ${formData.message}
                         name="projectType"
                         value={formData.projectType}
                         onChange={handleChange}
-                        className={`${INPUT_CLASS} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.25rem] bg-[position:right_0.75rem_center] bg-no-repeat`}
+                        className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.25rem] bg-[position:right_0.75rem_center] bg-no-repeat`}
                       >
                         <option value="">Select type</option>
                         <option value="new-website">New Website</option>
@@ -283,17 +295,18 @@ ${formData.message}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
                       placeholder="What do you need? Any timeline or budget in mind?"
+                      aria-invalid={errors.message ? true : undefined}
+                      aria-describedby={errors.message ? 'message-error' : undefined}
                     />
                     {errors.message && (
-                      <p className="mt-1 text-sm text-red-500">{errors.message}</p>
+                      <p id="message-error" className="mt-1 text-sm text-red-500">
+                        {errors.message}
+                      </p>
                     )}
                   </div>
 
                   <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-                    <button
-                      type="submit"
-                      className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-8 py-4 font-semibold text-white transition-all hover:bg-blue-700"
-                    >
+                    <button type="submit" className={BTN_PRIMARY_LG}>
                       Send It
                       <Send className="h-4 w-4" />
                     </button>
@@ -310,7 +323,7 @@ ${formData.message}
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-2xl font-bold text-white">
+            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
               Everything&apos;s <span className="logo-wave">Included</span>
             </h2>
             <p className="text-gray-400">

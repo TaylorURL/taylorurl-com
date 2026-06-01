@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import Seo from '@components/Seo'
 import { fadeInUp } from '@constants/animations'
+import { BTN_PRIMARY, INPUT } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
 
 const POSTS_PER_PAGE = 8
@@ -81,10 +82,7 @@ function FeaturedPost({ post }) {
             </span>
           </div>
 
-          <Link
-            to={`/blog/${post.slug}`}
-            className="group/btn inline-flex w-fit items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition-all hover:bg-blue-500"
-          >
+          <Link to={`/blog/${post.slug}`} className={`${BTN_PRIMARY} group/btn w-fit`}>
             Read Article
             <ArrowRight className="h-4 w-4 transition-transform group-hover/btn:translate-x-1" />
           </Link>
@@ -284,24 +282,28 @@ export default function Blog() {
             {/* Search + categories inline */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap gap-1.5">
-                {CATEGORIES.map(cat => (
-                  <button
-                    key={cat}
-                    onClick={() => setCategory(cat)}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
-                      activeCategory === cat
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    {cat}
-                    <span
-                      className={`ml-1 text-[10px] ${activeCategory === cat ? 'text-gray-400' : 'text-gray-400'}`}
+                {CATEGORIES.map(cat => {
+                  const isActive = activeCategory === cat
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setCategory(cat)}
+                      aria-pressed={isActive}
+                      className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                        isActive
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
                     >
-                      {categoryCounts[cat] || 0}
-                    </span>
-                  </button>
-                ))}
+                      {cat}
+                      <span
+                        className={`ml-1 text-[10px] ${isActive ? 'text-gray-400' : 'text-gray-400'}`}
+                      >
+                        {categoryCounts[cat] || 0}
+                      </span>
+                    </button>
+                  )
+                })}
               </div>
 
               <div className="relative w-full sm:w-64">
@@ -311,7 +313,8 @@ export default function Blog() {
                   value={search}
                   onChange={handleSearch}
                   placeholder="Search..."
-                  className="w-full rounded-lg border border-gray-200 bg-white py-2 pl-9 pr-8 text-sm text-gray-900 transition-all placeholder:text-gray-400 focus:border-gray-400 focus:outline-none focus:ring-1 focus:ring-gray-400/20"
+                  aria-label="Search articles"
+                  className={`${INPUT} py-2 pl-9 pr-8 text-sm`}
                 />
                 {search && (
                   <button
@@ -405,6 +408,7 @@ export default function Blog() {
               <button
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage <= 1}
+                aria-label="Previous page"
                 className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -415,6 +419,8 @@ export default function Blog() {
                 <button
                   key={page}
                   onClick={() => setPage(page)}
+                  aria-label={`Page ${page}`}
+                  aria-current={page === currentPage ? 'page' : undefined}
                   className={`h-9 w-9 rounded-lg text-sm font-medium transition-all ${
                     page === currentPage
                       ? 'bg-gray-900 text-white'
@@ -428,6 +434,7 @@ export default function Blog() {
               <button
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
+                aria-label="Next page"
                 className="inline-flex items-center gap-1 rounded-lg border border-gray-200 px-3 py-2 text-sm font-medium text-gray-600 transition-all hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Next
@@ -449,10 +456,7 @@ export default function Blog() {
             <p className="mb-8 text-lg text-gray-400">
               Stop reading about it and let&apos;s actually do something about it.
             </p>
-            <Link
-              to="/pricing"
-              className="group inline-flex items-center gap-2 rounded-xl bg-blue-600 px-7 py-3.5 font-semibold text-white transition-all duration-300 hover:bg-blue-500"
-            >
+            <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
               Get a Quote
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>

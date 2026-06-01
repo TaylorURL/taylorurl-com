@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { fadeInUp } from '@constants/animations'
 import { HOW_IT_WORKS_STEPS } from '@data/home'
+import { SECTION_H2 } from '@constants/ui'
 
 export default function HowItWorksSection() {
   return (
@@ -8,7 +9,7 @@ export default function HowItWorksSection() {
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className={`mb-4 ${SECTION_H2}`}>
             Dead <span className="logo-wave-dark">Simple</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
