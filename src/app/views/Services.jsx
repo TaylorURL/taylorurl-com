@@ -17,7 +17,7 @@ import PageHero from '@components/PageHero'
 import BrowserMockup from '@components/BrowserMockup'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, BTN_SECONDARY, SECTION_H2 } from '@constants/ui'
+import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 
 const SERVICES = [
   {
@@ -213,13 +213,10 @@ export default function Services() {
             <p className="mb-8 text-lg text-gray-600">
               Tell us what you need. We&apos;ll give you a straight answer and a real price.
             </p>
-            <div className="flex flex-wrap justify-center gap-4">
+            <div className="flex justify-center">
               <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
                 Get a Quote
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link to="/work" className={BTN_SECONDARY}>
-                View Our Work
               </Link>
             </div>
           </motion.div>

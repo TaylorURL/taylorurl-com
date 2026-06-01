@@ -7,7 +7,6 @@ import ScrollToTop from '@components/ScrollToTop'
 const Home = lazy(() => import('@views/Home'))
 const About = lazy(() => import('@views/About'))
 const Services = lazy(() => import('@views/Services'))
-const Work = lazy(() => import('@views/Work'))
 const Pricing = lazy(() => import('@views/Pricing'))
 const Privacy = lazy(() => import('@views/Privacy'))
 const Terms = lazy(() => import('@views/Terms'))
@@ -31,7 +30,6 @@ export default function App() {
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
               <Route path="services" element={<Services />} />
-              <Route path="work" element={<Work />} />
               <Route path="pricing" element={<Pricing />} />
               <Route path="privacy" element={<Privacy />} />
               <Route path="terms" element={<Terms />} />

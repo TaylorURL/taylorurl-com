@@ -288,8 +288,6 @@ export default function Process() {
         description="Now you know how it works. Let's talk about your project and get you a real number."
         primaryLabel="Get a Quote"
         primaryTo="/pricing"
-        secondaryLabel="See Our Work"
-        secondaryTo="/work"
       />
     </div>
   )

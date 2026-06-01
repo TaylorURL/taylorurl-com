@@ -14,14 +14,7 @@ import {
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import {
-  BTN_PRIMARY,
-  BTN_SECONDARY_DARK,
-  CARD,
-  EYEBROW,
-  SECTION_H2,
-  SECTION_H2_DARK,
-} from '@constants/ui'
+import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
 
 const VALUES = [
   {
@@ -266,13 +259,10 @@ export default function About() {
               Tell us what you need. We&apos;ll give you a straight answer and a real quote — no
               &quot;discovery phase&quot; required.
             </p>
-            <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <div className="flex justify-center">
               <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
                 Get a Quote
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-              <Link to="/work" className={BTN_SECONDARY_DARK}>
-                View Our Work
               </Link>
             </div>
           </motion.div>

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
-import { BTN_PRIMARY, BTN_SECONDARY_DARK } from '@constants/ui'
+import { BTN_PRIMARY } from '@constants/ui'
 
 export default function HeroSection() {
   return (
@@ -53,14 +53,11 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-col gap-3 sm:flex-row"
+            className="flex"
           >
             <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
               Get a Free Quote
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Link>
-            <Link to="/work" className={BTN_SECONDARY_DARK}>
-              See Our Work
             </Link>
           </motion.div>
 

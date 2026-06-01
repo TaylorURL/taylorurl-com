@@ -4,6 +4,7 @@ import { CheckCircle2, Clock, Activity } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount, staggerChildMount } from '@constants/animations'
+import { SUPPORT_EMAIL } from '@constants/navigation'
 import { SECTION_H2_DARK } from '@constants/ui'
 
 const SERVICES = [
@@ -264,7 +265,7 @@ export default function Status() {
               Experiencing issues? Let us know and we&apos;ll get on it.
             </p>
             <a
-              href="mailto:support@taylorurl.com"
+              href={`mailto:${SUPPORT_EMAIL}`}
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-500"
             >
               Contact Support
