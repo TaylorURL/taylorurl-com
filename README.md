@@ -5,7 +5,7 @@
 <p align="center"><strong>Web Development Agency & Client Portal for Southeast Texas Businesses</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/v5.0.2-release-1e3a5f" alt="Version 5.0.2" />
+  <img src="https://img.shields.io/badge/v5.1.0-release-1e3a5f" alt="Version 5.1.0" />
   <img src="https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white" alt="React 19.1" />
   <img src="https://img.shields.io/badge/Vite-7.1-646CFF?logo=vite&logoColor=white" alt="Vite 7.1" />
   <img src="https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
@@ -101,24 +101,6 @@ Views
 | Structured Data Schemas | 3 (LocalBusiness, WebSite, FAQPage) |
 | Database Tables | 3 (profiles, websites, website_stats) |
 | Security Headers | 5 |
-
----
-
-## Sunday (Personal AI Agent)
-
-Sunday is an admin-only personal agent integrated into this project. Voice-driven, memory-rich, tool-equipped. Lives at `/sunday/*` (admin-only). Built on Anthropic Claude, Deepgram STT, ElevenLabs TTS, OpenAI embeddings, Home Assistant, and Claude Code via a local dispatch daemon.
-
-**To bring Sunday online for the first time, follow `docs/superpowers/sunday-setup.md`.**
-
-Implementation:
-- Schema: `supabase/migrations/20260602120000_sunday_schema.sql` + `20260602130000_sunday_rpc_and_cron.sql`
-- Edge functions: `supabase/functions/sunday-{chat,stt,tts,synthesize}`
-- Local daemon: `daemon/sunday-code-daemon/`
-- Frontend: `src/app/{views,components,hooks,data,constants}/sunday/`
-
-Design + plan reference:
-- Spec: `docs/superpowers/specs/2026-06-02-sunday-design.md`
-- Phase 1 plan: `docs/superpowers/plans/2026-06-02-sunday-phase-1-database-foundation.md`
 
 ---
 

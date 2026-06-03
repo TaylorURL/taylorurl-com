@@ -1,7 +1,7 @@
 {
   "name": "taylorurl",
   "private": true,
-  "version": "5.0.2",
+  "version": "5.1.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -12,12 +12,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,css}\""
   },
   "dependencies": {
-    "@radix-ui/react-select": "^2.2.6",
-    "@radix-ui/react-slot": "^1.2.4",
-    "@radix-ui/react-tooltip": "^1.2.8",
     "@supabase/supabase-js": "^2.106.2",
-    "class-variance-authority": "^0.7.1",
-    "clsx": "^2.1.1",
     "dompurify": "^3.2.6",
     "framer-motion": "^12.29.2",
     "leaflet": "^1.9.4",
@@ -26,10 +21,8 @@
     "react-dom": "^19.1.1",
     "react-helmet-async": "^3.0.0",
     "react-leaflet": "^5.0.0",
-    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.13.0",
     "recharts": "^3.7.0",
-    "tailwind-merge": "^3.6.0",
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
