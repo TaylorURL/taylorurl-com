@@ -23,7 +23,7 @@ export function ToastProvider({ children }) {
     <ToastContext.Provider value={addToast}>
       {children}
       <div
-        className="fixed bottom-6 left-1/2 z-[100] flex -translate-x-1/2 flex-col gap-2"
+        className="fixed bottom-6 left-4 right-4 z-[100] flex flex-col items-center gap-2 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
         role="region"
         aria-label="Notifications"
         aria-live="polite"
@@ -47,7 +47,7 @@ export function ToastProvider({ children }) {
               ) : (
                 <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
               )}
-              <span className="whitespace-nowrap text-sm font-medium">{toast.message}</span>
+              <span className="text-sm font-medium">{toast.message}</span>
               <button
                 onClick={() => removeToast(toast.id)}
                 className="ml-2 text-gray-400 transition-colors hover:text-gray-600"

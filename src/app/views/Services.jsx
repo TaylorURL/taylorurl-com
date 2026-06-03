@@ -111,10 +111,10 @@ export default function Services() {
       />
 
       {/* Services grid — alternating layout */}
-      <section className="relative overflow-hidden bg-white py-20">
+      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
-          <div className="space-y-20">
+          <div className="space-y-12 sm:space-y-20">
             {SERVICES.map((service, i) => {
               const Icon = service.icon
               const isReversed = i % 2 === 1
@@ -122,14 +122,14 @@ export default function Services() {
                 <motion.div
                   key={service.title}
                   {...staggerChild(i, 0.15)}
-                  className={`grid items-center gap-10 lg:grid-cols-2 ${isReversed ? 'lg:direction-rtl' : ''}`}
+                  className={`grid items-center gap-6 lg:grid-cols-2 lg:gap-10 ${isReversed ? 'lg:direction-rtl' : ''}`}
                 >
                   <div className={isReversed ? 'lg:order-2' : ''}>
                     <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
                       <Icon className="h-6 w-6 text-blue-600" strokeWidth={1.5} />
                     </div>
                     <h3 className="mb-3 text-2xl font-bold text-gray-900">{service.title}</h3>
-                    <p className="mb-6 text-lg text-gray-600">{service.description}</p>
+                    <p className="mb-6 text-base text-gray-600 sm:text-lg">{service.description}</p>
                     <ul className="space-y-3">
                       {service.features.map(feature => (
                         <li key={feature} className="flex items-center gap-3 text-gray-700">
@@ -203,14 +203,14 @@ export default function Services() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden border-t border-gray-200 bg-white py-20">
+      <section className="relative overflow-hidden border-t border-gray-200 bg-white py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
               Sounds <span className="logo-wave-dark">Good</span>?
             </h2>
-            <p className="mb-8 text-lg text-gray-600">
+            <p className="mb-8 text-base text-gray-600 sm:text-lg">
               Tell us what you need. We&apos;ll give you a straight answer and a real price.
             </p>
             <div className="flex justify-center">

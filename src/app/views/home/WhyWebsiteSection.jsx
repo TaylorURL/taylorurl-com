@@ -5,10 +5,10 @@ import { SECTION_H2 } from '@constants/ui'
 
 export default function WhyWebsiteSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-24">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-14 sm:py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
-        <motion.div {...fadeInUp} className="mb-16 text-center">
+        <motion.div {...fadeInUp} className="mb-10 text-center sm:mb-16">
           <h2 className={`mb-4 ${SECTION_H2}`}>
             Why You <span className="logo-wave-dark">Need a Website</span>
           </h2>
@@ -17,7 +17,7 @@ export default function WhyWebsiteSection() {
           </p>
         </motion.div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
           {WHY_WEBSITE_CARDS.map((item, i) => {
             const Icon = item.icon
             return (
@@ -25,7 +25,7 @@ export default function WhyWebsiteSection() {
                 key={i}
                 {...staggerChild(i)}
                 whileHover={{ y: -5 }}
-                className="group rounded-2xl border border-gray-200 bg-white p-8 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5"
+                className="group rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 sm:p-8"
               >
                 <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 transition-all duration-300 group-hover:bg-blue-50">
                   <Icon

@@ -56,10 +56,10 @@ function Avatar({ name, color }) {
 
 export default function TestimonialsSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-24">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-14 sm:py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mb-16 text-center">
+        <div className="mb-10 text-center sm:mb-16">
           <h2 className={`mb-4 ${SECTION_H2}`}>
             Don&apos;t Take Our <span className="logo-wave-dark">Word for It</span>
           </h2>
@@ -68,13 +68,13 @@ export default function TestimonialsSection() {
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
+        <div className="grid gap-4 sm:gap-8 md:grid-cols-3">
           {TESTIMONIALS.map((testimonial, index) => (
             <motion.div
               key={testimonial.name}
               {...staggerChild(index)}
               whileHover={{ y: -4 }}
-              className="rounded-2xl border border-gray-200 bg-gray-50 p-8 transition-shadow hover:shadow-lg"
+              className="rounded-2xl border border-gray-200 bg-gray-50 p-5 transition-shadow hover:shadow-lg sm:p-8"
             >
               <StarRating />
               <p className="mt-4 text-base italic leading-relaxed text-gray-600">

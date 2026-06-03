@@ -108,9 +108,9 @@ ${formData.message}
         description="No sales pitch. Just tell us what you need and we'll give you a number."
       />
 
-      <section className="bg-white py-20">
+      <section className="bg-white py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-12 lg:grid-cols-5">
+          <div className="grid gap-8 lg:grid-cols-5 lg:gap-12">
             <motion.div
               {...slideInLeftMount}
               transition={{ duration: 0.5 }}
@@ -182,7 +182,7 @@ ${formData.message}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:col-span-3"
             >
-              <div className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
                 <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Us What You Need</h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">

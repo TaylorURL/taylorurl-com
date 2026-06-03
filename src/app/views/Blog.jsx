@@ -369,7 +369,7 @@ export default function Blog() {
                 {/* Right: compact list sidebar */}
                 {sidebarPosts.length > 0 && (
                   <div className="lg:col-span-1">
-                    <div className="sticky top-28 rounded-2xl border border-gray-200 bg-gray-50/50 p-2">
+                    <div className="rounded-2xl border border-gray-200 bg-gray-50/50 p-2 lg:sticky lg:top-28">
                       <h3 className="mb-1 px-4 pt-3 text-xs font-semibold uppercase tracking-wider text-gray-400">
                         More Articles
                       </h3>
@@ -446,14 +446,14 @@ export default function Blog() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gray-950 py-20">
+      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-white">
+            <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
               Ready to Fix Your <span className="logo-wave">Website</span>?
             </h2>
-            <p className="mb-8 text-lg text-gray-400">
+            <p className="mb-8 text-base text-gray-400 sm:text-lg">
               Stop reading about it and let&apos;s actually do something about it.
             </p>
             <Link to="/pricing" className={`${BTN_PRIMARY} group`}>

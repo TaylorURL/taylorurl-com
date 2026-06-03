@@ -107,7 +107,7 @@ function OverallStatus() {
     <motion.div
       {...fadeInUpMount}
       transition={{ duration: 0.5 }}
-      className="mb-10 flex items-center justify-between rounded-2xl border border-green-200 bg-green-50 px-6 py-5"
+      className="mb-10 flex items-center justify-between rounded-2xl border border-green-200 bg-green-50 px-4 py-4 sm:px-6 sm:py-5"
     >
       <div className="flex items-center gap-3">
         <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-green-500" />
@@ -144,7 +144,7 @@ function ServiceRow({ service, daySlot, index }) {
       {...staggerChildMount(index, 0.03)}
       className="border-b border-gray-100 last:border-b-0"
     >
-      <div className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center justify-between px-4 py-4 sm:px-6">
         <div className="flex items-center gap-3">
           <CheckCircle2 className={`h-5 w-5 ${config.color}`} />
           <div>
@@ -168,7 +168,7 @@ function ServiceRow({ service, daySlot, index }) {
           </span>
         </div>
       </div>
-      <div className="px-6 pb-3">
+      <div className="px-4 pb-3 sm:px-6">
         <UptimeBar />
         <div className="mt-1 flex justify-between text-xs text-gray-400">
           <span>90 days ago</span>

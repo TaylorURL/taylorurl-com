@@ -96,10 +96,10 @@ export default function About() {
       <PageHero title="About Us" description="Small team. Real code. No corporate energy." />
 
       {/* Story section */}
-      <section className="relative overflow-hidden bg-white py-20">
+      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
-          <div className="grid items-start gap-16 lg:grid-cols-5">
+          <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
               <p className={`mb-2 ${EYEBROW}`}>Our Story</p>
               <h2 className={`mb-8 ${SECTION_H2}`}>
@@ -168,7 +168,7 @@ export default function About() {
       </section>
 
       {/* Values */}
-      <section className="border-y border-gray-200 bg-gray-50 py-20">
+      <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-14">
             <p className={`mb-2 ${EYEBROW}`}>Why Us</p>
@@ -193,7 +193,7 @@ export default function About() {
       </section>
 
       {/* Process */}
-      <section className="relative overflow-hidden bg-white py-20">
+      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
@@ -248,14 +248,14 @@ export default function About() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gray-950 py-20">
+      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
               Let&apos;s <span className="logo-wave">Do This</span>
             </h2>
-            <p className="mb-8 text-lg text-gray-400">
+            <p className="mb-8 text-base text-gray-400 sm:text-lg">
               Tell us what you need. We&apos;ll give you a straight answer and a real quote — no
               &quot;discovery phase&quot; required.
             </p>

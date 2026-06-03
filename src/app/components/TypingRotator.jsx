@@ -25,7 +25,7 @@ export default function TypingRotator() {
   }, [])
 
   return (
-    <span className="inline-block min-w-[180px] sm:min-w-[220px]">
+    <span className="inline-block min-w-[130px] sm:min-w-[180px] md:min-w-[220px]">
       <AnimatePresence mode="wait">
         <motion.span
           key={WORDS[index]}

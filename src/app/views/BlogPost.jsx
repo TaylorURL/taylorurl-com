@@ -41,7 +41,7 @@ export default function BlogPost() {
         }}
       />
 
-      <article className="relative overflow-hidden bg-white pb-20 pt-40">
+      <article className="relative overflow-hidden bg-white pb-12 pt-28 sm:pb-20 sm:pt-40">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-3xl px-6">
           <motion.div

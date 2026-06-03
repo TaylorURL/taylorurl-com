@@ -3,8 +3,13 @@
   "configurations": [
     {
       "name": "TaylorURL Dev",
-      "runtimeExecutable": "/bin/bash",
-      "runtimeArgs": ["-c", "cd /Users/trentontaylor/WebstormProjects/taylorurl-com && /Users/trentontaylor/.nvm/versions/node/v22.21.1/bin/npx vite --port 5173"],
+      "runtimeExecutable": "/Users/trentontaylor/.nvm/versions/node/v22.21.1/bin/npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/trentontaylor/WebstormProjects/taylorurl-com",
+        "run",
+        "dev"
+      ],
       "port": 5173
     }
   ]

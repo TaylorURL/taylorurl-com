@@ -1,6 +1,6 @@
 {
-  "version": "5.0.1",
+  "version": "5.0.2",
   "projectName": "taylorurl",
-  "branch": "main",
+  "branch": "develop",
   "provider": "claude-code"
 }

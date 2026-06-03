@@ -5,13 +5,13 @@ import { BTN_PRIMARY_LG, BTN_SECONDARY_DARK_LG } from '@constants/ui'
 
 export default function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-900 py-24">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-900 py-14 sm:py-24">
       <div className="grid-pattern-blue absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-6xl px-6 text-center">
-        <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
+        <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
           Ready to <span className="logo-wave">Stop Overthinking It</span>?
         </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-lg text-gray-400">
+        <p className="mx-auto mb-8 max-w-2xl text-base text-gray-400 sm:text-lg">
           You don&apos;t need to understand hosting, SSL, or DNS. That&apos;s literally our job.
           Just tell us what you need and we&apos;ll take it from there.
         </p>

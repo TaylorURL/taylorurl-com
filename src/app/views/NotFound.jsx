@@ -5,25 +5,26 @@ import { ArrowRight, Bug } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BTN_PRIMARY, BTN_SECONDARY } from '@constants/ui'
 
-const GRID_SIZE = 280
 const BUG_SIZE = 32
 const MOVE_INTERVAL_MS = 1200
 
-function randomPos() {
-  return {
-    x: Math.random() * (GRID_SIZE - BUG_SIZE),
-    y: Math.random() * (GRID_SIZE - BUG_SIZE),
-  }
-}
-
 export default function NotFound() {
   const [score, setScore] = useState(0)
-  const [bugPos, setBugPos] = useState(randomPos)
+  const [bugPos, setBugPos] = useState({ x: 0, y: 0 })
   const intervalRef = useRef(null)
+  const gridRef = useRef(null)
 
-  const moveBug = useCallback(() => setBugPos(randomPos()), [])
+  const moveBug = useCallback(() => {
+    const el = gridRef.current
+    const size = el ? el.offsetWidth : 280
+    setBugPos({
+      x: Math.random() * (size - BUG_SIZE),
+      y: Math.random() * (size - BUG_SIZE),
+    })
+  }, [])
 
   useEffect(() => {
+    moveBug()
     intervalRef.current = setInterval(moveBug, MOVE_INTERVAL_MS)
     return () => clearInterval(intervalRef.current)
   }, [moveBug])
@@ -34,7 +35,7 @@ export default function NotFound() {
   }
 
   return (
-    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-gray-50 px-4 pb-16 pt-40">
+    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-gray-50 px-4 pb-12 pt-28 sm:pb-16 sm:pt-40">
       <div className="grid-pattern absolute inset-0 opacity-[0.03]" />
       <Seo title="Page Not Found" path="/404" />
 
@@ -43,7 +44,7 @@ export default function NotFound() {
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.5 }}
-          className="logo-wave-dark text-[8rem] font-bold leading-none"
+          className="logo-wave-dark text-[5rem] font-bold leading-none sm:text-[8rem]"
         >
           404
         </motion.p>
@@ -52,7 +53,7 @@ export default function NotFound() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.5 }}
-          className="mt-4 text-3xl font-bold text-gray-900"
+          className="mt-4 text-2xl font-bold text-gray-900 sm:text-3xl"
         >
           Page not found
         </motion.h1>
@@ -77,8 +78,9 @@ export default function NotFound() {
             Bugs squashed: <span className="font-bold text-blue-600">{score}</span>
           </div>
           <div
-            className="relative mx-auto rounded-xl border-2 border-dashed border-gray-300 bg-white"
-            style={{ width: GRID_SIZE, height: GRID_SIZE }}
+            ref={gridRef}
+            className="relative mx-auto w-full max-w-[280px] rounded-xl border-2 border-dashed border-gray-300 bg-white"
+            style={{ aspectRatio: '1 / 1' }}
           >
             <div className="grid-pattern absolute inset-0 rounded-xl opacity-[0.03]" />
             <motion.button

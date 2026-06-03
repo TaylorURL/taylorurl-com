@@ -29,7 +29,9 @@ export default function CtaBanner({
   const isDark = variant === 'dark'
 
   return (
-    <section className={`border-t border-gray-200 py-20 ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}>
+    <section
+      className={`border-t border-gray-200 py-12 sm:py-20 ${isDark ? 'bg-gray-900' : 'bg-gray-100'}`}
+    >
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
           {...fadeInUp}
@@ -37,14 +39,14 @@ export default function CtaBanner({
           className="mx-auto max-w-3xl text-center"
         >
           <h2
-            className={`mb-4 text-3xl font-bold md:text-4xl ${isDark ? 'text-white' : 'text-gray-900'}`}
+            className={`mb-4 text-2xl font-bold sm:text-3xl md:text-4xl ${isDark ? 'text-white' : 'text-gray-900'}`}
           >
             {heading}{' '}
             {accentText && (
               <span className={isDark ? 'logo-wave' : 'logo-wave-dark'}>{accentText}</span>
             )}
           </h2>
-          <p className={`mb-8 text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+          <p className={`mb-8 text-base sm:text-lg ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
             {description}
           </p>
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

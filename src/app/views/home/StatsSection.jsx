@@ -12,14 +12,14 @@ export default function StatsSection() {
   const { count: localSearchPercent, ref: statRef } = useCountUp(46, 2500)
 
   return (
-    <section className="border-t border-gray-200 bg-gray-50 py-20">
+    <section className="border-t border-gray-200 bg-gray-50 py-12 sm:py-20">
       <div className="mx-auto max-w-6xl px-6">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <div>
             <h2 className={`mb-4 ${SECTION_H2}`}>
               Can People Actually <span className="logo-wave-dark">Find You?</span>
             </h2>
-            <p className="mb-8 text-lg text-gray-600">
+            <p className="mb-8 text-base text-gray-600 sm:text-lg">
               Almost every customer starts with a Google search. No website means they&apos;re
               calling the other guy.
             </p>
@@ -31,7 +31,7 @@ export default function StatsSection() {
                 <BarChart
                   data={CUSTOMER_DISCOVERY_DATA}
                   layout="vertical"
-                  margin={{ top: 5, right: 30, left: 90, bottom: 5 }}
+                  margin={{ top: 5, right: 10, left: 60, bottom: 5 }}
                 >
                   <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" horizontal={false} />
                   <XAxis type="number" domain={[0, 50]} tick={CHART_AXIS_STYLE} axisLine={false} />
@@ -60,7 +60,7 @@ export default function StatsSection() {
                 of all searches have local intent
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3 text-center sm:gap-6">
+            <div className="grid grid-cols-3 gap-2 text-center sm:gap-6">
               {LOCAL_SEARCH_STATS.map(stat => (
                 <div key={stat.value}>
                   <div className="text-xl font-bold text-gray-900 sm:text-3xl">{stat.value}</div>

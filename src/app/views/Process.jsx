@@ -149,13 +149,17 @@ export default function Process() {
       />
 
       {/* Timeline */}
-      <section className="bg-white py-20">
+      <section className="bg-white py-12 sm:py-20">
         <div className="mx-auto max-w-5xl px-6">
-          <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-16 text-center">
+          <motion.div
+            {...fadeInUp}
+            transition={{ duration: 0.5 }}
+            className="mb-10 text-center sm:mb-16"
+          >
             <h2 className={`mb-4 ${SECTION_H2}`}>
               From <span className="logo-wave-dark">Hello</span> to Live Site
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600">
+            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
               Most projects wrap in 3-4 weeks. Here&apos;s what each step looks like.
             </p>
           </motion.div>
@@ -182,13 +186,15 @@ export default function Process() {
                           </span>
                           <span className={BADGE}>{step.duration}</span>
                         </div>
-                        <h3 className="text-2xl font-bold text-gray-900">{step.title}</h3>
+                        <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">
+                          {step.title}
+                        </h3>
                       </div>
                     </div>
 
                     {/* Content card */}
                     <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 transition-all duration-300 hover:border-blue-200 hover:shadow-md lg:ml-20">
-                      <p className="mb-6 text-lg text-gray-600">{step.description}</p>
+                      <p className="mb-6 text-base text-gray-600 sm:text-lg">{step.description}</p>
 
                       {/* Two-column: You / Us */}
                       <div className="grid gap-6 sm:grid-cols-2">
@@ -241,13 +247,13 @@ export default function Process() {
       </section>
 
       {/* What You'll Need */}
-      <section className="border-y border-gray-200 bg-gray-50 py-20">
+      <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
         <div className="mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-12 text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
               What You&apos;ll Need <span className="logo-wave-dark">From Us</span>
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600">
+            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
               Don&apos;t stress about having everything perfect. We can work with what you&apos;ve
               got and help fill in the gaps.
             </p>

@@ -16,3 +16,10 @@ verify_jwt = false
 
 [functions.error-reporting-service]
 verify_jwt = false
+
+# Sunday (personal AI agent). sunday-chat/stt/tts do JWT + admin checks inside
+# the function via authorizeAdmin(); the gateway also enforces verify_jwt by
+# default. sunday-synthesize is invoked by pg_cron with a shared secret header,
+# so it disables the gateway JWT check.
+[functions.sunday-synthesize]
+verify_jwt = false

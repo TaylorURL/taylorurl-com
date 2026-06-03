@@ -5,7 +5,7 @@ import { SECTION_H2 } from '@constants/ui'
 
 export default function HowItWorksSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-24">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-14 sm:py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-16 text-center">
@@ -18,7 +18,7 @@ export default function HowItWorksSection() {
         </div>
 
         <div className="mx-auto max-w-4xl">
-          <div className="grid gap-8 md:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-3 md:gap-8">
             {HOW_IT_WORKS_STEPS.map((item, i) => (
               <motion.div
                 key={i}
@@ -26,7 +26,7 @@ export default function HowItWorksSection() {
                 transition={{ delay: i * 0.1 }}
                 className="text-center"
               >
-                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-blue-600 text-2xl font-bold text-blue-600">
+                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border-2 border-blue-600 text-lg font-bold text-blue-600 sm:mb-6 sm:h-16 sm:w-16 sm:text-2xl">
                   {item.step}
                 </div>
                 <h3 className="mb-3 text-xl font-semibold text-gray-900">{item.title}</h3>

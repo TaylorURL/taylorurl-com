@@ -94,7 +94,7 @@ export default function Careers() {
         description="Join our team and help local businesses succeed online."
       />
 
-      <section className="bg-white px-4 py-20 sm:px-6 md:py-28">
+      <section className="bg-white px-4 py-12 sm:px-6 sm:py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
           <motion.div
             {...fadeInUp}
@@ -102,7 +102,7 @@ export default function Careers() {
             className="mb-14 text-center"
           >
             <h2 className={`mb-4 ${SECTION_H2}`}>Why Work With Us</h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600">
+            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
               We believe great work comes from great teams. Here&apos;s what makes TaylorURL a place
               you&apos;ll love.
             </p>
@@ -126,7 +126,7 @@ export default function Careers() {
         </div>
       </section>
 
-      <section className="bg-gray-50 px-4 py-20 sm:px-6 md:py-28">
+      <section className="bg-gray-50 px-4 py-12 sm:px-6 sm:py-20 md:py-28">
         <div className="mx-auto max-w-4xl">
           <motion.div
             {...fadeInUp}
@@ -144,9 +144,11 @@ export default function Careers() {
               <motion.div
                 key={position.title}
                 {...staggerChild(index)}
-                className="rounded-2xl border border-gray-200 bg-white p-8 shadow-sm"
+                className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8"
               >
-                <h3 className="mb-3 text-2xl font-bold text-gray-900">{position.title}</h3>
+                <h3 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
+                  {position.title}
+                </h3>
                 <div className="mb-5 flex flex-wrap gap-2">
                   <span className={BADGE_BLUE}>{position.type}</span>
                   <span className={BADGE}>{position.location}</span>
@@ -177,7 +179,7 @@ export default function Careers() {
           <motion.div
             {...fadeInUp}
             transition={{ duration: FADE_DURATION, delay: GENERAL_APPLICATION_DELAY }}
-            className="mt-8 rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm"
+            className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-8"
           >
             <p className="mb-4 text-gray-600">
               Don&apos;t see your role? We&apos;re always interested in hearing from talented
@@ -194,7 +196,7 @@ export default function Careers() {
         </div>
       </section>
 
-      <section className="bg-gray-900 px-4 py-20 sm:px-6 md:py-28">
+      <section className="bg-gray-900 px-4 py-12 sm:px-6 sm:py-20 md:py-28">
         <motion.div
           {...fadeInUp}
           transition={{ duration: FADE_DURATION }}
@@ -203,7 +205,7 @@ export default function Careers() {
           <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
             Ready to <span className="logo-wave">Join Us?</span>
           </h2>
-          <p className="mx-auto mb-8 max-w-xl text-lg text-gray-400">
+          <p className="mx-auto mb-8 max-w-xl text-base text-gray-400 sm:text-lg">
             Send us your resume and portfolio. We&apos;d love to hear from you.
           </p>
           <a href={buildMailtoHref('Career Inquiry')} className={BTN_PRIMARY_LG}>

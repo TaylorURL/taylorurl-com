@@ -65,7 +65,7 @@ export default function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.6 }}
-            className="mt-12 flex items-center gap-6 text-sm text-gray-500"
+            className="mt-12 flex items-center gap-3 text-sm text-gray-500 sm:gap-6"
           >
             <div className="flex -space-x-2">
               {['bg-orange-500', 'bg-blue-600', 'bg-emerald-500', 'bg-violet-500'].map(

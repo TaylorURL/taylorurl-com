@@ -38,17 +38,17 @@ const FACTS = [
 
 export default function DataSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-950 py-24">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-950 py-14 sm:py-24">
       <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
       <div className="relative mx-auto max-w-6xl px-6">
         {/* Top: message + chart */}
-        <div className="grid items-center gap-12 lg:grid-cols-2">
+        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <motion.div {...fadeInUp}>
             <h2 className={`mb-5 ${SECTION_H2_DARK}`}>
               A Website Isn&apos;t a Nice-to-Have.{' '}
               <span className="logo-wave">It&apos;s the Difference.</span>
             </h2>
-            <p className="mb-6 text-lg leading-relaxed text-gray-400">
+            <p className="mb-6 text-base leading-relaxed text-gray-400 sm:text-lg">
               Businesses with a real website grow faster, get found more, and close more customers.
               The ones without? They stay stuck relying on word of mouth and hoping the phone rings.
             </p>
@@ -131,7 +131,7 @@ export default function DataSection() {
         <motion.div
           {...fadeInUp}
           transition={{ delay: 0.2 }}
-          className="mt-14 grid gap-6 md:grid-cols-3"
+          className="mt-10 grid gap-4 sm:mt-14 sm:gap-6 md:grid-cols-3"
         >
           {FACTS.map(fact => {
             const Icon = fact.icon

@@ -81,7 +81,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId }) {
         aria-controls={panelId}
         className="flex w-full items-center justify-between gap-4 py-5 text-left transition-colors hover:text-gray-900"
       >
-        <span className="text-lg font-medium text-gray-900">{question}</span>
+        <span className="text-base font-medium text-gray-900 sm:text-lg">{question}</span>
         <motion.span
           animate={{ rotate: isOpen ? 180 : 0 }}
           transition={{ duration: 0.25 }}
@@ -101,7 +101,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId }) {
             transition={{ duration: 0.3, ease: 'easeInOut' }}
             className="overflow-hidden"
           >
-            <p className="pb-5 pr-12 leading-relaxed text-gray-600">{answer}</p>
+            <p className="pb-5 pr-4 leading-relaxed text-gray-600 sm:pr-12">{answer}</p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -139,7 +139,7 @@ export default function Faq() {
       />
       <PageHero title="Frequently Asked Questions" description="Straight answers. No runaround." />
 
-      <section className="relative bg-white py-20">
+      <section className="relative bg-white py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
         <div className="relative mx-auto max-w-3xl px-6">
           {FAQ_CATEGORIES.map((category, catIndex) => (
@@ -152,7 +152,7 @@ export default function Faq() {
               <h2 className={`mb-6 ${SECTION_H2}`}>
                 <span className="logo-wave-dark">{category.title}</span>
               </h2>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/50 px-6">
+              <div className="rounded-2xl border border-gray-200 bg-gray-50/50 px-4 sm:px-6">
                 {category.questions.map((item, qIndex) => {
                   const key = `${catIndex}-${qIndex}`
                   return (
@@ -173,14 +173,14 @@ export default function Faq() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gray-950 py-20">
+      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-3xl font-bold text-white">
+            <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
               Still Have <span className="logo-wave">Questions</span>?
             </h2>
-            <p className="mb-8 text-lg text-gray-400">
+            <p className="mb-8 text-base text-gray-400 sm:text-lg">
               We don&apos;t bite. Shoot us a message and we&apos;ll get back to you fast.
             </p>
             <a href="/pricing" className={BTN_PRIMARY}>

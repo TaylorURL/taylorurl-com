@@ -35,7 +35,7 @@ export default function LogoMarquee() {
         </p>
       </div>
       <div className="marquee-fade">
-        <div className="animate-marquee flex gap-12">
+        <div className="animate-marquee flex gap-6 sm:gap-12">
           {DOUBLED.map((item, i) => {
             const Icon = item.icon
             return (
