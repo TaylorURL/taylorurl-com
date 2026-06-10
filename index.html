@@ -4,28 +4,28 @@
     <meta charset="UTF-8"/>
     <link href="/images/TaylorURL-Logo.png" rel="icon" type="image/png"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>TaylorURL | Web Development in Baytown & Houston, TX</title>
-    <meta content="Custom web development for businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded websites that rank on Google, load fast, and bring in customers. No templates, no page builders."
-          name="description"/>
     <meta name="keywords" content="web development Baytown TX, web design Houston, website developer near me, custom websites Texas, small business website Baytown, web developer Houston TX, affordable web design Baytown, SEO web development Houston"/>
     <meta name="geo.region" content="US-TX"/>
     <meta name="geo.placename" content="Baytown, Texas"/>
     <meta name="geo.position" content="29.7355;-94.9774"/>
     <meta name="ICBM" content="29.7355, -94.9774"/>
-    <meta content="TaylorURL | Web Development in Baytown & Houston, TX" property="og:title"/>
-    <meta content="Custom websites for local businesses in Baytown, Houston, and the greater Texas Gulf Coast. Real code, real results." property="og:description"/>
-    <meta content="website" property="og:type"/>
-    <meta content="https://taylorurl.com" property="og:url"/>
-    <meta content="/images/TaylorURL-Logo.png" property="og:image"/>
-    <meta content="TaylorURL" property="og:site_name"/>
     <meta content="en_US" property="og:locale"/>
-    <meta content="summary_large_image" name="twitter:card"/>
-    <meta content="TaylorURL | Web Development in Baytown & Houston, TX" name="twitter:title"/>
-    <meta content="Custom websites for local businesses in Baytown, Houston, and the greater Texas Gulf Coast." name="twitter:description"/>
-    <link rel="canonical" href="https://taylorurl.com/"/>
+    <!--
+      Per-route SEO (title, description, canonical, Open Graph, Twitter cards) is
+      owned by the Seo component (react-helmet-async) and baked into each route's
+      HTML at build time by the prerender step. Duplicating those tags here would
+      double them up in the prerendered output, so only site-wide hints remain.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com"/>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
 
+    <!--
+      TODO(NAP): "telephone" below is a placeholder (+18321234567) and "sameAs" is
+      empty. Replace the phone with the real business number and populate sameAs
+      with the real social profile URLs (Facebook, Instagram, LinkedIn, etc.) once
+      available. The same placeholder phone also lives in
+      src/app/constants/navigation.js (PHONE_NUMBER) and is used in tel: links.
+    -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",

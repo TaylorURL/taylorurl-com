@@ -1,9 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import path from 'node:path'
+import sitemapPlugin from './vite/sitemap-plugin.js'
+import prerenderPlugin from './vite/prerender-plugin.js'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), sitemapPlugin(), prerenderPlugin()],
   resolve: {
     alias: {
       '@components': path.resolve(__dirname, 'src/app/components'),
