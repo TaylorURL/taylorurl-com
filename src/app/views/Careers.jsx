@@ -179,7 +179,7 @@ export default function Careers() {
           <motion.div
             {...fadeInUp}
             transition={{ duration: FADE_DURATION, delay: GENERAL_APPLICATION_DELAY }}
-            className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-8"
+            className="mt-8 rounded-2xl border border-gray-200 bg-surface-overlay p-5 text-center shadow-sm sm:p-8"
           >
             <p className="mb-4 text-gray-600">
               Don&apos;t see your role? We&apos;re always interested in hearing from talented
