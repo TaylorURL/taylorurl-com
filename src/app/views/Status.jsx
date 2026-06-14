@@ -240,7 +240,7 @@ export default function Status() {
                     {group}
                   </h2>
                 </div>
-                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                <div className="overflow-hidden rounded-2xl border border-gray-200 bg-surface-raised">
                   {groupServices.map((service, i) => (
                     <ServiceRow
                       key={service.name}
