@@ -111,7 +111,7 @@ export default function Services() {
       />
 
       {/* Services grid — alternating layout */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="space-y-12 sm:space-y-20">
