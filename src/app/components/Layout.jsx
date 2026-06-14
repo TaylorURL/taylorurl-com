@@ -11,7 +11,7 @@ export default function Layout() {
   const isHome = location.pathname === '/'
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-surface-base">
       <ScrollProgress />
       <CursorGlow />
       <Navigation />
