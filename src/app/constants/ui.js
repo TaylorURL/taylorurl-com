@@ -35,13 +35,13 @@ export const BTN_SECONDARY_DARK_LG =
 
 // Form input (shared by every text/email/select control).
 export const INPUT =
-  'w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 transition duration-200 ease-out placeholder:text-gray-400 focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/15'
+  'w-full rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-gray-900 transition duration-200 ease-out placeholder:text-gray-400 focus:border-blue-600 focus:bg-surface-overlay focus:outline-none focus:ring-2 focus:ring-blue-600/15'
 
 // Cards — interactive (lifts on hover) and static.
 export const CARD =
-  'rounded-2xl border border-gray-200 bg-white p-6 transition duration-300 ease-out hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5'
+  'rounded-2xl border border-gray-200 bg-surface-raised p-6 transition duration-300 ease-out hover:-translate-y-0.5 hover:border-blue-200 hover:shadow-lg hover:shadow-blue-500/5'
 
-export const CARD_STATIC = 'rounded-2xl border border-gray-200 bg-white p-6'
+export const CARD_STATIC = 'rounded-2xl border border-gray-200 bg-surface-raised p-6'
 
 export const CARD_DARK =
   'rounded-2xl border border-gray-800 bg-gray-900/60 p-6 backdrop-blur-sm transition duration-300 ease-out hover:border-gray-700'

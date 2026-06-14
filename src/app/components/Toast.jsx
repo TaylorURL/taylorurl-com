@@ -38,8 +38,8 @@ export function ToastProvider({ children }) {
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               className={`flex items-center gap-3 rounded-xl border px-5 py-3 shadow-lg backdrop-blur-sm ${
                 toast.type === 'success'
-                  ? 'border-green-200 bg-white text-gray-900'
-                  : 'border-red-200 bg-white text-gray-900'
+                  ? 'border-green-200 bg-surface-overlay text-gray-900'
+                  : 'border-red-200 bg-surface-overlay text-gray-900'
               }`}
             >
               {toast.type === 'success' ? (

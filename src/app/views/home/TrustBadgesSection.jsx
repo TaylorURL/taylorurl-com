@@ -10,7 +10,7 @@ const TRUST_BADGES = [
 
 export default function TrustBadgesSection() {
   return (
-    <section className="border-y border-gray-200 bg-white py-8">
+    <section className="border-y border-gray-200 bg-surface-base py-8">
       <div className="mx-auto max-w-6xl px-6">
         <motion.div
           {...fadeInUp}

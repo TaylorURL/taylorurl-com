@@ -149,7 +149,7 @@ export default function Process() {
       />
 
       {/* Timeline */}
-      <section className="bg-white py-12 sm:py-20">
+      <section className="bg-surface-base py-12 sm:py-20">
         <div className="mx-auto max-w-5xl px-6">
           <motion.div
             {...fadeInUp}
@@ -176,7 +176,7 @@ export default function Process() {
                     {/* Step number + icon row */}
                     <div className="mb-6 flex items-center gap-4 lg:gap-6">
                       {/* Step circle */}
-                      <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-blue-500 bg-white md:h-16 md:w-16">
+                      <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-blue-500 bg-surface-overlay md:h-16 md:w-16">
                         <Icon className="h-5 w-5 text-blue-600 md:h-6 md:w-6" strokeWidth={1.5} />
                       </div>
                       <div>
@@ -198,7 +198,7 @@ export default function Process() {
 
                       {/* Two-column: You / Us */}
                       <div className="grid gap-6 sm:grid-cols-2">
-                        <div className="rounded-xl bg-white p-5">
+                        <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-gray-400">
                             WHAT YOU DO
                           </h4>
@@ -217,7 +217,7 @@ export default function Process() {
                             ))}
                           </ul>
                         </div>
-                        <div className="rounded-xl bg-white p-5">
+                        <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-blue-500">
                             WHAT WE DO
                           </h4>
@@ -266,7 +266,7 @@ export default function Process() {
                 <motion.div
                   key={item.label}
                   {...staggerChild(i)}
-                  className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-md"
+                  className="flex items-center gap-4 rounded-xl border border-gray-200 bg-surface-overlay p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-md"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
                     <Icon className="h-5 w-5 text-gray-700" strokeWidth={1.5} />

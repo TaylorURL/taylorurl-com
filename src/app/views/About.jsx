@@ -96,7 +96,7 @@ export default function About() {
       <PageHero title="About Us" description="Small team. Real code. No corporate energy." />
 
       {/* Story section */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
@@ -193,7 +193,7 @@ export default function About() {
       </section>
 
       {/* Process */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
@@ -213,7 +213,7 @@ export default function About() {
               {PROCESS.map((step, i) => (
                 <motion.div key={step.num} {...staggerChild(i, 0.1)} className="relative sm:pl-16">
                   {/* Step number on line */}
-                  <div className="absolute left-0 top-0 hidden h-12 w-12 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-sm font-bold text-gray-900 sm:flex">
+                  <div className="absolute left-0 top-0 hidden h-12 w-12 items-center justify-center rounded-full border-2 border-gray-200 bg-surface-overlay text-sm font-bold text-gray-900 sm:flex">
                     {step.num}
                   </div>
 
@@ -224,14 +224,14 @@ export default function About() {
                     </div>
                     <p className="mb-4 text-[15px] text-gray-600">{step.description}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="flex items-start gap-2 rounded-lg bg-white px-3 py-2">
+                      <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
                         <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
                         <div>
                           <p className="text-xs font-semibold uppercase text-gray-400">You</p>
                           <p className="text-sm text-gray-700">{step.you}</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 rounded-lg bg-white px-3 py-2">
+                      <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
                         <Monitor className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                         <div>
                           <p className="text-xs font-semibold uppercase text-blue-500">Us</p>

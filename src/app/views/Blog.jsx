@@ -110,7 +110,7 @@ function PostCard({ post, index }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.3, delay: index * 0.03 }}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white transition-all duration-300 hover:border-gray-300 hover:shadow-lg"
+      className="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-surface-raised transition-all duration-300 hover:border-gray-300 hover:shadow-lg"
     >
       <Link to={`/blog/${post.slug}`} className="flex flex-1 flex-col p-6">
         <div className="mb-3 flex items-center gap-2">
@@ -330,7 +330,7 @@ export default function Blog() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-12">
+      <section className="relative overflow-hidden bg-surface-base py-12">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           {/* Results count when filtering */}
