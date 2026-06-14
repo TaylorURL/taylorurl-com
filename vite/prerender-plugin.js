@@ -1,10 +1,10 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { preview } from 'vite'
-import puppeteer from 'puppeteer'
+import { createServer } from 'vite'
 import { PRERENDER_ROUTES } from './site-routes.js'
 
-const NAV_TIMEOUT_MS = 30000
+const ROOT_PLACEHOLDER = '<div id="root"></div>'
+const BODY_CLOSE_TAG = '</body>'
 
 /** Map a route to its static HTML output path (directory-style URLs). */
 function outputPathFor(outDir, route) {
@@ -12,13 +12,31 @@ function outputPathFor(outDir, route) {
 }
 
 /**
- * Build-time Vite plugin that renders each route in a headless browser and
- * writes the resulting HTML to disk, so social and AI crawlers (which don't run
- * JS) receive each page's real, per-route title/description/canonical/OG markup
- * from react-helmet-async instead of the SPA shell.
+ * Split the built index.html into the pieces the prerender reuses for every
+ * route: the <head> inner HTML (asset tags, site-wide meta, JSON-LD) and the
+ * trailing body markup that follows the empty root div (e.g. the analytics tag).
+ */
+function parseTemplate(template) {
+  const headOpenTag = template.match(/<head[^>]*>/)[0]
+  const headInner = template.slice(
+    template.indexOf(headOpenTag) + headOpenTag.length,
+    template.indexOf('</head>')
+  )
+  const bodyTail = template.slice(
+    template.indexOf(ROOT_PLACEHOLDER) + ROOT_PLACEHOLDER.length,
+    template.indexOf(BODY_CLOSE_TAG)
+  )
+  return { headInner, bodyTail }
+}
+
+/**
+ * Build-time Vite plugin that renders each route to static HTML with
+ * react-dom/server and React 19's native head hoisting, so social and AI
+ * crawlers (which don't run JS) receive each page's real per-route
+ * title/description/canonical/OG markup instead of the SPA shell.
  *
- * Locally the browser is the system Chromium (set PUPPETEER_EXECUTABLE_PATH);
- * in CI/Vercel it falls back to Puppeteer's bundled Chromium.
+ * Rendering happens in-process via Vite's SSR module loader — no headless
+ * browser — so it runs anywhere `vite build` does, including Vercel's sandbox.
  */
 export default function prerenderPlugin() {
   let outDir = 'dist'
@@ -31,54 +49,27 @@ export default function prerenderPlugin() {
     async closeBundle() {
       if (process.env.SKIP_PRERENDER) return
 
-      const server = await preview({
-        preview: { host: '127.0.0.1', port: 0 },
+      const template = await readFile(join(outDir, 'index.html'), 'utf8')
+      const { headInner, bodyTail } = parseTemplate(template)
+      const ssrServer = await createServer({
+        appType: 'custom',
+        server: { middlewareMode: true },
         logLevel: 'silent',
       })
-      const origin = server.resolvedUrls.local[0].replace(/\/$/, '')
 
-      const browser = await puppeteer.launch({
-        headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      })
-
-      // Render every route into memory first. Writing nothing to the output
-      // directory mid-crawl keeps the preview server's SPA fallback serving the
-      // pristine index.html shell, so no page inherits another route's baked-in
-      // <head> tags. Files are flushed to disk only after the server is closed.
-      const rendered = []
       try {
+        const { render } = await ssrServer.ssrLoadModule('/src/entry-server.jsx')
         for (const route of PRERENDER_ROUTES) {
-          const page = await browser.newPage()
-          // Skip cross-origin fetches (fonts, analytics beacon) for speed and to
-          // keep the network from idling out on third-party requests.
-          await page.setRequestInterception(true)
-          page.on('request', request => {
-            if (request.url().startsWith(origin)) request.continue()
-            else request.abort()
-          })
-
-          await page.goto(`${origin}${route}`, {
-            waitUntil: 'networkidle0',
-            timeout: NAV_TIMEOUT_MS,
-          })
-          // The canonical link only exists once react-helmet-async has applied
-          // the route's <Seo> tags, so it is a reliable "fully rendered" signal.
-          await page.waitForSelector('link[rel="canonical"]', { timeout: 10000 })
-
-          const html = await page.evaluate(() => document.documentElement.outerHTML)
-          rendered.push({ filePath: outputPathFor(outDir, route), html })
-          await page.close()
+          const document = render(route, headInner).replace(
+            BODY_CLOSE_TAG,
+            `${bodyTail}${BODY_CLOSE_TAG}`
+          )
+          const filePath = outputPathFor(outDir, route)
+          await mkdir(dirname(filePath), { recursive: true })
+          await writeFile(filePath, `<!doctype html>\n${document}\n`, 'utf8')
         }
       } finally {
-        await browser.close()
-        await server.close()
-      }
-
-      for (const { filePath, html } of rendered) {
-        await mkdir(dirname(filePath), { recursive: true })
-        await writeFile(filePath, `<!doctype html>\n${html}\n`, 'utf8')
+        await ssrServer.close()
       }
     },
   }

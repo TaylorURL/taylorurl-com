@@ -1,10 +1,10 @@
-import DOMPurify from 'dompurify'
 import { Link, useParams, Navigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, ArrowRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BADGE_BLUE, BTN_PRIMARY } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
+import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
 
 export default function BlogPost() {
   const { slug } = useParams()
@@ -87,7 +87,7 @@ export default function BlogPost() {
                   <p
                     key={i}
                     className="text-base leading-relaxed text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.text) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(block.text) }}
                   />
                 )
               })}
