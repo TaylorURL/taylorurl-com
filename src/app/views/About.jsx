@@ -224,7 +224,7 @@ export default function About() {
                     </div>
                     <p className="mb-4 text-[15px] text-gray-600">{step.description}</p>
                     <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="flex items-start gap-2 rounded-lg bg-white px-3 py-2">
+                      <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
                         <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
                         <div>
                           <p className="text-xs font-semibold uppercase text-gray-400">You</p>
