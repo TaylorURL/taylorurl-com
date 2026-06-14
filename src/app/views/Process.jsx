@@ -176,7 +176,7 @@ export default function Process() {
                     {/* Step number + icon row */}
                     <div className="mb-6 flex items-center gap-4 lg:gap-6">
                       {/* Step circle */}
-                      <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-blue-500 bg-white md:h-16 md:w-16">
+                      <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-blue-500 bg-surface-overlay md:h-16 md:w-16">
                         <Icon className="h-5 w-5 text-blue-600 md:h-6 md:w-6" strokeWidth={1.5} />
                       </div>
                       <div>
