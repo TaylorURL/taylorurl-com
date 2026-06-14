@@ -203,7 +203,7 @@ export default function Services() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden border-t border-gray-200 bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
