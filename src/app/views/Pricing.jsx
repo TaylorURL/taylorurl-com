@@ -182,7 +182,7 @@ ${formData.message}
               transition={{ duration: 0.5, delay: 0.2 }}
               className="lg:col-span-3"
             >
-              <div className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8">
+              <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
                 <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Us What You Need</h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
