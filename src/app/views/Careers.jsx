@@ -94,7 +94,7 @@ export default function Careers() {
         description="Join our team and help local businesses succeed online."
       />
 
-      <section className="bg-white px-4 py-12 sm:px-6 sm:py-20 md:py-28">
+      <section className="bg-surface-base px-4 py-12 sm:px-6 sm:py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
           <motion.div
             {...fadeInUp}
