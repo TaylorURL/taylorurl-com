@@ -111,7 +111,7 @@ export default function Navigation() {
             className={`pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-1.5 transition-all duration-500 ${
               isPillTransparent
                 ? 'border-white/15 bg-white/10 backdrop-blur-xl'
-                : 'border-gray-200 bg-white/90 shadow-lg shadow-black/[0.06] backdrop-blur-xl'
+                : 'border-gray-200 bg-surface-base/90 shadow-lg shadow-black/[0.06] backdrop-blur-xl'
             }`}
           >
             {PRIMARY_LINKS.map(link => {
