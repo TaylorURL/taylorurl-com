@@ -330,7 +330,7 @@ export default function Blog() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-white py-12">
+      <section className="relative overflow-hidden bg-surface-base py-12">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           {/* Results count when filtering */}
