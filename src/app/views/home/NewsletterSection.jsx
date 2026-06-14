@@ -19,7 +19,7 @@ export default function NewsletterSection() {
     <section className="relative overflow-hidden border-t border-gray-200 bg-gray-50 py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
       <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-white p-8 text-center md:p-12">
+        <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-surface-overlay p-8 text-center md:p-12">
           <MessageSquare aria-hidden="true" className="mx-auto mb-6 h-12 w-12 text-blue-500" />
           <h2 className={`mb-4 ${SECTION_H2}`}>
             Free Stuff for <span className="logo-wave-dark">Your Business</span>
