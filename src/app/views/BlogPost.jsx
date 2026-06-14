@@ -87,7 +87,7 @@ export default function BlogPost() {
                   <p
                     key={i}
                     className="text-base leading-relaxed text-gray-600"
-                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(block.text) }}
+                    dangerouslySetInnerHTML={{ __html: sanitizeBlogHtml(block.text) }}
                   />
                 )
               })}
