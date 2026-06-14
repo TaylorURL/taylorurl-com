@@ -96,7 +96,7 @@ export default function About() {
       <PageHero title="About Us" description="Small team. Real code. No corporate energy." />
 
       {/* Story section */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
