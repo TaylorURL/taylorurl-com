@@ -167,7 +167,7 @@ export default function Services() {
                 <motion.div
                   key={cap.label}
                   {...staggerChild(i, 0.05)}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center transition-all hover:border-blue-200 hover:shadow-md"
+                  className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-surface-overlay p-4 text-center transition-all hover:border-blue-200 hover:shadow-md"
                 >
                   <Icon className="h-5 w-5 text-blue-600" strokeWidth={1.5} />
                   <span className="text-xs font-medium text-gray-700">{cap.label}</span>
