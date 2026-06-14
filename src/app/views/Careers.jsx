@@ -144,7 +144,7 @@ export default function Careers() {
               <motion.div
                 key={position.title}
                 {...staggerChild(index)}
-                className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8"
+                className="rounded-2xl border border-gray-200 bg-surface-overlay p-5 shadow-sm sm:p-8"
               >
                 <h3 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
                   {position.title}
