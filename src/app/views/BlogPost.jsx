@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BADGE_BLUE, BTN_PRIMARY } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
+import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
 
 export default function BlogPost() {
   const { slug } = useParams()
