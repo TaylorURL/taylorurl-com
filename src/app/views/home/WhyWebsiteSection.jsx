@@ -25,7 +25,7 @@ export default function WhyWebsiteSection() {
                 key={i}
                 {...staggerChild(i)}
                 whileHover={{ y: -5 }}
-                className="group rounded-2xl border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 sm:p-8"
+                className="group rounded-2xl border border-gray-200 bg-surface-raised p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 sm:p-8"
               >
                 <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 transition-all duration-300 group-hover:bg-blue-50">
                   <Icon
