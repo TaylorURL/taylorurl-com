@@ -79,7 +79,7 @@ export default function NotFound() {
           </div>
           <div
             ref={gridRef}
-            className="relative mx-auto w-full max-w-[280px] rounded-xl border-2 border-dashed border-gray-300 bg-white"
+            className="relative mx-auto w-full max-w-[280px] rounded-xl border-2 border-dashed border-gray-300 bg-surface-overlay"
             style={{ aspectRatio: '1 / 1' }}
           >
             <div className="grid-pattern absolute inset-0 rounded-xl opacity-[0.03]" />
