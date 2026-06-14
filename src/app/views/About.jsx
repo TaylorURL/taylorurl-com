@@ -213,7 +213,7 @@ export default function About() {
               {PROCESS.map((step, i) => (
                 <motion.div key={step.num} {...staggerChild(i, 0.1)} className="relative sm:pl-16">
                   {/* Step number on line */}
-                  <div className="absolute left-0 top-0 hidden h-12 w-12 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-sm font-bold text-gray-900 sm:flex">
+                  <div className="absolute left-0 top-0 hidden h-12 w-12 items-center justify-center rounded-full border-2 border-gray-200 bg-surface-overlay text-sm font-bold text-gray-900 sm:flex">
                     {step.num}
                   </div>
 
