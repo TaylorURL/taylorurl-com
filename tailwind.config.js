@@ -22,6 +22,11 @@ export default {
           800: '#1e40af',
           900: '#1e3a8a',
         },
+        surface: {
+          base: '#F5F6F7',
+          raised: '#F8F9FA',
+          overlay: '#FFFFFF',
+        },
       },
       fontFamily: {
         sans: ['Geist', 'Inter', 'system-ui', 'sans-serif'],

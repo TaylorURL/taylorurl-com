@@ -111,7 +111,7 @@ export default function Services() {
       />
 
       {/* Services grid — alternating layout */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="space-y-12 sm:space-y-20">
@@ -167,7 +167,7 @@ export default function Services() {
                 <motion.div
                   key={cap.label}
                   {...staggerChild(i, 0.05)}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-white p-4 text-center transition-all hover:border-blue-200 hover:shadow-md"
+                  className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-surface-overlay p-4 text-center transition-all hover:border-blue-200 hover:shadow-md"
                 >
                   <Icon className="h-5 w-5 text-blue-600" strokeWidth={1.5} />
                   <span className="text-xs font-medium text-gray-700">{cap.label}</span>
@@ -203,7 +203,7 @@ export default function Services() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden border-t border-gray-200 bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">

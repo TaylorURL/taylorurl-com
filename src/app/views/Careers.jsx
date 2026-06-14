@@ -94,7 +94,7 @@ export default function Careers() {
         description="Join our team and help local businesses succeed online."
       />
 
-      <section className="bg-white px-4 py-12 sm:px-6 sm:py-20 md:py-28">
+      <section className="bg-surface-base px-4 py-12 sm:px-6 sm:py-20 md:py-28">
         <div className="mx-auto max-w-6xl">
           <motion.div
             {...fadeInUp}
@@ -113,7 +113,7 @@ export default function Careers() {
               <motion.div
                 key={title}
                 {...staggerChild(index)}
-                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="rounded-2xl border border-gray-200 bg-surface-raised p-6 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
                   <Icon className="h-5 w-5 text-blue-600" />
@@ -144,7 +144,7 @@ export default function Careers() {
               <motion.div
                 key={position.title}
                 {...staggerChild(index)}
-                className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-8"
+                className="rounded-2xl border border-gray-200 bg-surface-overlay p-5 shadow-sm sm:p-8"
               >
                 <h3 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
                   {position.title}
@@ -179,7 +179,7 @@ export default function Careers() {
           <motion.div
             {...fadeInUp}
             transition={{ duration: FADE_DURATION, delay: GENERAL_APPLICATION_DELAY }}
-            className="mt-8 rounded-2xl border border-gray-200 bg-white p-5 text-center shadow-sm sm:p-8"
+            className="mt-8 rounded-2xl border border-gray-200 bg-surface-overlay p-5 text-center shadow-sm sm:p-8"
           >
             <p className="mb-4 text-gray-600">
               Don&apos;t see your role? We&apos;re always interested in hearing from talented

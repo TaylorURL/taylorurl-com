@@ -111,7 +111,7 @@ export default function Navigation() {
             className={`pointer-events-auto flex items-center gap-1 rounded-full border px-2 py-1.5 transition-all duration-500 ${
               isPillTransparent
                 ? 'border-white/15 bg-white/10 backdrop-blur-xl'
-                : 'border-gray-200 bg-white/90 shadow-lg shadow-black/[0.06] backdrop-blur-xl'
+                : 'border-gray-200 bg-surface-base/90 shadow-lg shadow-black/[0.06] backdrop-blur-xl'
             }`}
           >
             {PRIMARY_LINKS.map(link => {
@@ -160,7 +160,7 @@ export default function Navigation() {
           className={`flex items-center justify-between overflow-hidden px-5 py-2 transition-all duration-500 ${
             onDark && !mobileOpen
               ? 'bg-transparent'
-              : 'border-b border-gray-200/60 bg-white/90 backdrop-blur-xl'
+              : 'border-b border-gray-200/60 bg-surface-base/90 backdrop-blur-xl'
           }`}
         >
           <Link ref={mobileLogoRef} to="/" className="flex items-center">
@@ -216,7 +216,7 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[201] flex h-full w-[280px] flex-col overflow-y-auto bg-white shadow-2xl md:hidden"
+              className="fixed right-0 top-0 z-[201] flex h-full w-[280px] flex-col overflow-y-auto bg-surface-overlay shadow-2xl md:hidden"
               onClick={e => e.stopPropagation()}
             >
               {/* Drawer header */}
