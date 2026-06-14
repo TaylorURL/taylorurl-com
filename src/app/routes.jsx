@@ -7,7 +7,7 @@ import Layout from '@components/Layout'
  * prerender entry supplies eager views so server rendering stays synchronous.
  * Each `key` matches the view's file name under `@views` (e.g. `BlogPost`).
  */
-export const ROUTE_DEFINITIONS = [
+const ROUTE_DEFINITIONS = [
   { key: 'Home', index: true },
   { key: 'About', path: 'about' },
   { key: 'Services', path: 'services' },
