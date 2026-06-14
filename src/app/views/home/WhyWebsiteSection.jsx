@@ -5,7 +5,7 @@ import { SECTION_H2 } from '@constants/ui'
 
 export default function WhyWebsiteSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-white py-14 sm:py-24">
+    <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-14 sm:py-24">
       <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
       <div className="relative mx-auto max-w-6xl px-6">
         <motion.div {...fadeInUp} className="mb-10 text-center sm:mb-16">
