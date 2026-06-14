@@ -28,7 +28,7 @@ const DOUBLED = [...INDUSTRIES, ...INDUSTRIES]
 
 export default function LogoMarquee() {
   return (
-    <section className="overflow-hidden border-t border-gray-200 bg-white py-10">
+    <section className="overflow-hidden border-t border-gray-200 bg-surface-base py-10">
       <div className="mb-6 text-center">
         <p className="text-sm font-medium uppercase tracking-wider text-gray-400">
           Industries We Serve
