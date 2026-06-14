@@ -231,7 +231,7 @@ export default function About() {
                           <p className="text-sm text-gray-700">{step.you}</p>
                         </div>
                       </div>
-                      <div className="flex items-start gap-2 rounded-lg bg-white px-3 py-2">
+                      <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
                         <Monitor className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                         <div>
                           <p className="text-xs font-semibold uppercase text-blue-500">Us</p>
