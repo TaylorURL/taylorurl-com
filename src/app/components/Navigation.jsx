@@ -216,7 +216,7 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[201] flex h-full w-[280px] flex-col overflow-y-auto bg-white shadow-2xl md:hidden"
+              className="fixed right-0 top-0 z-[201] flex h-full w-[280px] flex-col overflow-y-auto bg-surface-overlay shadow-2xl md:hidden"
               onClick={e => e.stopPropagation()}
             >
               {/* Drawer header */}
