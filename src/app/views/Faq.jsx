@@ -139,7 +139,7 @@ export default function Faq() {
       />
       <PageHero title="Frequently Asked Questions" description="Straight answers. No runaround." />
 
-      <section className="relative bg-white py-12 sm:py-20">
+      <section className="relative bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
         <div className="relative mx-auto max-w-3xl px-6">
           {FAQ_CATEGORIES.map((category, catIndex) => (
