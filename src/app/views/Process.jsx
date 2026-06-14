@@ -217,7 +217,7 @@ export default function Process() {
                             ))}
                           </ul>
                         </div>
-                        <div className="rounded-xl bg-white p-5">
+                        <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-blue-500">
                             WHAT WE DO
                           </h4>
