@@ -160,7 +160,7 @@ export default function Navigation() {
           className={`flex items-center justify-between overflow-hidden px-5 py-2 transition-all duration-500 ${
             onDark && !mobileOpen
               ? 'bg-transparent'
-              : 'border-b border-gray-200/60 bg-white/90 backdrop-blur-xl'
+              : 'border-b border-gray-200/60 bg-surface-base/90 backdrop-blur-xl'
           }`}
         >
           <Link ref={mobileLogoRef} to="/" className="flex items-center">
