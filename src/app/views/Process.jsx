@@ -198,7 +198,7 @@ export default function Process() {
 
                       {/* Two-column: You / Us */}
                       <div className="grid gap-6 sm:grid-cols-2">
-                        <div className="rounded-xl bg-white p-5">
+                        <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-gray-400">
                             WHAT YOU DO
                           </h4>
