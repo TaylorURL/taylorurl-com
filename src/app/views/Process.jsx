@@ -149,7 +149,7 @@ export default function Process() {
       />
 
       {/* Timeline */}
-      <section className="bg-white py-12 sm:py-20">
+      <section className="bg-surface-base py-12 sm:py-20">
         <div className="mx-auto max-w-5xl px-6">
           <motion.div
             {...fadeInUp}
