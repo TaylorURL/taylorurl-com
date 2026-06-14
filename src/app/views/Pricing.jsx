@@ -108,7 +108,7 @@ ${formData.message}
         description="No sales pitch. Just tell us what you need and we'll give you a number."
       />
 
-      <section className="bg-white py-12 sm:py-20">
+      <section className="bg-surface-base py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-6">
           <div className="grid gap-8 lg:grid-cols-5 lg:gap-12">
             <motion.div
