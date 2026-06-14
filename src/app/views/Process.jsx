@@ -266,7 +266,7 @@ export default function Process() {
                 <motion.div
                   key={item.label}
                   {...staggerChild(i)}
-                  className="flex items-center gap-4 rounded-xl border border-gray-200 bg-white p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-md"
+                  className="flex items-center gap-4 rounded-xl border border-gray-200 bg-surface-overlay p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-md"
                 >
                   <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
                     <Icon className="h-5 w-5 text-gray-700" strokeWidth={1.5} />
