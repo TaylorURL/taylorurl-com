@@ -23,7 +23,7 @@ export default function StatsSection() {
               Almost every customer starts with a Google search. No website means they&apos;re
               calling the other guy.
             </p>
-            <div className="rounded-2xl border border-gray-200 bg-white p-6">
+            <div className="rounded-2xl border border-gray-200 bg-surface-overlay p-6">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
                 How Customers Find Local Businesses
               </h3>
