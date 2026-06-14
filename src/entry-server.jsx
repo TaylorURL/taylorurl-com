@@ -1,4 +1,4 @@
-import { renderToString } from 'react-dom/server'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
 import { HelmetProvider } from 'react-helmet-async'
 import { MotionConfig } from 'framer-motion'
@@ -6,8 +6,8 @@ import { ToastProvider } from './app/components/Toast'
 import AppRoutes from './app/routes'
 
 // Eagerly import every top-level view so server rendering is fully synchronous:
-// renderToString cannot await the lazy() imports the browser entry uses, and
-// would otherwise emit only the Suspense fallback for each page's body.
+// renderToStaticMarkup cannot await the lazy() imports the browser entry uses,
+// and would otherwise emit only an empty shell for each page's body.
 const viewModules = import.meta.glob('./app/views/*.jsx', { eager: true })
 const views = Object.fromEntries(
   Object.entries(viewModules).map(([filePath, module]) => [
@@ -17,24 +17,33 @@ const views = Object.fromEntries(
 )
 
 /**
- * Renders a single route to static HTML and collects its react-helmet-async
- * head tags. Used at build time by the prerender plugin — no browser required.
+ * Renders a route to a complete static HTML document. The built template's
+ * <head> is injected verbatim (hashed asset tags, site-wide meta, JSON-LD), and
+ * React 19 hoists each route's react-helmet-async <title>/<meta>/<link> into
+ * that same <head> — so crawlers receive real per-route SEO markup. No browser
+ * is involved, so it runs anywhere `vite build` does.
  *
- * @param {string} url - The route path to render (e.g. `/blog/some-slug`).
- * @returns {{ appHtml: string, helmet: import('react-helmet-async').HelmetServerState }}
+ * @param {string} url - Route path to render (e.g. `/blog/some-slug`).
+ * @param {string} headInner - Inner HTML of the built template's <head>.
+ * @returns {string} A complete HTML document (without the leading doctype).
  */
-export function render(url) {
-  const helmetContext = {}
-  const appHtml = renderToString(
-    <HelmetProvider context={helmetContext}>
-      <MotionConfig reducedMotion="user">
-        <ToastProvider>
-          <StaticRouter location={url}>
-            <AppRoutes views={views} />
-          </StaticRouter>
-        </ToastProvider>
-      </MotionConfig>
-    </HelmetProvider>
+export function render(url, headInner) {
+  return renderToStaticMarkup(
+    <html lang="en">
+      <head dangerouslySetInnerHTML={{ __html: headInner }} />
+      <body>
+        <div id="root">
+          <HelmetProvider>
+            <MotionConfig reducedMotion="user">
+              <ToastProvider>
+                <StaticRouter location={url}>
+                  <AppRoutes views={views} />
+                </StaticRouter>
+              </ToastProvider>
+            </MotionConfig>
+          </HelmetProvider>
+        </div>
+      </body>
+    </html>
   )
-  return { appHtml, helmet: helmetContext.helmet }
 }
