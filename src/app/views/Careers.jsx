@@ -113,7 +113,7 @@ export default function Careers() {
               <motion.div
                 key={title}
                 {...staggerChild(index)}
-                className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md"
+                className="rounded-2xl border border-gray-200 bg-surface-raised p-6 shadow-sm transition-shadow hover:shadow-md"
               >
                 <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
                   <Icon className="h-5 w-5 text-blue-600" />
