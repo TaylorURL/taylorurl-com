@@ -193,7 +193,7 @@ export default function About() {
       </section>
 
       {/* Process */}
-      <section className="relative overflow-hidden bg-white py-12 sm:py-20">
+      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
