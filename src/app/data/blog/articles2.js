@@ -415,7 +415,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'What Maintenance Actually Includes' },
       {
         type: 'p',
-        text: "Website maintenance covers a few key areas. Software updates to keep things secure. Monitoring to catch downtime or errors before your customers do. Performance checks to make sure the site stays fast. Content updates when your business info changes — new hours, new services, new team members. And backups so you don't lose everything if something goes wrong.",
+        text: "Website maintenance covers a few key areas. Software updates to keep things secure. Monitoring to catch downtime or errors before your customers do. Performance checks to make sure the site stays fast. Content updates when your business info changes — new hours, new services, new staff. And backups so you don't lose everything if something goes wrong.",
       },
       {
         type: 'p',
