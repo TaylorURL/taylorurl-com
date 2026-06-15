@@ -65,8 +65,8 @@ const FAQ_CATEGORIES = [
         a: "Small stuff like text edits and image swaps are included in your maintenance plan. For bigger changes — new pages, new features — I'll give you a quote. No surprises.",
       },
       {
-        q: 'Do you only work with businesses in Houston?',
-        a: "Nope. I'm based in Baytown, Texas and a lot of my clients are in the Houston area, but I work with people everywhere. Everything I do is remote-friendly. As long as you can hop on a call or send a text, we're good.",
+        q: 'Do you only work with local businesses in Houston?',
+        a: "I'm based in Baytown, Texas and a lot of the local businesses I work with are in the Houston area, but I'll happily work with local businesses anywhere. Everything I do is remote-friendly. As long as you can hop on a call or send a text, we're good.",
       },
       {
         q: 'What happens if I want to cancel?',
