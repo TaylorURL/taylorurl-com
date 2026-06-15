@@ -34,7 +34,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-6 text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl"
           >
-            We build websites
+            I build websites
             <br />
             for <TypingRotator />
           </motion.h1>
@@ -46,7 +46,7 @@ export default function HeroSection() {
             className="mb-8 max-w-md text-base leading-relaxed text-gray-400 sm:mb-10 sm:text-lg"
           >
             No jargon. No runaround. Just fast, good-looking websites that actually bring in
-            customers — built by real people who pick up the phone.
+            customers — built by one developer who picks up the phone.
           </motion.p>
 
           <motion.div
