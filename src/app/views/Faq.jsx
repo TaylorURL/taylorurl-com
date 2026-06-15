@@ -181,7 +181,7 @@ export default function Faq() {
               Still Have <span className="logo-wave">Questions</span>?
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              We don&apos;t bite. Shoot us a message and we&apos;ll get back to you fast.
+              I don&apos;t bite. Shoot me a message and I&apos;ll get back to you fast.
             </p>
             <a href="/pricing" className={BTN_PRIMARY}>
               Get in Touch
