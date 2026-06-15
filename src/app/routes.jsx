@@ -11,7 +11,7 @@ const ROUTE_DEFINITIONS = [
   { key: 'Home', index: true },
   { key: 'About', path: 'about' },
   { key: 'Services', path: 'services' },
-  { key: 'Pricing', path: 'pricing' },
+  { key: 'Contact', path: 'contact' },
   { key: 'Privacy', path: 'privacy' },
   { key: 'Terms', path: 'terms' },
   { key: 'License', path: 'license' },
