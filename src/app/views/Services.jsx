@@ -101,7 +101,7 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Services for Local Businesses"
+        title="Services"
         description="Modern websites, redesigns, JavaScript applications, SEO, and ongoing maintenance for local businesses in Baytown, Houston, and the surrounding Texas community. Hand-coded by one developer who works directly with the shops, restaurants, trades, and professionals who hire him."
         path="/services"
       />
