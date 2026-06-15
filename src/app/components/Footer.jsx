@@ -78,8 +78,8 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <Link to="/pricing" className={`group ${BTN_PRIMARY_SM}`}>
-              Get a Quote
+            <Link to="/contact" className={`group ${BTN_PRIMARY_SM}`}>
+              Get in Touch
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
