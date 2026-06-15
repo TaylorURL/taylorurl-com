@@ -243,7 +243,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: '2. Using Stock Photos Instead of Real Ones' },
       {
         type: 'p',
-        text: "People can spot stock photos instantly. The perfectly diverse group of coworkers high-fiving in a glass conference room? Nobody buys it. Use real photos of your business, your team, your work. They don't have to be professional photography — phone photos in good lighting are fine. <strong>Real always beats polished.</strong>",
+        text: "People can spot stock photos instantly. The perfectly diverse group of coworkers high-fiving in a glass conference room? Nobody buys it. Use real photos of your business, your crew, your work. They don't have to be professional photography — phone photos in good lighting are fine. <strong>Real always beats polished.</strong>",
       },
       { type: 'h2', text: '3. Hiding Contact Information' },
       {
