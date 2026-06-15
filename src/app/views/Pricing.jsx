@@ -120,8 +120,8 @@ ${formData.message}
                 Let&apos;s <span className="logo-wave-dark">Talk</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or just need someone to take over management — tell us.
-                We&apos;ll figure out what you need and what it&apos;ll cost.
+                New site, redesign, or just need someone to take over management — tell me.
+                I&apos;ll figure out what you need and what it&apos;ll cost.
               </p>
 
               <div className="mb-8 space-y-4">
