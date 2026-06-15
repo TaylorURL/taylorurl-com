@@ -71,7 +71,7 @@ export const BLOG_ARTICLES_2 = [
       },
       {
         type: 'p',
-        text: "Upload real photos of your business. Not stock photos — actual pictures of your shop, your team, your work. Businesses with photos get <strong>42% more requests for directions</strong> and 35% more clicks to their website. That's Google's own data.",
+        text: "Upload real photos of your business. Not stock photos — actual pictures of your shop, your crew, your work. Businesses with photos get <strong>42% more requests for directions</strong> and 35% more clicks to their website. That's Google's own data.",
       },
       { type: 'h2', text: 'Post Updates Regularly' },
       {
