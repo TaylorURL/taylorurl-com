@@ -139,7 +139,7 @@ export default function Process() {
   return (
     <div>
       <Seo
-        title="How I Work With Local Businesses"
+        title="How I Work"
         description="My process for building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. From first call to launch in 2-4 weeks. No mystery, no jargon — just a direct relationship with the developer."
         path="/process"
       />
