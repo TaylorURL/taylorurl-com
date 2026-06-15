@@ -190,7 +190,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'Spend Once, Spend Right' },
       {
         type: 'p',
-        text: "A custom website isn't an expense — it's an investment that pays for itself. It loads fast, ranks well, converts visitors, and doesn't need to be rebuilt when your business evolves. You own it completely with no platform lock-in. The real cost of a cheap website isn't the price tag. It's every customer it fails to convert and every dollar you spend fixing it.",
+        text: "A custom website isn't an expense — it's an investment that pays for itself. It loads fast, ranks well, converts visitors, and doesn't need to be rebuilt when your business evolves. You own it completely with no platform lock-in. The real cost of a cheap website isn't what you paid for it — it's every customer it fails to convert and every hour you spend fixing it.",
       },
     ],
   },
