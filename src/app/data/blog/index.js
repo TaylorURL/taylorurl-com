@@ -70,7 +70,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'The Speed Problem' },
       {
         type: 'p',
-        text: 'Wix sites are slow. Not "kinda slow" — measurably, provably slow. The average Wix site loads in 4-6 seconds on mobile. Google recommends under 2.5 seconds. That matters because <strong>53% of mobile visitors leave a site that takes more than 3 seconds to load.</strong> That\'s not a stat we made up. That\'s from Google.',
+        text: 'Wix sites are slow. Not "kinda slow" — measurably, provably slow. The average Wix site loads in 4-6 seconds on mobile. Google recommends under 2.5 seconds. That matters because <strong>53% of mobile visitors leave a site that takes more than 3 seconds to load.</strong> That\'s not a stat I made up. That\'s from Google.',
       },
       {
         type: 'p',
