@@ -261,12 +261,12 @@ export default function About() {
               Let&apos;s <span className="logo-wave">Do This</span>
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me what you need. I&apos;ll give you a straight answer and a real quote — no
-              &quot;discovery phase&quot; required.
+              Tell me about your local business and what you&apos;re trying to fix. I&apos;ll give
+              you a straight answer — no &quot;discovery phase&quot; required.
             </p>
             <div className="flex justify-center">
-              <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
-                Get a Quote
+              <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
+                Get in Touch
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
