@@ -100,7 +100,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: 'We hear this all the time: "I\'m not a writer." "Nobody reads blogs anymore." "I don\'t have time for that." We get it. Writing blog posts sounds like homework. But here\'s the thing — <strong>a blog isn\'t for you. It\'s for Google.</strong> And Google loves fresh, relevant content.',
+        text: 'I hear this all the time: "I\'m not a writer." "Nobody reads blogs anymore." "I don\'t have time for that." I get it. Writing blog posts sounds like homework. But here\'s the thing — <strong>a blog isn\'t for you. It\'s for Google.</strong> And Google loves fresh, relevant content.',
       },
       { type: 'h2', text: 'More Pages Means More Chances to Rank' },
       {
