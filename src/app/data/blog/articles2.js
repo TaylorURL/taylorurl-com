@@ -442,7 +442,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: "It's Cheaper Than the Alternative" },
       {
         type: 'p',
-        text: "A maintenance plan might run you $50-200 a month depending on what's included. Recovering from a hacked site? That can cost $1,000 or more. Rebuilding a site that fell apart from neglect? You're basically starting over. Regular maintenance is the cheapest insurance policy your website can have. <strong>Don't learn this lesson the expensive way.</strong>",
+        text: "Recovering from a hacked site is painful and expensive. Rebuilding one that fell apart from neglect means basically starting over. Regular maintenance is the easiest insurance policy your website can have. <strong>Don't learn this lesson the hard way.</strong>",
       },
     ],
   },
