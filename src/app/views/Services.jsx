@@ -101,13 +101,13 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Web Development Services"
-        description="Custom website development, redesigns, SEO, and ongoing maintenance for businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded sites built by one developer who outperforms templates."
+        title="Services for Local Businesses"
+        description="Modern websites, redesigns, JavaScript applications, SEO, and ongoing maintenance for local businesses in Baytown, Houston, and the surrounding Texas community. Hand-coded by one developer who works directly with the shops, restaurants, trades, and professionals who hire him."
         path="/services"
       />
       <PageHero
-        title="What I Do"
-        description="Custom websites and redesigns. I build it, host it, and keep it running. That's the whole pitch."
+        title="What I Build for Local Businesses"
+        description="Modern websites, redesigns, and JavaScript applications. I build it, host it, and keep it running."
       />
 
       {/* Services grid — alternating layout */}
