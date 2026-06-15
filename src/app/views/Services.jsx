@@ -211,7 +211,7 @@ export default function Services() {
               Sounds <span className="logo-wave-dark">Good</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell us what you need. We&apos;ll give you a straight answer and a real price.
+              Tell me what you need. I&apos;ll give you a straight answer and a real price.
             </p>
             <div className="flex justify-center">
               <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
