@@ -272,11 +272,11 @@ export default function Navigation() {
                 className="border-t border-gray-100 px-4 py-5"
               >
                 <Link
-                  to="/pricing"
+                  to="/contact"
                   onClick={() => setMobileOpen(false)}
                   className="flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-blue-500"
                 >
-                  Get a Quote
+                  Get in Touch
                   <ArrowRight className="h-4 w-4" />
                 </Link>
               </motion.div>
