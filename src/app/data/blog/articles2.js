@@ -143,7 +143,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: '"We leverage innovative solutions to deliver best-in-class results." If that sentence is anywhere on your website, we need to have a conversation. Nobody talks like that in real life, and nobody wants to read it either. <strong>Your website copy should sound like a real person talking to another real person.</strong>',
+        text: '"We leverage innovative solutions to deliver best-in-class results." If that sentence is anywhere on your website, I need to have a conversation with you. Nobody talks like that in real life, and nobody wants to read it either. <strong>Your website copy should sound like a real person talking to another real person.</strong>',
       },
       { type: 'h2', text: 'Write Like You Talk' },
       {
