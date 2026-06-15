@@ -17,11 +17,11 @@ export default function StatsSection() {
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <div>
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              Can People Actually <span className="logo-wave-dark">Find You?</span>
+              Can Your Neighbors Actually <span className="logo-wave-dark">Find You?</span>
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Almost every customer starts with a Google search. No website means they&apos;re
-              calling the other guy.
+              Almost every local customer starts with a Google search. No website means
+              they&apos;re calling the shop down the street instead of you.
             </p>
             <div className="rounded-2xl border border-gray-200 bg-surface-overlay p-6">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">
