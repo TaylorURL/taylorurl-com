@@ -65,7 +65,7 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: "Look, we're not here to trash Wix. It serves a purpose. If you need a site up in an afternoon for a garage sale or a school project, it's fine. But if you're running an actual business and trying to get customers from the internet, <strong>a drag-and-drop builder is quietly working against you.</strong>",
+        text: "Look, I'm not here to trash Wix. It serves a purpose. If you need a site up in an afternoon for a garage sale or a school project, it's fine. But if you're running an actual business and trying to get customers from the internet, <strong>a drag-and-drop builder is quietly working against you.</strong>",
       },
       { type: 'h2', text: 'The Speed Problem' },
       {
