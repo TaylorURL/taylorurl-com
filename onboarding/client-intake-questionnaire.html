@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Client Intake Questionnaire — TaylorURL Onboarding</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --blue: #2563eb;
+    --blue-light: #3b82f6;
+    --sky: #7dd3fc;
+    --bg: #F5F6F7;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #475569;
+    --hairline: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Geist','Inter',system-ui,-apple-system,sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 880px; margin: 0 auto; padding: 32px 24px 64px; }
+  .hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 70%, #3b82f6 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 44px;
+    box-shadow: 0 18px 40px -20px rgba(30,58,95,.45);
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(125,211,252,.35), transparent 70%);
+    border-radius: 50%;
+  }
+  .kicker { text-transform: uppercase; letter-spacing: .22em; font-size: 12px;
+    font-weight: 600; color: var(--sky); margin: 0 0 14px; }
+  .wordmark { font-weight: 700; font-size: 18px; margin-bottom: 24px; color: #fff; }
+  .wordmark .accent { color: var(--sky); }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .hero p { font-size: 17px; color: rgba(255,255,255,.88); margin: 0; max-width: 56ch; }
+  .card {
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 32px 32px 28px; margin-top: 24px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -16px rgba(15,23,42,.12);
+  }
+  .card h2 { font-size: 22px; margin: 0 0 8px; color: var(--navy);
+    display: flex; align-items: center; gap: 14px; }
+  .num { display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff; font-size: 15px; font-weight: 600; flex: none; }
+  .card h3 { font-size: 15px; color: var(--navy); margin: 22px 0 6px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .08em; font-size: 12px; }
+  .card p, .card li, .q { color: var(--muted); font-size: 15.5px; }
+  .lead { color: var(--muted); margin: 4px 0 18px; }
+  .q { display: block; padding: 10px 0; border-bottom: 1px dashed var(--hairline); }
+  .q:last-child { border-bottom: none; }
+  .q strong { display: block; color: var(--ink); font-weight: 600; margin-bottom: 2px; font-size: 15.5px; }
+  .q em { color: var(--muted); font-style: normal; font-size: 13.5px; }
+  .footer { text-align: center; margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid var(--hairline); font-size: 13px; color: var(--muted); }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 28px; } h1 { font-size: 30px; } .card { padding: 24px; }
+  }
+  @media print {
+    body { background: #fff; } .card, .hero { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="wordmark">Taylor<span class="accent">URL</span></div>
+    <p class="kicker">Client Onboarding</p>
+    <h1>Client Intake Questionnaire</h1>
+    <p>The answers below are how we turn "let's build a site" into a clear, scoped, on-time project. Fill in what you can — we'll work through the rest together in the kickoff call.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="num">1</span> Business goals &amp; target audience</h2>
+    <p class="lead">Before pixels, we need to understand why this site exists and who it's for.</p>
+    <span class="q"><strong>What does your business do, in one sentence?</strong><em>Imagine explaining it to a neighbor who's never heard of you.</em></span>
+    <span class="q"><strong>What is the single most important outcome this site needs to drive?</strong><em>Calls, form fills, bookings, online orders, applications — pick one primary action.</em></span>
+    <span class="q"><strong>Who is the ideal visitor?</strong><em>Industry, role, location, budget range, the problem they're trying to solve.</em></span>
+    <span class="q"><strong>What problems does your business solve for them better than the alternatives?</strong></span>
+    <span class="q"><strong>How will you know the site is working three months after launch?</strong><em>Specific numbers are great — "30 leads/month" beats "more traffic."</em></span>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> Brand assets</h2>
+    <p class="lead">If it already exists, send it over. If it doesn't, we'll either create it or make a clear plan for it.</p>
+    <span class="q"><strong>Logo files</strong><em>SVG preferred. PNG with a transparent background is fine. Send dark and light versions if you have them.</em></span>
+    <span class="q"><strong>Brand colors</strong><em>Hex codes if you have them. Otherwise point us at something that feels right.</em></span>
+    <span class="q"><strong>Fonts</strong><em>Names of typefaces you already use, or license info if they're paid fonts.</em></span>
+    <span class="q"><strong>Photography &amp; imagery</strong><em>Existing photo library, photographer credits, or a note that you'll need help sourcing.</em></span>
+    <span class="q"><strong>Brand voice &amp; tone</strong><em>Three adjectives that describe how you want to sound (e.g. confident, plain-spoken, warm).</em></span>
+    <span class="q"><strong>Anything off-limits?</strong><em>Colors, words, imagery, or competitor look-and-feels you want to avoid.</em></span>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span> Existing domain, hosting &amp; access</h2>
+    <p class="lead">We never make changes to things we don't have a clear handoff for. List what exists and who controls it.</p>
+    <span class="q"><strong>Primary domain</strong><em>The domain the new site will live on, including any www / apex preferences.</em></span>
+    <span class="q"><strong>Where is the domain registered?</strong><em>GoDaddy, Namecheap, Google Domains, etc. Note who has the login.</em></span>
+    <span class="q"><strong>Current hosting provider, if any</strong><em>If you have an existing site, where is it hosted now?</em></span>
+    <span class="q"><strong>DNS / email considerations</strong><em>Business email running on this domain (Google Workspace, Microsoft 365, etc.) we should not disrupt.</em></span>
+    <span class="q"><strong>Existing analytics / tracking</strong><em>Google Analytics, Search Console, Meta Pixel, anything we should preserve.</em></span>
+    <span class="q"><strong>Existing social profiles to link to</strong></span>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span> Content &amp; copy</h2>
+    <p class="lead">Words are usually the longest lead time on a site. Tell us where the content stands.</p>
+    <span class="q"><strong>Who is writing the copy?</strong><em>You, your team, us, or a mix?</em></span>
+    <span class="q"><strong>Existing content we should reuse</strong><em>Old site pages, brochures, sales decks, PDFs.</em></span>
+    <span class="q"><strong>Required legal pages</strong><em>Privacy policy, terms of service, accessibility statement.</em></span>
+    <span class="q"><strong>Testimonials or case studies available?</strong></span>
+    <span class="q"><strong>Service area, hours, phone, email to display</strong></span>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span> Pages &amp; features</h2>
+    <p class="lead">A first pass at the sitemap and feature set. We will refine this in Discovery.</p>
+    <span class="q"><strong>Pages you know you need</strong><em>Home, Services, About, Contact, FAQ, Blog, Portfolio, Pricing, etc.</em></span>
+    <span class="q"><strong>Forms &amp; submissions</strong><em>Contact form, quote request, booking, newsletter signup — where do the submissions need to go?</em></span>
+    <span class="q"><strong>Integrations</strong><em>CRM, scheduling tool, payment processor, email marketing, calendar.</em></span>
+    <span class="q"><strong>Special features</strong><em>Members area, gated content, multi-language, gallery, map, video.</em></span>
+    <span class="q"><strong>Search engine priorities</strong><em>Keywords you want to rank for, geographic targeting.</em></span>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">6</span> Competitors &amp; references</h2>
+    <p class="lead">Show us the field so we can design intentionally — not by accident.</p>
+    <span class="q"><strong>Top three competitor websites</strong><em>The ones you'd hate to lose a customer to.</em></span>
+    <span class="q"><strong>Sites you love (in any industry)</strong><em>What about each one resonates? Layout, tone, photography, motion?</em></span>
+    <span class="q"><strong>Sites you can't stand</strong><em>Equally useful — tells us what to avoid.</em></span>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">7</span> Timeline &amp; budget</h2>
+    <p class="lead">Be honest. A real number lets us recommend a realistic scope.</p>
+    <span class="q"><strong>When would you like to launch?</strong><em>A specific date, a season, or "as soon as possible."</em></span>
+    <span class="q"><strong>Hard deadlines</strong><em>Trade show, grand opening, end of quarter, funding milestone.</em></span>
+    <span class="q"><strong>Budget range</strong><em>A bracket is fine. Helps us scope features in or out.</em></span>
+    <span class="q"><strong>Ongoing support expectations</strong><em>Hands-off after launch, monthly care plan, or somewhere in between?</em></span>
+    <span class="q"><strong>Who signs off?</strong><em>The decision-makers on your side and the order they need to approve.</em></span>
+  </section>
+
+  <footer class="footer">TaylorURL · Web Development Agency · Baytown, Texas · Built by Trenton Taylor</footer>
+</div>
+</body>
+</html>

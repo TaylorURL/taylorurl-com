@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Communication &amp; Support — TaylorURL Onboarding</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --blue: #2563eb;
+    --blue-light: #3b82f6;
+    --sky: #7dd3fc;
+    --bg: #F5F6F7;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #475569;
+    --hairline: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Geist','Inter',system-ui,-apple-system,sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 880px; margin: 0 auto; padding: 32px 24px 64px; }
+  .hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 70%, #3b82f6 100%);
+    color: #fff; border-radius: 20px; padding: 56px 44px;
+    box-shadow: 0 18px 40px -20px rgba(30,58,95,.45);
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(125,211,252,.35), transparent 70%);
+    border-radius: 50%;
+  }
+  .kicker { text-transform: uppercase; letter-spacing: .22em; font-size: 12px;
+    font-weight: 600; color: var(--sky); margin: 0 0 14px; }
+  .wordmark { font-weight: 700; font-size: 18px; margin-bottom: 24px; color: #fff; }
+  .wordmark .accent { color: var(--sky); }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .hero p { font-size: 17px; color: rgba(255,255,255,.88); margin: 0; max-width: 56ch; }
+  .card {
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 32px 32px 28px; margin-top: 24px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -16px rgba(15,23,42,.12);
+  }
+  .card h2 { font-size: 22px; margin: 0 0 8px; color: var(--navy);
+    display: flex; align-items: center; gap: 14px; }
+  .num { display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff; font-size: 15px; font-weight: 600; flex: none; }
+  .card h3 { font-size: 15px; color: var(--navy); margin: 20px 0 6px; font-weight: 600; }
+  .card p, .card li { color: var(--muted); font-size: 15.5px; }
+  .card ul, .card ol { padding-left: 18px; margin: 6px 0 0; }
+  .card li { margin-bottom: 6px; }
+  .card li strong { color: var(--ink); font-weight: 600; }
+  .channel-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 14px; }
+  .channel {
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 18px;
+    background: #fafbfc;
+  }
+  .channel .label { font-size: 12px; color: var(--blue); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .channel h4 { margin: 4px 0 6px; color: var(--ink); font-size: 16px; }
+  .channel p { margin: 0; font-size: 14px; color: var(--muted); }
+  .sla-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 14px; }
+  .sla {
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 16px;
+    background: #fff;
+  }
+  .sla .pri { font-size: 11px; font-weight: 600; letter-spacing: .08em;
+    text-transform: uppercase; color: var(--blue); }
+  .sla .target { font-size: 22px; color: var(--navy); font-weight: 700; margin: 4px 0; letter-spacing: -0.01em; }
+  .sla .desc { font-size: 13.5px; color: var(--muted); }
+  .faq-item {
+    border-top: 1px solid var(--hairline);
+    padding: 16px 0;
+  }
+  .faq-item:first-of-type { border-top: none; padding-top: 6px; }
+  .faq-item strong { display: block; color: var(--ink); font-size: 15.5px; margin-bottom: 4px; }
+  .faq-item p { margin: 0; font-size: 15px; color: var(--muted); }
+  .footer { text-align: center; margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid var(--hairline); font-size: 13px; color: var(--muted); }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 28px; } h1 { font-size: 30px; } .card { padding: 24px; }
+  }
+  @media print {
+    body { background: #fff; } .card, .hero { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="wordmark">Taylor<span class="accent">URL</span></div>
+    <p class="kicker">Client Onboarding</p>
+    <h1>Communication &amp; Support</h1>
+    <p>The smoothest projects are the ones where everyone knows where to send what, how soon they'll hear back, and what counts as in-scope. Here's how we run it.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="num">1</span> How to reach us</h2>
+    <p>One channel per kind of message keeps things from getting lost. Pick the right lane and your request gets to the right place.</p>
+    <div class="channel-grid">
+      <div class="channel">
+        <div class="label">Day-to-day</div>
+        <h4>Email</h4>
+        <p>The default for non-urgent project work — questions, content, decisions, approvals. Replies are written and searchable.</p>
+      </div>
+      <div class="channel">
+        <div class="label">Same-day</div>
+        <h4>SMS / Phone</h4>
+        <p>For time-sensitive items during business hours, or when something needs a quick yes/no to keep the project moving.</p>
+      </div>
+      <div class="channel">
+        <div class="label">Inside the work</div>
+        <h4>Client portal</h4>
+        <p>Document delivery, deliverables, status, and ongoing metrics live in the portal — not buried in an email thread.</p>
+      </div>
+      <div class="channel">
+        <div class="label">Urgent</div>
+        <h4>Site down / outage</h4>
+        <p>Call or text — and we're already on it. Outage alerts page us automatically, but a direct heads-up is always welcome.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> Response time targets</h2>
+    <p>Business hours are Monday through Friday, 8:00 AM to 6:00 PM Central. Outside those hours we still monitor outages, but routine work waits for the next morning.</p>
+    <div class="sla-grid">
+      <div class="sla">
+        <div class="pri">Site outage</div>
+        <div class="target">&lt; 30 min</div>
+        <div class="desc">Acknowledged 24/7. Active investigation begins immediately.</div>
+      </div>
+      <div class="sla">
+        <div class="pri">Urgent issue</div>
+        <div class="target">Same business day</div>
+        <div class="desc">Anything blocking real customer activity but not a full outage.</div>
+      </div>
+      <div class="sla">
+        <div class="pri">Standard request</div>
+        <div class="target">Next business day</div>
+        <div class="desc">Content updates, small tweaks, general questions.</div>
+      </div>
+      <div class="sla">
+        <div class="pri">Larger change</div>
+        <div class="target">2–3 business days</div>
+        <div class="desc">Scoping or estimate returned, then scheduled.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span> Requesting changes &amp; reporting issues</h2>
+    <p>Whether it's a typo or a brand-new section, send it the same way. We'll triage and respond.</p>
+    <h3>What to include</h3>
+    <ul>
+      <li><strong>What you want changed.</strong> Plain English is fine.</li>
+      <li><strong>Where it is.</strong> A page URL or screenshot saves us 80% of the back-and-forth.</li>
+      <li><strong>Why it matters &amp; how urgent.</strong> Helps us prioritize honestly.</li>
+      <li><strong>Anything time-sensitive.</strong> A campaign, an event, a deadline.</li>
+    </ul>
+    <h3>What happens next</h3>
+    <ol>
+      <li>We confirm receipt within the targets above.</li>
+      <li>For anything beyond a small tweak, we send a quick scope and estimate before starting.</li>
+      <li>Work lands on staging first whenever possible so you can review it before it goes live.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span> Scope &amp; change requests</h2>
+    <p>Scope clarity protects both sides. We are direct about what's in, what's out, and how we move things from one column to the other.</p>
+    <h3>In-scope changes</h3>
+    <ul>
+      <li>Anything explicitly listed in your signed scope.</li>
+      <li>Small content edits during the active engagement — copy tweaks, image swaps, link fixes.</li>
+      <li>Bug fixes on work we've delivered.</li>
+    </ul>
+    <h3>Out-of-scope changes</h3>
+    <ul>
+      <li>New pages, new features, or new integrations not in the original scope.</li>
+      <li>Redesigns or visual reworks after design sign-off.</li>
+      <li>Work on systems we don't already manage for you.</li>
+    </ul>
+    <h3>How change requests work</h3>
+    <ol>
+      <li>You send the request through any of the channels above.</li>
+      <li>We respond with whether it's in scope, and if not, a clear estimate.</li>
+      <li>If you approve the estimate, it joins the schedule and we get moving.</li>
+      <li>No surprise invoices — work outside scope only happens after you've said yes.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span> Billing cadence</h2>
+    <p>Clear, predictable billing. No mystery line items.</p>
+    <h3>For build engagements</h3>
+    <ul>
+      <li>A deposit at kickoff to confirm the schedule and start Discovery.</li>
+      <li>A progress invoice at the design sign-off milestone.</li>
+      <li>Final invoice at launch, due before the public DNS cutover.</li>
+    </ul>
+    <h3>For ongoing care</h3>
+    <ul>
+      <li>Monthly invoice on a fixed date, agreed at the start of the care plan.</li>
+      <li>Any approved out-of-scope work bills on the next monthly invoice.</li>
+      <li>Pause or end the care plan with 30 days' notice — no long-term lock-in.</li>
+    </ul>
+    <h3>Methods</h3>
+    <ul>
+      <li>Card or ACH via secure invoice link.</li>
+      <li>Receipts and prior invoices live in the portal so you can grab them any time.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">6</span> Short FAQ</h2>
+    <div class="faq-item">
+      <strong>Who owns the site after launch?</strong>
+      <p>You do. The code, the content, and the domain are yours. We'll happily keep operating it for you, but nothing locks you in.</p>
+    </div>
+    <div class="faq-item">
+      <strong>What if my site goes down at 2 AM?</strong>
+      <p>Our monitoring pages us automatically. In most cases we're already investigating before you wake up. You can text the urgent line at any hour.</p>
+    </div>
+    <div class="faq-item">
+      <strong>Can my team help update content directly?</strong>
+      <p>Yes — depending on what you want to control, we'll either give you a content editor or handle updates for you within your care plan. We'll recommend the right setup at launch.</p>
+    </div>
+    <div class="faq-item">
+      <strong>How do you handle requests during a heavy week?</strong>
+      <p>Honestly. If something will land later than the standard target, we tell you when to expect it. We'd rather set a real date than miss an optimistic one.</p>
+    </div>
+    <div class="faq-item">
+      <strong>What if I'm not sure whether something is in scope?</strong>
+      <p>Just ask. We'll never charge for asking, and we'll always give you a straight answer about whether it counts as a change request.</p>
+    </div>
+  </section>
+
+  <footer class="footer">TaylorURL · Web Development Agency · Baytown, Texas · Built by Trenton Taylor</footer>
+</div>
+</body>
+</html>
