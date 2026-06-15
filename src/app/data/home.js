@@ -59,21 +59,21 @@ export const WHY_WEBSITE_CARDS = [
 export const HOW_IT_WORKS_STEPS = [
   {
     step: '1',
-    title: 'Hit Us Up',
+    title: 'Hit Me Up',
     description:
-      "Call, text, email — whatever works. Tell us what you need and we'll give you a straight answer and a real quote. No 47-page proposal.",
+      "Call, text, email — whatever works. Tell me what you need and I'll give you a straight answer and a real quote. No 47-page proposal.",
   },
   {
     step: '2',
-    title: 'We Build It',
+    title: 'I Build It',
     description:
-      'We get to work. You see progress along the way and can tell us to change anything. No surprises, no waiting months.',
+      'I get to work. You see progress along the way and can tell me to change anything. No surprises, no waiting months.',
   },
   {
     step: '3',
     title: "You're Live",
     description:
-      'Site goes live, we handle everything after — hosting, updates, security. You go back to running your business.',
+      'Site goes live, I handle everything after — hosting, updates, security. You go back to running your business.',
   },
 ]
 
