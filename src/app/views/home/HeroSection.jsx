@@ -81,7 +81,7 @@ export default function HeroSection() {
               )}
             </div>
             <span>
-              Trusted by <strong className="text-gray-300">50+</strong> local businesses
+              Trusted by <strong className="text-gray-300">50+</strong> local businesses in the area
             </span>
           </motion.div>
         </div>
