@@ -13,7 +13,8 @@ export default function HowItWorksSection() {
             Dead <span className="logo-wave-dark">Simple</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            No onboarding decks. No kickoff meetings. Here&apos;s how it actually works.
+            No onboarding decks. No kickoff meetings. Just a straight path from &quot;my business
+            needs a website&quot; to live.
           </p>
         </div>
 

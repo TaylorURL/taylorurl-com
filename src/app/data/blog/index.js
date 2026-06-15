@@ -93,7 +93,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'The Cost Problem' },
       {
         type: 'p',
-        text: "Wix isn't even that cheap when you do the math. The business plan is $17/month. Add a custom domain, remove ads, get more storage — you're at $27-32/month. That's $324-384 a year for a slow website you don't really own. Over three years, you've spent over a thousand dollars on a site that's actively losing you customers.",
+        text: "Wix isn't even that cheap when you do the math. Once you add a custom domain, remove ads, and get enough storage to be useful, you're on a monthly subscription that adds up year after year — for a slow website you don't really own. Over a few years, you've spent serious money on a site that's actively losing you customers.",
       },
       {
         type: 'p',

@@ -107,8 +107,8 @@ export default function NotFound() {
             Go Home
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
-          <Link to="/pricing" className={BTN_SECONDARY}>
-            Get a Quote
+          <Link to="/contact" className={BTN_SECONDARY}>
+            Get in Touch
           </Link>
         </motion.div>
       </div>

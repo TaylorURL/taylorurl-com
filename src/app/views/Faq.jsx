@@ -11,8 +11,8 @@ const FAQ_CATEGORIES = [
     title: 'Getting Started',
     questions: [
       {
-        q: 'How much does a website cost?',
-        a: 'Most local business sites land between $1,500 and $5,000 depending on what you need. A simple 5-page site is on the lower end. Something with booking, e-commerce, or custom features costs more. I also offer ongoing maintenance for $99/mo so you never have to worry about updates or security.',
+        q: 'Who do you build websites for?',
+        a: "Local businesses — shops, restaurants, trades, contractors, salons, dentists, realtors, law firms, independent professionals, and anyone else running a real business in the community. If you have customers in your area and need a real online presence, you're the kind of client I work with.",
       },
       {
         q: 'How long does it take to build a site?',
@@ -20,7 +20,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'What do you need from me to get started?',
-        a: "Not much. Your logo (if you have one), any photos you want used, and a rough idea of what you want. I handle everything else — writing, design, structure. If you don't have content ready, I can work with you on that too.",
+        a: "Not much. Your logo (if you have one), any photos you want used, and a rough idea of what your business does. I handle everything else — writing, design, structure. If you don't have content ready, I can work with you on that too.",
       },
       {
         q: 'Can you redesign my existing site?',
@@ -29,19 +29,23 @@ const FAQ_CATEGORIES = [
     ],
   },
   {
-    title: 'Pricing & Payment',
+    title: 'How I Work',
     questions: [
       {
-        q: 'What does the $99/mo maintenance include?',
-        a: 'Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff.',
+        q: 'What does ongoing maintenance include?',
+        a: "Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff — that's the whole point of working with one developer instead of an agency.",
       },
       {
         q: 'What makes you different from agencies?',
-        a: "I write real code. I don't hide behind page builders or templates and charge you agency prices for it. You talk directly to the developer building your site — me — not account managers or a ticket system. And I actually stick around after launch.",
+        a: 'I write real code, and I work directly with the local businesses I build for. No account managers, no ticket systems, no agency overhead between you and the person actually building your site. You talk to me, I do the work, and I stick around after launch.',
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
         a: "No. I write real code using modern frameworks like React. No third-party platforms, no page builders, no drag-and-drop tools. Your site is custom-built, loads fast, and isn't held hostage by some platform's subscription fees or limitations.",
+      },
+      {
+        q: 'Can you build a web app, not just a marketing site?',
+        a: 'Yes. A lot of local businesses need more than static pages — booking flows, customer portals, online ordering, quote forms, internal tools. I build those as real JavaScript applications using React, so they actually feel like modern software instead of a duct-taped plugin.',
       },
     ],
   },
@@ -58,11 +62,11 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'What if I need changes after launch?',
-        a: "Small stuff like text edits and image swaps are included in your maintenance plan. For bigger changes — new pages, new features — I'll give you a quote. No surprises.",
+        a: "Small stuff like text edits and image swaps are included in ongoing maintenance. For bigger changes — new pages, new features — we'll scope it out together before I get started. No surprises.",
       },
       {
-        q: 'Do you only work with businesses in Houston?',
-        a: "Nope. I'm based in Baytown, Texas and a lot of my clients are in the Houston area, but I work with people everywhere. Everything I do is remote-friendly. As long as you can hop on a call or send a text, we're good.",
+        q: 'Do you only work with local businesses in Houston?',
+        a: "I'm based in Baytown, Texas and a lot of the local businesses I work with are in the Houston area, but I'll happily work with local businesses anywhere. Everything I do is remote-friendly. As long as you can hop on a call or send a text, we're good.",
       },
       {
         q: 'What happens if I want to cancel?',
@@ -119,8 +123,8 @@ export default function Faq() {
   return (
     <div>
       <Seo
-        title="FAQ - Web Development Questions"
-        description="Common questions about web development pricing, timelines, and working with TaylorURL — a solo developer serving Baytown, Houston TX, and beyond. Get straight answers about custom websites for your business."
+        title="FAQ"
+        description="Common questions about working with TaylorURL — a solo developer building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. Straight answers about timelines, process, and how I work directly with the businesses I build for."
         path="/faq"
         schema={{
           '@context': 'https://schema.org',
@@ -183,7 +187,7 @@ export default function Faq() {
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
               I don&apos;t bite. Shoot me a message and I&apos;ll get back to you fast.
             </p>
-            <a href="/pricing" className={BTN_PRIMARY}>
+            <a href="/contact" className={BTN_PRIMARY}>
               Get in Touch
             </a>
           </motion.div>

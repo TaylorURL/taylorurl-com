@@ -61,7 +61,7 @@ export const HOW_IT_WORKS_STEPS = [
     step: '1',
     title: 'Hit Me Up',
     description:
-      "Call, text, email — whatever works. Tell me what you need and I'll give you a straight answer and a real quote. No 47-page proposal.",
+      "Call, text, email — whatever works. Tell me about your business and what you need. You'll get a straight answer, not a 47-page proposal.",
   },
   {
     step: '2',

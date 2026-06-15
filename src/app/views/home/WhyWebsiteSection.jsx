@@ -10,10 +10,10 @@ export default function WhyWebsiteSection() {
       <div className="relative mx-auto max-w-6xl px-6">
         <motion.div {...fadeInUp} className="mb-10 text-center sm:mb-16">
           <h2 className={`mb-4 ${SECTION_H2}`}>
-            Why You <span className="logo-wave-dark">Need a Website</span>
+            Why Your Local Business <span className="logo-wave-dark">Needs a Real Website</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Your competitors already have one. Let&apos;s be real about why it matters.
+            The shop across the street already has one. Here&apos;s why that matters.
           </p>
         </motion.div>
 
