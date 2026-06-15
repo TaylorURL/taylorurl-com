@@ -10,7 +10,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: 'We see it all the time. A business owner gets a website built and they want everything on the homepage — every service, every testimonial, a full company history, a blog feed, social media links, a giant photo gallery, and a mission statement that reads like a college essay. The homepage ends up looking like a junk drawer.',
+        text: 'I see it all the time. A business owner gets a website built and they want everything on the homepage — every service, every testimonial, a full company history, a blog feed, social media links, a giant photo gallery, and a mission statement that reads like a college essay. The homepage ends up looking like a junk drawer.',
       },
       { type: 'h2', text: 'Your Homepage Is Not Your Entire Website' },
       {
