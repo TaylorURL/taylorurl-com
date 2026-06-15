@@ -27,28 +27,28 @@ const TIMELINE_STEPS = [
     title: 'First Call',
     duration: 'Day 1',
     description:
-      'You tell me what you need. I ask questions, take notes, and give you a straight answer on whether I can help and what it\'ll cost. No pitch deck, no "discovery phase."',
+      'You tell me about your local business and what you need from a website. I ask questions, take notes, and give you a straight answer on whether I can help. No pitch deck, no "discovery phase."',
     client: [
       'Tell me about your business',
       'Share what you like (and hate) in other sites',
-      'Give me a rough idea of budget',
+      'Walk me through how customers reach you today',
     ],
     taylorurl: [
       'Ask the right questions',
       'Give you a straight yes/no on fit',
-      'Ballpark the cost on the spot',
+      'Sketch what your site should actually do',
     ],
   },
   {
     step: '02',
     icon: FileText,
-    title: 'Quote & Agreement',
+    title: 'Scope & Agreement',
     duration: 'Day 2-3',
     description:
-      'I send you a real number. Not a range. Not "it depends." If it works, we shake hands (digitally) and get moving.',
-    client: ['Review the quote', 'Ask any questions', "Sign off when you're ready"],
+      'I write up a clear scope — what I&apos;m building, what&apos;s included, and how long it takes. If it works for you, we shake hands (digitally) and get moving.',
+    client: ['Review the scope', 'Ask any questions', "Sign off when you're ready"],
     taylorurl: [
-      'Send a clear, itemized quote',
+      'Send a clear scope of work',
       "Explain what's included (and what's not)",
       'Set up the project timeline',
     ],
