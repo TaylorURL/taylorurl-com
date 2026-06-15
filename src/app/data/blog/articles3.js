@@ -138,7 +138,7 @@ export const BLOG_ARTICLES_3 = [
     content: [
       {
         type: 'p',
-        text: "We're going to be straight with you: website templates are not the deal they seem like. Yeah, they're cheap. Yeah, they're fast. But there's a reason your website looks exactly like 4,000 other businesses on the internet — because it literally <strong>is</strong> the same website.",
+        text: "I'm going to be straight with you: website templates are not the deal they seem like. Yeah, they're cheap. Yeah, they're fast. But there's a reason your website looks exactly like 4,000 other businesses on the internet — because it literally <strong>is</strong> the same website.",
       },
       { type: 'h2', text: 'The Hidden Costs of "Cheap"' },
       {
