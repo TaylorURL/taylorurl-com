@@ -185,7 +185,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'The Redesign Tax' },
       {
         type: 'p',
-        text: "Here's the pattern we see over and over: business gets a cheap site, outgrows it within a year, pays for a complete rebuild. So now they've paid twice. If they'd invested in a proper custom site from day one, they'd have saved time, money, and the migraine of starting over. <strong>A well-built site grows with your business. A cheap site holds it back.</strong>",
+        text: "Here's the pattern I see over and over: business gets a cheap site, outgrows it within a year, pays for a complete rebuild. So now they've paid twice. If they'd invested in a proper custom site from day one, they'd have saved time, money, and the migraine of starting over. <strong>A well-built site grows with your business. A cheap site holds it back.</strong>",
       },
       { type: 'h2', text: 'Spend Once, Spend Right' },
       {
