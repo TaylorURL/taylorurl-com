@@ -258,7 +258,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: '5. Setting It and Forgetting It' },
       {
         type: 'p',
-        text: 'A website isn\'t a "build it once and never touch it" thing. Your business changes — new services, new hours, new team members, new photos. If your site still shows information from two years ago, it looks abandoned. Customers notice.',
+        text: 'A website isn\'t a "build it once and never touch it" thing. Your business changes — new services, new hours, new staff, new photos. If your site still shows information from two years ago, it looks abandoned. Customers notice.',
       },
       {
         type: 'p',
