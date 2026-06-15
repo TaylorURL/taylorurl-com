@@ -229,7 +229,7 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: "After building websites for local businesses for years, we've noticed the same problems showing up again and again. None of them are hard to fix, but they're surprisingly common. Here are the five biggest ones.",
+        text: "After building websites for local businesses for years, I've noticed the same problems showing up again and again. None of them are hard to fix, but they're surprisingly common. Here are the five biggest ones.",
       },
       { type: 'h2', text: '1. No Clear Call to Action' },
       {
