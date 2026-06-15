@@ -123,8 +123,8 @@ export default function Faq() {
   return (
     <div>
       <Seo
-        title="FAQ - Web Development Questions"
-        description="Common questions about web development pricing, timelines, and working with TaylorURL — a solo developer serving Baytown, Houston TX, and beyond. Get straight answers about custom websites for your business."
+        title="FAQ - Websites for Local Businesses"
+        description="Common questions about working with TaylorURL — a solo developer building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. Straight answers about timelines, process, and how I work directly with the businesses I build for."
         path="/faq"
         schema={{
           '@context': 'https://schema.org',
