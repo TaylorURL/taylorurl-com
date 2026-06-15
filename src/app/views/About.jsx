@@ -161,7 +161,8 @@ export default function About() {
                   <div>
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
                     <p className="text-sm text-gray-600">
-                      Working with businesses everywhere. Everything I do is remote-friendly.
+                      Working with local businesses across the Houston area and beyond.
+                      Everything I do is remote-friendly.
                     </p>
                   </div>
                 </div>
