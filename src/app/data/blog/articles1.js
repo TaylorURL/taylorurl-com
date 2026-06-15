@@ -127,7 +127,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Before you come at us — we get it. WordPress is popular, it's familiar, and every other web developer uses it. But popularity isn't the same as quality. WordPress was great in 2005 when the alternative was hand-coding HTML in Notepad. In 2026, there are far better ways to build a website. <strong>We don't use WordPress, Wix, Squarespace, or any third-party platform. We write real code.</strong>",
+        text: "Before you come at me — I get it. WordPress is popular, it's familiar, and every other web developer uses it. But popularity isn't the same as quality. WordPress was great in 2005 when the alternative was hand-coding HTML in Notepad. In 2026, there are far better ways to build a website. <strong>I don't use WordPress, Wix, Squarespace, or any third-party platform. I write real code.</strong>",
       },
       { type: 'h2', text: 'The Plugin Casino' },
       {
