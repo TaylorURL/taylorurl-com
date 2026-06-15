@@ -15,7 +15,7 @@
 
 ---
 
-TaylorURL is a professional web development agency platform built by Trenton Taylor, based in Baytown, Texas. It operates as two interconnected products within a single application: a high-conversion marketing site aimed at Southeast Texas businesses seeking modern web presence, and a fully authenticated client portal where customers monitor the real-time health, analytics, and performance of their live websites.
+TaylorURL is a solo web development platform built and operated by Trenton Taylor, based in Baytown, Texas. It operates as two interconnected products within a single application: a high-conversion marketing site aimed at Southeast Texas businesses seeking modern web presence, and a fully authenticated client portal where customers monitor the real-time health, analytics, and performance of their live websites.
 
 The platform is designed to close the gap between selling a service and delivering ongoing value. Rather than pointing clients to third-party dashboards or sending manual reports, TaylorURL gives each customer a dedicated, branded window into their own site's data — visitor counts, page views, uptime percentage, and status badges — all surfaced through a clean portal that reinforces trust long after the initial project ships.
 
