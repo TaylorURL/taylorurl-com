@@ -49,7 +49,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Every week we talk to small business owners who are spending hundreds on Facebook ads or Google Ads and have never touched their Google Business Profile. That's like paying for a billboard when there's a free one sitting empty on the busiest street in town. <strong>Local SEO is the most underused marketing tool for small businesses, and it costs nothing to start.</strong>",
+        text: "Every week I talk to small business owners who are spending hundreds on Facebook ads or Google Ads and have never touched their Google Business Profile. That's like paying for a billboard when there's a free one sitting empty on the busiest street in town. <strong>Local SEO is the most underused marketing tool for small businesses, and it costs nothing to start.</strong>",
       },
       { type: 'h2', text: 'What Local SEO Actually Is' },
       {
