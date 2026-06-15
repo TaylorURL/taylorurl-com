@@ -216,7 +216,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: 'The Biggest Mistake Small Businesses Make' },
       {
         type: 'p',
-        text: "Using too many colors. We see it all the time — a homepage that looks like a bag of Skittles. Pick <strong>two or three colors max</strong> for your brand palette. One primary, one secondary, and maybe an accent. That's it. Consistency builds recognition, and recognition builds trust.",
+        text: "Using too many colors. I see it all the time — a homepage that looks like a bag of Skittles. Pick <strong>two or three colors max</strong> for your brand palette. One primary, one secondary, and maybe an accent. That's it. Consistency builds recognition, and recognition builds trust.",
       },
       { type: 'h2', text: 'How to Choose the Right Palette' },
       {
