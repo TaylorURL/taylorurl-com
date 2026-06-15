@@ -45,7 +45,7 @@ const TIMELINE_STEPS = [
     title: 'Scope & Agreement',
     duration: 'Day 2-3',
     description:
-      'I write up a clear scope — what I&apos;m building, what&apos;s included, and how long it takes. If it works for you, we shake hands (digitally) and get moving.',
+      "I write up a clear scope — what I'm building, what's included, and how long it takes. If it works for you, we shake hands (digitally) and get moving.",
     client: ['Review the scope', 'Ask any questions', "Sign off when you're ready"],
     taylorurl: [
       'Send a clear scope of work',
