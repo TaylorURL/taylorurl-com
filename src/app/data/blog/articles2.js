@@ -257,7 +257,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'What to Look For' },
       {
         type: 'p',
-        text: "When evaluating hosting, look for strong uptime guarantees, SSD storage, a server location close to your customers, good customer support, and included SSL certificates. Avoid hosts that lure you in with a $2/month introductory rate that jumps to $15/month after the first year. <strong>Read the renewal pricing before you sign up.</strong> That's where they get you.",
+        text: "When evaluating hosting, look for strong uptime guarantees, SSD storage, a server location close to your customers, good customer support, and included SSL certificates. Watch out for hosts that lure you in with a low introductory rate that jumps significantly after the first year. <strong>Read the renewal terms before you sign up.</strong> That's where they get you.",
       },
     ],
   },
