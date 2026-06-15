@@ -11,8 +11,8 @@ const FAQ_CATEGORIES = [
     title: 'Getting Started',
     questions: [
       {
-        q: 'How much does a website cost?',
-        a: 'Most local business sites land between $1,500 and $5,000 depending on what you need. A simple 5-page site is on the lower end. Something with booking, e-commerce, or custom features costs more. I also offer ongoing maintenance for $99/mo so you never have to worry about updates or security.',
+        q: 'Who do you build websites for?',
+        a: "Local businesses — shops, restaurants, trades, contractors, salons, dentists, realtors, law firms, independent professionals, and anyone else running a real business in the community. If you have customers in your area and need a real online presence, you're the kind of client I work with.",
       },
       {
         q: 'How long does it take to build a site?',
@@ -20,7 +20,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'What do you need from me to get started?',
-        a: "Not much. Your logo (if you have one), any photos you want used, and a rough idea of what you want. I handle everything else — writing, design, structure. If you don't have content ready, I can work with you on that too.",
+        a: "Not much. Your logo (if you have one), any photos you want used, and a rough idea of what your business does. I handle everything else — writing, design, structure. If you don't have content ready, I can work with you on that too.",
       },
       {
         q: 'Can you redesign my existing site?',
@@ -29,19 +29,23 @@ const FAQ_CATEGORIES = [
     ],
   },
   {
-    title: 'Pricing & Payment',
+    title: 'How I Work',
     questions: [
       {
-        q: 'What does the $99/mo maintenance include?',
-        a: 'Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff.',
+        q: 'What does ongoing maintenance include?',
+        a: 'Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff — that\'s the whole point of working with one developer instead of an agency.',
       },
       {
         q: 'What makes you different from agencies?',
-        a: "I write real code. I don't hide behind page builders or templates and charge you agency prices for it. You talk directly to the developer building your site — me — not account managers or a ticket system. And I actually stick around after launch.",
+        a: "I write real code, and I work directly with the local businesses I build for. No account managers, no ticket systems, no agency overhead between you and the person actually building your site. You talk to me, I do the work, and I stick around after launch.",
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
         a: "No. I write real code using modern frameworks like React. No third-party platforms, no page builders, no drag-and-drop tools. Your site is custom-built, loads fast, and isn't held hostage by some platform's subscription fees or limitations.",
+      },
+      {
+        q: 'Can you build a web app, not just a marketing site?',
+        a: "Yes. A lot of local businesses need more than static pages — booking flows, customer portals, online ordering, quote forms, internal tools. I build those as real JavaScript applications using React, so they actually feel like modern software instead of a duct-taped plugin.",
       },
     ],
   },
