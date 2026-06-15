@@ -25,7 +25,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: "Don't DIY This One" },
       {
         type: 'p',
-        text: "We get it — Canva is right there. But a professional logo is one of those investments that pays for itself over and over. You don't have to spend thousands, but you should work with someone who understands design principles and can give you files that actually work everywhere. Your logo is the face of your business. Treat it like one.",
+        text: "I get it — Canva is right there. But a professional logo is one of those investments that pays for itself over and over. You don't have to spend thousands, but you should work with someone who understands design principles and can give you files that actually work everywhere. Your logo is the face of your business. Treat it like one.",
       },
     ],
   },
