@@ -288,7 +288,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "If your website is slow, images are almost always the biggest reason. We audit sites all the time where a single page is loading 10MB of images. For context, your entire homepage should ideally be under 2MB total. <strong>Unoptimized images are the number one speed killer, and fixing them is the easiest performance win you'll ever get.</strong>",
+        text: "If your website is slow, images are almost always the biggest reason. I audit sites all the time where a single page is loading 10MB of images. For context, your entire homepage should ideally be under 2MB total. <strong>Unoptimized images are the number one speed killer, and fixing them is the easiest performance win you'll ever get.</strong>",
       },
       { type: 'h2', text: 'The Problem Is Bigger Than You Think' },
       {
