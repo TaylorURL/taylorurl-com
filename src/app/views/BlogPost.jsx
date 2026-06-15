@@ -106,10 +106,11 @@ export default function BlogPost() {
             Need Help With <span className="logo-wave">Your Website</span>?
           </h2>
           <p className="mb-6 text-gray-400">
-            I build fast, custom websites for local businesses. No templates, no page builders.
+            I build modern websites and JavaScript applications for local businesses. No
+            templates, no page builders — just a direct relationship with the developer.
           </p>
-          <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
-            Get a Quote
+          <Link to="/contact" className={`${BTN_PRIMARY} group`}>
+            Get in Touch
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
         </div>
