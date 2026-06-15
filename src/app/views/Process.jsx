@@ -291,9 +291,9 @@ export default function Process() {
       <CtaBanner
         heading="Ready to"
         accentText="Get Started?"
-        description="Now you know how it works. Let's talk about your project and get you a real number."
-        primaryLabel="Get a Quote"
-        primaryTo="/pricing"
+        description="Now you know how it works. Let's talk about your local business and what you need."
+        primaryLabel="Get in Touch"
+        primaryTo="/contact"
       />
     </div>
   )
