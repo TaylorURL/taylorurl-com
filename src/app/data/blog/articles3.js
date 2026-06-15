@@ -153,7 +153,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: 'When Templates Actually Make Sense' },
       {
         type: 'p',
-        text: "Look, we're not saying templates are always bad. If you need a quick placeholder while your real site is being built, or you're testing a business idea before going all in — fine. But if you're a real business trying to grow, a template is a ceiling you're going to hit fast.",
+        text: "Look, I'm not saying templates are always bad. If you need a quick placeholder while your real site is being built, or you're testing a business idea before going all in — fine. But if you're a real business trying to grow, a template is a ceiling you're going to hit fast.",
       },
       {
         type: 'p',
