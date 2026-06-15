@@ -118,9 +118,9 @@ export const BLOG_ARTICLES_1 = [
   },
   {
     slug: 'why-we-dont-use-wordpress-and-you-shouldnt-either',
-    title: "Why We Don't Use WordPress (And You Shouldn't Either)",
+    title: "Why I Don't Use WordPress (And You Shouldn't Either)",
     excerpt:
-      "WordPress runs 40% of the internet. That doesn't make it good — it makes it a target. Here's why we build from scratch.",
+      "WordPress runs 40% of the internet. That doesn't make it good — it makes it a target. Here's why I build from scratch.",
     category: 'Industry Tips',
     date: 'December 5, 2025',
     readTime: '6 min read',
