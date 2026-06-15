@@ -61,14 +61,6 @@ export default function Footer() {
                   FAQ
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/careers"
-                  className="text-sm text-gray-500 transition-colors hover:text-gray-900"
-                >
-                  Careers
-                </Link>
-              </li>
             </ul>
           </div>
 
