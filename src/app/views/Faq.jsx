@@ -187,7 +187,7 @@ export default function Faq() {
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
               I don&apos;t bite. Shoot me a message and I&apos;ll get back to you fast.
             </p>
-            <a href="/pricing" className={BTN_PRIMARY}>
+            <a href="/contact" className={BTN_PRIMARY}>
               Get in Touch
             </a>
           </motion.div>
