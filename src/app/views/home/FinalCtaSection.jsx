@@ -12,8 +12,8 @@ export default function FinalCtaSection() {
           Ready to <span className="logo-wave">Stop Overthinking It</span>?
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-base text-gray-400 sm:text-lg">
-          You don&apos;t need to understand hosting, SSL, or DNS. That&apos;s literally our job.
-          Just tell us what you need and we&apos;ll take it from there.
+          You don&apos;t need to understand hosting, SSL, or DNS. That&apos;s literally my job.
+          Just tell me what you need and I&apos;ll take it from there.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link to="/pricing" className={`group ${BTN_PRIMARY_LG}`}>
@@ -22,7 +22,7 @@ export default function FinalCtaSection() {
           </Link>
           <a href={`tel:${PHONE_NUMBER}`} className={BTN_SECONDARY_DARK_LG}>
             <Phone className="h-5 w-5" />
-            Call Us
+            Call Me
           </a>
         </div>
       </div>
