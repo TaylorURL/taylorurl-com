@@ -24,11 +24,13 @@ const INCLUDED_ITEMS = [
 const PROCESS_STEPS = [
   {
     title: 'Quick Chat',
-    description: 'Tell me what you need. I ask a few questions and give you a straight answer.',
+    description:
+      'Tell me about your local business. I ask a few questions and give you a straight answer.',
   },
   {
-    title: 'Real Quote',
-    description: 'You get a number — not a range, not "it depends." A real quote.',
+    title: 'A Real Plan',
+    description:
+      'You get a clear scope — what I build, how long it takes, and what happens after launch.',
   },
   {
     title: 'I Build It',
@@ -38,7 +40,7 @@ const PROCESS_STEPS = [
 
 const INPUT_CLASS = INPUT
 
-export default function Pricing() {
+export default function Contact() {
   const toast = useToast()
   const [formData, setFormData] = useState({
     name: '',
@@ -81,7 +83,7 @@ export default function Pricing() {
     const body = `
 Name: ${formData.name}
 Email: ${formData.email}
-Company: ${formData.company || 'N/A'}
+Business: ${formData.company || 'N/A'}
 Project Type: ${formData.projectType || 'Not specified'}
 
 Message:
@@ -99,13 +101,13 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Web Development Pricing"
-        description="Affordable custom web development pricing for Baytown and Houston businesses. Most sites $1,500-$5,000 with $99/mo maintenance. No hidden fees, no contracts."
-        path="/pricing"
+        title="Get in Touch"
+        description="Tell me about your local business and the site you need. I build modern websites and JavaScript applications for shops, restaurants, trades, and independent professionals in the Baytown and Houston area."
+        path="/contact"
       />
       <PageHero
-        title="Get a Quote"
-        description="No sales pitch. Just tell me what you need and I'll give you a number."
+        title="Get in Touch"
+        description="Tell me about your local business. I'll get back to you within 24 hours."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
@@ -120,8 +122,9 @@ ${formData.message}
                 Let&apos;s <span className="logo-wave-dark">Talk</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or just need someone to take over management — tell me.
-                I&apos;ll figure out what you need and what it&apos;ll cost.
+                New site, redesign, or need someone to take over a site you already have — tell me
+                what your business does and what you&apos;re trying to fix. I&apos;ll take it from
+                there.
               </p>
 
               <div className="mb-8 space-y-4">
@@ -183,7 +186,9 @@ ${formData.message}
               className="lg:col-span-3"
             >
               <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
-                <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Me What You Need</h3>
+                <h3 className="mb-6 text-xl font-semibold text-gray-900">
+                  Tell Me About Your Business
+                </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
@@ -226,7 +231,7 @@ ${formData.message}
                         value={formData.email}
                         onChange={handleChange}
                         className={INPUT_CLASS}
-                        placeholder="you@company.com"
+                        placeholder="you@yourbusiness.com"
                         aria-invalid={errors.email ? true : undefined}
                         aria-describedby={errors.email ? 'email-error' : undefined}
                       />
@@ -244,7 +249,7 @@ ${formData.message}
                         htmlFor="company"
                         className="mb-2 block text-sm font-medium text-gray-900"
                       >
-                        Company / Business
+                        Business Name
                       </label>
                       <input
                         type="text"
@@ -253,7 +258,7 @@ ${formData.message}
                         value={formData.company}
                         onChange={handleChange}
                         className={INPUT_CLASS}
-                        placeholder="Your company name"
+                        placeholder="Your business name"
                       />
                     </div>
                     <div>
@@ -273,6 +278,7 @@ ${formData.message}
                         <option value="">Select type</option>
                         <option value="new-website">New Website</option>
                         <option value="redesign">Website Redesign</option>
+                        <option value="web-app">Web Application</option>
                         <option value="optimization">Performance Optimization</option>
                         <option value="maintenance">Ongoing Maintenance</option>
                       </select>
@@ -294,7 +300,7 @@ ${formData.message}
                       onChange={handleChange}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
-                      placeholder="What do you need? Any timeline or budget in mind?"
+                      placeholder="What does your business do, and what do you need from a website?"
                       aria-invalid={errors.message ? true : undefined}
                       aria-describedby={errors.message ? 'message-error' : undefined}
                     />
@@ -327,7 +333,7 @@ ${formData.message}
               Everything&apos;s <span className="logo-wave">Included</span>
             </h2>
             <p className="text-gray-400">
-              You don&apos;t pay extra for any of this. It all comes with the site.
+              All of this comes with the site. You won&apos;t get nickel-and-dimed for the basics.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

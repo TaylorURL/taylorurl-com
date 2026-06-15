@@ -264,8 +264,8 @@ export default function Blog() {
   return (
     <div>
       <Seo
-        title="Web Development Blog"
-        description="Web development tips, SEO advice, and business growth strategies for small businesses in Baytown, Houston, and Texas. Learn what actually works to get more customers online."
+        title="Blog"
+        description="Web development tips, SEO advice, and growth strategies written for local businesses in Baytown, Houston, and beyond. Real advice about getting your shop, restaurant, or service business found online."
         path="/blog"
       />
 
@@ -277,7 +277,7 @@ export default function Blog() {
             <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
               The <span className="logo-wave-dark">Blog</span>
             </h1>
-            <p className="mb-6 text-gray-500">Real advice for real businesses. No fluff.</p>
+            <p className="mb-6 text-gray-500">Real advice for local businesses. No fluff.</p>
 
             {/* Search + categories inline */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -456,8 +456,8 @@ export default function Blog() {
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
               Stop reading about it and let&apos;s actually do something about it.
             </p>
-            <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
-              Get a Quote
+            <Link to="/contact" className={`${BTN_PRIMARY} group`}>
+              Get in Touch
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>

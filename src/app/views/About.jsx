@@ -21,7 +21,7 @@ const VALUES = [
     icon: Code2,
     title: 'Real Code, Not Drag-and-Drop',
     description:
-      'Every line is written by hand. No WordPress, no Wix, no Squarespace. Your site is built with the same tech that powers the biggest companies on the internet — except it actually loads fast.',
+      'Every line is written by hand with modern JavaScript and React. No WordPress, no Wix, no Squarespace. Your site is built with the same tech that powers the biggest companies on the internet — except it actually loads fast.',
   },
   {
     icon: Headphones,
@@ -33,13 +33,13 @@ const VALUES = [
     icon: Zap,
     title: 'Fast Turnaround, Not Fast Talk',
     description:
-      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what you need, I build it.',
+      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what your business does, I build it.',
   },
   {
     icon: Shield,
-    title: 'No Hidden Costs. Ever.',
+    title: 'Built for Local Businesses',
     description:
-      'I quote you a number and that\'s what it costs. No surprise "oh I didn\'t scope that" invoices. No nickel-and-diming on revisions. The price is the price.',
+      'I work with shops, restaurants, trades, contractors, and independent professionals — the kind of business that needs a real online presence, not a template-y agency project. Direct relationship, clear scope, no surprises.',
   },
 ]
 
@@ -90,10 +90,13 @@ export default function About() {
     <div>
       <Seo
         title="About"
-        description="TaylorURL is Trenton Taylor — a solo web developer based in Baytown, Texas serving Houston and surrounding areas. I build custom websites for local businesses — no templates, no agencies, just one developer who picks up the phone."
+        description="TaylorURL is Trenton Taylor — a solo developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Shops, restaurants, trades, contractors, independent professionals. No templates, no agencies — one developer who picks up the phone."
         path="/about"
       />
-      <PageHero title="About" description="One developer. Real code. No corporate energy." />
+      <PageHero
+        title="About"
+        description="One developer building real websites for local businesses. No corporate energy."
+      />
 
       {/* Story section */}
       <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
@@ -102,27 +105,25 @@ export default function About() {
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
               <p className={`mb-2 ${EYEBROW}`}>My Story</p>
-              <h2 className={`mb-8 ${SECTION_H2}`}>
-                I got tired of watching local businesses get ripped off
-              </h2>
+              <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for local businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown, Texas
-                  because I kept seeing the same thing everywhere — local businesses either paying
-                  some agency $10,000 for a WordPress template they could&apos;ve bought for $59, or
-                  settling for a site that looks like it was built on a free Wix plan in 2012.
+                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown,
+                  Texas because the local businesses I knew — the family restaurant, the plumber
+                  down the street, the salon two blocks over — all needed a real online presence and
+                  kept ending up with either a template-y agency project or a Wix page that looked
+                  like it was built in 2012.
                 </p>
                 <p>
-                  Both options suck. So I started building websites the right way — with real code,
-                  real design, and real support after launch. Not as a faceless agency with a sales
-                  team and a ticket queue, but as one developer you can text when something needs
-                  fixing.
+                  Neither option works. So I build websites the right way — with real code, real
+                  design, and real support after launch. Not as a faceless agency with a sales team
+                  and a ticket queue, but as one developer you can text when something needs fixing.
                 </p>
                 <p>
-                  I use the same technology that powers sites like Netflix and Airbnb, except I
-                  don&apos;t charge like them and I don&apos;t talk like them either. Every site I
-                  build is custom, fast, and yours to keep. No lock-in, no platform fees, no
-                  surprises.
+                  I use the same JavaScript and React stack that powers the biggest sites on the
+                  internet, scaled down and built around what a local business actually needs: fast
+                  pages, clean design, and a direct relationship with the person who built it. No
+                  lock-in, no platform fees, no surprises.
                 </p>
               </div>
             </motion.div>
@@ -157,7 +158,8 @@ export default function About() {
                   <div>
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
                     <p className="text-sm text-gray-600">
-                      Working with businesses everywhere. Everything I do is remote-friendly.
+                      Working with local businesses across the Houston area and beyond. Everything I
+                      do is remote-friendly.
                     </p>
                   </div>
                 </div>
@@ -256,12 +258,12 @@ export default function About() {
               Let&apos;s <span className="logo-wave">Do This</span>
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me what you need. I&apos;ll give you a straight answer and a real quote — no
-              &quot;discovery phase&quot; required.
+              Tell me about your local business and what you&apos;re trying to fix. I&apos;ll give
+              you a straight answer — no &quot;discovery phase&quot; required.
             </p>
             <div className="flex justify-center">
-              <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
-                Get a Quote
+              <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
+                Get in Touch
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>

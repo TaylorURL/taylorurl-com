@@ -22,8 +22,8 @@ export default function Footer() {
               <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-28 w-auto" />
             </Link>
             <p className="mb-6 max-w-sm text-sm leading-relaxed text-gray-500">
-              Solo web development for businesses in Baytown, Houston, Pasadena, Deer Park, La
-              Porte, and the greater Houston area. Built by Trenton Taylor.
+              Modern websites and JavaScript applications for local businesses in Baytown, Houston,
+              Pasadena, Deer Park, La Porte, and the greater Houston area. Built by Trenton Taylor.
             </p>
             <div className="space-y-2.5">
               <div className="flex items-center gap-2.5 text-sm text-gray-500">
@@ -78,8 +78,8 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <Link to="/pricing" className={`group ${BTN_PRIMARY_SM}`}>
-              Get a Quote
+            <Link to="/contact" className={`group ${BTN_PRIMARY_SM}`}>
+              Get in Touch
               <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>

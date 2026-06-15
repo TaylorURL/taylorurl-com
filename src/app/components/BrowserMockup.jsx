@@ -215,7 +215,7 @@ function DashboardContent() {
         {[
           { label: 'Visitors', value: '1,247', color: 'text-blue-600' },
           { label: 'Leads', value: '38', color: 'text-emerald-600' },
-          { label: 'Revenue', value: '$4.2k', color: 'text-violet-600' },
+          { label: 'Conv. Rate', value: '3.0%', color: 'text-violet-600' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}

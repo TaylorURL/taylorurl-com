@@ -16,7 +16,7 @@ export default function Home() {
     <div>
       <Seo
         path="/"
-        description="TaylorURL is Trenton Taylor — a solo developer building custom websites for businesses in Baytown, Houston, Pasadena, Deer Park, La Porte, and the greater Houston TX area. No templates. No page builders. Real code that ranks on Google."
+        description="TaylorURL is Trenton Taylor — a solo developer building modern websites and JavaScript applications for local businesses. Shops, restaurants, trades, contractors, and independent professionals in Baytown, Houston, and the surrounding community. Direct relationship with the developer. Real code. No template-y agency feel."
       />
       <div id="hero">
         <HeroSection />

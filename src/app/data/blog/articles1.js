@@ -159,14 +159,14 @@ export const BLOG_ARTICLES_1 = [
     slug: 'the-real-cost-of-a-cheap-website',
     title: 'The Real Cost of a Cheap Website',
     excerpt:
-      "That $500 website sounds like a steal until you see what it's actually costing your business in lost leads and wasted time.",
+      "A bargain-bin website sounds like a steal until you see what it's actually costing your local business in lost leads and wasted time.",
     category: 'Business',
     date: 'December 18, 2025',
     readTime: '5 min read',
     content: [
       {
         type: 'p',
-        text: "Look, I understand the temptation. You're a small business, budgets are tight, and someone on Fiverr says they'll build you a website for $400. Why would you spend $3,000 when you can get something for a tenth of that? <strong>Because the $400 site is going to cost you way more than $3,000 in the long run.</strong> Here's how.",
+        text: "Look, I understand the temptation. You're a local business, budgets are tight, and someone on Fiverr says they'll throw together a website fast. Why pay more for custom work when it looks like you can get something for a fraction of that? <strong>Because the bargain site is going to cost you way more in the long run.</strong> Here's how.",
       },
       { type: 'h2', text: 'You Get a Template, Not a Website' },
       {
@@ -190,7 +190,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'Spend Once, Spend Right' },
       {
         type: 'p',
-        text: "A custom website isn't an expense — it's an investment that pays for itself. It loads fast, ranks well, converts visitors, and doesn't need to be rebuilt when your business evolves. You own it completely with no platform lock-in. The real cost of a cheap website isn't the price tag. It's every customer it fails to convert and every dollar you spend fixing it.",
+        text: "A custom website isn't an expense — it's an investment that pays for itself. It loads fast, ranks well, converts visitors, and doesn't need to be rebuilt when your business evolves. You own it completely with no platform lock-in. The real cost of a cheap website isn't what you paid for it — it's every customer it fails to convert and every hour you spend fixing it.",
       },
     ],
   },
@@ -217,14 +217,14 @@ export const BLOG_ARTICLES_1 = [
         type: 'p',
         text: "Before you sign anything, ask: <strong>Who owns the website after it's built?</strong> The answer should always be you. What technology are you building on? What happens if I need changes after launch? How long will this take? What do you need from me? A good developer answers these confidently and clearly. A bad one gets vague or defensive.",
       },
-      { type: 'h2', text: 'Understand Fair Pricing' },
+      { type: 'h2', text: 'Get a Clear Scope, Not a Vague Quote' },
       {
         type: 'p',
-        text: "A legit custom website for a small business typically runs between $1,500 and $10,000 depending on size and complexity. If someone quotes you $300 for a \"custom\" site, it's a template with your logo on it. If someone quotes $25,000 for a five-page site, they're overcharging. <strong>Most developers take a deposit upfront — usually 30-50% — with the rest due at launch.</strong> That's standard and fair.",
+        text: "A real developer can describe exactly what they're building before they start: how many pages, what features, how long it takes, what happens after launch, and what's included in ongoing maintenance. If someone hands you a one-liner with no detail behind it, that's a red flag. <strong>Clear scope up front is how you avoid surprise invoices and \"oh I didn't include that\" conversations later.</strong>",
       },
       {
         type: 'p',
-        text: "Monthly maintenance plans between $50 and $200 are normal for hosting, updates, and small changes. If someone is charging you $500/month for basic maintenance, ask what exactly they're doing for that money.",
+        text: "Also ask how payment is structured. Most developers ask for a deposit upfront — usually a portion of the project — with the rest due at launch. That's standard and fair. Just make sure the milestones, deliverables, and ongoing maintenance terms are spelled out in writing before any money changes hands.",
       },
       { type: 'h2', text: 'Look at Their Own Website' },
       {

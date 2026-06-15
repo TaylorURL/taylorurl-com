@@ -9,7 +9,7 @@ const SECTIONS = [
   },
   {
     title: '2. Services Description',
-    content: `TaylorURL provides custom website development, website redesigns, and ongoing website management services, all performed by Trenton Taylor. The specific scope, deliverables, timeline, and pricing for each project will be outlined in a separate project agreement or statement of work.`,
+    content: `TaylorURL provides custom website development, JavaScript application development, website redesigns, and ongoing website management services for local businesses, all performed by Trenton Taylor. The specific scope, deliverables, timeline, and terms for each project will be outlined in a separate project agreement or statement of work.`,
   },
   {
     title: '3. Client Responsibilities',
@@ -17,7 +17,7 @@ const SECTIONS = [
   },
   {
     title: '4. Payment Terms',
-    content: `Pricing includes a one-time project fee and a recurring monthly maintenance fee. Additional charges may apply for external services such as API integrations, token usage, or advertising costs. Specific pricing will be outlined in individual project agreements. Late payments may incur additional fees.`,
+    content: `Payment terms — including any one-time project fees, recurring maintenance fees, and pass-through charges for external services such as domains, API integrations, or advertising — are outlined in each individual project agreement. Late payments may incur additional fees as specified in that agreement.`,
   },
   {
     title: '5. Intellectual Property',

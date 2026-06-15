@@ -45,19 +45,19 @@ export default function DataSection() {
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <motion.div {...fadeInUp}>
             <h2 className={`mb-5 ${SECTION_H2_DARK}`}>
-              A Website Isn&apos;t a Nice-to-Have.{' '}
+              A Real Online Presence Isn&apos;t a Nice-to-Have.{' '}
               <span className="logo-wave">It&apos;s the Difference.</span>
             </h2>
             <p className="mb-6 text-base leading-relaxed text-gray-400 sm:text-lg">
-              Businesses with a real website grow faster, get found more, and close more customers.
-              The ones without? They stay stuck relying on word of mouth and hoping the phone rings.
+              Local businesses with a real website grow faster, get found more, and close more
+              customers. The ones without stay stuck on word of mouth and hoping the phone rings.
             </p>
             <p className="mb-8 text-gray-500">
               This isn&apos;t theory — it&apos;s what happens every time. A professional site puts
-              you where your customers are already looking.
+              your business where your neighbors are already looking.
             </p>
-            <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
-              Get Started
+            <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
+              Get in Touch
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>

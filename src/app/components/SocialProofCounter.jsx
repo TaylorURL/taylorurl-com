@@ -31,7 +31,7 @@ export default function SocialProofCounter() {
         >
           {count}
         </motion.span>{' '}
-        businesses served this year
+        local businesses served this year
       </p>
     </motion.div>
   )
