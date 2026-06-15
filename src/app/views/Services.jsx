@@ -211,11 +211,12 @@ export default function Services() {
               Sounds <span className="logo-wave-dark">Good</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what you need. I&apos;ll give you a straight answer and a real price.
+              Tell me what your local business needs. I&apos;ll give you a straight answer and we
+              can talk through what to build.
             </p>
             <div className="flex justify-center">
-              <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
-                Get a Quote
+              <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
+                Get in Touch
                 <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </Link>
             </div>
