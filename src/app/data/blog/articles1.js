@@ -166,7 +166,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Look, we understand the temptation. You're a small business, budgets are tight, and someone on Fiverr says they'll build you a website for $400. Why would you spend $3,000 when you can get something for a tenth of that? <strong>Because the $400 site is going to cost you way more than $3,000 in the long run.</strong> Here's how.",
+        text: "Look, I understand the temptation. You're a small business, budgets are tight, and someone on Fiverr says they'll build you a website for $400. Why would you spend $3,000 when you can get something for a tenth of that? <strong>Because the $400 site is going to cost you way more than $3,000 in the long run.</strong> Here's how.",
       },
       { type: 'h2', text: 'You Get a Template, Not a Website' },
       {
