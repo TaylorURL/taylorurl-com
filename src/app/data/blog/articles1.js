@@ -312,7 +312,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'The Speed Payoff' },
       {
         type: 'p',
-        text: "We've seen sites go from 8-second load times to under 2 seconds just by optimizing images. No code changes, no hosting upgrades, no redesign — just properly sized and compressed images. Faster load times mean lower bounce rates, better Google rankings, and more conversions. It's free, it's easy, and it makes an immediate difference. <strong>If you do one thing for your website this week, optimize your images.</strong>",
+        text: "I've seen sites go from 8-second load times to under 2 seconds just by optimizing images. No code changes, no hosting upgrades, no redesign — just properly sized and compressed images. Faster load times mean lower bounce rates, better Google rankings, and more conversions. It's free, it's easy, and it makes an immediate difference. <strong>If you do one thing for your website this week, optimize your images.</strong>",
       },
     ],
   },
