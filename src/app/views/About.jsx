@@ -90,10 +90,13 @@ export default function About() {
     <div>
       <Seo
         title="About"
-        description="TaylorURL is Trenton Taylor — a solo web developer based in Baytown, Texas serving Houston and surrounding areas. I build custom websites for local businesses — no templates, no agencies, just one developer who picks up the phone."
+        description="TaylorURL is Trenton Taylor — a solo developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Shops, restaurants, trades, contractors, independent professionals. No templates, no agencies — one developer who picks up the phone."
         path="/about"
       />
-      <PageHero title="About" description="One developer. Real code. No corporate energy." />
+      <PageHero
+        title="About"
+        description="One developer building real websites for local businesses. No corporate energy."
+      />
 
       {/* Story section */}
       <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
