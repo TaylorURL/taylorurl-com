@@ -62,7 +62,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'What if I need changes after launch?',
-        a: "Small stuff like text edits and image swaps are included in your maintenance plan. For bigger changes — new pages, new features — I'll give you a quote. No surprises.",
+        a: "Small stuff like text edits and image swaps are included in ongoing maintenance. For bigger changes — new pages, new features — we'll scope it out together before I get started. No surprises.",
       },
       {
         q: 'Do you only work with local businesses in Houston?',
