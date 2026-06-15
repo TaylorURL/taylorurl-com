@@ -24,15 +24,15 @@ const INCLUDED_ITEMS = [
 const PROCESS_STEPS = [
   {
     title: 'Quick Chat',
-    description: 'Tell us what you need. We ask a few questions and give you a straight answer.',
+    description: 'Tell me what you need. I ask a few questions and give you a straight answer.',
   },
   {
     title: 'Real Quote',
     description: 'You get a number — not a range, not "it depends." A real quote.',
   },
   {
-    title: 'We Build It',
-    description: 'We get to work, you see progress, and we launch it with full support included.',
+    title: 'I Build It',
+    description: 'I get to work, you see progress, and I launch it with full support included.',
   },
 ]
 
