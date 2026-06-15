@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Your Client Portal Guide — TaylorURL Onboarding</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --blue: #2563eb;
+    --blue-light: #3b82f6;
+    --sky: #7dd3fc;
+    --bg: #F5F6F7;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #475569;
+    --hairline: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Geist','Inter',system-ui,-apple-system,sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 880px; margin: 0 auto; padding: 32px 24px 64px; }
+  .hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 70%, #3b82f6 100%);
+    color: #fff; border-radius: 20px; padding: 56px 44px;
+    box-shadow: 0 18px 40px -20px rgba(30,58,95,.45);
+    position: relative; overflow: hidden;
+  }
+  .hero::after {
+    content: ""; position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(125,211,252,.35), transparent 70%);
+    border-radius: 50%;
+  }
+  .kicker { text-transform: uppercase; letter-spacing: .22em; font-size: 12px;
+    font-weight: 600; color: var(--sky); margin: 0 0 14px; }
+  .wordmark { font-weight: 700; font-size: 18px; margin-bottom: 24px; color: #fff; }
+  .wordmark .accent { color: var(--sky); }
+  h1 { font-size: 40px; line-height: 1.15; margin: 0 0 14px; font-weight: 700; letter-spacing: -0.01em; }
+  .hero p { font-size: 17px; color: rgba(255,255,255,.88); margin: 0; max-width: 56ch; }
+  .card {
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 16px;
+    padding: 32px 32px 28px; margin-top: 24px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -16px rgba(15,23,42,.12);
+  }
+  .card h2 { font-size: 22px; margin: 0 0 8px; color: var(--navy);
+    display: flex; align-items: center; gap: 14px; }
+  .num { display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff; font-size: 15px; font-weight: 600; flex: none; }
+  .card h3 { font-size: 15px; color: var(--navy); margin: 20px 0 6px; font-weight: 600; }
+  .card p, .card li { color: var(--muted); font-size: 15.5px; }
+  .card ul, .card ol { padding-left: 18px; margin: 6px 0 0; }
+  .card li { margin-bottom: 6px; }
+  .card li strong { color: var(--ink); font-weight: 600; }
+  .role-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 14px; }
+  .role {
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 18px;
+    background: #fafbfc;
+  }
+  .role .badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .role h4 { margin: 0 0 4px; color: var(--ink); font-size: 16px; }
+  .role p { margin: 0; font-size: 14px; color: var(--muted); }
+  .metric-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-top: 14px; }
+  .metric {
+    border: 1px solid var(--hairline);
+    border-radius: 14px;
+    padding: 18px;
+    background: #fff;
+  }
+  .metric .label { font-size: 12px; color: var(--blue); text-transform: uppercase; letter-spacing: .08em; font-weight: 600; }
+  .metric .value { font-size: 28px; color: var(--navy); font-weight: 700; margin: 4px 0; letter-spacing: -0.01em; }
+  .metric .note { font-size: 13px; color: var(--muted); }
+  .status-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px 6px 10px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid var(--hairline);
+    background: #fff;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; }
+  .ok { color: #166534; background: #f0fdf4; border-color: #bbf7d0; }
+  .ok .dot { background: #16a34a; }
+  .warn { color: #92400e; background: #fffbeb; border-color: #fde68a; }
+  .warn .dot { background: #d97706; }
+  .down { color: #991b1b; background: #fef2f2; border-color: #fecaca; }
+  .down .dot { background: #dc2626; }
+  .footer { text-align: center; margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid var(--hairline); font-size: 13px; color: var(--muted); }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 28px; } h1 { font-size: 30px; } .card { padding: 24px; }
+  }
+  @media print {
+    body { background: #fff; } .card, .hero { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="wordmark">Taylor<span class="accent">URL</span></div>
+    <p class="kicker">Client Onboarding</p>
+    <h1>Your Client Portal Guide</h1>
+    <p>The portal is the part that makes TaylorURL different. It's where you watch your site work — visitors arriving, pages performing, uptime holding — in real time, without us in the middle.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="num">1</span> Signing in</h2>
+    <p>Once we create your account, you'll get an email invite to set a password. From then on:</p>
+    <ol>
+      <li>Visit your portal URL (we'll share this with you on kickoff).</li>
+      <li>Enter your email address and password.</li>
+      <li>Land directly on your dashboard.</li>
+    </ol>
+    <h3>Forgot your password?</h3>
+    <p>Use the "Forgot password" link on the sign-in screen. A reset email arrives within a minute. If it doesn't, check spam, then ping us — we can resend manually.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> What the dashboard shows</h2>
+    <p>The dashboard is built around four signals that answer the question "is my site working?" in under five seconds.</p>
+    <div class="metric-grid">
+      <div class="metric">
+        <div class="label">Visitor count</div>
+        <div class="value">1,248</div>
+        <div class="note">Unique people who reached your site this week.</div>
+      </div>
+      <div class="metric">
+        <div class="label">Page views</div>
+        <div class="value">3,914</div>
+        <div class="note">Total pages loaded, broken down by page.</div>
+      </div>
+      <div class="metric">
+        <div class="label">Uptime</div>
+        <div class="value">99.98%</div>
+        <div class="note">Rolling 30-day independent uptime checks.</div>
+      </div>
+      <div class="metric">
+        <div class="label">Status</div>
+        <div class="value" style="font-size: 22px;">All systems normal</div>
+        <div class="note">Quick health indicator across the whole stack.</div>
+      </div>
+    </div>
+    <p style="margin-top:16px">The numbers above are illustrative — your dashboard reflects your own site. Hover or tap any tile to drill into the underlying trend.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span> Reading the status badges</h2>
+    <p>Status badges are the at-a-glance signal that something needs attention — or that everything's fine. You'll see them throughout the portal.</p>
+    <div class="status-row">
+      <span class="status ok"><span class="dot"></span>Healthy</span>
+      <span class="status warn"><span class="dot"></span>Degraded</span>
+      <span class="status down"><span class="dot"></span>Down</span>
+    </div>
+    <h3>What each one means</h3>
+    <ul>
+      <li><strong>Healthy</strong> — site responding normally, uptime holding, no alerts firing.</li>
+      <li><strong>Degraded</strong> — site is up but something is slower or off (a third-party API, an asset, a region). We're aware and watching.</li>
+      <li><strong>Down</strong> — site is unreachable. We're notified the moment this changes; you should be too.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span> Roles &amp; access</h2>
+    <p>The portal has three roles. Each one sees a different slice of the system.</p>
+    <div class="role-grid">
+      <div class="role">
+        <span class="badge">Client</span>
+        <h4>Client</h4>
+        <p>You and the people you invite from your team. Default for any new signup. Sees the dashboard, metrics, and any documents we share with your account.</p>
+      </div>
+      <div class="role">
+        <span class="badge">Staff</span>
+        <h4>Staff</h4>
+        <p>TaylorURL team members who can work on your project — review the same data you see, plus internal tooling for deploys and content updates.</p>
+      </div>
+      <div class="role">
+        <span class="badge">Admin</span>
+        <h4>Admin</h4>
+        <p>Trenton. Full control over accounts, roles, billing, and infrastructure. Use the admin contact for anything sensitive.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span> Inviting team members</h2>
+    <p>You can bring teammates into the portal so they see the same numbers you do — without sharing your password.</p>
+    <ol>
+      <li>Open <strong>Settings → Team</strong> in the portal.</li>
+      <li>Click <strong>Invite member</strong>.</li>
+      <li>Enter their email address and choose the <em>client</em> role.</li>
+      <li>They'll get an email invite to set their own password and sign in.</li>
+    </ol>
+    <p style="margin-top:10px">Need someone removed? Same screen, same role — and we're happy to handle removals for you if that's easier.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">6</span> Reading the metrics well</h2>
+    <p>Dashboards lie when they're read poorly. A few habits that make this one useful:</p>
+    <ul>
+      <li><strong>Compare to last week, not yesterday.</strong> Day-to-day swings are noise; week-over-week tells the real story.</li>
+      <li><strong>Watch which pages move.</strong> A visitor spike is interesting; a visitor spike on your service page is actionable.</li>
+      <li><strong>Treat 99.9% uptime as the floor.</strong> If it slips below that for a week, ask why — we'll already be looking.</li>
+      <li><strong>Don't panic on a single degraded badge.</strong> Sometimes a third party hiccups. Sustained degradation is the signal that matters.</li>
+    </ul>
+    <p style="margin-top:10px">If you ever can't tell what a number means, ask. The portal exists to give you clarity, not homework.</p>
+  </section>
+
+  <footer class="footer">TaylorURL · Web Development Agency · Baytown, Texas · Built by Trenton Taylor</footer>
+</div>
+</body>
+</html>
