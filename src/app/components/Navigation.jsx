@@ -138,10 +138,10 @@ export default function Navigation() {
             <div className={`mx-1 h-5 w-px ${isPillTransparent ? 'bg-white/20' : 'bg-gray-200'}`} />
 
             <Link
-              to="/pricing"
+              to="/contact"
               className="group flex items-center gap-1.5 rounded-full bg-blue-600 px-5 py-2 text-[13px] font-semibold text-white transition-all duration-200 hover:bg-blue-500"
             >
-              Get a Quote
+              Get in Touch
               <ArrowRight className="h-3 w-3 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
