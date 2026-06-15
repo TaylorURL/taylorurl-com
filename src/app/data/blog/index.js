@@ -14,7 +14,7 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: "We get this question a lot. And honestly, it's a fair one. You've got social media, you've got a Google Business listing, maybe you're even on Yelp. People can find you. So why spend money on a website?",
+        text: "I get this question a lot. And honestly, it's a fair one. You've got social media, you've got a Google Business listing, maybe you're even on Yelp. People can find you. So why spend money on a website?",
       },
       {
         type: 'p',
