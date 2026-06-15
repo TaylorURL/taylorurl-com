@@ -139,13 +139,13 @@ export default function Process() {
   return (
     <div>
       <Seo
-        title="My Web Development Process"
-        description="How I build custom websites for Baytown and Houston businesses. From first call to launch in 2-4 weeks. No mystery, no jargon — just results."
+        title="How I Work With Local Businesses"
+        description="My process for building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. From first call to launch in 2-4 weeks. No mystery, no jargon — just a direct relationship with the developer."
         path="/process"
       />
       <PageHero
         title="How I Work"
-        description="No mystery. No jargon. Here's exactly what happens."
+        description="No mystery. No jargon. Here's exactly how I work with local businesses."
       />
 
       {/* Timeline */}
