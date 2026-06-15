@@ -25,13 +25,17 @@ export default function BlogPost() {
           description: post.excerpt,
           datePublished: new Date(post.date).toISOString(),
           author: {
-            '@type': 'Organization',
-            name: 'TaylorURL',
-            url: 'https://taylorurl.com',
+            '@type': 'Person',
+            name: 'Trenton Taylor',
+            url: 'https://taylorurl.com/about',
           },
           publisher: {
             '@type': 'Organization',
             name: 'TaylorURL',
+            founder: {
+              '@type': 'Person',
+              name: 'Trenton Taylor',
+            },
             logo: {
               '@type': 'ImageObject',
               url: 'https://taylorurl.com/images/TaylorURL-Logo.png',
