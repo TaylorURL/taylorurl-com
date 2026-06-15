@@ -24,7 +24,7 @@ const SERVICES = [
     icon: Palette,
     title: 'Custom Websites',
     description:
-      'No templates. No drag-and-drop builders. We design your site from scratch so it actually looks like your business.',
+      'No templates. No drag-and-drop builders. I design your site from scratch so it actually looks like your business.',
     features: [
       'Designed around your brand, not a theme',
       'Looks great on every screen size',
@@ -37,7 +37,7 @@ const SERVICES = [
     icon: Code2,
     title: 'Website Redesigns',
     description:
-      "Already have a site that looks outdated or runs like garbage? We'll rebuild it from the ground up with real code.",
+      "Already have a site that looks outdated or runs like garbage? I'll rebuild it from the ground up with real code.",
     features: [
       'Full redesign with modern tech',
       'Keep your content, ditch the clutter',
@@ -50,7 +50,7 @@ const SERVICES = [
     icon: Zap,
     title: 'Speed That Matters',
     description:
-      'Slow sites lose customers. Google penalizes them too. We make sure yours is fast — actually fast, not "fast for a website."',
+      'Slow sites lose customers. Google penalizes them too. I make sure yours is fast — actually fast, not "fast for a website."',
     features: [
       'Under 2 second load times',
       'Google Core Web Vitals optimized',
@@ -61,14 +61,14 @@ const SERVICES = [
   },
   {
     icon: Wrench,
-    title: 'We Handle Everything After',
+    title: 'I Handle Everything After',
     description:
-      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. We watch it.",
+      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. I watch it.",
     features: [
       'Hosting, SSL, & domain setup',
       'Security patches as they drop',
       'Uptime monitoring & daily backups',
-      'Direct access to the people who built it',
+      'Direct access to the developer who built it',
     ],
     mockup: 'default',
   },
@@ -102,12 +102,12 @@ export default function Services() {
     <div>
       <Seo
         title="Web Development Services"
-        description="Custom website development, redesigns, SEO, and ongoing maintenance for businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded sites that outperform templates."
+        description="Custom website development, redesigns, SEO, and ongoing maintenance for businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded sites built by one developer who outperforms templates."
         path="/services"
       />
       <PageHero
-        title="What We Do"
-        description="Custom websites and redesigns. We build it, host it, and keep it running. That's the whole pitch."
+        title="What I Do"
+        description="Custom websites and redesigns. I build it, host it, and keep it running. That's the whole pitch."
       />
 
       {/* Services grid — alternating layout */}
@@ -183,7 +183,7 @@ export default function Services() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-white">Our Stack</h2>
+            <h2 className="text-lg font-semibold text-white">My Stack</h2>
             <p className="mt-2 text-sm text-gray-500">
               The same tools the big companies use — without the big company attitude.
             </p>
@@ -211,7 +211,7 @@ export default function Services() {
               Sounds <span className="logo-wave-dark">Good</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell us what you need. We&apos;ll give you a straight answer and a real price.
+              Tell me what you need. I&apos;ll give you a straight answer and a real price.
             </p>
             <div className="flex justify-center">
               <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>

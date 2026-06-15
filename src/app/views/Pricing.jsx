@@ -24,15 +24,15 @@ const INCLUDED_ITEMS = [
 const PROCESS_STEPS = [
   {
     title: 'Quick Chat',
-    description: 'Tell us what you need. We ask a few questions and give you a straight answer.',
+    description: 'Tell me what you need. I ask a few questions and give you a straight answer.',
   },
   {
     title: 'Real Quote',
     description: 'You get a number — not a range, not "it depends." A real quote.',
   },
   {
-    title: 'We Build It',
-    description: 'We get to work, you see progress, and we launch it with full support included.',
+    title: 'I Build It',
+    description: 'I get to work, you see progress, and I launch it with full support included.',
   },
 ]
 
@@ -89,7 +89,7 @@ ${formData.message}
     `.trim()
 
     window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    toast("Opening your email client — we'll get back to you within 24 hours!")
+    toast("Opening your email client — I'll get back to you within 24 hours!")
   }
 
   const handleChange = e => {
@@ -105,7 +105,7 @@ ${formData.message}
       />
       <PageHero
         title="Get a Quote"
-        description="No sales pitch. Just tell us what you need and we'll give you a number."
+        description="No sales pitch. Just tell me what you need and I'll give you a number."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
@@ -120,8 +120,8 @@ ${formData.message}
                 Let&apos;s <span className="logo-wave-dark">Talk</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or just need someone to take over management — tell us.
-                We&apos;ll figure out what you need and what it&apos;ll cost.
+                New site, redesign, or just need someone to take over management — tell me.
+                I&apos;ll figure out what you need and what it&apos;ll cost.
               </p>
 
               <div className="mb-8 space-y-4">
@@ -183,7 +183,7 @@ ${formData.message}
               className="lg:col-span-3"
             >
               <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
-                <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Us What You Need</h3>
+                <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Me What You Need</h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>

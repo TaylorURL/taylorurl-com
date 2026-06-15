@@ -25,13 +25,17 @@ export default function BlogPost() {
           description: post.excerpt,
           datePublished: new Date(post.date).toISOString(),
           author: {
-            '@type': 'Organization',
-            name: 'TaylorURL',
-            url: 'https://taylorurl.com',
+            '@type': 'Person',
+            name: 'Trenton Taylor',
+            url: 'https://taylorurl.com/about',
           },
           publisher: {
             '@type': 'Organization',
             name: 'TaylorURL',
+            founder: {
+              '@type': 'Person',
+              name: 'Trenton Taylor',
+            },
             logo: {
               '@type': 'ImageObject',
               url: 'https://taylorurl.com/images/TaylorURL-Logo.png',
@@ -102,7 +106,7 @@ export default function BlogPost() {
             Need Help With <span className="logo-wave">Your Website</span>?
           </h2>
           <p className="mb-6 text-gray-400">
-            We build fast, custom websites for local businesses. No templates, no page builders.
+            I build fast, custom websites for local businesses. No templates, no page builders.
           </p>
           <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
             Get a Quote

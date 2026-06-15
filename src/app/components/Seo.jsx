@@ -3,7 +3,7 @@ import { BRAND_NAME } from '@constants/navigation'
 
 const BASE_URL = 'https://taylorurl.com'
 const DEFAULT_DESCRIPTION =
-  'Custom web development for businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded websites that rank on Google, load fast, and bring in customers.'
+  'Custom web development by Trenton Taylor — a solo developer serving businesses in Baytown, Houston, and surrounding Texas areas. Hand-coded websites that rank on Google, load fast, and bring in customers.'
 
 export default function Seo({ title, description = DEFAULT_DESCRIPTION, path = '', schema }) {
   const fullTitle = title

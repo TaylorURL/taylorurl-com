@@ -71,7 +71,7 @@ export const BLOG_ARTICLES_2 = [
       },
       {
         type: 'p',
-        text: "Upload real photos of your business. Not stock photos — actual pictures of your shop, your team, your work. Businesses with photos get <strong>42% more requests for directions</strong> and 35% more clicks to their website. That's Google's own data.",
+        text: "Upload real photos of your business. Not stock photos — actual pictures of your shop, your crew, your work. Businesses with photos get <strong>42% more requests for directions</strong> and 35% more clicks to their website. That's Google's own data.",
       },
       { type: 'h2', text: 'Post Updates Regularly' },
       {
@@ -100,7 +100,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: 'We hear this all the time: "I\'m not a writer." "Nobody reads blogs anymore." "I don\'t have time for that." We get it. Writing blog posts sounds like homework. But here\'s the thing — <strong>a blog isn\'t for you. It\'s for Google.</strong> And Google loves fresh, relevant content.',
+        text: 'I hear this all the time: "I\'m not a writer." "Nobody reads blogs anymore." "I don\'t have time for that." I get it. Writing blog posts sounds like homework. But here\'s the thing — <strong>a blog isn\'t for you. It\'s for Google.</strong> And Google loves fresh, relevant content.',
       },
       { type: 'h2', text: 'More Pages Means More Chances to Rank' },
       {
@@ -143,7 +143,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: '"We leverage innovative solutions to deliver best-in-class results." If that sentence is anywhere on your website, we need to have a conversation. Nobody talks like that in real life, and nobody wants to read it either. <strong>Your website copy should sound like a real person talking to another real person.</strong>',
+        text: '"We leverage innovative solutions to deliver best-in-class results." If that sentence is anywhere on your website, I need to have a conversation with you. Nobody talks like that in real life, and nobody wants to read it either. <strong>Your website copy should sound like a real person talking to another real person.</strong>',
       },
       { type: 'h2', text: 'Write Like You Talk' },
       {
@@ -354,21 +354,21 @@ export const BLOG_ARTICLES_2 = [
   },
   {
     slug: 'how-we-build-websites-our-tech-stack-explained',
-    title: 'How We Build Websites: Our Tech Stack Explained',
+    title: 'How I Build Websites: My Tech Stack Explained',
     excerpt:
-      "Ever wonder what goes into building a website from scratch? Here's a plain-English breakdown of the tools we use and why.",
+      "Ever wonder what goes into building a website from scratch? Here's a plain-English breakdown of the tools I use and why.",
     category: 'Industry Tips',
     date: 'February 5, 2026',
     readTime: '5 min read',
     content: [
       {
         type: 'p',
-        text: "When we say we build custom websites, people sometimes ask what that actually means. Fair question. We don't use WordPress, we don't use Wix, and we definitely don't use Squarespace. We write code from scratch using modern tools that make sites fast, secure, and easy to maintain. <strong>Here's the non-technical version of how it all works.</strong>",
+        text: "When I say I build custom websites, people sometimes ask what that actually means. Fair question. I don't use WordPress, I don't use Wix, and I definitely don't use Squarespace. I write code from scratch using modern tools that make sites fast, secure, and easy to maintain. <strong>Here's the non-technical version of how it all works.</strong>",
       },
       { type: 'h2', text: 'The Front End: What You See' },
       {
         type: 'p',
-        text: 'The front end is everything your visitors interact with — the layout, the buttons, the images, the text. We build this with React, which is a JavaScript framework used by companies like Netflix, Airbnb, and Instagram. It lets us build interactive, fast-loading interfaces without the bloat that comes with page builders and templates.',
+        text: 'The front end is everything your visitors interact with — the layout, the buttons, the images, the text. I build this with React, which is a JavaScript framework used by companies like Netflix, Airbnb, and Instagram. It lets me build interactive, fast-loading interfaces without the bloat that comes with page builders and templates.',
       },
       {
         type: 'p',
@@ -377,25 +377,25 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'Hosting and Deployment' },
       {
         type: 'p',
-        text: "We use modern cloud hosting that distributes your site across multiple servers worldwide. When someone in Baytown loads your site, they're getting it from a server nearby — not one across the country. This is called a CDN (Content Delivery Network), and it's a big part of why our sites load so fast.",
+        text: "I use modern cloud hosting that distributes your site across multiple servers worldwide. When someone in Baytown loads your site, they're getting it from a server nearby — not one across the country. This is called a CDN (Content Delivery Network), and it's a big part of why my sites load so fast.",
       },
       {
         type: 'p',
-        text: 'Deploying updates is instant. We push the code, it goes live within seconds. No FTP uploads, no cPanel, no crossing your fingers and hoping nothing breaks. <strong>Modern deployment is fast and reliable.</strong>',
+        text: 'Deploying updates is instant. I push the code, it goes live within seconds. No FTP uploads, no cPanel, no crossing your fingers and hoping nothing breaks. <strong>Modern deployment is fast and reliable.</strong>',
       },
-      { type: 'h2', text: 'Why We Skip WordPress' },
+      { type: 'h2', text: 'Why I Skip WordPress' },
       {
         type: 'p',
-        text: "WordPress powers a lot of the internet, but it comes with baggage. Constant plugin updates, security vulnerabilities, database maintenance, and performance issues that get worse as you add more plugins. We've cleaned up enough hacked WordPress sites to know it's not the right tool for most small business websites.",
+        text: "WordPress powers a lot of the internet, but it comes with baggage. Constant plugin updates, security vulnerabilities, database maintenance, and performance issues that get worse as you add more plugins. I've cleaned up enough hacked WordPress sites to know it's not the right tool for most small business websites.",
       },
       {
         type: 'p',
-        text: "Our approach gives you a site that's faster, more secure, and doesn't need you to log in and click \"Update\" every week. <strong>We'd rather build something that just works.</strong>",
+        text: "My approach gives you a site that's faster, more secure, and doesn't need you to log in and click \"Update\" every week. <strong>I'd rather build something that just works.</strong>",
       },
       { type: 'h2', text: 'What This Means for You' },
       {
         type: 'p',
-        text: "You don't need to understand any of this to work with us. We handle all the technical stuff — that's literally the job. But we believe in being transparent about how we work. When you hire TaylorURL, you're getting a site built with the same caliber of tools that power major web applications, tuned for speed and simplicity. No templates, no page builders, no bloat.",
+        text: "You don't need to understand any of this to work with me. I handle all the technical stuff — that's literally the job. But I believe in being transparent about how I work. When you hire TaylorURL, you're getting a site built with the same caliber of tools that power major web applications, tuned for speed and simplicity. No templates, no page builders, no bloat.",
       },
     ],
   },
@@ -410,12 +410,12 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: "A lot of business owners think the job is done once the website launches. And we get it — you paid for a site, it looks great, it's live. Time to move on, right? Not quite. A website is more like a car than a billboard. <strong>It needs regular attention or things start breaking down.</strong>",
+        text: "A lot of business owners think the job is done once the website launches. And I get it — you paid for a site, it looks great, it's live. Time to move on, right? Not quite. A website is more like a car than a billboard. <strong>It needs regular attention or things start breaking down.</strong>",
       },
       { type: 'h2', text: 'What Maintenance Actually Includes' },
       {
         type: 'p',
-        text: "Website maintenance covers a few key areas. Software updates to keep things secure. Monitoring to catch downtime or errors before your customers do. Performance checks to make sure the site stays fast. Content updates when your business info changes — new hours, new services, new team members. And backups so you don't lose everything if something goes wrong.",
+        text: "Website maintenance covers a few key areas. Software updates to keep things secure. Monitoring to catch downtime or errors before your customers do. Performance checks to make sure the site stays fast. Content updates when your business info changes — new hours, new services, new staff. And backups so you don't lose everything if something goes wrong.",
       },
       {
         type: 'p',
@@ -424,7 +424,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'What Happens When You Skip It' },
       {
         type: 'p',
-        text: "We've seen it a hundred times. A business launches a great website, ignores it for two years, and then calls us in a panic because their contact form has been broken for months and they didn't know. Or their site got hacked because a security patch was never applied. Or Google dropped their rankings because the site speed degraded over time.",
+        text: "I've seen it a hundred times. A business launches a great website, ignores it for two years, and then calls me in a panic because their contact form has been broken for months and they didn't know. Or their site got hacked because a security patch was never applied. Or Google dropped their rankings because the site speed degraded over time.",
       },
       {
         type: 'p',

@@ -25,8 +25,8 @@ export default function NewsletterSection() {
             Free Stuff for <span className="logo-wave-dark">Your Business</span>
           </h2>
           <p className="mb-8 text-gray-600">
-            Occasional tips on getting more customers online. No fluff, no sales funnels — just
-            stuff that actually works.
+            Occasional tips on getting more customers online — sent by me, not a marketing
+            department. No fluff, no sales funnels, just stuff that actually works.
           </p>
           <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-4 sm:flex-row">
             <input

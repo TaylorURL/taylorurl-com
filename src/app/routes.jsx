@@ -15,7 +15,6 @@ const ROUTE_DEFINITIONS = [
   { key: 'Privacy', path: 'privacy' },
   { key: 'Terms', path: 'terms' },
   { key: 'License', path: 'license' },
-  { key: 'Careers', path: 'careers' },
   { key: 'Process', path: 'process' },
   { key: 'Blog', path: 'blog' },
   { key: 'BlogPost', path: 'blog/:slug' },

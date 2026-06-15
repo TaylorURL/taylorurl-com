@@ -10,7 +10,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: 'We see it all the time. A business owner gets a website built and they want everything on the homepage — every service, every testimonial, a full company history, a blog feed, social media links, a giant photo gallery, and a mission statement that reads like a college essay. The homepage ends up looking like a junk drawer.',
+        text: 'I see it all the time. A business owner gets a website built and they want everything on the homepage — every service, every testimonial, a full company history, a blog feed, social media links, a giant photo gallery, and a mission statement that reads like a college essay. The homepage ends up looking like a junk drawer.',
       },
       { type: 'h2', text: 'Your Homepage Is Not Your Entire Website' },
       {
@@ -49,7 +49,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Every week we talk to small business owners who are spending hundreds on Facebook ads or Google Ads and have never touched their Google Business Profile. That's like paying for a billboard when there's a free one sitting empty on the busiest street in town. <strong>Local SEO is the most underused marketing tool for small businesses, and it costs nothing to start.</strong>",
+        text: "Every week I talk to small business owners who are spending hundreds on Facebook ads or Google Ads and have never touched their Google Business Profile. That's like paying for a billboard when there's a free one sitting empty on the busiest street in town. <strong>Local SEO is the most underused marketing tool for small businesses, and it costs nothing to start.</strong>",
       },
       { type: 'h2', text: 'What Local SEO Actually Is' },
       {
@@ -118,16 +118,16 @@ export const BLOG_ARTICLES_1 = [
   },
   {
     slug: 'why-we-dont-use-wordpress-and-you-shouldnt-either',
-    title: "Why We Don't Use WordPress (And You Shouldn't Either)",
+    title: "Why I Don't Use WordPress (And You Shouldn't Either)",
     excerpt:
-      "WordPress runs 40% of the internet. That doesn't make it good — it makes it a target. Here's why we build from scratch.",
+      "WordPress runs 40% of the internet. That doesn't make it good — it makes it a target. Here's why I build from scratch.",
     category: 'Industry Tips',
     date: 'December 5, 2025',
     readTime: '6 min read',
     content: [
       {
         type: 'p',
-        text: "Before you come at us — we get it. WordPress is popular, it's familiar, and every other web developer uses it. But popularity isn't the same as quality. WordPress was great in 2005 when the alternative was hand-coding HTML in Notepad. In 2026, there are far better ways to build a website. <strong>We don't use WordPress, Wix, Squarespace, or any third-party platform. We write real code.</strong>",
+        text: "Before you come at me — I get it. WordPress is popular, it's familiar, and every other web developer uses it. But popularity isn't the same as quality. WordPress was great in 2005 when the alternative was hand-coding HTML in Notepad. In 2026, there are far better ways to build a website. <strong>I don't use WordPress, Wix, Squarespace, or any third-party platform. I write real code.</strong>",
       },
       { type: 'h2', text: 'The Plugin Casino' },
       {
@@ -148,10 +148,10 @@ export const BLOG_ARTICLES_1 = [
         type: 'p',
         text: "A typical WordPress site with a theme and a stack of plugins loads in 4-7 seconds on mobile. That's unacceptable. Google says over half of mobile users leave if a page takes more than 3 seconds. <strong>A custom-built site loads in under 2 seconds because it only runs the code it actually needs.</strong> No bloated theme framework, no plugin scripts loading in the background, no database queries on every page load.",
       },
-      { type: 'h2', text: 'What We Build Instead' },
+      { type: 'h2', text: 'What I Build Instead' },
       {
         type: 'p',
-        text: "Every site we deliver is hand-coded. It's faster, more secure, fully owned by you, and doesn't depend on any platform or plugin ecosystem. It costs more upfront than a WordPress template, but it doesn't need constant patching, it won't get hacked through a plugin vulnerability, and it won't slow down as you add content. <strong>Your website is too important to be held together by plugins and prayers.</strong>",
+        text: "Every site I deliver is hand-coded. It's faster, more secure, fully owned by you, and doesn't depend on any platform or plugin ecosystem. It costs more upfront than a WordPress template, but it doesn't need constant patching, it won't get hacked through a plugin vulnerability, and it won't slow down as you add content. <strong>Your website is too important to be held together by plugins and prayers.</strong>",
       },
     ],
   },
@@ -166,7 +166,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Look, we understand the temptation. You're a small business, budgets are tight, and someone on Fiverr says they'll build you a website for $400. Why would you spend $3,000 when you can get something for a tenth of that? <strong>Because the $400 site is going to cost you way more than $3,000 in the long run.</strong> Here's how.",
+        text: "Look, I understand the temptation. You're a small business, budgets are tight, and someone on Fiverr says they'll build you a website for $400. Why would you spend $3,000 when you can get something for a tenth of that? <strong>Because the $400 site is going to cost you way more than $3,000 in the long run.</strong> Here's how.",
       },
       { type: 'h2', text: 'You Get a Template, Not a Website' },
       {
@@ -185,7 +185,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'The Redesign Tax' },
       {
         type: 'p',
-        text: "Here's the pattern we see over and over: business gets a cheap site, outgrows it within a year, pays for a complete rebuild. So now they've paid twice. If they'd invested in a proper custom site from day one, they'd have saved time, money, and the migraine of starting over. <strong>A well-built site grows with your business. A cheap site holds it back.</strong>",
+        text: "Here's the pattern I see over and over: business gets a cheap site, outgrows it within a year, pays for a complete rebuild. So now they've paid twice. If they'd invested in a proper custom site from day one, they'd have saved time, money, and the migraine of starting over. <strong>A well-built site grows with your business. A cheap site holds it back.</strong>",
       },
       { type: 'h2', text: 'Spend Once, Spend Right' },
       {
@@ -205,7 +205,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Finding a web developer feels like dating — everyone looks good on paper, but you don't find out who they really are until you're already committed. We've heard the horror stories from clients who came to us after getting burned. Developers who ghosted after getting paid, sites that took six months to launch, and code so bad it had to be scrapped entirely. <strong>Here's how to avoid that.</strong>",
+        text: "Finding a web developer feels like dating — everyone looks good on paper, but you don't find out who they really are until you're already committed. I've heard the horror stories from clients who came to me after getting burned. Developers who ghosted after getting paid, sites that took six months to launch, and code so bad it had to be scrapped entirely. <strong>Here's how to avoid that.</strong>",
       },
       { type: 'h2', text: 'Check Their Portfolio — For Real' },
       {
@@ -288,7 +288,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "If your website is slow, images are almost always the biggest reason. We audit sites all the time where a single page is loading 10MB of images. For context, your entire homepage should ideally be under 2MB total. <strong>Unoptimized images are the number one speed killer, and fixing them is the easiest performance win you'll ever get.</strong>",
+        text: "If your website is slow, images are almost always the biggest reason. I audit sites all the time where a single page is loading 10MB of images. For context, your entire homepage should ideally be under 2MB total. <strong>Unoptimized images are the number one speed killer, and fixing them is the easiest performance win you'll ever get.</strong>",
       },
       { type: 'h2', text: 'The Problem Is Bigger Than You Think' },
       {
@@ -312,7 +312,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'The Speed Payoff' },
       {
         type: 'p',
-        text: "We've seen sites go from 8-second load times to under 2 seconds just by optimizing images. No code changes, no hosting upgrades, no redesign — just properly sized and compressed images. Faster load times mean lower bounce rates, better Google rankings, and more conversions. It's free, it's easy, and it makes an immediate difference. <strong>If you do one thing for your website this week, optimize your images.</strong>",
+        text: "I've seen sites go from 8-second load times to under 2 seconds just by optimizing images. No code changes, no hosting upgrades, no redesign — just properly sized and compressed images. Faster load times mean lower bounce rates, better Google rankings, and more conversions. It's free, it's easy, and it makes an immediate difference. <strong>If you do one thing for your website this week, optimize your images.</strong>",
       },
     ],
   },
