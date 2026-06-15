@@ -106,7 +106,7 @@ export default function BlogPost() {
             Need Help With <span className="logo-wave">Your Website</span>?
           </h2>
           <p className="mb-6 text-gray-400">
-            We build fast, custom websites for local businesses. No templates, no page builders.
+            I build fast, custom websites for local businesses. No templates, no page builders.
           </p>
           <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
             Get a Quote
