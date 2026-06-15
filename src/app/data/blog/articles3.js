@@ -123,7 +123,7 @@ export const BLOG_ARTICLES_3 = [
       },
       {
         type: 'p',
-        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing we help with.",
+        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing I help with.",
       },
     ],
   },
