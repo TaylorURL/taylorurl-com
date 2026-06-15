@@ -200,7 +200,7 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: "Fair warning: if you're on Wix, Squarespace, or WordPress with a bunch of plugins, you're probably going to see a score in the 30-60 range on mobile. That's normal for those platforms. It's also why we don't use them.",
+        text: "Fair warning: if you're on Wix, Squarespace, or WordPress with a bunch of plugins, you're probably going to see a score in the 30-60 range on mobile. That's normal for those platforms. It's also why I don't use them.",
       },
       { type: 'h2', text: 'What Makes a Site Fast' },
       {
