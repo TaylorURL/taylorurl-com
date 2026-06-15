@@ -75,13 +75,13 @@ export default function License() {
       />
       <LegalPage
         title="License"
-        description="Terms governing the use of our software and deliverables."
+        description="Terms governing the use of my software and deliverables."
         sections={SECTIONS}
         footer={{
           heading: 'Licensing Inquiries',
           body: (
             <>
-              For licensing questions or permissions, contact us at{' '}
+              For licensing questions or permissions, contact me at{' '}
               <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
                 {SUPPORT_EMAIL}
               </a>

@@ -12,19 +12,19 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'How much does a website cost?',
-        a: 'Most local business sites land between $1,500 and $5,000 depending on what you need. A simple 5-page site is on the lower end. Something with booking, e-commerce, or custom features costs more. We also offer ongoing maintenance for $99/mo so you never have to worry about updates or security.',
+        a: 'Most local business sites land between $1,500 and $5,000 depending on what you need. A simple 5-page site is on the lower end. Something with booking, e-commerce, or custom features costs more. I also offer ongoing maintenance for $99/mo so you never have to worry about updates or security.',
       },
       {
         q: 'How long does it take to build a site?',
-        a: "Usually 2 to 4 weeks from start to launch. We don't drag things out with endless meetings and revision rounds. You tell us what you want, we build it, you give feedback, we ship it.",
+        a: "Usually 2 to 4 weeks from start to launch. I don't drag things out with endless meetings and revision rounds. You tell me what you want, I build it, you give feedback, I ship it.",
       },
       {
         q: 'What do you need from me to get started?',
-        a: "Not much. Your logo (if you have one), any photos you want used, and a rough idea of what you want. We handle everything else — writing, design, structure. If you don't have content ready, we can work with you on that too.",
+        a: "Not much. Your logo (if you have one), any photos you want used, and a rough idea of what you want. I handle everything else — writing, design, structure. If you don't have content ready, I can work with you on that too.",
       },
       {
         q: 'Can you redesign my existing site?',
-        a: "Absolutely. We do full redesigns all the time. We'll look at what you have, figure out what's working and what isn't, and build something better from scratch. No lipstick-on-a-pig situations.",
+        a: "Absolutely. I do full redesigns all the time. I'll look at what you have, figure out what's working and what isn't, and build something better from scratch. No lipstick-on-a-pig situations.",
       },
     ],
   },
@@ -36,12 +36,12 @@ const FAQ_CATEGORIES = [
         a: 'Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff.',
       },
       {
-        q: 'What makes you different from other agencies?',
-        a: "We write real code. We don't hide behind page builders or templates and charge you agency prices for it. You talk directly to the people building your site — no account managers, no ticket systems. And we actually stick around after launch.",
+        q: 'What makes you different from agencies?',
+        a: "I write real code. I don't hide behind page builders or templates and charge you agency prices for it. You talk directly to the developer building your site — me — not account managers or a ticket system. And I actually stick around after launch.",
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
-        a: "No. We write real code using modern frameworks like React. No third-party platforms, no page builders, no drag-and-drop tools. Your site is custom-built, loads fast, and isn't held hostage by some platform's subscription fees or limitations.",
+        a: "No. I write real code using modern frameworks like React. No third-party platforms, no page builders, no drag-and-drop tools. Your site is custom-built, loads fast, and isn't held hostage by some platform's subscription fees or limitations.",
       },
     ],
   },
@@ -50,23 +50,23 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'Do I own my website?',
-        a: "Yes, 100%. The code, the design, all of it — it's yours. If you ever want to leave, we hand everything over. No lock-in, no hostage situations.",
+        a: "Yes, 100%. The code, the design, all of it — it's yours. If you ever want to leave, I hand everything over. No lock-in, no hostage situations.",
       },
       {
         q: 'Can I update content myself?',
-        a: "Depends on the setup. Some sites come with a content management system where you can edit text and images yourself. For others, just shoot us a message and we'll make changes same-day. Either way, you're covered.",
+        a: "Depends on the setup. Some sites come with a content management system where you can edit text and images yourself. For others, just shoot me a message and I'll make changes same-day. Either way, you're covered.",
       },
       {
         q: 'What if I need changes after launch?',
-        a: "Small stuff like text edits and image swaps are included in your maintenance plan. For bigger changes — new pages, new features — we'll give you a quote. No surprises.",
+        a: "Small stuff like text edits and image swaps are included in your maintenance plan. For bigger changes — new pages, new features — I'll give you a quote. No surprises.",
       },
       {
         q: 'Do you only work with businesses in Houston?',
-        a: "Nope. We're based in Baytown, Texas and a lot of our clients are in the Houston area, but we work with people everywhere. Everything we do is remote-friendly. As long as you can hop on a call or send a text, we're good.",
+        a: "Nope. I'm based in Baytown, Texas and a lot of my clients are in the Houston area, but I work with people everywhere. Everything I do is remote-friendly. As long as you can hop on a call or send a text, we're good.",
       },
       {
         q: 'What happens if I want to cancel?',
-        a: "You cancel. That's it. No contracts locking you in for a year. If you want to stop maintenance, we'll hand over all your files and code. We'd rather earn your business every month than trap you into staying.",
+        a: "You cancel. That's it. No contracts locking you in for a year. If you want to stop maintenance, I'll hand over all your files and code. I'd rather earn your business every month than trap you into staying.",
       },
     ],
   },
@@ -120,7 +120,7 @@ export default function Faq() {
     <div>
       <Seo
         title="FAQ - Web Development Questions"
-        description="Common questions about web development pricing, timelines, and working with TaylorURL in Baytown and Houston TX. Get straight answers about custom websites for your business."
+        description="Common questions about web development pricing, timelines, and working with TaylorURL — a solo developer serving Baytown, Houston TX, and beyond. Get straight answers about custom websites for your business."
         path="/faq"
         schema={{
           '@context': 'https://schema.org',
@@ -181,7 +181,7 @@ export default function Faq() {
               Still Have <span className="logo-wave">Questions</span>?
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              We don&apos;t bite. Shoot us a message and we&apos;ll get back to you fast.
+              I don&apos;t bite. Shoot me a message and I&apos;ll get back to you fast.
             </p>
             <a href="/pricing" className={BTN_PRIMARY}>
               Get in Touch

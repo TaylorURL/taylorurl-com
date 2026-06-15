@@ -27,11 +27,11 @@ const TIMELINE_STEPS = [
     title: 'First Call',
     duration: 'Day 1',
     description:
-      'You tell us what you need. We ask questions, take notes, and give you a straight answer on whether we can help and what it\'ll cost. No pitch deck, no "discovery phase."',
+      'You tell me what you need. I ask questions, take notes, and give you a straight answer on whether I can help and what it\'ll cost. No pitch deck, no "discovery phase."',
     client: [
-      'Tell us about your business',
+      'Tell me about your business',
       'Share what you like (and hate) in other sites',
-      'Give us a rough idea of budget',
+      'Give me a rough idea of budget',
     ],
     taylorurl: [
       'Ask the right questions',
@@ -45,7 +45,7 @@ const TIMELINE_STEPS = [
     title: 'Quote & Agreement',
     duration: 'Day 2-3',
     description:
-      'We send you a real number. Not a range. Not "it depends." If it works, we shake hands (digitally) and get moving.',
+      'I send you a real number. Not a range. Not "it depends." If it works, we shake hands (digitally) and get moving.',
     client: ['Review the quote', 'Ask any questions', "Sign off when you're ready"],
     taylorurl: [
       'Send a clear, itemized quote',
@@ -59,11 +59,11 @@ const TIMELINE_STEPS = [
     title: 'Design',
     duration: 'Week 1',
     description:
-      "We mock up your site. You tell us what you like, what you don't. We go back and forth until it looks right. No weird 40-page design doc.",
+      "I mock up your site. You tell me what you like, what you don't. We go back and forth until it looks right. No weird 40-page design doc.",
     client: [
-      'Send us your logo, photos, and content',
+      'Send me your logo, photos, and content',
       'Give feedback on mockups',
-      'Tell us if something feels off',
+      'Tell me if something feels off',
     ],
     taylorurl: [
       'Create visual mockups of your site',
@@ -77,7 +77,7 @@ const TIMELINE_STEPS = [
     title: 'Build',
     duration: 'Week 2-3',
     description:
-      "We write the code. Real code, not drag-and-drop. You can check in anytime \u2014 we'll share progress as we go so there are zero surprises.",
+      "I write the code. Real code, not drag-and-drop. You can check in anytime — I'll share progress as I go so there are zero surprises.",
     client: [
       'Check in whenever you want',
       "Flag anything that doesn't look right",
@@ -95,11 +95,11 @@ const TIMELINE_STEPS = [
     title: 'Review & Launch',
     duration: 'Week 3-4',
     description:
-      'You test everything. Click every button, read every page. We fix whatever needs fixing. When you say go, we push it live.',
+      'You test everything. Click every button, read every page. I fix whatever needs fixing. When you say go, I push it live.',
     client: [
       'Test the site top to bottom',
-      'Send us any final changes',
-      'Say the word and we go live',
+      'Send me any final changes',
+      'Say the word and I go live',
     ],
     taylorurl: [
       'Fix any issues you find',
@@ -110,13 +110,13 @@ const TIMELINE_STEPS = [
   {
     step: '06',
     icon: HeadphonesIcon,
-    title: 'We Stick Around',
+    title: 'I Stick Around',
     duration: 'Ongoing',
     description:
-      "Site's live, but we're not gone. Hosting, updates, security, content changes \u2014 all handled. You just run your business.",
+      "Site's live, but I'm not gone. Hosting, updates, security, content changes — all handled. You just run your business.",
     client: [
       'Run your business',
-      'Text us when you need something changed',
+      'Text me when you need something changed',
       "That's it. Seriously.",
     ],
     taylorurl: [
@@ -130,21 +130,21 @@ const TIMELINE_STEPS = [
 const WHAT_YOULL_NEED = [
   { icon: Image, label: 'Your logo (any format works)' },
   { icon: FileText, label: 'Content or copy for your pages' },
-  { icon: Image, label: 'Photos of your work, team, or space' },
+  { icon: Image, label: 'Photos of your work or your space' },
   { icon: Paintbrush, label: 'Brand colors, if you have them' },
-  { icon: Globe, label: 'Domain info (or we can help you get one)' },
+  { icon: Globe, label: 'Domain info (or I can help you get one)' },
 ]
 
 export default function Process() {
   return (
     <div>
       <Seo
-        title="Our Web Development Process"
-        description="How TaylorURL builds custom websites for Baytown and Houston businesses. From first call to launch in 2-4 weeks. No mystery, no jargon — just results."
+        title="My Web Development Process"
+        description="How I build custom websites for Baytown and Houston businesses. From first call to launch in 2-4 weeks. No mystery, no jargon — just results."
         path="/process"
       />
       <PageHero
-        title="How We Work"
+        title="How I Work"
         description="No mystery. No jargon. Here's exactly what happens."
       />
 
@@ -196,7 +196,7 @@ export default function Process() {
                     <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 transition-all duration-300 hover:border-blue-200 hover:shadow-md lg:ml-20">
                       <p className="mb-6 text-base text-gray-600 sm:text-lg">{step.description}</p>
 
-                      {/* Two-column: You / Us */}
+                      {/* Two-column: You / Me */}
                       <div className="grid gap-6 sm:grid-cols-2">
                         <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-gray-400">
@@ -219,7 +219,7 @@ export default function Process() {
                         </div>
                         <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-blue-500">
-                            WHAT WE DO
+                            WHAT I DO
                           </h4>
                           <ul className="space-y-2">
                             {step.taylorurl.map(item => (
@@ -251,10 +251,10 @@ export default function Process() {
         <div className="mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-12 text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              What You&apos;ll Need <span className="logo-wave-dark">From Us</span>
+              What You&apos;ll Need <span className="logo-wave-dark">From Me</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Don&apos;t stress about having everything perfect. We can work with what you&apos;ve
+              Don&apos;t stress about having everything perfect. I can work with what you&apos;ve
               got and help fill in the gaps.
             </p>
           </motion.div>
@@ -282,7 +282,7 @@ export default function Process() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-8 text-center text-sm text-gray-500"
           >
-            Don&apos;t have a logo or photos yet? No worries — we can point you in the right
+            Don&apos;t have a logo or photos yet? No worries — I can point you in the right
             direction.
           </motion.p>
         </div>

@@ -14,7 +14,7 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: "We get this question a lot. And honestly, it's a fair one. You've got social media, you've got a Google Business listing, maybe you're even on Yelp. People can find you. So why spend money on a website?",
+        text: "I get this question a lot. And honestly, it's a fair one. You've got social media, you've got a Google Business listing, maybe you're even on Yelp. People can find you. So why spend money on a website?",
       },
       {
         type: 'p',
@@ -65,12 +65,12 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: "Look, we're not here to trash Wix. It serves a purpose. If you need a site up in an afternoon for a garage sale or a school project, it's fine. But if you're running an actual business and trying to get customers from the internet, <strong>a drag-and-drop builder is quietly working against you.</strong>",
+        text: "Look, I'm not here to trash Wix. It serves a purpose. If you need a site up in an afternoon for a garage sale or a school project, it's fine. But if you're running an actual business and trying to get customers from the internet, <strong>a drag-and-drop builder is quietly working against you.</strong>",
       },
       { type: 'h2', text: 'The Speed Problem' },
       {
         type: 'p',
-        text: 'Wix sites are slow. Not "kinda slow" — measurably, provably slow. The average Wix site loads in 4-6 seconds on mobile. Google recommends under 2.5 seconds. That matters because <strong>53% of mobile visitors leave a site that takes more than 3 seconds to load.</strong> That\'s not a stat we made up. That\'s from Google.',
+        text: 'Wix sites are slow. Not "kinda slow" — measurably, provably slow. The average Wix site loads in 4-6 seconds on mobile. Google recommends under 2.5 seconds. That matters because <strong>53% of mobile visitors leave a site that takes more than 3 seconds to load.</strong> That\'s not a stat I made up. That\'s from Google.',
       },
       {
         type: 'p',
@@ -200,7 +200,7 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: "Fair warning: if you're on Wix, Squarespace, or WordPress with a bunch of plugins, you're probably going to see a score in the 30-60 range on mobile. That's normal for those platforms. It's also why we don't use them.",
+        text: "Fair warning: if you're on Wix, Squarespace, or WordPress with a bunch of plugins, you're probably going to see a score in the 30-60 range on mobile. That's normal for those platforms. It's also why I don't use them.",
       },
       { type: 'h2', text: 'What Makes a Site Fast' },
       {
@@ -222,14 +222,14 @@ const ORIGINAL_POSTS = [
     slug: 'small-business-website-mistakes',
     title: '5 Website Mistakes Small Businesses Keep Making',
     excerpt:
-      "We've seen hundreds of small business websites. These are the mistakes that show up over and over — and they're all fixable.",
+      "I've seen hundreds of small business websites. These are the mistakes that show up over and over — and they're all fixable.",
     category: 'Business',
     date: 'January 12, 2026',
     readTime: '4 min read',
     content: [
       {
         type: 'p',
-        text: "After building websites for local businesses for years, we've noticed the same problems showing up again and again. None of them are hard to fix, but they're surprisingly common. Here are the five biggest ones.",
+        text: "After building websites for local businesses for years, I've noticed the same problems showing up again and again. None of them are hard to fix, but they're surprisingly common. Here are the five biggest ones.",
       },
       { type: 'h2', text: '1. No Clear Call to Action' },
       {
@@ -243,7 +243,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: '2. Using Stock Photos Instead of Real Ones' },
       {
         type: 'p',
-        text: "People can spot stock photos instantly. The perfectly diverse group of coworkers high-fiving in a glass conference room? Nobody buys it. Use real photos of your business, your team, your work. They don't have to be professional photography — phone photos in good lighting are fine. <strong>Real always beats polished.</strong>",
+        text: "People can spot stock photos instantly. The perfectly diverse group of coworkers high-fiving in a glass conference room? Nobody buys it. Use real photos of your business, your crew, your work. They don't have to be professional photography — phone photos in good lighting are fine. <strong>Real always beats polished.</strong>",
       },
       { type: 'h2', text: '3. Hiding Contact Information' },
       {
@@ -258,7 +258,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: '5. Setting It and Forgetting It' },
       {
         type: 'p',
-        text: 'A website isn\'t a "build it once and never touch it" thing. Your business changes — new services, new hours, new team members, new photos. If your site still shows information from two years ago, it looks abandoned. Customers notice.',
+        text: 'A website isn\'t a "build it once and never touch it" thing. Your business changes — new services, new hours, new staff, new photos. If your site still shows information from two years ago, it looks abandoned. Customers notice.',
       },
       {
         type: 'p',

@@ -25,7 +25,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: "Don't DIY This One" },
       {
         type: 'p',
-        text: "We get it — Canva is right there. But a professional logo is one of those investments that pays for itself over and over. You don't have to spend thousands, but you should work with someone who understands design principles and can give you files that actually work everywhere. Your logo is the face of your business. Treat it like one.",
+        text: "I get it — Canva is right there. But a professional logo is one of those investments that pays for itself over and over. You don't have to spend thousands, but you should work with someone who understands design principles and can give you files that actually work everywhere. Your logo is the face of your business. Treat it like one.",
       },
     ],
   },
@@ -123,7 +123,7 @@ export const BLOG_ARTICLES_3 = [
       },
       {
         type: 'p',
-        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing we help with.",
+        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing I help with.",
       },
     ],
   },
@@ -138,7 +138,7 @@ export const BLOG_ARTICLES_3 = [
     content: [
       {
         type: 'p',
-        text: "We're going to be straight with you: website templates are not the deal they seem like. Yeah, they're cheap. Yeah, they're fast. But there's a reason your website looks exactly like 4,000 other businesses on the internet — because it literally <strong>is</strong> the same website.",
+        text: "I'm going to be straight with you: website templates are not the deal they seem like. Yeah, they're cheap. Yeah, they're fast. But there's a reason your website looks exactly like 4,000 other businesses on the internet — because it literally <strong>is</strong> the same website.",
       },
       { type: 'h2', text: 'The Hidden Costs of "Cheap"' },
       {
@@ -153,7 +153,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: 'When Templates Actually Make Sense' },
       {
         type: 'p',
-        text: "Look, we're not saying templates are always bad. If you need a quick placeholder while your real site is being built, or you're testing a business idea before going all in — fine. But if you're a real business trying to grow, a template is a ceiling you're going to hit fast.",
+        text: "Look, I'm not saying templates are always bad. If you need a quick placeholder while your real site is being built, or you're testing a business idea before going all in — fine. But if you're a real business trying to grow, a template is a ceiling you're going to hit fast.",
       },
       {
         type: 'p',
@@ -216,7 +216,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: 'The Biggest Mistake Small Businesses Make' },
       {
         type: 'p',
-        text: "Using too many colors. We see it all the time — a homepage that looks like a bag of Skittles. Pick <strong>two or three colors max</strong> for your brand palette. One primary, one secondary, and maybe an accent. That's it. Consistency builds recognition, and recognition builds trust.",
+        text: "Using too many colors. I see it all the time — a homepage that looks like a bag of Skittles. Pick <strong>two or three colors max</strong> for your brand palette. One primary, one secondary, and maybe an accent. That's it. Consistency builds recognition, and recognition builds trust.",
       },
       { type: 'h2', text: 'How to Choose the Right Palette' },
       {

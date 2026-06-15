@@ -10,7 +10,7 @@ const TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-orange-500',
     quote:
-      "They just handle it. I don't know anything about websites and I don't want to. Online orders are up 40% since launch and I didn't have to learn a single thing.",
+      "Trenton just handles it. I don't know anything about websites and I don't want to. Online orders are up 40% since launch and I didn't have to learn a single thing.",
   },
   {
     name: 'James Mitchell',
@@ -18,7 +18,7 @@ const TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-blue-600',
     quote:
-      'Went from maybe 2-3 internet calls a week to 2-3 a day. I text them when I need something changed and it just gets done. No tickets, no waiting.',
+      'Went from maybe 2-3 internet calls a week to 2-3 a day. I text Trenton when I need something changed and it just gets done. No tickets, no waiting.',
   },
   {
     name: 'Sarah Chen',
@@ -61,7 +61,7 @@ export default function TestimonialsSection() {
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-10 text-center sm:mb-16">
           <h2 className={`mb-4 ${SECTION_H2}`}>
-            Don&apos;t Take Our <span className="logo-wave-dark">Word for It</span>
+            Don&apos;t Take My <span className="logo-wave-dark">Word for It</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
             Hear it from the people who actually write the checks.

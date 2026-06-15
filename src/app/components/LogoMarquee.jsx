@@ -31,7 +31,7 @@ export default function LogoMarquee() {
     <section className="overflow-hidden border-t border-gray-200 bg-surface-base py-10">
       <div className="mb-6 text-center">
         <p className="text-sm font-medium uppercase tracking-wider text-gray-400">
-          Industries We Serve
+          Industries I Serve
         </p>
       </div>
       <div className="marquee-fade">
