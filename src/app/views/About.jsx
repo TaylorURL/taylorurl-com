@@ -106,26 +106,27 @@ export default function About() {
             <motion.div {...fadeInUp} className="lg:col-span-3">
               <p className={`mb-2 ${EYEBROW}`}>My Story</p>
               <h2 className={`mb-8 ${SECTION_H2}`}>
-                I got tired of watching local businesses get ripped off
+                I build modern websites for local businesses
               </h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown, Texas
-                  because I kept seeing the same thing everywhere — local businesses either paying
-                  some agency $10,000 for a WordPress template they could&apos;ve bought for $59, or
-                  settling for a site that looks like it was built on a free Wix plan in 2012.
+                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown,
+                  Texas because the local businesses I knew — the family restaurant, the plumber
+                  down the street, the salon two blocks over — all needed a real online presence
+                  and kept ending up with either a template-y agency project or a Wix page that
+                  looked like it was built in 2012.
                 </p>
                 <p>
-                  Both options suck. So I started building websites the right way — with real code,
-                  real design, and real support after launch. Not as a faceless agency with a sales
-                  team and a ticket queue, but as one developer you can text when something needs
+                  Neither option works. So I build websites the right way — with real code, real
+                  design, and real support after launch. Not as a faceless agency with a sales team
+                  and a ticket queue, but as one developer you can text when something needs
                   fixing.
                 </p>
                 <p>
-                  I use the same technology that powers sites like Netflix and Airbnb, except I
-                  don&apos;t charge like them and I don&apos;t talk like them either. Every site I
-                  build is custom, fast, and yours to keep. No lock-in, no platform fees, no
-                  surprises.
+                  I use the same JavaScript and React stack that powers the biggest sites on the
+                  internet, scaled down and built around what a local business actually needs:
+                  fast pages, clean design, and a direct relationship with the person who built
+                  it. No lock-in, no platform fees, no surprises.
                 </p>
               </div>
             </motion.div>
