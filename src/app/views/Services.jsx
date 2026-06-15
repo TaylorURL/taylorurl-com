@@ -24,7 +24,7 @@ const SERVICES = [
     icon: Palette,
     title: 'Custom Websites',
     description:
-      'No templates. No drag-and-drop builders. We design your site from scratch so it actually looks like your business.',
+      'No templates. No drag-and-drop builders. I design your site from scratch so it actually looks like your business.',
     features: [
       'Designed around your brand, not a theme',
       'Looks great on every screen size',
@@ -37,7 +37,7 @@ const SERVICES = [
     icon: Code2,
     title: 'Website Redesigns',
     description:
-      "Already have a site that looks outdated or runs like garbage? We'll rebuild it from the ground up with real code.",
+      "Already have a site that looks outdated or runs like garbage? I'll rebuild it from the ground up with real code.",
     features: [
       'Full redesign with modern tech',
       'Keep your content, ditch the clutter',
@@ -50,7 +50,7 @@ const SERVICES = [
     icon: Zap,
     title: 'Speed That Matters',
     description:
-      'Slow sites lose customers. Google penalizes them too. We make sure yours is fast — actually fast, not "fast for a website."',
+      'Slow sites lose customers. Google penalizes them too. I make sure yours is fast — actually fast, not "fast for a website."',
     features: [
       'Under 2 second load times',
       'Google Core Web Vitals optimized',
@@ -61,14 +61,14 @@ const SERVICES = [
   },
   {
     icon: Wrench,
-    title: 'We Handle Everything After',
+    title: 'I Handle Everything After',
     description:
-      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. We watch it.",
+      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. I watch it.",
     features: [
       'Hosting, SSL, & domain setup',
       'Security patches as they drop',
       'Uptime monitoring & daily backups',
-      'Direct access to the people who built it',
+      'Direct access to the developer who built it',
     ],
     mockup: 'default',
   },
