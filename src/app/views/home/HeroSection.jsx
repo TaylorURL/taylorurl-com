@@ -34,9 +34,9 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-6 text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl"
           >
-            I build websites
+            Modern websites for
             <br />
-            for <TypingRotator />
+            local <TypingRotator />
           </motion.h1>
 
           <motion.p
@@ -45,8 +45,9 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8 max-w-md text-base leading-relaxed text-gray-400 sm:mb-10 sm:text-lg"
           >
-            No jargon. No runaround. Just fast, good-looking websites that actually bring in
-            customers — built by one developer who picks up the phone.
+            I&apos;m Trenton — one developer building real websites and JavaScript applications for
+            local businesses. Direct relationship, fast sites, clean design. No template-y agency
+            feel.
           </motion.p>
 
           <motion.div
@@ -55,8 +56,8 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="flex"
           >
-            <Link to="/pricing" className={`group ${BTN_PRIMARY}`}>
-              Get a Free Quote
+            <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
+              Get in Touch
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
