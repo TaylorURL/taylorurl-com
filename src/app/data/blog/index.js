@@ -222,7 +222,7 @@ const ORIGINAL_POSTS = [
     slug: 'small-business-website-mistakes',
     title: '5 Website Mistakes Small Businesses Keep Making',
     excerpt:
-      "We've seen hundreds of small business websites. These are the mistakes that show up over and over — and they're all fixable.",
+      "I've seen hundreds of small business websites. These are the mistakes that show up over and over — and they're all fixable.",
     category: 'Business',
     date: 'January 12, 2026',
     readTime: '4 min read',
