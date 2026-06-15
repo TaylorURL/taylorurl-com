@@ -2,7 +2,7 @@
 
 <h1 align="center">TaylorURL</h1>
 
-<p align="center"><strong>Web Development Agency & Client Portal for Southeast Texas Businesses</strong></p>
+<p align="center"><strong>Solo Web Development & Client Portal for Southeast Texas Businesses</strong></p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/v5.2.1-release-1e3a5f" alt="Version 5.2.1" />
