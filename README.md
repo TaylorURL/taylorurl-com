@@ -5,7 +5,7 @@
 <p align="center"><strong>Modern Websites & JavaScript Applications for Local Businesses in Southeast Texas</strong></p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/v5.2.1-release-1e3a5f" alt="Version 5.2.1" />
+  <img src="https://img.shields.io/badge/v5.2.4-release-1e3a5f" alt="Version 5.2.4" />
   <img src="https://img.shields.io/badge/React-19.1-61DAFB?logo=react&logoColor=white" alt="React 19.1" />
   <img src="https://img.shields.io/badge/Vite-7.1-646CFF?logo=vite&logoColor=white" alt="Vite 7.1" />
   <img src="https://img.shields.io/badge/Supabase-3ECF8E?logo=supabase&logoColor=white" alt="Supabase" />
