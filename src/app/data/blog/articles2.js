@@ -410,7 +410,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: "A lot of business owners think the job is done once the website launches. And we get it — you paid for a site, it looks great, it's live. Time to move on, right? Not quite. A website is more like a car than a billboard. <strong>It needs regular attention or things start breaking down.</strong>",
+        text: "A lot of business owners think the job is done once the website launches. And I get it — you paid for a site, it looks great, it's live. Time to move on, right? Not quite. A website is more like a car than a billboard. <strong>It needs regular attention or things start breaking down.</strong>",
       },
       { type: 'h2', text: 'What Maintenance Actually Includes' },
       {
