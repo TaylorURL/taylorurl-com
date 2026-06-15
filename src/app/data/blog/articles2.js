@@ -177,44 +177,44 @@ export const BLOG_ARTICLES_2 = [
   },
   {
     slug: 'the-difference-between-a-500-website-and-a-5000-one',
-    title: 'The Difference Between a $500 Website and a $5,000 One',
+    title: 'The Difference Between a Template Website and a Custom One',
     excerpt:
-      "You've seen prices all over the map. Here's what actually changes as the budget goes up — and where the money goes.",
+      "You've seen the quality all over the map. Here's what actually changes when a site is built from scratch for your local business — and why it matters.",
     category: 'Business',
     date: 'December 1, 2025',
     readTime: '6 min read',
     content: [
       {
         type: 'p',
-        text: "You ask five web developers for a quote and you get five wildly different numbers. One says $500. Another says $5,000. Same project, same basic description. What gives? <strong>The difference isn't just the price — it's what you're actually getting.</strong>",
+        text: "You ask a few web developers what they'd build for your local business and you get wildly different answers. One says a template site. Another says custom. Same project, same basic description. What gives? <strong>The difference isn't just the look — it's what you're actually getting.</strong>",
       },
-      { type: 'h2', text: 'The $500 Website' },
+      { type: 'h2', text: 'The Template Website' },
       {
         type: 'p',
-        text: "At $500, you're almost certainly getting a template. Someone picks a pre-made design, swaps in your logo and text, maybe adjusts some colors, and calls it done. It'll look fine. It might even look pretty good. But it's not built for your business specifically — it's a one-size-fits-all solution with your name on it.",
+        text: "A template site means someone picks a pre-made design, swaps in your logo and text, maybe adjusts some colors, and calls it done. It'll look fine. It might even look pretty good. But it's not built for your local business specifically — it's a one-size-fits-all solution with your name on it.",
       },
       {
         type: 'p',
         text: "The problems show up later. The template is bloated with code you don't need, so it loads slowly. It's hard to customize beyond the basics. SEO is limited to whatever the template allows. And if something breaks, you're stuck waiting for the template developer to push a fix — <strong>assuming they're still maintaining it.</strong>",
       },
-      { type: 'h2', text: 'The $5,000 Website' },
+      { type: 'h2', text: 'The Custom Website' },
       {
         type: 'p',
-        text: 'At $5,000, you should be getting something custom. A developer sits down with you, learns about your business, your customers, and your goals, and builds something from scratch. The design is yours. The code is clean and fast. Every element exists for a reason — to drive calls, bookings, or whatever your business needs.',
+        text: 'A custom site means a developer sits down with you, learns about your business, your customers, and your goals, and builds something from scratch. The design is yours. The code is clean and fast. Every element exists for a reason — to drive calls, bookings, or whatever your local business needs.',
       },
       {
         type: 'p',
-        text: "You get proper SEO baked in from day one. The site is built to perform well on Google's Core Web Vitals. It loads fast on mobile. The content is structured around what your customers are actually searching for. <strong>It's not just a website — it's a tool that works for your business 24/7.</strong>",
+        text: "You get proper SEO baked in from day one. The site is built to perform well on Google's Core Web Vitals. It loads fast on mobile. The content is structured around what your neighbors are actually searching for. <strong>It's not just a website — it's a tool that works for your business 24/7.</strong>",
       },
-      { type: 'h2', text: 'Where the Money Actually Goes' },
+      { type: 'h2', text: 'Where the Difference Actually Comes From' },
       {
         type: 'p',
-        text: "Most of the cost difference is time and expertise. A $500 site takes a few hours. A $5,000 site takes weeks. That time goes into research, strategy, custom design, development, testing, SEO optimization, and revisions. You're paying for someone who understands <strong>why</strong> things should be a certain way, not just someone who can make things look pretty.",
+        text: "Most of the difference is time and expertise. A template site takes a few hours. A custom site takes weeks. That time goes into research, strategy, custom design, development, testing, SEO optimization, and revisions. You're working with someone who understands <strong>why</strong> things should be a certain way, not just someone who can make things look pretty.",
       },
       { type: 'h2', text: 'Which One Should You Choose?' },
       {
         type: 'p',
-        text: "It depends on where your business is. If you're brand new and just need something online while you figure things out, a cheaper option might work for now. But if your website is a primary way customers find you, a custom site pays for itself. <strong>The ROI on a well-built website is hard to beat.</strong> One extra customer a month from better Google rankings and the site has paid for itself within a year.",
+        text: "It depends on where your business is. If you're brand new and just need something online while you figure things out, a basic template might work for now. But if your website is a primary way local customers find you, a custom site is worth it. <strong>The return on a well-built local-business website is hard to beat.</strong> One extra customer a month from better Google rankings makes a real difference over a year.",
       },
     ],
   },
