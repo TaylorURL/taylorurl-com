@@ -205,7 +205,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: "Finding a web developer feels like dating — everyone looks good on paper, but you don't find out who they really are until you're already committed. We've heard the horror stories from clients who came to us after getting burned. Developers who ghosted after getting paid, sites that took six months to launch, and code so bad it had to be scrapped entirely. <strong>Here's how to avoid that.</strong>",
+        text: "Finding a web developer feels like dating — everyone looks good on paper, but you don't find out who they really are until you're already committed. I've heard the horror stories from clients who came to me after getting burned. Developers who ghosted after getting paid, sites that took six months to launch, and code so bad it had to be scrapped entirely. <strong>Here's how to avoid that.</strong>",
       },
       { type: 'h2', text: 'Check Their Portfolio — For Real' },
       {
