@@ -22,14 +22,14 @@ import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 const SERVICES = [
   {
     icon: Palette,
-    title: 'Custom Websites',
+    title: 'Custom Local Business Websites',
     description:
-      'No templates. No drag-and-drop builders. I design your site from scratch so it actually looks like your business.',
+      'No templates. No drag-and-drop builders. I design your site from scratch so it actually looks like your business — not a stock theme every other shop on the block is using.',
     features: [
       'Designed around your brand, not a theme',
       'Looks great on every screen size',
       "Smooth animations that don't feel cheap",
-      'Your colors, your fonts, your vibe',
+      'Built for the customers you actually serve',
     ],
     mockup: 'default',
   },
@@ -37,7 +37,7 @@ const SERVICES = [
     icon: Code2,
     title: 'Website Redesigns',
     description:
-      "Already have a site that looks outdated or runs like garbage? I'll rebuild it from the ground up with real code.",
+      "Already have a site that looks outdated or runs like garbage? I'll rebuild it from the ground up with real code so your business doesn't look stuck in 2014.",
     features: [
       'Full redesign with modern tech',
       'Keep your content, ditch the clutter',
@@ -48,14 +48,14 @@ const SERVICES = [
   },
   {
     icon: Zap,
-    title: 'Speed That Matters',
+    title: 'JavaScript Apps & Custom Features',
     description:
-      'Slow sites lose customers. Google penalizes them too. I make sure yours is fast — actually fast, not "fast for a website."',
+      "Booking forms, customer portals, online ordering, inventory views — if your business needs more than static pages, I can build it as a real JavaScript application that integrates with the tools you already use.",
     features: [
-      'Under 2 second load times',
-      'Google Core Web Vitals optimized',
-      'Images & assets compressed right',
-      "Code split so nothing loads that shouldn't",
+      'Custom React apps, not page-builder plugins',
+      'Booking, ordering, and quote workflows',
+      'Connects to the tools you already use',
+      'Built fast, hosted fast',
     ],
     mockup: 'analytics',
   },
@@ -63,7 +63,7 @@ const SERVICES = [
     icon: Wrench,
     title: 'I Handle Everything After',
     description:
-      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. I watch it.",
+      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. I watch it so you can focus on your business.",
     features: [
       'Hosting, SSL, & domain setup',
       'Security patches as they drop',
