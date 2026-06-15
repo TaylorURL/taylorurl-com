@@ -424,7 +424,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'What Happens When You Skip It' },
       {
         type: 'p',
-        text: "We've seen it a hundred times. A business launches a great website, ignores it for two years, and then calls us in a panic because their contact form has been broken for months and they didn't know. Or their site got hacked because a security patch was never applied. Or Google dropped their rankings because the site speed degraded over time.",
+        text: "I've seen it a hundred times. A business launches a great website, ignores it for two years, and then calls me in a panic because their contact form has been broken for months and they didn't know. Or their site got hacked because a security patch was never applied. Or Google dropped their rankings because the site speed degraded over time.",
       },
       {
         type: 'p',
