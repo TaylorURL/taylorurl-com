@@ -456,8 +456,8 @@ export default function Blog() {
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
               Stop reading about it and let&apos;s actually do something about it.
             </p>
-            <Link to="/pricing" className={`${BTN_PRIMARY} group`}>
-              Get a Quote
+            <Link to="/contact" className={`${BTN_PRIMARY} group`}>
+              Get in Touch
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
