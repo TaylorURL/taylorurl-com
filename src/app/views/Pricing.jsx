@@ -105,7 +105,7 @@ ${formData.message}
       />
       <PageHero
         title="Get a Quote"
-        description="No sales pitch. Just tell us what you need and we'll give you a number."
+        description="No sales pitch. Just tell me what you need and I'll give you a number."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
