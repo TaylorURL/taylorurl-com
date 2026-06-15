@@ -5,8 +5,8 @@
 @tailwind utilities;
 
 :root {
-  --color-bg: #F5F6F7;
-  --color-surface: #F8F9FA;
+  --color-bg: #f5f6f7;
+  --color-surface: #f8f9fa;
 }
 
 @layer base {

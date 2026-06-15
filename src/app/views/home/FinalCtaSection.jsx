@@ -12,8 +12,8 @@ export default function FinalCtaSection() {
           Ready to <span className="logo-wave">Get Your Business Online</span>?
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-base text-gray-400 sm:text-lg">
-          You don&apos;t need to understand hosting, SSL, or DNS. That&apos;s literally my job.
-          Tell me about your local business and we&apos;ll talk.
+          You don&apos;t need to understand hosting, SSL, or DNS. That&apos;s literally my job. Tell
+          me about your local business and we&apos;ll talk.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link to="/contact" className={`group ${BTN_PRIMARY_LG}`}>

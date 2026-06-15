@@ -24,11 +24,13 @@ const INCLUDED_ITEMS = [
 const PROCESS_STEPS = [
   {
     title: 'Quick Chat',
-    description: 'Tell me about your local business. I ask a few questions and give you a straight answer.',
+    description:
+      'Tell me about your local business. I ask a few questions and give you a straight answer.',
   },
   {
     title: 'A Real Plan',
-    description: 'You get a clear scope — what I build, how long it takes, and what happens after launch.',
+    description:
+      'You get a clear scope — what I build, how long it takes, and what happens after launch.',
   },
   {
     title: 'I Build It',
@@ -184,7 +186,9 @@ ${formData.message}
               className="lg:col-span-3"
             >
               <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
-                <h3 className="mb-6 text-xl font-semibold text-gray-900">Tell Me About Your Business</h3>
+                <h3 className="mb-6 text-xl font-semibold text-gray-900">
+                  Tell Me About Your Business
+                </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>

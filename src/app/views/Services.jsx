@@ -50,7 +50,7 @@ const SERVICES = [
     icon: Zap,
     title: 'JavaScript Apps & Custom Features',
     description:
-      "Booking forms, customer portals, online ordering, inventory views — if your business needs more than static pages, I can build it as a real JavaScript application that integrates with the tools you already use.",
+      'Booking forms, customer portals, online ordering, inventory views — if your business needs more than static pages, I can build it as a real JavaScript application that integrates with the tools you already use.',
     features: [
       'Custom React apps, not page-builder plugins',
       'Booking, ordering, and quote workflows',

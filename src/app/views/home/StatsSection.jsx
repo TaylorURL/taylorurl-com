@@ -20,8 +20,8 @@ export default function StatsSection() {
               Can Your Neighbors Actually <span className="logo-wave-dark">Find You?</span>
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Almost every local customer starts with a Google search. No website means
-              they&apos;re calling the shop down the street instead of you.
+              Almost every local customer starts with a Google search. No website means they&apos;re
+              calling the shop down the street instead of you.
             </p>
             <div className="rounded-2xl border border-gray-200 bg-surface-overlay p-6">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-500">

@@ -33,11 +33,11 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'What does ongoing maintenance include?',
-        a: 'Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff — that\'s the whole point of working with one developer instead of an agency.',
+        a: "Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Basically, everything it takes to keep your site fast, secure, and online. You never have to think about the technical stuff — that's the whole point of working with one developer instead of an agency.",
       },
       {
         q: 'What makes you different from agencies?',
-        a: "I write real code, and I work directly with the local businesses I build for. No account managers, no ticket systems, no agency overhead between you and the person actually building your site. You talk to me, I do the work, and I stick around after launch.",
+        a: 'I write real code, and I work directly with the local businesses I build for. No account managers, no ticket systems, no agency overhead between you and the person actually building your site. You talk to me, I do the work, and I stick around after launch.',
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
@@ -45,7 +45,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Can you build a web app, not just a marketing site?',
-        a: "Yes. A lot of local businesses need more than static pages — booking flows, customer portals, online ordering, quote forms, internal tools. I build those as real JavaScript applications using React, so they actually feel like modern software instead of a duct-taped plugin.",
+        a: 'Yes. A lot of local businesses need more than static pages — booking flows, customer portals, online ordering, quote forms, internal tools. I build those as real JavaScript applications using React, so they actually feel like modern software instead of a duct-taped plugin.',
       },
     ],
   },
