@@ -235,7 +235,7 @@ export default function About() {
                         <Monitor className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                         <div>
                           <p className="text-xs font-semibold uppercase text-blue-500">Me</p>
-                          <p className="text-sm text-gray-700">{step.us}</p>
+                          <p className="text-sm text-gray-700">{step.me}</p>
                         </div>
                       </div>
                     </div>
