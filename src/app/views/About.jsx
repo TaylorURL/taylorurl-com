@@ -21,7 +21,7 @@ const VALUES = [
     icon: Code2,
     title: 'Real Code, Not Drag-and-Drop',
     description:
-      'Every line is written by hand. No WordPress, no Wix, no Squarespace. Your site is built with the same tech that powers the biggest companies on the internet — except it actually loads fast.',
+      'Every line is written by hand with modern JavaScript and React. No WordPress, no Wix, no Squarespace. Your site is built with the same tech that powers the biggest companies on the internet — except it actually loads fast.',
   },
   {
     icon: Headphones,
@@ -33,13 +33,13 @@ const VALUES = [
     icon: Zap,
     title: 'Fast Turnaround, Not Fast Talk',
     description:
-      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what you need, I build it.',
+      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what your business does, I build it.',
   },
   {
     icon: Shield,
-    title: 'No Hidden Costs. Ever.',
+    title: 'Built for Local Businesses',
     description:
-      'I quote you a number and that\'s what it costs. No surprise "oh I didn\'t scope that" invoices. No nickel-and-diming on revisions. The price is the price.',
+      'I work with shops, restaurants, trades, contractors, and independent professionals — the kind of business that needs a real online presence, not a template-y agency project. Direct relationship, clear scope, no surprises.',
   },
 ]
 
