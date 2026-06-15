@@ -32,7 +32,7 @@ const FACTS = [
     stat: '<2s',
     label: 'load time',
     detail:
-      'Slow sites kill conversions. Every site we build loads in under 2 seconds — Google rewards that.',
+      'Slow sites kill conversions. Every site I build loads in under 2 seconds — Google rewards that.',
   },
 ]
 
