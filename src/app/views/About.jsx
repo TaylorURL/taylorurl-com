@@ -57,7 +57,7 @@ const PROCESS = [
     description:
       'Tell me about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
     you: 'Send me a message',
-    us: 'Get back to you same day',
+    me: 'Get back to you same day',
   },
   {
     num: '02',
@@ -65,7 +65,7 @@ const PROCESS = [
     description:
       'I figure out the structure, pages, and design direction. You approve it before I write a single line of code.',
     you: 'Give feedback on the plan',
-    us: 'Design mockups you can actually see',
+    me: 'Design mockups you can actually see',
   },
   {
     num: '03',
@@ -73,7 +73,7 @@ const PROCESS = [
     description:
       'Custom code, optimized images, fast hosting. You get progress updates and can give feedback the whole time.',
     you: 'Review and request changes',
-    us: 'Build, test, and refine',
+    me: 'Build, test, and refine',
   },
   {
     num: '04',
@@ -81,7 +81,7 @@ const PROCESS = [
     description:
       'Your site goes live. I handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
     you: 'Focus on your business',
-    us: 'Keep everything running',
+    me: 'Keep everything running',
   },
 ]
 
