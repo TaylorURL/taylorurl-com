@@ -234,7 +234,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'Shared Hosting vs. Everything Else' },
       {
         type: 'p',
-        text: "The cheapest hosting — the $3/month plans — is shared hosting. That means your website is on the same server as hundreds of other websites. It's like renting a room in a crowded apartment building. When your neighbor has a ton of traffic, your site slows down. When the server has issues, everyone goes down together.",
+        text: "The cheapest hosting plans are shared hosting. That means your website is on the same server as hundreds of other websites. It's like renting a room in a crowded apartment building. When your neighbor has a ton of traffic, your site slows down. When the server has issues, everyone goes down together.",
       },
       {
         type: 'p',
