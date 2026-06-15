@@ -159,14 +159,14 @@ export const BLOG_ARTICLES_1 = [
     slug: 'the-real-cost-of-a-cheap-website',
     title: 'The Real Cost of a Cheap Website',
     excerpt:
-      "That $500 website sounds like a steal until you see what it's actually costing your business in lost leads and wasted time.",
+      "A bargain-bin website sounds like a steal until you see what it's actually costing your local business in lost leads and wasted time.",
     category: 'Business',
     date: 'December 18, 2025',
     readTime: '5 min read',
     content: [
       {
         type: 'p',
-        text: "Look, I understand the temptation. You're a small business, budgets are tight, and someone on Fiverr says they'll build you a website for $400. Why would you spend $3,000 when you can get something for a tenth of that? <strong>Because the $400 site is going to cost you way more than $3,000 in the long run.</strong> Here's how.",
+        text: "Look, I understand the temptation. You're a local business, budgets are tight, and someone on Fiverr says they'll throw together a website fast. Why pay more for custom work when it looks like you can get something for a fraction of that? <strong>Because the bargain site is going to cost you way more in the long run.</strong> Here's how.",
       },
       { type: 'h2', text: 'You Get a Template, Not a Website' },
       {
