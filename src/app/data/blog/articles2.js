@@ -354,21 +354,21 @@ export const BLOG_ARTICLES_2 = [
   },
   {
     slug: 'how-we-build-websites-our-tech-stack-explained',
-    title: 'How We Build Websites: Our Tech Stack Explained',
+    title: 'How I Build Websites: My Tech Stack Explained',
     excerpt:
-      "Ever wonder what goes into building a website from scratch? Here's a plain-English breakdown of the tools we use and why.",
+      "Ever wonder what goes into building a website from scratch? Here's a plain-English breakdown of the tools I use and why.",
     category: 'Industry Tips',
     date: 'February 5, 2026',
     readTime: '5 min read',
     content: [
       {
         type: 'p',
-        text: "When we say we build custom websites, people sometimes ask what that actually means. Fair question. We don't use WordPress, we don't use Wix, and we definitely don't use Squarespace. We write code from scratch using modern tools that make sites fast, secure, and easy to maintain. <strong>Here's the non-technical version of how it all works.</strong>",
+        text: "When I say I build custom websites, people sometimes ask what that actually means. Fair question. I don't use WordPress, I don't use Wix, and I definitely don't use Squarespace. I write code from scratch using modern tools that make sites fast, secure, and easy to maintain. <strong>Here's the non-technical version of how it all works.</strong>",
       },
       { type: 'h2', text: 'The Front End: What You See' },
       {
         type: 'p',
-        text: 'The front end is everything your visitors interact with — the layout, the buttons, the images, the text. We build this with React, which is a JavaScript framework used by companies like Netflix, Airbnb, and Instagram. It lets us build interactive, fast-loading interfaces without the bloat that comes with page builders and templates.',
+        text: 'The front end is everything your visitors interact with — the layout, the buttons, the images, the text. I build this with React, which is a JavaScript framework used by companies like Netflix, Airbnb, and Instagram. It lets me build interactive, fast-loading interfaces without the bloat that comes with page builders and templates.',
       },
       {
         type: 'p',
@@ -377,25 +377,25 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'Hosting and Deployment' },
       {
         type: 'p',
-        text: "We use modern cloud hosting that distributes your site across multiple servers worldwide. When someone in Baytown loads your site, they're getting it from a server nearby — not one across the country. This is called a CDN (Content Delivery Network), and it's a big part of why our sites load so fast.",
+        text: "I use modern cloud hosting that distributes your site across multiple servers worldwide. When someone in Baytown loads your site, they're getting it from a server nearby — not one across the country. This is called a CDN (Content Delivery Network), and it's a big part of why my sites load so fast.",
       },
       {
         type: 'p',
-        text: 'Deploying updates is instant. We push the code, it goes live within seconds. No FTP uploads, no cPanel, no crossing your fingers and hoping nothing breaks. <strong>Modern deployment is fast and reliable.</strong>',
+        text: 'Deploying updates is instant. I push the code, it goes live within seconds. No FTP uploads, no cPanel, no crossing your fingers and hoping nothing breaks. <strong>Modern deployment is fast and reliable.</strong>',
       },
-      { type: 'h2', text: 'Why We Skip WordPress' },
+      { type: 'h2', text: 'Why I Skip WordPress' },
       {
         type: 'p',
-        text: "WordPress powers a lot of the internet, but it comes with baggage. Constant plugin updates, security vulnerabilities, database maintenance, and performance issues that get worse as you add more plugins. We've cleaned up enough hacked WordPress sites to know it's not the right tool for most small business websites.",
+        text: "WordPress powers a lot of the internet, but it comes with baggage. Constant plugin updates, security vulnerabilities, database maintenance, and performance issues that get worse as you add more plugins. I've cleaned up enough hacked WordPress sites to know it's not the right tool for most small business websites.",
       },
       {
         type: 'p',
-        text: "Our approach gives you a site that's faster, more secure, and doesn't need you to log in and click \"Update\" every week. <strong>We'd rather build something that just works.</strong>",
+        text: "My approach gives you a site that's faster, more secure, and doesn't need you to log in and click \"Update\" every week. <strong>I'd rather build something that just works.</strong>",
       },
       { type: 'h2', text: 'What This Means for You' },
       {
         type: 'p',
-        text: "You don't need to understand any of this to work with us. We handle all the technical stuff — that's literally the job. But we believe in being transparent about how we work. When you hire TaylorURL, you're getting a site built with the same caliber of tools that power major web applications, tuned for speed and simplicity. No templates, no page builders, no bloat.",
+        text: "You don't need to understand any of this to work with me. I handle all the technical stuff — that's literally the job. But I believe in being transparent about how I work. When you hire TaylorURL, you're getting a site built with the same caliber of tools that power major web applications, tuned for speed and simplicity. No templates, no page builders, no bloat.",
       },
     ],
   },
