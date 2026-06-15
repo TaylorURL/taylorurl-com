@@ -265,7 +265,7 @@ export default function Status() {
           <motion.div {...fadeInUp}>
             <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need Help?</h2>
             <p className="mb-6 text-gray-400">
-              Experiencing issues? Let us know and we&apos;ll get on it.
+              Experiencing issues? Let me know and I&apos;ll get on it.
             </p>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
