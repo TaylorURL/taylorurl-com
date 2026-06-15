@@ -27,19 +27,19 @@ const VALUES = [
     icon: Headphones,
     title: 'You Talk to the Builder',
     description:
-      'No account managers. No ticket systems. No "we\'ll get back to you in 3-5 business days." You text or call us directly and we handle it. That\'s how it should work.',
+      'No account managers. No ticket systems. No "I\'ll get back to you in 3-5 business days." You text or call me directly and I handle it. That\'s how it should work.',
   },
   {
     icon: Zap,
     title: 'Fast Turnaround, Not Fast Talk',
     description:
-      'Most sites are done in 2-4 weeks. We don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell us what you need, we build it.',
+      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what you need, I build it.',
   },
   {
     icon: Shield,
     title: 'No Hidden Costs. Ever.',
     description:
-      'We quote you a number and that\'s what it costs. No surprise "oh we didn\'t scope that" invoices. No nickel-and-diming on revisions. The price is the price.',
+      'I quote you a number and that\'s what it costs. No surprise "oh I didn\'t scope that" invoices. No nickel-and-diming on revisions. The price is the price.',
   },
 ]
 
@@ -55,21 +55,21 @@ const PROCESS = [
     num: '01',
     title: 'You reach out',
     description:
-      'Tell us about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
-    you: 'Send us a message',
+      'Tell me about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
+    you: 'Send me a message',
     us: 'Get back to you same day',
   },
   {
     num: '02',
-    title: 'We plan it out',
+    title: 'I plan it out',
     description:
-      'We figure out the structure, pages, and design direction. You approve it before we write a single line of code.',
+      'I figure out the structure, pages, and design direction. You approve it before I write a single line of code.',
     you: 'Give feedback on the plan',
     us: 'Design mockups you can actually see',
   },
   {
     num: '03',
-    title: 'We build it',
+    title: 'I build it',
     description:
       'Custom code, optimized images, fast hosting. You get progress updates and can give feedback the whole time.',
     you: 'Review and request changes',
@@ -77,9 +77,9 @@ const PROCESS = [
   },
   {
     num: '04',
-    title: 'We launch and stick around',
+    title: 'I launch and stick around',
     description:
-      'Your site goes live. We handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
+      'Your site goes live. I handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
     you: 'Focus on your business',
     us: 'Keep everything running',
   },
@@ -89,11 +89,11 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About Us"
-        description="TaylorURL is a web development team based in Baytown, Texas serving Houston and surrounding areas. We build custom websites for local businesses — no templates, no agencies, just real people who pick up the phone."
+        title="About"
+        description="TaylorURL is Trenton Taylor — a solo web developer based in Baytown, Texas serving Houston and surrounding areas. I build custom websites for local businesses — no templates, no agencies, just one developer who picks up the phone."
         path="/about"
       />
-      <PageHero title="About Us" description="Small team. Real code. No corporate energy." />
+      <PageHero title="About" description="One developer. Real code. No corporate energy." />
 
       {/* Story section */}
       <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
@@ -101,26 +101,26 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
-              <p className={`mb-2 ${EYEBROW}`}>Our Story</p>
+              <p className={`mb-2 ${EYEBROW}`}>My Story</p>
               <h2 className={`mb-8 ${SECTION_H2}`}>
-                We got tired of watching local businesses get ripped off
+                I got tired of watching local businesses get ripped off
               </h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  TaylorURL started in Baytown, Texas because we kept seeing the same thing
-                  everywhere — local businesses either paying some agency $10,000 for a WordPress
-                  template they could&apos;ve bought for $59, or settling for a site that looks like
-                  it was built on a free Wix plan in 2012.
+                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown, Texas
+                  because I kept seeing the same thing everywhere — local businesses either paying
+                  some agency $10,000 for a WordPress template they could&apos;ve bought for $59, or
+                  settling for a site that looks like it was built on a free Wix plan in 2012.
                 </p>
                 <p>
-                  Both options suck. So we started building websites the right way — with real code,
+                  Both options suck. So I started building websites the right way — with real code,
                   real design, and real support after launch. Not as a faceless agency with a sales
-                  team and a ticket queue, but as actual humans you can text when something needs
+                  team and a ticket queue, but as one developer you can text when something needs
                   fixing.
                 </p>
                 <p>
-                  We use the same technology that powers sites like Netflix and Airbnb, except we
-                  don&apos;t charge like them and we don&apos;t talk like them either. Every site we
+                  I use the same technology that powers sites like Netflix and Airbnb, except I
+                  don&apos;t charge like them and I don&apos;t talk like them either. Every site I
                   build is custom, fast, and yours to keep. No lock-in, no platform fees, no
                   surprises.
                 </p>
@@ -157,7 +157,7 @@ export default function About() {
                   <div>
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
                     <p className="text-sm text-gray-600">
-                      Working with businesses everywhere. Everything we do is remote-friendly.
+                      Working with businesses everywhere. Everything I do is remote-friendly.
                     </p>
                   </div>
                 </div>
@@ -171,8 +171,8 @@ export default function About() {
       <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-14">
-            <p className={`mb-2 ${EYEBROW}`}>Why Us</p>
-            <h2 className={SECTION_H2}>We do things differently</h2>
+            <p className={`mb-2 ${EYEBROW}`}>Why Me</p>
+            <h2 className={SECTION_H2}>I do things differently</h2>
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2">
@@ -234,7 +234,7 @@ export default function About() {
                       <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
                         <Monitor className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
                         <div>
-                          <p className="text-xs font-semibold uppercase text-blue-500">Us</p>
+                          <p className="text-xs font-semibold uppercase text-blue-500">Me</p>
                           <p className="text-sm text-gray-700">{step.us}</p>
                         </div>
                       </div>
@@ -256,7 +256,7 @@ export default function About() {
               Let&apos;s <span className="logo-wave">Do This</span>
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell us what you need. We&apos;ll give you a straight answer and a real quote — no
+              Tell me what you need. I&apos;ll give you a straight answer and a real quote — no
               &quot;discovery phase&quot; required.
             </p>
             <div className="flex justify-center">
