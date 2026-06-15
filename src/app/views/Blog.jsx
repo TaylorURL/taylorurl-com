@@ -277,7 +277,7 @@ export default function Blog() {
             <h1 className="mb-2 text-3xl font-bold text-gray-900 sm:text-4xl">
               The <span className="logo-wave-dark">Blog</span>
             </h1>
-            <p className="mb-6 text-gray-500">Real advice for real businesses. No fluff.</p>
+            <p className="mb-6 text-gray-500">Real advice for local businesses. No fluff.</p>
 
             {/* Search + categories inline */}
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
