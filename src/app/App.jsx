@@ -12,7 +12,6 @@ const views = {
   Privacy: lazy(() => import('@views/Privacy')),
   Terms: lazy(() => import('@views/Terms')),
   License: lazy(() => import('@views/License')),
-  Careers: lazy(() => import('@views/Careers')),
   Process: lazy(() => import('@views/Process')),
   Blog: lazy(() => import('@views/Blog')),
   BlogPost: lazy(() => import('@views/BlogPost')),
