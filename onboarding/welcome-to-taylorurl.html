@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Welcome to TaylorURL — Client Onboarding</title>
+<style>
+  :root {
+    --navy: #1e3a5f;
+    --blue: #2563eb;
+    --blue-light: #3b82f6;
+    --sky: #7dd3fc;
+    --bg: #F5F6F7;
+    --card: #ffffff;
+    --ink: #0f172a;
+    --muted: #475569;
+    --hairline: #e2e8f0;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'Geist','Inter',system-ui,-apple-system,sans-serif;
+    line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  .page { max-width: 880px; margin: 0 auto; padding: 32px 24px 64px; }
+  .hero {
+    background: linear-gradient(135deg, #1e3a5f 0%, #2563eb 70%, #3b82f6 100%);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 44px;
+    box-shadow: 0 18px 40px -20px rgba(30,58,95,.45);
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::after {
+    content: "";
+    position: absolute; right: -80px; top: -80px;
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, rgba(125,211,252,.35), transparent 70%);
+    border-radius: 50%;
+  }
+  .kicker {
+    text-transform: uppercase;
+    letter-spacing: .22em;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sky);
+    margin: 0 0 14px;
+  }
+  .wordmark {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: .01em;
+    margin-bottom: 24px;
+    color: #fff;
+  }
+  .wordmark .accent { color: var(--sky); }
+  h1 {
+    font-size: 40px;
+    line-height: 1.15;
+    margin: 0 0 14px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .hero p {
+    font-size: 17px;
+    color: rgba(255,255,255,.88);
+    margin: 0;
+    max-width: 56ch;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--hairline);
+    border-radius: 16px;
+    padding: 32px 32px 28px;
+    margin-top: 24px;
+    box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -16px rgba(15,23,42,.12);
+  }
+  .card h2 {
+    font-size: 22px;
+    margin: 0 0 8px;
+    color: var(--navy);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .num {
+    display: inline-flex;
+    align-items: center; justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--navy), var(--blue));
+    color: #fff;
+    font-size: 15px;
+    font-weight: 600;
+    flex: none;
+  }
+  .card h3 {
+    font-size: 15px;
+    color: var(--navy);
+    margin: 20px 0 6px;
+    font-weight: 600;
+  }
+  .card p, .card li { color: var(--muted); font-size: 15.5px; }
+  .card ul { padding-left: 18px; margin: 8px 0 0; }
+  .card li { margin-bottom: 6px; }
+  .card li strong { color: var(--ink); font-weight: 600; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+  }
+  .pill {
+    border: 1px solid var(--hairline);
+    border-radius: 12px;
+    padding: 16px;
+    background: #fafbfc;
+  }
+  .pill strong { display: block; color: var(--navy); font-size: 14px; margin-bottom: 4px; }
+  .pill span { color: var(--muted); font-size: 14px; }
+  .footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+    color: var(--muted);
+  }
+  @media (max-width: 600px) {
+    .hero { padding: 40px 28px; }
+    h1 { font-size: 30px; }
+    .card { padding: 24px; }
+  }
+  @media print {
+    body { background: #fff; }
+    .card, .hero { box-shadow: none; break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="hero">
+    <div class="wordmark">Taylor<span class="accent">URL</span></div>
+    <p class="kicker">Client Onboarding</p>
+    <h1>Welcome to TaylorURL.</h1>
+    <p>We're a Baytown-based web development agency that builds high-conversion marketing sites and pairs them with a real-time client portal so you always know how your site is performing. This kit walks you through everything you need to start strong.</p>
+  </header>
+
+  <section class="card">
+    <h2><span class="num">1</span> Who we are</h2>
+    <p>TaylorURL is an independent web development agency serving Southeast Texas businesses. Founded and operated by Trenton Taylor out of Baytown, we focus on a tight loop: design that converts, code that ships fast, and visibility you can actually see — through your own client portal.</p>
+    <div class="grid">
+      <div class="pill"><strong>Where</strong><span>Baytown, Texas — serving Southeast Texas</span></div>
+      <div class="pill"><strong>What</strong><span>Marketing sites + a built-in client portal</span></div>
+      <div class="pill"><strong>Stack</strong><span>React 19, Vite, Tailwind, Supabase</span></div>
+      <div class="pill"><strong>Promise</strong><span>Real visibility, never guesswork</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">2</span> What to expect</h2>
+    <p>Our engagements move through a deliberate set of phases. You will always know what we're doing, what we need from you, and when the next milestone lands. No mystery, no quiet stretches.</p>
+    <h3>You can count on:</h3>
+    <ul>
+      <li><strong>One point of contact.</strong> You work directly with Trenton — there is no account manager between you and the work.</li>
+      <li><strong>Honest timelines.</strong> If a piece of work will slip, you hear it from us first.</li>
+      <li><strong>Working software early.</strong> You see real pages in your portal long before launch.</li>
+      <li><strong>Documentation as we go.</strong> Decisions get written down, not lost in a chat thread.</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">3</span> Engagement overview</h2>
+    <p>A typical TaylorURL engagement runs in six phases. We'll go deep on each in the <em>Project Process &amp; Timeline</em> doc, but here's the shape:</p>
+    <div class="grid">
+      <div class="pill"><strong>Discovery &amp; Intake</strong><span>Goals, audience, brand, content, scope</span></div>
+      <div class="pill"><strong>Design</strong><span>Wireframes, visual direction, sign-off</span></div>
+      <div class="pill"><strong>Build</strong><span>Implementation in React + Tailwind</span></div>
+      <div class="pill"><strong>Review &amp; QA</strong><span>Cross-device, content, accessibility</span></div>
+      <div class="pill"><strong>Launch</strong><span>Domain cutover and go-live checks</span></div>
+      <div class="pill"><strong>Ongoing Care</strong><span>Monitoring, updates, change requests</span></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">4</span> Your client portal</h2>
+    <p>Every TaylorURL client gets an account in our portal at launch — and often much earlier. The portal is where the marketing site you're paying for proves it's working.</p>
+    <h3>Inside the portal you'll see:</h3>
+    <ul>
+      <li><strong>Visitor counts</strong> — how many real people are reaching your site.</li>
+      <li><strong>Page views</strong> — which pages are pulling weight and which need attention.</li>
+      <li><strong>Uptime percentage</strong> — independent verification that your site is online.</li>
+      <li><strong>Status badges</strong> — quick visual signals when something needs a look.</li>
+    </ul>
+    <p style="margin-top:14px">Three roles exist in the portal: <strong>client</strong> (you and your team), <strong>staff</strong> (TaylorURL team members working on your account), and <strong>admin</strong> (Trenton). New signups default to the client role. Full walkthrough lives in the <em>Your Client Portal</em> guide.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="num">5</span> A map of this kit</h2>
+    <p>This onboarding kit is five documents, each with a specific job:</p>
+    <ul>
+      <li><strong>Welcome to TaylorURL</strong> — this document. Orientation and what to expect.</li>
+      <li><strong>Client Intake Questionnaire</strong> — everything we need to start your project.</li>
+      <li><strong>Project Process &amp; Timeline</strong> — the phases, what happens in each, and typical milestones.</li>
+      <li><strong>Your Client Portal Guide</strong> — signing in, reading the dashboard, inviting your team.</li>
+      <li><strong>Communication &amp; Support</strong> — how to reach us, response times, change requests, billing.</li>
+    </ul>
+    <p style="margin-top:14px">Read them in order if you have time. If you don't, start with the Intake Questionnaire — that's what unblocks the work.</p>
+  </section>
+
+  <footer class="footer">TaylorURL · Web Development Agency · Baytown, Texas · Built by Trenton Taylor</footer>
+</div>
+</body>
+</html>
