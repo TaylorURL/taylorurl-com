@@ -24,33 +24,33 @@ const TIMELINE_STEPS = [
   {
     step: '01',
     icon: MessageCircle,
-    title: 'First Call',
+    title: 'First call',
     duration: 'Day 1',
     description:
-      'You tell me about your local business and what you need from a website. I ask questions, take notes, and give you a straight answer on whether I can help. No pitch deck, no "discovery phase."',
+      'You walk me through the business and what you need from a site. I ask questions, take notes, and give you a direct answer on whether I am the right fit. No pitch deck, no extended discovery.',
     client: [
-      'Tell me about your business',
-      'Share what you like (and hate) in other sites',
-      'Walk me through how customers reach you today',
+      'Describe the business',
+      'Share what works and what does not in other sites',
+      'Explain how customers reach you today',
     ],
     taylorurl: [
       'Ask the right questions',
-      'Give you a straight yes/no on fit',
-      'Sketch what your site should actually do',
+      'Give a direct yes or no on fit',
+      'Outline what the site should do',
     ],
   },
   {
     step: '02',
     icon: FileText,
-    title: 'Scope & Agreement',
+    title: 'Scope and agreement',
     duration: 'Day 2-3',
     description:
-      "I write up a clear scope — what I'm building, what's included, and how long it takes. If it works for you, we shake hands (digitally) and get moving.",
-    client: ['Review the scope', 'Ask any questions', "Sign off when you're ready"],
+      'I write up a clear scope of work — what I am building, what is included, and how long it takes. Once it works for both sides, we move forward.',
+    client: ['Review the scope', 'Ask questions', 'Sign off when ready'],
     taylorurl: [
       'Send a clear scope of work',
-      "Explain what's included (and what's not)",
-      'Set up the project timeline',
+      'Outline what is and is not included',
+      'Set the project timeline',
     ],
   },
   {
@@ -59,16 +59,16 @@ const TIMELINE_STEPS = [
     title: 'Design',
     duration: 'Week 1',
     description:
-      "I mock up your site. You tell me what you like, what you don't. We go back and forth until it looks right. No weird 40-page design doc.",
+      'I produce mockups of the site. You give feedback, I iterate until the direction is right. No oversized design doc, no design-by-committee.',
     client: [
-      'Send me your logo, photos, and content',
-      'Give feedback on mockups',
-      'Tell me if something feels off',
+      'Send your logo, photos, and content',
+      'Review and respond to mockups',
+      'Flag anything that does not fit',
     ],
     taylorurl: [
-      'Create visual mockups of your site',
+      'Produce visual mockups',
       'Revise based on your feedback',
-      'Nail down the layout and style',
+      'Lock the layout and visual style',
     ],
   },
   {
@@ -77,29 +77,29 @@ const TIMELINE_STEPS = [
     title: 'Build',
     duration: 'Week 2-3',
     description:
-      "I write the code. Real code, not drag-and-drop. You can check in anytime — I'll share progress as I go so there are zero surprises.",
+      'I write the code. Hand-coded React, not page builders. You can check in at any point — I share progress links throughout so there are no surprises at the end.',
     client: [
-      'Check in whenever you want',
-      "Flag anything that doesn't look right",
-      'Send over any remaining content',
+      'Review progress whenever you want',
+      'Flag anything that needs to change',
+      'Send any remaining content',
     ],
     taylorurl: [
       'Write clean, performant code',
-      'Make it look great on every screen',
-      'Share progress links along the way',
+      'Make it work on every screen size',
+      'Share progress links throughout',
     ],
   },
   {
     step: '05',
     icon: Rocket,
-    title: 'Review & Launch',
+    title: 'Review and launch',
     duration: 'Week 3-4',
     description:
-      'You test everything. Click every button, read every page. I fix whatever needs fixing. When you say go, I push it live.',
+      'You test the site end-to-end. I fix whatever needs fixing. Once you approve it, I deploy to production and handle the launch.',
     client: [
-      'Test the site top to bottom',
-      'Send me any final changes',
-      'Say the word and I go live',
+      'Test the site end-to-end',
+      'Send final changes',
+      'Approve the launch',
     ],
     taylorurl: [
       'Fix any issues you find',
@@ -110,42 +110,42 @@ const TIMELINE_STEPS = [
   {
     step: '06',
     icon: HeadphonesIcon,
-    title: 'I Stick Around',
+    title: 'Ongoing support',
     duration: 'Ongoing',
     description:
-      "Site's live, but I'm not gone. Hosting, updates, security, content changes — all handled. You just run your business.",
+      'After launch I continue to handle hosting, updates, security, and content changes. The technical side stays with me so the business stays focused on operating.',
     client: [
-      'Run your business',
-      'Text me when you need something changed',
-      "That's it. Seriously.",
+      'Run the business',
+      'Send a message when you need a change',
+      'No tickets, no waiting',
     ],
     taylorurl: [
-      'Keep your site fast and secure',
+      'Keep the site fast and secure',
       'Handle hosting and backups',
-      'Make updates whenever you need them',
+      'Ship updates as you need them',
     ],
   },
 ]
 
 const WHAT_YOULL_NEED = [
-  { icon: Image, label: 'Your logo (any format works)' },
+  { icon: Image, label: 'Your logo (any format)' },
   { icon: FileText, label: 'Content or copy for your pages' },
-  { icon: Image, label: 'Photos of your work or your space' },
+  { icon: Image, label: 'Photos of the work or the space' },
   { icon: Paintbrush, label: 'Brand colors, if you have them' },
-  { icon: Globe, label: 'Domain info (or I can help you get one)' },
+  { icon: Globe, label: 'Domain info, or assistance registering one' },
 ]
 
 export default function Process() {
   return (
     <div>
       <Seo
-        title="How I Work"
-        description="My process for building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. From first call to launch in 2-4 weeks. No mystery, no jargon — just a direct relationship with the developer."
+        title="Process"
+        description="The process for building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. From first call to launch in 2-4 weeks, with ongoing support after launch."
         path="/process"
       />
       <PageHero
-        title="How I Work"
-        description="No mystery. No jargon. Here's exactly how I work with local businesses."
+        title="Process"
+        description="A clear, predictable path from first call to launch and beyond."
       />
 
       {/* Timeline */}
@@ -157,10 +157,10 @@ export default function Process() {
             className="mb-10 text-center sm:mb-16"
           >
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              From <span className="logo-wave-dark">Hello</span> to Live Site
+              From first call to <span className="logo-wave-dark">live site</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Most projects wrap in 3-4 weeks. Here&apos;s what each step looks like.
+              Most projects wrap in three to four weeks. Here is what each step looks like.
             </p>
           </motion.div>
 
@@ -200,7 +200,7 @@ export default function Process() {
                       <div className="grid gap-6 sm:grid-cols-2">
                         <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-gray-400">
-                            WHAT YOU DO
+                            YOUR PART
                           </h4>
                           <ul className="space-y-2">
                             {step.client.map(item => (
@@ -219,7 +219,7 @@ export default function Process() {
                         </div>
                         <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-blue-500">
-                            WHAT I DO
+                            MY PART
                           </h4>
                           <ul className="space-y-2">
                             {step.taylorurl.map(item => (
@@ -251,11 +251,11 @@ export default function Process() {
         <div className="mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-12 text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              What You&apos;ll Need <span className="logo-wave-dark">From Me</span>
+              What I&apos;ll <span className="logo-wave-dark">need from you</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Don&apos;t stress about having everything perfect. I can work with what you&apos;ve
-              got and help fill in the gaps.
+              It does not have to be perfect or complete. I can work with what you have and
+              help fill in the gaps.
             </p>
           </motion.div>
 
@@ -282,16 +282,15 @@ export default function Process() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-8 text-center text-sm text-gray-500"
           >
-            Don&apos;t have a logo or photos yet? No worries — I can point you in the right
-            direction.
+            No logo or photos yet? I can point you to people who handle that work.
           </motion.p>
         </div>
       </section>
 
       <CtaBanner
         heading="Ready to"
-        accentText="Get Started?"
-        description="Now you know how it works. Let's talk about your local business and what you need."
+        accentText="get started?"
+        description="You know the process. Tell me about the business and what you need."
         primaryLabel="Get in Touch"
         primaryTo="/contact"
       />

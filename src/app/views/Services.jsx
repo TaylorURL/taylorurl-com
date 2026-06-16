@@ -22,52 +22,52 @@ import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 const SERVICES = [
   {
     icon: Palette,
-    title: 'Custom Local Business Websites',
+    title: 'Custom websites for local businesses',
     description:
-      'No templates. No drag-and-drop builders. I design your site from scratch so it actually looks like your business — not a stock theme every other shop on the block is using.',
+      'Designed from scratch around your brand and your customers. No templates, no page builders — the site looks and behaves like your business, not a stock theme.',
     features: [
       'Designed around your brand, not a theme',
-      'Looks great on every screen size',
-      "Smooth animations that don't feel cheap",
+      'Responsive on every screen size',
+      'Considered motion and interaction',
       'Built for the customers you actually serve',
     ],
     mockup: 'default',
   },
   {
     icon: Code2,
-    title: 'Website Redesigns',
+    title: 'Website redesigns',
     description:
-      "Already have a site that looks outdated or runs like garbage? I'll rebuild it from the ground up with real code so your business doesn't look stuck in 2014.",
+      'If the current site is dated or underperforming, I rebuild it from the ground up in modern code so the business is represented properly online.',
     features: [
-      'Full redesign with modern tech',
-      'Keep your content, ditch the clutter',
-      'Faster load times guaranteed',
-      'SEO cleanup so Google notices',
+      'Full redesign on a modern stack',
+      'Keep what works, remove the clutter',
+      'Measurably faster load times',
+      'Technical SEO cleanup and structure',
     ],
     mockup: 'code',
   },
   {
     icon: Zap,
-    title: 'JavaScript Apps & Custom Features',
+    title: 'JavaScript applications and custom features',
     description:
-      'Booking forms, customer portals, online ordering, inventory views — if your business needs more than static pages, I can build it as a real JavaScript application that integrates with the tools you already use.',
+      'Booking flows, customer portals, online ordering, internal dashboards. When the business needs more than static pages, I build it as a real React application that integrates with the tools you already use.',
     features: [
       'Custom React apps, not page-builder plugins',
-      'Booking, ordering, and quote workflows',
-      'Connects to the tools you already use',
-      'Built fast, hosted fast',
+      'Booking, ordering, and quoting workflows',
+      'Integrates with your existing tools',
+      'Built and hosted for speed',
     ],
     mockup: 'analytics',
   },
   {
     icon: Wrench,
-    title: 'I Handle Everything After',
+    title: 'Ongoing hosting and maintenance',
     description:
-      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. I watch it so you can focus on your business.",
+      'Hosting, updates, security patches, backups, monitoring. The operational side of running a website, handled in the background so you do not have to think about it.',
     features: [
-      'Hosting, SSL, & domain setup',
-      'Security patches as they drop',
-      'Uptime monitoring & daily backups',
+      'Hosting, SSL, and domain setup',
+      'Security patches as they ship',
+      'Uptime monitoring and daily backups',
       'Direct access to the developer who built it',
     ],
     mockup: 'default',
@@ -102,12 +102,12 @@ export default function Services() {
     <div>
       <Seo
         title="Services"
-        description="Modern websites, redesigns, JavaScript applications, SEO, and ongoing maintenance for local businesses in Baytown, Houston, and the surrounding Texas community. Hand-coded by one developer who works directly with the shops, restaurants, trades, and professionals who hire him."
+        description="Modern websites, redesigns, JavaScript applications, SEO, and ongoing maintenance for local businesses in Baytown, Houston, and the surrounding Texas area. Hand-coded by one developer with a direct, ongoing client relationship."
         path="/services"
       />
       <PageHero
-        title="What I Build for Local Businesses"
-        description="Modern websites, redesigns, and JavaScript applications. I build it, host it, and keep it running."
+        title="What I build"
+        description="Modern websites, redesigns, and JavaScript applications. Built, hosted, and maintained from one source."
       />
 
       {/* Services grid — alternating layout */}
@@ -158,7 +158,7 @@ export default function Services() {
       <section className="border-y border-gray-200 bg-gray-50 py-12">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">All of This Comes Standard</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Standard with every build</h2>
           </motion.div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
             {CAPABILITIES.map((cap, i) => {
@@ -183,9 +183,9 @@ export default function Services() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-white">My Stack</h2>
+            <h2 className="text-lg font-semibold text-white">The stack</h2>
             <p className="mt-2 text-sm text-gray-500">
-              The same tools the big companies use — without the big company attitude.
+              The same tools serious engineering teams use, applied to local-business work.
             </p>
           </motion.div>
           <div className="flex flex-wrap justify-center gap-3">
@@ -208,11 +208,11 @@ export default function Services() {
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              Sounds <span className="logo-wave-dark">Good</span>?
+              Ready to <span className="logo-wave-dark">talk through it</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what your local business needs. I&apos;ll give you a straight answer and we
-              can talk through what to build.
+              Tell me what your business needs. You get a direct answer and a clear scope to work
+              from.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>

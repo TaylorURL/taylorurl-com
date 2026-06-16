@@ -19,34 +19,34 @@ import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@consta
 const VALUES = [
   {
     icon: Code2,
-    title: 'Real Code, Not Drag-and-Drop',
+    title: 'Hand-coded, not templated',
     description:
-      'Every line is written by hand with modern JavaScript and React. No WordPress, no Wix, no Squarespace. Your site is built with the same tech that powers the biggest companies on the internet — except it actually loads fast.',
+      'Every line is written in modern JavaScript and React. No WordPress, no Wix, no Squarespace. The same stack used by serious product teams, scaled to what a local business actually needs.',
   },
   {
     icon: Headphones,
-    title: 'You Talk to the Builder',
+    title: 'Direct relationship',
     description:
-      'No account managers. No ticket systems. No "I\'ll get back to you in 3-5 business days." You text or call me directly and I handle it. That\'s how it should work.',
+      'No account managers, no ticket systems, no multi-day response windows. You text or call me directly and I handle it.',
   },
   {
     icon: Zap,
-    title: 'Fast Turnaround, Not Fast Talk',
+    title: 'Two-to-four-week turnaround',
     description:
-      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what your business does, I build it.',
+      'Most projects launch inside four weeks. I do not pad timelines with extended discovery or stakeholder alignment phases. You describe the business, I build the site.',
   },
   {
     icon: Shield,
-    title: 'Built for Local Businesses',
+    title: 'Built for local businesses',
     description:
-      'I work with shops, restaurants, trades, contractors, and independent professionals — the kind of business that needs a real online presence, not a template-y agency project. Direct relationship, clear scope, no surprises.',
+      'I work with shops, restaurants, trades, contractors, and independent professionals — businesses that need a real online presence and a clear, ongoing relationship with the developer who maintains it.',
   },
 ]
 
 const STATS = [
   { value: '2-4', unit: ' weeks', label: 'Average build time' },
   { value: '97+', unit: '', label: 'Average PageSpeed score' },
-  { value: '50+', unit: '', label: 'Happy clients' },
+  { value: '50+', unit: '', label: 'Clients served' },
   { value: '24/7', unit: '', label: 'Support after launch' },
 ]
 
@@ -55,32 +55,32 @@ const PROCESS = [
     num: '01',
     title: 'You reach out',
     description:
-      'Tell me about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
+      'Tell me about the business and what you need. A short message is enough — no forms with thirty fields.',
     you: 'Send me a message',
-    me: 'Get back to you same day',
+    me: 'Reply same day',
   },
   {
     num: '02',
     title: 'I plan it out',
     description:
-      'I figure out the structure, pages, and design direction. You approve it before I write a single line of code.',
-    you: 'Give feedback on the plan',
-    me: 'Design mockups you can actually see',
+      'I scope the structure, pages, and design direction. You approve the plan before any code is written.',
+    you: 'Review and give feedback',
+    me: 'Share mockups you can actually see',
   },
   {
     num: '03',
     title: 'I build it',
     description:
-      'Custom code, optimized images, fast hosting. You get progress updates and can give feedback the whole time.',
+      'Custom code, optimized images, fast hosting. You get progress updates throughout and can give feedback at any stage.',
     you: 'Review and request changes',
     me: 'Build, test, and refine',
   },
   {
     num: '04',
-    title: 'I launch and stick around',
+    title: 'Launch and support',
     description:
-      'Your site goes live. I handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
-    you: 'Focus on your business',
+      'Your site goes live. I handle hosting, security, updates, and fixes after launch so the technical side stays off your plate.',
+    you: 'Run the business',
     me: 'Keep everything running',
   },
 ]
@@ -90,12 +90,12 @@ export default function About() {
     <div>
       <Seo
         title="About"
-        description="TaylorURL is Trenton Taylor — a solo developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Shops, restaurants, trades, contractors, independent professionals. No templates, no agencies — one developer who picks up the phone."
+        description="TaylorURL is Trenton Taylor, an independent developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Hand-coded React, direct relationship, ongoing support after launch."
         path="/about"
       />
       <PageHero
         title="About"
-        description="One developer building real websites for local businesses. No corporate energy."
+        description="One developer, hand-coded sites, direct relationship from first call through ongoing support."
       />
 
       {/* Story section */}
@@ -104,26 +104,26 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
-              <p className={`mb-2 ${EYEBROW}`}>My Story</p>
+              <p className={`mb-2 ${EYEBROW}`}>Background</p>
               <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for local businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown,
-                  Texas because the local businesses I knew — the family restaurant, the plumber
-                  down the street, the salon two blocks over — all needed a real online presence and
-                  kept ending up with either a template-y agency project or a Wix page that looked
-                  like it was built in 2012.
+                  I&apos;m Trenton Taylor, and TaylorURL is me. I started the practice in Baytown,
+                  Texas because the local businesses around me — restaurants, trades, salons,
+                  independent professionals — kept ending up with one of two outcomes: a generic
+                  agency build or an outdated page-builder site that no longer represented their
+                  business.
                 </p>
                 <p>
-                  Neither option works. So I build websites the right way — with real code, real
-                  design, and real support after launch. Not as a faceless agency with a sales team
-                  and a ticket queue, but as one developer you can text when something needs fixing.
+                  Neither option works long-term. So I build sites the way a serious product team
+                  would: real code, considered design, and ongoing support from the person who
+                  wrote it. No sales layer, no ticket queue, no handoffs.
                 </p>
                 <p>
-                  I use the same JavaScript and React stack that powers the biggest sites on the
-                  internet, scaled down and built around what a local business actually needs: fast
-                  pages, clean design, and a direct relationship with the person who built it. No
-                  lock-in, no platform fees, no surprises.
+                  The stack is the same JavaScript and React stack used by major engineering
+                  teams, scaled to what a local business actually needs: fast pages, clear design,
+                  and a direct relationship with the developer who maintains the site. No
+                  vendor lock-in, no platform fees, no surprises.
                 </p>
               </div>
             </motion.div>
@@ -158,8 +158,8 @@ export default function About() {
                   <div>
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
                     <p className="text-sm text-gray-600">
-                      Working with local businesses across the Houston area and beyond. Everything I
-                      do is remote-friendly.
+                      Working with local businesses across the Houston area and beyond. The work
+                      is remote-friendly end-to-end.
                     </p>
                   </div>
                 </div>
@@ -173,8 +173,8 @@ export default function About() {
       <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-14">
-            <p className={`mb-2 ${EYEBROW}`}>Why Me</p>
-            <h2 className={SECTION_H2}>I do things differently</h2>
+            <p className={`mb-2 ${EYEBROW}`}>How I work</p>
+            <h2 className={SECTION_H2}>Why clients choose to work with me</h2>
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2">
@@ -199,10 +199,10 @@ export default function About() {
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
-            <p className={`mb-2 ${EYEBROW}`}>How It Works</p>
-            <h2 className={`mb-3 ${SECTION_H2}`}>Four steps. That&apos;s it.</h2>
+            <p className={`mb-2 ${EYEBROW}`}>Process</p>
+            <h2 className={`mb-3 ${SECTION_H2}`}>Four steps from first call to launch</h2>
             <p className="mx-auto max-w-lg text-gray-500">
-              No 12-step onboarding. No Gantt charts. No "discovery phase." Here&apos;s the whole
+              No twelve-step onboarding, no Gantt charts, no extended discovery. This is the whole
               process.
             </p>
           </motion.div>
@@ -255,11 +255,11 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Let&apos;s <span className="logo-wave">Do This</span>
+              Start a <span className="logo-wave">conversation</span>
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me about your local business and what you&apos;re trying to fix. I&apos;ll give
-              you a straight answer — no &quot;discovery phase&quot; required.
+              Tell me what your business does and what you need from a site. You get a direct
+              answer and a clear next step.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>

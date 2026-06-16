@@ -11,7 +11,7 @@ export default function NewsletterSection() {
   const handleNewsletterSubmit = e => {
     e.preventDefault()
     window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Newsletter Signup')}&body=${encodeURIComponent(`Please add me to your newsletter: ${email}`)}`
-    toast('Opening your email client — thanks for subscribing!')
+    toast('Opening your email client to complete signup.')
     setEmail('')
   }
 
@@ -22,11 +22,11 @@ export default function NewsletterSection() {
         <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-surface-overlay p-8 text-center md:p-12">
           <MessageSquare aria-hidden="true" className="mx-auto mb-6 h-12 w-12 text-blue-500" />
           <h2 className={`mb-4 ${SECTION_H2}`}>
-            Free Stuff for <span className="logo-wave-dark">Your Business</span>
+            Practical tips for <span className="logo-wave-dark">your business</span>
           </h2>
           <p className="mb-8 text-gray-600">
-            Occasional tips on getting more customers online — sent by me, not a marketing
-            department. No fluff, no sales funnels, just stuff that actually works.
+            Occasional notes on getting found online and converting more of the visitors you
+            already have. Written by me, sent only when there is something useful to say.
           </p>
           <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-4 sm:flex-row">
             <input
@@ -42,7 +42,7 @@ export default function NewsletterSection() {
               Subscribe
             </button>
           </form>
-          <p className="mt-4 text-sm text-gray-500">Free. Unsubscribe anytime.</p>
+          <p className="mt-4 text-sm text-gray-500">Unsubscribe anytime.</p>
         </div>
       </div>
     </section>

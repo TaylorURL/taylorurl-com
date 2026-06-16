@@ -45,9 +45,9 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8 max-w-md text-base leading-relaxed text-gray-400 sm:mb-10 sm:text-lg"
           >
-            I&apos;m Trenton — one developer building real websites and JavaScript applications for
-            local businesses. Direct relationship, fast sites, clean design. No template-y agency
-            feel.
+            I&apos;m Trenton. I build websites and JavaScript applications for local businesses.
+            Hand-coded React, clean design, direct relationship with the developer who writes the
+            code.
           </motion.p>
 
           <motion.div
@@ -57,7 +57,7 @@ export default function HeroSection() {
             className="flex"
           >
             <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
-              Get in Touch
+              Start a project
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
@@ -81,7 +81,8 @@ export default function HeroSection() {
               )}
             </div>
             <span>
-              Trusted by <strong className="text-gray-300">50+</strong> local businesses in the area
+              Working with <strong className="text-gray-300">50+</strong> local businesses across
+              the area
             </span>
           </motion.div>
         </div>
