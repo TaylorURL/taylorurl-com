@@ -251,11 +251,11 @@ export default function Process() {
         <div className="mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-12 text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              What You&apos;ll Need <span className="logo-wave-dark">From Me</span>
+              What I&apos;ll <span className="logo-wave-dark">need from you</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Don&apos;t stress about having everything perfect. I can work with what you&apos;ve
-              got and help fill in the gaps.
+              It does not have to be perfect or complete. I can work with what you have and
+              help fill in the gaps.
             </p>
           </motion.div>
 
