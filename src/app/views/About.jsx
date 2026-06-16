@@ -19,34 +19,34 @@ import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@consta
 const VALUES = [
   {
     icon: Code2,
-    title: 'Real Code, Not Drag-and-Drop',
+    title: 'Hand-coded, not templated',
     description:
-      'Every line is written by hand with modern JavaScript and React. No WordPress, no Wix, no Squarespace. Your site is built with the same tech that powers the biggest companies on the internet — except it actually loads fast.',
+      'Every line is written in modern JavaScript and React. No WordPress, no Wix, no Squarespace. The same stack used by serious product teams, scaled to what a local business actually needs.',
   },
   {
     icon: Headphones,
-    title: 'You Talk to the Builder',
+    title: 'Direct relationship',
     description:
-      'No account managers. No ticket systems. No "I\'ll get back to you in 3-5 business days." You text or call me directly and I handle it. That\'s how it should work.',
+      'No account managers, no ticket systems, no multi-day response windows. You text or call me directly and I handle it.',
   },
   {
     icon: Zap,
-    title: 'Fast Turnaround, Not Fast Talk',
+    title: 'Two-to-four-week turnaround',
     description:
-      'Most sites are done in 2-4 weeks. I don\'t pad timelines with "discovery phases" and "stakeholder alignment sessions." You tell me what your business does, I build it.',
+      'Most projects launch inside four weeks. I do not pad timelines with extended discovery or stakeholder alignment phases. You describe the business, I build the site.',
   },
   {
     icon: Shield,
-    title: 'Built for Local Businesses',
+    title: 'Built for local businesses',
     description:
-      'I work with shops, restaurants, trades, contractors, and independent professionals — the kind of business that needs a real online presence, not a template-y agency project. Direct relationship, clear scope, no surprises.',
+      'I work with shops, restaurants, trades, contractors, and independent professionals — businesses that need a real online presence and a clear, ongoing relationship with the developer who maintains it.',
   },
 ]
 
 const STATS = [
   { value: '2-4', unit: ' weeks', label: 'Average build time' },
   { value: '97+', unit: '', label: 'Average PageSpeed score' },
-  { value: '50+', unit: '', label: 'Happy clients' },
+  { value: '50+', unit: '', label: 'Clients served' },
   { value: '24/7', unit: '', label: 'Support after launch' },
 ]
 
@@ -55,32 +55,32 @@ const PROCESS = [
     num: '01',
     title: 'You reach out',
     description:
-      'Tell me about your business and what you need. Takes 5 minutes. No forms with 30 fields.',
+      'Tell me about the business and what you need. A short message is enough — no forms with thirty fields.',
     you: 'Send me a message',
-    me: 'Get back to you same day',
+    me: 'Reply same day',
   },
   {
     num: '02',
     title: 'I plan it out',
     description:
-      'I figure out the structure, pages, and design direction. You approve it before I write a single line of code.',
-    you: 'Give feedback on the plan',
-    me: 'Design mockups you can actually see',
+      'I scope the structure, pages, and design direction. You approve the plan before any code is written.',
+    you: 'Review and give feedback',
+    me: 'Share mockups you can actually see',
   },
   {
     num: '03',
     title: 'I build it',
     description:
-      'Custom code, optimized images, fast hosting. You get progress updates and can give feedback the whole time.',
+      'Custom code, optimized images, fast hosting. You get progress updates throughout and can give feedback at any stage.',
     you: 'Review and request changes',
     me: 'Build, test, and refine',
   },
   {
     num: '04',
-    title: 'I launch and stick around',
+    title: 'Launch and support',
     description:
-      'Your site goes live. I handle hosting, security, updates, and fixes. You never have to think about the technical stuff.',
-    you: 'Focus on your business',
+      'Your site goes live. I handle hosting, security, updates, and fixes after launch so the technical side stays off your plate.',
+    you: 'Run the business',
     me: 'Keep everything running',
   },
 ]
