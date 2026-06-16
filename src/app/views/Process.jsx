@@ -157,10 +157,10 @@ export default function Process() {
             className="mb-10 text-center sm:mb-16"
           >
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              From <span className="logo-wave-dark">Hello</span> to Live Site
+              From first call to <span className="logo-wave-dark">live site</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Most projects wrap in 3-4 weeks. Here&apos;s what each step looks like.
+              Most projects wrap in three to four weeks. Here is what each step looks like.
             </p>
           </motion.div>
 
