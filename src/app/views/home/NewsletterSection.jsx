@@ -42,7 +42,7 @@ export default function NewsletterSection() {
               Subscribe
             </button>
           </form>
-          <p className="mt-4 text-sm text-gray-500">Free. Unsubscribe anytime.</p>
+          <p className="mt-4 text-sm text-gray-500">Unsubscribe anytime.</p>
         </div>
       </div>
     </section>
