@@ -200,7 +200,7 @@ export default function Process() {
                       <div className="grid gap-6 sm:grid-cols-2">
                         <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-gray-400">
-                            WHAT YOU DO
+                            YOUR PART
                           </h4>
                           <ul className="space-y-2">
                             {step.client.map(item => (
