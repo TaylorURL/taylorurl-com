@@ -158,7 +158,7 @@ export default function Services() {
       <section className="border-y border-gray-200 bg-gray-50 py-12">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">All of This Comes Standard</h2>
+            <h2 className="text-lg font-semibold text-gray-900">Standard with every build</h2>
           </motion.div>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
             {CAPABILITIES.map((cap, i) => {
