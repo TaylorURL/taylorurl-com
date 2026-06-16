@@ -300,7 +300,7 @@ ${formData.message}
                       onChange={handleChange}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
-                      placeholder="What does your business do, and what do you need from a website?"
+                      placeholder="What does the business do, and what do you need from a website?"
                       aria-invalid={errors.message ? true : undefined}
                       aria-describedby={errors.message ? 'message-error' : undefined}
                     />
