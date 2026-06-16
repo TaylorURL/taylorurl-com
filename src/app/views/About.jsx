@@ -104,26 +104,26 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
-              <p className={`mb-2 ${EYEBROW}`}>My Story</p>
+              <p className={`mb-2 ${EYEBROW}`}>Background</p>
               <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for local businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL is just me. I started this in Baytown,
-                  Texas because the local businesses I knew — the family restaurant, the plumber
-                  down the street, the salon two blocks over — all needed a real online presence and
-                  kept ending up with either a template-y agency project or a Wix page that looked
-                  like it was built in 2012.
+                  I&apos;m Trenton Taylor, and TaylorURL is me. I started the practice in Baytown,
+                  Texas because the local businesses around me — restaurants, trades, salons,
+                  independent professionals — kept ending up with one of two outcomes: a generic
+                  agency build or an outdated page-builder site that no longer represented their
+                  business.
                 </p>
                 <p>
-                  Neither option works. So I build websites the right way — with real code, real
-                  design, and real support after launch. Not as a faceless agency with a sales team
-                  and a ticket queue, but as one developer you can text when something needs fixing.
+                  Neither option works long-term. So I build sites the way a serious product team
+                  would: real code, considered design, and ongoing support from the person who
+                  wrote it. No sales layer, no ticket queue, no handoffs.
                 </p>
                 <p>
-                  I use the same JavaScript and React stack that powers the biggest sites on the
-                  internet, scaled down and built around what a local business actually needs: fast
-                  pages, clean design, and a direct relationship with the person who built it. No
-                  lock-in, no platform fees, no surprises.
+                  The stack is the same JavaScript and React stack used by major engineering
+                  teams, scaled to what a local business actually needs: fast pages, clear design,
+                  and a direct relationship with the developer who maintains the site. No
+                  vendor lock-in, no platform fees, no surprises.
                 </p>
               </div>
             </motion.div>
