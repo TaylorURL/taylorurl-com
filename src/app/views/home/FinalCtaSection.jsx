@@ -9,11 +9,11 @@ export default function FinalCtaSection() {
       <div className="grid-pattern-blue absolute inset-0 opacity-[0.04]" />
       <div className="relative mx-auto max-w-6xl px-6 text-center">
         <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
-          Ready to <span className="logo-wave">Get Your Business Online</span>?
+          Ready to <span className="logo-wave">get started</span>?
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-base text-gray-400 sm:text-lg">
-          You don&apos;t need to understand hosting, SSL, or DNS. That&apos;s literally my job. Tell
-          me about your local business and we&apos;ll talk.
+          Hosting, SSL, DNS, deployment — I handle the technical side. Tell me about your
+          business and what you need from a site.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link to="/contact" className={`group ${BTN_PRIMARY_LG}`}>
@@ -22,7 +22,7 @@ export default function FinalCtaSection() {
           </Link>
           <a href={`tel:${PHONE_NUMBER}`} className={BTN_SECONDARY_DARK_LG}>
             <Phone className="h-5 w-5" />
-            Call Me
+            Call
           </a>
         </div>
       </div>
