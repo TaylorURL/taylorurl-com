@@ -173,8 +173,8 @@ export default function About() {
       <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
         <div className="mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-14">
-            <p className={`mb-2 ${EYEBROW}`}>Why Me</p>
-            <h2 className={SECTION_H2}>I do things differently</h2>
+            <p className={`mb-2 ${EYEBROW}`}>How I work</p>
+            <h2 className={SECTION_H2}>Why clients choose to work with me</h2>
           </motion.div>
 
           <div className="grid gap-6 sm:grid-cols-2">
