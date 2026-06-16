@@ -64,7 +64,7 @@ export default function NotFound() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="mt-4 text-lg text-gray-600"
         >
-          This page doesn&apos;t exist. But while you&apos;re here, catch some bugs.
+          This page does not exist. Catch a few bugs while you are here.
         </motion.p>
 
         {/* Bug catching game */}
