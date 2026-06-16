@@ -104,7 +104,7 @@ export default function NotFound() {
           className="flex flex-wrap justify-center gap-4"
         >
           <Link to="/" className={`group ${BTN_PRIMARY}`}>
-            Go Home
+            Back to home
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link to="/contact" className={BTN_SECONDARY}>
