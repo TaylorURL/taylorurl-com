@@ -22,52 +22,52 @@ import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 const SERVICES = [
   {
     icon: Palette,
-    title: 'Custom Local Business Websites',
+    title: 'Custom websites for local businesses',
     description:
-      'No templates. No drag-and-drop builders. I design your site from scratch so it actually looks like your business — not a stock theme every other shop on the block is using.',
+      'Designed from scratch around your brand and your customers. No templates, no page builders — the site looks and behaves like your business, not a stock theme.',
     features: [
       'Designed around your brand, not a theme',
-      'Looks great on every screen size',
-      "Smooth animations that don't feel cheap",
+      'Responsive on every screen size',
+      'Considered motion and interaction',
       'Built for the customers you actually serve',
     ],
     mockup: 'default',
   },
   {
     icon: Code2,
-    title: 'Website Redesigns',
+    title: 'Website redesigns',
     description:
-      "Already have a site that looks outdated or runs like garbage? I'll rebuild it from the ground up with real code so your business doesn't look stuck in 2014.",
+      'If the current site is dated or underperforming, I rebuild it from the ground up in modern code so the business is represented properly online.',
     features: [
-      'Full redesign with modern tech',
-      'Keep your content, ditch the clutter',
-      'Faster load times guaranteed',
-      'SEO cleanup so Google notices',
+      'Full redesign on a modern stack',
+      'Keep what works, remove the clutter',
+      'Measurably faster load times',
+      'Technical SEO cleanup and structure',
     ],
     mockup: 'code',
   },
   {
     icon: Zap,
-    title: 'JavaScript Apps & Custom Features',
+    title: 'JavaScript applications and custom features',
     description:
-      'Booking forms, customer portals, online ordering, inventory views — if your business needs more than static pages, I can build it as a real JavaScript application that integrates with the tools you already use.',
+      'Booking flows, customer portals, online ordering, internal dashboards. When the business needs more than static pages, I build it as a real React application that integrates with the tools you already use.',
     features: [
       'Custom React apps, not page-builder plugins',
-      'Booking, ordering, and quote workflows',
-      'Connects to the tools you already use',
-      'Built fast, hosted fast',
+      'Booking, ordering, and quoting workflows',
+      'Integrates with your existing tools',
+      'Built and hosted for speed',
     ],
     mockup: 'analytics',
   },
   {
     icon: Wrench,
-    title: 'I Handle Everything After',
+    title: 'Ongoing hosting and maintenance',
     description:
-      "Hosting, updates, security, backups — the boring stuff that breaks sites when nobody's watching. I watch it so you can focus on your business.",
+      'Hosting, updates, security patches, backups, monitoring. The operational side of running a website, handled in the background so you do not have to think about it.',
     features: [
-      'Hosting, SSL, & domain setup',
-      'Security patches as they drop',
-      'Uptime monitoring & daily backups',
+      'Hosting, SSL, and domain setup',
+      'Security patches as they ship',
+      'Uptime monitoring and daily backups',
       'Direct access to the developer who built it',
     ],
     mockup: 'default',
