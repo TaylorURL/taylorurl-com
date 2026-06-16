@@ -18,21 +18,22 @@ const FACTS = [
     icon: TrendingUp,
     stat: '+110%',
     label: 'more revenue',
-    detail: 'Businesses with websites consistently outgrow those without — by a lot.',
+    detail:
+      'Businesses with a real online presence consistently outperform those without one over a 12-month window.',
   },
   {
     icon: Smartphone,
     stat: '70%',
     label: 'mobile searches',
     detail:
-      "Most of your customers are searching from their phone. If your site isn't built for that, you're losing them.",
+      'Most local searches happen on a phone. If the site is not fast and usable on mobile, those visitors leave before the page loads.',
   },
   {
     icon: Monitor,
     stat: '<2s',
     label: 'load time',
     detail:
-      'Slow sites kill conversions. Every site I build loads in under 2 seconds — Google rewards that.',
+      'Every site I build loads in under two seconds. Faster pages convert more visitors and rank higher in search.',
   },
 ]
 
