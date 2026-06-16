@@ -199,10 +199,10 @@ export default function About() {
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
         <div className="relative mx-auto max-w-4xl px-6">
           <motion.div {...fadeInUp} className="mb-14 text-center">
-            <p className={`mb-2 ${EYEBROW}`}>How It Works</p>
-            <h2 className={`mb-3 ${SECTION_H2}`}>Four steps. That&apos;s it.</h2>
+            <p className={`mb-2 ${EYEBROW}`}>Process</p>
+            <h2 className={`mb-3 ${SECTION_H2}`}>Four steps from first call to launch</h2>
             <p className="mx-auto max-w-lg text-gray-500">
-              No 12-step onboarding. No Gantt charts. No "discovery phase." Here&apos;s the whole
+              No twelve-step onboarding, no Gantt charts, no extended discovery. This is the whole
               process.
             </p>
           </motion.div>
