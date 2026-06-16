@@ -23,18 +23,19 @@ const INCLUDED_ITEMS = [
 
 const PROCESS_STEPS = [
   {
-    title: 'Quick Chat',
+    title: 'Initial call',
     description:
-      'Tell me about your local business. I ask a few questions and give you a straight answer.',
+      'You walk me through the business. I ask the questions needed to scope the work and give you a direct answer.',
   },
   {
-    title: 'A Real Plan',
+    title: 'Clear scope',
     description:
-      'You get a clear scope — what I build, how long it takes, and what happens after launch.',
+      'You get a written scope: what gets built, how long it takes, what is included, and what happens after launch.',
   },
   {
-    title: 'I Build It',
-    description: 'I get to work, you see progress, and I launch it with full support included.',
+    title: 'Build and launch',
+    description:
+      'I build the site, share progress as it goes, and launch it. Ongoing support is included.',
   },
 ]
 
@@ -91,7 +92,7 @@ ${formData.message}
     `.trim()
 
     window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    toast("Opening your email client — I'll get back to you within 24 hours!")
+    toast('Opening your email client. I will respond within 24 hours.')
   }
 
   const handleChange = e => {
@@ -101,13 +102,13 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Get in Touch"
-        description="Tell me about your local business and the site you need. I build modern websites and JavaScript applications for shops, restaurants, trades, and independent professionals in the Baytown and Houston area."
+        title="Contact"
+        description="Tell me about your business and what you need from a site. I build modern websites and JavaScript applications for local businesses in Baytown, Houston, and the surrounding Texas area."
         path="/contact"
       />
       <PageHero
-        title="Get in Touch"
-        description="Tell me about your local business. I'll get back to you within 24 hours."
+        title="Get in touch"
+        description="Tell me about the business. I respond within 24 hours."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
@@ -119,12 +120,11 @@ ${formData.message}
               className="lg:col-span-2"
             >
               <h2 className={`mb-6 ${SECTION_H2}`}>
-                Let&apos;s <span className="logo-wave-dark">Talk</span>
+                Start the <span className="logo-wave-dark">conversation</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or need someone to take over a site you already have — tell me
-                what your business does and what you&apos;re trying to fix. I&apos;ll take it from
-                there.
+                New site, redesign, or takeover of an existing site — describe the business and
+                what needs to change. I will take it from there.
               </p>
 
               <div className="mb-8 space-y-4">
@@ -163,7 +163,7 @@ ${formData.message}
               </div>
 
               <div className="rounded-xl bg-gray-50 p-6">
-                <h3 className="mb-4 font-semibold text-gray-900">How It Works</h3>
+                <h3 className="mb-4 font-semibold text-gray-900">How it works</h3>
                 <div className="space-y-4">
                   {PROCESS_STEPS.map((step, i) => (
                     <div key={step.title} className="flex items-start gap-3">
@@ -187,7 +187,7 @@ ${formData.message}
             >
               <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
                 <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                  Tell Me About Your Business
+                  Project details
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
@@ -300,7 +300,7 @@ ${formData.message}
                       onChange={handleChange}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
-                      placeholder="What does your business do, and what do you need from a website?"
+                      placeholder="What does the business do, and what do you need from a website?"
                       aria-invalid={errors.message ? true : undefined}
                       aria-describedby={errors.message ? 'message-error' : undefined}
                     />
@@ -313,7 +313,7 @@ ${formData.message}
 
                   <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
                     <button type="submit" className={BTN_PRIMARY_LG}>
-                      Send It
+                      Send message
                       <Send className="h-4 w-4" />
                     </button>
                     <p className="text-xs text-gray-500">Opens your email client</p>
@@ -330,10 +330,10 @@ ${formData.message}
         <div className="relative mx-auto max-w-4xl px-6">
           <div className="mb-12 text-center">
             <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Everything&apos;s <span className="logo-wave">Included</span>
+              Everything <span className="logo-wave">included</span>
             </h2>
             <p className="text-gray-400">
-              All of this comes with the site. You won&apos;t get nickel-and-dimed for the basics.
+              These come standard with every engagement. No surprise line items for the basics.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

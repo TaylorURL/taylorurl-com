@@ -64,7 +64,7 @@ export default function NotFound() {
           transition={{ delay: 0.3, duration: 0.5 }}
           className="mt-4 text-lg text-gray-600"
         >
-          This page doesn&apos;t exist. But while you&apos;re here, catch some bugs.
+          This page does not exist. Catch a few bugs while you are here.
         </motion.p>
 
         {/* Bug catching game */}
@@ -75,7 +75,7 @@ export default function NotFound() {
           className="mx-auto mb-8 mt-8"
         >
           <div className="mb-3 text-sm font-medium text-gray-500">
-            Bugs squashed: <span className="font-bold text-blue-600">{score}</span>
+            Bugs caught: <span className="font-bold text-blue-600">{score}</span>
           </div>
           <div
             ref={gridRef}
@@ -104,7 +104,7 @@ export default function NotFound() {
           className="flex flex-wrap justify-center gap-4"
         >
           <Link to="/" className={`group ${BTN_PRIMARY}`}>
-            Go Home
+            Back to home
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
           </Link>
           <Link to="/contact" className={BTN_SECONDARY}>

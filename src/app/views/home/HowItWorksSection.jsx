@@ -10,11 +10,10 @@ export default function HowItWorksSection() {
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-16 text-center">
           <h2 className={`mb-4 ${SECTION_H2}`}>
-            Dead <span className="logo-wave-dark">Simple</span>
+            How it <span className="logo-wave-dark">works</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            No onboarding decks. No kickoff meetings. Just a straight path from &quot;my business
-            needs a website&quot; to live.
+            Three steps from first message to launch. No onboarding decks, no extended discovery.
           </p>
         </div>
 

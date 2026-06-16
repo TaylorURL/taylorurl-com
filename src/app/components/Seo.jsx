@@ -3,12 +3,12 @@ import { BRAND_NAME } from '@constants/navigation'
 
 const BASE_URL = 'https://taylorurl.com'
 const DEFAULT_DESCRIPTION =
-  'Modern websites and JavaScript applications for local businesses — built by Trenton Taylor, a solo developer in Baytown, Texas serving shops, restaurants, trades, contractors, and independent professionals across the Houston area. Real code, direct relationship, no template-y agency feel.'
+  'Modern websites and JavaScript applications for local businesses, built by Trenton Taylor — an independent developer in Baytown, Texas working with shops, restaurants, trades, contractors, and independent professionals across the Houston area. Hand-coded React, direct relationship, ongoing support after launch.'
 
 export default function Seo({ title, description = DEFAULT_DESCRIPTION, path = '', schema }) {
   const fullTitle = title
-    ? `${title} | ${BRAND_NAME} - Websites for Local Businesses`
-    : `${BRAND_NAME} - Modern Websites for Local Businesses in Baytown & Houston`
+    ? `${title} | ${BRAND_NAME} — Websites for Local Businesses`
+    : `${BRAND_NAME} — Modern Websites for Local Businesses in Baytown & Houston`
   const url = `${BASE_URL}${path}`
 
   return (

@@ -19,39 +19,39 @@ export const REVENUE_GROWTH_DATA = [
 
 export const WHY_WEBSITE_CARDS = [
   {
-    title: 'Show Up on Google',
+    title: 'Search visibility',
     description:
-      'If someone searches "plumber near me" and you don\'t pop up, you just lost that job to the guy down the street. Simple as that.',
+      'When customers search for what you do, the businesses that rank are the ones with real websites. Without one, you are not in the conversation.',
     icon: Search,
   },
   {
-    title: 'Open While You Sleep',
+    title: 'Always available',
     description:
-      "Your website takes calls at 2am. Answers the same questions you're tired of answering. Books jobs while you're on a job.",
+      'Your site answers questions, captures leads, and accepts bookings outside business hours. The work continues while you sleep.',
     icon: Clock,
   },
   {
-    title: 'People Google You',
+    title: 'Credibility',
     description:
-      "Before anyone calls, they look you up. No website? They assume you're either closed or not serious. That's just how it works now.",
+      'People check you out before they call. A professional site tells them you are established, serious, and worth doing business with.',
     icon: Shield,
   },
   {
-    title: 'More Than Word of Mouth',
+    title: 'Reach beyond referrals',
     description:
-      "Referrals are great, but they don't scale. A website puts you in front of people who've never heard of you — and that's where the growth is.",
+      'Word of mouth is valuable, but it is not scalable. A website puts you in front of customers who have never heard of you before.',
     icon: Users,
   },
   {
-    title: 'Phones First',
+    title: 'Built for mobile',
     description:
-      "Your customers are searching from their truck, their couch, their kid's soccer game. If your site doesn't work on a phone, it doesn't work.",
+      'Most local searches happen on a phone. If the site is not fast and usable there, you lose the customer before the first tap.',
     icon: Smartphone,
   },
   {
-    title: 'It Pays for Itself',
+    title: 'Real return',
     description:
-      "One new customer and the site has already made its money back. That's not a sales pitch — it's just math.",
+      'One new customer typically covers the cost of the site. After that, the work it does for you is pure upside.',
     icon: DollarSign,
   },
 ]
@@ -59,28 +59,28 @@ export const WHY_WEBSITE_CARDS = [
 export const HOW_IT_WORKS_STEPS = [
   {
     step: '1',
-    title: 'Hit Me Up',
+    title: 'Get in touch',
     description:
-      "Call, text, email — whatever works. Tell me about your business and what you need. You'll get a straight answer, not a 47-page proposal.",
+      'Call, text, or email. Tell me what your business does and what you need. You get a straight answer, not a proposal deck.',
   },
   {
     step: '2',
-    title: 'I Build It',
+    title: 'I build it',
     description:
-      'I get to work. You see progress along the way and can tell me to change anything. No surprises, no waiting months.',
+      'I get to work and share progress as I go. Feedback is welcome at any stage. No long timelines, no surprises.',
   },
   {
     step: '3',
-    title: "You're Live",
+    title: 'Launch',
     description:
-      'Site goes live, I handle everything after — hosting, updates, security. You go back to running your business.',
+      'Your site goes live. I handle hosting, updates, and security after launch so you can stay focused on the business.',
   },
 ]
 
 export const CHART_AXIS_STYLE = { fill: '#6b7280', fontSize: 12 }
 export const CHART_TOOLTIP_STYLE = { borderRadius: '8px', border: '1px solid #e5e7eb' }
 
-export const HERO_BADGES = ['Cancel anytime', 'Free consultation']
+export const HERO_BADGES = ['Cancel anytime', 'Free initial consultation']
 
 export const LOCAL_SEARCH_STATS = [
   { value: '97%', label: 'search online first' },

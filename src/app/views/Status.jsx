@@ -192,12 +192,12 @@ export default function Status() {
     <div>
       <Seo
         title="System Status"
-        description="Live status of TaylorURL hosting, security, and maintenance infrastructure. Uptime monitoring for every client website I keep online."
+        description="Live status of TaylorURL hosting, security, and maintenance infrastructure. Uptime monitoring for every client site under maintenance."
         path="/status"
       />
       <PageHero
-        title="System Status"
-        description="Current health of the infrastructure I run for clients."
+        title="System status"
+        description="Current health of the infrastructure powering client sites."
       />
 
       <section className="relative overflow-hidden bg-surface-base py-16">
@@ -263,9 +263,9 @@ export default function Status() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-4xl px-6 text-center">
           <motion.div {...fadeInUp}>
-            <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need Help?</h2>
+            <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need help?</h2>
             <p className="mb-6 text-gray-400">
-              Experiencing issues? Let me know and I&apos;ll get on it.
+              Report any issue with a client site and I will investigate.
             </p>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
