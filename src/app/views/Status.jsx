@@ -192,12 +192,12 @@ export default function Status() {
     <div>
       <Seo
         title="System Status"
-        description="Live status of TaylorURL hosting, security, and maintenance infrastructure. Uptime monitoring for every client website I keep online."
+        description="Live status of TaylorURL hosting, security, and maintenance infrastructure. Uptime monitoring for every client site under maintenance."
         path="/status"
       />
       <PageHero
-        title="System Status"
-        description="Current health of the infrastructure I run for clients."
+        title="System status"
+        description="Current health of the infrastructure powering client sites."
       />
 
       <section className="relative overflow-hidden bg-surface-base py-16">
