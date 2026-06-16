@@ -313,7 +313,7 @@ ${formData.message}
 
                   <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
                     <button type="submit" className={BTN_PRIMARY_LG}>
-                      Send It
+                      Send message
                       <Send className="h-4 w-4" />
                     </button>
                     <p className="text-xs text-gray-500">Opens your email client</p>
