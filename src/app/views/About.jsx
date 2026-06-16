@@ -255,11 +255,11 @@ export default function About() {
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Let&apos;s <span className="logo-wave">Do This</span>
+              Start a <span className="logo-wave">conversation</span>
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me about your local business and what you&apos;re trying to fix. I&apos;ll give
-              you a straight answer — no &quot;discovery phase&quot; required.
+              Tell me what your business does and what you need from a site. You get a direct
+              answer and a clear next step.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
