@@ -75,7 +75,7 @@ export default function NotFound() {
           className="mx-auto mb-8 mt-8"
         >
           <div className="mb-3 text-sm font-medium text-gray-500">
-            Bugs squashed: <span className="font-bold text-blue-600">{score}</span>
+            Bugs caught: <span className="font-bold text-blue-600">{score}</span>
           </div>
           <div
             ref={gridRef}
