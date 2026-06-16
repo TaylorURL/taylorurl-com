@@ -265,7 +265,7 @@ export default function Blog() {
     <div>
       <Seo
         title="Blog"
-        description="Web development tips, SEO advice, and growth strategies written for local businesses in Baytown, Houston, and beyond. Real advice about getting your shop, restaurant, or service business found online."
+        description="Web development, SEO, and growth notes for local businesses in Baytown, Houston, and the surrounding area. Practical advice on getting your shop, restaurant, or service business found online."
         path="/blog"
       />
 
