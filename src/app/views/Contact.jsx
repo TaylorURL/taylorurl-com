@@ -92,7 +92,7 @@ ${formData.message}
     `.trim()
 
     window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    toast("Opening your email client — I'll get back to you within 24 hours!")
+    toast('Opening your email client. I will respond within 24 hours.')
   }
 
   const handleChange = e => {
