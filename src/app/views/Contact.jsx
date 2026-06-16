@@ -330,10 +330,10 @@ ${formData.message}
         <div className="relative mx-auto max-w-4xl px-6">
           <div className="mb-12 text-center">
             <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Everything&apos;s <span className="logo-wave">Included</span>
+              Everything <span className="logo-wave">included</span>
             </h2>
             <p className="text-gray-400">
-              All of this comes with the site. You won&apos;t get nickel-and-dimed for the basics.
+              These come standard with every engagement. No surprise line items for the basics.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
