@@ -208,11 +208,11 @@ export default function Services() {
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className={`mb-4 ${SECTION_H2}`}>
-              Sounds <span className="logo-wave-dark">Good</span>?
+              Ready to <span className="logo-wave-dark">talk through it</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what your local business needs. I&apos;ll give you a straight answer and we
-              can talk through what to build.
+              Tell me what your business needs. You get a direct answer and a clear scope to work
+              from.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
