@@ -102,13 +102,13 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Get in Touch"
-        description="Tell me about your local business and the site you need. I build modern websites and JavaScript applications for shops, restaurants, trades, and independent professionals in the Baytown and Houston area."
+        title="Contact"
+        description="Tell me about your business and what you need from a site. I build modern websites and JavaScript applications for local businesses in Baytown, Houston, and the surrounding Texas area."
         path="/contact"
       />
       <PageHero
-        title="Get in Touch"
-        description="Tell me about your local business. I'll get back to you within 24 hours."
+        title="Get in touch"
+        description="Tell me about the business. I respond within 24 hours."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
