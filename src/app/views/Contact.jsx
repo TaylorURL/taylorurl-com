@@ -120,12 +120,11 @@ ${formData.message}
               className="lg:col-span-2"
             >
               <h2 className={`mb-6 ${SECTION_H2}`}>
-                Let&apos;s <span className="logo-wave-dark">Talk</span>
+                Start the <span className="logo-wave-dark">conversation</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or need someone to take over a site you already have — tell me
-                what your business does and what you&apos;re trying to fix. I&apos;ll take it from
-                there.
+                New site, redesign, or takeover of an existing site — describe the business and
+                what needs to change. I will take it from there.
               </p>
 
               <div className="mb-8 space-y-4">
