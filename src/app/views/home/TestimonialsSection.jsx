@@ -61,10 +61,10 @@ export default function TestimonialsSection() {
       <div className="relative mx-auto max-w-6xl px-6">
         <div className="mb-10 text-center sm:mb-16">
           <h2 className={`mb-4 ${SECTION_H2}`}>
-            Don&apos;t Take My <span className="logo-wave-dark">Word for It</span>
+            What clients <span className="logo-wave-dark">say</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Hear it from the people who actually write the checks.
+            From the local businesses I build and maintain sites for.
           </p>
         </div>
 
