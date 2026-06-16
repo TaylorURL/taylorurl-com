@@ -282,8 +282,7 @@ export default function Process() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-8 text-center text-sm text-gray-500"
           >
-            Don&apos;t have a logo or photos yet? No worries — I can point you in the right
-            direction.
+            No logo or photos yet? I can point you to people who handle that work.
           </motion.p>
         </div>
       </section>
