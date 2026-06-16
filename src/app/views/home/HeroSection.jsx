@@ -57,7 +57,7 @@ export default function HeroSection() {
             className="flex"
           >
             <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
-              Get in Touch
+              Start a project
               <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </motion.div>
