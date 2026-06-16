@@ -163,7 +163,7 @@ ${formData.message}
               </div>
 
               <div className="rounded-xl bg-gray-50 p-6">
-                <h3 className="mb-4 font-semibold text-gray-900">How It Works</h3>
+                <h3 className="mb-4 font-semibold text-gray-900">How it works</h3>
                 <div className="space-y-4">
                   {PROCESS_STEPS.map((step, i) => (
                     <div key={step.title} className="flex items-start gap-3">
