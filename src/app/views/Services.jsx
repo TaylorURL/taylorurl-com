@@ -183,9 +183,9 @@ export default function Services() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-white">My Stack</h2>
+            <h2 className="text-lg font-semibold text-white">The stack</h2>
             <p className="mt-2 text-sm text-gray-500">
-              The same tools the big companies use — without the big company attitude.
+              The same tools serious engineering teams use, applied to local-business work.
             </p>
           </motion.div>
           <div className="flex flex-wrap justify-center gap-3">
