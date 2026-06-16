@@ -103,11 +103,11 @@ export default function BlogPost() {
       <section className="border-t border-gray-200 bg-gray-950 py-16">
         <div className="mx-auto max-w-3xl px-6 text-center">
           <h2 className="mb-3 text-2xl font-bold text-white">
-            Need Help With <span className="logo-wave">Your Website</span>?
+            Need help with <span className="logo-wave">your website</span>?
           </h2>
           <p className="mb-6 text-gray-400">
-            I build modern websites and JavaScript applications for local businesses. No templates,
-            no page builders — just a direct relationship with the developer.
+            I build modern websites and JavaScript applications for local businesses.
+            Hand-coded React, direct relationship, ongoing support after launch.
           </p>
           <Link to="/contact" className={`${BTN_PRIMARY} group`}>
             Get in Touch
