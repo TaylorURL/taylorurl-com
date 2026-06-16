@@ -10,7 +10,7 @@ const TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-orange-500',
     quote:
-      "Trenton just handles it. I don't know anything about websites and I don't want to. Online orders are up 40% since launch and I didn't have to learn a single thing.",
+      'Trenton handles the technical side completely. Online orders are up 40% since launch, and the day-to-day on our end has not changed at all.',
   },
   {
     name: 'James Mitchell',
@@ -18,7 +18,7 @@ const TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-blue-600',
     quote:
-      'Went from maybe 2-3 internet calls a week to 2-3 a day. I text Trenton when I need something changed and it just gets done. No tickets, no waiting.',
+      'Inbound calls went from a few a week to a few a day. When I need a change, I text Trenton and it gets done. No tickets, no waiting on an agency.',
   },
   {
     name: 'Sarah Chen',
@@ -26,7 +26,7 @@ const TESTIMONIALS = [
     role: 'General Manager',
     color: 'bg-emerald-500',
     quote:
-      "We had nothing online. Now we're the top search result in our area. The site paid for itself in the first month from new customers alone.",
+      'We had no online presence before. We now rank at the top of local search, and the site paid for itself in the first month from new customers alone.',
   },
 ]
 
