@@ -23,18 +23,19 @@ const INCLUDED_ITEMS = [
 
 const PROCESS_STEPS = [
   {
-    title: 'Quick Chat',
+    title: 'Initial call',
     description:
-      'Tell me about your local business. I ask a few questions and give you a straight answer.',
+      'You walk me through the business. I ask the questions needed to scope the work and give you a direct answer.',
   },
   {
-    title: 'A Real Plan',
+    title: 'Clear scope',
     description:
-      'You get a clear scope — what I build, how long it takes, and what happens after launch.',
+      'You get a written scope: what gets built, how long it takes, what is included, and what happens after launch.',
   },
   {
-    title: 'I Build It',
-    description: 'I get to work, you see progress, and I launch it with full support included.',
+    title: 'Build and launch',
+    description:
+      'I build the site, share progress as it goes, and launch it. Ongoing support is included.',
   },
 ]
 
