@@ -185,10 +185,10 @@ export default function Faq() {
         <div className="relative mx-auto max-w-6xl px-6">
           <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
             <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
-              Still Have <span className="logo-wave">Questions</span>?
+              Still have <span className="logo-wave">questions</span>?
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              I don&apos;t bite. Shoot me a message and I&apos;ll get back to you fast.
+              Send me a message. I respond within 24 hours.
             </p>
             <a href="/contact" className={BTN_PRIMARY}>
               Get in Touch
