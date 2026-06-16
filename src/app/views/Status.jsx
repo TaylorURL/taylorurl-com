@@ -263,9 +263,9 @@ export default function Status() {
         <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
         <div className="relative mx-auto max-w-4xl px-6 text-center">
           <motion.div {...fadeInUp}>
-            <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need Help?</h2>
+            <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need help?</h2>
             <p className="mb-6 text-gray-400">
-              Experiencing issues? Let me know and I&apos;ll get on it.
+              Report any issue with a client site and I will investigate.
             </p>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
