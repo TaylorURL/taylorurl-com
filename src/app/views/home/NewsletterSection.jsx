@@ -11,7 +11,7 @@ export default function NewsletterSection() {
   const handleNewsletterSubmit = e => {
     e.preventDefault()
     window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${encodeURIComponent('Newsletter Signup')}&body=${encodeURIComponent(`Please add me to your newsletter: ${email}`)}`
-    toast('Opening your email client — thanks for subscribing!')
+    toast('Opening your email client to complete signup.')
     setEmail('')
   }
 
