@@ -90,12 +90,12 @@ export default function About() {
     <div>
       <Seo
         title="About"
-        description="TaylorURL is Trenton Taylor — a solo developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Shops, restaurants, trades, contractors, independent professionals. No templates, no agencies — one developer who picks up the phone."
+        description="TaylorURL is Trenton Taylor, an independent developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Hand-coded React, direct relationship, ongoing support after launch."
         path="/about"
       />
       <PageHero
         title="About"
-        description="One developer building real websites for local businesses. No corporate energy."
+        description="One developer, hand-coded sites, direct relationship from first call through ongoing support."
       />
 
       {/* Story section */}
