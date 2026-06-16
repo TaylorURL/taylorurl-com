@@ -141,7 +141,10 @@ export default function Faq() {
           ),
         }}
       />
-      <PageHero title="Frequently Asked Questions" description="Straight answers. No runaround." />
+      <PageHero
+        title="Frequently asked questions"
+        description="Common questions, direct answers."
+      />
 
       <section className="relative bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
