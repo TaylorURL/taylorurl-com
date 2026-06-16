@@ -219,7 +219,7 @@ export default function Process() {
                         </div>
                         <div className="rounded-xl bg-surface-overlay p-5">
                           <h4 className="mb-3 text-sm font-semibold tracking-wider text-blue-500">
-                            WHAT I DO
+                            MY PART
                           </h4>
                           <ul className="space-y-2">
                             {step.taylorurl.map(item => (
