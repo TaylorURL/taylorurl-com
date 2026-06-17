@@ -36,4 +36,28 @@ export const PORTFOLIO_PROJECTS = [
       'A regional concrete ready-mix management platform that tracks assets, personnel, productivity, and efficiency.',
     accent: 'from-amber-500/30 via-orange-500/20 to-slate-900/40',
   },
+  {
+    name: "Charlie T's",
+    url: 'https://charliets.com',
+    displayUrl: 'charliets.com',
+    description:
+      'A local business website for a Baytown restaurant and bar — menus, events, and location info designed to bring in foot traffic from nearby search.',
+    accent: 'from-emerald-500/30 via-teal-500/20 to-slate-900/40',
+  },
+  {
+    name: 'SETX Football',
+    url: 'https://setxfootball.com',
+    displayUrl: 'setxfootball.com',
+    description:
+      'A local youth sports league site for Southeast Texas — season sign-ups, schedules, and shirt-order management in one streamlined hub for parents and coaches.',
+    accent: 'from-green-500/30 via-lime-500/20 to-slate-900/40',
+  },
+  {
+    name: 'Dickinson Bayou Fleeting',
+    url: 'https://dickinsonbayoufleeting.com',
+    displayUrl: 'dickinsonbayoufleeting.com',
+    description:
+      'A professional site for a Galveston Bay barge fleeting company — services, fleet capacity, and contact details built to establish credibility with maritime clients.',
+    accent: 'from-cyan-500/30 via-sky-500/20 to-slate-900/40',
+  },
 ]
