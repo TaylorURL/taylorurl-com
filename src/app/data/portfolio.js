@@ -46,8 +46,8 @@ export const PORTFOLIO_PROJECTS = [
   },
   {
     name: 'SETX Football',
-    url: 'https://setxfootball.com',
-    displayUrl: 'setxfootball.com',
+    url: 'https://setxfootball.org',
+    displayUrl: 'setxfootball.org',
     description:
       'A local youth sports league site for Southeast Texas — season sign-ups, schedules, and shirt-order management in one streamlined hub for parents and coaches.',
     accent: 'from-green-500/30 via-lime-500/20 to-slate-900/40',
