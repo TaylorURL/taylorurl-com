@@ -28,4 +28,12 @@ export const PORTFOLIO_PROJECTS = [
       'A polished brand site for a personal trainer — services, pricing, and a direct booking path designed to convert first-time visitors into scheduled sessions.',
     accent: 'from-rose-500/30 via-fuchsia-500/20 to-slate-900/40',
   },
+  {
+    name: 'Smyrna Tools',
+    url: 'https://smyrnatools.com',
+    displayUrl: 'smyrnatools.com',
+    description:
+      'A regional concrete ready-mix management platform that tracks assets, personnel, productivity, and efficiency.',
+    accent: 'from-amber-500/30 via-orange-500/20 to-slate-900/40',
+  },
 ]
