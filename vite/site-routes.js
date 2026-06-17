@@ -13,6 +13,7 @@ export const STATIC_ROUTES = [
   { path: '/contact', changefreq: 'monthly', priority: '0.9' },
   { path: '/about', changefreq: 'monthly', priority: '0.8' },
   { path: '/process', changefreq: 'monthly', priority: '0.7' },
+  { path: '/portfolio', changefreq: 'monthly', priority: '0.8' },
   { path: '/blog', changefreq: 'weekly', priority: '0.8' },
   { path: '/faq', changefreq: 'monthly', priority: '0.7' },
   { path: '/status', changefreq: 'always', priority: '0.3' },
