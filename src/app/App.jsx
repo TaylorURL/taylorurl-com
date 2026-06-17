@@ -13,6 +13,7 @@ const views = {
   Terms: lazy(() => import('@views/Terms')),
   License: lazy(() => import('@views/License')),
   Process: lazy(() => import('@views/Process')),
+  Portfolio: lazy(() => import('@views/Portfolio')),
   Blog: lazy(() => import('@views/Blog')),
   BlogPost: lazy(() => import('@views/BlogPost')),
   Faq: lazy(() => import('@views/Faq')),
