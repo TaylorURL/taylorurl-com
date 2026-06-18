@@ -5,6 +5,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
+import { breadcrumbSchema } from '@constants/seo'
 
 const FAQ_CATEGORIES = [
   {
