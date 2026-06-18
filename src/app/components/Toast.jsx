@@ -1,22 +1,42 @@
-import { createContext, useCallback, useContext, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, X, AlertCircle } from 'lucide-react'
+import { ToastContext } from '@hooks/useToast'
 
-const ToastContext = createContext(null)
-
-let toastId = 0
+const DEFAULT_TOAST_DURATION = 4000
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
-
-  const addToast = useCallback((message, type = 'success', duration = 4000) => {
-    const id = ++toastId
-    setToasts(prev => [...prev, { id, message, type }])
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration)
-  }, [])
+  // Per-instance id source and live auto-dismiss timers. Using refs (not a
+  // module-level counter) keeps multiple providers / SSR renders isolated.
+  const nextIdRef = useRef(0)
+  const timersRef = useRef(new Map())
 
   const removeToast = useCallback(id => {
-    setToasts(prev => prev.filter(t => t.id !== id))
+    const timer = timersRef.current.get(id)
+    if (timer) {
+      clearTimeout(timer)
+      timersRef.current.delete(id)
+    }
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }, [])
+
+  const addToast = useCallback(
+    (message, type = 'success', duration = DEFAULT_TOAST_DURATION) => {
+      const id = (nextIdRef.current += 1)
+      setToasts(prev => [...prev, { id, message, type }])
+      timersRef.current.set(id, setTimeout(() => removeToast(id), duration))
+    },
+    [removeToast]
+  )
+
+  // Clear any pending dismiss timers if the provider unmounts.
+  useEffect(() => {
+    const timers = timersRef.current
+    return () => {
+      timers.forEach(clearTimeout)
+      timers.clear()
+    }
   }, [])
 
   return (
@@ -61,10 +81,4 @@ export function ToastProvider({ children }) {
       </div>
     </ToastContext.Provider>
   )
-}
-
-export function useToast() {
-  const context = useContext(ToastContext)
-  if (!context) throw new Error('useToast must be used within ToastProvider')
-  return context
 }
