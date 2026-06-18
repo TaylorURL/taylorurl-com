@@ -10,11 +10,11 @@ export default function WhyWebsiteSection() {
       <div className="relative mx-auto max-w-6xl px-6">
         <motion.div {...fadeInUp} className="mb-10 text-center sm:mb-16">
           <h2 className={`mb-4 ${SECTION_H2}`}>
-            Why a website <span className="logo-wave-dark">earns its keep</span>
+            Why a website <span className="logo-wave-dark">pays off</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Six concrete ways a real website pays back the investment for a local business in
-            Baytown, Houston, and the surrounding Texas communities.
+            Six real ways a website brings in customers and earns its keep for small
+            businesses in Baytown, Houston, and the surrounding Texas communities.
           </p>
         </motion.div>
 
