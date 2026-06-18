@@ -20,27 +20,27 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 const VALUES = [
   {
     icon: Code2,
-    title: 'Hand-coded, not templated',
+    title: 'Custom-built, not templated',
     description:
-      'Every line is written in modern JavaScript and React. No WordPress, no Wix, no Squarespace. The same stack used by serious product teams, scaled to what a local business actually needs.',
+      'Every site is built from scratch for your business. No Wix, no Squarespace, no cookie-cutter themes. The result is faster, more polished, and entirely yours.',
   },
   {
     icon: Headphones,
-    title: 'Direct relationship',
+    title: 'You work with me directly',
     description:
-      'No account managers, no ticket systems, no multi-day response windows. You text or call me directly and I handle it.',
+      'No account managers, no support tickets, no waiting days for a reply. You text or call me and I take care of it.',
   },
   {
     icon: Zap,
-    title: 'Two-to-four-week turnaround',
+    title: 'Live in two to four weeks',
     description:
-      'Most projects launch inside four weeks. I do not pad timelines with extended discovery or stakeholder alignment phases. You describe the business, I build the site.',
+      'Most sites are up and running in under a month. I do not pad timelines with endless meetings or paperwork. You tell me about your business, I build the site.',
   },
   {
     icon: Shield,
     title: 'Built for local businesses',
     description:
-      'I work with shops, restaurants, trades, contractors, and independent professionals — businesses that need a real online presence and a clear, ongoing relationship with the developer who maintains it.',
+      'I work with shops, restaurants, trades, contractors, and independent pros — businesses that need to look great online and have one person to call when something needs to change.',
   },
 ]
 
