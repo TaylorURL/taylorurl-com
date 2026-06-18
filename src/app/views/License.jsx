@@ -33,7 +33,7 @@ const SECTIONS = [
   {
     title: 'Proprietary Software License',
     content:
-      'This software and associated documentation files (the "Software") are the exclusive property of TaylorURL and Trenton Taylor. The Software is protected by copyright laws and international treaty provisions.',
+      'This software and associated documentation files (the "Software") are the exclusive property of TaylorURL LLC and Trenton Taylor. The Software is protected by copyright laws and international treaty provisions.',
   },
   {
     title: 'Restrictions',
