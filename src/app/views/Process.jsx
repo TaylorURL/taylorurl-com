@@ -165,7 +165,7 @@ export default function Process() {
               From first call to <span className="logo-wave-dark">live site</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Most projects wrap in three to four weeks. Here is what each step looks like.
+              Most projects wrap up in three to four weeks. Here is what each step looks like.
             </p>
           </motion.div>
 
