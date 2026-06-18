@@ -212,19 +212,19 @@ export default function Status() {
           >
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">{overallUptime}%</p>
-              <p className="text-xs text-gray-500">Overall Uptime</p>
+              <p className="text-xs text-gray-500">Time online</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">{SERVICES.length}</p>
-              <p className="text-xs text-gray-500">Monitored Services</p>
+              <p className="text-xs text-gray-500">Things I watch</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">24/7</p>
-              <p className="text-xs text-gray-500">Active Monitoring</p>
+              <p className="text-xs text-gray-500">Always watching</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">90d</p>
-              <p className="text-xs text-gray-500">History Shown</p>
+              <p className="text-xs text-gray-500">Days of history</p>
             </div>
           </motion.div>
 
