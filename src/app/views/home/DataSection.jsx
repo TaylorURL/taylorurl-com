@@ -70,7 +70,7 @@ export default function DataSection() {
                 <div className="flex gap-4 text-[11px]">
                   <div className="flex items-center gap-1.5">
                     <div className="h-2 w-4 rounded-full bg-blue-500" />
-                    <span className="text-gray-500">With Website</span>
+                    <span className="text-gray-500">With a website</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="h-0.5 w-4 border-t border-dashed border-gray-600" />
