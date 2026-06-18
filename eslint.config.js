@@ -23,7 +23,11 @@ export default defineConfig([
             },
         },
         rules: {
-            'no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]'}],
+            // Core no-unused-vars can't see identifiers referenced only in JSX
+            // (no eslint-plugin-react installed). The capitalized pattern exempts
+            // component imports; `motion` is framer-motion's lowercase JSX
+            // namespace, used as <motion.div> and otherwise flagged as unused.
+            'no-unused-vars': ['error', {varsIgnorePattern: '^[A-Z_]|^motion$'}],
         },
     },
     {

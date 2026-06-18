@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, Globe } from 'lucide-react'
+import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
+import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
-import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
+import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
@@ -134,26 +133,14 @@ export default function Portfolio() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-12 sm:py-20">
-        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className={`mb-4 ${SECTION_H2}`}>
-              Want your business <span className="logo-wave-dark">in this list</span>?
-            </h2>
-            <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what your business needs and I will put together a plan. Most websites
-              are live in two to four weeks.
-            </p>
-            <div className="flex justify-center">
-              <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
-                Get in Touch
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <CtaSection
+        title={
+          <>
+            Want your business <span className="logo-wave-dark">in this list</span>?
+          </>
+        }
+        description="Tell me what your business needs and I will put together a plan. Most websites are live in two to four weeks."
+      />
     </div>
   )
 }

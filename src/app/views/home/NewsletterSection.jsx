@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { MessageSquare } from 'lucide-react'
-import { useToast } from '@components/Toast'
+import { useToast } from '@hooks/useToast'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { BTN_PRIMARY, INPUT, SECTION_H2 } from '@constants/ui'
 
