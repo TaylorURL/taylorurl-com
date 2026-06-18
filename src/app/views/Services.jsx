@@ -87,13 +87,43 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Services"
-        description="Modern websites, redesigns, JavaScript applications, SEO, and ongoing maintenance for local businesses in Baytown, Houston, and the surrounding Texas area. Hand-coded by one developer with a direct, ongoing client relationship."
+        title="Web Development Services in Baytown, TX"
+        description="Custom websites, redesigns, JavaScript apps, SEO, and hosting for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
         path="/services"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Services', path: '/services' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            serviceType: 'Web Development',
+            name: 'Web development and JavaScript application development',
+            provider: { '@id': BUSINESS_ID },
+            areaServed: SERVICE_AREAS.map(name => ({
+              '@type': 'City',
+              name,
+              containedInPlace: { '@type': 'State', name: 'Texas' },
+            })),
+            hasOfferCatalog: {
+              '@type': 'OfferCatalog',
+              name: 'Web development services',
+              itemListElement: SERVICES.map(service => ({
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: service.title,
+                  description: service.description,
+                },
+              })),
+            },
+          },
+        ]}
       />
       <PageHero
-        title="What I build"
-        description="Modern websites, redesigns, and JavaScript applications. Built, hosted, and maintained from one source."
+        title="Web development in Baytown, TX"
+        description="Custom websites, redesigns, and JavaScript applications for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses — built, hosted, and maintained from one source."
       />
 
       {/* Services grid — alternating layout */}
