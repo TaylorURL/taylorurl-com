@@ -45,9 +45,10 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8 max-w-md text-base leading-relaxed text-gray-400 sm:mb-10 sm:text-lg"
           >
-            I&apos;m Trenton. I build websites and JavaScript applications for local businesses.
-            Hand-coded React, clean design, direct relationship with the developer who writes the
-            code.
+            I&apos;m Trenton, a Baytown, TX web developer. I build websites and JavaScript
+            applications for local businesses across Baytown, Mont Belvieu, Pasadena, Deer Park,
+            La Porte, and the greater Houston area. Hand-coded React, clean design, direct
+            relationship with the developer who writes the code.
           </motion.p>
 
           <motion.div
