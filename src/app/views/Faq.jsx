@@ -150,7 +150,7 @@ export default function Faq() {
       />
       <PageHero
         title="Frequently asked questions"
-        description="Common questions about working with a Baytown, TX web developer. Direct answers on timelines, process, ownership, and ongoing support."
+        description="Common questions about working with a Baytown, TX website designer. Straight answers on timelines, how it works, who owns what, and ongoing care."
       />
 
       <section className="relative bg-surface-base py-12 sm:py-20">
