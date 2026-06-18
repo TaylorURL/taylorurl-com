@@ -180,8 +180,9 @@ export default function About() {
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
                     <p className="text-sm text-gray-600">
                       Working with local businesses across Baytown, Mont Belvieu, Channelview,
-                      Crosby, La Porte, Deer Park, Pasadena, and the greater Houston area. The work
-                      is remote-friendly end-to-end.
+                      Crosby, La Porte, Deer Park, Pasadena, and the greater Houston area. The
+                      whole project can be handled by phone, text, and email — no in-person
+                      meetings required.
                     </p>
                   </div>
                 </div>
