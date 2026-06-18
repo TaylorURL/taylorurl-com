@@ -45,7 +45,7 @@ export default function Privacy() {
         title="Privacy Policy"
         description="How I collect, use, and protect your information."
         effectiveDate="Last Updated: February 1, 2026"
-        introText='TaylorURL is operated by Trenton Taylor ("I", "me", or "my"). I am committed to protecting your privacy. This Privacy Policy explains how I collect, use, disclose, and safeguard your information when you visit taylorurl.com.'
+        introText='TaylorURL LLC is operated by Trenton Taylor ("I", "me", or "my"). I am committed to protecting your privacy. This Privacy Policy explains how I collect, use, disclose, and safeguard your information when you visit taylorurl.com.'
         sections={SECTIONS}
         footer={{
           heading: 'Questions?',
