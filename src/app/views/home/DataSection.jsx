@@ -99,7 +99,7 @@ export default function DataSection() {
                     <Tooltip
                       formatter={(value, name) => [
                         `${value}%`,
-                        name === 'withSite' ? 'With Website' : 'Without Website',
+                        name === 'withSite' ? 'With a website' : 'Without a website',
                       ]}
                       contentStyle={TOOLTIP_STYLE}
                       labelStyle={{ color: '#9ca3af' }}
