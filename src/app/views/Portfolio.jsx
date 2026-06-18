@@ -96,8 +96,8 @@ export default function Portfolio() {
   return (
     <div>
       <Seo
-        title="Web Development Portfolio — Baytown, TX"
-        description="Recent client websites hand-coded and launched for Baytown, Houston-area, and Southeast Texas businesses."
+        title="Recent Client Websites — Baytown, TX"
+        description="Recent client websites built and launched for Baytown, Houston-area, and Southeast Texas small businesses."
         path="/portfolio"
         schema={[
           breadcrumbSchema([
