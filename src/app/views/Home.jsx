@@ -17,12 +17,6 @@ export default function Home() {
       <div id="hero">
         <HeroSection />
       </div>
-      <SocialProofCounter />
-      <TrustBadgesSection />
-      <LogoMarquee />
-      <div id="stats">
-        <StatsSection />
-      </div>
       <div id="why">
         <WhyWebsiteSection />
       </div>
