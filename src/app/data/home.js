@@ -53,19 +53,19 @@ export const HOW_IT_WORKS_STEPS = [
     step: '1',
     title: 'Get in touch',
     description:
-      'Call, text, or email. Tell me what your business does and what you need. You get a straight answer, not a proposal deck.',
+      'Call, text, or email. Tell me what your business does and what you need. You get a straight answer, not a sales pitch.',
   },
   {
     step: '2',
     title: 'I build it',
     description:
-      'I get to work and share progress as I go. Feedback is welcome at any stage. No long timelines, no surprises.',
+      'I get to work and show you progress as I go. You can give feedback any time. No drawn-out timelines, no surprises.',
   },
   {
     step: '3',
-    title: 'Launch',
+    title: 'Go live',
     description:
-      'Your site goes live. I handle hosting, updates, and security after launch so you can stay focused on the business.',
+      'Your site goes live. I take care of keeping it online, fast, and safe so you can stay focused on running the business.',
   },
 ]
 
