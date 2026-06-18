@@ -279,7 +279,7 @@ ${formData.message}
                         htmlFor="projectType"
                         className="mb-2 block text-sm font-medium text-gray-900"
                       >
-                        Project Type
+                        What do you need?
                       </label>
                       <select
                         id="projectType"
@@ -288,12 +288,12 @@ ${formData.message}
                         onChange={handleChange}
                         className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.25rem] bg-[position:right_0.75rem_center] bg-no-repeat`}
                       >
-                        <option value="">Select type</option>
-                        <option value="new-website">New Website</option>
-                        <option value="redesign">Website Redesign</option>
-                        <option value="web-app">Web Application</option>
-                        <option value="optimization">Performance Optimization</option>
-                        <option value="maintenance">Ongoing Maintenance</option>
+                        <option value="">Pick one</option>
+                        <option value="new-website">A brand-new website</option>
+                        <option value="redesign">Redo my current site</option>
+                        <option value="web-app">An online tool or booking system</option>
+                        <option value="optimization">Make my site faster</option>
+                        <option value="maintenance">Ongoing care for my site</option>
                       </select>
                     </div>
                   </div>
