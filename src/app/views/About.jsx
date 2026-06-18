@@ -225,8 +225,8 @@ export default function About() {
             <p className={`mb-2 ${EYEBROW}`}>Process</p>
             <h2 className={`mb-3 ${SECTION_H2}`}>Four steps from first call to launch</h2>
             <p className="mx-auto max-w-lg text-gray-500">
-              No twelve-step onboarding, no Gantt charts, no extended discovery. This is the whole
-              process.
+              No twelve-step onboarding, no project charts, no drawn-out planning. This is the
+              whole thing.
             </p>
           </motion.div>
 
