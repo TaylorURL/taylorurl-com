@@ -83,20 +83,6 @@ const CAPABILITIES = [
   { icon: Zap, label: 'Speed Optimization' },
 ]
 
-const TECH_STACK = [
-  'React',
-  'JavaScript',
-  'Tailwind CSS',
-  'Node.js',
-  'AWS',
-  'Vercel',
-  'Git',
-  'Framer Motion',
-  'Vite',
-  'HTML5',
-  'CSS3',
-]
-
 export default function Services() {
   return (
     <div>
