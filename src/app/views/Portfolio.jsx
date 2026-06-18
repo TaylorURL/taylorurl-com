@@ -142,8 +142,8 @@ export default function Portfolio() {
               Want your business <span className="logo-wave-dark">in this list</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what your business needs and I will scope a build. Most projects launch in two
-              to four weeks.
+              Tell me what your business needs and I will put together a plan. Most websites
+              are live in two to four weeks.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
