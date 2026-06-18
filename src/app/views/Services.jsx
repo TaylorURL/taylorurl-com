@@ -88,8 +88,8 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Web Development Services in Baytown, TX"
-        description="Custom websites, redesigns, JavaScript apps, SEO, and hosting for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
+        title="Small Business Website Services in Baytown, TX"
+        description="Custom websites, redesigns, online booking tools, Google visibility, and hosting for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
         path="/services"
         schema={[
           breadcrumbSchema([
@@ -100,7 +100,7 @@ export default function Services() {
             '@context': 'https://schema.org',
             '@type': 'Service',
             serviceType: 'Web Development',
-            name: 'Web development and JavaScript application development',
+            name: 'Small business websites and online tools',
             provider: { '@id': BUSINESS_ID },
             areaServed: SERVICE_AREAS.map(name => ({
               '@type': 'City',
