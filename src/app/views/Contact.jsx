@@ -329,7 +329,7 @@ ${formData.message}
                       Send message
                       <Send className="h-4 w-4" />
                     </button>
-                    <p className="text-xs text-gray-500">Opens your email client</p>
+                    <p className="text-xs text-gray-500">Opens your email</p>
                   </div>
                 </form>
               </div>
