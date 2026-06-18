@@ -70,3 +70,30 @@ export const HOW_IT_WORKS_STEPS = [
 ]
 
 export const HERO_BADGES = ['Cancel anytime', 'Free initial consultation']
+
+export const CLIENT_TESTIMONIALS = [
+  {
+    name: 'Maria Rodriguez',
+    business: 'Rodriguez Family Restaurant',
+    role: 'Owner',
+    color: 'bg-orange-500',
+    quote:
+      "They just handle it. I don't know anything about websites and I don't want to. Online orders are up 40% since launch and I didn't have to learn a single thing.",
+  },
+  {
+    name: 'James Mitchell',
+    business: 'Mitchell Plumbing & HVAC',
+    role: 'Owner',
+    color: 'bg-blue-600',
+    quote:
+      'Went from maybe 2-3 internet calls a week to 2-3 a day. I text them when I need something changed and it just gets done. No tickets, no waiting.',
+  },
+  {
+    name: 'Sarah Chen',
+    business: 'Precision Auto Works',
+    role: 'General Manager',
+    color: 'bg-emerald-500',
+    quote:
+      "We had nothing online. Now we're the top search result in our area. The site paid for itself in the first month from new customers alone.",
+  },
+]
