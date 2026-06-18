@@ -25,8 +25,8 @@ export default function NewsletterSection() {
             Practical tips for <span className="logo-wave-dark">your business</span>
           </h2>
           <p className="mb-8 text-gray-600">
-            Occasional notes on getting found online and converting more of the visitors you
-            already have. Written by me, sent only when there is something useful to say.
+            Short, useful notes on getting found on Google and turning more visitors into
+            paying customers. Written by me, sent only when I have something worth saying.
           </p>
           <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-4 sm:flex-row">
             <input
