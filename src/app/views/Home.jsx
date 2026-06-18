@@ -1,4 +1,5 @@
 import Seo from '@components/Seo'
+import EmailCapturePopup from '@components/EmailCapturePopup'
 import HeroSection from './home/HeroSection'
 import WhyWebsiteSection from './home/WhyWebsiteSection'
 import DataSection from './home/DataSection'
