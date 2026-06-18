@@ -74,7 +74,7 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: "Why are they slow? Because every Wix page loads a mountain of JavaScript you didn't ask for. Tracking scripts, animation libraries, their own framework code — it all gets dumped onto your page whether you need it or not. A simple five-page site shouldn't need 3MB of JavaScript. But on Wix, it does.",
+        text: "Why are they slow? Because every Wix page loads a pile of extra code you never asked for. Tracking scripts, animation files, their own platform code — it all gets dumped onto your page whether you need it or not. A simple five-page site should not be that heavy. But on Wix, it is.",
       },
       { type: 'h2', text: 'The SEO Problem' },
       {
