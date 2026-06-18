@@ -192,37 +192,33 @@ export default function Blog() {
   const activeCategory = searchParams.get('category') || 'All'
   const currentPage = parseInt(searchParams.get('page') || '1', 10)
 
-  const setCategory = cat => {
+  // Clone the current query string, apply the given key updates (a falsy value
+  // removes the key), and push the result. Centralises the set-or-delete dance
+  // every filter control would otherwise repeat.
+  const updateParams = (updates, options) => {
     const params = new URLSearchParams(searchParams)
-    if (cat === 'All') params.delete('category')
-    else params.set('category', cat)
-    params.delete('page')
-    setSearchParams(params)
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) params.set(key, value)
+      else params.delete(key)
+    }
+    setSearchParams(params, options)
   }
 
+  const setCategory = cat => updateParams({ category: cat === 'All' ? '' : cat, page: '' })
+
   const setPage = page => {
-    const params = new URLSearchParams(searchParams)
-    if (page <= 1) params.delete('page')
-    else params.set('page', String(page))
-    setSearchParams(params)
+    updateParams({ page: page <= 1 ? '' : String(page) })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSearch = e => {
     setSearch(e.target.value)
-    const params = new URLSearchParams(searchParams)
-    if (e.target.value) params.set('q', e.target.value)
-    else params.delete('q')
-    params.delete('page')
-    setSearchParams(params, { replace: true })
+    updateParams({ q: e.target.value, page: '' }, { replace: true })
   }
 
   const clearSearch = () => {
     setSearch('')
-    const params = new URLSearchParams(searchParams)
-    params.delete('q')
-    params.delete('page')
-    setSearchParams(params, { replace: true })
+    updateParams({ q: '', page: '' }, { replace: true })
   }
 
   const filtered = useMemo(() => {
