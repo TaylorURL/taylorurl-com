@@ -83,7 +83,7 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: 'Custom-built sites give you <strong>full control over every single thing Google looks at.</strong> Page titles, descriptions, heading structure, image optimization, schema markup, sitemap — all of it. On Wix, you get whatever their builder decides to give you.',
+        text: 'Custom-built sites give you <strong>full control over every single thing Google looks at.</strong> Page titles, descriptions, heading order, image sizing, structure tags, sitemap — all of it. On Wix, you get whatever their builder decides to give you.',
       },
       { type: 'h2', text: 'The "It Looks Like Every Other Site" Problem' },
       {
