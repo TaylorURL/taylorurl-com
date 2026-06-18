@@ -54,7 +54,7 @@ export default function Terms() {
     <>
       <Seo
         title="Terms of Service"
-        description="Terms and conditions for engaging TaylorURL's web development and maintenance services."
+        description="Terms and conditions for engaging TaylorURL LLC's web development and maintenance services."
         path="/terms"
       />
       <LegalPage
