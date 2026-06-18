@@ -140,8 +140,8 @@ export default function Process() {
   return (
     <div>
       <Seo
-        title="Web Development Process — Baytown & Houston"
-        description="How I build websites and JavaScript apps for Baytown and Houston-area businesses — from first call to launch in two to four weeks."
+        title="My Website Build Process — Baytown & Houston"
+        description="How I build websites for Baytown and Houston-area small businesses — from your first call to a live site in two to four weeks."
         path="/process"
         schema={breadcrumbSchema([
           { name: 'Home', path: '/' },
