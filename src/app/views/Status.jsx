@@ -192,7 +192,7 @@ export default function Status() {
     <div>
       <Seo
         title="System Status"
-        description="Live status of TaylorURL hosting, security, and maintenance infrastructure for client sites."
+        description="Live status of TaylorURL LLC hosting, security, and maintenance infrastructure for client sites."
         path="/status"
       />
       <PageHero

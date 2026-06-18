@@ -33,7 +33,7 @@ const SECTIONS = [
   {
     title: 'Proprietary Software License',
     content:
-      'This software and associated documentation files (the "Software") are the exclusive property of TaylorURL and Trenton Taylor. The Software is protected by copyright laws and international treaty provisions.',
+      'This software and associated documentation files (the "Software") are the exclusive property of TaylorURL LLC and Trenton Taylor. The Software is protected by copyright laws and international treaty provisions.',
   },
   {
     title: 'Restrictions',
@@ -51,7 +51,7 @@ const SECTIONS = [
   {
     title: 'Authorized Use',
     content:
-      'Access to this Software is granted only to authorized clients who have entered into a service agreement with TaylorURL. Unauthorized access, use, or distribution is strictly prohibited and may result in civil and criminal penalties.',
+      'Access to this Software is granted only to authorized clients who have entered into a service agreement with TaylorURL LLC. Unauthorized access, use, or distribution is strictly prohibited and may result in civil and criminal penalties.',
   },
   {
     title: 'Disclaimer',
@@ -70,7 +70,7 @@ export default function License() {
     <>
       <Seo
         title="License"
-        description="License terms governing the use of TaylorURL deliverables and code."
+        description="License terms governing the use of TaylorURL LLC deliverables and code."
         path="/license"
         noIndex
       />
@@ -95,7 +95,7 @@ export default function License() {
             MIT License with Additional Restrictions
           </p>
           <p className="mt-1 text-sm text-gray-500">
-            Copyright (c) 2026 TaylorURL / Trenton Taylor
+            Copyright (c) 2026 TaylorURL LLC / Trenton Taylor
           </p>
         </div>
       </LegalPage>
