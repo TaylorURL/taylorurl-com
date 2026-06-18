@@ -204,7 +204,7 @@ export default function Services() {
             </h2>
             <p className="mb-6 text-base text-gray-600">
               Based in Baytown, TX and working with shops, restaurants, trades, contractors, and
-              independent professionals across the surrounding communities.
+              independent pros across the surrounding communities.
             </p>
             <p className="text-sm leading-relaxed text-gray-500">
               {SERVICE_AREAS.join(' · ')}
