@@ -84,20 +84,6 @@
   }
 }
 
-@keyframes marquee {
-  from {
-    transform: translateX(0);
-  }
-  to {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-marquee {
-  animation: marquee 25s linear infinite;
-  will-change: transform;
-}
-
 /* Respect users who prefer reduced motion: neutralize CSS animation/transition. */
 @media (prefers-reduced-motion: reduce) {
   *,
