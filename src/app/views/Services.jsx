@@ -109,7 +109,7 @@ export default function Services() {
             })),
             hasOfferCatalog: {
               '@type': 'OfferCatalog',
-              name: 'Web development services',
+              name: 'Small business website services',
               itemListElement: SERVICES.map(service => ({
                 '@type': 'Offer',
                 itemOffered: {
