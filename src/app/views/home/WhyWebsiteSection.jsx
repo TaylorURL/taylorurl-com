@@ -13,7 +13,8 @@ export default function WhyWebsiteSection() {
             Why a website <span className="logo-wave-dark">earns its keep</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Six concrete ways a real website pays back the investment for a local business.
+            Six concrete ways a real website pays back the investment for a local business in
+            Baytown, Houston, and the surrounding Texas communities.
           </p>
         </motion.div>
 
