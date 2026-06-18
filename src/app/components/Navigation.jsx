@@ -1,10 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { ArrowRight, X } from 'lucide-react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PRIMARY_LINKS } from '@constants/navigation'
 
-const SOLID_THRESHOLD = 24
+const SCROLL_SOLID_THRESHOLD = 24
 
 function isDarkColor(rgb) {
   if (!rgb || rgb === 'rgba(0, 0, 0, 0)' || rgb === 'transparent') return null
@@ -26,6 +26,34 @@ function getBackgroundAtPoint(x, y, ...ignoreEls) {
   return false
 }
 
+/**
+ * The source logo PNG is 1024×1024 but the wordmark only occupies the band
+ * y=415→683 (~26% of the canvas). Rendering the raw image at a normal nav
+ * size yields a tiny wordmark surrounded by transparent padding. This wrapper
+ * crops the whitespace by sizing the image to ~3.8× the wrapper height and
+ * centering it, so the wordmark itself fills the wrapper — making the brand
+ * mark the visual anchor of the bar.
+ */
+function LogoMark({ sizeClass, invert }) {
+  return (
+    <div className={`relative overflow-hidden ${sizeClass}`}>
+      <img
+        src="/images/TaylorURL-Logo.png"
+        alt="TaylorURL — websites for small businesses in Baytown, TX"
+        width="1024"
+        height="1024"
+        fetchPriority="high"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[380%] w-auto max-w-none -translate-x-1/2 select-none transition-[filter] duration-300"
+        style={{
+          transform: 'translate(-50%, -54%)',
+          filter: invert ? 'brightness(0) invert(1)' : undefined,
+        }}
+        draggable={false}
+      />
+    </div>
+  )
+}
+
 export default function Navigation() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -33,7 +61,6 @@ export default function Navigation() {
   const [onDark, setOnDark] = useState(false)
   const probeRef = useRef(null)
   const navRef = useRef(null)
-  const mobileNavRef = useRef(null)
   const isHome = location.pathname === '/'
 
   const checkBackground = useCallback(() => {
@@ -42,12 +69,12 @@ export default function Navigation() {
     const rect = el.getBoundingClientRect()
     const x = rect.left + rect.width / 2
     const y = rect.top + rect.height / 2
-    setOnDark(getBackgroundAtPoint(x, y, navRef.current, mobileNavRef.current))
+    setOnDark(getBackgroundAtPoint(x, y, navRef.current))
   }, [])
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > SOLID_THRESHOLD)
+      setScrolled(window.scrollY > SCROLL_SOLID_THRESHOLD)
       checkBackground()
     }
     handleScroll()
@@ -72,14 +99,12 @@ export default function Navigation() {
     }
   }, [mobileOpen])
 
-  // Transparent over the home hero before scroll; solid bar everywhere else.
-  const isTransparent = isHome && !scrolled
-  const showBarChrome = !isTransparent
+  // Transparent only over the dark home hero before any scroll.
+  const isTransparent = isHome && !scrolled && !mobileOpen
+  const onHeroDark = isTransparent && onDark
 
-  const isActive = to => {
-    if (to === '/') return location.pathname === '/'
-    return location.pathname.startsWith(to)
-  }
+  const isActive = to =>
+    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
   return (
     <>
@@ -87,137 +112,102 @@ export default function Navigation() {
       <span
         ref={probeRef}
         aria-hidden
-        className="pointer-events-none fixed left-8 top-7 h-1 w-1 md:left-10 md:top-8"
+        className="pointer-events-none fixed left-10 top-10 h-1 w-1"
       />
 
-      {/* Desktop nav — full-width bar */}
       <motion.nav
         ref={navRef}
         aria-label="Primary"
-        initial={{ y: -20, opacity: 0 }}
+        initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed inset-x-0 top-0 z-50 hidden border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out md:block ${
-          showBarChrome
-            ? 'border-gray-200/80 bg-surface-base/85 shadow-sm shadow-black/[0.03] backdrop-blur-xl'
-            : 'border-transparent bg-transparent'
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out ${
+          isTransparent
+            ? 'border-transparent bg-transparent'
+            : 'border-gray-200/70 bg-white/85 shadow-[0_1px_0_0_rgba(15,23,42,0.04),0_10px_30px_-18px_rgba(15,23,42,0.18)] backdrop-blur-xl'
         }`}
       >
-        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6 lg:px-10">
-          <Link to="/" className="flex shrink-0 items-center" aria-label="TaylorURL home">
-            <img
-              src="/images/TaylorURL-Logo.png"
-              alt="TaylorURL — websites for small businesses in Baytown, TX"
-              width="120"
-              height="120"
-              fetchPriority="high"
-              className="h-10 w-auto transition-[filter] duration-300"
-              style={isTransparent && onDark ? { filter: 'brightness(0) invert(1)' } : undefined}
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-5 md:h-20 md:gap-8 md:px-8 lg:px-12">
+          {/* LOGO — the anchor of the bar */}
+          <Link
+            to="/"
+            aria-label="TaylorURL home"
+            className="group flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-4"
+          >
+            <LogoMark
+              sizeClass="h-11 w-[164px] md:h-14 md:w-[210px]"
+              invert={onHeroDark}
             />
           </Link>
 
-          <div className="flex items-center gap-1">
+          {/* DESKTOP LINKS — minimalist text with motion-animated active underline */}
+          <ul className="hidden flex-1 items-center justify-center md:flex">
             {PRIMARY_LINKS.map(link => {
               const active = isActive(link.to)
               return (
-                <Link
-                  key={link.to}
-                  to={link.to}
-                  aria-current={active ? 'page' : undefined}
-                  className={`relative rounded-full px-3.5 py-1.5 text-[13.5px] font-medium transition-colors duration-200 ${
-                    isTransparent
-                      ? active
-                        ? 'bg-white/15 text-white'
-                        : 'text-gray-300 hover:bg-white/10 hover:text-white'
-                      : active
-                        ? 'bg-gray-900/[0.06] text-gray-900'
-                        : 'text-gray-500 hover:bg-gray-900/[0.04] hover:text-gray-900'
-                  }`}
-                >
-                  {link.label}
-                </Link>
+                <li key={link.to} className="relative">
+                  <Link
+                    to={link.to}
+                    aria-current={active ? 'page' : undefined}
+                    className={`relative inline-flex items-center px-4 py-2 text-[13.5px] font-medium tracking-[-0.005em] transition-colors duration-200 ${
+                      onHeroDark
+                        ? active
+                          ? 'text-white'
+                          : 'text-gray-400 hover:text-white'
+                        : active
+                          ? 'text-gray-900'
+                          : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    {link.label}
+                    {active && (
+                      <motion.span
+                        layoutId="nav-active-indicator"
+                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                        className={`absolute inset-x-3 -bottom-[3px] h-[2px] rounded-full ${
+                          onHeroDark ? 'bg-blue-400' : 'bg-blue-600'
+                        }`}
+                      />
+                    )}
+                  </Link>
+                </li>
               )
             })}
-          </div>
+          </ul>
 
-          <div className="flex shrink-0 items-center gap-3">
+          {/* DESKTOP CTA — gradient pill with launch arrow */}
+          <div className="hidden shrink-0 items-center md:flex">
             <Link
               to="/contact"
-              className={`group flex items-center gap-1.5 rounded-full px-5 py-2 text-[13.5px] font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
-                isTransparent
-                  ? 'bg-white text-gray-900 shadow-sm shadow-black/10 hover:bg-gray-100'
-                  : 'bg-gray-900 text-white shadow-sm shadow-black/10 hover:bg-blue-600 hover:shadow-blue-600/25'
+              className={`group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-5 py-2.5 text-[13.5px] font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
+                onHeroDark
+                  ? 'bg-white text-gray-900 shadow-[0_4px_18px_-4px_rgba(255,255,255,0.35)] hover:shadow-[0_6px_22px_-2px_rgba(255,255,255,0.45)]'
+                  : 'bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_14px_-2px_rgba(37,99,235,0.45)] hover:from-blue-500 hover:to-blue-600 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_8px_24px_-4px_rgba(37,99,235,0.55)]'
               }`}
             >
-              Get in Touch
-              <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+              <span>Start a project</span>
+              <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </div>
-        </div>
-      </motion.nav>
 
-      {/* Mobile nav — full-width bar */}
-      <motion.nav
-        ref={mobileNavRef}
-        aria-label="Primary"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,backdrop-filter] duration-300 ease-out md:hidden ${
-          showBarChrome || mobileOpen
-            ? 'border-gray-200/80 bg-surface-base/90 backdrop-blur-xl'
-            : 'border-transparent bg-transparent'
-        }`}
-      >
-        <div className="flex h-14 items-center justify-between px-5">
-          <Link to="/" className="flex items-center" aria-label="TaylorURL home">
-            <img
-              src="/images/TaylorURL-Logo.png"
-              alt="TaylorURL — websites for small businesses in Baytown, TX"
-              width="120"
-              height="120"
-              fetchPriority="high"
-              className="h-9 w-auto transition-[filter] duration-300"
-              style={
-                isTransparent && onDark && !mobileOpen
-                  ? { filter: 'brightness(0) invert(1)' }
-                  : undefined
-              }
-            />
-          </Link>
-
+          {/* MOBILE TOGGLE */}
           <button
             type="button"
             onClick={() => setMobileOpen(prev => !prev)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl transition-colors duration-200 ${
-              isTransparent && onDark && !mobileOpen
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-200 md:hidden ${
+              onHeroDark
                 ? 'text-white hover:bg-white/10'
-                : 'text-gray-900 hover:bg-gray-900/[0.05]'
+                : 'text-gray-900 hover:bg-gray-900/[0.06]'
             }`}
           >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <div className="flex w-5 flex-col items-end gap-[5px]">
-                <span
-                  className={`block h-[2px] w-5 rounded-full transition-colors duration-300 ${
-                    isTransparent && onDark ? 'bg-white' : 'bg-gray-900'
-                  }`}
-                />
-                <span
-                  className={`block h-[2px] w-3.5 rounded-full transition-colors duration-300 ${
-                    isTransparent && onDark ? 'bg-white' : 'bg-gray-900'
-                  }`}
-                />
-              </div>
-            )}
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </motion.nav>
 
-      {/* Mobile drawer */}
+      {/* MOBILE SHEET — drops from the top, edge-to-edge, premium feel */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -225,96 +215,83 @@ export default function Navigation() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-[200] bg-black/50 backdrop-blur-sm md:hidden"
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[60] bg-gray-950/55 backdrop-blur-sm md:hidden"
               onClick={() => setMobileOpen(false)}
             />
 
             <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              className="fixed right-0 top-0 z-[201] flex h-full w-[300px] flex-col overflow-y-auto bg-surface-overlay shadow-2xl md:hidden"
-              onClick={e => e.stopPropagation()}
+              initial={{ y: '-100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '-100%' }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Site menu"
+              className="fixed inset-x-0 top-0 z-[61] flex max-h-[92vh] flex-col overflow-y-auto rounded-b-3xl border-b border-gray-200 bg-white shadow-2xl md:hidden"
             >
-              <div className="flex h-14 items-center justify-between border-b border-gray-200/80 px-5">
-                <Link
-                  to="/"
-                  onClick={() => setMobileOpen(false)}
-                  aria-label="TaylorURL home"
-                  className="flex items-center"
-                >
-                  <img
-                    src="/images/TaylorURL-Logo.png"
-                    alt="TaylorURL — websites for small businesses in Baytown, TX"
-                    width="120"
-                    height="120"
-                    className="h-9 w-auto"
-                  />
+              <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-gray-100 px-5">
+                <Link to="/" aria-label="TaylorURL home" onClick={() => setMobileOpen(false)}>
+                  <LogoMark sizeClass="h-11 w-[164px]" invert={false} />
                 </Link>
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
-                  className="flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition-colors duration-200 hover:bg-gray-100 hover:text-gray-900"
+                  className="flex h-11 w-11 items-center justify-center rounded-xl text-gray-900 transition-colors duration-200 hover:bg-gray-100"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="flex-1 px-4 py-6">
-                <p className="mb-3 px-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-gray-400">
-                  Menu
+              <nav className="flex flex-col gap-1 px-4 py-6" aria-label="Mobile primary">
+                <p className="px-3 pb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+                  Navigate
                 </p>
-                <div className="space-y-0.5">
-                  {PRIMARY_LINKS.map((link, i) => {
-                    const active = isActive(link.to)
-                    return (
-                      <motion.div
-                        key={link.to}
-                        initial={{ opacity: 0, x: 16 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.04, duration: 0.25 }}
+                {PRIMARY_LINKS.map((link, i) => {
+                  const active = isActive(link.to)
+                  return (
+                    <motion.div
+                      key={link.to}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.05 + i * 0.04, duration: 0.25 }}
+                    >
+                      <Link
+                        to={link.to}
+                        onClick={() => setMobileOpen(false)}
+                        aria-current={active ? 'page' : undefined}
+                        className={`flex items-center justify-between rounded-2xl px-4 py-3.5 text-[17px] font-medium transition-colors duration-150 ${
+                          active
+                            ? 'bg-blue-50 text-blue-700'
+                            : 'text-gray-800 hover:bg-gray-50 hover:text-gray-900'
+                        }`}
                       >
-                        <Link
-                          to={link.to}
-                          onClick={() => setMobileOpen(false)}
-                          aria-current={active ? 'page' : undefined}
-                          className={`flex items-center justify-between rounded-xl px-3 py-3 text-[15px] font-medium transition-colors duration-150 ${
-                            active
-                              ? 'bg-blue-50 text-blue-700'
-                              : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                          }`}
-                        >
-                          <span className="flex items-center gap-3">
-                            {active && (
-                              <span className="h-1.5 w-1.5 rounded-full bg-blue-600" />
-                            )}
-                            {link.label}
-                          </span>
-                        </Link>
-                      </motion.div>
-                    )
-                  })}
-                </div>
-              </div>
+                        <span>{link.label}</span>
+                        {active ? (
+                          <span className="h-2 w-2 rounded-full bg-blue-600" />
+                        ) : (
+                          <ArrowUpRight className="h-4 w-4 text-gray-300" />
+                        )}
+                      </Link>
+                    </motion.div>
+                  )
+                })}
+              </nav>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3, duration: 0.25 }}
-                className="border-t border-gray-200/80 px-4 py-5"
-              >
+              <div className="mt-auto border-t border-gray-100 px-5 py-6">
                 <Link
                   to="/contact"
                   onClick={() => setMobileOpen(false)}
-                  className="group flex w-full items-center justify-center gap-2 rounded-xl bg-blue-600 px-5 py-3.5 text-sm font-semibold text-white shadow-sm shadow-blue-600/20 transition-all duration-200 ease-out hover:bg-blue-500 hover:shadow-lg hover:shadow-blue-600/25 active:scale-[0.98]"
+                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-blue-600 to-blue-700 px-6 py-4 text-base font-semibold text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_6px_22px_-4px_rgba(37,99,235,0.55)] transition-all duration-200 ease-out hover:from-blue-500 hover:to-blue-600 active:scale-[0.98]"
                 >
-                  Get in Touch
-                  <ArrowRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:translate-x-0.5" />
+                  <span>Start a project</span>
+                  <ArrowUpRight className="h-5 w-5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
-              </motion.div>
+                <p className="mt-5 text-center font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
+                  Baytown, TX · Serving the Greater Houston area
+                </p>
+              </div>
             </motion.div>
           </>
         )}
