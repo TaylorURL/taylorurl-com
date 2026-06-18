@@ -265,13 +265,13 @@ export default function Status() {
           <motion.div {...fadeInUp}>
             <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need help?</h2>
             <p className="mb-6 text-gray-400">
-              Report any issue with a client site and I will investigate.
+              Spot something wrong with your site? Let me know and I will look into it.
             </p>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-500"
             >
-              Contact Support
+              Get in touch
             </a>
           </motion.div>
         </div>
