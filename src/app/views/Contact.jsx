@@ -136,8 +136,8 @@ ${formData.message}
                 Start the <span className="logo-wave-dark">conversation</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or takeover of an existing site — describe the business and
-                what needs to change. I will take it from there.
+                New site, redo of an old one, or taking over a site someone else built — tell
+                me about the business and what needs to change. I will take it from there.
               </p>
 
               <div className="mb-8 space-y-4">
