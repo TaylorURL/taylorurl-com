@@ -42,7 +42,7 @@ function PortfolioCard({ project, index }) {
           />
           {!imageFailed && (
             <img
-              src={`${SCREENSHOT_ENDPOINT}/${project.url}`}
+              src={project.image}
               alt={`${project.name} website homepage — built by TaylorURL`}
               width="1280"
               height="800"
