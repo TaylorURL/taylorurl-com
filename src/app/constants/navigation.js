@@ -16,5 +16,5 @@ export const LEGAL_LINKS = [
 export const SUPPORT_EMAIL = 'trenton@taylorurl.com'
 export const SALES_EMAIL = 'trenton@taylorurl.com'
 export const COMPANY_LOCATION = 'Baytown, Texas'
-export const BRAND_NAME = 'TaylorURL'
+export const BRAND_NAME = 'TaylorURL LLC'
 export const PHONE_NUMBER = '+18321234567'
