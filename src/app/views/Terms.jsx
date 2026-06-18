@@ -9,7 +9,7 @@ const SECTIONS = [
   },
   {
     title: '2. Services Description',
-    content: `TaylorURL LLC provides custom website development, JavaScript application development, website redesigns, and ongoing website management services for local businesses, all performed by Trenton Taylor. The specific scope, deliverables, timeline, and terms for each project will be outlined in a separate project agreement or statement of work.`,
+    content: `TaylorURL LLC provides custom website design, online booking and customer tools, website redesigns, and ongoing website care for local businesses, all performed by Trenton Taylor. The specific scope, deliverables, timeline, and terms for each project will be outlined in a separate project agreement or statement of work.`,
   },
   {
     title: '3. Client Responsibilities',
@@ -54,7 +54,7 @@ export default function Terms() {
     <>
       <Seo
         title="Terms of Service"
-        description="Terms and conditions for engaging TaylorURL LLC's web development and maintenance services."
+        description="Terms and conditions for working with TaylorURL LLC on website design, build, and ongoing care."
         path="/terms"
       />
       <LegalPage

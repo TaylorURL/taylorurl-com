@@ -59,7 +59,7 @@ const ORIGINAL_POSTS = [
     title: 'Why Your Wix Site Is Costing You Customers',
     excerpt:
       "Wix, Squarespace, GoDaddy builders — they're easy to use. They're also slow, bloated, and full of code that makes Google cringe. Let's talk about it.",
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'February 20, 2026',
     readTime: '5 min read',
     content: [
@@ -74,16 +74,16 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: "Why are they slow? Because every Wix page loads a mountain of JavaScript you didn't ask for. Tracking scripts, animation libraries, their own framework code — it all gets dumped onto your page whether you need it or not. A simple five-page site shouldn't need 3MB of JavaScript. But on Wix, it does.",
+        text: "Why are they slow? Because every Wix page loads a pile of extra code you never asked for. Tracking scripts, animation files, their own platform code — it all gets dumped onto your page whether you need it or not. A simple five-page site should not be that heavy. But on Wix, it is.",
       },
       { type: 'h2', text: 'The SEO Problem' },
       {
         type: 'p',
-        text: "Google cares about site speed, mobile experience, clean code, and proper page structure. Wix makes all of those harder. The HTML it generates is bloated and messy. The URLs are weird. The meta tags are limited. You can technically do SEO on Wix, but it's like trying to run a race in boots — technically possible, but why would you?",
+        text: "Google cares about site speed, how the site behaves on a phone, clean structure, and clear page titles. Wix makes all of those harder. The page structure it generates is bloated and messy. The web addresses are weird. The labels Google reads are limited. You can do SEO on Wix, but it is like running a race in boots — technically possible, but why would you?",
       },
       {
         type: 'p',
-        text: 'Custom-built sites give you <strong>full control over every single thing Google looks at.</strong> Page titles, descriptions, heading structure, image optimization, schema markup, sitemap — all of it. On Wix, you get whatever their builder decides to give you.',
+        text: 'Custom-built sites give you <strong>full control over every single thing Google looks at.</strong> Page titles, descriptions, heading order, image sizing, structure tags, sitemap — all of it. On Wix, you get whatever their builder decides to give you.',
       },
       { type: 'h2', text: 'The "It Looks Like Every Other Site" Problem' },
       {
@@ -167,7 +167,7 @@ const ORIGINAL_POSTS = [
     title: 'How Fast Should My Website Load?',
     excerpt:
       'If your site takes more than 3 seconds to load, you\'re losing visitors. Here\'s what "fast" actually means, how to measure it, and why it matters more than you think.',
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'January 25, 2026',
     readTime: '4 min read',
     content: [

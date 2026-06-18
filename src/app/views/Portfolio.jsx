@@ -96,8 +96,8 @@ export default function Portfolio() {
   return (
     <div>
       <Seo
-        title="Web Development Portfolio — Baytown, TX"
-        description="Recent client websites hand-coded and launched for Baytown, Houston-area, and Southeast Texas businesses."
+        title="Recent Client Websites — Baytown, TX"
+        description="Recent client websites built and launched for Baytown, Houston-area, and Southeast Texas small businesses."
         path="/portfolio"
         schema={[
           breadcrumbSchema([
@@ -120,7 +120,7 @@ export default function Portfolio() {
       />
       <PageHero
         title="Recent client work"
-        description="A look at the sites I have shipped for Baytown and Houston-area businesses. Every project is hand-coded, hosted, and maintained from one source."
+        description="A look at the sites I have built for Baytown and Houston-area businesses. Every one is custom-built, hosted, and looked after by me."
       />
 
       <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
@@ -142,8 +142,8 @@ export default function Portfolio() {
               Want your business <span className="logo-wave-dark">in this list</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what your business needs and I will scope a build. Most projects launch in two
-              to four weeks.
+              Tell me what your business needs and I will put together a plan. Most websites
+              are live in two to four weeks.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>

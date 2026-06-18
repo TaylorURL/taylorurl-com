@@ -13,19 +13,19 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'Who do you build websites for?',
-        a: 'Local businesses — shops, restaurants, trades, contractors, salons, dentists, realtors, law firms, and independent professionals. If you serve a defined geographic area and need a real online presence, you are the kind of client I work with.',
+        a: 'Local businesses — shops, restaurants, trades, contractors, salons, dentists, realtors, law firms, and independent pros. If you serve a defined area and need to look great online, you are the kind of client I work with.',
       },
       {
         q: 'How long does a build take?',
-        a: 'Most projects launch in two to four weeks. There are no endless meetings or revision rounds. You describe the work, I build it, you give feedback, I ship it.',
+        a: 'Most websites are up and running in two to four weeks. No endless meetings or revision rounds. You tell me about the business, I build it, you give feedback, I put it online.',
       },
       {
         q: 'What do you need from me to get started?',
-        a: 'Your logo if you have one, any photos you want used, and a clear sense of what the business does. I handle the writing, design, and structure. If content is not ready, I can work with you to put it together.',
+        a: 'Your logo if you have one, any photos you want used, and a clear sense of what your business does. I handle the writing, design, and the look of the site. If your content is not ready, we can put it together as we go.',
       },
       {
         q: 'Can you redesign an existing site?',
-        a: 'Yes. I do full redesigns regularly. I review what you have, identify what works and what does not, and rebuild on a modern stack. The structure is reconsidered, not just the visuals.',
+        a: 'Yes. I do full redesigns all the time. I look at what you have, figure out what works and what does not, and rebuild from the ground up. I rethink how the pages are laid out, not just the colors.',
       },
     ],
   },
@@ -33,20 +33,20 @@ const FAQ_CATEGORIES = [
     title: 'How I Work',
     questions: [
       {
-        q: 'What does ongoing maintenance include?',
-        a: 'Hosting, security updates, performance monitoring, bug fixes, SSL certificates, backups, and minor content changes. Effectively, everything required to keep the site fast, secure, and online.',
+        q: 'What does ongoing care include?',
+        a: 'Keeping the site online, keeping it safe, keeping it fast, fixing anything that breaks, daily backups, and small content changes. Pretty much everything needed to keep your site running smoothly.',
       },
       {
         q: 'How is this different from working with an agency?',
-        a: 'I write the code, and you work directly with me. No account managers, no ticket systems, no overhead between you and the person building the site. You message me, I handle it, and I stay on after launch.',
+        a: 'I build the site, and you work directly with me. No account managers, no support tickets, no layers between you and the person making the site. You text me, I handle it, and I stick around after launch.',
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
-        a: 'No. I build with modern frameworks like React. No third-party platforms, no page builders, no drag-and-drop tools. The site is custom code that loads fast and is not tied to a platform subscription.',
+        a: 'No. I build custom sites from scratch — no Wix, no Squarespace, no drag-and-drop builders. The result is faster, safer, and not tied to a monthly subscription you can never escape.',
       },
       {
-        q: 'Can you build a web app, not just a marketing site?',
-        a: 'Yes. Many local businesses need more than static pages — booking flows, customer portals, online ordering, quote forms, internal tools. I build those as real React applications that integrate with the systems you already use.',
+        q: 'Can you build more than a basic website?',
+        a: 'Yes. Plenty of local businesses need more than a few pages — online booking, customer accounts, ordering, quote forms, simple back-office tools. I build those custom to fit how you work, and connect them to the apps you already use.',
       },
     ],
   },
@@ -55,23 +55,23 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'Do I own the website?',
-        a: 'Yes, in full. The code and the design belong to you. If you ever decide to move on, everything is handed over. No lock-in.',
+        a: 'Yes, completely. The site is yours. If you ever decide to move on, everything is handed over. No lock-in.',
       },
       {
         q: 'Can I update content myself?',
-        a: 'It depends on the setup. Some sites include a content management system so you can edit text and images directly. For others, you send me a request and changes go out same-day. Either model is supported.',
+        a: 'It depends on the setup. Some sites come with a simple editor so you can change text and photos yourself. For others, you send me a quick request and the change goes live the same day. Either way works.',
       },
       {
         q: 'What if I need changes after launch?',
-        a: 'Small updates like text edits and image swaps are included in ongoing maintenance. Larger changes — new pages or new features — are scoped separately before any work starts.',
+        a: 'Small updates — text edits, photo swaps — are included in your ongoing care. Bigger changes like new pages or new features get a quick price up front before any work starts.',
       },
       {
         q: 'Do you only work with businesses in the Houston area?',
-        a: 'I am based in Baytown and most of my clients are in the Houston area, but I work with local businesses anywhere. The work is remote-friendly end-to-end.',
+        a: 'I am based in Baytown and most of my clients are around Houston, but I work with local businesses anywhere. The whole project can be handled by phone, text, and email.',
       },
       {
         q: 'What happens if I want to cancel?',
-        a: 'You can stop maintenance at any time. No annual contracts. If you leave, all files and code are handed over. I would rather earn the engagement each month than rely on a lock-in clause.',
+        a: 'You can stop the ongoing care plan any time. No annual contracts. If you leave, your whole site is handed over. I would rather earn your business every month than tie you to a contract.',
       },
     ],
   },
@@ -124,8 +124,8 @@ export default function Faq() {
   return (
     <div>
       <Seo
-        title="FAQ — Web Development in Baytown, TX"
-        description="Common questions about working with TaylorURL LLC — a Baytown, TX developer building websites and apps for Houston-area businesses."
+        title="FAQ — Small Business Websites in Baytown, TX"
+        description="Common questions about working with TaylorURL LLC — a Baytown, TX website designer building custom small business websites across the Houston area."
         path="/faq"
         schema={[
           breadcrumbSchema([
@@ -150,7 +150,7 @@ export default function Faq() {
       />
       <PageHero
         title="Frequently asked questions"
-        description="Common questions about working with a Baytown, TX web developer. Direct answers on timelines, process, ownership, and ongoing support."
+        description="Common questions about working with a Baytown, TX website designer. Straight answers on timelines, how it works, who owns what, and ongoing care."
       />
 
       <section className="relative bg-surface-base py-12 sm:py-20">
@@ -195,7 +195,7 @@ export default function Faq() {
               Still have <span className="logo-wave">questions</span>?
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Send me a message. I respond within 24 hours.
+              Send me a message. I get back to you within 24 hours.
             </p>
             <a href="/contact" className={BTN_PRIMARY}>
               Get in Touch

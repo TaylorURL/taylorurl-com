@@ -9,63 +9,63 @@ import { SECTION_H2_DARK } from '@constants/ui'
 
 const SERVICES = [
   {
-    name: 'Primary Web Hosting',
-    description: 'Client website hosting infrastructure',
+    name: 'Main website hosting',
+    description: 'Where your website lives online',
     group: 'Hosting',
   },
   {
-    name: 'Redundancy Hosting',
-    description: 'Secondary hosting for failover',
+    name: 'Backup hosting',
+    description: 'A safety net that kicks in if anything hiccups',
     group: 'Hosting',
   },
   {
-    name: 'CDN & Edge Delivery',
-    description: 'Global content delivery network',
+    name: 'Fast global delivery',
+    description: 'Your site loads quickly from anywhere in the world',
     group: 'Hosting',
   },
   {
-    name: 'DNS Services',
-    description: 'Domain resolution and routing',
+    name: 'Web address service',
+    description: 'Makes sure typing your address takes people to your site',
     group: 'Hosting',
   },
   {
-    name: 'SSL Certificates',
-    description: 'Certificate management and renewal',
+    name: 'Padlock and encryption',
+    description: 'The little padlock in the browser bar, kept up to date',
     group: 'Security',
   },
   {
-    name: 'DDoS Mitigation',
-    description: 'Traffic filtering and protection',
+    name: 'Attack protection',
+    description: 'Blocks bots and traffic floods before they reach your site',
     group: 'Security',
   },
   {
-    name: 'Web Application Firewall',
-    description: 'Application-layer security',
+    name: 'Spam and hack shield',
+    description: 'Filters out junk traffic and common attacks',
     group: 'Security',
   },
   {
-    name: 'Automated Backups',
-    description: 'Scheduled backups and recovery',
+    name: 'Daily backups',
+    description: 'A fresh copy of your site, every day',
     group: 'Maintenance',
   },
   {
-    name: 'Health Monitoring',
-    description: 'Continuous uptime monitoring',
+    name: 'Always-on watch',
+    description: 'I get a ping the second anything goes wrong',
     group: 'Maintenance',
   },
   {
-    name: 'Performance Tracking',
-    description: 'Speed and performance analytics',
+    name: 'Speed checks',
+    description: 'Page load times tracked so the site stays quick',
     group: 'Maintenance',
   },
   {
-    name: 'Email Services',
-    description: 'Email delivery and processing',
+    name: 'Email delivery',
+    description: 'Contact form messages reach your inbox',
     group: 'Services',
   },
   {
-    name: 'Form Processing',
-    description: 'Form handling and filtering',
+    name: 'Contact forms',
+    description: 'Form submissions handled and spam filtered',
     group: 'Services',
   },
 ]
@@ -94,7 +94,7 @@ function getResponseTime(service, daySlot) {
 
 const STATUS_CONFIG = {
   operational: {
-    label: 'Operational',
+    label: 'Up and running',
     color: 'text-green-600',
     bg: 'bg-green-50',
     border: 'border-green-200',
@@ -111,7 +111,7 @@ function OverallStatus() {
     >
       <div className="flex items-center gap-3">
         <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-green-500" />
-        <span className="text-lg font-semibold text-green-700">All Systems Operational</span>
+        <span className="text-lg font-semibold text-green-700">Everything running smoothly</span>
       </div>
       <div className="hidden items-center gap-2 text-sm text-gray-500 sm:flex">
         <Clock className="h-4 w-4" />
@@ -123,7 +123,7 @@ function OverallStatus() {
 
 function UptimeBar() {
   return (
-    <div role="img" aria-label="90-day uptime history, all operational" className="flex gap-px">
+    <div role="img" aria-label="90-day history, all running smoothly" className="flex gap-px">
       {Array.from({ length: 90 }, (_, i) => (
         <div
           key={i}
@@ -155,10 +155,10 @@ function ServiceRow({ service, daySlot, index }) {
         <div className="flex items-center gap-6">
           <div className="hidden items-center gap-4 text-sm sm:flex">
             <span className="text-gray-500">
-              <span className="font-medium text-gray-700">{responseTime}ms</span> response
+              <span className="font-medium text-gray-700">{responseTime}ms</span> reply time
             </span>
             <span className="text-gray-500">
-              <span className="font-medium text-gray-700">{uptime}%</span> uptime
+              <span className="font-medium text-gray-700">{uptime}%</span> online
             </span>
           </div>
           <span
@@ -192,12 +192,12 @@ export default function Status() {
     <div>
       <Seo
         title="System Status"
-        description="Live status of TaylorURL LLC hosting, security, and maintenance infrastructure for client sites."
+        description="Live status of the hosting, security, and care behind every TaylorURL LLC client website."
         path="/status"
       />
       <PageHero
         title="System status"
-        description="Current health of the infrastructure powering client sites."
+        description="A live look at what is running smoothly behind every client website."
       />
 
       <section className="relative overflow-hidden bg-surface-base py-16">
@@ -212,19 +212,19 @@ export default function Status() {
           >
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">{overallUptime}%</p>
-              <p className="text-xs text-gray-500">Overall Uptime</p>
+              <p className="text-xs text-gray-500">Time online</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">{SERVICES.length}</p>
-              <p className="text-xs text-gray-500">Monitored Services</p>
+              <p className="text-xs text-gray-500">Things I watch</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">24/7</p>
-              <p className="text-xs text-gray-500">Active Monitoring</p>
+              <p className="text-xs text-gray-500">Always watching</p>
             </div>
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">90d</p>
-              <p className="text-xs text-gray-500">History Shown</p>
+              <p className="text-xs text-gray-500">Days of history</p>
             </div>
           </motion.div>
 
@@ -265,13 +265,13 @@ export default function Status() {
           <motion.div {...fadeInUp}>
             <h2 className={`mb-3 ${SECTION_H2_DARK}`}>Need help?</h2>
             <p className="mb-6 text-gray-400">
-              Report any issue with a client site and I will investigate.
+              Spot something wrong with your site? Let me know and I will look into it.
             </p>
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               className="inline-flex items-center gap-2 rounded-xl bg-blue-600 px-6 py-3 font-semibold text-white transition-all hover:bg-blue-500"
             >
-              Contact Support
+              Get in touch
             </a>
           </motion.div>
         </div>

@@ -11,32 +11,32 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
-  'Responsive development',
+  'Works on every device',
   'Website hosting',
-  'Regular updates and patches',
-  'Security monitoring',
+  'Regular updates and fixes',
+  'Watched around the clock',
   'Bug fixes',
-  'Performance optimization',
-  'Backup management',
+  'Quick page loads',
+  'Daily backups',
   'Content updates',
-  'Technical support',
+  'A real person to call',
 ]
 
 const PROCESS_STEPS = [
   {
-    title: 'Initial call',
+    title: 'First call',
     description:
-      'You walk me through the business. I ask the questions needed to scope the work and give you a direct answer.',
+      'You walk me through the business. I ask the questions I need to plan the work and give you a straight answer.',
   },
   {
-    title: 'Clear scope',
+    title: 'Clear plan',
     description:
-      'You get a written scope: what gets built, how long it takes, what is included, and what happens after launch.',
+      'You get a written plan: what gets built, how long it takes, what is included, and what happens after launch.',
   },
   {
-    title: 'Build and launch',
+    title: 'Build and go live',
     description:
-      'I build the site, share progress as it goes, and launch it. Ongoing support is included.',
+      'I build the site, share progress along the way, and put it online. Ongoing care is included.',
   },
 ]
 
@@ -93,7 +93,7 @@ ${formData.message}
     `.trim()
 
     window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    toast('Opening your email client. I will respond within 24 hours.')
+    toast('Opening your email. I will get back to you within 24 hours.')
   }
 
   const handleChange = e => {
@@ -103,8 +103,8 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Contact a Baytown Web Developer"
-        description="Tell me about your Baytown or Houston-area business and what you need from a website or web app. I respond within 24 hours."
+        title="Contact a Baytown Website Designer"
+        description="Tell me about your Baytown or Houston-area business and what you need from a website. I get back to you within 24 hours."
         path="/contact"
         schema={[
           breadcrumbSchema([
@@ -120,8 +120,8 @@ ${formData.message}
         ]}
       />
       <PageHero
-        title="Contact a Baytown web developer"
-        description="Tell me about your Baytown or Houston-area business. I respond within 24 hours."
+        title="Let's talk about your website"
+        description="Tell me about your Baytown or Houston-area business. I get back to you within 24 hours."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
@@ -136,8 +136,8 @@ ${formData.message}
                 Start the <span className="logo-wave-dark">conversation</span>
               </h2>
               <p className="mb-8 text-gray-600">
-                New site, redesign, or takeover of an existing site — describe the business and
-                what needs to change. I will take it from there.
+                New site, redo of an old one, or taking over a site someone else built — tell
+                me about the business and what needs to change. I will take it from there.
               </p>
 
               <div className="mb-8 space-y-4">
@@ -200,7 +200,7 @@ ${formData.message}
             >
               <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
                 <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                  Project details
+                  About your project
                 </h3>
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid gap-6 sm:grid-cols-2">
@@ -279,7 +279,7 @@ ${formData.message}
                         htmlFor="projectType"
                         className="mb-2 block text-sm font-medium text-gray-900"
                       >
-                        Project Type
+                        What do you need?
                       </label>
                       <select
                         id="projectType"
@@ -288,12 +288,12 @@ ${formData.message}
                         onChange={handleChange}
                         className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.25rem] bg-[position:right_0.75rem_center] bg-no-repeat`}
                       >
-                        <option value="">Select type</option>
-                        <option value="new-website">New Website</option>
-                        <option value="redesign">Website Redesign</option>
-                        <option value="web-app">Web Application</option>
-                        <option value="optimization">Performance Optimization</option>
-                        <option value="maintenance">Ongoing Maintenance</option>
+                        <option value="">Pick one</option>
+                        <option value="new-website">A brand-new website</option>
+                        <option value="redesign">Redo my current site</option>
+                        <option value="web-app">An online tool or booking system</option>
+                        <option value="optimization">Make my site faster</option>
+                        <option value="maintenance">Ongoing care for my site</option>
                       </select>
                     </div>
                   </div>
@@ -303,7 +303,7 @@ ${formData.message}
                       htmlFor="message"
                       className="mb-2 block text-sm font-medium text-gray-900"
                     >
-                      Project Details
+                      Tell me about it
                     </label>
                     <textarea
                       id="message"
@@ -313,7 +313,7 @@ ${formData.message}
                       onChange={handleChange}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
-                      placeholder="What does the business do, and what do you need from a website?"
+                      placeholder="What does your business do, and what do you want your website to do for you?"
                       aria-invalid={errors.message ? true : undefined}
                       aria-describedby={errors.message ? 'message-error' : undefined}
                     />
@@ -329,7 +329,7 @@ ${formData.message}
                       Send message
                       <Send className="h-4 w-4" />
                     </button>
-                    <p className="text-xs text-gray-500">Opens your email client</p>
+                    <p className="text-xs text-gray-500">Opens your email</p>
                   </div>
                 </form>
               </div>
@@ -346,7 +346,7 @@ ${formData.message}
               Everything <span className="logo-wave">included</span>
             </h2>
             <p className="text-gray-400">
-              These come standard with every engagement. No surprise line items for the basics.
+              These come standard with every project. No surprise charges for the basics.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">

@@ -28,30 +28,30 @@ const TIMELINE_STEPS = [
     title: 'First call',
     duration: 'Day 1',
     description:
-      'You walk me through the business and what you need from a site. I ask questions, take notes, and give you a direct answer on whether I am the right fit. No pitch deck, no extended discovery.',
+      'You walk me through the business and what you want from a website. I ask questions, take notes, and tell you straight up whether I am the right fit. No sales pitch, no long planning phase.',
     client: [
       'Describe the business',
-      'Share what works and what does not in other sites',
+      'Share what you like and dislike about other sites',
       'Explain how customers reach you today',
     ],
     taylorurl: [
       'Ask the right questions',
-      'Give a direct yes or no on fit',
-      'Outline what the site should do',
+      'Give a straight yes or no on fit',
+      'Sketch out what the site should do',
     ],
   },
   {
     step: '02',
     icon: FileText,
-    title: 'Scope and agreement',
+    title: 'Plan and quote',
     duration: 'Day 2-3',
     description:
-      'I write up a clear scope of work — what I am building, what is included, and how long it takes. Once it works for both sides, we move forward.',
-    client: ['Review the scope', 'Ask questions', 'Sign off when ready'],
+      'I write up a clear plan — what I am building, what is included, and how long it takes. Once it works for both sides, we get going.',
+    client: ['Review the plan', 'Ask questions', 'Give the green light when ready'],
     taylorurl: [
-      'Send a clear scope of work',
-      'Outline what is and is not included',
-      'Set the project timeline',
+      'Send a clear plan and price',
+      'Spell out what is and is not included',
+      'Set the timeline',
     ],
   },
   {
@@ -60,16 +60,16 @@ const TIMELINE_STEPS = [
     title: 'Design',
     duration: 'Week 1',
     description:
-      'I produce mockups of the site. You give feedback, I iterate until the direction is right. No oversized design doc, no design-by-committee.',
+      'I show you pictures of what the site will look like. You give feedback, I make changes until it feels right. No oversized design document, no design by committee.',
     client: [
       'Send your logo, photos, and content',
-      'Review and respond to mockups',
+      'Review and respond to the designs',
       'Flag anything that does not fit',
     ],
     taylorurl: [
-      'Produce visual mockups',
+      'Design what each page will look like',
       'Revise based on your feedback',
-      'Lock the layout and visual style',
+      'Lock in the look and layout',
     ],
   },
   {
@@ -78,70 +78,70 @@ const TIMELINE_STEPS = [
     title: 'Build',
     duration: 'Week 2-3',
     description:
-      'I write the code. Hand-coded React, not page builders. You can check in at any point — I share progress links throughout so there are no surprises at the end.',
+      'I build the site, custom from the ground up. You can peek in any time — I share preview links the whole way so there are no surprises at the end.',
     client: [
       'Review progress whenever you want',
       'Flag anything that needs to change',
       'Send any remaining content',
     ],
     taylorurl: [
-      'Write clean, performant code',
-      'Make it work on every screen size',
-      'Share progress links throughout',
+      'Build clean, quick-loading pages',
+      'Make sure it works on phones, tablets, and computers',
+      'Share preview links the whole way',
     ],
   },
   {
     step: '05',
     icon: Rocket,
-    title: 'Review and launch',
+    title: 'Review and go live',
     duration: 'Week 3-4',
     description:
-      'You test the site end-to-end. I fix whatever needs fixing. Once you approve it, I deploy to production and handle the launch.',
+      'You click through the whole site. I fix whatever needs fixing. Once you give the go-ahead, I put it online for the world to see.',
     client: [
-      'Test the site end-to-end',
+      'Click through the whole site',
       'Send final changes',
-      'Approve the launch',
+      'Give the go-ahead to launch',
     ],
     taylorurl: [
       'Fix any issues you find',
-      'Run performance and SEO checks',
-      'Handle DNS, hosting, and deployment',
+      'Tune up speed and Google visibility',
+      'Handle the technical side of going live',
     ],
   },
   {
     step: '06',
     icon: HeadphonesIcon,
-    title: 'Ongoing support',
+    title: 'Ongoing care',
     duration: 'Ongoing',
     description:
-      'After launch I continue to handle hosting, updates, security, and content changes. The technical side stays with me so the business stays focused on operating.',
+      'After launch I keep the site online, fast, safe, and up to date. The technical side stays with me so you stay focused on running the business.',
     client: [
       'Run the business',
       'Send a message when you need a change',
       'No tickets, no waiting',
     ],
     taylorurl: [
-      'Keep the site fast and secure',
+      'Keep the site fast and safe',
       'Handle hosting and backups',
-      'Ship updates as you need them',
+      'Make updates as you need them',
     ],
   },
 ]
 
 const WHAT_YOULL_NEED = [
   { icon: Image, label: 'Your logo (any format)' },
-  { icon: FileText, label: 'Content or copy for your pages' },
-  { icon: Image, label: 'Photos of the work or the space' },
+  { icon: FileText, label: 'What you want each page to say' },
+  { icon: Image, label: 'Photos of your work or your space' },
   { icon: Paintbrush, label: 'Brand colors, if you have them' },
-  { icon: Globe, label: 'Domain info, or assistance registering one' },
+  { icon: Globe, label: 'Your web address, or help picking one' },
 ]
 
 export default function Process() {
   return (
     <div>
       <Seo
-        title="Web Development Process — Baytown & Houston"
-        description="How I build websites and JavaScript apps for Baytown and Houston-area businesses — from first call to launch in two to four weeks."
+        title="My Website Build Process — Baytown & Houston"
+        description="How I build websites for Baytown and Houston-area small businesses — from your first call to a live site in two to four weeks."
         path="/process"
         schema={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -149,8 +149,8 @@ export default function Process() {
         ])}
       />
       <PageHero
-        title="The build process"
-        description="A clear, predictable path from first call to launch — for Baytown and Houston-area businesses."
+        title="How it works"
+        description="A clear, predictable path from your first call to a live website — for Baytown and Houston-area businesses."
       />
 
       {/* Timeline */}
@@ -165,7 +165,7 @@ export default function Process() {
               From first call to <span className="logo-wave-dark">live site</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Most projects wrap in three to four weeks. Here is what each step looks like.
+              Most projects wrap up in three to four weeks. Here is what each step looks like.
             </p>
           </motion.div>
 
@@ -259,7 +259,7 @@ export default function Process() {
               What I&apos;ll <span className="logo-wave-dark">need from you</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              It does not have to be perfect or complete. I can work with what you have and
+              It does not have to be perfect or finished. I can work with what you have and
               help fill in the gaps.
             </p>
           </motion.div>
@@ -287,7 +287,7 @@ export default function Process() {
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-8 text-center text-sm text-gray-500"
           >
-            No logo or photos yet? I can point you to people who handle that work.
+            No logo or photos yet? I can point you to people who handle that.
           </motion.p>
         </div>
       </section>
@@ -295,7 +295,7 @@ export default function Process() {
       <CtaBanner
         heading="Ready to"
         accentText="get started?"
-        description="You know the process. Tell me about the business and what you need."
+        description="You know how it works. Tell me about the business and what you need."
         primaryLabel="Get in Touch"
         primaryTo="/contact"
       />

@@ -12,8 +12,8 @@ export default function FinalCtaSection() {
           Ready to <span className="logo-wave">get started</span>?
         </h2>
         <p className="mx-auto mb-8 max-w-2xl text-base text-gray-400 sm:text-lg">
-          Hosting, SSL, DNS, deployment — I handle the technical side. Tell me about your
-          business and what you need from a site.
+          I handle the technical headaches — keeping your site online, fast, and secure.
+          Tell me about your business and what you need.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link to="/contact" className={`group ${BTN_PRIMARY_LG}`}>

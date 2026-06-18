@@ -4,7 +4,7 @@ export const BLOG_ARTICLES_2 = [
     title: 'SSL Certificates: What They Are and Why You Need One',
     excerpt:
       "That little padlock in your browser bar isn't just decoration. Here's what SSL does, why Google cares about it, and what happens without one.",
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'October 10, 2025',
     readTime: '5 min read',
     content: [
@@ -223,7 +223,7 @@ export const BLOG_ARTICLES_2 = [
     title: 'What Is Web Hosting and Why Does It Matter?',
     excerpt:
       "Your website has to live somewhere. Here's what web hosting actually is, why cheap hosting is a trap, and what to look for.",
-    category: 'Industry Tips',
+    category: 'Tips for Owners',
     date: 'December 12, 2025',
     readTime: '5 min read',
     content: [
@@ -354,48 +354,48 @@ export const BLOG_ARTICLES_2 = [
   },
   {
     slug: 'how-we-build-websites-our-tech-stack-explained',
-    title: 'How I Build Websites: My Tech Stack Explained',
+    title: 'How I Build Websites: A Plain-English Walkthrough',
     excerpt:
-      "Ever wonder what goes into building a website from scratch? Here's a plain-English breakdown of the tools I use and why.",
-    category: 'Industry Tips',
+      "Ever wonder what goes into building a website from scratch? Here's the no-jargon version of how I make sites that load fast and look sharp.",
+    category: 'Tips for Owners',
     date: 'February 5, 2026',
     readTime: '5 min read',
     content: [
       {
         type: 'p',
-        text: "When I say I build custom websites, people sometimes ask what that actually means. Fair question. I don't use WordPress, I don't use Wix, and I definitely don't use Squarespace. I write code from scratch using modern tools that make sites fast, secure, and easy to maintain. <strong>Here's the non-technical version of how it all works.</strong>",
+        text: "When I say I build custom websites, people sometimes ask what that actually means. Fair question. I do not use WordPress, Wix, or Squarespace. I build each site from scratch using modern tools that keep it quick, safe, and easy to update. <strong>Here is the version without the techie talk.</strong>",
       },
-      { type: 'h2', text: 'The Front End: What You See' },
+      { type: 'h2', text: 'What People See' },
       {
         type: 'p',
-        text: 'The front end is everything your visitors interact with — the layout, the buttons, the images, the text. I build this with React, which is a JavaScript framework used by companies like Netflix, Airbnb, and Instagram. It lets me build interactive, fast-loading interfaces without the bloat that comes with page builders and templates.',
-      },
-      {
-        type: 'p',
-        text: 'Why does this matter to you? Because <strong>a React site loads only what it needs, when it needs it.</strong> No unnecessary plugins slowing things down. No massive theme files loading on every page. Just clean, efficient code that gets your content on screen fast.',
-      },
-      { type: 'h2', text: 'Hosting and Deployment' },
-      {
-        type: 'p',
-        text: "I use modern cloud hosting that distributes your site across multiple servers worldwide. When someone in Baytown loads your site, they're getting it from a server nearby — not one across the country. This is called a CDN (Content Delivery Network), and it's a big part of why my sites load so fast.",
+        text: 'The visible part of your site is everything your visitors actually touch — the layout, the buttons, the photos, the words on the page. I build that with the same kind of modern tools that power the biggest sites you use every day, like Netflix and Instagram. The result is a site that feels fast and smooth, without the clunky feel of a template build.',
       },
       {
         type: 'p',
-        text: 'Deploying updates is instant. I push the code, it goes live within seconds. No FTP uploads, no cPanel, no crossing your fingers and hoping nothing breaks. <strong>Modern deployment is fast and reliable.</strong>',
+        text: 'Why does that matter to you? Because <strong>your site loads only what it needs, when it needs it.</strong> No unnecessary extras dragging it down. No bloated themes loading on every page. Just a clean, quick site that gets your message in front of customers fast.',
       },
-      { type: 'h2', text: 'Why I Skip WordPress' },
+      { type: 'h2', text: 'Where Your Site Lives' },
       {
         type: 'p',
-        text: "WordPress powers a lot of the internet, but it comes with baggage. Constant plugin updates, security vulnerabilities, database maintenance, and performance issues that get worse as you add more plugins. I've cleaned up enough hacked WordPress sites to know it's not the right tool for most small business websites.",
+        text: "I keep your site on modern hosting that spreads it across servers around the world. When someone in Baytown opens your site, they get it from a nearby server — not one across the country. That is a big part of why my sites load so quickly, no matter where someone is browsing from.",
       },
       {
         type: 'p',
-        text: "My approach gives you a site that's faster, more secure, and doesn't need you to log in and click \"Update\" every week. <strong>I'd rather build something that just works.</strong>",
+        text: 'When I need to make a change, it goes live within seconds. No clunky uploads, no logging into a control panel and crossing your fingers. <strong>Quick, reliable, and quiet — the way it should be.</strong>',
+      },
+      { type: 'h2', text: 'Why I Skip Page-Builder Platforms' },
+      {
+        type: 'p',
+        text: "WordPress and the do-it-yourself builders power a lot of small business sites, but they come with baggage. Constant updates, monthly fees, security holes from add-ons, and pages that get slower the more you bolt on. I have cleaned up enough of them to know they are not the right fit for most local businesses.",
+      },
+      {
+        type: 'p',
+        text: "My approach gives you a site that is faster, safer, and does not ask you to log in and click \"Update\" every week. <strong>I would rather build something that just works.</strong>",
       },
       { type: 'h2', text: 'What This Means for You' },
       {
         type: 'p',
-        text: "You don't need to understand any of this to work with me. I handle all the technical stuff — that's literally the job. But I believe in being transparent about how I work. When you hire TaylorURL, you're getting a site built with the same caliber of tools that power major web applications, tuned for speed and simplicity. No templates, no page builders, no bloat.",
+        text: "You do not need to understand any of this to work with me — that is literally my job. But I like to be straight with people about how I work. When you hire me, you get a site built the way the best online stores and brands build theirs — tuned for speed and built to last. No templates, no builders, no clutter.",
       },
     ],
   },
