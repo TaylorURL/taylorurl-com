@@ -303,7 +303,7 @@ ${formData.message}
                       htmlFor="message"
                       className="mb-2 block text-sm font-medium text-gray-900"
                     >
-                      Project Details
+                      Tell me about it
                     </label>
                     <textarea
                       id="message"
@@ -313,7 +313,7 @@ ${formData.message}
                       onChange={handleChange}
                       rows={5}
                       className={`${INPUT_CLASS} resize-none`}
-                      placeholder="What does the business do, and what do you need from a website?"
+                      placeholder="What does your business do, and what do you want your website to do for you?"
                       aria-invalid={errors.message ? true : undefined}
                       aria-describedby={errors.message ? 'message-error' : undefined}
                     />
