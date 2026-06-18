@@ -11,32 +11,32 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
-  'Responsive development',
+  'Works on every device',
   'Website hosting',
-  'Regular updates and patches',
-  'Security monitoring',
+  'Regular updates and fixes',
+  'Watched around the clock',
   'Bug fixes',
-  'Performance optimization',
-  'Backup management',
+  'Quick page loads',
+  'Daily backups',
   'Content updates',
-  'Technical support',
+  'A real person to call',
 ]
 
 const PROCESS_STEPS = [
   {
-    title: 'Initial call',
+    title: 'First call',
     description:
-      'You walk me through the business. I ask the questions needed to scope the work and give you a direct answer.',
+      'You walk me through the business. I ask the questions I need to plan the work and give you a straight answer.',
   },
   {
-    title: 'Clear scope',
+    title: 'Clear plan',
     description:
-      'You get a written scope: what gets built, how long it takes, what is included, and what happens after launch.',
+      'You get a written plan: what gets built, how long it takes, what is included, and what happens after launch.',
   },
   {
-    title: 'Build and launch',
+    title: 'Build and go live',
     description:
-      'I build the site, share progress as it goes, and launch it. Ongoing support is included.',
+      'I build the site, share progress along the way, and put it online. Ongoing care is included.',
   },
 ]
 
