@@ -95,7 +95,7 @@ export default function License() {
             MIT License with Additional Restrictions
           </p>
           <p className="mt-1 text-sm text-gray-500">
-            Copyright (c) 2026 TaylorURL / Trenton Taylor
+            Copyright (c) 2026 TaylorURL LLC / Trenton Taylor
           </p>
         </div>
       </LegalPage>
