@@ -11,39 +11,39 @@ export const REVENUE_GROWTH_DATA = [
 
 export const WHY_WEBSITE_CARDS = [
   {
-    title: 'Search visibility',
+    title: 'Get found on Google',
     description:
-      'When customers search for what you do, the businesses that rank are the ones with real websites. Without one, you are not in the conversation.',
+      'When people search for what you do, the businesses that show up are the ones with a real website. Without one, you are not in the running.',
     icon: Search,
   },
   {
-    title: 'Always available',
+    title: 'Open day and night',
     description:
-      'Your site answers questions, captures leads, and accepts bookings outside business hours. The work continues while you sleep.',
+      'Your website answers questions, takes messages, and accepts bookings while you are closed. It keeps working when you cannot.',
     icon: Clock,
   },
   {
-    title: 'Credibility',
+    title: 'Look professional',
     description:
-      'People check you out before they call. A professional site tells them you are established, serious, and worth doing business with.',
+      'People check you out before they call. A clean, well-built website tells them you are serious, established, and worth picking up the phone for.',
     icon: Shield,
   },
   {
-    title: 'Reach beyond referrals',
+    title: 'Reach new customers',
     description:
-      'Word of mouth is valuable, but it is not scalable. A website puts you in front of customers who have never heard of you before.',
+      'Word of mouth is great, but it only goes so far. A website puts you in front of people who have never heard of you before.',
     icon: Users,
   },
   {
-    title: 'Built for mobile',
+    title: 'Works on every phone',
     description:
-      'Most local searches happen on a phone. If the site is not fast and usable there, you lose the customer before the first tap.',
+      'Most people search on their phones. If the site is slow or hard to use there, they tap the back button before they ever call you.',
     icon: Smartphone,
   },
   {
-    title: 'Real return',
+    title: 'Pays for itself',
     description:
-      'One new customer typically covers the cost of the site. After that, the work it does for you is pure upside.',
+      'One or two new customers usually covers the whole site. Everything after that goes straight to your bottom line.',
     icon: DollarSign,
   },
 ]
