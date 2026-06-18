@@ -107,7 +107,7 @@ export default function About() {
               '@type': 'Person',
               '@id': `${SITE_URL}/#trenton`,
               name: 'Trenton Taylor',
-              jobTitle: 'Web Developer',
+              jobTitle: 'Website Designer',
               worksFor: { '@id': BUSINESS_ID },
               url: `${SITE_URL}/about`,
             },
@@ -115,8 +115,8 @@ export default function About() {
         ]}
       />
       <PageHero
-        title="Baytown, TX web developer"
-        description="One developer, hand-coded sites, direct relationship — serving local businesses across Baytown and the Houston area from first call through ongoing support."
+        title="Baytown, TX website designer"
+        description="One person, custom-built sites, and a direct line to me — serving local businesses across Baytown and the Houston area from your first call through every change after launch."
       />
 
       {/* Story section */}
