@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Mail, MapPin } from 'lucide-react'
+import { ArrowRight, Facebook, Mail, MapPin } from 'lucide-react'
 import { COMPANY_LOCATION, LEGAL_LINKS, PRIMARY_LINKS, SUPPORT_EMAIL } from '@constants/navigation'
 import { fadeInUp } from '@constants/animations'
 import { BTN_PRIMARY_SM } from '@constants/ui'
@@ -45,6 +45,16 @@ export default function Footer() {
               >
                 <Mail className="h-4 w-4 text-gray-400" />
                 <span>{SUPPORT_EMAIL}</span>
+              </a>
+              <a
+                href="https://www.facebook.com/profile.php?id=61591005089902"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Facebook"
+                className="flex items-center gap-2.5 text-sm text-gray-500 transition-colors hover:text-blue-600"
+              >
+                <Facebook className="h-4 w-4 text-gray-400" />
+                <span>Facebook</span>
               </a>
             </div>
           </div>
