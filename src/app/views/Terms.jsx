@@ -5,7 +5,7 @@ import { SUPPORT_EMAIL } from '@constants/navigation'
 const SECTIONS = [
   {
     title: '1. Acceptance of Terms',
-    content: `By accessing and using the TaylorURL website and services, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use my services.`,
+    content: `By accessing and using the TaylorURL LLC website and services, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use my services.`,
   },
   {
     title: '2. Services Description',
