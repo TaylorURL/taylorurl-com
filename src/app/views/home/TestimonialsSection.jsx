@@ -85,7 +85,7 @@ export default function TestimonialsSection() {
             What clients <span className="logo-wave-dark">say</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            A few words from the local business owners I&apos;ve built and supported sites for.
+            A few words from local business owners I have built and looked after websites for.
           </p>
           <div className="mt-8 flex justify-center">
             <TrustpilotBadge profileUrl={TRUSTPILOT_PROFILE_URL} />
