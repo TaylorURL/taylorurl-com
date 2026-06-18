@@ -94,7 +94,7 @@ function getResponseTime(service, daySlot) {
 
 const STATUS_CONFIG = {
   operational: {
-    label: 'Operational',
+    label: 'Up and running',
     color: 'text-green-600',
     bg: 'bg-green-50',
     border: 'border-green-200',
