@@ -100,7 +100,10 @@ export default function Navigation() {
           <Link ref={logoRef} to="/" className="group pointer-events-auto flex items-center">
             <img
               src="/images/TaylorURL-Logo.png"
-              alt="TaylorURL"
+              alt="TaylorURL — web development in Baytown, TX"
+              width="112"
+              height="112"
+              fetchPriority="high"
               className="h-28 w-auto transition-all duration-300"
               style={onDark ? { filter: 'brightness(0) invert(1)' } : undefined}
             />
