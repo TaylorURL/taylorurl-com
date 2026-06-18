@@ -90,13 +90,33 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About"
-        description="TaylorURL is Trenton Taylor, an independent developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Hand-coded React, direct relationship, ongoing support after launch."
+        title="About Trenton Taylor — Baytown Web Developer"
+        description="Trenton Taylor is an independent Baytown, TX developer building modern websites and JavaScript apps for shops, trades, and pros across Houston."
         path="/about"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'About', path: '/about' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'AboutPage',
+            url: `${SITE_URL}/about`,
+            mainEntity: { '@id': BUSINESS_ID },
+            about: {
+              '@type': 'Person',
+              '@id': `${SITE_URL}/#trenton`,
+              name: 'Trenton Taylor',
+              jobTitle: 'Web Developer',
+              worksFor: { '@id': BUSINESS_ID },
+              url: `${SITE_URL}/about`,
+            },
+          },
+        ]}
       />
       <PageHero
-        title="About"
-        description="One developer, hand-coded sites, direct relationship from first call through ongoing support."
+        title="Baytown, TX web developer"
+        description="One developer, hand-coded sites, direct relationship — serving local businesses across Baytown and the Houston area from first call through ongoing support."
       />
 
       {/* Story section */}
