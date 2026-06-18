@@ -1,13 +1,5 @@
 import { Clock, DollarSign, Search, Shield, Smartphone, Users } from 'lucide-react'
 
-export const CUSTOMER_DISCOVERY_DATA = [
-  { name: 'Google Search', value: 46 },
-  { name: 'Social Media', value: 24 },
-  { name: 'Word of Mouth', value: 18 },
-  { name: 'Direct Visit', value: 8 },
-  { name: 'Other', value: 4 },
-]
-
 export const REVENUE_GROWTH_DATA = [
   { month: 'Jan', withSite: 100, withoutSite: 100 },
   { month: 'Mar', withSite: 118, withoutSite: 102 },
