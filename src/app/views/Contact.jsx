@@ -346,7 +346,7 @@ ${formData.message}
               Everything <span className="logo-wave">included</span>
             </h2>
             <p className="text-gray-400">
-              These come standard with every engagement. No surprise line items for the basics.
+              These come standard with every project. No surprise charges for the basics.
             </p>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
