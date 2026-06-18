@@ -135,7 +135,7 @@ export default function Navigation() {
             className="group flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-4"
           >
             <LogoMark
-              sizeClass="h-11 w-[164px] md:h-14 md:w-[210px]"
+              sizeClass="h-10 w-[150px] md:h-12 md:w-[180px]"
               invert={onHeroDark}
             />
           </Link>
@@ -232,7 +232,7 @@ export default function Navigation() {
             >
               <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-gray-100 px-5">
                 <Link to="/" aria-label="TaylorURL home" onClick={() => setMobileOpen(false)}>
-                  <LogoMark sizeClass="h-11 w-[164px]" invert={false} />
+                  <LogoMark sizeClass="h-10 w-[150px]" invert={false} />
                 </Link>
                 <button
                   type="button"
