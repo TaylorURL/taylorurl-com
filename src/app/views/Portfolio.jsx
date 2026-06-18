@@ -120,7 +120,7 @@ export default function Portfolio() {
       />
       <PageHero
         title="Recent client work"
-        description="A look at the sites I have shipped for Baytown and Houston-area businesses. Every project is hand-coded, hosted, and maintained from one source."
+        description="A look at the sites I have built for Baytown and Houston-area businesses. Every one is custom-built, hosted, and looked after by me."
       />
 
       <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
