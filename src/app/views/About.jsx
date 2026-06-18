@@ -15,6 +15,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const VALUES = [
   {
