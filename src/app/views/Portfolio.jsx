@@ -10,10 +10,11 @@ import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 
 /**
  * Live screenshot proxy that returns a PNG of the target URL with no API key
- * required. Used as the card preview; the placeholder swatch shows until the
- * image loads and remains in place if the request fails.
+ * required. maxAge/24 forces a daily recapture so previews track the live
+ * sites. The placeholder swatch shows until the image loads and remains in
+ * place if the request fails.
  */
-const SCREENSHOT_ENDPOINT = 'https://image.thum.io/get/width/1280/crop/800'
+const SCREENSHOT_ENDPOINT = 'https://image.thum.io/get/maxAge/24/width/1280/crop/800'
 
 function PortfolioCard({ project, index }) {
   const [imageLoaded, setImageLoaded] = useState(false)
