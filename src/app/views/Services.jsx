@@ -25,11 +25,11 @@ const SERVICES = [
     icon: Palette,
     title: 'Custom websites for local businesses',
     description:
-      'Designed from scratch around your brand and your customers. No templates, no page builders — the site looks and behaves like your business, not a stock theme.',
+      'Designed from scratch around your brand and your customers. No off-the-shelf templates — the site looks and feels like your business, not a stock theme everyone else is using.',
     features: [
       'Designed around your brand, not a theme',
-      'Responsive on every screen size',
-      'Considered motion and interaction',
+      'Looks great on phones, tablets, and computers',
+      'Polished little touches that feel premium',
       'Built for the customers you actually serve',
     ],
     mockup: 'default',
@@ -38,50 +38,50 @@ const SERVICES = [
     icon: Code2,
     title: 'Website redesigns',
     description:
-      'If the current site is dated or underperforming, I rebuild it from the ground up in modern code so the business is represented properly online.',
+      'If your current site looks dated or is not bringing in business, I rebuild it from the ground up so you finally look as good online as you are in person.',
     features: [
-      'Full redesign on a modern stack',
-      'Keep what works, remove the clutter',
-      'Measurably faster load times',
-      'Technical SEO cleanup and structure',
+      'Fresh, modern look from the ground up',
+      'Keep what works, drop the clutter',
+      'Noticeably faster pages',
+      'Cleaned up so Google can find you',
     ],
     mockup: 'code',
   },
   {
     icon: Zap,
-    title: 'JavaScript applications and custom features',
+    title: 'Online tools and custom features',
     description:
-      'Booking flows, customer portals, online ordering, internal dashboards. When the business needs more than static pages, I build it as a real React application that integrates with the tools you already use.',
+      'Online booking, ordering, customer portals, quote forms, simple dashboards. When you need more than a basic site, I build the tools that fit how you run the business — and connect them to the apps you already use.',
     features: [
-      'Custom React apps, not page-builder plugins',
-      'Booking, ordering, and quoting workflows',
-      'Integrates with your existing tools',
-      'Built and hosted for speed',
+      'Custom tools built for your business',
+      'Online booking, ordering, and quote forms',
+      'Plays nice with the apps you already use',
+      'Fast, smooth, and easy for customers',
     ],
     mockup: 'analytics',
   },
   {
     icon: Wrench,
-    title: 'Ongoing hosting and maintenance',
+    title: 'Ongoing care and updates',
     description:
-      'Hosting, updates, security patches, backups, monitoring. The operational side of running a website, handled in the background so you do not have to think about it.',
+      'Keeping the site online, fast, safe, and backed up. The technical stuff happens in the background so you never have to think about it.',
     features: [
-      'Hosting, SSL, and domain setup',
-      'Security patches as they ship',
-      'Uptime monitoring and daily backups',
-      'Direct access to the developer who built it',
+      'Website hosting and domain set up',
+      'Security kept current, behind the scenes',
+      'Watched around the clock with daily backups',
+      'A direct line to the person who built your site',
     ],
     mockup: 'default',
   },
 ]
 
 const CAPABILITIES = [
-  { icon: Smartphone, label: 'Responsive Design' },
-  { icon: Search, label: 'SEO Optimization' },
-  { icon: Shield, label: 'Security Hardening' },
-  { icon: Globe, label: 'Domain & DNS' },
-  { icon: RefreshCw, label: 'Content Updates' },
-  { icon: Zap, label: 'Speed Optimization' },
+  { icon: Smartphone, label: 'Works on every phone' },
+  { icon: Search, label: 'Found on Google' },
+  { icon: Shield, label: 'Locked down safe' },
+  { icon: Globe, label: 'Domain set up for you' },
+  { icon: RefreshCw, label: 'Easy content updates' },
+  { icon: Zap, label: 'Quick page loads' },
 ]
 
 export default function Services() {
