@@ -169,7 +169,10 @@ export default function Navigation() {
           <Link ref={mobileLogoRef} to="/" className="flex items-center">
             <img
               src="/images/TaylorURL-Logo.png"
-              alt="TaylorURL"
+              alt="TaylorURL — web development in Baytown, TX"
+              width="80"
+              height="80"
+              fetchPriority="high"
               className="-mb-[10px] h-20 w-auto transition-all duration-300"
               style={onDark && !mobileOpen ? { filter: 'brightness(0) invert(1)' } : undefined}
             />
