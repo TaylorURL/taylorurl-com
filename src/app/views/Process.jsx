@@ -19,6 +19,7 @@ import CtaBanner from '@components/CtaBanner'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BADGE, SECTION_H2 } from '@constants/ui'
+import { breadcrumbSchema } from '@constants/seo'
 
 const TIMELINE_STEPS = [
   {
@@ -139,13 +140,17 @@ export default function Process() {
   return (
     <div>
       <Seo
-        title="Process"
-        description="The process for building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. From first call to launch in 2-4 weeks, with ongoing support after launch."
+        title="Web Development Process — Baytown & Houston"
+        description="How I build websites and JavaScript apps for Baytown and Houston-area businesses — from first call to launch in two to four weeks."
         path="/process"
+        schema={breadcrumbSchema([
+          { name: 'Home', path: '/' },
+          { name: 'Process', path: '/process' },
+        ])}
       />
       <PageHero
-        title="Process"
-        description="A clear, predictable path from first call to launch and beyond."
+        title="The build process"
+        description="A clear, predictable path from first call to launch — for Baytown and Houston-area businesses."
       />
 
       {/* Timeline */}

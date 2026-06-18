@@ -18,6 +18,7 @@ import BrowserMockup from '@components/BrowserMockup'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
+import { BUSINESS_ID, SERVICE_AREAS, breadcrumbSchema } from '@constants/seo'
 
 const SERVICES = [
   {
@@ -87,13 +88,43 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Services"
-        description="Modern websites, redesigns, JavaScript applications, SEO, and ongoing maintenance for local businesses in Baytown, Houston, and the surrounding Texas area. Hand-coded by one developer with a direct, ongoing client relationship."
+        title="Web Development Services in Baytown, TX"
+        description="Custom websites, redesigns, JavaScript apps, SEO, and hosting for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
         path="/services"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Services', path: '/services' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Service',
+            serviceType: 'Web Development',
+            name: 'Web development and JavaScript application development',
+            provider: { '@id': BUSINESS_ID },
+            areaServed: SERVICE_AREAS.map(name => ({
+              '@type': 'City',
+              name,
+              containedInPlace: { '@type': 'State', name: 'Texas' },
+            })),
+            hasOfferCatalog: {
+              '@type': 'OfferCatalog',
+              name: 'Web development services',
+              itemListElement: SERVICES.map(service => ({
+                '@type': 'Offer',
+                itemOffered: {
+                  '@type': 'Service',
+                  name: service.title,
+                  description: service.description,
+                },
+              })),
+            },
+          },
+        ]}
       />
       <PageHero
-        title="What I build"
-        description="Modern websites, redesigns, and JavaScript applications. Built, hosted, and maintained from one source."
+        title="Web development in Baytown, TX"
+        description="Custom websites, redesigns, and JavaScript applications for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses — built, hosted, and maintained from one source."
       />
 
       {/* Services grid — alternating layout */}
@@ -161,6 +192,24 @@ export default function Services() {
               )
             })}
           </div>
+        </div>
+      </section>
+
+      {/* Service area */}
+      <section className="border-t border-gray-200 bg-surface-base py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <motion.div {...fadeInUp}>
+            <h2 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
+              Serving local businesses across the Houston area
+            </h2>
+            <p className="mb-6 text-base text-gray-600">
+              Based in Baytown, TX and working with shops, restaurants, trades, contractors, and
+              independent professionals across the surrounding communities.
+            </p>
+            <p className="text-sm leading-relaxed text-gray-500">
+              {SERVICE_AREAS.join(' · ')}
+            </p>
+          </motion.div>
         </div>
       </section>
 

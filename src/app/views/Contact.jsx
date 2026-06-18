@@ -7,6 +7,7 @@ import { useToast } from '@components/Toast'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { slideInLeftMount, slideInRightMount } from '@constants/animations'
 import { BTN_PRIMARY_LG, INPUT, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
@@ -102,13 +103,25 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Contact"
-        description="Tell me about your business and what you need from a site. I build modern websites and JavaScript applications for local businesses in Baytown, Houston, and the surrounding Texas area."
+        title="Contact a Baytown Web Developer"
+        description="Tell me about your Baytown or Houston-area business and what you need from a website or web app. I respond within 24 hours."
         path="/contact"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Contact', path: '/contact' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ContactPage',
+            url: `${SITE_URL}/contact`,
+            mainEntity: { '@id': BUSINESS_ID },
+          },
+        ]}
       />
       <PageHero
-        title="Get in touch"
-        description="Tell me about the business. I respond within 24 hours."
+        title="Contact a Baytown web developer"
+        description="Tell me about your Baytown or Houston-area business. I respond within 24 hours."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">

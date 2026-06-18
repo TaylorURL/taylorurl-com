@@ -12,7 +12,7 @@ export default function Home() {
     <div>
       <Seo
         path="/"
-        description="TaylorURL is Trenton Taylor, an independent developer building modern websites and JavaScript applications for local businesses in Baytown, Houston, and the surrounding area. Hand-coded React. Direct relationship. Ongoing support after launch."
+        description="Baytown, TX web developer building hand-coded React websites and JavaScript apps for shops, restaurants, trades, and pros across the Houston area."
       />
       <div id="hero">
         <HeroSection />

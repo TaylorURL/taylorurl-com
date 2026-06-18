@@ -29,11 +29,13 @@
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "LocalBusiness",
+      "@type": ["LocalBusiness", "ProfessionalService"],
       "@id": "https://taylorurl.com/#business",
       "name": "TaylorURL",
+      "alternateName": ["Baytown Web Development", "TaylorURL Web Development"],
       "description": "Modern websites and JavaScript applications for local businesses — shops, restaurants, trades, contractors, and independent professionals in Baytown, Houston, and the surrounding Texas area. Built and maintained by one developer with a direct, ongoing client relationship.",
       "url": "https://taylorurl.com",
+      "priceRange": "$$",
       "logo": "https://taylorurl.com/images/TaylorURL-Logo.png",
       "image": "https://taylorurl.com/images/TaylorURL-Logo.png",
       "telephone": "+18321234567",
@@ -62,6 +64,21 @@
         {
           "@type": "City",
           "name": "Baytown",
+          "containedInPlace": { "@type": "State", "name": "Texas" }
+        },
+        {
+          "@type": "City",
+          "name": "Highlands",
+          "containedInPlace": { "@type": "State", "name": "Texas" }
+        },
+        {
+          "@type": "City",
+          "name": "Channelview",
+          "containedInPlace": { "@type": "State", "name": "Texas" }
+        },
+        {
+          "@type": "City",
+          "name": "Crosby",
           "containedInPlace": { "@type": "State", "name": "Texas" }
         },
         {
@@ -126,7 +143,16 @@
         "opens": "09:00",
         "closes": "17:00"
       },
-      "sameAs": [],
+      "sameAs": [
+        "https://baytownwebdevelopment.com"
+      ],
+      "serviceType": [
+        "Web Development",
+        "JavaScript Application Development",
+        "Website Redesign",
+        "Website Hosting and Maintenance",
+        "Local SEO"
+      ],
       "knowsAbout": [
         "Local business websites",
         "Custom web development for small businesses",

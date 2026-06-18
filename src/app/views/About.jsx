@@ -15,6 +15,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const VALUES = [
   {
@@ -89,13 +90,33 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About"
-        description="TaylorURL is Trenton Taylor, an independent developer based in Baytown, Texas, building modern websites and JavaScript applications for local businesses across the Houston area. Hand-coded React, direct relationship, ongoing support after launch."
+        title="About Trenton Taylor — Baytown Web Developer"
+        description="Trenton Taylor is an independent Baytown, TX developer building modern websites and JavaScript apps for shops, trades, and pros across Houston."
         path="/about"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'About', path: '/about' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'AboutPage',
+            url: `${SITE_URL}/about`,
+            mainEntity: { '@id': BUSINESS_ID },
+            about: {
+              '@type': 'Person',
+              '@id': `${SITE_URL}/#trenton`,
+              name: 'Trenton Taylor',
+              jobTitle: 'Web Developer',
+              worksFor: { '@id': BUSINESS_ID },
+              url: `${SITE_URL}/about`,
+            },
+          },
+        ]}
       />
       <PageHero
-        title="About"
-        description="One developer, hand-coded sites, direct relationship from first call through ongoing support."
+        title="Baytown, TX web developer"
+        description="One developer, hand-coded sites, direct relationship — serving local businesses across Baytown and the Houston area from first call through ongoing support."
       />
 
       {/* Story section */}
@@ -105,7 +126,7 @@ export default function About() {
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
               <p className={`mb-2 ${EYEBROW}`}>Background</p>
-              <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for local businesses</h2>
+              <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for Baytown and Houston-area businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
                   I&apos;m Trenton Taylor, and TaylorURL is me. I started the practice in Baytown,
@@ -158,7 +179,8 @@ export default function About() {
                   <div>
                     <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
                     <p className="text-sm text-gray-600">
-                      Working with local businesses across the Houston area and beyond. The work
+                      Working with local businesses across Baytown, Mont Belvieu, Channelview,
+                      Crosby, La Porte, Deer Park, Pasadena, and the greater Houston area. The work
                       is remote-friendly end-to-end.
                     </p>
                   </div>
