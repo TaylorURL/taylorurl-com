@@ -37,7 +37,7 @@ export default function NotFound() {
   return (
     <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-gray-50 px-4 pb-12 pt-28 sm:pb-16 sm:pt-40">
       <div className="grid-pattern absolute inset-0 opacity-[0.03]" />
-      <Seo title="Page Not Found" path="/404" />
+      <Seo title="Page Not Found" path="/404" noIndex />
 
       <div className="relative mx-auto max-w-lg text-center">
         <motion.p
