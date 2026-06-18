@@ -56,7 +56,7 @@ const PROCESS = [
     num: '01',
     title: 'You reach out',
     description:
-      'Tell me about the business and what you need. A short message is enough — no forms with thirty fields.',
+      'Tell me about the business and what you need. A short message is plenty — no thirty-field intake form.',
     you: 'Send me a message',
     me: 'Reply same day',
   },
@@ -64,23 +64,23 @@ const PROCESS = [
     num: '02',
     title: 'I plan it out',
     description:
-      'I scope the structure, pages, and design direction. You approve the plan before any code is written.',
+      'I lay out the pages, structure, and look of the site. You approve the plan before any work starts.',
     you: 'Review and give feedback',
-    me: 'Share mockups you can actually see',
+    me: 'Share designs you can actually see',
   },
   {
     num: '03',
     title: 'I build it',
     description:
-      'Custom code, optimized images, fast hosting. You get progress updates throughout and can give feedback at any stage.',
+      'Clean design, sharp photos, and fast pages. You get progress updates the whole way and can ask for changes at any stage.',
     you: 'Review and request changes',
-    me: 'Build, test, and refine',
+    me: 'Build, test, and polish',
   },
   {
     num: '04',
-    title: 'Launch and support',
+    title: 'Launch and look after it',
     description:
-      'Your site goes live. I handle hosting, security, updates, and fixes after launch so the technical side stays off your plate.',
+      'Your site goes live. I keep it online, secure, and up to date so the technical side never lands on you.',
     you: 'Run the business',
     me: 'Keep everything running',
   },
