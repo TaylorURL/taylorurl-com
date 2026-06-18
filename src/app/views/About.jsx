@@ -281,8 +281,8 @@ export default function About() {
               Start a <span className="logo-wave">conversation</span>
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me what your business does and what you need from a site. You get a direct
-              answer and a clear next step.
+              Tell me what your business does and what you want from a website. You get a
+              straight answer and a clear next step.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
