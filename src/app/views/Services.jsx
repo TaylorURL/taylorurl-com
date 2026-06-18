@@ -195,6 +195,24 @@ export default function Services() {
         </div>
       </section>
 
+      {/* Service area */}
+      <section className="border-t border-gray-200 bg-surface-base py-12 sm:py-16">
+        <div className="mx-auto max-w-4xl px-6 text-center">
+          <motion.div {...fadeInUp}>
+            <h2 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
+              Serving local businesses across the Houston area
+            </h2>
+            <p className="mb-6 text-base text-gray-600">
+              Based in Baytown, TX and working with shops, restaurants, trades, contractors, and
+              independent professionals across the surrounding communities.
+            </p>
+            <p className="text-sm leading-relaxed text-gray-500">
+              {SERVICE_AREAS.join(' · ')}
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-12 sm:py-20">
         <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
