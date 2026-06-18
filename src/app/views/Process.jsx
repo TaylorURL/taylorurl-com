@@ -149,8 +149,8 @@ export default function Process() {
         ])}
       />
       <PageHero
-        title="The build process"
-        description="A clear, predictable path from first call to launch — for Baytown and Houston-area businesses."
+        title="How it works"
+        description="A clear, predictable path from your first call to a live website — for Baytown and Houston-area businesses."
       />
 
       {/* Timeline */}
