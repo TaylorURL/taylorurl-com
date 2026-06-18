@@ -52,7 +52,9 @@ function PortfolioCard({ project, index }) {
           {!imageFailed && (
             <img
               src={`${SCREENSHOT_ENDPOINT}/${project.url}`}
-              alt={`${project.name} homepage preview`}
+              alt={`${project.name} website homepage — built by TaylorURL`}
+              width="1280"
+              height="800"
               loading="lazy"
               decoding="async"
               onLoad={() => setImageLoaded(true)}
