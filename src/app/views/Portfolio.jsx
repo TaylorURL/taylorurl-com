@@ -4,7 +4,7 @@ import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
-import { fadeInUp, staggerChild } from '@constants/animations'
+import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
