@@ -1,9 +1,5 @@
 import Seo from '@components/Seo'
-import LogoMarquee from '@components/LogoMarquee'
-import SocialProofCounter from '@components/SocialProofCounter'
 import HeroSection from './home/HeroSection'
-import TrustBadgesSection from './home/TrustBadgesSection'
-import StatsSection from './home/StatsSection'
 import WhyWebsiteSection from './home/WhyWebsiteSection'
 import DataSection from './home/DataSection'
 import TestimonialsSection from './home/TestimonialsSection'
@@ -20,12 +16,6 @@ export default function Home() {
       />
       <div id="hero">
         <HeroSection />
-      </div>
-      <SocialProofCounter />
-      <TrustBadgesSection />
-      <LogoMarquee />
-      <div id="stats">
-        <StatsSection />
       </div>
       <div id="why">
         <WhyWebsiteSection />
