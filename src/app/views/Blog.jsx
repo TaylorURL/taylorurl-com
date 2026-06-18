@@ -40,6 +40,26 @@ function getCategoryStyle(category) {
   )
 }
 
+// Size variants for the category pill. `featured` is borderless; the others
+// frame the pill against lighter card/list surfaces.
+const CATEGORY_BADGE_SIZES = {
+  featured: 'gap-1 px-3 py-1 text-xs',
+  card: 'gap-1.5 border px-2.5 py-0.5 text-xs',
+  list: 'border px-2 py-0.5 text-[10px]',
+}
+
+function CategoryBadge({ category, size = 'card' }) {
+  const style = getCategoryStyle(category)
+  const border = size === 'featured' ? '' : style.border
+  return (
+    <span
+      className={`inline-flex items-center rounded-full font-medium ${CATEGORY_BADGE_SIZES[size]} ${style.bg} ${style.text} ${border}`}
+    >
+      {category}
+    </span>
+  )
+}
+
 function FeaturedPost({ post }) {
   const style = getCategoryStyle(post.category)
   return (
