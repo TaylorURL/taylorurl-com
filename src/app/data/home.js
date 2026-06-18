@@ -69,13 +69,4 @@ export const HOW_IT_WORKS_STEPS = [
   },
 ]
 
-export const CHART_AXIS_STYLE = { fill: '#6b7280', fontSize: 12 }
-export const CHART_TOOLTIP_STYLE = { borderRadius: '8px', border: '1px solid #e5e7eb' }
-
 export const HERO_BADGES = ['Cancel anytime', 'Free initial consultation']
-
-export const LOCAL_SEARCH_STATS = [
-  { value: '97%', label: 'search online first' },
-  { value: '72%', label: 'visit within 5 miles' },
-  { value: '88%', label: 'trust online reviews' },
-]
