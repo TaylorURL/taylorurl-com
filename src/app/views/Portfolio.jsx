@@ -7,6 +7,7 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
+import { breadcrumbSchema } from '@constants/seo'
 
 /**
  * Live screenshot proxy that returns a PNG of the target URL with no API key
