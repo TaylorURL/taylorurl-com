@@ -59,7 +59,7 @@ const ORIGINAL_POSTS = [
     title: 'Why Your Wix Site Is Costing You Customers',
     excerpt:
       "Wix, Squarespace, GoDaddy builders — they're easy to use. They're also slow, bloated, and full of code that makes Google cringe. Let's talk about it.",
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'February 20, 2026',
     readTime: '5 min read',
     content: [
@@ -167,7 +167,7 @@ const ORIGINAL_POSTS = [
     title: 'How Fast Should My Website Load?',
     excerpt:
       'If your site takes more than 3 seconds to load, you\'re losing visitors. Here\'s what "fast" actually means, how to measure it, and why it matters more than you think.',
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'January 25, 2026',
     readTime: '4 min read',
     content: [

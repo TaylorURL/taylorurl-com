@@ -121,7 +121,7 @@ export const BLOG_ARTICLES_1 = [
     title: "Why I Don't Use WordPress (And You Shouldn't Either)",
     excerpt:
       "WordPress runs 40% of the internet. That doesn't make it good — it makes it a target. Here's why I build from scratch.",
-    category: 'Industry Tips',
+    category: 'Tips for Owners',
     date: 'December 5, 2025',
     readTime: '6 min read',
     content: [
@@ -199,7 +199,7 @@ export const BLOG_ARTICLES_1 = [
     title: 'How to Pick a Web Developer Without Getting Burned',
     excerpt:
       "Hiring a web developer is stressful when you don't know the industry. Here's how to find a good one and avoid the bad ones.",
-    category: 'Industry Tips',
+    category: 'Tips for Owners',
     date: 'January 10, 2026',
     readTime: '6 min read',
     content: [
@@ -282,7 +282,7 @@ export const BLOG_ARTICLES_1 = [
     title: 'Image Optimization: The Easiest Speed Win',
     excerpt:
       "Your site is slow and the fix might be as simple as shrinking your images. Here's how to do it without losing quality.",
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'February 8, 2026',
     readTime: '5 min read',
     content: [
