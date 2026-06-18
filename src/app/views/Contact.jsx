@@ -120,8 +120,8 @@ ${formData.message}
         ]}
       />
       <PageHero
-        title="Contact a Baytown web developer"
-        description="Tell me about your Baytown or Houston-area business. I respond within 24 hours."
+        title="Let's talk about your website"
+        description="Tell me about your Baytown or Houston-area business. I get back to you within 24 hours."
       />
 
       <section className="bg-surface-base py-12 sm:py-20">
