@@ -21,7 +21,7 @@ export default function Footer() {
             <Link to="/" className="mb-5 inline-block">
               <img
                 src="/images/TaylorURL-Logo.png"
-                alt="TaylorURL — web development in Baytown, TX"
+                alt="TaylorURL — websites for small businesses in Baytown, TX"
                 width="112"
                 height="112"
                 loading="lazy"
@@ -30,9 +30,9 @@ export default function Footer() {
               />
             </Link>
             <p className="mb-6 max-w-sm text-sm leading-relaxed text-gray-500">
-              Modern websites and JavaScript applications for local businesses across Baytown,
-              Houston, Pasadena, Deer Park, La Porte, and the greater Houston area. Built and
-              maintained by Trenton Taylor.
+              Custom websites for small businesses across Baytown, Houston, Pasadena, Deer
+              Park, La Porte, and the greater Houston area. Built and looked after by Trenton
+              Taylor.
             </p>
             <div className="space-y-2.5">
               <div className="flex items-center gap-2.5 text-sm text-gray-500">
@@ -124,7 +124,7 @@ export default function Footer() {
             className="flex items-center gap-2 text-sm text-gray-400 transition-colors hover:text-gray-600"
           >
             <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-blue-500" />
-            <span>All systems operational</span>
+            <span>Everything running smoothly</span>
           </Link>
         </div>
       </motion.div>

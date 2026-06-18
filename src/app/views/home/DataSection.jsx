@@ -19,21 +19,21 @@ const FACTS = [
     stat: '+110%',
     label: 'more revenue',
     detail:
-      'Businesses with a real online presence consistently outperform those without one over a 12-month window.',
+      'Small businesses with a real website outgrow the ones without over a twelve-month stretch — by a wide margin.',
   },
   {
     icon: Smartphone,
     stat: '70%',
-    label: 'mobile searches',
+    label: 'searches on phones',
     detail:
-      'Most local searches happen on a phone. If the site is not fast and usable on mobile, those visitors leave before the page loads.',
+      'Most local searches happen on a phone. If your site is slow or clunky there, people leave before they ever see what you offer.',
   },
   {
     icon: Monitor,
     stat: '<2s',
     label: 'load time',
     detail:
-      'Every site I build loads in under two seconds. Faster pages convert more visitors and rank higher in search.',
+      'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with higher spots in search.',
   },
 ]
 
@@ -46,16 +46,16 @@ export default function DataSection() {
         <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
           <motion.div {...fadeInUp}>
             <h2 className={`mb-5 ${SECTION_H2_DARK}`}>
-              A real online presence{' '}
+              A real website{' '}
               <span className="logo-wave">is the difference.</span>
             </h2>
             <p className="mb-6 text-base leading-relaxed text-gray-400 sm:text-lg">
               Local businesses with a professional website grow faster, get found more often, and
-              close more customers. The ones without rely on referrals and hope.
+              win more customers. The ones without rely on referrals and hope.
             </p>
             <p className="mb-8 text-gray-500">
-              A well-built site puts the business where customers already look when they need
-              someone to call.
+              A well-built site puts your business right where people are already looking when
+              they need someone to call.
             </p>
             <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
               Get in Touch
@@ -70,7 +70,7 @@ export default function DataSection() {
                 <div className="flex gap-4 text-[11px]">
                   <div className="flex items-center gap-1.5">
                     <div className="h-2 w-4 rounded-full bg-blue-500" />
-                    <span className="text-gray-500">With Website</span>
+                    <span className="text-gray-500">With a website</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <div className="h-0.5 w-4 border-t border-dashed border-gray-600" />
@@ -99,7 +99,7 @@ export default function DataSection() {
                     <Tooltip
                       formatter={(value, name) => [
                         `${value}%`,
-                        name === 'withSite' ? 'With Website' : 'Without Website',
+                        name === 'withSite' ? 'With a website' : 'Without a website',
                       ]}
                       contentStyle={TOOLTIP_STYLE}
                       labelStyle={{ color: '#9ca3af' }}

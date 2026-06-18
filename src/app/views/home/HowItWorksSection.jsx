@@ -13,7 +13,8 @@ export default function HowItWorksSection() {
             How it <span className="logo-wave-dark">works</span>
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            Three steps from first message to launch. No onboarding decks, no extended discovery.
+            Three steps from your first message to a live website. No drawn-out meetings, no
+            confusing paperwork.
           </p>
         </div>
 

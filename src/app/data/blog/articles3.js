@@ -98,7 +98,7 @@ export const BLOG_ARTICLES_3 = [
     title: 'Why Fast Websites Make More Money',
     excerpt:
       "Speed isn't just a nice-to-have. Slow websites lose customers, tank your SEO, and cost you real revenue.",
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'November 19, 2025',
     readTime: '5 min read',
     content: [
@@ -132,7 +132,7 @@ export const BLOG_ARTICLES_3 = [
     title: 'The Truth About Website Templates',
     excerpt:
       "Templates seem like a great deal until you realize what you're actually giving up. Let's talk about it.",
-    category: 'Industry Tips',
+    category: 'Tips for Owners',
     date: 'December 3, 2025',
     readTime: '6 min read',
     content: [
@@ -166,7 +166,7 @@ export const BLOG_ARTICLES_3 = [
     title: "How to Tell If Your Web Developer Actually Knows What They're Doing",
     excerpt:
       'Not all developers are created equal. Here are the green flags and red flags to watch for.',
-    category: 'Industry Tips',
+    category: 'Tips for Owners',
     date: 'December 17, 2025',
     readTime: '6 min read',
     content: [
@@ -234,7 +234,7 @@ export const BLOG_ARTICLES_3 = [
     title: 'Bounce Rate: What It Is and How to Fix It',
     excerpt:
       "If people are landing on your site and immediately leaving, you've got a bounce rate problem. Here's what to do about it.",
-    category: 'Web Performance',
+    category: 'Site Speed',
     date: 'January 21, 2026',
     readTime: '5 min read',
     content: [

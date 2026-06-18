@@ -26,8 +26,8 @@ const CATEGORY_COLORS = {
   Business: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
   SEO: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
   Design: { bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
-  'Web Performance': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
-  'Industry Tips': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
+  'Site Speed': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  'Tips for Owners': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
 }
 
 function getCategoryStyle(category) {
@@ -265,8 +265,8 @@ export default function Blog() {
   return (
     <div>
       <Seo
-        title="Web & SEO Blog for Baytown Businesses"
-        description="Web development, SEO, and growth notes for Baytown, Houston, and Southeast Texas businesses. Practical advice on getting found online."
+        title="Website & Google Tips for Baytown Businesses"
+        description="Plain-English website, Google, and growth notes for Baytown, Houston, and Southeast Texas small businesses. Practical advice on getting more customers online."
         path="/blog"
         schema={[
           breadcrumbSchema([
@@ -279,7 +279,7 @@ export default function Blog() {
             name: 'TaylorURL Blog',
             url: 'https://taylorurl.com/blog',
             description:
-              'Web development, SEO, and growth notes for local businesses in Baytown and the Houston area.',
+              'Plain-English website, Google, and growth notes for small businesses in Baytown and the Houston area.',
             publisher: { '@id': 'https://taylorurl.com/#business' },
           },
         ]}
@@ -294,7 +294,7 @@ export default function Blog() {
               The <span className="logo-wave-dark">Blog</span>
             </h1>
             <p className="mb-6 text-gray-500">
-              Practical web, SEO, and growth notes for local businesses.
+              Practical website, Google, and growth tips for local businesses.
             </p>
 
             {/* Search + categories inline */}

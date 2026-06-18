@@ -12,7 +12,7 @@ export default function Home() {
     <div>
       <Seo
         path="/"
-        description="Baytown, TX web developer building hand-coded React websites and JavaScript apps for shops, restaurants, trades, and pros across the Houston area."
+        description="Baytown, TX website designer building custom websites for shops, restaurants, trades, and local pros across the Houston area. Get found on Google."
       />
       <div id="hero">
         <HeroSection />

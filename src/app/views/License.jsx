@@ -70,7 +70,7 @@ export default function License() {
     <>
       <Seo
         title="License"
-        description="License terms governing the use of TaylorURL LLC deliverables and code."
+        description="License terms governing the use of TaylorURL LLC deliverables."
         path="/license"
         noIndex
       />

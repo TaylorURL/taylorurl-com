@@ -34,7 +34,7 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mb-6 text-3xl font-bold leading-[1.08] tracking-tight text-white sm:text-4xl md:text-5xl lg:text-6xl"
           >
-            Modern websites for
+            Websites that work for
             <br />
             local <TypingRotator />
           </motion.h1>
@@ -45,10 +45,10 @@ export default function HeroSection() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="mb-8 max-w-md text-base leading-relaxed text-gray-400 sm:mb-10 sm:text-lg"
           >
-            I&apos;m Trenton, a Baytown, TX web developer. I build websites and JavaScript
-            applications for local businesses across Baytown, Mont Belvieu, Pasadena, Deer Park,
-            La Porte, and the greater Houston area. Hand-coded React, clean design, direct
-            relationship with the developer who writes the code.
+            I&apos;m Trenton — I build websites for small businesses around Baytown, Mont
+            Belvieu, Pasadena, Deer Park, La Porte, and the greater Houston area. Custom-built
+            to help you get found on Google, look professional, and bring in more customers.
+            You work with me directly, every step of the way.
           </motion.p>
 
           <motion.div

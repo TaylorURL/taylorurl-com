@@ -131,8 +131,8 @@ export default function BlogPost() {
             Need help with <span className="logo-wave">your website</span>?
           </h2>
           <p className="mb-6 text-gray-400">
-            I build modern websites and JavaScript applications for local businesses.
-            Hand-coded React, direct relationship, ongoing support after launch.
+            I build custom websites for small businesses. Made from scratch, looked after by
+            me, and a direct line to talk to whenever you need a change.
           </p>
           <Link to="/contact" className={`${BTN_PRIMARY} group`}>
             Get in Touch
