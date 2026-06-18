@@ -123,8 +123,8 @@ export default function Services() {
         ]}
       />
       <PageHero
-        title="Web development in Baytown, TX"
-        description="Custom websites, redesigns, and JavaScript applications for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses — built, hosted, and maintained from one source."
+        title="Small business websites in Baytown, TX"
+        description="Custom websites, redesigns, and online tools for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses — built, hosted, and looked after by one person."
       />
 
       {/* Services grid — alternating layout */}
