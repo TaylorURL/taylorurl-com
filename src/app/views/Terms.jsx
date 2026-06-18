@@ -21,7 +21,7 @@ const SECTIONS = [
   },
   {
     title: '5. Intellectual Property',
-    content: `Upon full payment, clients receive ownership of the final deliverables created specifically for their project. TaylorURL retains the right to use general techniques, skills, and non-confidential elements in future projects. I may display completed work in my portfolio unless otherwise agreed.`,
+    content: `Upon full payment, clients receive ownership of the final deliverables created specifically for their project. TaylorURL LLC retains the right to use general techniques, skills, and non-confidential elements in future projects. I may display completed work in my portfolio unless otherwise agreed.`,
   },
   {
     title: '6. Confidentiality',
