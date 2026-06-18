@@ -18,6 +18,7 @@ import BrowserMockup from '@components/BrowserMockup'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
+import { BUSINESS_ID, SERVICE_AREAS, breadcrumbSchema } from '@constants/seo'
 
 const SERVICES = [
   {
