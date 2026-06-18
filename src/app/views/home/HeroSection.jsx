@@ -7,7 +7,7 @@ import { BTN_PRIMARY } from '@constants/ui'
 
 export default function HeroSection() {
   return (
-    <section className="relative flex min-h-[90vh] items-center overflow-hidden">
+    <section className="relative flex min-h-[90vh] items-center overflow-hidden pt-24 md:pt-28">
       <div className="absolute inset-0 bg-gray-950" />
       <div className="grid-pattern-blue absolute inset-0 opacity-[0.06]" />
       <div className="absolute left-1/2 top-0 h-[400px] w-[600px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-blue-600/20 blur-[120px] sm:h-[600px] sm:w-[900px]" />
