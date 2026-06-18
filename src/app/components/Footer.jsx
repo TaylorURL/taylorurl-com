@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Mail, MapPin } from 'lucide-react'
+import { ArrowRight, Facebook, Mail, MapPin } from 'lucide-react'
 import { COMPANY_LOCATION, LEGAL_LINKS, PRIMARY_LINKS, SUPPORT_EMAIL } from '@constants/navigation'
 import { fadeInUp } from '@constants/animations'
 import { BTN_PRIMARY_SM } from '@constants/ui'
