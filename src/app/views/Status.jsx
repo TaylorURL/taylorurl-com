@@ -155,10 +155,10 @@ function ServiceRow({ service, daySlot, index }) {
         <div className="flex items-center gap-6">
           <div className="hidden items-center gap-4 text-sm sm:flex">
             <span className="text-gray-500">
-              <span className="font-medium text-gray-700">{responseTime}ms</span> response
+              <span className="font-medium text-gray-700">{responseTime}ms</span> reply time
             </span>
             <span className="text-gray-500">
-              <span className="font-medium text-gray-700">{uptime}%</span> uptime
+              <span className="font-medium text-gray-700">{uptime}%</span> online
             </span>
           </div>
           <span
