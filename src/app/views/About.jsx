@@ -126,25 +126,25 @@ export default function About() {
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
               <p className={`mb-2 ${EYEBROW}`}>Background</p>
-              <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for Baytown and Houston-area businesses</h2>
+              <h2 className={`mb-8 ${SECTION_H2}`}>I build websites for Baytown and Houston-area small businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL LLC is me. I started the practice in Baytown,
-                  Texas because the local businesses around me — restaurants, trades, salons,
-                  independent professionals — kept ending up with one of two outcomes: a generic
-                  agency build or an outdated page-builder site that no longer represented their
+                  I&apos;m Trenton Taylor, and TaylorURL LLC is me. I started the business in
+                  Baytown, Texas because the local shops around me — restaurants, trades,
+                  salons, independent pros — kept ending up with one of two outcomes: a generic
+                  agency site or a dated, do-it-yourself page that no longer matched their
                   business.
                 </p>
                 <p>
-                  Neither option works long-term. So I build sites the way a serious product team
-                  would: real code, considered design, and ongoing support from the person who
-                  wrote it. No sales layer, no ticket queue, no handoffs.
+                  Neither one works for long. So I build sites the way the best companies online
+                  do: clean design, fast pages, and ongoing care from the person who made it. No
+                  sales reps, no support queue, no handoffs.
                 </p>
                 <p>
-                  The stack is the same JavaScript and React stack used by major engineering
-                  teams, scaled to what a local business actually needs: fast pages, clear design,
-                  and a direct relationship with the developer who maintains the site. No
-                  vendor lock-in, no platform fees, no surprises.
+                  You get a site that is fast, easy on the eyes, and built around the customers
+                  you actually want — with a direct line to me whenever something needs to
+                  change. No platform you are stuck with, no monthly fees that creep up, no
+                  surprises.
                 </p>
               </div>
             </motion.div>
