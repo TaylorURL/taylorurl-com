@@ -7,6 +7,7 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
+import { breadcrumbSchema } from '@constants/seo'
 
 /**
  * Live screenshot proxy that returns a PNG of the target URL with no API key
@@ -51,7 +52,9 @@ function PortfolioCard({ project, index }) {
           {!imageFailed && (
             <img
               src={`${SCREENSHOT_ENDPOINT}/${project.url}`}
-              alt={`${project.name} homepage preview`}
+              alt={`${project.name} website homepage — built by TaylorURL`}
+              width="1280"
+              height="800"
               loading="lazy"
               decoding="async"
               onLoad={() => setImageLoaded(true)}
@@ -93,13 +96,31 @@ export default function Portfolio() {
   return (
     <div>
       <Seo
-        title="Portfolio"
-        description="A selection of client websites built by TaylorURL — modern, hand-coded React sites launched for local businesses in Baytown, Houston, and across Texas."
+        title="Web Development Portfolio — Baytown, TX"
+        description="Recent client websites hand-coded and launched for Baytown, Houston-area, and Southeast Texas businesses."
         path="/portfolio"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Portfolio', path: '/portfolio' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'TaylorURL portfolio',
+            url: 'https://taylorurl.com/portfolio',
+            hasPart: PORTFOLIO_PROJECTS.map(project => ({
+              '@type': 'WebSite',
+              name: project.name,
+              url: project.url,
+              description: project.description,
+            })),
+          },
+        ]}
       />
       <PageHero
-        title="Recent work"
-        description="A look at the sites I have shipped for local businesses. Every project is hand-coded, hosted, and maintained from one source."
+        title="Recent client work"
+        description="A look at the sites I have shipped for Baytown and Houston-area businesses. Every project is hand-coded, hosted, and maintained from one source."
       />
 
       <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">

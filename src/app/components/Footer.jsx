@@ -19,7 +19,15 @@ export default function Footer() {
         <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-4">
           <div className="lg:col-span-2">
             <Link to="/" className="mb-5 inline-block">
-              <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-28 w-auto" />
+              <img
+                src="/images/TaylorURL-Logo.png"
+                alt="TaylorURL — web development in Baytown, TX"
+                width="112"
+                height="112"
+                loading="lazy"
+                decoding="async"
+                className="h-28 w-auto"
+              />
             </Link>
             <p className="mb-6 max-w-sm text-sm leading-relaxed text-gray-500">
               Modern websites and JavaScript applications for local businesses across Baytown,

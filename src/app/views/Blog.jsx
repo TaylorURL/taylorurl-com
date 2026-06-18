@@ -16,6 +16,7 @@ import Seo from '@components/Seo'
 import { fadeInUp } from '@constants/animations'
 import { BTN_PRIMARY, INPUT } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
+import { breadcrumbSchema } from '@constants/seo'
 
 const POSTS_PER_PAGE = 8
 
@@ -264,9 +265,24 @@ export default function Blog() {
   return (
     <div>
       <Seo
-        title="Blog"
-        description="Web development, SEO, and growth notes for local businesses in Baytown, Houston, and the surrounding area. Practical advice on getting your shop, restaurant, or service business found online."
+        title="Web & SEO Blog for Baytown Businesses"
+        description="Web development, SEO, and growth notes for Baytown, Houston, and Southeast Texas businesses. Practical advice on getting found online."
         path="/blog"
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Blog', path: '/blog' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Blog',
+            name: 'TaylorURL Blog',
+            url: 'https://taylorurl.com/blog',
+            description:
+              'Web development, SEO, and growth notes for local businesses in Baytown and the Houston area.',
+            publisher: { '@id': 'https://taylorurl.com/#business' },
+          },
+        ]}
       />
 
       {/* Compact header */}

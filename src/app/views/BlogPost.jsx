@@ -5,6 +5,14 @@ import Seo from '@components/Seo'
 import { BADGE_BLUE, BTN_PRIMARY } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
 import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
+import { breadcrumbSchema } from '@constants/seo'
+
+const MAX_DESCRIPTION_LENGTH = 155
+
+function clampDescription(text) {
+  if (!text || text.length <= MAX_DESCRIPTION_LENGTH) return text
+  return `${text.slice(0, MAX_DESCRIPTION_LENGTH - 1).trimEnd()}…`
+}
 
 export default function BlogPost() {
   const { slug } = useParams()
@@ -12,37 +20,53 @@ export default function BlogPost() {
 
   if (!post) return <Navigate to="/blog" replace />
 
+  const publishedTime = new Date(post.date).toISOString()
+  const description = clampDescription(post.excerpt)
+
   return (
     <div>
       <Seo
         title={post.title}
-        description={post.excerpt}
+        description={description}
         path={`/blog/${slug}`}
-        schema={{
-          '@context': 'https://schema.org',
-          '@type': 'BlogPosting',
-          headline: post.title,
-          description: post.excerpt,
-          datePublished: new Date(post.date).toISOString(),
-          author: {
-            '@type': 'Person',
-            name: 'Trenton Taylor',
-            url: 'https://taylorurl.com/about',
-          },
-          publisher: {
-            '@type': 'Organization',
-            name: 'TaylorURL',
-            founder: {
+        ogType="article"
+        article={{
+          publishedTime,
+          section: post.category,
+        }}
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'Blog', path: '/blog' },
+            { name: post.title, path: `/blog/${slug}` },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BlogPosting',
+            headline: post.title,
+            description: post.excerpt,
+            datePublished: publishedTime,
+            articleSection: post.category,
+            author: {
               '@type': 'Person',
               name: 'Trenton Taylor',
+              url: 'https://taylorurl.com/about',
             },
-            logo: {
-              '@type': 'ImageObject',
-              url: 'https://taylorurl.com/images/TaylorURL-Logo.png',
+            publisher: {
+              '@type': 'Organization',
+              name: 'TaylorURL',
+              founder: {
+                '@type': 'Person',
+                name: 'Trenton Taylor',
+              },
+              logo: {
+                '@type': 'ImageObject',
+                url: 'https://taylorurl.com/images/TaylorURL-Logo.png',
+              },
             },
+            mainEntityOfPage: `https://taylorurl.com/blog/${slug}`,
           },
-          mainEntityOfPage: `https://taylorurl.com/blog/${slug}`,
-        }}
+        ]}
       />
 
       <article className="relative overflow-hidden bg-surface-base pb-12 pt-28 sm:pb-20 sm:pt-40">

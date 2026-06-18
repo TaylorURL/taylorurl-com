@@ -38,7 +38,7 @@ export default function Privacy() {
     <>
       <Seo
         title="Privacy Policy"
-        description="Learn how TaylorURL collects, uses, and protects your personal information."
+        description="How TaylorURL collects, uses, and protects personal information from visitors and clients of taylorurl.com."
         path="/privacy"
       />
       <LegalPage
