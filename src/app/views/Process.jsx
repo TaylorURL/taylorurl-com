@@ -130,10 +130,10 @@ const TIMELINE_STEPS = [
 
 const WHAT_YOULL_NEED = [
   { icon: Image, label: 'Your logo (any format)' },
-  { icon: FileText, label: 'Content or copy for your pages' },
-  { icon: Image, label: 'Photos of the work or the space' },
+  { icon: FileText, label: 'What you want each page to say' },
+  { icon: Image, label: 'Photos of your work or your space' },
   { icon: Paintbrush, label: 'Brand colors, if you have them' },
-  { icon: Globe, label: 'Domain info, or assistance registering one' },
+  { icon: Globe, label: 'Your web address, or help picking one' },
 ]
 
 export default function Process() {
