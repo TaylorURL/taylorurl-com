@@ -100,7 +100,7 @@ export default function Navigation() {
           <Link ref={logoRef} to="/" className="group pointer-events-auto flex items-center">
             <img
               src="/images/TaylorURL-Logo.png"
-              alt="TaylorURL — web development in Baytown, TX"
+              alt="TaylorURL — websites for small businesses in Baytown, TX"
               width="112"
               height="112"
               fetchPriority="high"
@@ -169,7 +169,7 @@ export default function Navigation() {
           <Link ref={mobileLogoRef} to="/" className="flex items-center">
             <img
               src="/images/TaylorURL-Logo.png"
-              alt="TaylorURL — web development in Baytown, TX"
+              alt="TaylorURL — websites for small businesses in Baytown, TX"
               width="80"
               height="80"
               fetchPriority="high"
@@ -230,7 +230,7 @@ export default function Navigation() {
                 <Link to="/" onClick={() => setMobileOpen(false)}>
                   <img
                     src="/images/TaylorURL-Logo.png"
-                    alt="TaylorURL — web development in Baytown, TX"
+                    alt="TaylorURL — websites for small businesses in Baytown, TX"
                     width="64"
                     height="64"
                     className="h-16 w-auto"
