@@ -222,8 +222,8 @@ export default function Services() {
               Ready to <span className="logo-wave-dark">talk through it</span>?
             </h2>
             <p className="mb-8 text-base text-gray-600 sm:text-lg">
-              Tell me what your business needs. You get a direct answer and a clear scope to work
-              from.
+              Tell me what your business needs. You get a straight answer and a clear plan to
+              work from.
             </p>
             <div className="flex justify-center">
               <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
