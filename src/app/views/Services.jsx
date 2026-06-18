@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
-  ArrowRight,
   Check,
   Code2,
   Globe,
@@ -15,9 +13,9 @@ import {
 } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import BrowserMockup from '@components/BrowserMockup'
+import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 import { BUSINESS_ID, SERVICE_AREAS, breadcrumbSchema } from '@constants/seo'
 
 const SERVICES = [
