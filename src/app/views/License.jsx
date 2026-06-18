@@ -51,7 +51,7 @@ const SECTIONS = [
   {
     title: 'Authorized Use',
     content:
-      'Access to this Software is granted only to authorized clients who have entered into a service agreement with TaylorURL. Unauthorized access, use, or distribution is strictly prohibited and may result in civil and criminal penalties.',
+      'Access to this Software is granted only to authorized clients who have entered into a service agreement with TaylorURL LLC. Unauthorized access, use, or distribution is strictly prohibited and may result in civil and criminal penalties.',
   },
   {
     title: 'Disclaimer',
