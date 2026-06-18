@@ -129,7 +129,7 @@ export default function About() {
               <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for Baytown and Houston-area businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL is me. I started the practice in Baytown,
+                  I&apos;m Trenton Taylor, and TaylorURL LLC is me. I started the practice in Baytown,
                   Texas because the local businesses around me — restaurants, trades, salons,
                   independent professionals — kept ending up with one of two outcomes: a generic
                   agency build or an outdated page-builder site that no longer represented their

@@ -5,11 +5,11 @@ import { SUPPORT_EMAIL } from '@constants/navigation'
 const SECTIONS = [
   {
     title: '1. Acceptance of Terms',
-    content: `By accessing and using the TaylorURL website and services, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use my services.`,
+    content: `By accessing and using the TaylorURL LLC website and services, you accept and agree to be bound by the terms and provisions of this agreement. If you do not agree to abide by these terms, please do not use my services.`,
   },
   {
     title: '2. Services Description',
-    content: `TaylorURL provides custom website development, JavaScript application development, website redesigns, and ongoing website management services for local businesses, all performed by Trenton Taylor. The specific scope, deliverables, timeline, and terms for each project will be outlined in a separate project agreement or statement of work.`,
+    content: `TaylorURL LLC provides custom website development, JavaScript application development, website redesigns, and ongoing website management services for local businesses, all performed by Trenton Taylor. The specific scope, deliverables, timeline, and terms for each project will be outlined in a separate project agreement or statement of work.`,
   },
   {
     title: '3. Client Responsibilities',
@@ -21,7 +21,7 @@ const SECTIONS = [
   },
   {
     title: '5. Intellectual Property',
-    content: `Upon full payment, clients receive ownership of the final deliverables created specifically for their project. TaylorURL retains the right to use general techniques, skills, and non-confidential elements in future projects. I may display completed work in my portfolio unless otherwise agreed.`,
+    content: `Upon full payment, clients receive ownership of the final deliverables created specifically for their project. TaylorURL LLC retains the right to use general techniques, skills, and non-confidential elements in future projects. I may display completed work in my portfolio unless otherwise agreed.`,
   },
   {
     title: '6. Confidentiality',
@@ -29,7 +29,7 @@ const SECTIONS = [
   },
   {
     title: '7. Limitation of Liability',
-    content: `TaylorURL shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of my services. Total liability shall not exceed the amount paid for the specific service giving rise to the claim.`,
+    content: `TaylorURL LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of my services. Total liability shall not exceed the amount paid for the specific service giving rise to the claim.`,
   },
   {
     title: '8. Warranty Disclaimer',
@@ -54,7 +54,7 @@ export default function Terms() {
     <>
       <Seo
         title="Terms of Service"
-        description="Terms and conditions for engaging TaylorURL's web development and maintenance services."
+        description="Terms and conditions for engaging TaylorURL LLC's web development and maintenance services."
         path="/terms"
       />
       <LegalPage

@@ -107,7 +107,7 @@ export default function Footer() {
 
         <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-gray-200 pt-8 sm:flex-row">
           <p className="text-sm text-gray-400">
-            &copy; {currentYear} TaylorURL. All rights reserved.
+            &copy; {currentYear} TaylorURL LLC. All rights reserved.
           </p>
           <Link
             to="/status"
