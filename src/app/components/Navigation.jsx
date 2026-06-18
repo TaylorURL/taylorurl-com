@@ -232,7 +232,7 @@ export default function Navigation() {
             >
               <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-gray-100 px-5">
                 <Link to="/" aria-label="TaylorURL home" onClick={() => setMobileOpen(false)}>
-                  <LogoMark sizeClass="h-11 w-[164px]" invert={false} />
+                  <LogoMark sizeClass="h-10 w-[150px]" invert={false} />
                 </Link>
                 <button
                   type="button"
