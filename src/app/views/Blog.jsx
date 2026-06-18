@@ -155,7 +155,6 @@ function PostCard({ post, index }) {
 }
 
 function PostListItem({ post, index }) {
-  const style = getCategoryStyle(post.category)
   return (
     <motion.article
       layout
