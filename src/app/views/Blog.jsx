@@ -40,8 +40,27 @@ function getCategoryStyle(category) {
   )
 }
 
+// Size variants for the category pill. `featured` is borderless; the others
+// frame the pill against lighter card/list surfaces.
+const CATEGORY_BADGE_SIZES = {
+  featured: 'gap-1 px-3 py-1 text-xs',
+  card: 'gap-1.5 border px-2.5 py-0.5 text-xs',
+  list: 'border px-2 py-0.5 text-[10px]',
+}
+
+function CategoryBadge({ category, size = 'card' }) {
+  const style = getCategoryStyle(category)
+  const border = size === 'featured' ? '' : style.border
+  return (
+    <span
+      className={`inline-flex items-center rounded-full font-medium ${CATEGORY_BADGE_SIZES[size]} ${style.bg} ${style.text} ${border}`}
+    >
+      {category}
+    </span>
+  )
+}
+
 function FeaturedPost({ post }) {
-  const style = getCategoryStyle(post.category)
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -57,11 +76,7 @@ function FeaturedPost({ post }) {
               <TrendingUp className="h-3 w-3" />
               Latest
             </span>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full ${style.bg} px-3 py-1 text-xs font-medium ${style.text}`}
-            >
-              {post.category}
-            </span>
+            <CategoryBadge category={post.category} size="featured" />
           </div>
 
           <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
@@ -103,7 +118,6 @@ function FeaturedPost({ post }) {
 }
 
 function PostCard({ post, index }) {
-  const style = getCategoryStyle(post.category)
   return (
     <motion.article
       layout
@@ -115,11 +129,7 @@ function PostCard({ post, index }) {
     >
       <Link to={`/blog/${post.slug}`} className="flex flex-1 flex-col p-6">
         <div className="mb-3 flex items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full border ${style.border} ${style.bg} px-2.5 py-0.5 text-xs font-medium ${style.text}`}
-          >
-            {post.category}
-          </span>
+          <CategoryBadge category={post.category} size="card" />
           <span className="text-xs text-gray-400">{post.readTime}</span>
         </div>
 
@@ -145,7 +155,6 @@ function PostCard({ post, index }) {
 }
 
 function PostListItem({ post, index }) {
-  const style = getCategoryStyle(post.category)
   return (
     <motion.article
       layout
@@ -161,11 +170,7 @@ function PostListItem({ post, index }) {
       >
         <div className="flex-1">
           <div className="mb-1.5 flex items-center gap-2">
-            <span
-              className={`inline-flex items-center rounded-full border ${style.border} ${style.bg} px-2 py-0.5 text-[10px] font-medium ${style.text}`}
-            >
-              {post.category}
-            </span>
+            <CategoryBadge category={post.category} size="list" />
             <span className="text-xs text-gray-400">{post.date}</span>
           </div>
           <h3 className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
@@ -187,37 +192,33 @@ export default function Blog() {
   const activeCategory = searchParams.get('category') || 'All'
   const currentPage = parseInt(searchParams.get('page') || '1', 10)
 
-  const setCategory = cat => {
+  // Clone the current query string, apply the given key updates (a falsy value
+  // removes the key), and push the result. Centralises the set-or-delete dance
+  // every filter control would otherwise repeat.
+  const updateParams = (updates, options) => {
     const params = new URLSearchParams(searchParams)
-    if (cat === 'All') params.delete('category')
-    else params.set('category', cat)
-    params.delete('page')
-    setSearchParams(params)
+    for (const [key, value] of Object.entries(updates)) {
+      if (value) params.set(key, value)
+      else params.delete(key)
+    }
+    setSearchParams(params, options)
   }
 
+  const setCategory = cat => updateParams({ category: cat === 'All' ? '' : cat, page: '' })
+
   const setPage = page => {
-    const params = new URLSearchParams(searchParams)
-    if (page <= 1) params.delete('page')
-    else params.set('page', String(page))
-    setSearchParams(params)
+    updateParams({ page: page <= 1 ? '' : String(page) })
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleSearch = e => {
     setSearch(e.target.value)
-    const params = new URLSearchParams(searchParams)
-    if (e.target.value) params.set('q', e.target.value)
-    else params.delete('q')
-    params.delete('page')
-    setSearchParams(params, { replace: true })
+    updateParams({ q: e.target.value, page: '' }, { replace: true })
   }
 
   const clearSearch = () => {
     setSearch('')
-    const params = new URLSearchParams(searchParams)
-    params.delete('q')
-    params.delete('page')
-    setSearchParams(params, { replace: true })
+    updateParams({ q: '', page: '' }, { replace: true })
   }
 
   const filtered = useMemo(() => {

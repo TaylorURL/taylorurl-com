@@ -1,20 +1,10 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import {
-  ArrowRight,
-  Code2,
-  Headphones,
-  Zap,
-  Shield,
-  Clock,
-  Heart,
-  Users,
-  Monitor,
-} from 'lucide-react'
+import { Code2, Headphones, Zap, Shield, Clock, Heart, Users, Monitor } from 'lucide-react'
 import PageHero from '@components/PageHero'
+import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { CARD, EYEBROW, SECTION_H2 } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const VALUES = [
@@ -273,26 +263,15 @@ export default function About() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
-        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Start a <span className="logo-wave">conversation</span>
-            </h2>
-            <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me what your business does and what you want from a website. You get a
-              straight answer and a clear next step.
-            </p>
-            <div className="flex justify-center">
-              <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
-                Get in Touch
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <CtaSection
+        variant="dark"
+        title={
+          <>
+            Start a <span className="logo-wave">conversation</span>
+          </>
+        }
+        description="Tell me what your business does and what you want from a website. You get a straight answer and a clear next step."
+      />
     </div>
   )
 }
