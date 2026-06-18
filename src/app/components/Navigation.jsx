@@ -43,7 +43,7 @@ function LogoMark({ sizeClass, invert }) {
         width="1024"
         height="1024"
         fetchPriority="high"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[380%] w-auto max-w-none -translate-x-1/2 select-none transition-[filter] duration-300"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[380%] w-auto max-w-none select-none transition-[filter] duration-300"
         style={{
           transform: 'translate(-50%, -54%)',
           filter: invert ? 'brightness(0) invert(1)' : undefined,
