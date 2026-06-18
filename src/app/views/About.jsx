@@ -126,7 +126,7 @@ export default function About() {
           <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
             <motion.div {...fadeInUp} className="lg:col-span-3">
               <p className={`mb-2 ${EYEBROW}`}>Background</p>
-              <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for local businesses</h2>
+              <h2 className={`mb-8 ${SECTION_H2}`}>I build modern websites for Baytown and Houston-area businesses</h2>
               <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
                 <p>
                   I&apos;m Trenton Taylor, and TaylorURL is me. I started the practice in Baytown,
