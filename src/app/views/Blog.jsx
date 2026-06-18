@@ -170,11 +170,7 @@ function PostListItem({ post, index }) {
       >
         <div className="flex-1">
           <div className="mb-1.5 flex items-center gap-2">
-            <span
-              className={`inline-flex items-center rounded-full border ${style.border} ${style.bg} px-2 py-0.5 text-[10px] font-medium ${style.text}`}
-            >
-              {post.category}
-            </span>
+            <CategoryBadge category={post.category} size="list" />
             <span className="text-xs text-gray-400">{post.date}</span>
           </div>
           <h3 className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-blue-600">
