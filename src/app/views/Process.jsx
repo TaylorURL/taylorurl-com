@@ -28,30 +28,30 @@ const TIMELINE_STEPS = [
     title: 'First call',
     duration: 'Day 1',
     description:
-      'You walk me through the business and what you need from a site. I ask questions, take notes, and give you a direct answer on whether I am the right fit. No pitch deck, no extended discovery.',
+      'You walk me through the business and what you want from a website. I ask questions, take notes, and tell you straight up whether I am the right fit. No sales pitch, no long planning phase.',
     client: [
       'Describe the business',
-      'Share what works and what does not in other sites',
+      'Share what you like and dislike about other sites',
       'Explain how customers reach you today',
     ],
     taylorurl: [
       'Ask the right questions',
-      'Give a direct yes or no on fit',
-      'Outline what the site should do',
+      'Give a straight yes or no on fit',
+      'Sketch out what the site should do',
     ],
   },
   {
     step: '02',
     icon: FileText,
-    title: 'Scope and agreement',
+    title: 'Plan and quote',
     duration: 'Day 2-3',
     description:
-      'I write up a clear scope of work — what I am building, what is included, and how long it takes. Once it works for both sides, we move forward.',
-    client: ['Review the scope', 'Ask questions', 'Sign off when ready'],
+      'I write up a clear plan — what I am building, what is included, and how long it takes. Once it works for both sides, we get going.',
+    client: ['Review the plan', 'Ask questions', 'Give the green light when ready'],
     taylorurl: [
-      'Send a clear scope of work',
-      'Outline what is and is not included',
-      'Set the project timeline',
+      'Send a clear plan and price',
+      'Spell out what is and is not included',
+      'Set the timeline',
     ],
   },
   {
@@ -60,16 +60,16 @@ const TIMELINE_STEPS = [
     title: 'Design',
     duration: 'Week 1',
     description:
-      'I produce mockups of the site. You give feedback, I iterate until the direction is right. No oversized design doc, no design-by-committee.',
+      'I show you pictures of what the site will look like. You give feedback, I make changes until it feels right. No oversized design document, no design by committee.',
     client: [
       'Send your logo, photos, and content',
-      'Review and respond to mockups',
+      'Review and respond to the designs',
       'Flag anything that does not fit',
     ],
     taylorurl: [
-      'Produce visual mockups',
+      'Design what each page will look like',
       'Revise based on your feedback',
-      'Lock the layout and visual style',
+      'Lock in the look and layout',
     ],
   },
   {
@@ -78,52 +78,52 @@ const TIMELINE_STEPS = [
     title: 'Build',
     duration: 'Week 2-3',
     description:
-      'I write the code. Hand-coded React, not page builders. You can check in at any point — I share progress links throughout so there are no surprises at the end.',
+      'I build the site, custom from the ground up. You can peek in any time — I share preview links the whole way so there are no surprises at the end.',
     client: [
       'Review progress whenever you want',
       'Flag anything that needs to change',
       'Send any remaining content',
     ],
     taylorurl: [
-      'Write clean, performant code',
-      'Make it work on every screen size',
-      'Share progress links throughout',
+      'Build clean, quick-loading pages',
+      'Make sure it works on phones, tablets, and computers',
+      'Share preview links the whole way',
     ],
   },
   {
     step: '05',
     icon: Rocket,
-    title: 'Review and launch',
+    title: 'Review and go live',
     duration: 'Week 3-4',
     description:
-      'You test the site end-to-end. I fix whatever needs fixing. Once you approve it, I deploy to production and handle the launch.',
+      'You click through the whole site. I fix whatever needs fixing. Once you give the go-ahead, I put it online for the world to see.',
     client: [
-      'Test the site end-to-end',
+      'Click through the whole site',
       'Send final changes',
-      'Approve the launch',
+      'Give the go-ahead to launch',
     ],
     taylorurl: [
       'Fix any issues you find',
-      'Run performance and SEO checks',
-      'Handle DNS, hosting, and deployment',
+      'Tune up speed and Google visibility',
+      'Handle the technical side of going live',
     ],
   },
   {
     step: '06',
     icon: HeadphonesIcon,
-    title: 'Ongoing support',
+    title: 'Ongoing care',
     duration: 'Ongoing',
     description:
-      'After launch I continue to handle hosting, updates, security, and content changes. The technical side stays with me so the business stays focused on operating.',
+      'After launch I keep the site online, fast, safe, and up to date. The technical side stays with me so you stay focused on running the business.',
     client: [
       'Run the business',
       'Send a message when you need a change',
       'No tickets, no waiting',
     ],
     taylorurl: [
-      'Keep the site fast and secure',
+      'Keep the site fast and safe',
       'Handle hosting and backups',
-      'Ship updates as you need them',
+      'Make updates as you need them',
     ],
   },
 ]
