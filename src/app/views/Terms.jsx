@@ -29,7 +29,7 @@ const SECTIONS = [
   },
   {
     title: '7. Limitation of Liability',
-    content: `TaylorURL shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of my services. Total liability shall not exceed the amount paid for the specific service giving rise to the claim.`,
+    content: `TaylorURL LLC shall not be liable for any indirect, incidental, special, consequential, or punitive damages resulting from your use of my services. Total liability shall not exceed the amount paid for the specific service giving rise to the claim.`,
   },
   {
     title: '8. Warranty Disclaimer',
