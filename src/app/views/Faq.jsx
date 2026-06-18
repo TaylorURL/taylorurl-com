@@ -195,7 +195,7 @@ export default function Faq() {
               Still have <span className="logo-wave">questions</span>?
             </h2>
             <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Send me a message. I respond within 24 hours.
+              Send me a message. I get back to you within 24 hours.
             </p>
             <a href="/contact" className={BTN_PRIMARY}>
               Get in Touch
