@@ -273,26 +273,15 @@ export default function About() {
       </section>
 
       {/* CTA */}
-      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
-        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Start a <span className="logo-wave">conversation</span>
-            </h2>
-            <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Tell me what your business does and what you want from a website. You get a
-              straight answer and a clear next step.
-            </p>
-            <div className="flex justify-center">
-              <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
-                Get in Touch
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <CtaSection
+        variant="dark"
+        title={
+          <>
+            Start a <span className="logo-wave">conversation</span>
+          </>
+        }
+        description="Tell me what your business does and what you want from a website. You get a straight answer and a clear next step."
+      />
     </div>
   )
 }
