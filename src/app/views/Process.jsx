@@ -259,7 +259,7 @@ export default function Process() {
               What I&apos;ll <span className="logo-wave-dark">need from you</span>
             </h2>
             <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              It does not have to be perfect or complete. I can work with what you have and
+              It does not have to be perfect or finished. I can work with what you have and
               help fill in the gaps.
             </p>
           </motion.div>
