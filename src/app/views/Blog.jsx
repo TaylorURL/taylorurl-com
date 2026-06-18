@@ -24,10 +24,10 @@ const CATEGORIES = ['All', ...Array.from(new Set(BLOG_POSTS.map(p => p.category)
 
 const CATEGORY_COLORS = {
   Business: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  'Google & Search': { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+  SEO: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
   Design: { bg: 'bg-pink-50', text: 'text-pink-700', border: 'border-pink-200' },
-  'Speed & Mobile': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
-  'Behind the Scenes': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
+  'Site Speed': { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200' },
+  'Tips for Owners': { bg: 'bg-sky-50', text: 'text-sky-700', border: 'border-sky-200' },
 }
 
 function getCategoryStyle(category) {
