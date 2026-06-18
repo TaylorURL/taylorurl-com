@@ -294,7 +294,7 @@ export default function Blog() {
               The <span className="logo-wave-dark">Blog</span>
             </h1>
             <p className="mb-6 text-gray-500">
-              Practical web, SEO, and growth notes for local businesses.
+              Practical website, Google, and growth tips for local businesses.
             </p>
 
             {/* Search + categories inline */}
