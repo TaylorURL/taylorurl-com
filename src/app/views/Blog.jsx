@@ -129,11 +129,7 @@ function PostCard({ post, index }) {
     >
       <Link to={`/blog/${post.slug}`} className="flex flex-1 flex-col p-6">
         <div className="mb-3 flex items-center gap-2">
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full border ${style.border} ${style.bg} px-2.5 py-0.5 text-xs font-medium ${style.text}`}
-          >
-            {post.category}
-          </span>
+          <CategoryBadge category={post.category} size="card" />
           <span className="text-xs text-gray-400">{post.readTime}</span>
         </div>
 
