@@ -54,7 +54,8 @@ export default function BlogPost() {
             },
             publisher: {
               '@type': 'Organization',
-              name: 'TaylorURL',
+              name: 'TaylorURL LLC',
+              legalName: 'TaylorURL LLC',
               founder: {
                 '@type': 'Person',
                 name: 'Trenton Taylor',
