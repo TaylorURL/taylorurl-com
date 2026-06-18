@@ -79,7 +79,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'The SEO Problem' },
       {
         type: 'p',
-        text: "Google cares about site speed, mobile experience, clean code, and proper page structure. Wix makes all of those harder. The HTML it generates is bloated and messy. The URLs are weird. The meta tags are limited. You can technically do SEO on Wix, but it's like trying to run a race in boots — technically possible, but why would you?",
+        text: "Google cares about site speed, how the site behaves on a phone, clean structure, and clear page titles. Wix makes all of those harder. The page structure it generates is bloated and messy. The web addresses are weird. The labels Google reads are limited. You can do SEO on Wix, but it is like running a race in boots — technically possible, but why would you?",
       },
       {
         type: 'p',
