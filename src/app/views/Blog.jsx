@@ -118,7 +118,6 @@ function FeaturedPost({ post }) {
 }
 
 function PostCard({ post, index }) {
-  const style = getCategoryStyle(post.category)
   return (
     <motion.article
       layout
