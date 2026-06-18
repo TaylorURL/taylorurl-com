@@ -1,11 +1,10 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, ArrowUpRight, Globe } from 'lucide-react'
+import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
+import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
