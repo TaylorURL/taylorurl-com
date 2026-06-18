@@ -1,13 +1,5 @@
 import { Clock, DollarSign, Search, Shield, Smartphone, Users } from 'lucide-react'
 
-export const CUSTOMER_DISCOVERY_DATA = [
-  { name: 'Google Search', value: 46 },
-  { name: 'Social Media', value: 24 },
-  { name: 'Word of Mouth', value: 18 },
-  { name: 'Direct Visit', value: 8 },
-  { name: 'Other', value: 4 },
-]
-
 export const REVENUE_GROWTH_DATA = [
   { month: 'Jan', withSite: 100, withoutSite: 100 },
   { month: 'Mar', withSite: 118, withoutSite: 102 },
@@ -77,13 +69,4 @@ export const HOW_IT_WORKS_STEPS = [
   },
 ]
 
-export const CHART_AXIS_STYLE = { fill: '#6b7280', fontSize: 12 }
-export const CHART_TOOLTIP_STYLE = { borderRadius: '8px', border: '1px solid #e5e7eb' }
-
 export const HERO_BADGES = ['Cancel anytime', 'Free initial consultation']
-
-export const LOCAL_SEARCH_STATS = [
-  { value: '97%', label: 'search online first' },
-  { value: '72%', label: 'visit within 5 miles' },
-  { value: '88%', label: 'trust online reviews' },
-]
