@@ -124,27 +124,33 @@ export default function Faq() {
   return (
     <div>
       <Seo
-        title="FAQ"
-        description="Common questions about working with TaylorURL — an independent developer building modern websites and JavaScript applications for local businesses in Baytown, Houston, and beyond. Direct answers on timelines, process, ownership, and ongoing support."
+        title="FAQ — Web Development in Baytown, TX"
+        description="Common questions about working with TaylorURL — a Baytown, TX developer building websites and apps for Houston-area businesses."
         path="/faq"
-        schema={{
-          '@context': 'https://schema.org',
-          '@type': 'FAQPage',
-          mainEntity: FAQ_CATEGORIES.flatMap(cat =>
-            cat.questions.map(item => ({
-              '@type': 'Question',
-              name: item.q,
-              acceptedAnswer: {
-                '@type': 'Answer',
-                text: item.a,
-              },
-            }))
-          ),
-        }}
+        schema={[
+          breadcrumbSchema([
+            { name: 'Home', path: '/' },
+            { name: 'FAQ', path: '/faq' },
+          ]),
+          {
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: FAQ_CATEGORIES.flatMap(cat =>
+              cat.questions.map(item => ({
+                '@type': 'Question',
+                name: item.q,
+                acceptedAnswer: {
+                  '@type': 'Answer',
+                  text: item.a,
+                },
+              }))
+            ),
+          },
+        ]}
       />
       <PageHero
         title="Frequently asked questions"
-        description="Common questions, direct answers."
+        description="Common questions about working with a Baytown, TX web developer. Direct answers on timelines, process, ownership, and ongoing support."
       />
 
       <section className="relative bg-surface-base py-12 sm:py-20">
