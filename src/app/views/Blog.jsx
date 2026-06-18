@@ -61,7 +61,6 @@ function CategoryBadge({ category, size = 'card' }) {
 }
 
 function FeaturedPost({ post }) {
-  const style = getCategoryStyle(post.category)
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -77,11 +76,7 @@ function FeaturedPost({ post }) {
               <TrendingUp className="h-3 w-3" />
               Latest
             </span>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full ${style.bg} px-3 py-1 text-xs font-medium ${style.text}`}
-            >
-              {post.category}
-            </span>
+            <CategoryBadge category={post.category} size="featured" />
           </div>
 
           <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl lg:text-4xl">
