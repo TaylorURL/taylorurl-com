@@ -25,7 +25,7 @@ export default function HeroSection() {
               <span className="absolute inline-flex h-2 w-2 animate-ping rounded-full bg-blue-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-blue-400" />
             </span>
-            Serving the Greater Houston area
+            Baytown, TX · Serving the Greater Houston area
           </motion.div>
 
           <motion.h1
