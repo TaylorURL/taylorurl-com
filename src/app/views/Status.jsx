@@ -123,7 +123,7 @@ function OverallStatus() {
 
 function UptimeBar() {
   return (
-    <div role="img" aria-label="90-day uptime history, all operational" className="flex gap-px">
+    <div role="img" aria-label="90-day history, all running smoothly" className="flex gap-px">
       {Array.from({ length: 90 }, (_, i) => (
         <div
           key={i}
