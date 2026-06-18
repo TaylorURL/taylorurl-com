@@ -29,22 +29,6 @@ export const PORTFOLIO_PROJECTS = [
     accent: 'from-rose-500/30 via-fuchsia-500/20 to-slate-900/40',
   },
   {
-    name: 'Smyrna Tools',
-    url: 'https://smyrnatools.com',
-    displayUrl: 'smyrnatools.com',
-    description:
-      'A regional concrete ready-mix management platform that tracks assets, personnel, productivity, and efficiency.',
-    accent: 'from-amber-500/30 via-orange-500/20 to-slate-900/40',
-  },
-  {
-    name: "Charlie T's",
-    url: 'https://charliets.com',
-    displayUrl: 'charliets.com',
-    description:
-      'A local business website for a Baytown restaurant and bar — menus, events, and location info designed to bring in foot traffic from nearby search.',
-    accent: 'from-emerald-500/30 via-teal-500/20 to-slate-900/40',
-  },
-  {
     name: 'SETX Football',
     url: 'https://setxfootball.org',
     displayUrl: 'setxfootball.org',
