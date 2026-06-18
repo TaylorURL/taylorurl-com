@@ -1,20 +1,10 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import {
-  ArrowRight,
-  Code2,
-  Headphones,
-  Zap,
-  Shield,
-  Clock,
-  Heart,
-  Users,
-  Monitor,
-} from 'lucide-react'
+import { Code2, Headphones, Zap, Shield, Clock, Heart, Users, Monitor } from 'lucide-react'
 import PageHero from '@components/PageHero'
+import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, CARD, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { CARD, EYEBROW, SECTION_H2 } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const VALUES = [
