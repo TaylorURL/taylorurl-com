@@ -7,6 +7,7 @@ import { useToast } from '@components/Toast'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { slideInLeftMount, slideInRightMount } from '@constants/animations'
 import { BTN_PRIMARY_LG, INPUT, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
