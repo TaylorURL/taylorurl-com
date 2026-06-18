@@ -228,7 +228,13 @@ export default function Navigation() {
               {/* Drawer header */}
               <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
                 <Link to="/" onClick={() => setMobileOpen(false)}>
-                  <img src="/images/TaylorURL-Logo.png" alt="TaylorURL" className="h-16 w-auto" />
+                  <img
+                    src="/images/TaylorURL-Logo.png"
+                    alt="TaylorURL — web development in Baytown, TX"
+                    width="64"
+                    height="64"
+                    className="h-16 w-auto"
+                  />
                 </Link>
                 <button
                   onClick={() => setMobileOpen(false)}
