@@ -83,20 +83,6 @@ const CAPABILITIES = [
   { icon: Zap, label: 'Speed Optimization' },
 ]
 
-const TECH_STACK = [
-  'React',
-  'JavaScript',
-  'Tailwind CSS',
-  'Node.js',
-  'AWS',
-  'Vercel',
-  'Git',
-  'Framer Motion',
-  'Vite',
-  'HTML5',
-  'CSS3',
-]
-
 export default function Services() {
   return (
     <div>
@@ -174,30 +160,6 @@ export default function Services() {
                 </motion.div>
               )
             })}
-          </div>
-        </div>
-      </section>
-
-      {/* Tech stack */}
-      <section className="relative overflow-hidden bg-gray-950 py-16">
-        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-white">The stack</h2>
-            <p className="mt-2 text-sm text-gray-500">
-              The same tools serious engineering teams use, applied to local-business work.
-            </p>
-          </motion.div>
-          <div className="flex flex-wrap justify-center gap-3">
-            {TECH_STACK.map((tech, i) => (
-              <motion.span
-                key={tech}
-                {...staggerChild(i, 0.04)}
-                className="rounded-lg border border-gray-800 bg-gray-900 px-4 py-2 text-sm font-medium text-gray-300 transition-colors hover:border-blue-500/40 hover:text-blue-300"
-              >
-                {tech}
-              </motion.span>
-            ))}
           </div>
         </div>
       </section>
