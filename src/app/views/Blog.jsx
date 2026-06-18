@@ -16,6 +16,7 @@ import Seo from '@components/Seo'
 import { fadeInUp } from '@constants/animations'
 import { BTN_PRIMARY, INPUT } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
+import { breadcrumbSchema } from '@constants/seo'
 
 const POSTS_PER_PAGE = 8
 
