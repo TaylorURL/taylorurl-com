@@ -19,21 +19,21 @@ const FACTS = [
     stat: '+110%',
     label: 'more revenue',
     detail:
-      'Businesses with a real online presence consistently outperform those without one over a 12-month window.',
+      'Small businesses with a real website outgrow the ones without over a twelve-month stretch — by a wide margin.',
   },
   {
     icon: Smartphone,
     stat: '70%',
-    label: 'mobile searches',
+    label: 'searches on phones',
     detail:
-      'Most local searches happen on a phone. If the site is not fast and usable on mobile, those visitors leave before the page loads.',
+      'Most local searches happen on a phone. If your site is slow or clunky there, people leave before they ever see what you offer.',
   },
   {
     icon: Monitor,
     stat: '<2s',
     label: 'load time',
     detail:
-      'Every site I build loads in under two seconds. Faster pages convert more visitors and rank higher in search.',
+      'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with higher spots in search.',
   },
 ]
 
