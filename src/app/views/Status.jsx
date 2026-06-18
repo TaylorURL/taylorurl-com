@@ -111,7 +111,7 @@ function OverallStatus() {
     >
       <div className="flex items-center gap-3">
         <span className="inline-block h-3 w-3 animate-pulse rounded-full bg-green-500" />
-        <span className="text-lg font-semibold text-green-700">All Systems Operational</span>
+        <span className="text-lg font-semibold text-green-700">Everything running smoothly</span>
       </div>
       <div className="hidden items-center gap-2 text-sm text-gray-500 sm:flex">
         <Clock className="h-4 w-4" />
