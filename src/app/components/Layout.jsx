@@ -3,7 +3,6 @@ import Navigation from './Navigation'
 import Footer from './Footer'
 import ScrollProgress from './ScrollProgress'
 import BackToTop from './BackToTop'
-import CursorGlow from './CursorGlow'
 import SectionIndicator from './SectionIndicator'
 
 export default function Layout() {
@@ -11,9 +10,8 @@ export default function Layout() {
   const isHome = location.pathname === '/'
 
   return (
-    <div className="min-h-screen bg-surface-base">
+    <div className="min-h-screen bg-paper text-ink-paper">
       <ScrollProgress />
-      <CursorGlow />
       <Navigation />
       <main>
         <Outlet />
