@@ -127,7 +127,7 @@ export default function NotFound() {
               </motion.button>
             </div>
             <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-              Click the bug to debug
+              Click the bug to catch it
             </p>
           </div>
         </motion.div>
