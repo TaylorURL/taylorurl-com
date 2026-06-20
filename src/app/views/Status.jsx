@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import {
   AlertCircle,
   AlertTriangle,
-  ArrowRight,
+  ArrowUpRight,
   Mail,
   Server,
   ShieldCheck,
@@ -13,7 +13,6 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
-import { BTN_PRIMARY, EYEBROW, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
 
 const SERVICES = [
   {
@@ -103,11 +102,12 @@ const GROUPS = [
 
 const HISTORY_DAYS = 90
 
-// Status semantics mapped to site-native tokens — the same blue that pulses in
-// the footer, plus amber and red, both already used elsewhere (BrowserMockup
-// window chrome). No invented emerald / rose / violet.
 const STATUS = {
-  operational: { label: 'Up', dot: 'bg-blue-500', text: 'text-blue-600' },
+  operational: {
+    label: 'Up',
+    dot: 'bg-accent',
+    text: 'text-accent',
+  },
   degraded: {
     label: 'Slow',
     dot: 'bg-amber-500',
@@ -122,8 +122,6 @@ const STATUS = {
   },
 }
 
-// Right now every component is operational. Keyed by name so a future incident
-// drops a state in here and the row treatment changes automatically.
 const SERVICE_STATE = Object.fromEntries(
   SERVICES.map(service => [service.name, 'operational'])
 )
@@ -144,38 +142,42 @@ function LiveBand({ checkedAt, windowStart }) {
   return (
     <motion.div
       {...fadeInUpMount}
-      transition={{ duration: 0.5 }}
-      className="rounded-2xl border border-gray-200 bg-surface-raised"
+      className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-[1.6fr_1fr]"
     >
-      <div className="grid gap-6 px-6 py-7 sm:px-8 lg:grid-cols-[1fr_auto] lg:items-center lg:gap-12">
+      <div className="flex flex-col gap-6 bg-paper p-8 sm:p-10">
         <div className="flex items-start gap-4">
           <span aria-hidden="true" className="relative mt-2 flex h-2.5 w-2.5 flex-shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-blue-500/60" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-blue-500" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent/60" />
+            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
           </span>
           <div>
-            <p className="text-2xl font-bold tracking-tight text-gray-900 sm:text-[28px]">
+            <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+              // All systems nominal
+            </p>
+            <p className="mt-3 text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
               All clear.
             </p>
-            <p className="mt-2 max-w-md text-[15px] leading-relaxed text-gray-600">
+            <p className="mt-3 max-w-md text-[15px] leading-relaxed text-paper-soft">
               Every site I look after is up and answering as of{' '}
-              <span className="font-mono text-[14px] font-semibold text-gray-900">
+              <span className="font-mono text-[14px] font-semibold text-ink-paper">
                 {checkedAt}
               </span>{' '}
               today. Auto-checked continuously — I get a ping the second anything goes wrong.
             </p>
           </div>
         </div>
+      </div>
 
-        <div className="border-t border-gray-200 pt-5 lg:border-l lg:border-t-0 lg:pl-12 lg:pt-0">
-          <p className="font-mono text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl">
-            100.00<span className="text-gray-400">%</span>
-          </p>
-          <p className="mt-1 text-[13px] text-gray-500">uptime, last 90 days</p>
-          <p className="mt-1 font-mono text-[11px] uppercase tracking-wider text-gray-400">
-            {windowStart} → today
-          </p>
-        </div>
+      <div className="flex flex-col justify-center gap-3 bg-paper p-8 sm:p-10">
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+          // Uptime · 90 days
+        </p>
+        <p className="font-mono text-[clamp(2.4rem,5vw,3.4rem)] font-semibold leading-none text-ink-paper">
+          100.00<span className="text-paper-faint">%</span>
+        </p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+          {windowStart} → today
+        </p>
       </div>
     </motion.div>
   )
@@ -185,17 +187,17 @@ function ServiceRow({ service }) {
   const state = SERVICE_STATE[service.name]
   const cfg = STATUS[state]
   return (
-    <div className="flex items-center gap-4 px-5 py-4 sm:gap-5 sm:px-6">
+    <div className="flex items-center gap-4 bg-paper px-5 py-4 sm:gap-5 sm:px-6">
       <span
         aria-hidden="true"
-        className={`inline-flex h-2.5 w-2.5 flex-shrink-0 rounded-full ${cfg.dot}`}
+        className={`inline-flex h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[15px] font-medium text-gray-900">{service.name}</p>
-        <p className="truncate text-[13px] text-gray-500">{service.description}</p>
+        <p className="truncate text-[14px] font-medium text-ink-paper">{service.name}</p>
+        <p className="truncate text-[12px] text-paper-soft">{service.description}</p>
       </div>
       <span
-        className={`flex-shrink-0 text-[12px] font-medium ${cfg.text}`}
+        className={`flex-shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] ${cfg.text}`}
         aria-label={`${service.name} is ${cfg.label.toLowerCase()}`}
       >
         {cfg.label}
@@ -212,19 +214,23 @@ function GroupSection({ group, services, index }) {
       transition={{ delay: 0.05 + index * 0.05 }}
       aria-label={`${group.key} components`}
     >
-      <div className="mb-2 flex items-baseline gap-3">
-        <Icon
-          className="h-[18px] w-[18px] flex-shrink-0 translate-y-[3px] text-blue-600"
-          strokeWidth={1.75}
-        />
-        <h3 className="text-xl font-bold tracking-tight text-gray-900">{group.key}</h3>
-        <span className="text-sm text-gray-400">
-          · {services.length} {services.length === 1 ? 'component' : 'components'}
+      <div className="mb-4 flex items-baseline gap-4 border-b border-hair-paper pb-3">
+        <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
+        <h3 className="text-[18px] font-semibold tracking-tight text-ink-paper sm:text-[20px]">
+          {group.key}
+        </h3>
+        <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+          {String(services.length).padStart(2, '0')} comp
         </span>
       </div>
-      <p className="mb-4 pl-7 text-[14px] leading-relaxed text-gray-500">{group.blurb}</p>
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-surface-raised">
-        <div className="divide-y divide-gray-100">
+      <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-paper-soft">
+        {group.blurb}
+      </p>
+      <div className="overflow-hidden border border-hair-paper">
+        <div className="divide-y divide-hair-paper">
           {services.map(service => (
             <ServiceRow key={service.name} service={service} />
           ))}
@@ -253,26 +259,31 @@ export default function Status() {
         path="/status"
       />
       <PageHero
-        title="System status"
-        description="A live look at what is running smoothly behind every client website."
+        eyebrow="// 01 — Status"
+        title="A live look at every system."
+        description="Twelve components, watched continuously. Green means up, amber means slow, red means down — so a glance tells the whole story."
       />
 
-      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
-        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-        <div className="relative mx-auto max-w-4xl px-6">
+      <section className="relative overflow-hidden bg-paper py-20 sm:py-28">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
           <LiveBand checkedAt={checkedAt} windowStart={windowStart} />
 
-          <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="mb-10 mt-16">
-            <h2 className={SECTION_H2}>
-              What I&apos;m <span className="logo-wave-dark">watching</span>
+          <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="mb-12 mt-20">
+            <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              // 02 — Components
+            </p>
+            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+              What I&apos;m watching.
             </h2>
-            <p className="mt-3 max-w-lg text-base text-gray-600">
-              Twelve components, grouped four ways. The dot turns amber if something slows down
-              and red if it stops answering — so a glance tells you the whole story.
+            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-paper-soft">
+              Four groups, twelve components. Each row reports its own state — and the
+              overall band above changes color the moment any one of them does.
             </p>
           </motion.div>
 
-          <div className="space-y-10 sm:space-y-12">
+          <div className="space-y-14 sm:space-y-16">
             {GROUPS.map((group, i) => (
               <GroupSection
                 key={group.key}
@@ -285,53 +296,68 @@ export default function Status() {
         </div>
       </section>
 
-      <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-6">
+      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
+        <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            className="grid items-start gap-8 sm:grid-cols-[180px_1fr] sm:gap-14"
+            className="grid items-start gap-8 sm:grid-cols-[200px_1fr] sm:gap-14"
           >
             <div>
-              <p className={EYEBROW}>Last 90 days</p>
-              <p className="mt-3 font-mono text-3xl font-semibold tabular-nums text-gray-900">
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                Last 90 days
+              </p>
+              <p className="mt-4 font-mono text-[clamp(2.6rem,4.6vw,3.6rem)] font-semibold tabular-nums leading-none text-ink">
                 0
               </p>
-              <p className="text-xs text-gray-500">outages reported</p>
+              <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                outages reported
+              </p>
             </div>
             <div>
-              <h3 className="text-xl font-bold tracking-tight text-gray-900 sm:text-2xl">
+              <h3 className="text-[clamp(1.6rem,3vw,2.2rem)] font-semibold tracking-tightest text-ink">
                 Clean stretch since {windowStart}.
               </h3>
-              <p className="mt-3 text-[15px] leading-relaxed text-gray-600">
-                No outages, no slowdowns worth reporting. If something does break, this is where
-                you will see it first &mdash; and you will hear from me before it shows up here.
+              <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">
+                No outages, no slowdowns worth reporting. If something does break, this is
+                where you will see it first — and you will hear from me before it shows up
+                here.
               </p>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
-        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-        <div className="absolute right-0 top-0 -mr-32 -mt-32 h-72 w-72 rounded-full bg-blue-500/10 blur-3xl" />
-        <div className="relative mx-auto max-w-2xl px-6 text-center">
-          <motion.div {...fadeInUp}>
-            <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-blue-400">
-              Spot something off?
-            </p>
-            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Tell me &mdash; I&apos;ll look into it
-            </h2>
-            <p className="mb-8 text-base leading-relaxed text-gray-400 sm:text-lg">
-              If something on your site is acting up, send a quick note and I&apos;ll dig in and
-              get back to you.
-            </p>
-            <a href={`mailto:${SUPPORT_EMAIL}`} className={`group ${BTN_PRIMARY}`}>
-              Get in touch
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </a>
-          </motion.div>
-        </div>
+      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+        <div
+          className="pointer-events-none absolute right-0 top-0 h-72 w-72 -translate-y-1/3 translate-x-1/4 rounded-full bg-accent/12 blur-3xl"
+          aria-hidden="true"
+        />
+        <motion.div
+          {...fadeInUp}
+          className="relative mx-auto w-full max-w-[920px] px-6 text-center sm:px-10"
+        >
+          <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+            <span className="h-px w-8 bg-accent" />
+            // Spot something off?
+            <span className="h-px w-8 bg-accent" />
+          </p>
+          <h2 className="text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink">
+            Tell me — I&apos;ll <span className="text-accent">look into it</span>.
+          </h2>
+          <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
+            If something on your site is acting up, send a quick note and I&apos;ll dig in
+            and get back to you.
+          </p>
+          <a
+            href={`mailto:${SUPPORT_EMAIL}`}
+            className="group mt-10 inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+          >
+            Get in touch
+            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+          </a>
+        </motion.div>
       </section>
     </div>
   )

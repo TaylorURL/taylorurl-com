@@ -5,14 +5,14 @@ const WORDS = [
   'Restaurants',
   'Plumbers',
   'Contractors',
-  'Auto Shops',
-  'Law Firms',
+  'Auto shops',
+  'Law firms',
   'Salons',
   'Dentists',
   'Realtors',
 ]
 
-const ROTATE_INTERVAL_MS = 2500
+const ROTATE_INTERVAL_MS = 2400
 
 export default function TypingRotator() {
   const [index, setIndex] = useState(0)
@@ -25,15 +25,18 @@ export default function TypingRotator() {
   }, [])
 
   return (
-    <span className="inline-block min-w-[130px] sm:min-w-[180px] md:min-w-[220px]">
+    <span className="relative inline-flex min-w-[8ch] items-baseline">
+      <span aria-hidden="true" className="mr-2 text-accent">
+        ⟶
+      </span>
       <AnimatePresence mode="wait">
         <motion.span
           key={WORDS[index]}
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -20 }}
-          transition={{ duration: 0.3 }}
-          className="logo-wave inline-block"
+          exit={{ opacity: 0, y: -14 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+          className="inline-block text-accent"
         >
           {WORDS[index]}
         </motion.span>

@@ -69,7 +69,7 @@ const SERVICES = [
       'Watched around the clock with daily backups',
       'A direct line to the person who built your site',
     ],
-    mockup: 'default',
+    mockup: 'dashboard',
   },
 ]
 
@@ -121,36 +121,48 @@ export default function Services() {
         ]}
       />
       <PageHero
-        title="Small business websites in Baytown, TX"
-        description="Custom websites, redesigns, and online tools for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses — built, hosted, and looked after by one person."
+        eyebrow="// 01 — Services"
+        title="Built, hosted, and looked after — by one person."
+        description="Custom websites, redesigns, and online tools for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
       />
 
-      {/* Services grid — alternating layout */}
-      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
-        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <div className="space-y-12 sm:space-y-20">
+      {/* Services — alternating split layout */}
+      <section className="relative overflow-hidden bg-paper py-24 sm:py-36">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <div className="divide-y divide-hair-paper border-y border-hair-paper">
             {SERVICES.map((service, i) => {
               const Icon = service.icon
               const isReversed = i % 2 === 1
               return (
                 <motion.div
                   key={service.title}
-                  {...staggerChild(i, 0.15)}
-                  className={`grid items-center gap-6 lg:grid-cols-2 lg:gap-10 ${isReversed ? 'lg:direction-rtl' : ''}`}
+                  {...staggerChild(i, 0.08)}
+                  className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:gap-16 lg:py-24"
                 >
                   <div className={isReversed ? 'lg:order-2' : ''}>
-                    <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50">
-                      <Icon className="h-6 w-6 text-blue-600" strokeWidth={1.5} />
+                    <div className="mb-6 flex items-baseline justify-between border-b border-hair-paper pb-4">
+                      <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                        Service · {String(i + 1).padStart(2, '0')} / 04
+                      </span>
+                      <Icon className="h-6 w-6 text-ink-paper" strokeWidth={1.25} />
                     </div>
-                    <h3 className="mb-3 text-2xl font-bold text-gray-900">{service.title}</h3>
-                    <p className="mb-6 text-base text-gray-600 sm:text-lg">{service.description}</p>
-                    <ul className="space-y-3">
+                    <h3 className="mb-5 text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+                      {service.title}
+                    </h3>
+                    <p className="mb-8 text-[16px] leading-relaxed text-paper-soft sm:text-[17px]">
+                      {service.description}
+                    </p>
+                    <ul className="grid gap-3 sm:grid-cols-2">
                       {service.features.map(feature => (
-                        <li key={feature} className="flex items-center gap-3 text-gray-700">
-                          <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full bg-blue-100">
-                            <Check className="h-3 w-3 text-blue-600" strokeWidth={3} />
-                          </div>
+                        <li
+                          key={feature}
+                          className="flex items-start gap-3 border-t border-hair-paper pt-3 text-[14px] leading-snug text-paper-soft"
+                        >
+                          <Check
+                            className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent"
+                            strokeWidth={2}
+                          />
                           {feature}
                         </li>
                       ))}
@@ -169,23 +181,37 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Capabilities strip */}
-      <section className="border-y border-gray-200 bg-gray-50 py-12">
-        <div className="mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mb-8 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Standard with every build</h2>
+      {/* Capabilities strip — engineering spec list */}
+      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
+        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <motion.div {...fadeInUp} className="mb-12 border-b border-hair pb-8">
+            <p className="mb-4 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              // Standard build
+            </p>
+            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
+              Six things shipped with every build.
+            </h2>
           </motion.div>
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-6">
+          <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair bg-hair md:grid-cols-3 lg:grid-cols-6">
             {CAPABILITIES.map((cap, i) => {
               const Icon = cap.icon
               return (
                 <motion.div
                   key={cap.label}
-                  {...staggerChild(i, 0.05)}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-gray-200 bg-surface-overlay p-4 text-center transition-all hover:border-blue-200 hover:shadow-md"
+                  {...staggerChild(i, 0.04)}
+                  className="flex flex-col gap-3 bg-bg p-5 text-left"
                 >
-                  <Icon className="h-5 w-5 text-blue-600" strokeWidth={1.5} />
-                  <span className="text-xs font-medium text-gray-700">{cap.label}</span>
+                  <div className="flex items-center justify-between">
+                    <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                    <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-faint">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <span className="text-[13px] font-medium leading-snug text-ink">
+                    {cap.label}
+                  </span>
                 </motion.div>
               )
             })}
@@ -194,28 +220,50 @@ export default function Services() {
       </section>
 
       {/* Service area */}
-      <section className="border-t border-gray-200 bg-surface-base py-12 sm:py-16">
-        <div className="mx-auto max-w-4xl px-6 text-center">
-          <motion.div {...fadeInUp}>
-            <h2 className="mb-3 text-xl font-bold text-gray-900 sm:text-2xl">
-              Serving local businesses across the Houston area
-            </h2>
-            <p className="mb-6 text-base text-gray-600">
-              Based in Baytown, TX and working with shops, restaurants, trades, contractors, and
-              independent pros across the surrounding communities.
+      <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-20 sm:py-28">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <motion.div {...fadeInUp} className="grid items-end gap-10 lg:grid-cols-[1.4fr_1fr]">
+            <div>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // Service area
+              </p>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+                Local businesses across
+                <br />
+                <span className="text-accent">the Houston area.</span>
+              </h2>
+            </div>
+            <p className="max-w-md text-[15px] leading-relaxed text-paper-soft lg:text-right">
+              Based in Baytown, TX. Working with shops, restaurants, trades, contractors,
+              and independent pros across the surrounding communities.
             </p>
-            <p className="text-sm leading-relaxed text-gray-500">
-              {SERVICE_AREAS.join(' · ')}
-            </p>
+          </motion.div>
+
+          <motion.div
+            {...fadeInUp}
+            transition={{ delay: 0.1 }}
+            className="mt-10 flex flex-wrap gap-x-3 gap-y-2 border-t border-hair-paper pt-8"
+          >
+            {SERVICE_AREAS.map(area => (
+              <span
+                key={area}
+                className="rounded-sm border border-hair-paper-strong px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-paper-soft"
+              >
+                {area}
+              </span>
+            ))}
           </motion.div>
         </div>
       </section>
 
-      {/* CTA */}
       <CtaSection
+        variant="dark"
+        eyebrow="// Next — Talk it through"
         title={
           <>
-            Ready to <span className="logo-wave-dark">talk through it</span>?
+            Ready to <span className="text-accent">talk through it</span>?
           </>
         }
         description="Tell me what your business needs. You get a straight answer and a clear plan to work from."

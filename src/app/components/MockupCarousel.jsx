@@ -8,11 +8,10 @@ const MOCKUPS = [
   { url: 'yourbusiness.com/dashboard', variant: 'dashboard' },
 ]
 
-// Three positions in the orbit: center-front, back-left, back-right
 const POSITIONS = [
   { x: 0, y: 0, scale: 1, zIndex: 3, opacity: 1 },
-  { x: -140, y: 35, scale: 0.78, zIndex: 1, opacity: 0.5 },
-  { x: 140, y: 35, scale: 0.78, zIndex: 2, opacity: 0.5 },
+  { x: -135, y: 30, scale: 0.78, zIndex: 1, opacity: 0.45 },
+  { x: 135, y: 30, scale: 0.78, zIndex: 2, opacity: 0.45 },
 ]
 
 export default function MockupCarousel() {
@@ -21,7 +20,7 @@ export default function MockupCarousel() {
   useEffect(() => {
     const interval = setInterval(() => {
       setRotation(prev => prev + 1)
-    }, 3500)
+    }, 3600)
     return () => clearInterval(interval)
   }, [])
 
@@ -44,7 +43,7 @@ export default function MockupCarousel() {
             }}
             transition={{
               duration: 0.8,
-              ease: [0.4, 0, 0.2, 1],
+              ease: [0.22, 1, 0.36, 1],
             }}
           >
             <BrowserMockup url={mockup.url} variant={mockup.variant} />

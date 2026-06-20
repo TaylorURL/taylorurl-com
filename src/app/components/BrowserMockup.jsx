@@ -4,14 +4,14 @@ const BAR_VARIANTS = {
   initial: { scaleX: 0 },
   animate: i => ({
     scaleX: 1,
-    transition: { duration: 0.6, delay: 0.8 + i * 0.15, ease: 'easeOut' },
+    transition: { duration: 0.5, delay: 0.5 + i * 0.1, ease: [0.22, 1, 0.36, 1] },
   }),
 }
 
 const PULSE_TRANSITION = {
   repeat: Infinity,
   repeatType: 'reverse',
-  duration: 2,
+  duration: 2.2,
   ease: 'easeInOut',
 }
 
@@ -22,18 +22,18 @@ export default function BrowserMockup({
 }) {
   return (
     <div
-      className={`w-full rounded-xl border border-gray-200 bg-white shadow-2xl shadow-gray-900/10 ${className}`}
+      className={`w-full overflow-hidden rounded-sm border border-hair bg-bg text-ink shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] ${className}`}
     >
-      <div className="flex items-center gap-1.5 border-b border-gray-100 px-4 py-3">
-        <motion.div className="h-2.5 w-2.5 rounded-full bg-red-400" whileHover={{ scale: 1.4 }} />
-        <motion.div
-          className="h-2.5 w-2.5 rounded-full bg-yellow-400"
-          whileHover={{ scale: 1.4 }}
-        />
-        <motion.div className="h-2.5 w-2.5 rounded-full bg-green-400" whileHover={{ scale: 1.4 }} />
-        <div className="ml-3 flex-1 rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-400">
+      <div className="flex items-center gap-2 border-b border-hair bg-bg px-4 py-3">
+        <span className="h-2 w-2 rounded-full bg-ink-faint" />
+        <span className="h-2 w-2 rounded-full bg-ink-faint" />
+        <span className="h-2 w-2 rounded-full bg-ink-faint" />
+        <div className="ml-3 flex-1 rounded-sm border border-hair bg-surface-1 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-faint">
           {url}
         </div>
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+          v1
+        </span>
       </div>
       <div className="p-5">
         {variant === 'default' && <DefaultContent />}
@@ -49,39 +49,42 @@ export default function BrowserMockup({
 function DefaultContent() {
   return (
     <div className="space-y-3">
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+        // hero
+      </p>
       <motion.div
-        className="h-5 w-3/4 origin-left rounded bg-gray-200"
+        className="h-5 w-3/4 origin-left rounded-sm bg-ink/20"
         {...BAR_VARIANTS}
         custom={0}
       />
       <motion.div
-        className="h-3 w-full origin-left rounded bg-gray-100"
+        className="h-3 w-full origin-left rounded-sm bg-ink/10"
         {...BAR_VARIANTS}
         custom={1}
       />
       <motion.div
-        className="h-3 w-5/6 origin-left rounded bg-gray-100"
+        className="h-3 w-5/6 origin-left rounded-sm bg-ink/10"
         {...BAR_VARIANTS}
         custom={2}
       />
       <motion.div
-        className="mt-4 h-32 rounded-lg bg-gradient-to-br from-blue-50 to-gray-50"
-        initial={{ opacity: 0, scale: 0.95 }}
+        className="mt-4 h-28 rounded-sm border border-hair bg-accent/10"
+        initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.5, delay: 1.3 }}
+        transition={{ duration: 0.5, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
       />
       <motion.div
         className="flex gap-2"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.4, delay: 1.6 }}
+        transition={{ duration: 0.4, delay: 1.3 }}
       >
         <motion.div
-          className="h-8 w-24 rounded-md bg-blue-500"
-          animate={{ opacity: [0.7, 1] }}
+          className="h-8 w-28 rounded-sm bg-accent"
+          animate={{ opacity: [0.75, 1] }}
           transition={PULSE_TRANSITION}
         />
-        <div className="h-8 w-20 rounded-md bg-gray-100" />
+        <div className="h-8 w-20 rounded-sm border border-hair-strong" />
       </motion.div>
     </div>
   )
@@ -93,10 +96,12 @@ function AnalyticsContent() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="h-3 w-20 rounded bg-gray-200" />
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+          // traffic — last 7d
+        </p>
         <motion.div
-          className="h-5 w-16 rounded bg-green-100 text-center text-[10px] font-bold leading-5 text-green-600"
-          animate={{ opacity: [0.6, 1] }}
+          className="rounded-sm border border-accent/40 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent"
+          animate={{ opacity: [0.7, 1] }}
           transition={PULSE_TRANSITION}
         >
           +127%
@@ -106,21 +111,21 @@ function AnalyticsContent() {
         {bars.map((h, i) => (
           <motion.div
             key={i}
-            className="flex-1 rounded-t bg-blue-500"
+            className="flex-1 rounded-t-sm bg-accent"
             initial={{ height: 0 }}
             animate={{ height: `${h}%` }}
-            transition={{ duration: 0.6, delay: 0.6 + i * 0.1, ease: 'easeOut' }}
+            transition={{ duration: 0.5, delay: 0.5 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
           />
         ))}
       </div>
-      <div className="flex justify-between text-[9px] text-gray-400">
-        <span>Mon</span>
-        <span>Tue</span>
-        <span>Wed</span>
-        <span>Thu</span>
-        <span>Fri</span>
-        <span>Sat</span>
-        <span>Sun</span>
+      <div className="flex justify-between font-mono text-[9px] uppercase tracking-[0.18em] text-ink-faint">
+        <span>Mo</span>
+        <span>Tu</span>
+        <span>We</span>
+        <span>Th</span>
+        <span>Fr</span>
+        <span>Sa</span>
+        <span>Su</span>
       </div>
     </div>
   )
@@ -129,36 +134,36 @@ function AnalyticsContent() {
 function MobileContent() {
   return (
     <div className="flex justify-center">
-      <div className="w-[140px] rounded-2xl border-2 border-gray-200 bg-white p-2">
-        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-gray-200" />
+      <div className="w-[140px] rounded-sm border border-hair bg-bg p-2">
+        <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-ink-faint" />
         <motion.div
-          className="mb-2 h-16 rounded-lg bg-gradient-to-b from-blue-50 to-blue-100"
+          className="mb-2 h-16 rounded-sm bg-accent/15"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
         />
         <div className="space-y-1.5">
           <motion.div
-            className="h-2 w-full origin-left rounded bg-gray-100"
+            className="h-2 w-full origin-left rounded-sm bg-ink/10"
             {...BAR_VARIANTS}
             custom={0}
           />
           <motion.div
-            className="h-2 w-4/5 origin-left rounded bg-gray-100"
+            className="h-2 w-4/5 origin-left rounded-sm bg-ink/10"
             {...BAR_VARIANTS}
             custom={1}
           />
           <motion.div
-            className="h-2 w-3/5 origin-left rounded bg-gray-100"
+            className="h-2 w-3/5 origin-left rounded-sm bg-ink/10"
             {...BAR_VARIANTS}
             custom={2}
           />
         </div>
         <motion.div
-          className="mt-3 h-5 rounded bg-blue-500"
+          className="mt-3 h-5 rounded-sm bg-accent"
           initial={{ opacity: 0 }}
           animate={{ opacity: [0.7, 1] }}
-          transition={{ ...PULSE_TRANSITION, delay: 1.2 }}
+          transition={{ ...PULSE_TRANSITION, delay: 1 }}
         />
       </div>
     </div>
@@ -167,31 +172,31 @@ function MobileContent() {
 
 function CodeContent() {
   const lines = [
-    { width: 'w-3/4', color: 'bg-blue-200' },
-    { width: 'w-1/2', color: 'bg-purple-200' },
-    { width: 'w-5/6', color: 'bg-green-200' },
-    { width: 'w-2/3', color: 'bg-blue-200' },
-    { width: 'w-3/5', color: 'bg-yellow-200' },
-    { width: 'w-4/5', color: 'bg-purple-200' },
+    { width: 'w-3/4' },
+    { width: 'w-1/2' },
+    { width: 'w-5/6' },
+    { width: 'w-2/3' },
+    { width: 'w-3/5' },
+    { width: 'w-4/5' },
   ]
 
   return (
-    <div className="space-y-2 rounded-lg bg-gray-900 p-4">
+    <div className="space-y-2 rounded-sm border border-hair bg-bg p-4">
       {lines.map((line, i) => (
-        <div key={i} className="flex items-center gap-2">
-          <span className="w-4 text-right text-[10px] text-gray-600">{i + 1}</span>
+        <div key={i} className="flex items-center gap-3">
+          <span className="w-4 text-right font-mono text-[10px] text-ink-faint">{i + 1}</span>
           <motion.div
-            className={`h-2.5 origin-left rounded ${line.width} ${line.color} opacity-60`}
+            className={`h-2 origin-left rounded-sm ${line.width} ${i % 2 === 0 ? 'bg-ink/20' : 'bg-accent/60'}`}
             initial={{ scaleX: 0, opacity: 0 }}
-            animate={{ scaleX: 1, opacity: 0.6 }}
-            transition={{ duration: 0.4, delay: 0.6 + i * 0.12 }}
+            animate={{ scaleX: 1, opacity: 1 }}
+            transition={{ duration: 0.4, delay: 0.5 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
           />
         </div>
       ))}
       <motion.div
-        className="mt-2 h-0.5 w-2 bg-gray-400"
+        className="mt-2 h-0.5 w-2 bg-accent"
         animate={{ opacity: [1, 0] }}
-        transition={{ repeat: Infinity, duration: 0.8 }}
+        transition={{ repeat: Infinity, duration: 0.9 }}
       />
     </div>
   )
@@ -201,53 +206,57 @@ function DashboardContent() {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="h-3 w-24 rounded bg-gray-200" />
+        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+          // monitor
+        </p>
         <div className="flex gap-1.5">
-          <div className="h-5 w-14 rounded bg-gray-100 text-center text-[9px] leading-5 text-gray-400">
+          <div className="rounded-sm border border-hair px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
             Today
           </div>
-          <div className="h-5 w-14 rounded bg-blue-50 text-center text-[9px] font-medium leading-5 text-blue-600">
+          <div className="rounded-sm border border-accent/50 bg-accent/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-accent">
             Week
           </div>
         </div>
       </div>
       <div className="grid grid-cols-3 gap-2">
         {[
-          { label: 'Visitors', value: '1,247', color: 'text-blue-600' },
-          { label: 'Leads', value: '38', color: 'text-emerald-600' },
-          { label: 'Conv. Rate', value: '3.0%', color: 'text-violet-600' },
+          { label: 'Visitors', value: '1,247' },
+          { label: 'Leads', value: '38' },
+          { label: 'Convert.', value: '3.0%' },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            className="rounded-lg border border-gray-100 bg-gray-50 p-2 text-center"
-            initial={{ opacity: 0, y: 8 }}
+            className="rounded-sm border border-hair p-2 text-center"
+            initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.8 + i * 0.12 }}
+            transition={{ duration: 0.4, delay: 0.7 + i * 0.1 }}
           >
-            <div className={`text-sm font-bold ${stat.color}`}>{stat.value}</div>
-            <div className="text-[9px] text-gray-400">{stat.label}</div>
+            <div className="font-mono text-[14px] font-semibold text-ink">{stat.value}</div>
+            <div className="font-mono text-[9px] uppercase tracking-[0.18em] text-ink-faint">
+              {stat.label}
+            </div>
           </motion.div>
         ))}
       </div>
       <motion.div
-        className="h-16 rounded-lg bg-gradient-to-r from-blue-50 via-emerald-50 to-violet-50"
+        className="h-16 rounded-sm border border-hair bg-gradient-to-r from-accent/10 via-accent/5 to-transparent"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, delay: 1.2 }}
+        transition={{ duration: 0.5, delay: 1 }}
       />
       <div className="flex gap-2">
         <motion.div
-          className="h-2 flex-1 rounded bg-blue-200"
+          className="h-1.5 flex-1 rounded-sm bg-accent"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.6, delay: 1.4 }}
+          transition={{ duration: 0.5, delay: 1.15 }}
           style={{ originX: 0 }}
         />
         <motion.div
-          className="h-2 w-1/4 rounded bg-emerald-200"
+          className="h-1.5 w-1/4 rounded-sm bg-ink/30"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
-          transition={{ duration: 0.6, delay: 1.5 }}
+          transition={{ duration: 0.5, delay: 1.25 }}
           style={{ originX: 0 }}
         />
       </div>

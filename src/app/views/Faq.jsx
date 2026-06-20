@@ -1,15 +1,15 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronDown } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import PageHero from '@components/PageHero'
+import CtaBanner from '@components/CtaBanner'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BTN_PRIMARY, SECTION_H2 } from '@constants/ui'
 import { breadcrumbSchema } from '@constants/seo'
 
 const FAQ_CATEGORIES = [
   {
-    title: 'Getting Started',
+    title: 'Getting started',
     questions: [
       {
         q: 'Who do you build websites for?',
@@ -30,7 +30,7 @@ const FAQ_CATEGORIES = [
     ],
   },
   {
-    title: 'How I Work',
+    title: 'How I work',
     questions: [
       {
         q: 'What does ongoing care include?',
@@ -51,7 +51,7 @@ const FAQ_CATEGORIES = [
     ],
   },
   {
-    title: 'After Launch',
+    title: 'After launch',
     questions: [
       {
         q: 'Do I own the website?',
@@ -77,22 +77,33 @@ const FAQ_CATEGORIES = [
   },
 ]
 
-function FaqItem({ question, answer, isOpen, onToggle, index, panelId }) {
+function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIndex }) {
   return (
-    <motion.div {...staggerChild(index, 0.05)} className="border-b border-gray-200 last:border-b-0">
+    <motion.div {...staggerChild(index, 0.04)} className="border-t border-hair-paper">
       <button
         onClick={onToggle}
         aria-expanded={isOpen}
         aria-controls={panelId}
-        className="flex w-full items-center justify-between gap-4 py-5 text-left transition-colors hover:text-gray-900"
+        className="group flex w-full items-baseline justify-between gap-4 py-6 text-left"
       >
-        <span className="text-base font-medium text-gray-900 sm:text-lg">{question}</span>
+        <div className="flex items-baseline gap-5">
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint">
+            {String(sectionIndex + 1).padStart(2, '0')}.{String(index + 1).padStart(2, '0')}
+          </span>
+          <span className="text-[17px] font-medium tracking-tight text-ink-paper transition-colors group-hover:text-accent sm:text-[19px]">
+            {question}
+          </span>
+        </div>
         <motion.span
-          animate={{ rotate: isOpen ? 180 : 0 }}
-          transition={{ duration: 0.25 }}
+          animate={{ rotate: isOpen ? 45 : 0 }}
+          transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
           className="flex-shrink-0"
         >
-          <ChevronDown className="h-5 w-5 text-gray-400" aria-hidden="true" />
+          <Plus
+            className={`h-5 w-5 transition-colors ${isOpen ? 'text-accent' : 'text-paper-faint group-hover:text-ink-paper'}`}
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
         </motion.span>
       </button>
       <AnimatePresence initial={false}>
@@ -103,10 +114,12 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId }) {
             initial={{ height: 0, opacity: 0 }}
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: 'easeInOut' }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
             className="overflow-hidden"
           >
-            <p className="pb-5 pr-4 leading-relaxed text-gray-600 sm:pr-12">{answer}</p>
+            <p className="ml-12 max-w-3xl pb-7 pr-6 text-[15px] leading-relaxed text-paper-soft sm:text-[16px]">
+              {answer}
+            </p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -149,60 +162,59 @@ export default function Faq() {
         ]}
       />
       <PageHero
-        title="Frequently asked questions"
-        description="Common questions about working with a Baytown, TX website designer. Straight answers on timelines, how it works, who owns what, and ongoing care."
+        eyebrow="// 01 — FAQ"
+        title="Common questions, straight answers."
+        description="Common questions about working with a Baytown, TX website designer — timelines, how it works, who owns what, and ongoing care."
       />
 
-      <section className="relative bg-surface-base py-12 sm:py-20">
-        <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
-        <div className="relative mx-auto max-w-3xl px-6">
-          {FAQ_CATEGORIES.map((category, catIndex) => (
-            <motion.div
-              key={category.title}
-              {...fadeInUp}
-              transition={{ duration: 0.5, delay: catIndex * 0.15 }}
-              className={catIndex > 0 ? 'mt-16' : ''}
-            >
-              <h2 className={`mb-6 ${SECTION_H2}`}>
-                <span className="logo-wave-dark">{category.title}</span>
-              </h2>
-              <div className="rounded-2xl border border-gray-200 bg-gray-50/50 px-4 sm:px-6">
-                {category.questions.map((item, qIndex) => {
-                  const key = `${catIndex}-${qIndex}`
-                  return (
-                    <FaqItem
-                      key={key}
-                      question={item.q}
-                      answer={item.a}
-                      isOpen={!!openItems[key]}
-                      onToggle={() => toggleItem(key)}
-                      index={qIndex}
-                      panelId={`faq-panel-${key}`}
-                    />
-                  )
-                })}
-              </div>
-            </motion.div>
-          ))}
+      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
+          <div className="space-y-20">
+            {FAQ_CATEGORIES.map((category, catIndex) => (
+              <motion.div key={category.title} {...fadeInUp} transition={{ delay: catIndex * 0.08 }}>
+                <div className="flex items-baseline gap-5 border-b border-hair-paper pb-5">
+                  <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                    {String(catIndex + 1).padStart(2, '0')}
+                  </span>
+                  <h2 className="text-[clamp(1.6rem,3.4vw,2.4rem)] font-semibold tracking-tightest text-ink-paper">
+                    {category.title}
+                  </h2>
+                  <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    {String(category.questions.length).padStart(2, '0')} entries
+                  </span>
+                </div>
+                <div>
+                  {category.questions.map((item, qIndex) => {
+                    const key = `${catIndex}-${qIndex}`
+                    return (
+                      <FaqItem
+                        key={key}
+                        question={item.q}
+                        answer={item.a}
+                        isOpen={!!openItems[key]}
+                        onToggle={() => toggleItem(key)}
+                        index={qIndex}
+                        sectionIndex={catIndex}
+                        panelId={`faq-panel-${key}`}
+                      />
+                    )
+                  })}
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gray-950 py-12 sm:py-20">
-        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mx-auto max-w-2xl text-center">
-            <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl">
-              Still have <span className="logo-wave">questions</span>?
-            </h2>
-            <p className="mb-8 text-base text-gray-400 sm:text-lg">
-              Send me a message. I get back to you within 24 hours.
-            </p>
-            <a href="/contact" className={BTN_PRIMARY}>
-              Get in Touch
-            </a>
-          </motion.div>
-        </div>
-      </section>
+      <CtaBanner
+        eyebrow="// Next — Ask anything"
+        heading="Still have"
+        accentText="questions?"
+        description="Send me a message. I get back to you within 24 hours, with a straight answer."
+        primaryLabel="Get in touch"
+        primaryTo="/contact"
+      />
     </div>
   )
 }

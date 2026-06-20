@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowRight, Bug } from 'lucide-react'
+import { ArrowUpRight, Bug } from 'lucide-react'
 import Seo from '@components/Seo'
-import { BTN_PRIMARY, BTN_SECONDARY } from '@constants/ui'
 
-const BUG_SIZE = 32
+const BUG_SIZE = 28
 const MOVE_INTERVAL_MS = 1200
 
 export default function NotFound() {
@@ -35,81 +34,102 @@ export default function NotFound() {
   }
 
   return (
-    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-gray-50 px-4 pb-12 pt-28 sm:pb-16 sm:pt-40">
-      <div className="grid-pattern absolute inset-0 opacity-[0.03]" />
+    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-bg px-6 pb-16 pt-32 text-ink sm:pb-20 sm:pt-44">
+      <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <Seo title="Page Not Found" path="/404" noIndex />
 
-      <div className="relative mx-auto max-w-lg text-center">
-        <motion.p
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="logo-wave-dark text-[5rem] font-bold leading-none sm:text-[8rem]"
-        >
-          404
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="mt-4 text-2xl font-bold text-gray-900 sm:text-3xl"
-        >
-          Page not found
-        </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3, duration: 0.5 }}
-          className="mt-4 text-lg text-gray-600"
-        >
-          This page does not exist. Squash a few bugs while you are here.
-        </motion.p>
-
-        {/* Bug catching game */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="mx-auto mb-8 mt-8"
-        >
-          <div className="mb-3 text-sm font-medium text-gray-500">
-            Bugs caught: <span className="font-bold text-blue-600">{score}</span>
-          </div>
-          <div
-            ref={gridRef}
-            className="relative mx-auto w-full max-w-[280px] rounded-xl border-2 border-dashed border-gray-300 bg-surface-overlay"
-            style={{ aspectRatio: '1 / 1' }}
+      <div className="relative mx-auto grid w-full max-w-[1080px] items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
+        <div>
+          <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+            <span className="h-px w-8 bg-accent" />
+            // Signal lost — 404
+          </p>
+          <motion.p
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="font-mono text-[clamp(5rem,16vw,12rem)] font-semibold leading-none tracking-tightest text-ink"
           >
-            <div className="grid-pattern absolute inset-0 rounded-xl opacity-[0.03]" />
-            <motion.button
-              onClick={catchBug}
-              animate={{ x: bugPos.x, y: bugPos.y }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              className="absolute cursor-pointer text-red-500 transition-colors hover:text-red-600"
-              whileHover={{ scale: 1.3 }}
-              whileTap={{ scale: 0.7 }}
-              aria-label="Catch the bug"
-            >
-              <Bug className="h-8 w-8" />
-            </motion.button>
-          </div>
-        </motion.div>
+            404
+          </motion.p>
 
+          <motion.h1
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-6 text-[clamp(1.6rem,3.4vw,2.6rem)] font-semibold tracking-tightest text-ink"
+          >
+            Page not found.
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.18, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-soft"
+          >
+            This page does not exist. Squash a few bugs while you&apos;re here, or head
+            back to safe terrain.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.26, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+            className="mt-10 flex flex-wrap gap-4"
+          >
+            <Link
+              to="/"
+              className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+            >
+              Return to home
+              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+            </Link>
+            <Link
+              to="/contact"
+              className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-strong px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+            >
+              Get in touch
+            </Link>
+          </motion.div>
+        </div>
+
+        {/* Bug catching panel */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5, duration: 0.5 }}
-          className="flex flex-wrap justify-center gap-4"
+          transition={{ delay: 0.34, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+          className="relative w-full max-w-[320px] justify-self-center lg:justify-self-end"
         >
-          <Link to="/" className={`group ${BTN_PRIMARY}`}>
-            Back to home
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-          <Link to="/contact" className={BTN_SECONDARY}>
-            Get in Touch
-          </Link>
+          <div className="border border-hair p-5">
+            <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+              <span>// Debugger</span>
+              <span className="text-accent">
+                Caught · <span className="font-semibold text-ink">{String(score).padStart(2, '0')}</span>
+              </span>
+            </div>
+            <div
+              ref={gridRef}
+              className="relative mx-auto w-full overflow-hidden border border-dashed border-hair-strong bg-surface-1"
+              style={{ aspectRatio: '1 / 1' }}
+            >
+              <div className="grid-blueprint-fine absolute inset-0 opacity-60" aria-hidden="true" />
+              <motion.button
+                onClick={catchBug}
+                animate={{ x: bugPos.x, y: bugPos.y }}
+                transition={{ type: 'spring', stiffness: 280, damping: 22 }}
+                className="absolute cursor-pointer text-accent transition-colors hover:text-[color:var(--accent-hi)]"
+                whileHover={{ scale: 1.25 }}
+                whileTap={{ scale: 0.78 }}
+                aria-label="Catch the bug"
+              >
+                <Bug className="h-7 w-7" strokeWidth={1.5} />
+              </motion.button>
+            </div>
+            <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+              Click the bug to debug
+            </p>
+          </div>
         </motion.div>
       </div>
     </div>

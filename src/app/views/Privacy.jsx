@@ -44,7 +44,8 @@ export default function Privacy() {
       <LegalPage
         title="Privacy Policy"
         description="How I collect, use, and protect your information."
-        effectiveDate="Last Updated: February 1, 2026"
+        eyebrow="// 01 — Privacy"
+        effectiveDate="Last Updated · February 1, 2026"
         introText='TaylorURL LLC is operated by Trenton Taylor ("I", "me", or "my"). I am committed to protecting your privacy. This Privacy Policy explains how I collect, use, disclose, and safeguard your information when you visit taylorurl.com.'
         sections={SECTIONS}
         footer={{
@@ -52,7 +53,7 @@ export default function Privacy() {
           body: (
             <>
               If you have any questions about this Privacy Policy, please contact me at{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-accent underline">
                 {SUPPORT_EMAIL}
               </a>
             </>

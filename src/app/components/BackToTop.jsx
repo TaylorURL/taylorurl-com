@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ChevronUp } from 'lucide-react'
+import { ArrowUp } from 'lucide-react'
 
 const SHOW_THRESHOLD = 400
 
@@ -9,7 +9,7 @@ export default function BackToTop() {
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > SHOW_THRESHOLD)
-    window.addEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
@@ -19,16 +19,16 @@ export default function BackToTop() {
     <AnimatePresence>
       {visible && (
         <motion.button
-          initial={{ opacity: 0, scale: 0.8, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: 20 }}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 12 }}
+          transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
+          whileTap={{ scale: 0.94 }}
           onClick={scrollToTop}
-          className="fixed bottom-6 right-6 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-gray-200 bg-surface-overlay shadow-lg shadow-gray-900/10 transition-colors hover:bg-gray-50"
+          className="group fixed bottom-6 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-sm border border-hair-paper-strong bg-paper text-ink-paper transition-colors duration-200 hover:bg-ink-paper hover:text-paper"
           aria-label="Scroll to top"
         >
-          <ChevronUp className="h-5 w-5 text-gray-700" />
+          <ArrowUp className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
         </motion.button>
       )}
     </AnimatePresence>
