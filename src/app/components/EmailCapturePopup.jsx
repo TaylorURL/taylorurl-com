@@ -190,7 +190,7 @@ export default function EmailCapturePopup() {
               aria-hidden
               className="absolute -top-px left-7 bg-paper px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
             >
-              // Transmission
+              // Newsletter
             </span>
             <button
               type="button"
