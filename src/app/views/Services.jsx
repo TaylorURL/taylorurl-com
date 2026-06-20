@@ -143,7 +143,7 @@ export default function Services() {
                   <div className={isReversed ? 'lg:order-2' : ''}>
                     <div className="mb-6 flex items-baseline justify-between border-b border-hair-paper pb-4">
                       <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
-                        Service · {String(i + 1).padStart(2, '0')} / 04
+                        {String(i + 1).padStart(2, '0')} / 04
                       </span>
                       <Icon className="h-6 w-6 text-ink-paper" strokeWidth={1.25} />
                     </div>
