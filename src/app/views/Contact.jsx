@@ -209,10 +209,10 @@ ${formData.message}
             >
               <div className="mb-8 flex items-baseline justify-between border-b border-hair-paper pb-5">
                 <h3 className="text-[20px] font-semibold tracking-tight text-ink-paper">
-                  Project brief
+                  Tell me about it
                 </h3>
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                  Form / Inquiry-01
+                  Contact form
                 </span>
               </div>
               <form onSubmit={handleSubmit} className="space-y-7">
