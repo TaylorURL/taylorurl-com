@@ -353,17 +353,16 @@ ${formData.message}
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // Included
+                // What&apos;s included
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
-                Everything standard
+                What comes
                 <br />
                 <span className="text-accent">with every project.</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              No surprise charges for the basics. Ten things that ship with every build,
-              every time.
+              No surprise add-ons for the basics. Ten things that come standard, every time.
             </p>
           </motion.div>
           <div className="mt-12 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-5">
