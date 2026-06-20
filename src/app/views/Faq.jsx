@@ -163,8 +163,8 @@ export default function Faq() {
       />
       <PageHero
         eyebrow="// 01 — FAQ"
-        title="Common questions, straight answers."
-        description="Common questions about working with a Baytown, TX website designer — timelines, how it works, who owns what, and ongoing care."
+        title="Common questions, honest answers."
+        description="The questions I get most from owners — about timelines, how it works, who owns what, and what happens after launch."
       />
 
       <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
