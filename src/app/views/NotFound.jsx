@@ -42,7 +42,7 @@ export default function NotFound() {
         <div>
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
-            // Signal lost — 404
+            // Page not found — 404
           </p>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
