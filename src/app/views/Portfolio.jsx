@@ -162,7 +162,7 @@ export default function Portfolio() {
             Want your business <span className="text-accent">in this list</span>?
           </>
         }
-        description="Tell me what your business needs and I will put together a plan. Most websites are live in two to four weeks."
+        description="Tell me what your business needs and I'll put together a plan. Most sites are live in two to four weeks."
       />
     </div>
   )
