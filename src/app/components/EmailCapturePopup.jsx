@@ -152,7 +152,7 @@ export default function EmailCapturePopup() {
       setServerError(
         error?.message?.length && error.message.length < 200
           ? error.message
-          : "We couldn't sign you up just now. Please try again."
+          : "Couldn't sign you up just now. Please try again."
       )
     }
   }
