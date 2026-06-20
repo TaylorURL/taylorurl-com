@@ -124,11 +124,6 @@ export default function Navigation() {
           </ul>
 
           <div className="hidden shrink-0 items-center gap-5 lg:flex">
-            <span
-              className={`hidden font-mono text-[10px] uppercase tracking-[0.22em] xl:inline ${useDarkChrome ? 'text-ink-faint' : 'text-paper-faint'}`}
-            >
-              29.7355°N · 94.9774°W
-            </span>
             <Link
               to="/contact"
               className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
