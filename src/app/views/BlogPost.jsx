@@ -83,7 +83,7 @@ export default function BlogPost() {
               className="group inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-soft transition-colors hover:text-accent"
             >
               <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-              Back to field notes
+              Back to the blog
             </Link>
 
             <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-hair pb-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
