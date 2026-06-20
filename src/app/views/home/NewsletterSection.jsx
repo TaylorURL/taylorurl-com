@@ -64,17 +64,17 @@ export default function NewsletterSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // Transmission
+              // Newsletter
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
-              Field notes for owners.
+              Short notes for owners.
               <br />
-              <span className="text-accent">Sent only when worth it.</span>
+              <span className="text-accent">Only when worth sending.</span>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-            Short, useful notes on getting found on Google and turning more visitors into
-            paying customers. Written by me, sent only when I have something worth saying.
+            Practical tips on getting found on Google and turning more visitors into paying
+            customers. Written by me, sent only when there’s something worth saying.
           </p>
         </div>
 
