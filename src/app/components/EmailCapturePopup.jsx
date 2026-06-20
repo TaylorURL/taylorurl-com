@@ -222,14 +222,14 @@ export default function EmailCapturePopup() {
                   id="email-popup-title"
                   className="mb-3 text-3xl font-semibold leading-[1.05] tracking-tightest text-ink-paper"
                 >
-                  Notes for owners.{' '}
-                  <span className="text-accent">From me to you.</span>
+                  Short notes for owners.{' '}
+                  <span className="text-accent">Straight from me.</span>
                 </h2>
                 <p
                   id="email-popup-description"
                   className="mb-7 text-[15px] leading-relaxed text-paper-soft"
                 >
-                  Short, useful field notes on getting found online and turning visitors into
+                  Practical tips on getting found online and turning visitors into paying
                   customers. Sent only when there&apos;s something worth saying.
                 </p>
 
