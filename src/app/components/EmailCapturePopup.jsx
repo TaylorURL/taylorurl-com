@@ -210,10 +210,10 @@ export default function EmailCapturePopup() {
                   id="email-popup-title"
                   className="mb-3 text-2xl font-semibold tracking-tightest text-ink-paper"
                 >
-                  Locked in.
+                  You&apos;re in.
                 </h2>
                 <p id="email-popup-description" className="text-[15px] text-paper-soft">
-                  Thanks for signing up — keep an eye on your inbox.
+                  Thanks. Keep an eye on your inbox.
                 </p>
               </div>
             ) : (
