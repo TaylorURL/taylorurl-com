@@ -280,9 +280,9 @@ export default function Blog() {
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Field notes"
+        eyebrow="// 01 — Blog"
         title="Notes from the workbench."
-        description="Practical website, Google, and growth tips for local businesses. No buzzwords, no fluff — written by me, sent only when worth it."
+        description="Practical tips on websites, Google, and getting more customers — written for local businesses. No buzzwords, no fluff."
       />
 
       {/* Filters strip */}
