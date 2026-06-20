@@ -1,30 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PRIMARY_LINKS } from '@constants/navigation'
+import { useOnDarkBackground } from '@hooks/useOnDarkBackground'
 
 const SCROLL_SOLID_THRESHOLD = 20
-
-function isDarkColor(rgb) {
-  if (!rgb || rgb === 'rgba(0, 0, 0, 0)' || rgb === 'transparent') return null
-  const match = rgb.match(/\d+/g)
-  if (!match || match.length < 3) return null
-  const [r, g, b] = match.map(Number)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance < 0.45
-}
-
-function getBackgroundAtPoint(x, y, ...ignoreEls) {
-  const els = document.elementsFromPoint(x, y)
-  for (const el of els) {
-    if (ignoreEls.some(ref => ref && ref.contains(el))) continue
-    const bg = window.getComputedStyle(el).backgroundColor
-    const dark = isDarkColor(bg)
-    if (dark !== null) return dark
-  }
-  return false
-}
 
 function Wordmark({ invert = false, sizeClass = 'h-8 w-[148px]' }) {
   return (
