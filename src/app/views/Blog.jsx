@@ -381,9 +381,9 @@ export default function Blog() {
               className="border border-hair-paper py-20 text-center"
             >
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint">
-                // No matches
+                // Nothing found
               </p>
-              <p className="mt-3 text-[16px] text-ink-paper">No articles found.</p>
+              <p className="mt-3 text-[16px] text-ink-paper">No articles match that.</p>
               <button
                 onClick={() => {
                   clearSearch()
