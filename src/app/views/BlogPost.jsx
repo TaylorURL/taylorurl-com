@@ -157,8 +157,8 @@ export default function BlogPost() {
             Need help with <span className="text-accent">your website</span>?
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            I build custom websites for small businesses. Made from scratch, looked after
-            by me, and a direct line to talk to whenever you need a change.
+            I build custom websites for local businesses. Made from scratch, looked after
+            by me, and a direct line to call whenever something needs to change.
           </p>
           <Link
             to="/contact"
