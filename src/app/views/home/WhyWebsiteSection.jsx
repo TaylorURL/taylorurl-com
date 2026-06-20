@@ -1,42 +1,58 @@
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { WHY_WEBSITE_CARDS } from '@data/home'
-import { SECTION_H2 } from '@constants/ui'
 
 export default function WhyWebsiteSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-14 sm:py-24">
-      <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-      <div className="relative mx-auto max-w-6xl px-6">
-        <motion.div {...fadeInUp} className="mb-10 text-center sm:mb-16">
-          <h2 className={`mb-4 ${SECTION_H2}`}>
-            Why a website <span className="logo-wave-dark">pays off</span>
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600">
+    <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-24 sm:py-36">
+      <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+      <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+        <motion.div
+          {...fadeInUp}
+          className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
+        >
+          <div>
+            <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              // 01 — Why
+            </p>
+            <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
+              A website is the difference between
+              <br />
+              <span className="text-accent">being found</span> and being missed.
+            </h2>
+          </div>
+          <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
             Six real ways a website brings in customers and earns its keep for small
-            businesses in Baytown, Houston, and the surrounding Texas communities.
+            businesses across Baytown, Houston, and the surrounding Texas communities.
           </p>
         </motion.div>
 
-        <div className="grid gap-4 md:grid-cols-2 md:gap-6 lg:grid-cols-3">
+        <div className="mt-12 grid grid-cols-1 divide-y divide-hair-paper border-hair-paper md:mt-16 md:grid-cols-2 md:divide-y-0 md:border-y md:[&>*:nth-child(2n)]:border-l lg:grid-cols-3 lg:[&>*:nth-child(3n+1)]:border-l-0 lg:[&>*]:border-l">
           {WHY_WEBSITE_CARDS.map((item, i) => {
             const Icon = item.icon
             return (
-              <motion.div
-                key={i}
-                {...staggerChild(i)}
-                whileHover={{ y: -5 }}
-                className="group rounded-2xl border border-gray-200 bg-surface-raised p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-xl hover:shadow-blue-500/5 sm:p-8"
+              <motion.article
+                key={item.title}
+                {...staggerChild(i, 0.05)}
+                className="group relative border-hair-paper p-8 transition-colors duration-300 hover:bg-ink-paper/[0.02] sm:p-10"
               >
-                <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-xl bg-gray-100 transition-all duration-300 group-hover:bg-blue-50">
+                <div className="mb-6 flex items-baseline justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    {String(i + 1).padStart(2, '0')} / 06
+                  </span>
                   <Icon
-                    className="h-6 w-6 text-gray-900 transition-colors group-hover:text-blue-600"
-                    strokeWidth={1.5}
+                    className="h-6 w-6 text-ink-paper transition-colors duration-300 group-hover:text-accent"
+                    strokeWidth={1.25}
                   />
                 </div>
-                <h3 className="mb-3 text-xl font-semibold text-gray-900">{item.title}</h3>
-                <p className="leading-relaxed text-gray-600">{item.description}</p>
-              </motion.div>
+                <h3 className="mb-4 text-[22px] font-semibold leading-tight tracking-tight text-ink-paper">
+                  {item.title}
+                </h3>
+                <p className="text-[15px] leading-relaxed text-paper-soft">
+                  {item.description}
+                </p>
+              </motion.article>
             )
           })}
         </div>
