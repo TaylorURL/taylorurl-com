@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Check, Clock, Mail, MapPin, Send } from 'lucide-react'
+import { ArrowUpRight, Check, Clock, Mail, MapPin } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/useToast'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { slideInLeftMount, slideInRightMount } from '@constants/animations'
-import { BTN_PRIMARY_LG, INPUT, SECTION_H2, SECTION_H2_DARK } from '@constants/ui'
+import { INPUT } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const INCLUDED_ITEMS = [
@@ -22,7 +22,7 @@ const INCLUDED_ITEMS = [
   'A real person to call',
 ]
 
-const PROCESS_STEPS = [
+const CONTACT_STEPS = [
   {
     title: 'First call',
     description:
@@ -39,8 +39,6 @@ const PROCESS_STEPS = [
       'I build the site, share progress along the way, and put it online. Ongoing care is included.',
   },
 ]
-
-const INPUT_CLASS = INPUT
 
 export default function Contact() {
   const toast = useToast()
@@ -100,6 +98,10 @@ ${formData.message}
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
+  const labelClass =
+    'mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint'
+  const errorClass = 'mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-red-600'
+
   return (
     <div>
       <Seo
@@ -120,240 +122,258 @@ ${formData.message}
         ]}
       />
       <PageHero
-        title="Let's talk about your website"
-        description="Tell me about your Baytown or Houston-area business. I get back to you within 24 hours."
+        eyebrow="// 01 — Transmission"
+        title="Let's talk about your website."
+        description="Tell me about your Baytown or Houston-area business. I get back to you within 24 hours, with a straight answer."
       />
 
-      <section className="bg-surface-base py-12 sm:py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <div className="grid gap-8 lg:grid-cols-5 lg:gap-12">
-            <motion.div
+      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <div className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-[1fr_1.4fr]">
+            <motion.aside
               {...slideInLeftMount}
-              transition={{ duration: 0.5 }}
-              className="lg:col-span-2"
+              className="flex flex-col gap-10 bg-paper p-8 sm:p-12"
             >
-              <h2 className={`mb-6 ${SECTION_H2}`}>
-                Start the <span className="logo-wave-dark">conversation</span>
-              </h2>
-              <p className="mb-8 text-gray-600">
-                New site, redo of an old one, or taking over a site someone else built — tell
-                me about the business and what needs to change. I will take it from there.
-              </p>
+              <div>
+                <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                  <span className="h-px w-8 bg-accent" />
+                  // Channel
+                </p>
+                <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+                  Start the conversation.
+                </h2>
+                <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
+                  New site, redo of an old one, or taking over a site someone else built —
+                  tell me about the business and what needs to change.
+                </p>
+              </div>
 
-              <div className="mb-8 space-y-4">
+              <div className="space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
                 <a
                   href={`mailto:${SALES_EMAIL}`}
-                  className="group flex items-start gap-4 rounded-xl border border-gray-200 p-4 transition-all hover:border-gray-300 hover:bg-gray-50"
+                  className="group flex items-center gap-4 bg-paper p-5 transition-colors hover:bg-ink-paper/[0.02]"
                 >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-900">
-                    <Mail className="h-5 w-5 text-white" strokeWidth={1.5} />
+                  <Mail className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                      Email
+                    </p>
+                    <p className="truncate text-[14px] text-ink-paper">{SALES_EMAIL}</p>
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-900">Email</div>
-                    <div className="text-sm text-gray-500">{SALES_EMAIL}</div>
-                  </div>
+                  <ArrowUpRight className="h-4 w-4 text-paper-faint transition-colors group-hover:text-accent" />
                 </a>
-
-                <div className="flex items-start gap-4 rounded-xl border border-gray-200 p-4">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-900">
-                    <MapPin className="h-5 w-5 text-white" strokeWidth={1.5} />
-                  </div>
+                <div className="flex items-center gap-4 bg-paper p-5">
+                  <MapPin className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
-                    <div className="font-medium text-gray-900">Location</div>
-                    <div className="text-sm text-gray-500">{COMPANY_LOCATION}</div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                      Location
+                    </p>
+                    <p className="text-[14px] text-ink-paper">{COMPANY_LOCATION}</p>
                   </div>
                 </div>
-
-                <div className="flex items-start gap-4 rounded-xl border border-gray-200 p-4">
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-900">
-                    <Clock className="h-5 w-5 text-white" strokeWidth={1.5} />
-                  </div>
+                <div className="flex items-center gap-4 bg-paper p-5">
+                  <Clock className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
-                    <div className="font-medium text-gray-900">Response Time</div>
-                    <div className="text-sm text-gray-500">Within 24 hours</div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                      Response window
+                    </p>
+                    <p className="text-[14px] text-ink-paper">Within 24 hours</p>
                   </div>
                 </div>
               </div>
 
-              <div className="rounded-xl bg-gray-50 p-6">
-                <h3 className="mb-4 font-semibold text-gray-900">How it works</h3>
-                <div className="space-y-4">
-                  {PROCESS_STEPS.map((step, i) => (
-                    <div key={step.title} className="flex items-start gap-3">
-                      <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gray-200 text-sm font-medium text-gray-700">
+              <div>
+                <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                  // After you send it
+                </p>
+                <ol className="space-y-5 border-l border-accent/40 pl-5">
+                  {CONTACT_STEPS.map((step, i) => (
+                    <li key={step.title} className="relative">
+                      <span className="absolute -left-[27px] top-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-accent bg-paper font-mono text-[9px] font-semibold text-accent">
                         {i + 1}
-                      </div>
-                      <div>
-                        <div className="font-medium text-gray-900">{step.title}</div>
-                        <div className="text-sm text-gray-500">{step.description}</div>
-                      </div>
-                    </div>
+                      </span>
+                      <p className="text-[14px] font-semibold text-ink-paper">{step.title}</p>
+                      <p className="mt-1 text-[13px] leading-relaxed text-paper-soft">
+                        {step.description}
+                      </p>
+                    </li>
                   ))}
-                </div>
+                </ol>
               </div>
-            </motion.div>
+            </motion.aside>
 
             <motion.div
               {...slideInRightMount}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="lg:col-span-3"
+              className="bg-paper p-8 sm:p-12"
             >
-              <div className="rounded-2xl border border-gray-200 bg-surface-raised p-5 shadow-sm sm:p-8">
-                <h3 className="mb-6 text-xl font-semibold text-gray-900">
-                  About your project
+              <div className="mb-8 flex items-baseline justify-between border-b border-hair-paper pb-5">
+                <h3 className="text-[20px] font-semibold tracking-tight text-ink-paper">
+                  Project brief
                 </h3>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="name"
-                        className="mb-2 block text-sm font-medium text-gray-900"
-                      >
-                        Name
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        required
-                        value={formData.name}
-                        onChange={handleChange}
-                        className={INPUT_CLASS}
-                        placeholder="Your name"
-                        aria-invalid={errors.name ? true : undefined}
-                        aria-describedby={errors.name ? 'name-error' : undefined}
-                      />
-                      {errors.name && (
-                        <p id="name-error" className="mt-1 text-sm text-red-500">
-                          {errors.name}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="email"
-                        className="mb-2 block text-sm font-medium text-gray-900"
-                      >
-                        Email
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        required
-                        value={formData.email}
-                        onChange={handleChange}
-                        className={INPUT_CLASS}
-                        placeholder="you@yourbusiness.com"
-                        aria-invalid={errors.email ? true : undefined}
-                        aria-describedby={errors.email ? 'email-error' : undefined}
-                      />
-                      {errors.email && (
-                        <p id="email-error" className="mt-1 text-sm text-red-500">
-                          {errors.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div>
-                      <label
-                        htmlFor="company"
-                        className="mb-2 block text-sm font-medium text-gray-900"
-                      >
-                        Business Name
-                      </label>
-                      <input
-                        type="text"
-                        id="company"
-                        name="company"
-                        value={formData.company}
-                        onChange={handleChange}
-                        className={INPUT_CLASS}
-                        placeholder="Your business name"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="projectType"
-                        className="mb-2 block text-sm font-medium text-gray-900"
-                      >
-                        What do you need?
-                      </label>
-                      <select
-                        id="projectType"
-                        name="projectType"
-                        value={formData.projectType}
-                        onChange={handleChange}
-                        className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.25rem] bg-[position:right_0.75rem_center] bg-no-repeat`}
-                      >
-                        <option value="">Pick one</option>
-                        <option value="new-website">A brand-new website</option>
-                        <option value="redesign">Redo my current site</option>
-                        <option value="web-app">An online tool or booking system</option>
-                        <option value="optimization">Make my site faster</option>
-                        <option value="maintenance">Ongoing care for my site</option>
-                      </select>
-                    </div>
-                  </div>
-
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                  Form / Inquiry-01
+                </span>
+              </div>
+              <form onSubmit={handleSubmit} className="space-y-7">
+                <div className="grid gap-6 sm:grid-cols-2">
                   <div>
-                    <label
-                      htmlFor="message"
-                      className="mb-2 block text-sm font-medium text-gray-900"
-                    >
-                      Tell me about it
+                    <label htmlFor="name" className={labelClass}>
+                      Name
                     </label>
-                    <textarea
-                      id="message"
-                      name="message"
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
                       required
-                      value={formData.message}
+                      value={formData.name}
                       onChange={handleChange}
-                      rows={5}
-                      className={`${INPUT_CLASS} resize-none`}
-                      placeholder="What does your business do, and what do you want your website to do for you?"
-                      aria-invalid={errors.message ? true : undefined}
-                      aria-describedby={errors.message ? 'message-error' : undefined}
+                      className={INPUT}
+                      placeholder="Your name"
+                      aria-invalid={errors.name ? true : undefined}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
                     />
-                    {errors.message && (
-                      <p id="message-error" className="mt-1 text-sm text-red-500">
-                        {errors.message}
+                    {errors.name && (
+                      <p id="name-error" className={errorClass}>
+                        {errors.name}
                       </p>
                     )}
                   </div>
-
-                  <div className="flex flex-col gap-4 pt-2 sm:flex-row sm:items-center sm:justify-between">
-                    <button type="submit" className={BTN_PRIMARY_LG}>
-                      Send message
-                      <Send className="h-4 w-4" />
-                    </button>
-                    <p className="text-xs text-gray-500">Opens your email</p>
+                  <div>
+                    <label htmlFor="email" className={labelClass}>
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      className={INPUT}
+                      placeholder="you@yourbusiness.com"
+                      aria-invalid={errors.email ? true : undefined}
+                      aria-describedby={errors.email ? 'email-error' : undefined}
+                    />
+                    {errors.email && (
+                      <p id="email-error" className={errorClass}>
+                        {errors.email}
+                      </p>
+                    )}
                   </div>
-                </form>
-              </div>
+                </div>
+
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <div>
+                    <label htmlFor="company" className={labelClass}>
+                      Business name
+                    </label>
+                    <input
+                      type="text"
+                      id="company"
+                      name="company"
+                      value={formData.company}
+                      onChange={handleChange}
+                      className={INPUT}
+                      placeholder="Your business name"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="projectType" className={labelClass}>
+                      What do you need
+                    </label>
+                    <select
+                      id="projectType"
+                      name="projectType"
+                      value={formData.projectType}
+                      onChange={handleChange}
+                      className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.1rem] bg-[position:right_0.85rem_center] bg-no-repeat pr-10`}
+                    >
+                      <option value="">Pick one</option>
+                      <option value="new-website">A brand-new website</option>
+                      <option value="redesign">Redo my current site</option>
+                      <option value="web-app">An online tool or booking system</option>
+                      <option value="optimization">Make my site faster</option>
+                      <option value="maintenance">Ongoing care for my site</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label htmlFor="message" className={labelClass}>
+                    Tell me about it
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    value={formData.message}
+                    onChange={handleChange}
+                    rows={6}
+                    className={`${INPUT} resize-none`}
+                    placeholder="What does your business do, and what do you want your website to do for you?"
+                    aria-invalid={errors.message ? true : undefined}
+                    aria-describedby={errors.message ? 'message-error' : undefined}
+                  />
+                  {errors.message && (
+                    <p id="message-error" className={errorClass}>
+                      {errors.message}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex flex-col gap-4 border-t border-hair-paper pt-6 sm:flex-row sm:items-center sm:justify-between">
+                  <button
+                    type="submit"
+                    className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+                  >
+                    Send message
+                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </button>
+                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    Opens your email client
+                  </p>
+                </div>
+              </form>
             </motion.div>
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden bg-gray-950 py-16">
-        <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-        <div className="relative mx-auto max-w-4xl px-6">
-          <div className="mb-12 text-center">
-            <h2 className={`mb-4 ${SECTION_H2_DARK}`}>
-              Everything <span className="logo-wave">included</span>
-            </h2>
-            <p className="text-gray-400">
-              These come standard with every project. No surprise charges for the basics.
+      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
+        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+          >
+            <div>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // Included
+              </p>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
+                Everything standard
+                <br />
+                <span className="text-accent">with every project.</span>
+              </h2>
+            </div>
+            <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
+              No surprise charges for the basics. Ten things that ship with every build,
+              every time.
             </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-            {INCLUDED_ITEMS.map(item => (
-              <div key={item} className="flex items-start gap-2 text-sm text-gray-300">
-                <Check className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" strokeWidth={2} />
-                {item}
+          </motion.div>
+          <div className="mt-12 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-5">
+            {INCLUDED_ITEMS.map((item, i) => (
+              <div key={item} className="flex items-start gap-3 border-t border-hair pt-3">
+                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                  {String(i + 1).padStart(2, '0')}
+                </span>
+                <span className="flex-1 text-[14px] text-ink-soft">{item}</span>
+                <Check className="h-3.5 w-3.5 flex-shrink-0 text-accent" strokeWidth={2} />
               </div>
             ))}
           </div>
