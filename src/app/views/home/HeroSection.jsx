@@ -6,9 +6,9 @@ import TypingRotator from '@components/TypingRotator'
 
 const HERO_META = [
   { k: 'Region', v: 'Baytown — Houston, TX' },
-  { k: 'Lat', v: '29.7355°N' },
-  { k: 'Lon', v: '94.9774°W' },
   { k: 'Operator', v: 'Trenton Taylor' },
+  { k: 'Studio', v: 'TaylorURL LLC' },
+  { k: 'Contact', v: '24h reply' },
 ]
 
 const AVATAR_INITIALS = ['MR', 'JM', 'SC', 'DK']
