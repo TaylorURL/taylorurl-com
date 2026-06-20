@@ -42,35 +42,22 @@ function PortfolioCard({ project, index }) {
           </span>
         </div>
 
-        <div
-          className="relative aspect-[16/10] w-full overflow-hidden bg-bg"
-          style={{ containerType: 'inline-size' }}
-        >
-          <iframe
-            src={livePreviewUrl}
-            title={`${project.name} live website preview`}
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-bg">
+          <img
+            src={buildScreenshotUrl(project.url)}
+            alt={`${project.name} website preview`}
             loading="lazy"
-            referrerPolicy="no-referrer"
-            tabIndex={-1}
-            aria-hidden="true"
-            onLoad={() => setFrameLoaded(true)}
-            width={PREVIEW_FRAME_WIDTH}
-            height={PREVIEW_FRAME_HEIGHT}
-            style={{
-              width: `${PREVIEW_FRAME_WIDTH}px`,
-              height: `${PREVIEW_FRAME_HEIGHT}px`,
-              transform: `scale(calc(100cqw / ${PREVIEW_FRAME_WIDTH}))`,
-              transformOrigin: 'top left',
-            }}
-            className={`pointer-events-none absolute left-0 top-0 border-0 transition-opacity duration-500 ${
-              frameLoaded ? 'opacity-100' : 'opacity-0'
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
+            className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           />
-          {!frameLoaded && (
+          {!imageLoaded && (
             <div className="absolute inset-0 grid place-items-center bg-bg">
               <div className="text-center">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Loading live preview
+                  Loading preview
                 </p>
                 <p className="mt-2 text-[clamp(1.4rem,3vw,2.2rem)] font-semibold tracking-tight text-ink">
                   {project.name}
