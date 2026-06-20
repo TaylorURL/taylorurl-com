@@ -145,7 +145,7 @@ export default function About() {
 
             <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
               <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                // Operating numbers
+                // The numbers
               </p>
               <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper">
                 {STATS.map(stat => (
