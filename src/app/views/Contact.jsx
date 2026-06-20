@@ -105,8 +105,8 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Contact a Baytown Website Designer"
-        description="Tell me about your Baytown or Houston-area business and what you need from a website. I get back to you within 24 hours."
+        title="Contact a Baytown Web Designer"
+        description="Tell me about your Baytown or Houston-area business and what you need from a website. I get back to you within 24 hours, with an honest answer."
         path="/contact"
         schema={[
           breadcrumbSchema([
