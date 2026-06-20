@@ -188,10 +188,10 @@ export default function Services() {
           <motion.div {...fadeInUp} className="mb-12 border-b border-hair pb-8">
             <p className="mb-4 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // Standard build
+              // Comes with every site
             </p>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
-              Six things shipped with every build.
+              Six things every site I build comes with.
             </h2>
           </motion.div>
           <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair bg-hair md:grid-cols-3 lg:grid-cols-6">
