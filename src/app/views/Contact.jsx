@@ -185,7 +185,7 @@ ${formData.message}
 
               <div>
                 <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                  // After you send it
+                  // What happens next
                 </p>
                 <ol className="space-y-5 border-l border-accent/40 pl-5">
                   {CONTACT_STEPS.map((step, i) => (
