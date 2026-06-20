@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { CheckCircle2, MessageSquare } from 'lucide-react'
+import { ArrowUpRight, Check } from 'lucide-react'
 import { useToast } from '@hooks/useToast'
-import { BTN_PRIMARY, INPUT, SECTION_H2 } from '@constants/ui'
+import { INPUT_DARK } from '@constants/ui'
 
 const ENDPOINT = 'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/collect-email'
 const PUBLISHABLE_KEY = 'sb_publishable_qn4ZWB2n95HGMJm0L58I0w_ClE_Qu4M'
@@ -57,49 +57,76 @@ export default function NewsletterSection() {
   }
 
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-50 py-24">
-      <div className="grid-pattern absolute inset-0 opacity-[0.02]" />
-      <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mx-auto max-w-2xl rounded-2xl border border-gray-200 bg-surface-overlay p-8 text-center md:p-12">
+    <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+      <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
+      <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+        <div className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              // Transmission
+            </p>
+            <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
+              Field notes for owners.
+              <br />
+              <span className="text-accent">Sent only when worth it.</span>
+            </h2>
+          </div>
+          <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
+            Short, useful notes on getting found on Google and turning more visitors into
+            paying customers. Written by me, sent only when I have something worth saying.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
           {status === 'success' ? (
-            <>
-              <CheckCircle2 aria-hidden="true" className="mx-auto mb-6 h-12 w-12 text-green-500" />
-              <h2 className={`mb-4 ${SECTION_H2}`}>You're on the list</h2>
-              <p className="text-gray-600">
-                Thanks for signing up — keep an eye on your inbox.
-              </p>
-            </>
+            <div className="flex items-center gap-4 border border-hair-strong p-8 text-ink">
+              <div className="flex h-10 w-10 items-center justify-center rounded-sm border border-accent/50 bg-accent/10">
+                <Check className="h-4 w-4 text-accent" strokeWidth={2} />
+              </div>
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                  // Confirmed
+                </p>
+                <p className="text-[16px] text-ink">You&apos;re on the list — watch your inbox.</p>
+              </div>
+            </div>
           ) : (
-            <>
-              <MessageSquare aria-hidden="true" className="mx-auto mb-6 h-12 w-12 text-blue-500" />
-              <h2 className={`mb-4 ${SECTION_H2}`}>
-                Practical tips for <span className="logo-wave-dark">your business</span>
-              </h2>
-              <p className="mb-8 text-gray-600">
-                Short, useful notes on getting found on Google and turning more visitors into
-                paying customers. Written by me, sent only when I have something worth saying.
-              </p>
-              <form onSubmit={handleNewsletterSubmit} className="flex flex-col gap-4 sm:flex-row">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={event => setEmail(event.target.value)}
-                  placeholder="Enter your email"
-                  required
-                  aria-label="Email address"
-                  className={`flex-1 ${INPUT}`}
-                />
-                <button
-                  type="submit"
-                  disabled={status === 'submitting'}
-                  className={`${BTN_PRIMARY} ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
-                >
-                  {status === 'submitting' ? 'Subscribing…' : 'Subscribe'}
-                </button>
-              </form>
-              <p className="mt-4 text-sm text-gray-500">Unsubscribe anytime.</p>
-            </>
+            <form
+              onSubmit={handleNewsletterSubmit}
+              className="flex flex-col gap-3 border border-hair p-3 sm:flex-row sm:items-stretch sm:p-2"
+            >
+              <input
+                type="email"
+                value={email}
+                onChange={event => setEmail(event.target.value)}
+                placeholder="you@yourbusiness.com"
+                required
+                aria-label="Email address"
+                className={`${INPUT_DARK} flex-1 border-none bg-transparent px-4 py-3.5 ring-0 focus:ring-0 focus:border-transparent`}
+              />
+              <button
+                type="submit"
+                disabled={status === 'submitting'}
+                className={`group inline-flex items-center justify-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98] ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
+              >
+                {status === 'submitting' ? 'Subscribing…' : 'Subscribe'}
+                {status !== 'submitting' && (
+                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                )}
+              </button>
+            </form>
           )}
+          <div className="grid grid-cols-2 gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+            <div>
+              <p className="mb-2 text-accent">// Cadence</p>
+              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing.</p>
+            </div>
+            <div>
+              <p className="mb-2 text-accent">// Exit</p>
+              <p className="text-ink-soft normal-case tracking-normal">One click to unsubscribe. No follow-up loops.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
