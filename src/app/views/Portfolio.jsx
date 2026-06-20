@@ -140,7 +140,7 @@ export default function Portfolio() {
       <PageHero
         eyebrow="// 01 — Portfolio"
         title="Recent client work."
-        description="A look at the sites I have built for Baytown and Houston-area businesses. Every one is custom-built, hosted, and looked after by me."
+        description="A look at sites I've built for businesses around Baytown and Houston. Every one is custom-built, hosted, and looked after by me."
       />
 
       <section className="relative overflow-hidden bg-paper py-20 sm:py-28">
