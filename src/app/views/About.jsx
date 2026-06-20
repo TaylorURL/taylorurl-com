@@ -104,9 +104,9 @@ export default function About() {
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Operator"
-        title="One person, custom-built sites, a direct line."
-        description="I'm Trenton Taylor — TaylorURL LLC is me. Serving local businesses across Baytown and the Houston area from the first call through every change after launch."
+        eyebrow="// 01 — About me"
+        title="One person, custom-built websites, a direct line."
+        description="I'm Trenton Taylor — TaylorURL LLC is me. I work with local businesses around Baytown and the Houston area, from the first call all the way through every change you ever need after launch."
       />
 
       {/* Story + stats */}
