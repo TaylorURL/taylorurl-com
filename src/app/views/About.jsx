@@ -11,25 +11,25 @@ const VALUES = [
     icon: Code2,
     title: 'Custom-built, not templated',
     description:
-      'Every site is built from scratch for your business. No Wix, no Squarespace, no cookie-cutter themes. The result is faster, more polished, and entirely yours.',
+      'Every site is built from scratch for your business. No Wix, no Squarespace, no theme everyone else is using. The result is faster, sharper, and yours.',
   },
   {
     icon: Headphones,
-    title: 'You work with me directly',
+    title: 'You talk to me directly',
     description:
-      'No account managers, no support tickets, no waiting days for a reply. You text or call me and I take care of it.',
+      'No account managers, no support tickets, no waiting days for a reply. You text or call me, and I handle it.',
   },
   {
     icon: Zap,
     title: 'Live in two to four weeks',
     description:
-      'Most sites are up and running in under a month. I do not pad timelines with endless meetings or paperwork. You tell me about your business, I build the site.',
+      'Most sites are up and running in under a month. I don’t pad the timeline with endless meetings or paperwork. You tell me about the business, I build the site.',
   },
   {
     icon: Shield,
     title: 'Built for local businesses',
     description:
-      'I work with shops, restaurants, trades, contractors, and independent pros — businesses that need to look great online and have one person to call when something needs to change.',
+      'I work with shops, restaurants, trades, contractors, and independent pros — businesses that need to look the part online and have one person to call when something needs to change.',
   },
 ]
 
@@ -45,7 +45,7 @@ const PROCESS = [
     num: '01',
     title: 'You reach out',
     description:
-      'Tell me about the business and what you need. A short message is plenty — no thirty-field intake form.',
+      'Tell me about the business and what you need. A few sentences is plenty — no thirty-field intake form.',
     you: 'Send me a message',
     me: 'Reply same day',
   },
@@ -53,15 +53,15 @@ const PROCESS = [
     num: '02',
     title: 'I plan it out',
     description:
-      'I lay out the pages, structure, and look of the site. You approve the plan before any work starts.',
-    you: 'Review and give feedback',
-    me: 'Share designs you can actually see',
+      'I lay out the pages, the structure, and the look of the site. You approve the plan before any building starts.',
+    you: 'Look it over and give feedback',
+    me: 'Show you designs you can actually see',
   },
   {
     num: '03',
     title: 'I build it',
     description:
-      'Clean design, sharp photos, and fast pages. You get progress updates the whole way and can ask for changes at any stage.',
+      'Clean design, sharp photos, and fast pages. You get progress updates the whole way and can ask for changes at any point.',
     you: 'Review and request changes',
     me: 'Build, test, and polish',
   },
@@ -69,7 +69,7 @@ const PROCESS = [
     num: '04',
     title: 'Launch and look after it',
     description:
-      'Your site goes live. I keep it online, secure, and up to date so the technical side never lands on you.',
+      'Your site goes live. I keep it online, safe, and up to date so the tech side never lands on you.',
     you: 'Run the business',
     me: 'Keep everything running',
   },
