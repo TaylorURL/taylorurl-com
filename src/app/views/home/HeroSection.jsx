@@ -5,8 +5,8 @@ import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
 
 const HERO_META = [
-  { k: 'Region', v: 'Baytown — Houston, TX' },
-  { k: 'Operator', v: 'Trenton Taylor' },
+  { k: 'Based in', v: 'Baytown, TX' },
+  { k: 'Built by', v: 'Trenton Taylor' },
 ]
 
 const AVATAR_INITIALS = ['MR', 'JM', 'SC', 'DK']
