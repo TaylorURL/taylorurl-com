@@ -12,10 +12,10 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 const INCLUDED_ITEMS = [
   'Custom website design',
   'Works on every device',
-  'Website hosting',
+  'Hosting taken care of',
   'Regular updates and fixes',
   'Watched around the clock',
-  'Bug fixes',
+  'Quick to spot and fix issues',
   'Quick page loads',
   'Daily backups',
   'Content updates',
@@ -26,12 +26,12 @@ const CONTACT_STEPS = [
   {
     title: 'First call',
     description:
-      'You walk me through the business. I ask the questions I need to plan the work and give you a straight answer.',
+      'You walk me through the business. I ask the questions I need to plan the work and give you an honest answer.',
   },
   {
     title: 'Clear plan',
     description:
-      'You get a written plan: what gets built, how long it takes, what is included, and what happens after launch.',
+      'You get a written plan: what gets built, how long it takes, what’s included, and what happens after launch.',
   },
   {
     title: 'Build and go live',
