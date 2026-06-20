@@ -176,7 +176,7 @@ ${formData.message}
                   <Clock className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                      Response window
+                      Reply time
                     </p>
                     <p className="text-[14px] text-ink-paper">Within 24 hours</p>
                   </div>
