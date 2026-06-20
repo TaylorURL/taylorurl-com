@@ -113,11 +113,11 @@ export default function HeroSection() {
               </div>
               <div className="text-[13px] text-ink-soft">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Operating contract
+                  What you get
                 </p>
                 <p>
-                  <span className="font-semibold text-ink">50+</span> local businesses, one
-                  operator, zero handoffs.
+                  <span className="font-semibold text-ink">50+</span> local businesses
+                  served. One person to call. No handoffs.
                 </p>
               </div>
             </motion.div>
