@@ -261,7 +261,7 @@ export default function About() {
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
               No twelve-step onboarding. No project charts. No drawn-out planning. This is
-              the whole thing, end to end.
+              the whole thing, start to finish.
             </p>
           </motion.div>
 
