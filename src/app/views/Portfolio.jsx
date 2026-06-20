@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
@@ -8,27 +8,15 @@ import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
-// Logical viewport the iframe renders at before being scaled to fit the card.
-// 1280×800 keeps a 16:10 aspect ratio (matching the frame) and hits the
-// laptop-desktop breakpoint our client sites are actually designed for — wider
-// viewports render sparse, dark heroes that leave the preview looking empty.
-const PREVIEW_FRAME_WIDTH = 1280
-const PREVIEW_FRAME_HEIGHT = 800
-
-function buildLivePreviewUrl(url, cacheBuster) {
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}__preview=${cacheBuster}`
+// Server-rendered screenshot via WordPress mShots. Renders the target site
+// server-side and caches by URL, so client-site X-Frame-Options headers can't
+// black out the preview the way a live cross-origin iframe would.
+function buildScreenshotUrl(url) {
+  return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1280&h=800`
 }
 
 function PortfolioCard({ project, index }) {
-  const [frameLoaded, setFrameLoaded] = useState(false)
-
-  // One cache-buster per page load — ensures the iframe always requests a fresh
-  // copy of the live site instead of reusing the browser's HTTP cache.
-  const livePreviewUrl = useMemo(
-    () => buildLivePreviewUrl(project.url, Date.now()),
-    [project.url]
-  )
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   return (
     <motion.a
@@ -54,35 +42,22 @@ function PortfolioCard({ project, index }) {
           </span>
         </div>
 
-        <div
-          className="relative aspect-[16/10] w-full overflow-hidden bg-bg"
-          style={{ containerType: 'inline-size' }}
-        >
-          <iframe
-            src={livePreviewUrl}
-            title={`${project.name} live website preview`}
+        <div className="relative aspect-[16/10] w-full overflow-hidden bg-bg">
+          <img
+            src={buildScreenshotUrl(project.url)}
+            alt={`${project.name} website preview`}
             loading="lazy"
-            referrerPolicy="no-referrer"
-            tabIndex={-1}
-            aria-hidden="true"
-            onLoad={() => setFrameLoaded(true)}
-            width={PREVIEW_FRAME_WIDTH}
-            height={PREVIEW_FRAME_HEIGHT}
-            style={{
-              width: `${PREVIEW_FRAME_WIDTH}px`,
-              height: `${PREVIEW_FRAME_HEIGHT}px`,
-              transform: `scale(calc(100cqw / ${PREVIEW_FRAME_WIDTH}))`,
-              transformOrigin: 'top left',
-            }}
-            className={`pointer-events-none absolute left-0 top-0 border-0 transition-opacity duration-500 ${
-              frameLoaded ? 'opacity-100' : 'opacity-0'
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
+            className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
             }`}
           />
-          {!frameLoaded && (
+          {!imageLoaded && (
             <div className="absolute inset-0 grid place-items-center bg-bg">
               <div className="text-center">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Loading live preview
+                  Loading preview
                 </p>
                 <p className="mt-2 text-[clamp(1.4rem,3vw,2.2rem)] font-semibold tracking-tight text-ink">
                   {project.name}
