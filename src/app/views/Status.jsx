@@ -152,17 +152,17 @@ function LiveBand({ checkedAt, windowStart }) {
           </span>
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-              // All systems nominal
+              // All sites up
             </p>
             <p className="mt-3 text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
               All clear.
             </p>
             <p className="mt-3 max-w-md text-[15px] leading-relaxed text-paper-soft">
-              Every site I look after is up and answering as of{' '}
+              Every site I look after is up and running as of{' '}
               <span className="font-mono text-[14px] font-semibold text-ink-paper">
                 {checkedAt}
               </span>{' '}
-              today. Auto-checked continuously — I get a ping the second anything goes wrong.
+              today. Checked around the clock — I get a ping the second anything goes wrong.
             </p>
           </div>
         </div>
