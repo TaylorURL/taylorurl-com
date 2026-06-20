@@ -187,7 +187,7 @@ export default function Navigation() {
 
               <div className="flex flex-col gap-1 px-6 py-8">
                 <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Index — Primary
+                  Menu
                 </p>
                 {PRIMARY_LINKS.map((link, i) => {
                   const active = isActive(link.to)
