@@ -22,7 +22,7 @@ const SERVICES = [
   },
   {
     name: 'Backup hosting',
-    description: 'A safety net that kicks in if anything hiccups',
+    description: 'A safety net that kicks in if anything goes sideways',
     group: 'Hosting',
   },
   {
@@ -37,7 +37,7 @@ const SERVICES = [
   },
   {
     name: 'Padlock and encryption',
-    description: 'The little padlock in the browser bar, kept up to date',
+    description: 'The padlock in the browser bar, kept up to date',
     group: 'Security',
   },
   {
@@ -81,22 +81,22 @@ const GROUPS = [
   {
     key: 'Hosting',
     icon: Server,
-    blurb: 'Where the site lives and how visitors reach it.',
+    blurb: 'Where the site lives and how visitors get to it.',
   },
   {
     key: 'Security',
     icon: ShieldCheck,
-    blurb: 'Protection layers between the site and the internet.',
+    blurb: 'The layers between your site and the rest of the internet.',
   },
   {
     key: 'Maintenance',
     icon: Wrench,
-    blurb: 'Backups, monitoring, and quiet behind-the-scenes care.',
+    blurb: 'Backups, monitoring, and quiet care in the background.',
   },
   {
     key: 'Services',
     icon: Mail,
-    blurb: 'Forms, messages, and inbox delivery.',
+    blurb: 'Forms, messages, and getting them into your inbox.',
   },
 ]
 
