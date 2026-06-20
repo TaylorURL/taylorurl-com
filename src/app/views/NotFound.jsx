@@ -68,8 +68,8 @@ export default function NotFound() {
             transition={{ delay: 0.18, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-soft"
           >
-            This page does not exist. Squash a few bugs while you&apos;re here, or head
-            back to safe terrain.
+            This page doesn&apos;t exist. Catch a few bugs while you&apos;re here, or head
+            back to the home page.
           </motion.p>
 
           <motion.div
