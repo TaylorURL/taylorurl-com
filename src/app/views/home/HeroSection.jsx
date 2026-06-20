@@ -6,8 +6,6 @@ import TypingRotator from '@components/TypingRotator'
 
 const HERO_META = [
   { k: 'Region', v: 'Baytown — Houston, TX' },
-  { k: 'Lat', v: '29.7355°N' },
-  { k: 'Lon', v: '94.9774°W' },
   { k: 'Operator', v: 'Trenton Taylor' },
 ]
 
@@ -39,7 +37,7 @@ export default function HeroSection() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
             </span>
-            Online — 29.7355°N · 94.9774°W
+            Online — Baytown, TX
           </span>
           <span className="hidden sm:inline">·</span>
           <span>TaylorURL LLC</span>
