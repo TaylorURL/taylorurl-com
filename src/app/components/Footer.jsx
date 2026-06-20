@@ -42,7 +42,7 @@ export default function Footer() {
             <Link to="/" className="mb-8 inline-block">
               <img
                 src="/images/TaylorURL-Logo.png"
-                alt="TaylorURL — websites for small businesses in Baytown, TX"
+                alt="TaylorURL — custom websites for local businesses in Baytown, TX"
                 width="180"
                 height="180"
                 loading="lazy"
