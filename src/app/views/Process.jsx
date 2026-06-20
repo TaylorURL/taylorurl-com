@@ -1,11 +1,7 @@
 import { motion } from 'framer-motion'
-import { Link } from 'react-router-dom'
 import {
-  ArrowRight,
-  Check,
   Code,
   FileText,
-  Handshake,
   HeadphonesIcon,
   MessageCircle,
   Palette,
@@ -18,7 +14,6 @@ import PageHero from '@components/PageHero'
 import CtaBanner from '@components/CtaBanner'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { BADGE, SECTION_H2 } from '@constants/ui'
 import { breadcrumbSchema } from '@constants/seo'
 
 const TIMELINE_STEPS = [
@@ -97,11 +92,7 @@ const TIMELINE_STEPS = [
     duration: 'Week 3-4',
     description:
       'You click through the whole site. I fix whatever needs fixing. Once you give the go-ahead, I put it online for the world to see.',
-    client: [
-      'Click through the whole site',
-      'Send final changes',
-      'Give the go-ahead to launch',
-    ],
+    client: ['Click through the whole site', 'Send final changes', 'Give the go-ahead to launch'],
     taylorurl: [
       'Fix any issues you find',
       'Tune up speed and Google visibility',
@@ -115,11 +106,7 @@ const TIMELINE_STEPS = [
     duration: 'Ongoing',
     description:
       'After launch I keep the site online, fast, safe, and up to date. The technical side stays with me so you stay focused on running the business.',
-    client: [
-      'Run the business',
-      'Send a message when you need a change',
-      'No tickets, no waiting',
-    ],
+    client: ['Run the business', 'Send a message when you need a change', 'No tickets, no waiting'],
     taylorurl: [
       'Keep the site fast and safe',
       'Handle hosting and backups',
@@ -149,134 +136,148 @@ export default function Process() {
         ])}
       />
       <PageHero
-        title="How it works"
-        description="A clear, predictable path from your first call to a live website — for Baytown and Houston-area businesses."
+        eyebrow="// 01 — Process"
+        title="From first call to live site."
+        description="A clear, predictable path for Baytown and Houston-area businesses — six phases, three to four weeks, one operator."
       />
 
-      {/* Timeline */}
-      <section className="bg-surface-base py-12 sm:py-20">
-        <div className="mx-auto max-w-5xl px-6">
+      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            transition={{ duration: 0.5 }}
-            className="mb-10 text-center sm:mb-16"
+            className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
-            <h2 className={`mb-4 ${SECTION_H2}`}>
-              From first call to <span className="logo-wave-dark">live site</span>
-            </h2>
-            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              Most projects wrap up in three to four weeks. Here is what each step looks like.
+            <div>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // 02 — Timeline
+              </p>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+                Six phases.
+                <br />
+                <span className="text-accent">Three to four weeks.</span>
+              </h2>
+            </div>
+            <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+              Most projects wrap in three to four weeks. Here is what each phase looks
+              like — your half, my half, side by side.
             </p>
           </motion.div>
 
-          <div className="relative">
-            {/* Vertical connecting line */}
-            <div className="absolute left-6 top-0 hidden h-full w-px bg-gradient-to-b from-blue-200 via-blue-400 to-blue-200 md:left-8 lg:block" />
-
-            <div className="space-y-12 lg:space-y-16">
-              {TIMELINE_STEPS.map((step, i) => {
-                const Icon = step.icon
-                return (
-                  <motion.div key={step.step} {...staggerChild(i, 0.15)} className="relative">
-                    {/* Step number + icon row */}
-                    <div className="mb-6 flex items-center gap-4 lg:gap-6">
-                      {/* Step circle */}
-                      <div className="relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full border-2 border-blue-500 bg-surface-overlay md:h-16 md:w-16">
-                        <Icon className="h-5 w-5 text-blue-600 md:h-6 md:w-6" strokeWidth={1.5} />
-                      </div>
-                      <div>
-                        <div className="mb-1 flex items-center gap-3">
-                          <span className="text-sm font-semibold tracking-wider text-blue-600">
-                            STEP {step.step}
-                          </span>
-                          <span className={BADGE}>{step.duration}</span>
-                        </div>
-                        <h3 className="text-xl font-bold text-gray-900 sm:text-2xl">
-                          {step.title}
-                        </h3>
-                      </div>
+          <div className="mt-16 space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
+            {TIMELINE_STEPS.map((step, i) => {
+              const Icon = step.icon
+              return (
+                <motion.article
+                  key={step.step}
+                  {...staggerChild(i, 0.05)}
+                  className="grid items-start gap-6 bg-paper p-8 sm:p-10 lg:grid-cols-[200px_1fr_1fr] lg:gap-10"
+                >
+                  <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
+                    <span className="font-mono text-[clamp(3rem,5vw,4.4rem)] font-semibold leading-none text-paper-faint">
+                      {step.step}
+                    </span>
+                    <div className="flex flex-1 flex-col gap-3 lg:flex-none">
+                      <Icon className="h-5 w-5 text-accent" strokeWidth={1.25} />
+                      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                        {step.duration}
+                      </span>
                     </div>
+                  </div>
 
-                    {/* Content card */}
-                    <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6 transition-all duration-300 hover:border-blue-200 hover:shadow-md lg:ml-20">
-                      <p className="mb-6 text-base text-gray-600 sm:text-lg">{step.description}</p>
+                  <div className="lg:col-span-1">
+                    <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink-paper sm:text-[26px]">
+                      {step.title}
+                    </h3>
+                    <p className="text-[15px] leading-relaxed text-paper-soft sm:text-[16px]">
+                      {step.description}
+                    </p>
+                  </div>
 
-                      {/* Two-column: You / Me */}
-                      <div className="grid gap-6 sm:grid-cols-2">
-                        <div className="rounded-xl bg-surface-overlay p-5">
-                          <h4 className="mb-3 text-sm font-semibold tracking-wider text-gray-400">
-                            YOUR PART
-                          </h4>
-                          <ul className="space-y-2">
-                            {step.client.map(item => (
-                              <li
-                                key={item}
-                                className="flex items-start gap-2 text-sm text-gray-700"
-                              >
-                                <Check
-                                  className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400"
-                                  strokeWidth={2}
-                                />
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                        <div className="rounded-xl bg-surface-overlay p-5">
-                          <h4 className="mb-3 text-sm font-semibold tracking-wider text-blue-500">
-                            MY PART
-                          </h4>
-                          <ul className="space-y-2">
-                            {step.taylorurl.map(item => (
-                              <li
-                                key={item}
-                                className="flex items-start gap-2 text-sm text-gray-700"
-                              >
-                                <Check
-                                  className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500"
-                                  strokeWidth={2}
-                                />
-                                {item}
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      </div>
+                  <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:col-span-1">
+                    <div className="bg-paper p-5">
+                      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                        Your part
+                      </p>
+                      <ul className="space-y-2">
+                        {step.client.map(item => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
+                          >
+                            <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-paper-faint" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
                     </div>
-                  </motion.div>
-                )
-              })}
-            </div>
+                    <div className="bg-paper p-5">
+                      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                        My part
+                      </p>
+                      <ul className="space-y-2">
+                        {step.taylorurl.map(item => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
+                          >
+                            <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-accent" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </motion.article>
+              )
+            })}
           </div>
         </div>
       </section>
 
-      {/* What You'll Need */}
-      <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
-        <div className="mx-auto max-w-4xl px-6">
-          <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="mb-12 text-center">
-            <h2 className={`mb-4 ${SECTION_H2}`}>
-              What I&apos;ll <span className="logo-wave-dark">need from you</span>
-            </h2>
-            <p className="mx-auto max-w-2xl text-base text-gray-600 sm:text-lg">
-              It does not have to be perfect or finished. I can work with what you have and
-              help fill in the gaps.
+      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <motion.div
+            {...fadeInUp}
+            className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+          >
+            <div>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // 03 — Inputs
+              </p>
+              <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
+                What I&apos;ll need
+                <br />
+                <span className="text-accent">from you.</span>
+              </h2>
+            </div>
+            <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
+              Doesn&apos;t have to be perfect or finished. I can work with what you have
+              and help fill in the gaps along the way.
             </p>
           </motion.div>
 
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-12 grid gap-px overflow-hidden border border-hair bg-hair sm:grid-cols-2 lg:grid-cols-5">
             {WHAT_YOULL_NEED.map((item, i) => {
               const Icon = item.icon
               return (
                 <motion.div
                   key={item.label}
-                  {...staggerChild(i)}
-                  className="flex items-center gap-4 rounded-xl border border-gray-200 bg-surface-overlay p-5 transition-all duration-300 hover:border-blue-200 hover:shadow-md"
+                  {...staggerChild(i, 0.05)}
+                  className="flex flex-col gap-5 bg-bg p-6"
                 >
-                  <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-gray-100">
-                    <Icon className="h-5 w-5 text-gray-700" strokeWidth={1.5} />
+                  <div className="flex items-center justify-between">
+                    <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                    <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-faint">
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-700">{item.label}</span>
+                  <span className="text-[13px] font-medium leading-snug text-ink">
+                    {item.label}
+                  </span>
                 </motion.div>
               )
             })}
@@ -284,10 +285,10 @@ export default function Process() {
 
           <motion.p
             {...fadeInUp}
-            transition={{ duration: 0.5, delay: 0.3 }}
-            className="mt-8 text-center text-sm text-gray-500"
+            transition={{ delay: 0.2 }}
+            className="mt-8 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
           >
-            No logo or photos yet? I can point you to people who handle that.
+            // No logo or photos yet? I can point you to people who handle that.
           </motion.p>
         </div>
       </section>
@@ -296,7 +297,7 @@ export default function Process() {
         heading="Ready to"
         accentText="get started?"
         description="You know how it works. Tell me about the business and what you need."
-        primaryLabel="Get in Touch"
+        primaryLabel="Start a project"
         primaryTo="/contact"
       />
     </div>

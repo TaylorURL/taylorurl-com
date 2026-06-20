@@ -1,51 +1,30 @@
 import { motion } from 'framer-motion'
-import { PencilLine, Star } from 'lucide-react'
+import { ArrowUpRight, PencilLine, Star } from 'lucide-react'
 import TrustpilotBadge from '@components/TrustpilotBadge'
-import { staggerChild } from '@constants/animations'
+import { fadeInUp, staggerChild } from '@constants/animations'
 import { CLIENT_TESTIMONIALS } from '@data/home'
-import { SECTION_H2 } from '@constants/ui'
 
-// TODO: If the canonical Trustpilot profile slug ever differs from the bare
-// domain, replace this constant — both CTA URLs and the rating API derive from
-// the same value.
 const TRUSTPILOT_DOMAIN = 'taylorurl.com'
 const TRUSTPILOT_PROFILE_URL = `https://www.trustpilot.com/review/${TRUSTPILOT_DOMAIN}`
 const TRUSTPILOT_EVALUATE_URL = `https://www.trustpilot.com/evaluate/${TRUSTPILOT_DOMAIN}`
-
-const TRUSTPILOT_BTN_BASE =
-  'inline-flex items-center justify-center gap-2 rounded-xl px-7 py-3.5 text-[15px] font-semibold transition duration-200 ease-out active:scale-[0.97]'
-
-const TRUSTPILOT_BTN_PRIMARY = `${TRUSTPILOT_BTN_BASE} bg-[#00b67a] text-white shadow-sm shadow-[#00b67a]/25 hover:bg-[#00a36b] hover:shadow-lg hover:shadow-[#00b67a]/30`
-
-const TRUSTPILOT_BTN_SECONDARY = `${TRUSTPILOT_BTN_BASE} border border-[#00b67a]/30 bg-white text-[#007a52] hover:border-[#00b67a] hover:bg-[#00b67a]/5`
-
-function TrustpilotStar({ className = 'h-4 w-4' }) {
-  return (
-    <svg aria-hidden="true" viewBox="0 0 24 24" className={className} fill="currentColor">
-      <polygon points="12,2 14.85,8.63 22,9.27 16.5,14.14 18.18,21.02 12,17.27 5.82,21.02 7.5,14.14 2,9.27 9.15,8.63" />
-    </svg>
-  )
-}
 
 function ClientStarRow() {
   return (
     <div className="flex gap-0.5" role="img" aria-label="Rated 5 out of 5 stars">
       {Array.from({ length: 5 }).map((_, index) => (
-        <Star key={index} aria-hidden="true" className="h-4 w-4 fill-amber-400 text-amber-400" />
+        <Star key={index} aria-hidden="true" className="h-4 w-4 fill-accent text-accent" />
       ))}
     </div>
   )
 }
 
-function ClientAvatar({ name, color }) {
+function ClientAvatar({ name }) {
   const initials = name
     .split(' ')
     .map(part => part[0])
     .join('')
   return (
-    <div
-      className={`flex h-12 w-12 items-center justify-center rounded-full ${color} text-sm font-bold text-white shadow-md`}
-    >
+    <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-hair-paper-strong bg-paper text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-paper">
       {initials}
     </div>
   )
@@ -54,20 +33,24 @@ function ClientAvatar({ name, color }) {
 function ClientTestimonialCard({ testimonial, index }) {
   return (
     <motion.figure
-      {...staggerChild(index)}
-      whileHover={{ y: -4 }}
-      className="flex h-full flex-col rounded-2xl border border-gray-200 bg-surface-overlay p-6 transition-shadow hover:shadow-lg sm:p-8"
+      {...staggerChild(index, 0.06)}
+      className="group relative flex h-full flex-col gap-8 bg-paper p-8 sm:p-10"
     >
-      <ClientStarRow />
-      <blockquote className="mt-4 flex-1 text-base italic leading-relaxed text-gray-600">
+      <div className="flex items-center justify-between">
+        <ClientStarRow />
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+          {String(index + 1).padStart(2, '0')} / 03
+        </span>
+      </div>
+      <blockquote className="flex-1 text-[18px] leading-[1.5] tracking-tight text-ink-paper">
         &ldquo;{testimonial.quote}&rdquo;
       </blockquote>
-      <figcaption className="mt-6 flex items-center gap-3">
-        <ClientAvatar name={testimonial.name} color={testimonial.color} />
+      <figcaption className="flex items-center gap-4 border-t border-hair-paper pt-5">
+        <ClientAvatar name={testimonial.name} />
         <div>
-          <div className="font-semibold text-gray-900">{testimonial.name}</div>
-          <div className="text-sm text-gray-500">
-            {testimonial.role}, {testimonial.business}
+          <div className="text-[14px] font-semibold text-ink-paper">{testimonial.name}</div>
+          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper-faint">
+            {testimonial.role} — {testimonial.business}
           </div>
         </div>
       </figcaption>
@@ -77,22 +60,34 @@ function ClientTestimonialCard({ testimonial, index }) {
 
 export default function TestimonialsSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-surface-base py-14 sm:py-24">
-      <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-      <div className="relative mx-auto max-w-6xl px-6">
-        <div className="mb-10 text-center sm:mb-12">
-          <h2 className={`mb-4 ${SECTION_H2}`}>
-            What clients <span className="logo-wave-dark">say</span>
-          </h2>
-          <p className="mx-auto max-w-2xl text-lg text-gray-600">
-            A few words from local business owners I have built and looked after websites for.
-          </p>
-          <div className="mt-8 flex justify-center">
-            <TrustpilotBadge profileUrl={TRUSTPILOT_PROFILE_URL} />
+    <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-24 sm:py-36">
+      <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+      <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+        <motion.div
+          {...fadeInUp}
+          className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
+        >
+          <div>
+            <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              // 03 — Voices
+            </p>
+            <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
+              From the owners
+              <br />
+              <span className="text-accent">who hire me.</span>
+            </h2>
           </div>
-        </div>
+          <div className="flex flex-col items-start gap-6 lg:items-end">
+            <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+              A few words from local business owners I have built and looked after websites
+              for across Baytown and the Houston area.
+            </p>
+            <TrustpilotBadge profileUrl={TRUSTPILOT_PROFILE_URL} variant="paper" />
+          </div>
+        </motion.div>
 
-        <div className="grid gap-5 sm:gap-6 md:grid-cols-3">
+        <div className="mt-12 grid gap-px overflow-hidden border border-hair-paper bg-hair-paper md:mt-16 md:grid-cols-3">
           {CLIENT_TESTIMONIALS.map((testimonial, index) => (
             <ClientTestimonialCard
               key={testimonial.name}
@@ -107,20 +102,20 @@ export default function TestimonialsSection() {
             href={TRUSTPILOT_EVALUATE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={TRUSTPILOT_BTN_PRIMARY}
+            className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
           >
-            <PencilLine aria-hidden="true" className="h-4 w-4" />
-            Leave us a review
-            <TrustpilotStar />
+            <PencilLine aria-hidden="true" className="h-3.5 w-3.5" />
+            Leave a review
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </a>
           <a
             href={TRUSTPILOT_PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className={TRUSTPILOT_BTN_SECONDARY}
+            className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-paper-strong px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink-paper transition duration-200 ease-out hover:bg-ink-paper hover:text-paper active:scale-[0.98]"
           >
-            See our reviews on Trustpilot
-            <TrustpilotStar className="h-4 w-4 text-[#00b67a]" />
+            See all reviews
+            <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </a>
         </div>
       </div>

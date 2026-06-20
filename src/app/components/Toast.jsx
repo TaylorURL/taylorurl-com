@@ -1,14 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, X, AlertCircle } from 'lucide-react'
+import { AlertCircle, Check, X } from 'lucide-react'
 import { ToastContext } from '@hooks/useToast'
 
 const DEFAULT_TOAST_DURATION = 4000
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
-  // Per-instance id source and live auto-dismiss timers. Using refs (not a
-  // module-level counter) keeps multiple providers / SSR renders isolated.
   const nextIdRef = useRef(0)
   const timersRef = useRef(new Map())
 
@@ -30,7 +28,6 @@ export function ToastProvider({ children }) {
     [removeToast]
   )
 
-  // Clear any pending dismiss timers if the provider unmounts.
   useEffect(() => {
     const timers = timersRef.current
     return () => {
@@ -49,34 +46,36 @@ export function ToastProvider({ children }) {
         aria-live="polite"
       >
         <AnimatePresence>
-          {toasts.map(toast => (
-            <motion.div
-              key={toast.id}
-              role={toast.type === 'success' ? 'status' : 'alert'}
-              initial={{ opacity: 0, y: 30, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: -20, scale: 0.95 }}
-              className={`flex items-center gap-3 rounded-xl border px-5 py-3 shadow-lg backdrop-blur-sm ${
-                toast.type === 'success'
-                  ? 'border-green-200 bg-surface-overlay text-gray-900'
-                  : 'border-red-200 bg-surface-overlay text-gray-900'
-              }`}
-            >
-              {toast.type === 'success' ? (
-                <CheckCircle2 className="h-5 w-5 flex-shrink-0 text-green-500" />
-              ) : (
-                <AlertCircle className="h-5 w-5 flex-shrink-0 text-red-500" />
-              )}
-              <span className="text-sm font-medium">{toast.message}</span>
-              <button
-                onClick={() => removeToast(toast.id)}
-                className="ml-2 text-gray-400 transition-colors hover:text-gray-600"
-                aria-label="Dismiss notification"
+          {toasts.map(toast => {
+            const isError = toast.type === 'error'
+            return (
+              <motion.div
+                key={toast.id}
+                role={isError ? 'alert' : 'status'}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -12 }}
+                transition={{ duration: 0.2, ease: [0.22, 1, 0.36, 1] }}
+                className={`flex items-center gap-3 rounded-sm border bg-bg px-5 py-3 text-ink shadow-[0_18px_48px_-12px_rgba(0,0,0,0.5)] ${
+                  isError ? 'border-red-500/60' : 'border-hair-strong'
+                }`}
               >
-                <X className="h-4 w-4" />
-              </button>
-            </motion.div>
-          ))}
+                {isError ? (
+                  <AlertCircle className="h-4 w-4 flex-shrink-0 text-red-400" strokeWidth={2} />
+                ) : (
+                  <Check className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={2} />
+                )}
+                <span className="text-[14px] font-medium tracking-tight">{toast.message}</span>
+                <button
+                  onClick={() => removeToast(toast.id)}
+                  className="ml-2 text-ink-faint transition-colors hover:text-ink"
+                  aria-label="Dismiss notification"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </motion.div>
+            )
+          })}
         </AnimatePresence>
       </div>
     </ToastContext.Provider>

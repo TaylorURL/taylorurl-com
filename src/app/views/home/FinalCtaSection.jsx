@@ -1,31 +1,58 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Phone } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ArrowUpRight, Phone } from 'lucide-react'
 import { PHONE_NUMBER } from '@constants/navigation'
-import { BTN_PRIMARY_LG, BTN_SECONDARY_DARK_LG } from '@constants/ui'
+import { fadeInUp } from '@constants/animations'
 
 export default function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-900 py-14 sm:py-24">
-      <div className="grid-pattern-blue absolute inset-0 opacity-[0.04]" />
-      <div className="relative mx-auto max-w-6xl px-6 text-center">
-        <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl md:text-4xl">
-          Ready to <span className="logo-wave">get started</span>?
+    <section className="relative overflow-hidden border-t border-hair bg-bg py-28 text-ink sm:py-40">
+      <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+      <div
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[820px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/15 blur-[140px]"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+        aria-hidden="true"
+      />
+
+      <motion.div
+        {...fadeInUp}
+        className="relative mx-auto w-full max-w-[1280px] px-6 text-center sm:px-10 lg:px-16"
+      >
+        <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+          <span className="h-px w-8 bg-accent" />
+          // 05 — Contact
+          <span className="h-px w-8 bg-accent" />
+        </p>
+        <h2 className="mx-auto max-w-4xl text-[clamp(2.4rem,7vw,5.6rem)] font-semibold leading-[0.98] tracking-tightest text-ink">
+          Ready to <span className="text-accent">get started</span>?
         </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-base text-gray-400 sm:text-lg">
+        <p className="mx-auto mt-8 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]">
           I handle the technical headaches — keeping your site online, fast, and secure.
           Tell me about your business and what you need.
         </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Link to="/contact" className={`group ${BTN_PRIMARY_LG}`}>
-            Get in Touch
-            <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+        <div className="mt-12 flex flex-wrap justify-center gap-4">
+          <Link
+            to="/contact"
+            className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-8 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+          >
+            Get in touch
+            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </Link>
-          <a href={`tel:${PHONE_NUMBER}`} className={BTN_SECONDARY_DARK_LG}>
-            <Phone className="h-5 w-5" />
+          <a
+            href={`tel:${PHONE_NUMBER}`}
+            className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-strong px-8 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+          >
+            <Phone className="h-4 w-4" />
             Call
           </a>
         </div>
-      </div>
+        <p className="mx-auto mt-12 max-w-md font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+          Reply within 24 hours · No sales pitch · Straight answers
+        </p>
+      </motion.div>
     </section>
   )
 }

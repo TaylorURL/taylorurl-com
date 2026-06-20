@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion'
-import { Code2, Headphones, Zap, Shield, Clock, Heart, Users, Monitor } from 'lucide-react'
+import { Code2, Headphones, Zap, Shield, Heart, Users, Monitor } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
-import { CARD, EYEBROW, SECTION_H2 } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const VALUES = [
@@ -35,7 +34,7 @@ const VALUES = [
 ]
 
 const STATS = [
-  { value: '2-4', unit: ' weeks', label: 'Average build time' },
+  { value: '2-4', unit: 'wk', label: 'Average build time' },
   { value: '97+', unit: '', label: 'Average PageSpeed score' },
   { value: '50+', unit: '', label: 'Clients served' },
   { value: '24/7', unit: '', label: 'Support after launch' },
@@ -105,101 +104,135 @@ export default function About() {
         ]}
       />
       <PageHero
-        title="Baytown, TX website designer"
-        description="One person, custom-built sites, and a direct line to me — serving local businesses across Baytown and the Houston area from your first call through every change after launch."
+        eyebrow="// 01 — Operator"
+        title="One person, custom-built sites, a direct line."
+        description="I'm Trenton Taylor — TaylorURL LLC is me. Serving local businesses across Baytown and the Houston area from the first call through every change after launch."
       />
 
-      {/* Story section */}
-      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
-        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-        <div className="relative mx-auto max-w-6xl px-6">
-          <div className="grid items-start gap-8 lg:grid-cols-5 lg:gap-16">
-            <motion.div {...fadeInUp} className="lg:col-span-3">
-              <p className={`mb-2 ${EYEBROW}`}>Background</p>
-              <h2 className={`mb-8 ${SECTION_H2}`}>I build websites for Baytown and Houston-area small businesses</h2>
-              <div className="space-y-5 text-[17px] leading-relaxed text-gray-600">
+      {/* Story + stats */}
+      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
+            <motion.div {...fadeInUp}>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // Background
+              </p>
+              <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
+                I build websites for Baytown and Houston-area small businesses.
+              </h2>
+              <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-paper-soft">
                 <p>
-                  I&apos;m Trenton Taylor, and TaylorURL LLC is me. I started the business in
-                  Baytown, Texas because the local shops around me — restaurants, trades,
-                  salons, independent pros — kept ending up with one of two outcomes: a generic
-                  agency site or a dated, do-it-yourself page that no longer matched their
-                  business.
+                  I started the business in Baytown, Texas because the local shops around me
+                  — restaurants, trades, salons, independent pros — kept ending up with one
+                  of two outcomes: a generic agency site or a dated, do-it-yourself page
+                  that no longer matched their business.
                 </p>
                 <p>
-                  Neither one works for long. So I build sites the way the best companies online
-                  do: clean design, fast pages, and ongoing care from the person who made it. No
-                  sales reps, no support queue, no handoffs.
+                  Neither one works for long. So I build sites the way the best companies
+                  online do: clean design, fast pages, and ongoing care from the person who
+                  made it. No sales reps, no support queue, no handoffs.
                 </p>
                 <p>
-                  You get a site that is fast, easy on the eyes, and built around the customers
-                  you actually want — with a direct line to me whenever something needs to
-                  change. No platform you are stuck with, no monthly fees that creep up, no
-                  surprises.
+                  You get a site that is fast, easy on the eyes, and built around the
+                  customers you actually want — with a direct line to me whenever something
+                  needs to change. No platform you are stuck with, no monthly fees that
+                  creep up, no surprises.
                 </p>
               </div>
             </motion.div>
 
-            <motion.div {...fadeInUp} transition={{ delay: 0.15 }} className="lg:col-span-2">
-              <div className="grid grid-cols-2 gap-4">
-                {STATS.map((stat, i) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: i * 0.08 }}
-                    className="rounded-2xl border border-gray-200 bg-gray-50 p-5"
-                  >
-                    <div className="mb-1 text-2xl font-bold text-gray-900">
+            <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+              <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                // Operating numbers
+              </p>
+              <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper">
+                {STATS.map(stat => (
+                  <div key={stat.label} className="bg-paper p-6">
+                    <div className="font-mono text-[clamp(2rem,3.6vw,2.8rem)] font-semibold leading-none text-ink-paper">
                       {stat.value}
-                      <span className="text-blue-600">{stat.unit}</span>
+                      {stat.unit && <span className="text-accent">{stat.unit}</span>}
                     </div>
-                    <div className="text-sm text-gray-500">{stat.label}</div>
-                  </motion.div>
+                    <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                      {stat.label}
+                    </div>
+                  </div>
                 ))}
               </div>
 
-              <motion.div
-                {...fadeInUp}
-                transition={{ delay: 0.3 }}
-                className="mt-4 rounded-2xl border border-blue-100 bg-blue-50 p-5"
-              >
+              <div className="mt-px border border-hair-paper bg-paper p-6">
                 <div className="flex items-start gap-3">
-                  <Heart className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+                  <Heart className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
-                    <p className="font-semibold text-gray-900">Based in Baytown, TX</p>
-                    <p className="text-sm text-gray-600">
-                      Working with local businesses across Baytown, Mont Belvieu, Channelview,
-                      Crosby, La Porte, Deer Park, Pasadena, and the greater Houston area. The
-                      whole project can be handled by phone, text, and email — no in-person
-                      meetings required.
+                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                      Baytown, TX — 29.7355°N · 94.9774°W
+                    </p>
+                    <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
+                      Working with local businesses across Baytown, Mont Belvieu,
+                      Channelview, Crosby, La Porte, Deer Park, Pasadena, and the greater
+                      Houston area. Whole project handled by phone, text, and email — no
+                      in-person meetings required.
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Values */}
-      <section className="border-y border-gray-200 bg-gray-50 py-12 sm:py-20">
-        <div className="mx-auto max-w-6xl px-6">
-          <motion.div {...fadeInUp} className="mb-14">
-            <p className={`mb-2 ${EYEBROW}`}>How I work</p>
-            <h2 className={SECTION_H2}>Why clients choose to work with me</h2>
+      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <motion.div
+            {...fadeInUp}
+            className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+          >
+            <div>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // 02 — How I work
+              </p>
+              <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
+                Why clients choose
+                <br />
+                <span className="text-accent">to work with me.</span>
+              </h2>
+            </div>
+            <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
+              Four operating principles. They are the contract — direct, fast, custom, and
+              built for the people who run the shop.
+            </p>
           </motion.div>
 
-          <div className="grid gap-6 sm:grid-cols-2">
+          <div className="mt-12 grid gap-px overflow-hidden border border-hair bg-hair md:grid-cols-2">
             {VALUES.map((item, i) => {
               const Icon = item.icon
               return (
-                <motion.div key={item.title} {...staggerChild(i, 0.08)} className={`group ${CARD}`}>
-                  <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white">
-                    <Icon className="h-5 w-5" strokeWidth={1.5} />
+                <motion.div
+                  key={item.title}
+                  {...staggerChild(i, 0.06)}
+                  className="group flex flex-col gap-6 bg-bg p-8 sm:p-10"
+                >
+                  <div className="flex items-baseline justify-between">
+                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                      {String(i + 1).padStart(2, '0')} / 04
+                    </span>
+                    <Icon
+                      className="h-5 w-5 text-ink transition-colors duration-300 group-hover:text-accent"
+                      strokeWidth={1.25}
+                    />
                   </div>
-                  <h3 className="mb-2 text-lg font-bold text-gray-900">{item.title}</h3>
-                  <p className="text-[15px] leading-relaxed text-gray-600">{item.description}</p>
+                  <div>
+                    <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink">
+                      {item.title}
+                    </h3>
+                    <p className="text-[15px] leading-relaxed text-ink-soft">
+                      {item.description}
+                    </p>
+                  </div>
                 </motion.div>
               )
             })}
@@ -208,66 +241,79 @@ export default function About() {
       </section>
 
       {/* Process */}
-      <section className="relative overflow-hidden bg-surface-base py-12 sm:py-20">
-        <div className="grid-pattern absolute inset-0 opacity-[0.015]" />
-        <div className="relative mx-auto max-w-4xl px-6">
-          <motion.div {...fadeInUp} className="mb-14 text-center">
-            <p className={`mb-2 ${EYEBROW}`}>Process</p>
-            <h2 className={`mb-3 ${SECTION_H2}`}>Four steps from first call to launch</h2>
-            <p className="mx-auto max-w-lg text-gray-500">
-              No twelve-step onboarding, no project charts, no drawn-out planning. This is the
-              whole thing.
+      <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-24 sm:py-32">
+        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+        <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+          <motion.div
+            {...fadeInUp}
+            className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
+          >
+            <div>
+              <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+                <span className="h-px w-8 bg-accent" />
+                // 03 — Process
+              </p>
+              <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
+                Four steps from
+                <br />
+                <span className="text-accent">first call to launch.</span>
+              </h2>
+            </div>
+            <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+              No twelve-step onboarding. No project charts. No drawn-out planning. This is
+              the whole thing, end to end.
             </p>
           </motion.div>
 
-          <div className="relative">
-            {/* Vertical line */}
-            <div className="absolute left-6 top-0 hidden h-full w-px bg-gray-200 sm:block" />
-
-            <div className="space-y-8">
-              {PROCESS.map((step, i) => (
-                <motion.div key={step.num} {...staggerChild(i, 0.1)} className="relative sm:pl-16">
-                  {/* Step number on line */}
-                  <div className="absolute left-0 top-0 hidden h-12 w-12 items-center justify-center rounded-full border-2 border-gray-200 bg-surface-overlay text-sm font-bold text-gray-900 sm:flex">
+          <div className="mt-12 grid gap-px overflow-hidden border border-hair-paper bg-hair-paper md:grid-cols-2">
+            {PROCESS.map((step, i) => (
+              <motion.div
+                key={step.num}
+                {...staggerChild(i, 0.06)}
+                className="flex flex-col gap-7 bg-paper p-8 sm:p-10"
+              >
+                <div className="flex items-baseline justify-between">
+                  <span className="font-mono text-[clamp(2.4rem,4vw,3.4rem)] font-semibold leading-none text-paper-faint">
                     {step.num}
+                  </span>
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                    Phase / 04
+                  </span>
+                </div>
+                <div>
+                  <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink-paper">
+                    {step.title}
+                  </h3>
+                  <p className="text-[15px] leading-relaxed text-paper-soft">
+                    {step.description}
+                  </p>
+                </div>
+                <div className="mt-auto grid grid-cols-2 gap-px overflow-hidden border-t border-hair-paper pt-5">
+                  <div className="pr-4">
+                    <p className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                      <Users className="h-3 w-3" /> You
+                    </p>
+                    <p className="text-[13px] text-paper-soft">{step.you}</p>
                   </div>
-
-                  <div className="rounded-2xl border border-gray-200 bg-gray-50 p-6">
-                    <div className="mb-1 flex items-center gap-3">
-                      <span className="text-sm font-bold text-blue-600 sm:hidden">{step.num}</span>
-                      <h3 className="text-lg font-bold text-gray-900">{step.title}</h3>
-                    </div>
-                    <p className="mb-4 text-[15px] text-gray-600">{step.description}</p>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
-                        <Users className="mt-0.5 h-4 w-4 flex-shrink-0 text-gray-400" />
-                        <div>
-                          <p className="text-xs font-semibold uppercase text-gray-400">You</p>
-                          <p className="text-sm text-gray-700">{step.you}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2 rounded-lg bg-surface-overlay px-3 py-2">
-                        <Monitor className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
-                        <div>
-                          <p className="text-xs font-semibold uppercase text-blue-500">Me</p>
-                          <p className="text-sm text-gray-700">{step.me}</p>
-                        </div>
-                      </div>
-                    </div>
+                  <div className="border-l border-hair-paper pl-4">
+                    <p className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+                      <Monitor className="h-3 w-3" /> Me
+                    </p>
+                    <p className="text-[13px] text-paper-soft">{step.me}</p>
                   </div>
-                </motion.div>
-              ))}
-            </div>
+                </div>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
       <CtaSection
         variant="dark"
+        eyebrow="// 04 — Contact"
         title={
           <>
-            Start a <span className="logo-wave">conversation</span>
+            Start a <span className="text-accent">conversation</span>.
           </>
         }
         description="Tell me what your business does and what you want from a website. You get a straight answer and a clear next step."
