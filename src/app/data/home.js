@@ -11,39 +11,39 @@ export const REVENUE_GROWTH_DATA = [
 
 export const WHY_WEBSITE_CARDS = [
   {
-    title: 'Get found on Google',
+    title: 'Show up on Google',
     description:
-      'When people search for what you do, the businesses that show up are the ones with a real website. Without one, you are not in the running.',
+      'When someone searches for what you do, the businesses that come up are the ones with a real website. No website, no chance of being picked.',
     icon: Search,
   },
   {
-    title: 'Open day and night',
+    title: 'Open after you close',
     description:
-      'Your website answers questions, takes messages, and accepts bookings while you are closed. It keeps working when you cannot.',
+      'Your website answers questions, takes messages, and accepts bookings overnight and on weekends. It keeps working when you can’t.',
     icon: Clock,
   },
   {
-    title: 'Look professional',
+    title: 'Look the part',
     description:
-      'People check you out before they call. A clean, well-built website tells them you are serious, established, and worth picking up the phone for.',
+      'People check you out before they call. A clean, well-built site tells them you’re the real deal and worth picking up the phone for.',
     icon: Shield,
   },
   {
     title: 'Reach new customers',
     description:
-      'Word of mouth is great, but it only goes so far. A website puts you in front of people who have never heard of you before.',
+      'Word of mouth only goes so far. A website puts you in front of people who’ve never heard your name but are ready to spend.',
     icon: Users,
   },
   {
     title: 'Works on every phone',
     description:
-      'Most people search on their phones. If the site is slow or hard to use there, they tap the back button before they ever call you.',
+      'Most people search on a phone. If your site is slow or hard to use there, they tap back and call the next name on the list.',
     icon: Smartphone,
   },
   {
     title: 'Pays for itself',
     description:
-      'One or two new customers usually covers the whole site. Everything after that goes straight to your bottom line.',
+      'One or two extra jobs usually covers the whole site. Everything after that goes straight to your bottom line.',
     icon: DollarSign,
   },
 ]
@@ -59,17 +59,17 @@ export const HOW_IT_WORKS_STEPS = [
     step: '2',
     title: 'I build it',
     description:
-      'I get to work and show you progress as I go. You can give feedback any time. No drawn-out timelines, no surprises.',
+      'I get to work and show you progress as I go. You can give feedback any time. No drawn-out timelines and no surprises at the end.',
   },
   {
     step: '3',
     title: 'Go live',
     description:
-      'Your site goes live. I take care of keeping it online, fast, and safe so you can stay focused on running the business.',
+      'Your site goes live. I keep it online, fast, and safe so you can stay focused on running the business.',
   },
 ]
 
-export const HERO_BADGES = ['Cancel anytime', 'Free initial consultation']
+export const HERO_BADGES = ['Cancel anytime', 'Free initial call']
 
 export const CLIENT_TESTIMONIALS = [
   {
@@ -78,7 +78,7 @@ export const CLIENT_TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-orange-500',
     quote:
-      "They just handle it. I don't know anything about websites and I don't want to. Online orders are up 40% since launch and I didn't have to learn a single thing.",
+      "He just handles it. I don’t know anything about websites and I don’t want to. Online orders are up about 40% since launch and I haven’t had to learn a thing.",
   },
   {
     name: 'James Mitchell',
@@ -86,7 +86,7 @@ export const CLIENT_TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-blue-600',
     quote:
-      'Went from maybe 2-3 internet calls a week to 2-3 a day. I text them when I need something changed and it just gets done. No tickets, no waiting.',
+      'Went from a couple of website calls a week to a couple a day. I text Trenton when I need something changed and it just gets done. No tickets, no waiting.',
   },
   {
     name: 'Sarah Chen',
@@ -94,6 +94,6 @@ export const CLIENT_TESTIMONIALS = [
     role: 'General Manager',
     color: 'bg-emerald-500',
     quote:
-      "We had nothing online. Now we're the top search result in our area. The site paid for itself in the first month from new customers alone.",
+      "We had nothing online before. Now we’re one of the first names that shows up in our area. The site paid for itself the first month from new customers alone.",
   },
 ]

@@ -8,8 +8,12 @@ import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
-const PREVIEW_FRAME_WIDTH = 1920
-const PREVIEW_FRAME_HEIGHT = 1200
+// Logical viewport the iframe renders at before being scaled to fit the card.
+// 1280×800 keeps a 16:10 aspect ratio (matching the frame) and hits the
+// laptop-desktop breakpoint our client sites are actually designed for — wider
+// viewports render sparse, dark heroes that leave the preview looking empty.
+const PREVIEW_FRAME_WIDTH = 1280
+const PREVIEW_FRAME_HEIGHT = 800
 
 function buildLivePreviewUrl(url, cacheBuster) {
   const separator = url.includes('?') ? '&' : '?'
@@ -116,7 +120,7 @@ export default function Portfolio() {
     <div>
       <Seo
         title="Recent Client Websites — Baytown, TX"
-        description="Recent client websites built and launched for Baytown, Houston-area, and Southeast Texas small businesses."
+        description="A look at recent websites I've built for small businesses around Baytown, Houston, and Southeast Texas. Every one is live and earning its keep."
         path="/portfolio"
         schema={[
           breadcrumbSchema([
@@ -140,7 +144,7 @@ export default function Portfolio() {
       <PageHero
         eyebrow="// 01 — Portfolio"
         title="Recent client work."
-        description="A look at the sites I have built for Baytown and Houston-area businesses. Every one is custom-built, hosted, and looked after by me."
+        description="A look at sites I've built for businesses around Baytown and Houston. Every one is custom-built, hosted, and looked after by me."
       />
 
       <section className="relative overflow-hidden bg-paper py-20 sm:py-28">
@@ -162,7 +166,7 @@ export default function Portfolio() {
             Want your business <span className="text-accent">in this list</span>?
           </>
         }
-        description="Tell me what your business needs and I will put together a plan. Most websites are live in two to four weeks."
+        description="Tell me what your business needs and I'll put together a plan. Most sites are live in two to four weeks."
       />
     </div>
   )

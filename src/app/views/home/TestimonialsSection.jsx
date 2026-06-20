@@ -70,18 +70,18 @@ export default function TestimonialsSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 03 — Voices
+              // 03 — Reviews
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
-              From the owners
+              Owners who
               <br />
-              <span className="text-accent">who hire me.</span>
+              <span className="text-accent">picked up the phone.</span>
             </h2>
           </div>
           <div className="flex flex-col items-start gap-6 lg:items-end">
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              A few words from local business owners I have built and looked after websites
-              for across Baytown and the Houston area.
+              A few words from local business owners I’ve built and looked after sites for
+              around Baytown and the Houston area.
             </p>
             <TrustpilotBadge profileUrl={TRUSTPILOT_PROFILE_URL} variant="paper" />
           </div>

@@ -152,7 +152,7 @@ export default function EmailCapturePopup() {
       setServerError(
         error?.message?.length && error.message.length < 200
           ? error.message
-          : "We couldn't sign you up just now. Please try again."
+          : "Couldn't sign you up just now. Please try again."
       )
     }
   }
@@ -190,7 +190,7 @@ export default function EmailCapturePopup() {
               aria-hidden
               className="absolute -top-px left-7 bg-paper px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
             >
-              // Transmission
+              // Newsletter
             </span>
             <button
               type="button"
@@ -210,10 +210,10 @@ export default function EmailCapturePopup() {
                   id="email-popup-title"
                   className="mb-3 text-2xl font-semibold tracking-tightest text-ink-paper"
                 >
-                  Locked in.
+                  You&apos;re in.
                 </h2>
                 <p id="email-popup-description" className="text-[15px] text-paper-soft">
-                  Thanks for signing up — keep an eye on your inbox.
+                  Thanks. Keep an eye on your inbox.
                 </p>
               </div>
             ) : (
@@ -222,14 +222,14 @@ export default function EmailCapturePopup() {
                   id="email-popup-title"
                   className="mb-3 text-3xl font-semibold leading-[1.05] tracking-tightest text-ink-paper"
                 >
-                  Notes for owners.{' '}
-                  <span className="text-accent">From me to you.</span>
+                  Short notes for owners.{' '}
+                  <span className="text-accent">Straight from me.</span>
                 </h2>
                 <p
                   id="email-popup-description"
                   className="mb-7 text-[15px] leading-relaxed text-paper-soft"
                 >
-                  Short, useful field notes on getting found online and turning visitors into
+                  Practical tips on getting found online and turning visitors into paying
                   customers. Sent only when there&apos;s something worth saying.
                 </p>
 
@@ -306,7 +306,7 @@ export default function EmailCapturePopup() {
                       disabled={status === 'submitting'}
                       className={`group inline-flex items-center justify-center gap-2.5 rounded-sm bg-accent px-6 py-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98] ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
                     >
-                      {status === 'submitting' ? 'Signing you up…' : 'Join the list'}
+                      {status === 'submitting' ? 'Signing you up…' : 'Sign me up'}
                       {status !== 'submitting' && (
                         <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                       )}

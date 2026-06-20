@@ -11,25 +11,25 @@ const VALUES = [
     icon: Code2,
     title: 'Custom-built, not templated',
     description:
-      'Every site is built from scratch for your business. No Wix, no Squarespace, no cookie-cutter themes. The result is faster, more polished, and entirely yours.',
+      'Every site is built from scratch for your business. No Wix, no Squarespace, no theme everyone else is using. The result is faster, sharper, and yours.',
   },
   {
     icon: Headphones,
-    title: 'You work with me directly',
+    title: 'You talk to me directly',
     description:
-      'No account managers, no support tickets, no waiting days for a reply. You text or call me and I take care of it.',
+      'No account managers, no support tickets, no waiting days for a reply. You text or call me, and I handle it.',
   },
   {
     icon: Zap,
     title: 'Live in two to four weeks',
     description:
-      'Most sites are up and running in under a month. I do not pad timelines with endless meetings or paperwork. You tell me about your business, I build the site.',
+      'Most sites are up and running in under a month. I don’t pad the timeline with endless meetings or paperwork. You tell me about the business, I build the site.',
   },
   {
     icon: Shield,
     title: 'Built for local businesses',
     description:
-      'I work with shops, restaurants, trades, contractors, and independent pros — businesses that need to look great online and have one person to call when something needs to change.',
+      'I work with shops, restaurants, trades, contractors, and independent pros — businesses that need to look the part online and have one person to call when something needs to change.',
   },
 ]
 
@@ -45,7 +45,7 @@ const PROCESS = [
     num: '01',
     title: 'You reach out',
     description:
-      'Tell me about the business and what you need. A short message is plenty — no thirty-field intake form.',
+      'Tell me about the business and what you need. A few sentences is plenty — no thirty-field intake form.',
     you: 'Send me a message',
     me: 'Reply same day',
   },
@@ -53,15 +53,15 @@ const PROCESS = [
     num: '02',
     title: 'I plan it out',
     description:
-      'I lay out the pages, structure, and look of the site. You approve the plan before any work starts.',
-    you: 'Review and give feedback',
-    me: 'Share designs you can actually see',
+      'I lay out the pages, the structure, and the look of the site. You approve the plan before any building starts.',
+    you: 'Look it over and give feedback',
+    me: 'Show you designs you can actually see',
   },
   {
     num: '03',
     title: 'I build it',
     description:
-      'Clean design, sharp photos, and fast pages. You get progress updates the whole way and can ask for changes at any stage.',
+      'Clean design, sharp photos, and fast pages. You get progress updates the whole way and can ask for changes at any point.',
     you: 'Review and request changes',
     me: 'Build, test, and polish',
   },
@@ -69,7 +69,7 @@ const PROCESS = [
     num: '04',
     title: 'Launch and look after it',
     description:
-      'Your site goes live. I keep it online, secure, and up to date so the technical side never lands on you.',
+      'Your site goes live. I keep it online, safe, and up to date so the tech side never lands on you.',
     you: 'Run the business',
     me: 'Keep everything running',
   },
@@ -79,8 +79,8 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About Trenton Taylor — Baytown Website Designer"
-        description="Trenton Taylor is an independent Baytown, TX website designer building custom small business websites for shops, trades, and pros across Houston."
+        title="About Trenton Taylor — Baytown Web Designer"
+        description="I'm Trenton Taylor, an independent Baytown, TX web designer building custom websites for shops, trades, and small businesses across the Houston area."
         path="/about"
         schema={[
           breadcrumbSchema([
@@ -104,9 +104,9 @@ export default function About() {
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Operator"
-        title="One person, custom-built sites, a direct line."
-        description="I'm Trenton Taylor — TaylorURL LLC is me. Serving local businesses across Baytown and the Houston area from the first call through every change after launch."
+        eyebrow="// 01 — About me"
+        title="One person, custom-built websites, a direct line."
+        description="I'm Trenton Taylor — TaylorURL LLC is me. I work with local businesses around Baytown and the Houston area, from the first call all the way through every change you ever need after launch."
       />
 
       {/* Story + stats */}
@@ -117,35 +117,35 @@ export default function About() {
             <motion.div {...fadeInUp}>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // Background
+                // My story
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
                 I build websites for Baytown and Houston-area small businesses.
               </h2>
               <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-paper-soft">
                 <p>
-                  I started the business in Baytown, Texas because the local shops around me
-                  — restaurants, trades, salons, independent pros — kept ending up with one
-                  of two outcomes: a generic agency site or a dated, do-it-yourself page
-                  that no longer matched their business.
+                  I started the business in Baytown because the local shops around me —
+                  restaurants, trades, salons, independent pros — kept ending up with one of
+                  two outcomes: a generic agency site that cost too much, or a dated DIY
+                  page that no longer matched the business.
                 </p>
                 <p>
-                  Neither one works for long. So I build sites the way the best companies
+                  Neither one works for long. So I build sites the way the best businesses
                   online do: clean design, fast pages, and ongoing care from the person who
-                  made it. No sales reps, no support queue, no handoffs.
+                  built it. No sales reps, no support queue, no handoffs.
                 </p>
                 <p>
-                  You get a site that is fast, easy on the eyes, and built around the
+                  You get a site that’s quick, easy on the eyes, and built around the
                   customers you actually want — with a direct line to me whenever something
-                  needs to change. No platform you are stuck with, no monthly fees that
-                  creep up, no surprises.
+                  needs to change. No platform you’re stuck on, no monthly fees that creep
+                  up, no surprises.
                 </p>
               </div>
             </motion.div>
 
             <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
               <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                // Operating numbers
+                // The numbers
               </p>
               <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper">
                 {STATS.map(stat => (
@@ -169,10 +169,10 @@ export default function About() {
                       Baytown, TX
                     </p>
                     <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
-                      Working with local businesses across Baytown, Mont Belvieu,
-                      Channelview, Crosby, La Porte, Deer Park, Pasadena, and the greater
-                      Houston area. Whole project handled by phone, text, and email — no
-                      in-person meetings required.
+                      Working with local businesses around Baytown, Mont Belvieu,
+                      Channelview, Crosby, La Porte, Deer Park, Pasadena, and the rest of
+                      the Houston area. The whole project happens by phone, text, and
+                      email — no in-person meetings required.
                     </p>
                   </div>
                 </div>
@@ -196,14 +196,14 @@ export default function About() {
                 // 02 — How I work
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
-                Why clients choose
+                Why owners
                 <br />
-                <span className="text-accent">to work with me.</span>
+                <span className="text-accent">work with me.</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              Four operating principles. They are the contract — direct, fast, custom, and
-              built for the people who run the shop.
+              Four things I won&apos;t budge on: direct, fast, custom, and built for the
+              people actually running the shop.
             </p>
           </motion.div>
 
@@ -261,7 +261,7 @@ export default function About() {
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
               No twelve-step onboarding. No project charts. No drawn-out planning. This is
-              the whole thing, end to end.
+              the whole thing, start to finish.
             </p>
           </motion.div>
 
@@ -310,13 +310,13 @@ export default function About() {
 
       <CtaSection
         variant="dark"
-        eyebrow="// 04 — Contact"
+        eyebrow="// 04 — Get in touch"
         title={
           <>
             Start a <span className="text-accent">conversation</span>.
           </>
         }
-        description="Tell me what your business does and what you want from a website. You get a straight answer and a clear next step."
+        description="Tell me what your business does and what you want from a website. You'll get an honest answer and a clear next step."
       />
     </div>
   )

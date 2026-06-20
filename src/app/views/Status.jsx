@@ -22,7 +22,7 @@ const SERVICES = [
   },
   {
     name: 'Backup hosting',
-    description: 'A safety net that kicks in if anything hiccups',
+    description: 'A safety net that kicks in if anything goes sideways',
     group: 'Hosting',
   },
   {
@@ -37,7 +37,7 @@ const SERVICES = [
   },
   {
     name: 'Padlock and encryption',
-    description: 'The little padlock in the browser bar, kept up to date',
+    description: 'The padlock in the browser bar, kept up to date',
     group: 'Security',
   },
   {
@@ -81,22 +81,22 @@ const GROUPS = [
   {
     key: 'Hosting',
     icon: Server,
-    blurb: 'Where the site lives and how visitors reach it.',
+    blurb: 'Where the site lives and how visitors get to it.',
   },
   {
     key: 'Security',
     icon: ShieldCheck,
-    blurb: 'Protection layers between the site and the internet.',
+    blurb: 'The layers between your site and the rest of the internet.',
   },
   {
     key: 'Maintenance',
     icon: Wrench,
-    blurb: 'Backups, monitoring, and quiet behind-the-scenes care.',
+    blurb: 'Backups, monitoring, and quiet care in the background.',
   },
   {
     key: 'Services',
     icon: Mail,
-    blurb: 'Forms, messages, and inbox delivery.',
+    blurb: 'Forms, messages, and getting them into your inbox.',
   },
 ]
 
@@ -152,17 +152,17 @@ function LiveBand({ checkedAt, windowStart }) {
           </span>
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-              // All systems nominal
+              // All sites up
             </p>
             <p className="mt-3 text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
               All clear.
             </p>
             <p className="mt-3 max-w-md text-[15px] leading-relaxed text-paper-soft">
-              Every site I look after is up and answering as of{' '}
+              Every site I look after is up and running as of{' '}
               <span className="font-mono text-[14px] font-semibold text-ink-paper">
                 {checkedAt}
               </span>{' '}
-              today. Auto-checked continuously — I get a ping the second anything goes wrong.
+              today. Checked around the clock — I get a ping the second anything goes wrong.
             </p>
           </div>
         </div>
@@ -255,13 +255,13 @@ export default function Status() {
     <div>
       <Seo
         title="System Status"
-        description="Live status of the hosting, security, and care behind every TaylorURL LLC client website."
+        description="Live status of the hosting, security, and care behind every TaylorURL client website."
         path="/status"
       />
       <PageHero
         eyebrow="// 01 — Status"
         title="A live look at every system."
-        description="Twelve components, watched continuously. Green means up, amber means slow, red means down — so a glance tells the whole story."
+        description="Twelve things I watch around the clock. Green means up, amber means slow, red means down — so a glance tells you the whole story."
       />
 
       <section className="relative overflow-hidden bg-paper py-20 sm:py-28">
@@ -272,14 +272,14 @@ export default function Status() {
           <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="mb-12 mt-20">
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 02 — Components
+              // 02 — What I watch
             </p>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
               What I&apos;m watching.
             </h2>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-paper-soft">
-              Four groups, twelve components. Each row reports its own state — and the
-              overall band above changes color the moment any one of them does.
+              Four groups, twelve checks. Each row shows its own state — and the band up
+              top changes color the moment any one of them does.
             </p>
           </motion.div>
 
@@ -319,9 +319,9 @@ export default function Status() {
                 Clean stretch since {windowStart}.
               </h3>
               <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">
-                No outages, no slowdowns worth reporting. If something does break, this is
-                where you will see it first — and you will hear from me before it shows up
-                here.
+                No outages and no slowdowns worth reporting. If something does break, this
+                is where you’ll see it first — and you’ll hear from me before it ever shows
+                up here.
               </p>
             </div>
           </motion.div>
@@ -347,7 +347,7 @@ export default function Status() {
             Tell me — I&apos;ll <span className="text-accent">look into it</span>.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            If something on your site is acting up, send a quick note and I&apos;ll dig in
+            If something on your site is acting up, send a quick message. I&apos;ll dig in
             and get back to you.
           </p>
           <a

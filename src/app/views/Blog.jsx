@@ -261,7 +261,7 @@ export default function Blog() {
     <div>
       <Seo
         title="Website & Google Tips for Baytown Businesses"
-        description="Plain-English website, Google, and growth notes for Baytown, Houston, and Southeast Texas small businesses. Practical advice on getting more customers online."
+        description="Plain-English notes on websites, Google, and getting more customers — written for small businesses around Baytown, Houston, and Southeast Texas."
         path="/blog"
         schema={[
           breadcrumbSchema([
@@ -274,15 +274,15 @@ export default function Blog() {
             name: 'TaylorURL Blog',
             url: 'https://taylorurl.com/blog',
             description:
-              'Plain-English website, Google, and growth notes for small businesses in Baytown and the Houston area.',
+              'Plain-English notes on websites, Google, and getting more customers — written for small businesses in Baytown and the Houston area.',
             publisher: { '@id': 'https://taylorurl.com/#business' },
           },
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Field notes"
+        eyebrow="// 01 — Blog"
         title="Notes from the workbench."
-        description="Practical website, Google, and growth tips for local businesses. No buzzwords, no fluff — written by me, sent only when worth it."
+        description="Practical tips on websites, Google, and getting more customers — written for local businesses. No buzzwords, no fluff."
       />
 
       {/* Filters strip */}
@@ -381,9 +381,9 @@ export default function Blog() {
               className="border border-hair-paper py-20 text-center"
             >
               <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint">
-                // No matches
+                // Nothing found
               </p>
-              <p className="mt-3 text-[16px] text-ink-paper">No articles found.</p>
+              <p className="mt-3 text-[16px] text-ink-paper">No articles match that.</p>
               <button
                 onClick={() => {
                   clearSearch()
@@ -455,7 +455,7 @@ export default function Blog() {
               Ready to fix your <span className="text-accent">website</span>?
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft sm:text-[18px]">
-              Tell me about the business and what is not working. I will take it from there.
+              Tell me about the business and what isn’t working. I’ll take it from there.
             </p>
             <Link
               to="/contact"

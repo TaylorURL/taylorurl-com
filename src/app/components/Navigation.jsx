@@ -12,7 +12,7 @@ function Wordmark({ invert = false, sizeClass = 'h-8 w-[148px]' }) {
     <div className={`relative overflow-hidden ${sizeClass}`}>
       <img
         src="/images/TaylorURL-Logo.png"
-        alt="TaylorURL — websites for small businesses in Baytown, TX"
+        alt="TaylorURL — custom websites for local businesses in Baytown, TX"
         width="1024"
         height="1024"
         fetchPriority="high"
@@ -187,7 +187,7 @@ export default function Navigation() {
 
               <div className="flex flex-col gap-1 px-6 py-8">
                 <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Index — Primary
+                  Menu
                 </p>
                 {PRIMARY_LINKS.map((link, i) => {
                   const active = isActive(link.to)
