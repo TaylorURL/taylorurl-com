@@ -138,13 +138,13 @@ ${formData.message}
               <div>
                 <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                   <span className="h-px w-8 bg-accent" />
-                  // Channel
+                  // Get in touch
                 </p>
                 <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                   Start the conversation.
                 </h2>
                 <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
-                  New site, redo of an old one, or taking over a site someone else built —
+                  New site, redoing an old one, or taking over a site someone else built —
                   tell me about the business and what needs to change.
                 </p>
               </div>
