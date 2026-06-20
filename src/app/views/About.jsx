@@ -196,14 +196,14 @@ export default function About() {
                 // 02 — How I work
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
-                Why clients choose
+                Why owners
                 <br />
-                <span className="text-accent">to work with me.</span>
+                <span className="text-accent">work with me.</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              Four operating principles. They are the contract — direct, fast, custom, and
-              built for the people who run the shop.
+              Four things I won&apos;t budge on: direct, fast, custom, and built for the
+              people actually running the shop.
             </p>
           </motion.div>
 
