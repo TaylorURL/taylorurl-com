@@ -154,14 +154,14 @@ export default function Process() {
                 // 02 — Timeline
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
-                Six phases.
+                Six steps.
                 <br />
                 <span className="text-accent">Three to four weeks.</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              Most projects wrap in three to four weeks. Here is what each phase looks
-              like — your half, my half, side by side.
+              Most projects wrap up in three to four weeks. Here’s what each step looks
+              like — your part and my part, side by side.
             </p>
           </motion.div>
 
