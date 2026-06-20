@@ -50,7 +50,7 @@ export default function FinalCtaSection() {
           </a>
         </div>
         <p className="mx-auto mt-12 max-w-md font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-          Reply within 24 hours · No sales pitch · Straight answers
+          Reply within 24 hours · No sales pitch · Honest answers
         </p>
       </motion.div>
     </section>
