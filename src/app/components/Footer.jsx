@@ -173,12 +173,9 @@ export default function Footer() {
           <p className="sr-only">Serving {SERVING.join(', ')}.</p>
         </div>
 
-        {/* Coordinates strip + meta */}
         <div className="flex flex-col gap-6 border-t border-hair pt-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
             <span>© {currentYear} TaylorURL LLC</span>
-            <span className="hidden sm:inline">·</span>
-            <span>29.7355°N — 94.9774°W</span>
             <span className="hidden sm:inline">·</span>
             <span>Baytown, TX — US</span>
           </div>
