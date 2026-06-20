@@ -22,21 +22,21 @@ const FACTS = [
     stat: '+110%',
     label: 'more revenue',
     detail:
-      'Small businesses with a real website outgrow the ones without over a twelve-month stretch — by a wide margin.',
+      'Local businesses with a real website grow faster than the ones without — and the gap gets wider every quarter.',
   },
   {
     icon: Smartphone,
     stat: '70%',
-    label: 'searches on phones',
+    label: 'searches happen on phones',
     detail:
-      'Most local searches happen on a phone. If your site is slow or clunky there, people leave before they ever see what you offer.',
+      'Most people looking for what you do are on their phone. If your site is slow or hard to use there, they’re gone before they ever see your work.',
   },
   {
     icon: Monitor,
     stat: '<2s',
-    label: 'load time',
+    label: 'page load',
     detail:
-      'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with higher spots in search.',
+      'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with better spots in search.',
   },
 ]
 
