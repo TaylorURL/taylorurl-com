@@ -227,7 +227,7 @@ export default function Services() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // Service area
+                // Where I work
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                 Local businesses across
@@ -236,8 +236,8 @@ export default function Services() {
               </h2>
             </div>
             <p className="max-w-md text-[15px] leading-relaxed text-paper-soft lg:text-right">
-              Based in Baytown, TX. Working with shops, restaurants, trades, contractors,
-              and independent pros across the surrounding communities.
+              Based in Baytown, TX. I work with shops, restaurants, trades, contractors, and
+              independent pros across the surrounding towns and neighborhoods.
             </p>
           </motion.div>
 
