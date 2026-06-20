@@ -43,11 +43,11 @@ export default function Footer() {
               <img
                 src="/images/TaylorURL-Logo.png"
                 alt="TaylorURL — websites for small businesses in Baytown, TX"
-                width="120"
-                height="120"
+                width="180"
+                height="180"
                 loading="lazy"
                 decoding="async"
-                className="h-20 w-auto"
+                className="h-32 w-auto sm:h-36"
                 style={{ filter: 'brightness(0) invert(1)' }}
               />
             </Link>

@@ -1,30 +1,11 @@
 import { Link, useLocation } from 'react-router-dom'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PRIMARY_LINKS } from '@constants/navigation'
+import { useOnDarkBackground } from '@hooks/useOnDarkBackground'
 
 const SCROLL_SOLID_THRESHOLD = 20
-
-function isDarkColor(rgb) {
-  if (!rgb || rgb === 'rgba(0, 0, 0, 0)' || rgb === 'transparent') return null
-  const match = rgb.match(/\d+/g)
-  if (!match || match.length < 3) return null
-  const [r, g, b] = match.map(Number)
-  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
-  return luminance < 0.45
-}
-
-function getBackgroundAtPoint(x, y, ...ignoreEls) {
-  const els = document.elementsFromPoint(x, y)
-  for (const el of els) {
-    if (ignoreEls.some(ref => ref && ref.contains(el))) continue
-    const bg = window.getComputedStyle(el).backgroundColor
-    const dark = isDarkColor(bg)
-    if (dark !== null) return dark
-  }
-  return false
-}
 
 function Wordmark({ invert = false, sizeClass = 'h-8 w-[148px]' }) {
   return (
@@ -50,38 +31,22 @@ export default function Navigation() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [onDark, setOnDark] = useState(false)
   const probeRef = useRef(null)
   const navRef = useRef(null)
+  const [onDark, recheckBackground] = useOnDarkBackground(probeRef, [navRef])
 
-  const checkBackground = useCallback(() => {
-    const el = probeRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
-    setOnDark(getBackgroundAtPoint(x, y, navRef.current))
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > SCROLL_SOLID_THRESHOLD)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > SCROLL_SOLID_THRESHOLD)
-      checkBackground()
-    }
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    window.addEventListener('resize', checkBackground, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', checkBackground)
-    }
-  }, [checkBackground])
-
-  useEffect(() => {
     setMobileOpen(false)
-    const t = setTimeout(checkBackground, 100)
+    const t = setTimeout(recheckBackground, 100)
     return () => clearTimeout(t)
-  }, [location.pathname, checkBackground])
+  }, [location.pathname, recheckBackground])
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
@@ -91,7 +56,7 @@ export default function Navigation() {
   }, [mobileOpen])
 
   const isTransparent = !scrolled && !mobileOpen
-  const useDarkChrome = isTransparent && onDark
+  const useDarkChrome = onDark
 
   const isActive = to =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
