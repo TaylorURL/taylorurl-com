@@ -14,17 +14,17 @@ export default function WhyWebsiteSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 01 — Why
+              // 01 — Why a website
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               A website is the difference between
               <br />
-              <span className="text-accent">being found</span> and being missed.
+              <span className="text-accent">getting the call</span> and getting skipped.
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-            Six real ways a website brings in customers and earns its keep for small
-            businesses across Baytown, Houston, and the surrounding Texas communities.
+            Six honest reasons a website pays for itself for shops, restaurants, trades, and
+            pros around Baytown and the rest of the Houston area.
           </p>
         </motion.div>
 
