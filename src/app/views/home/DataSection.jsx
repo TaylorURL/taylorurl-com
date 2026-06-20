@@ -52,17 +52,17 @@ export default function DataSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 02 — Signal
+              // 02 — By the numbers
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
               A real website
               <br />
-              <span className="text-accent">is the difference.</span>
+              <span className="text-accent">pulls its weight.</span>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-            Local businesses with a professional website grow faster, get found more often,
-            and win more customers. The ones without rely on referrals and hope.
+            Local businesses with a real website grow faster, get found more often, and win
+            more customers. The ones without are leaning on referrals and luck.
           </p>
         </motion.div>
 
