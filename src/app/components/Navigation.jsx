@@ -31,38 +31,22 @@ export default function Navigation() {
   const location = useLocation()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const [onDark, setOnDark] = useState(false)
   const probeRef = useRef(null)
   const navRef = useRef(null)
+  const [onDark, recheckBackground] = useOnDarkBackground(probeRef, [navRef])
 
-  const checkBackground = useCallback(() => {
-    const el = probeRef.current
-    if (!el) return
-    const rect = el.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
-    setOnDark(getBackgroundAtPoint(x, y, navRef.current))
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > SCROLL_SOLID_THRESHOLD)
+    handleScroll()
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > SCROLL_SOLID_THRESHOLD)
-      checkBackground()
-    }
-    handleScroll()
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    window.addEventListener('resize', checkBackground, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', checkBackground)
-    }
-  }, [checkBackground])
-
-  useEffect(() => {
     setMobileOpen(false)
-    const t = setTimeout(checkBackground, 100)
+    const t = setTimeout(recheckBackground, 100)
     return () => clearTimeout(t)
-  }, [location.pathname, checkBackground])
+  }, [location.pathname, recheckBackground])
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? 'hidden' : ''
@@ -72,7 +56,7 @@ export default function Navigation() {
   }, [mobileOpen])
 
   const isTransparent = !scrolled && !mobileOpen
-  const useDarkChrome = isTransparent && onDark
+  const useDarkChrome = mobileOpen ? true : onDark
 
   const isActive = to =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
