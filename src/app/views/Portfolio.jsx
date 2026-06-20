@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
@@ -8,9 +8,23 @@ import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
+const PREVIEW_FRAME_WIDTH = 1440
+const PREVIEW_FRAME_HEIGHT = 900
+
+function buildLivePreviewUrl(url, cacheBuster) {
+  const separator = url.includes('?') ? '&' : '?'
+  return `${url}${separator}__preview=${cacheBuster}`
+}
+
 function PortfolioCard({ project, index }) {
-  const [imageLoaded, setImageLoaded] = useState(false)
-  const [imageFailed, setImageFailed] = useState(false)
+  const [frameLoaded, setFrameLoaded] = useState(false)
+
+  // One cache-buster per page load — ensures the iframe always requests a fresh
+  // copy of the live site instead of reusing the browser's HTTP cache.
+  const livePreviewUrl = useMemo(
+    () => buildLivePreviewUrl(project.url, Date.now()),
+    [project.url]
+  )
 
   return (
     <motion.a
@@ -36,27 +50,35 @@ function PortfolioCard({ project, index }) {
           </span>
         </div>
 
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-bg">
-          {!imageFailed && (
-            <img
-              src={project.image}
-              alt={`${project.name} website homepage — built by TaylorURL`}
-              width="1280"
-              height="800"
-              loading="lazy"
-              decoding="async"
-              onLoad={() => setImageLoaded(true)}
-              onError={() => setImageFailed(true)}
-              className={`absolute inset-0 h-full w-full object-cover object-top transition-all duration-500 group-hover:scale-[1.02] ${
-                imageLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-            />
-          )}
-          {(!imageLoaded || imageFailed) && (
+        <div
+          className="relative aspect-[16/10] w-full overflow-hidden bg-bg"
+          style={{ containerType: 'inline-size' }}
+        >
+          <iframe
+            src={livePreviewUrl}
+            title={`${project.name} live website preview`}
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            tabIndex={-1}
+            aria-hidden="true"
+            onLoad={() => setFrameLoaded(true)}
+            width={PREVIEW_FRAME_WIDTH}
+            height={PREVIEW_FRAME_HEIGHT}
+            style={{
+              width: `${PREVIEW_FRAME_WIDTH}px`,
+              height: `${PREVIEW_FRAME_HEIGHT}px`,
+              transform: `scale(calc(100cqw / ${PREVIEW_FRAME_WIDTH}))`,
+              transformOrigin: 'top left',
+            }}
+            className={`pointer-events-none absolute left-0 top-0 border-0 transition-opacity duration-500 ${
+              frameLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+          />
+          {!frameLoaded && (
             <div className="absolute inset-0 grid place-items-center bg-bg">
               <div className="text-center">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Preview
+                  Loading live preview
                 </p>
                 <p className="mt-2 text-[clamp(1.4rem,3vw,2.2rem)] font-semibold tracking-tight text-ink">
                   {project.name}
