@@ -231,7 +231,7 @@ export default function Navigation() {
                   <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
                 <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  29.7355°N · 94.9774°W — Baytown, TX
+                  Baytown, TX
                 </p>
               </div>
             </motion.div>
