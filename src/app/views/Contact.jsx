@@ -331,7 +331,7 @@ ${formData.message}
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </button>
                   <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                    Opens your email client
+                    Opens your email app
                   </p>
                 </div>
               </form>
