@@ -14,6 +14,8 @@ const WORDS = [
 
 const ROTATE_INTERVAL_MS = 2400
 
+const LONGEST_WORD = WORDS.reduce((a, b) => (b.length > a.length ? b : a), '')
+
 export default function TypingRotator() {
   const [index, setIndex] = useState(0)
 
@@ -25,22 +27,30 @@ export default function TypingRotator() {
   }, [])
 
   return (
-    <span className="relative inline-flex min-w-[8ch] items-baseline">
+    <span className="relative inline-flex items-baseline align-baseline">
       <span aria-hidden="true" className="mr-2 text-accent">
         ⟶
       </span>
-      <AnimatePresence mode="wait">
-        <motion.span
-          key={WORDS[index]}
-          initial={{ opacity: 0, y: 14 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -14 }}
-          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-          className="inline-block text-accent"
+      <span className="relative inline-grid">
+        <span
+          aria-hidden="true"
+          className="invisible col-start-1 row-start-1 whitespace-nowrap"
         >
-          {WORDS[index]}
-        </motion.span>
-      </AnimatePresence>
+          {LONGEST_WORD}
+        </span>
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={WORDS[index]}
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -14 }}
+            transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+            className="col-start-1 row-start-1 whitespace-nowrap text-accent"
+          >
+            {WORDS[index]}
+          </motion.span>
+        </AnimatePresence>
+      </span>
     </span>
   )
 }
