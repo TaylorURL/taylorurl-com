@@ -4,7 +4,7 @@ import { ArrowUpRight, Menu, X } from 'lucide-react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { PRIMARY_LINKS } from '@constants/navigation'
 
-const SCROLL_SOLID_THRESHOLD = 24
+const SCROLL_SOLID_THRESHOLD = 20
 
 function isDarkColor(rgb) {
   if (!rgb || rgb === 'rgba(0, 0, 0, 0)' || rgb === 'transparent') return null
@@ -26,15 +26,7 @@ function getBackgroundAtPoint(x, y, ...ignoreEls) {
   return false
 }
 
-/**
- * The source logo PNG is 1024×1024 but the wordmark only occupies the band
- * y=415→683 (~26% of the canvas). Rendering the raw image at a normal nav
- * size yields a tiny wordmark surrounded by transparent padding. This wrapper
- * crops the whitespace by sizing the image to ~3.8× the wrapper height and
- * centering it, so the wordmark itself fills the wrapper — making the brand
- * mark the visual anchor of the bar.
- */
-function LogoMark({ sizeClass, invert }) {
+function Wordmark({ invert = false, sizeClass = 'h-8 w-[148px]' }) {
   return (
     <div className={`relative overflow-hidden ${sizeClass}`}>
       <img
@@ -61,7 +53,6 @@ export default function Navigation() {
   const [onDark, setOnDark] = useState(false)
   const probeRef = useRef(null)
   const navRef = useRef(null)
-  const isHome = location.pathname === '/'
 
   const checkBackground = useCallback(() => {
     const el = probeRef.current
@@ -99,16 +90,19 @@ export default function Navigation() {
     }
   }, [mobileOpen])
 
-  // Transparent only over the dark home hero before any scroll.
-  const isTransparent = isHome && !scrolled && !mobileOpen
-  const onHeroDark = isTransparent && onDark
+  const isTransparent = !scrolled && !mobileOpen
+  const useDarkChrome = isTransparent && onDark
 
   const isActive = to =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
 
+  const linkBaseDark = 'text-ink-soft hover:text-ink'
+  const linkBaseLight = 'text-paper-mute hover:text-ink-paper'
+  const linkActiveDark = 'text-ink'
+  const linkActiveLight = 'text-ink-paper'
+
   return (
     <>
-      {/* Hidden probe — anchored where the logo sits, used to sample the page bg behind the nav. */}
       <span
         ref={probeRef}
         aria-hidden
@@ -121,27 +115,24 @@ export default function Navigation() {
         initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className={`fixed inset-x-0 top-0 z-50 border-b transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out ${
+        className={`fixed inset-x-0 top-0 z-50 transition-[background-color,border-color,backdrop-filter] duration-300 ease-out ${
           isTransparent
-            ? 'border-transparent bg-transparent'
-            : 'border-gray-200/70 bg-white/85 shadow-[0_1px_0_0_rgba(15,23,42,0.04),0_10px_30px_-18px_rgba(15,23,42,0.18)] backdrop-blur-xl'
+            ? 'border-b border-transparent bg-transparent'
+            : useDarkChrome
+              ? 'border-b border-hair bg-bg/85 backdrop-blur-xl'
+              : 'border-b border-hair-paper bg-paper/85 backdrop-blur-xl'
         }`}
       >
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-6 px-5 md:h-20 md:gap-8 md:px-8 lg:px-12">
-          {/* LOGO — the anchor of the bar */}
+        <div className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between gap-6 px-6 sm:px-10 lg:h-[76px] lg:px-16">
           <Link
             to="/"
             aria-label="TaylorURL home"
-            className="group flex shrink-0 items-center rounded-md outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-4"
+            className="group flex shrink-0 items-center gap-3 rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-4 focus-visible:ring-offset-transparent"
           >
-            <LogoMark
-              sizeClass="h-10 w-[150px] md:h-12 md:w-[180px]"
-              invert={onHeroDark}
-            />
+            <Wordmark invert={useDarkChrome} sizeClass="h-9 w-[150px]" />
           </Link>
 
-          {/* DESKTOP LINKS — minimalist text with motion-animated active underline */}
-          <ul className="hidden flex-1 items-center justify-center md:flex">
+          <ul className="hidden flex-1 items-center justify-center gap-1 lg:flex">
             {PRIMARY_LINKS.map(link => {
               const active = isActive(link.to)
               return (
@@ -149,57 +140,48 @@ export default function Navigation() {
                   <Link
                     to={link.to}
                     aria-current={active ? 'page' : undefined}
-                    className={`relative inline-flex items-center px-4 py-2 text-[13.5px] font-medium tracking-[-0.005em] transition-colors duration-200 ${
-                      onHeroDark
+                    className={`relative inline-flex items-center rounded-sm px-3.5 py-2 font-mono text-[11px] uppercase tracking-[0.18em] transition-colors duration-200 ${
+                      useDarkChrome
                         ? active
-                          ? 'text-white'
-                          : 'text-gray-400 hover:text-white'
+                          ? linkActiveDark
+                          : linkBaseDark
                         : active
-                          ? 'text-gray-900'
-                          : 'text-gray-500 hover:text-gray-900'
+                          ? linkActiveLight
+                          : linkBaseLight
                     }`}
                   >
+                    <span className="mr-1.5 text-accent">{active ? '●' : ''}</span>
                     {link.label}
-                    {active && (
-                      <motion.span
-                        layoutId="nav-active-indicator"
-                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
-                        className={`absolute inset-x-3 -bottom-[3px] h-[2px] rounded-full ${
-                          onHeroDark ? 'bg-blue-400' : 'bg-blue-600'
-                        }`}
-                      />
-                    )}
                   </Link>
                 </li>
               )
             })}
           </ul>
 
-          {/* DESKTOP CTA — gradient pill with launch arrow */}
-          <div className="hidden shrink-0 items-center md:flex">
+          <div className="hidden shrink-0 items-center gap-5 lg:flex">
+            <span
+              className={`hidden font-mono text-[10px] uppercase tracking-[0.22em] xl:inline ${useDarkChrome ? 'text-ink-faint' : 'text-paper-faint'}`}
+            >
+              29.7355°N · 94.9774°W
+            </span>
             <Link
               to="/contact"
-              className={`group relative inline-flex items-center gap-1.5 overflow-hidden rounded-full px-5 py-2.5 text-[13.5px] font-semibold transition-all duration-200 ease-out active:scale-[0.97] ${
-                onHeroDark
-                  ? 'bg-white text-gray-900 shadow-[0_4px_18px_-4px_rgba(255,255,255,0.35)] hover:shadow-[0_6px_22px_-2px_rgba(255,255,255,0.45)]'
-                  : 'bg-gradient-to-b from-blue-600 to-blue-700 text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.15),0_4px_14px_-2px_rgba(37,99,235,0.45)] hover:from-blue-500 hover:to-blue-600 hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_8px_24px_-4px_rgba(37,99,235,0.55)]'
-              }`}
+              className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-5 py-2.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
             >
               <span>Start a project</span>
-              <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </div>
 
-          {/* MOBILE TOGGLE */}
           <button
             type="button"
             onClick={() => setMobileOpen(prev => !prev)}
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors duration-200 md:hidden ${
-              onHeroDark
-                ? 'text-white hover:bg-white/10'
-                : 'text-gray-900 hover:bg-gray-900/[0.06]'
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-sm transition-colors duration-200 lg:hidden ${
+              useDarkChrome
+                ? 'text-ink hover:bg-ink/10'
+                : 'text-ink-paper hover:bg-ink-paper/10'
             }`}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -207,7 +189,6 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* MOBILE SHEET — drops from the top, edge-to-edge, premium feel */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -216,7 +197,7 @@ export default function Navigation() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[60] bg-gray-950/55 backdrop-blur-sm md:hidden"
+              className="fixed inset-0 z-[60] bg-bg/70 backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
             />
 
@@ -224,29 +205,29 @@ export default function Navigation() {
               initial={{ y: '-100%' }}
               animate={{ y: 0 }}
               exit={{ y: '-100%' }}
-              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.42, ease: [0.22, 1, 0.36, 1] }}
               role="dialog"
               aria-modal="true"
               aria-label="Site menu"
-              className="fixed inset-x-0 top-0 z-[61] flex max-h-[92vh] flex-col overflow-y-auto rounded-b-3xl border-b border-gray-200 bg-white shadow-2xl md:hidden"
+              className="fixed inset-x-0 top-0 z-[61] flex max-h-[92vh] flex-col overflow-y-auto border-b border-hair bg-bg text-ink shadow-2xl lg:hidden"
             >
-              <div className="flex h-[72px] shrink-0 items-center justify-between border-b border-gray-100 px-5">
+              <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-hair px-6">
                 <Link to="/" aria-label="TaylorURL home" onClick={() => setMobileOpen(false)}>
-                  <LogoMark sizeClass="h-10 w-[150px]" invert={false} />
+                  <Wordmark invert sizeClass="h-9 w-[150px]" />
                 </Link>
                 <button
                   type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
-                  className="flex h-11 w-11 items-center justify-center rounded-xl text-gray-900 transition-colors duration-200 hover:bg-gray-100"
+                  className="flex h-11 w-11 items-center justify-center rounded-sm text-ink transition-colors duration-200 hover:bg-ink/10"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <nav className="flex flex-col gap-1 px-4 py-6" aria-label="Mobile primary">
-                <p className="px-3 pb-3 font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                  Navigate
+              <div className="flex flex-col gap-1 px-6 py-8">
+                <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                  Index — Primary
                 </p>
                 {PRIMARY_LINKS.map((link, i) => {
                   const active = isActive(link.to)
@@ -255,41 +236,42 @@ export default function Navigation() {
                       key={link.to}
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.05 + i * 0.04, duration: 0.25 }}
+                      transition={{ delay: 0.04 + i * 0.04, duration: 0.25 }}
                     >
                       <Link
                         to={link.to}
                         onClick={() => setMobileOpen(false)}
                         aria-current={active ? 'page' : undefined}
-                        className={`flex items-center justify-between rounded-2xl px-4 py-3.5 text-[17px] font-medium transition-colors duration-150 ${
-                          active
-                            ? 'bg-blue-50 text-blue-700'
-                            : 'text-gray-800 hover:bg-gray-50 hover:text-gray-900'
+                        className={`flex items-center justify-between border-b border-hair py-4 transition-colors duration-150 ${
+                          active ? 'text-accent' : 'text-ink-soft hover:text-ink'
                         }`}
                       >
-                        <span>{link.label}</span>
-                        {active ? (
-                          <span className="h-2 w-2 rounded-full bg-blue-600" />
-                        ) : (
-                          <ArrowUpRight className="h-4 w-4 text-gray-300" />
-                        )}
+                        <span className="flex items-center gap-3">
+                          <span className="font-mono text-[10px] text-ink-faint">
+                            0{i + 1}
+                          </span>
+                          <span className="text-[22px] font-semibold tracking-tight">
+                            {link.label}
+                          </span>
+                        </span>
+                        <ArrowUpRight className="h-4 w-4 text-ink-faint" />
                       </Link>
                     </motion.div>
                   )
                 })}
-              </nav>
+              </div>
 
-              <div className="mt-auto border-t border-gray-100 px-5 py-6">
+              <div className="mt-auto border-t border-hair px-6 py-8">
                 <Link
                   to="/contact"
                   onClick={() => setMobileOpen(false)}
-                  className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-b from-blue-600 to-blue-700 px-6 py-4 text-base font-semibold text-white shadow-[inset_0_1px_0_0_rgba(255,255,255,0.18),0_6px_22px_-4px_rgba(37,99,235,0.55)] transition-all duration-200 ease-out hover:from-blue-500 hover:to-blue-600 active:scale-[0.98]"
+                  className="group flex w-full items-center justify-center gap-2.5 rounded-sm bg-accent px-6 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition-all duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
                 >
                   <span>Start a project</span>
-                  <ArrowUpRight className="h-5 w-5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                 </Link>
-                <p className="mt-5 text-center font-mono text-[11px] uppercase tracking-[0.18em] text-gray-400">
-                  Baytown, TX · Serving the Greater Houston area
+                <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                  29.7355°N · 94.9774°W — Baytown, TX
                 </p>
               </div>
             </motion.div>
