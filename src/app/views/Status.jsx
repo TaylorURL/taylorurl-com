@@ -272,14 +272,14 @@ export default function Status() {
           <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="mb-12 mt-20">
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 02 — Components
+              // 02 — What I watch
             </p>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
               What I&apos;m watching.
             </h2>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-paper-soft">
-              Four groups, twelve components. Each row reports its own state — and the
-              overall band above changes color the moment any one of them does.
+              Four groups, twelve checks. Each row shows its own state — and the band up
+              top changes color the moment any one of them does.
             </p>
           </motion.div>
 
