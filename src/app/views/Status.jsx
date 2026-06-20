@@ -319,9 +319,9 @@ export default function Status() {
                 Clean stretch since {windowStart}.
               </h3>
               <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">
-                No outages, no slowdowns worth reporting. If something does break, this is
-                where you will see it first — and you will hear from me before it shows up
-                here.
+                No outages and no slowdowns worth reporting. If something does break, this
+                is where you’ll see it first — and you’ll hear from me before it ever shows
+                up here.
               </p>
             </div>
           </motion.div>
