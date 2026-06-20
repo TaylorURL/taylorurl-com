@@ -122,9 +122,9 @@ ${formData.message}
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Transmission"
+        eyebrow="// 01 — Get in touch"
         title="Let's talk about your website."
-        description="Tell me about your Baytown or Houston-area business. I get back to you within 24 hours, with a straight answer."
+        description="Tell me about your Baytown or Houston-area business. I get back within 24 hours, with an honest answer — no sales pitch."
       />
 
       <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
