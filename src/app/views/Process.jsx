@@ -246,7 +246,7 @@ export default function Process() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // 03 — Inputs
+                // 03 — What you bring
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
                 What I&apos;ll need
@@ -255,8 +255,8 @@ export default function Process() {
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              Doesn&apos;t have to be perfect or finished. I can work with what you have
-              and help fill in the gaps along the way.
+              Doesn&apos;t need to be perfect or finished. I can work with whatever you have
+              and help fill in the gaps as we go.
             </p>
           </motion.div>
 
