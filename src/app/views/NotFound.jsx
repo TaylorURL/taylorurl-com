@@ -103,7 +103,7 @@ export default function NotFound() {
         >
           <div className="border border-hair p-5">
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-              <span>// Debugger</span>
+              <span>// Bug catcher</span>
               <span className="text-accent">
                 Caught · <span className="font-semibold text-ink">{String(score).padStart(2, '0')}</span>
               </span>
