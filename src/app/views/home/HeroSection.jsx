@@ -136,7 +136,7 @@ export default function HeroSection() {
                 aria-hidden
                 className="absolute -top-px left-4 bg-bg px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
               >
-                Spec sheet
+                The basics
               </span>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 font-mono text-[11px] uppercase tracking-[0.18em]">
                 {HERO_META.map(item => (
