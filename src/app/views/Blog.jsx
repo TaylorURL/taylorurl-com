@@ -274,7 +274,7 @@ export default function Blog() {
             name: 'TaylorURL Blog',
             url: 'https://taylorurl.com/blog',
             description:
-              'Plain-English website, Google, and growth notes for small businesses in Baytown and the Houston area.',
+              'Plain-English notes on websites, Google, and getting more customers — written for small businesses in Baytown and the Houston area.',
             publisher: { '@id': 'https://taylorurl.com/#business' },
           },
         ]}
