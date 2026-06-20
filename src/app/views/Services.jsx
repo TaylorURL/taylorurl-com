@@ -121,9 +121,9 @@ export default function Services() {
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Services"
-        title="Built, hosted, and looked after — by one person."
-        description="Custom websites, redesigns, and online tools for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
+        eyebrow="// 01 — What I do"
+        title="Built, hosted, and looked after — all by me."
+        description="Custom websites, redesigns, and online tools for shops, restaurants, trades, and pros around Baytown and the Houston area."
       />
 
       {/* Services — alternating split layout */}
