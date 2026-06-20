@@ -157,7 +157,7 @@ export default function Footer() {
         {/* Monumental wordmark band */}
         <div className="mb-16 sm:mb-20">
           <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-            Service area
+            Working with businesses in
           </p>
           <div
             aria-hidden="true"
