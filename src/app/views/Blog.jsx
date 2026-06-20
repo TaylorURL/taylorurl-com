@@ -261,7 +261,7 @@ export default function Blog() {
     <div>
       <Seo
         title="Website & Google Tips for Baytown Businesses"
-        description="Plain-English website, Google, and growth notes for Baytown, Houston, and Southeast Texas small businesses. Practical advice on getting more customers online."
+        description="Plain-English notes on websites, Google, and getting more customers — written for small businesses around Baytown, Houston, and Southeast Texas."
         path="/blog"
         schema={[
           breadcrumbSchema([
