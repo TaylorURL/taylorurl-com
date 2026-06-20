@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
+import TopographicDotField from './TopographicDotField'
 
 const HERO_META = [
   { k: 'Based in', v: 'Baytown, TX' },
