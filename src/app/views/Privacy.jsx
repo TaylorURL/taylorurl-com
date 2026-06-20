@@ -53,7 +53,7 @@ export default function Privacy() {
           body: (
             <>
               If you have any questions about this Privacy Policy, please contact me at{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-accent underline">
                 {SUPPORT_EMAIL}
               </a>
             </>
