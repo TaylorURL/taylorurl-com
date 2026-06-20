@@ -55,9 +55,9 @@ export default function HeroSection() {
               transition={{ duration: 0.55, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="text-[clamp(2.7rem,7.4vw,6.2rem)] font-semibold leading-[0.95] tracking-tightest text-ink"
             >
-              Websites that bring in
+              Real websites
               <br />
-              more{' '}
+              for local{' '}
               <TypingRotator />
             </motion.h1>
 
