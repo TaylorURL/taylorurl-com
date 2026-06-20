@@ -55,9 +55,9 @@ export default function HeroSection() {
               transition={{ duration: 0.55, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="text-[clamp(2.7rem,7.4vw,6.2rem)] font-semibold leading-[0.95] tracking-tightest text-ink"
             >
-              Custom websites
+              Websites that bring in
               <br />
-              for local{' '}
+              more{' '}
               <TypingRotator />
             </motion.h1>
 
@@ -67,10 +67,10 @@ export default function HeroSection() {
               transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="mt-10 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
             >
-              I&apos;m Trenton — I build websites for small businesses around Baytown, Mont
-              Belvieu, Pasadena, Deer Park, La Porte, and the greater Houston area.
-              Custom-built to help you get found on Google, look professional, and bring in
-              more customers. You work with me directly, every step of the way.
+              I&apos;m Trenton. I build custom websites for local businesses around Baytown,
+              Mont Belvieu, Pasadena, Deer Park, La Porte, and the greater Houston area —
+              the kind that show up on Google, look like you know what you&apos;re doing,
+              and bring in real customers. You talk to me directly. No agency, no runaround.
             </motion.p>
 
             <motion.div
