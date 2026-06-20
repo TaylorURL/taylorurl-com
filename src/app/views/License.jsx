@@ -77,25 +77,26 @@ export default function License() {
       <LegalPage
         title="License"
         description="Terms governing the use of my software and deliverables."
+        eyebrow="// 01 — License"
         sections={SECTIONS}
         footer={{
-          heading: 'Licensing Inquiries',
+          heading: 'Licensing inquiries',
           body: (
             <>
               For licensing questions or permissions, contact me at{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-accent underline">
                 {SUPPORT_EMAIL}
               </a>
             </>
           ),
         }}
       >
-        <div className="mb-8 rounded-lg border border-gray-200 bg-gray-50 p-6">
-          <p className="text-sm font-medium text-gray-900">
-            MIT License with Additional Restrictions
+        <div className="mb-10 border border-hair-paper-strong p-6">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
+            // MIT License with additional restrictions
           </p>
-          <p className="mt-1 text-sm text-gray-500">
-            Copyright (c) 2026 TaylorURL LLC / Trenton Taylor
+          <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.18em] text-paper-faint">
+            Copyright (c) 2026 TaylorURL LLC · Trenton Taylor
           </p>
         </div>
       </LegalPage>
