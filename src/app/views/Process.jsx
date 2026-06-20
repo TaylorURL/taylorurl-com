@@ -138,7 +138,7 @@ export default function Process() {
       <PageHero
         eyebrow="// 01 — Process"
         title="From first call to live site."
-        description="A clear, predictable path for Baytown and Houston-area businesses — six phases, three to four weeks, one operator."
+        description="A clear, predictable path for Baytown and Houston-area businesses — six steps, three to four weeks, one person handling all of it."
       />
 
       <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
