@@ -21,53 +21,53 @@ import { BUSINESS_ID, SERVICE_AREAS, breadcrumbSchema } from '@constants/seo'
 const SERVICES = [
   {
     icon: Palette,
-    title: 'Custom websites for local businesses',
+    title: 'A brand-new website',
     description:
-      'Designed from scratch around your brand and your customers. No off-the-shelf templates — the site looks and feels like your business, not a stock theme everyone else is using.',
+      'Designed from scratch around your business and the customers you’re trying to reach. No off-the-shelf templates — it looks and feels like you, not a theme half your competitors are using.',
     features: [
-      'Designed around your brand, not a theme',
+      'Designed around your business, not a template',
       'Looks great on phones, tablets, and computers',
-      'Polished little touches that feel premium',
-      'Built for the customers you actually serve',
+      'Small touches that make it feel premium',
+      'Built for the customers you actually want',
     ],
     mockup: 'default',
   },
   {
     icon: Code2,
-    title: 'Website redesigns',
+    title: 'Redoing your current site',
     description:
-      'If your current site looks dated or is not bringing in business, I rebuild it from the ground up so you finally look as good online as you are in person.',
+      'If your site looks dated or isn’t bringing in business, I rebuild it from the ground up so you finally look as good online as you do in person.',
     features: [
       'Fresh, modern look from the ground up',
-      'Keep what works, drop the clutter',
+      'Keep what’s working, drop the clutter',
       'Noticeably faster pages',
-      'Cleaned up so Google can find you',
+      'Cleaned up so Google can actually find you',
     ],
     mockup: 'code',
   },
   {
     icon: Zap,
-    title: 'Online tools and custom features',
+    title: 'Online booking, ordering, and tools',
     description:
-      'Online booking, ordering, customer portals, quote forms, simple dashboards. When you need more than a basic site, I build the tools that fit how you run the business — and connect them to the apps you already use.',
+      'Online booking, ordering, customer logins, quote forms, simple dashboards — when you need more than a basic site, I build the tools that fit how you actually run things, and tie them into the apps you already use.',
     features: [
-      'Custom tools built for your business',
+      'Custom tools built for how you work',
       'Online booking, ordering, and quote forms',
-      'Plays nice with the apps you already use',
-      'Fast, smooth, and easy for customers',
+      'Connects to the apps you already use',
+      'Fast and easy for customers to use',
     ],
     mockup: 'analytics',
   },
   {
     icon: Wrench,
-    title: 'Ongoing care and updates',
+    title: 'Looking after it after launch',
     description:
-      'Keeping the site online, fast, safe, and backed up. The technical stuff happens in the background so you never have to think about it.',
+      'Keeping the site online, fast, safe, and backed up. The tech side stays out of your way so you never have to think about it.',
     features: [
-      'Website hosting and domain set up',
-      'Security kept current, behind the scenes',
+      'Hosting and domain set up for you',
+      'Security kept current in the background',
       'Watched around the clock with daily backups',
-      'A direct line to the person who built your site',
+      'A direct line to the person who built it',
     ],
     mockup: 'dashboard',
   },
@@ -75,8 +75,8 @@ const SERVICES = [
 
 const CAPABILITIES = [
   { icon: Smartphone, label: 'Works on every phone' },
-  { icon: Search, label: 'Found on Google' },
-  { icon: Shield, label: 'Locked down safe' },
+  { icon: Search, label: 'Shows up on Google' },
+  { icon: Shield, label: 'Locked down and safe' },
   { icon: Globe, label: 'Domain set up for you' },
   { icon: RefreshCw, label: 'Easy content updates' },
   { icon: Zap, label: 'Quick page loads' },
