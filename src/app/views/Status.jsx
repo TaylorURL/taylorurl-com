@@ -347,7 +347,7 @@ export default function Status() {
             Tell me — I&apos;ll <span className="text-accent">look into it</span>.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            If something on your site is acting up, send a quick note and I&apos;ll dig in
+            If something on your site is acting up, send a quick message. I&apos;ll dig in
             and get back to you.
           </p>
           <a
