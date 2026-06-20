@@ -8,8 +8,8 @@ import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
-const PREVIEW_FRAME_WIDTH = 1440
-const PREVIEW_FRAME_HEIGHT = 900
+const PREVIEW_FRAME_WIDTH = 1920
+const PREVIEW_FRAME_HEIGHT = 1200
 
 function buildLivePreviewUrl(url, cacheBuster) {
   const separator = url.includes('?') ? '&' : '?'
