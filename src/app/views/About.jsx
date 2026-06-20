@@ -310,13 +310,13 @@ export default function About() {
 
       <CtaSection
         variant="dark"
-        eyebrow="// 04 — Contact"
+        eyebrow="// 04 — Get in touch"
         title={
           <>
             Start a <span className="text-accent">conversation</span>.
           </>
         }
-        description="Tell me what your business does and what you want from a website. You get a straight answer and a clear next step."
+        description="Tell me what your business does and what you want from a website. You'll get an honest answer and a clear next step."
       />
     </div>
   )
