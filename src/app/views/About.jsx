@@ -169,10 +169,10 @@ export default function About() {
                       Baytown, TX
                     </p>
                     <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
-                      Working with local businesses across Baytown, Mont Belvieu,
-                      Channelview, Crosby, La Porte, Deer Park, Pasadena, and the greater
-                      Houston area. Whole project handled by phone, text, and email — no
-                      in-person meetings required.
+                      Working with local businesses around Baytown, Mont Belvieu,
+                      Channelview, Crosby, La Porte, Deer Park, Pasadena, and the rest of
+                      the Houston area. The whole project happens by phone, text, and
+                      email — no in-person meetings required.
                     </p>
                   </div>
                 </div>
