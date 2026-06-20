@@ -260,13 +260,13 @@ export default function Services() {
 
       <CtaSection
         variant="dark"
-        eyebrow="// Next — Talk it through"
+        eyebrow="// Next — Let&apos;s talk"
         title={
           <>
-            Ready to <span className="text-accent">talk through it</span>?
+            Ready to <span className="text-accent">talk it through</span>?
           </>
         }
-        description="Tell me what your business needs. You get a straight answer and a clear plan to work from."
+        description="Tell me what your business needs. You get an honest answer and a clear plan to work from."
       />
     </div>
   )
