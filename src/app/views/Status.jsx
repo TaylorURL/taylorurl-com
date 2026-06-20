@@ -255,13 +255,13 @@ export default function Status() {
     <div>
       <Seo
         title="System Status"
-        description="Live status of the hosting, security, and care behind every TaylorURL LLC client website."
+        description="Live status of the hosting, security, and care behind every TaylorURL client website."
         path="/status"
       />
       <PageHero
         eyebrow="// 01 — Status"
         title="A live look at every system."
-        description="Twelve components, watched continuously. Green means up, amber means slow, red means down — so a glance tells the whole story."
+        description="Twelve things I watch around the clock. Green means up, amber means slow, red means down — so a glance tells you the whole story."
       />
 
       <section className="relative overflow-hidden bg-paper py-20 sm:py-28">
