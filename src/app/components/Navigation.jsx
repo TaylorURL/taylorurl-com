@@ -56,7 +56,7 @@ export default function Navigation() {
   }, [mobileOpen])
 
   const isTransparent = !scrolled && !mobileOpen
-  const useDarkChrome = mobileOpen ? true : onDark
+  const useDarkChrome = onDark
 
   const isActive = to =>
     to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
