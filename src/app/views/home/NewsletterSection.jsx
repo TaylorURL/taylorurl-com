@@ -119,12 +119,12 @@ export default function NewsletterSection() {
           )}
           <div className="grid grid-cols-2 gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
             <div>
-              <p className="mb-2 text-accent">// Cadence</p>
-              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing.</p>
+              <p className="mb-2 text-accent">// How often</p>
+              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing to say.</p>
             </div>
             <div>
-              <p className="mb-2 text-accent">// Exit</p>
-              <p className="text-ink-soft normal-case tracking-normal">One click to unsubscribe. No follow-up loops.</p>
+              <p className="mb-2 text-accent">// Unsubscribing</p>
+              <p className="text-ink-soft normal-case tracking-normal">One click and you&apos;re off. No follow-up emails.</p>
             </div>
           </div>
         </div>
