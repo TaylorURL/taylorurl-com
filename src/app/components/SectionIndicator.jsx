@@ -51,7 +51,7 @@ export default function SectionIndicator() {
 
   const activeText = onDark ? 'text-ink' : 'text-ink-paper'
   const inactiveText = onDark ? 'text-ink-faint' : 'text-paper-faint'
-  const inactiveLine = onDark ? 'bg-ink-faint' : 'bg-paper-ink-faint'
+  const inactiveLine = onDark ? 'bg-ink-faint' : 'bg-[color:var(--paper-ink-faint)]'
   const hoverLine = onDark ? 'group-hover:bg-ink' : 'group-hover:bg-ink-paper'
 
   return (
