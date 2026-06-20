@@ -187,7 +187,7 @@ export default function Footer() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            All systems nominal
+            All sites up and running
           </Link>
         </div>
       </motion.div>
