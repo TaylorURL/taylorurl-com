@@ -73,11 +73,11 @@ export default function DataSection() {
           >
             <div>
               <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                // Observation
+                // The short version
               </p>
               <p className="text-[17px] leading-relaxed text-ink-soft">
-                A well-built site puts your business right where people are already looking
-                when they need someone to call.
+                A well-built website puts your business right where people are already
+                looking when they need someone to call.
               </p>
             </div>
             <Link
