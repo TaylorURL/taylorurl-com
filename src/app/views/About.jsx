@@ -166,7 +166,7 @@ export default function About() {
                   <Heart className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-                      Baytown, TX — 29.7355°N · 94.9774°W
+                      Baytown, TX
                     </p>
                     <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
                       Working with local businesses across Baytown, Mont Belvieu,
