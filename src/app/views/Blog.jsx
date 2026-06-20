@@ -455,7 +455,7 @@ export default function Blog() {
               Ready to fix your <span className="text-accent">website</span>?
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft sm:text-[18px]">
-              Tell me about the business and what is not working. I will take it from there.
+              Tell me about the business and what isn’t working. I’ll take it from there.
             </p>
             <Link
               to="/contact"
