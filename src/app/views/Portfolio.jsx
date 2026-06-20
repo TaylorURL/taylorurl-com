@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
@@ -8,27 +8,15 @@ import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
-// Logical viewport the iframe renders at before being scaled to fit the card.
-// 1280×800 keeps a 16:10 aspect ratio (matching the frame) and hits the
-// laptop-desktop breakpoint our client sites are actually designed for — wider
-// viewports render sparse, dark heroes that leave the preview looking empty.
-const PREVIEW_FRAME_WIDTH = 1280
-const PREVIEW_FRAME_HEIGHT = 800
-
-function buildLivePreviewUrl(url, cacheBuster) {
-  const separator = url.includes('?') ? '&' : '?'
-  return `${url}${separator}__preview=${cacheBuster}`
+// Server-rendered screenshot via WordPress mShots. Renders the target site
+// server-side and caches by URL, so client-site X-Frame-Options headers can't
+// black out the preview the way a live cross-origin iframe would.
+function buildScreenshotUrl(url) {
+  return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1280&h=800`
 }
 
 function PortfolioCard({ project, index }) {
-  const [frameLoaded, setFrameLoaded] = useState(false)
-
-  // One cache-buster per page load — ensures the iframe always requests a fresh
-  // copy of the live site instead of reusing the browser's HTTP cache.
-  const livePreviewUrl = useMemo(
-    () => buildLivePreviewUrl(project.url, Date.now()),
-    [project.url]
-  )
+  const [imageLoaded, setImageLoaded] = useState(false)
 
   return (
     <motion.a
