@@ -86,8 +86,8 @@ export default function Services() {
   return (
     <div>
       <Seo
-        title="Small Business Website Services in Baytown, TX"
-        description="Custom websites, redesigns, online booking tools, Google visibility, and hosting for Baytown, Mont Belvieu, Pasadena, Deer Park, and Houston-area businesses."
+        title="Small Business Website Services — Baytown, TX"
+        description="Custom websites, redesigns, online booking, and hosting for shops, restaurants, trades, and pros in Baytown, Mont Belvieu, Pasadena, Deer Park, and the Houston area."
         path="/services"
         schema={[
           breadcrumbSchema([
