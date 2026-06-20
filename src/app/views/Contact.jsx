@@ -292,9 +292,9 @@ ${formData.message}
                       <option value="">Pick one</option>
                       <option value="new-website">A brand-new website</option>
                       <option value="redesign">Redo my current site</option>
-                      <option value="web-app">An online tool or booking system</option>
+                      <option value="web-app">Online booking or a custom tool</option>
                       <option value="optimization">Make my site faster</option>
-                      <option value="maintenance">Ongoing care for my site</option>
+                      <option value="maintenance">Take over hosting and care</option>
                     </select>
                   </div>
                 </div>
