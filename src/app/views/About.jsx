@@ -79,8 +79,8 @@ export default function About() {
   return (
     <div>
       <Seo
-        title="About Trenton Taylor — Baytown Website Designer"
-        description="Trenton Taylor is an independent Baytown, TX website designer building custom small business websites for shops, trades, and pros across Houston."
+        title="About Trenton Taylor — Baytown Web Designer"
+        description="I'm Trenton Taylor, an independent Baytown, TX web designer building custom websites for shops, trades, and small businesses across the Houston area."
         path="/about"
         schema={[
           breadcrumbSchema([
