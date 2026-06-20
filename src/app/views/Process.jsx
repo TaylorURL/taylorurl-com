@@ -116,10 +116,10 @@ const TIMELINE_STEPS = [
 ]
 
 const WHAT_YOULL_NEED = [
-  { icon: Image, label: 'Your logo (any format)' },
+  { icon: Image, label: 'Your logo (any file type)' },
   { icon: FileText, label: 'What you want each page to say' },
-  { icon: Image, label: 'Photos of your work or your space' },
-  { icon: Paintbrush, label: 'Brand colors, if you have them' },
+  { icon: Image, label: 'Photos of your work or your shop' },
+  { icon: Paintbrush, label: 'Brand colors, if you have any' },
   { icon: Globe, label: 'Your web address, or help picking one' },
 ]
 
