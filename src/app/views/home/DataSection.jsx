@@ -1,16 +1,19 @@
 import { motion } from 'framer-motion'
-import { ArrowRight, Monitor, Smartphone, TrendingUp } from 'lucide-react'
+import { ArrowUpRight, Monitor, Smartphone, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { fadeInUp } from '@constants/animations'
+import { fadeInUp, staggerChild } from '@constants/animations'
 import { REVENUE_GROWTH_DATA } from '@data/home'
-import { BTN_PRIMARY, SECTION_H2_DARK } from '@constants/ui'
 
 const TOOLTIP_STYLE = {
-  backgroundColor: '#111827',
-  border: '1px solid #374151',
-  borderRadius: '8px',
-  color: '#e5e7eb',
+  backgroundColor: '#0a0a0a',
+  border: '1px solid rgba(255,255,255,0.18)',
+  borderRadius: '2px',
+  color: '#ffffff',
+  fontFamily: 'Geist Mono, ui-monospace, monospace',
+  fontSize: '11px',
+  letterSpacing: '0.05em',
+  textTransform: 'uppercase',
 }
 
 const FACTS = [
@@ -39,120 +42,149 @@ const FACTS = [
 
 export default function DataSection() {
   return (
-    <section className="relative overflow-hidden border-t border-gray-200 bg-gray-950 py-14 sm:py-24">
-      <div className="grid-pattern-blue absolute inset-0 opacity-[0.05]" />
-      <div className="relative mx-auto max-w-6xl px-6">
-        {/* Top: message + chart */}
-        <div className="grid items-center gap-8 lg:grid-cols-2 lg:gap-12">
-          <motion.div {...fadeInUp}>
-            <h2 className={`mb-5 ${SECTION_H2_DARK}`}>
-              A real website{' '}
-              <span className="logo-wave">is the difference.</span>
+    <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-36">
+      <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+      <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
+        <motion.div
+          {...fadeInUp}
+          className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+        >
+          <div>
+            <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+              <span className="h-px w-8 bg-accent" />
+              // 02 — Signal
+            </p>
+            <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
+              A real website
+              <br />
+              <span className="text-accent">is the difference.</span>
             </h2>
-            <p className="mb-6 text-base leading-relaxed text-gray-400 sm:text-lg">
-              Local businesses with a professional website grow faster, get found more often, and
-              win more customers. The ones without rely on referrals and hope.
-            </p>
-            <p className="mb-8 text-gray-500">
-              A well-built site puts your business right where people are already looking when
-              they need someone to call.
-            </p>
-            <Link to="/contact" className={`group ${BTN_PRIMARY}`}>
-              Get in Touch
-              <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </div>
+          <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
+            Local businesses with a professional website grow faster, get found more often,
+            and win more customers. The ones without rely on referrals and hope.
+          </p>
+        </motion.div>
+
+        <div className="mt-12 grid items-stretch gap-px overflow-hidden border border-hair bg-hair sm:mt-16 lg:grid-cols-[1fr_1.2fr]">
+          <motion.div
+            {...fadeInUp}
+            className="flex flex-col justify-between gap-8 bg-bg p-8 sm:p-12"
+          >
+            <div>
+              <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                // Observation
+              </p>
+              <p className="text-[17px] leading-relaxed text-ink-soft">
+                A well-built site puts your business right where people are already looking
+                when they need someone to call.
+              </p>
+            </div>
+            <Link
+              to="/contact"
+              className="group inline-flex w-fit items-center gap-2.5 rounded-sm border border-hair-strong px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.18em] font-semibold text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+            >
+              Start a project
+              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </motion.div>
 
-          <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
-            <div className="overflow-hidden rounded-2xl border border-gray-800 bg-gray-900/80 backdrop-blur-sm">
-              <div className="flex items-center justify-between border-b border-gray-800 px-5 py-3">
-                <span className="text-xs font-medium text-gray-400">12-Month Revenue Growth</span>
-                <div className="flex gap-4 text-[11px]">
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-2 w-4 rounded-full bg-blue-500" />
-                    <span className="text-gray-500">With a website</span>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <div className="h-0.5 w-4 border-t border-dashed border-gray-600" />
-                    <span className="text-gray-500">Without</span>
-                  </div>
-                </div>
-              </div>
-              <div className="px-3 pb-2 pt-4">
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart
-                    data={REVENUE_GROWTH_DATA}
-                    margin={{ top: 5, right: 10, left: -15, bottom: 5 }}
-                  >
-                    <XAxis
-                      dataKey="month"
-                      tick={{ fill: '#6b7280', fontSize: 11 }}
-                      axisLine={false}
-                      tickLine={false}
-                    />
-                    <YAxis
-                      tick={{ fill: '#4b5563', fontSize: 10 }}
-                      axisLine={false}
-                      tickLine={false}
-                      domain={[90, 220]}
-                    />
-                    <Tooltip
-                      formatter={(value, name) => [
-                        `${value}%`,
-                        name === 'withSite' ? 'With a website' : 'Without a website',
-                      ]}
-                      contentStyle={TOOLTIP_STYLE}
-                      labelStyle={{ color: '#9ca3af' }}
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="withSite"
-                      stroke="#3b82f6"
-                      strokeWidth={2.5}
-                      dot={{ fill: '#3b82f6', strokeWidth: 0, r: 3 }}
-                      name="withSite"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="withoutSite"
-                      stroke="#4b5563"
-                      strokeWidth={1.5}
-                      strokeDasharray="5 5"
-                      dot={{ fill: '#4b5563', strokeWidth: 0, r: 2 }}
-                      name="withoutSite"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+          <motion.div
+            {...fadeInUp}
+            transition={{ delay: 0.08 }}
+            className="relative bg-bg p-6 sm:p-8"
+          >
+            <div className="mb-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+              <span>12-mo revenue · indexed to 100</span>
+              <div className="flex gap-5">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-px w-4 bg-accent" />
+                  <span>With site</span>
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-px w-4 border-t border-dashed border-ink-faint" />
+                  <span>Without</span>
+                </span>
               </div>
             </div>
+            <ResponsiveContainer width="100%" height={260}>
+              <LineChart
+                data={REVENUE_GROWTH_DATA}
+                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
+              >
+                <XAxis
+                  dataKey="month"
+                  tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'Geist Mono' }}
+                  axisLine={{ stroke: 'rgba(255,255,255,0.15)' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fill: 'rgba(255,255,255,0.32)', fontSize: 10, fontFamily: 'Geist Mono' }}
+                  axisLine={false}
+                  tickLine={false}
+                  domain={[90, 220]}
+                />
+                <Tooltip
+                  formatter={(value, name) => [
+                    `${value}%`,
+                    name === 'withSite' ? 'With a website' : 'Without a website',
+                  ]}
+                  contentStyle={TOOLTIP_STYLE}
+                  labelStyle={{ color: 'rgba(255,255,255,0.5)' }}
+                  cursor={{ stroke: 'rgba(47,107,255,0.4)', strokeWidth: 1 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="withSite"
+                  stroke="#2f6bff"
+                  strokeWidth={2}
+                  dot={{ fill: '#2f6bff', strokeWidth: 0, r: 3 }}
+                  name="withSite"
+                />
+                <Line
+                  type="monotone"
+                  dataKey="withoutSite"
+                  stroke="rgba(255,255,255,0.4)"
+                  strokeWidth={1.25}
+                  strokeDasharray="4 4"
+                  dot={{ fill: 'rgba(255,255,255,0.4)', strokeWidth: 0, r: 2 }}
+                  name="withoutSite"
+                />
+              </LineChart>
+            </ResponsiveContainer>
           </motion.div>
         </div>
 
-        {/* Bottom: three fact cards */}
-        <motion.div
-          {...fadeInUp}
-          transition={{ delay: 0.2 }}
-          className="mt-10 grid gap-4 sm:mt-14 sm:gap-6 md:grid-cols-3"
-        >
-          {FACTS.map(fact => {
+        <div className="mt-12 grid gap-px overflow-hidden border border-hair bg-hair sm:mt-16 md:grid-cols-3">
+          {FACTS.map((fact, i) => {
             const Icon = fact.icon
             return (
-              <div
+              <motion.div
                 key={fact.label}
-                className="rounded-xl border border-gray-800 bg-gray-900/60 p-6 backdrop-blur-sm"
+                {...staggerChild(i, 0.06)}
+                className="flex flex-col justify-between gap-6 bg-bg p-7 sm:p-9"
               >
-                <div className="mb-4 flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-500/10">
-                    <Icon className="h-4 w-4 text-blue-400" />
-                  </div>
-                  <span className="text-2xl font-bold text-white">{fact.stat}</span>
-                  <span className="text-sm text-gray-500">{fact.label}</span>
+                <div className="flex items-start justify-between">
+                  <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                    {String(i + 1).padStart(2, '0')} / 03
+                  </span>
+                  <Icon className="h-5 w-5 text-accent" strokeWidth={1.25} />
                 </div>
-                <p className="text-sm leading-relaxed text-gray-400">{fact.detail}</p>
-              </div>
+                <div>
+                  <p className="font-mono text-[clamp(2.4rem,5vw,3.6rem)] font-semibold leading-none text-ink">
+                    {fact.stat}
+                  </p>
+                  <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+                    {fact.label}
+                  </p>
+                  <p className="mt-5 text-[14px] leading-relaxed text-ink-soft">
+                    {fact.detail}
+                  </p>
+                </div>
+              </motion.div>
             )
           })}
-        </motion.div>
+        </div>
       </div>
     </section>
   )
