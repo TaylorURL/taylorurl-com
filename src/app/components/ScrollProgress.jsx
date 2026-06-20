@@ -21,8 +21,9 @@ export default function ScrollProgress() {
   return (
     <div
       ref={barRef}
-      className="fixed left-0 right-0 top-0 z-[60] h-0.5 origin-left bg-blue-600"
+      className="fixed left-0 right-0 top-0 z-[60] h-px origin-left bg-accent"
       style={{ transform: 'scaleX(0)', willChange: 'transform' }}
+      aria-hidden="true"
     />
   )
 }
