@@ -138,7 +138,7 @@ export default function Faq() {
     <div>
       <Seo
         title="FAQ — Small Business Websites in Baytown, TX"
-        description="Common questions about working with TaylorURL LLC — a Baytown, TX website designer building custom small business websites across the Houston area."
+        description="Common questions about working with TaylorURL — timelines, pricing, who owns what, and what happens after launch. Plain answers from an independent Baytown web designer."
         path="/faq"
         schema={[
           breadcrumbSchema([
