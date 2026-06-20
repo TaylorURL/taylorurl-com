@@ -53,7 +53,7 @@ export default function Footer() {
             </Link>
             <p className="mb-8 text-[15px] leading-relaxed text-ink-soft">
               Custom websites for shops, restaurants, trades, contractors, and independent
-              pros across Baytown, Houston, and the surrounding Texas communities. Built and
+              pros around Baytown, Houston, and the rest of Southeast Texas. Built and
               looked after by one person, with a direct line you can actually reach.
             </p>
             <div className="space-y-3">
