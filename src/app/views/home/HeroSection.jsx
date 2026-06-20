@@ -37,13 +37,13 @@ export default function HeroSection() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
             </span>
-            Online — Baytown, TX
+            Open for new projects
           </span>
           <span className="hidden sm:inline">·</span>
           <span>TaylorURL LLC</span>
           <span className="hidden sm:inline">·</span>
-          <span>v5 — 2026</span>
-          <span className="ml-auto hidden sm:inline">// 00 — Index</span>
+          <span>Baytown, TX</span>
+          <span className="ml-auto hidden sm:inline">Home</span>
         </motion.div>
 
         {/* Headline grid */}
