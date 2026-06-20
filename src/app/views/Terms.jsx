@@ -68,7 +68,7 @@ export default function Terms() {
           body: (
             <>
               For questions about these Terms of Service, contact me at{' '}
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-blue-600 underline">
+              <a href={`mailto:${SUPPORT_EMAIL}`} className="text-accent underline">
                 {SUPPORT_EMAIL}
               </a>
             </>
