@@ -117,28 +117,28 @@ export default function About() {
             <motion.div {...fadeInUp}>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // Background
+                // My story
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
                 I build websites for Baytown and Houston-area small businesses.
               </h2>
               <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-paper-soft">
                 <p>
-                  I started the business in Baytown, Texas because the local shops around me
-                  — restaurants, trades, salons, independent pros — kept ending up with one
-                  of two outcomes: a generic agency site or a dated, do-it-yourself page
-                  that no longer matched their business.
+                  I started the business in Baytown because the local shops around me —
+                  restaurants, trades, salons, independent pros — kept ending up with one of
+                  two outcomes: a generic agency site that cost too much, or a dated DIY
+                  page that no longer matched the business.
                 </p>
                 <p>
-                  Neither one works for long. So I build sites the way the best companies
+                  Neither one works for long. So I build sites the way the best businesses
                   online do: clean design, fast pages, and ongoing care from the person who
-                  made it. No sales reps, no support queue, no handoffs.
+                  built it. No sales reps, no support queue, no handoffs.
                 </p>
                 <p>
-                  You get a site that is fast, easy on the eyes, and built around the
+                  You get a site that’s quick, easy on the eyes, and built around the
                   customers you actually want — with a direct line to me whenever something
-                  needs to change. No platform you are stuck with, no monthly fees that
-                  creep up, no surprises.
+                  needs to change. No platform you’re stuck on, no monthly fees that creep
+                  up, no surprises.
                 </p>
               </div>
             </motion.div>
