@@ -149,7 +149,7 @@ export default function Footer() {
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
             <p className="mt-5 text-[13px] leading-relaxed text-ink-mute">
-              Send a note, get a straight answer within 24 hours.
+              Send a note. You’ll hear back within 24 hours.
             </p>
           </div>
         </div>
