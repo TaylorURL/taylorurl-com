@@ -211,7 +211,7 @@ export default function Faq() {
         eyebrow="// Next — Ask anything"
         heading="Still have"
         accentText="questions?"
-        description="Send me a message. I get back to you within 24 hours, with a straight answer."
+        description="Send me a message. I get back within 24 hours, with an honest answer."
         primaryLabel="Get in touch"
         primaryTo="/contact"
       />
