@@ -86,9 +86,9 @@ export default function NewsletterSection() {
               </div>
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-                  // Confirmed
+                  // You&apos;re in
                 </p>
-                <p className="text-[16px] text-ink">You&apos;re on the list — watch your inbox.</p>
+                <p className="text-[16px] text-ink">Thanks. Watch your inbox.</p>
               </div>
             </div>
           ) : (
