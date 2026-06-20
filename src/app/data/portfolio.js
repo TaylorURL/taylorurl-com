@@ -20,27 +20,27 @@ export const PORTFOLIO_PROJECTS = [
     url: 'https://baytowngocarts.com',
     displayUrl: 'baytowngocarts.com',
     description:
-      'A modern marketing site for a Baytown go-kart track — hours, pricing, group bookings, and directions in a layout built to convert local search traffic into walk-ins.',
+      'A modern site for a Baytown go-kart track. Hours, pricing, group bookings, and directions — laid out to turn people searching for fun nearby into walk-ins through the gate.',
   },
   {
     name: 'DeluxFit by Angie',
     url: 'https://deluxfitbyangie.com',
     displayUrl: 'deluxfitbyangie.com',
     description:
-      'A polished brand site for a personal trainer — services, pricing, and a direct booking path designed to convert first-time visitors into scheduled sessions.',
+      'A clean brand site for a personal trainer. Services, pricing, and a clear booking path so first-time visitors actually end up on the schedule.',
   },
   {
     name: 'SETX Football',
     url: 'https://setxfootball.org',
     displayUrl: 'setxfootball.org',
     description:
-      'A local youth sports league site for Southeast Texas — season sign-ups, schedules, and shirt-order management in one streamlined hub for parents and coaches.',
+      'A Southeast Texas youth football league site. Season sign-ups, schedules, and shirt orders pulled into one easy place for parents and coaches.',
   },
   {
     name: 'Dickinson Bayou Fleeting',
     url: 'https://dickinsonbayoufleeting.com',
     displayUrl: 'dickinsonbayoufleeting.com',
     description:
-      'A professional site for a Galveston Bay barge fleeting company — services, fleet capacity, and contact details built to establish credibility with maritime clients.',
+      'A professional site for a Galveston Bay barge fleeting company. Services, fleet capacity, and contact details laid out to look like the serious operation it is.',
   },
 ]
