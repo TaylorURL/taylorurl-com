@@ -157,8 +157,8 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="mt-16 flex items-center justify-between border-t border-hair pt-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
         >
-          <span>Scroll — 06 sections</span>
-          <span className="hidden sm:inline">A real person · a direct line · craft you can feel</span>
+          <span>Scroll to keep reading</span>
+          <span className="hidden sm:inline">A real person · a direct line · work you can be proud of</span>
           <span className="text-accent">↓</span>
         </motion.div>
       </div>
