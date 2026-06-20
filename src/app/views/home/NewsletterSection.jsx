@@ -45,13 +45,13 @@ export default function NewsletterSection() {
 
       setStatus('success')
       setEmail('')
-      toast("You're subscribed — thanks for signing up!")
+      toast("You're on the list. Thanks for signing up.")
     } catch (error) {
       setStatus('idle')
       toast(
         error?.message?.length && error.message.length < 200
           ? error.message
-          : "We couldn't sign you up just now. Please try again."
+          : "Couldn't sign you up just now. Please try again."
       )
     }
   }
@@ -64,17 +64,17 @@ export default function NewsletterSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // Transmission
+              // Newsletter
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
-              Field notes for owners.
+              Short notes for owners.
               <br />
-              <span className="text-accent">Sent only when worth it.</span>
+              <span className="text-accent">Only when worth sending.</span>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-            Short, useful notes on getting found on Google and turning more visitors into
-            paying customers. Written by me, sent only when I have something worth saying.
+            Practical tips on getting found on Google and turning more visitors into paying
+            customers. Written by me, sent only when there’s something worth saying.
           </p>
         </div>
 
@@ -86,9 +86,9 @@ export default function NewsletterSection() {
               </div>
               <div>
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-                  // Confirmed
+                  // You&apos;re in
                 </p>
-                <p className="text-[16px] text-ink">You&apos;re on the list — watch your inbox.</p>
+                <p className="text-[16px] text-ink">Thanks. Watch your inbox.</p>
               </div>
             </div>
           ) : (
@@ -119,12 +119,12 @@ export default function NewsletterSection() {
           )}
           <div className="grid grid-cols-2 gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
             <div>
-              <p className="mb-2 text-accent">// Cadence</p>
-              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing.</p>
+              <p className="mb-2 text-accent">// How often</p>
+              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing to say.</p>
             </div>
             <div>
-              <p className="mb-2 text-accent">// Exit</p>
-              <p className="text-ink-soft normal-case tracking-normal">One click to unsubscribe. No follow-up loops.</p>
+              <p className="mb-2 text-accent">// Unsubscribing</p>
+              <p className="text-ink-soft normal-case tracking-normal">One click and you&apos;re off. No follow-up emails.</p>
             </div>
           </div>
         </div>

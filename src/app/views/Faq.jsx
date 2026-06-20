@@ -13,19 +13,19 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'Who do you build websites for?',
-        a: 'Local businesses — shops, restaurants, trades, contractors, salons, dentists, realtors, law firms, and independent pros. If you serve a defined area and need to look great online, you are the kind of client I work with.',
+        a: 'Local businesses — shops, restaurants, trades, contractors, salons, dentists, realtors, law firms, and independent pros. If you serve a local area and need to look the part online, you’re the kind of client I work with.',
       },
       {
         q: 'How long does a build take?',
-        a: 'Most websites are up and running in two to four weeks. No endless meetings or revision rounds. You tell me about the business, I build it, you give feedback, I put it online.',
+        a: 'Most websites are up and running in two to four weeks. No endless meetings, no never-ending revision rounds. You tell me about the business, I build it, you give feedback, I put it online.',
       },
       {
         q: 'What do you need from me to get started?',
-        a: 'Your logo if you have one, any photos you want used, and a clear sense of what your business does. I handle the writing, design, and the look of the site. If your content is not ready, we can put it together as we go.',
+        a: 'Your logo if you have one, any photos you want used, and a clear sense of what your business does. I handle the writing, design, and overall look of the site. If your content isn’t ready yet, we can put it together as we go.',
       },
       {
         q: 'Can you redesign an existing site?',
-        a: 'Yes. I do full redesigns all the time. I look at what you have, figure out what works and what does not, and rebuild from the ground up. I rethink how the pages are laid out, not just the colors.',
+        a: 'Yes. I do full redesigns all the time. I look at what you have, figure out what’s working and what isn’t, and rebuild from the ground up. I rethink how the pages are laid out, not just the colors.',
       },
     ],
   },
@@ -38,15 +38,15 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'How is this different from working with an agency?',
-        a: 'I build the site, and you work directly with me. No account managers, no support tickets, no layers between you and the person making the site. You text me, I handle it, and I stick around after launch.',
+        a: 'I build the site and you talk to me directly. No account managers, no support tickets, no layers between you and the person doing the work. You text me, I handle it, and I stick around after launch.',
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
-        a: 'No. I build custom sites from scratch — no Wix, no Squarespace, no drag-and-drop builders. The result is faster, safer, and not tied to a monthly subscription you can never escape.',
+        a: 'No. I build custom sites from scratch — no Wix, no Squarespace, no drag-and-drop builders. The result is faster, safer, and not tied to a monthly subscription you can never get off of.',
       },
       {
         q: 'Can you build more than a basic website?',
-        a: 'Yes. Plenty of local businesses need more than a few pages — online booking, customer accounts, ordering, quote forms, simple back-office tools. I build those custom to fit how you work, and connect them to the apps you already use.',
+        a: 'Yes. A lot of local businesses need more than a few pages — online booking, customer accounts, ordering, quote forms, simple back-office tools. I build those custom to fit how you actually work, and connect them to the apps you already use.',
       },
     ],
   },
@@ -55,11 +55,11 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'Do I own the website?',
-        a: 'Yes, completely. The site is yours. If you ever decide to move on, everything is handed over. No lock-in.',
+        a: 'Yes, completely. The site is yours. If you ever decide to move on, everything gets handed over. No lock-in.',
       },
       {
         q: 'Can I update content myself?',
-        a: 'It depends on the setup. Some sites come with a simple editor so you can change text and photos yourself. For others, you send me a quick request and the change goes live the same day. Either way works.',
+        a: 'Depends on the setup. Some sites come with a simple editor so you can change text and photos yourself. For others, you send me a quick request and the change goes live the same day. Either way works.',
       },
       {
         q: 'What if I need changes after launch?',
@@ -67,11 +67,11 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Do you only work with businesses in the Houston area?',
-        a: 'I am based in Baytown and most of my clients are around Houston, but I work with local businesses anywhere. The whole project can be handled by phone, text, and email.',
+        a: 'I’m based in Baytown and most of my clients are around Houston, but I work with local businesses anywhere. The whole project can be handled by phone, text, and email.',
       },
       {
         q: 'What happens if I want to cancel?',
-        a: 'You can stop the ongoing care plan any time. No annual contracts. If you leave, your whole site is handed over. I would rather earn your business every month than tie you to a contract.',
+        a: 'You can stop the ongoing care plan any time. No annual contracts. If you leave, your whole site gets handed over. I’d rather earn your business every month than tie you to a contract.',
       },
     ],
   },
@@ -138,7 +138,7 @@ export default function Faq() {
     <div>
       <Seo
         title="FAQ — Small Business Websites in Baytown, TX"
-        description="Common questions about working with TaylorURL LLC — a Baytown, TX website designer building custom small business websites across the Houston area."
+        description="Common questions about working with TaylorURL — timelines, pricing, who owns what, and what happens after launch. Plain answers from an independent Baytown web designer."
         path="/faq"
         schema={[
           breadcrumbSchema([
@@ -163,8 +163,8 @@ export default function Faq() {
       />
       <PageHero
         eyebrow="// 01 — FAQ"
-        title="Common questions, straight answers."
-        description="Common questions about working with a Baytown, TX website designer — timelines, how it works, who owns what, and ongoing care."
+        title="Common questions, honest answers."
+        description="The questions I get most from owners — about timelines, how it works, who owns what, and what happens after launch."
       />
 
       <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
@@ -211,7 +211,7 @@ export default function Faq() {
         eyebrow="// Next — Ask anything"
         heading="Still have"
         accentText="questions?"
-        description="Send me a message. I get back to you within 24 hours, with a straight answer."
+        description="Send me a message. I get back within 24 hours, with an honest answer."
         primaryLabel="Get in touch"
         primaryTo="/contact"
       />

@@ -22,21 +22,21 @@ const FACTS = [
     stat: '+110%',
     label: 'more revenue',
     detail:
-      'Small businesses with a real website outgrow the ones without over a twelve-month stretch — by a wide margin.',
+      'Local businesses with a real website grow faster than the ones without — and the gap gets wider every quarter.',
   },
   {
     icon: Smartphone,
     stat: '70%',
-    label: 'searches on phones',
+    label: 'searches happen on phones',
     detail:
-      'Most local searches happen on a phone. If your site is slow or clunky there, people leave before they ever see what you offer.',
+      'Most people looking for what you do are on their phone. If your site is slow or hard to use there, they’re gone before they ever see your work.',
   },
   {
     icon: Monitor,
     stat: '<2s',
-    label: 'load time',
+    label: 'page load',
     detail:
-      'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with higher spots in search.',
+      'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with better spots in search.',
   },
 ]
 
@@ -52,17 +52,17 @@ export default function DataSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 02 — Signal
+              // 02 — By the numbers
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
               A real website
               <br />
-              <span className="text-accent">is the difference.</span>
+              <span className="text-accent">pulls its weight.</span>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-            Local businesses with a professional website grow faster, get found more often,
-            and win more customers. The ones without rely on referrals and hope.
+            Local businesses with a real website grow faster, get found more often, and win
+            more customers. The ones without are leaning on referrals and luck.
           </p>
         </motion.div>
 
@@ -73,11 +73,11 @@ export default function DataSection() {
           >
             <div>
               <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                // Observation
+                // The short version
               </p>
               <p className="text-[17px] leading-relaxed text-ink-soft">
-                A well-built site puts your business right where people are already looking
-                when they need someone to call.
+                A well-built website puts your business right where people are already
+                looking when they need someone to call.
               </p>
             </div>
             <Link

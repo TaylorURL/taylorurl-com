@@ -5,8 +5,8 @@ import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
 
 const HERO_META = [
-  { k: 'Region', v: 'Baytown — Houston, TX' },
-  { k: 'Operator', v: 'Trenton Taylor' },
+  { k: 'Based in', v: 'Baytown, TX' },
+  { k: 'Built by', v: 'Trenton Taylor' },
 ]
 
 const AVATAR_INITIALS = ['MR', 'JM', 'SC', 'DK']
@@ -37,13 +37,13 @@ export default function HeroSection() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
               <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
             </span>
-            Online — Baytown, TX
+            Open for new projects
           </span>
           <span className="hidden sm:inline">·</span>
           <span>TaylorURL LLC</span>
           <span className="hidden sm:inline">·</span>
-          <span>v5 — 2026</span>
-          <span className="ml-auto hidden sm:inline">// 00 — Index</span>
+          <span>Baytown, TX</span>
+          <span className="ml-auto hidden sm:inline">Home</span>
         </motion.div>
 
         {/* Headline grid */}
@@ -55,7 +55,7 @@ export default function HeroSection() {
               transition={{ duration: 0.55, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
               className="text-[clamp(2.7rem,7.4vw,6.2rem)] font-semibold leading-[0.95] tracking-tightest text-ink"
             >
-              Custom websites
+              Real websites
               <br />
               for local{' '}
               <TypingRotator />
@@ -67,10 +67,10 @@ export default function HeroSection() {
               transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
               className="mt-10 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
             >
-              I&apos;m Trenton — I build websites for small businesses around Baytown, Mont
-              Belvieu, Pasadena, Deer Park, La Porte, and the greater Houston area.
-              Custom-built to help you get found on Google, look professional, and bring in
-              more customers. You work with me directly, every step of the way.
+              I&apos;m Trenton. I build custom websites for local businesses around Baytown,
+              Mont Belvieu, Pasadena, Deer Park, La Porte, and the greater Houston area —
+              the kind that show up on Google, look like you know what you&apos;re doing,
+              and bring in real customers. You talk to me directly. No agency, no runaround.
             </motion.p>
 
             <motion.div
@@ -113,11 +113,11 @@ export default function HeroSection() {
               </div>
               <div className="text-[13px] text-ink-soft">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                  Operating contract
+                  What you get
                 </p>
                 <p>
-                  <span className="font-semibold text-ink">50+</span> local businesses, one
-                  operator, zero handoffs.
+                  <span className="font-semibold text-ink">50+</span> local businesses
+                  served. One person to call. No handoffs.
                 </p>
               </div>
             </motion.div>
@@ -136,7 +136,7 @@ export default function HeroSection() {
                 aria-hidden
                 className="absolute -top-px left-4 bg-bg px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
               >
-                Spec sheet
+                The basics
               </span>
               <dl className="grid grid-cols-[auto_1fr] gap-x-6 gap-y-2.5 font-mono text-[11px] uppercase tracking-[0.18em]">
                 {HERO_META.map(item => (
@@ -157,8 +157,8 @@ export default function HeroSection() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="mt-16 flex items-center justify-between border-t border-hair pt-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
         >
-          <span>Scroll — 06 sections</span>
-          <span className="hidden sm:inline">A real person · a direct line · craft you can feel</span>
+          <span>Scroll to keep reading</span>
+          <span className="hidden sm:inline">A real person · a direct line · work you can be proud of</span>
           <span className="text-accent">↓</span>
         </motion.div>
       </div>

@@ -42,7 +42,7 @@ export default function NotFound() {
         <div>
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
-            // Signal lost — 404
+            // Page not found — 404
           </p>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -68,8 +68,8 @@ export default function NotFound() {
             transition={{ delay: 0.18, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-soft"
           >
-            This page does not exist. Squash a few bugs while you&apos;re here, or head
-            back to safe terrain.
+            This page doesn&apos;t exist. Catch a few bugs while you&apos;re here, or head
+            back to the home page.
           </motion.p>
 
           <motion.div
@@ -103,7 +103,7 @@ export default function NotFound() {
         >
           <div className="border border-hair p-5">
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-              <span>// Debugger</span>
+              <span>// Bug catcher</span>
               <span className="text-accent">
                 Caught · <span className="font-semibold text-ink">{String(score).padStart(2, '0')}</span>
               </span>
@@ -127,7 +127,7 @@ export default function NotFound() {
               </motion.button>
             </div>
             <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-              Click the bug to debug
+              Click the bug to catch it
             </p>
           </div>
         </motion.div>

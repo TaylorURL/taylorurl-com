@@ -14,7 +14,7 @@ export default function HowItWorksSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 04 — Process
+              // 04 — How it works
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               How it works
@@ -24,7 +24,7 @@ export default function HowItWorksSection() {
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
             From your first message to a live website. No drawn-out meetings, no confusing
-            paperwork. One operator, one direct line, one clean handoff.
+            paperwork. One person to talk to and a clean handoff at the end.
           </p>
         </motion.div>
 

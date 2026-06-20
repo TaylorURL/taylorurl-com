@@ -13,7 +13,7 @@ export default function Home() {
     <div>
       <Seo
         path="/"
-        description="Baytown, TX website designer building custom websites for shops, restaurants, trades, and local pros across the Houston area. Get found on Google."
+        description="Baytown, TX web designer building custom websites for shops, restaurants, trades, and local pros across the Houston area. Show up on Google. Bring in more customers."
       />
       <div id="hero">
         <HeroSection />

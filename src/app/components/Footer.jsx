@@ -42,7 +42,7 @@ export default function Footer() {
             <Link to="/" className="mb-8 inline-block">
               <img
                 src="/images/TaylorURL-Logo.png"
-                alt="TaylorURL — websites for small businesses in Baytown, TX"
+                alt="TaylorURL — custom websites for local businesses in Baytown, TX"
                 width="180"
                 height="180"
                 loading="lazy"
@@ -53,7 +53,7 @@ export default function Footer() {
             </Link>
             <p className="mb-8 text-[15px] leading-relaxed text-ink-soft">
               Custom websites for shops, restaurants, trades, contractors, and independent
-              pros across Baytown, Houston, and the surrounding Texas communities. Built and
+              pros around Baytown, Houston, and the rest of Southeast Texas. Built and
               looked after by one person, with a direct line you can actually reach.
             </p>
             <div className="space-y-3">
@@ -149,7 +149,7 @@ export default function Footer() {
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
             <p className="mt-5 text-[13px] leading-relaxed text-ink-mute">
-              Send a note, get a straight answer within 24 hours.
+              Send a note. You’ll hear back within 24 hours.
             </p>
           </div>
         </div>
@@ -157,7 +157,7 @@ export default function Footer() {
         {/* Monumental wordmark band */}
         <div className="mb-16 sm:mb-20">
           <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-            Service area
+            Working with businesses in
           </p>
           <div
             aria-hidden="true"
@@ -187,7 +187,7 @@ export default function Footer() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            All systems nominal
+            All sites up and running
           </Link>
         </div>
       </motion.div>

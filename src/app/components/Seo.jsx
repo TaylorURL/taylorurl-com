@@ -3,10 +3,10 @@ import { BRAND_NAME } from '@constants/navigation'
 
 const BASE_URL = 'https://taylorurl.com'
 const DEFAULT_IMAGE = `${BASE_URL}/images/TaylorURL-Logo.png`
-const DEFAULT_IMAGE_ALT = 'TaylorURL — websites for small businesses in Baytown, TX'
+const DEFAULT_IMAGE_ALT = 'TaylorURL — custom websites for local businesses in Baytown, TX'
 const DEFAULT_HOME_TITLE = 'Small Business Websites in Baytown, TX | TaylorURL LLC'
 const DEFAULT_DESCRIPTION =
-  'Baytown, TX website designer building custom small business websites for shops, restaurants, trades, and local pros across the Houston area.'
+  'Baytown, TX web designer building custom websites for shops, restaurants, trades, and local pros across the Houston area. Show up on Google. Bring in more customers.'
 const TITLE_SUFFIX = ` | ${BRAND_NAME}`
 
 /**

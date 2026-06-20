@@ -23,15 +23,15 @@ export default function FinalCtaSection() {
       >
         <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
           <span className="h-px w-8 bg-accent" />
-          // 05 — Contact
+          // 05 — Let&apos;s talk
           <span className="h-px w-8 bg-accent" />
         </p>
         <h2 className="mx-auto max-w-4xl text-[clamp(2.4rem,7vw,5.6rem)] font-semibold leading-[0.98] tracking-tightest text-ink">
           Ready to <span className="text-accent">get started</span>?
         </h2>
         <p className="mx-auto mt-8 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]">
-          I handle the technical headaches — keeping your site online, fast, and secure.
-          Tell me about your business and what you need.
+          I take care of the tech side — keeping your site online, fast, and safe. You just
+          tell me about the business and what you need.
         </p>
         <div className="mt-12 flex flex-wrap justify-center gap-4">
           <Link
@@ -50,7 +50,7 @@ export default function FinalCtaSection() {
           </a>
         </div>
         <p className="mx-auto mt-12 max-w-md font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-          Reply within 24 hours · No sales pitch · Straight answers
+          Reply within 24 hours · No sales pitch · Honest answers
         </p>
       </motion.div>
     </section>

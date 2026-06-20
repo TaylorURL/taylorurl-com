@@ -12,10 +12,10 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 const INCLUDED_ITEMS = [
   'Custom website design',
   'Works on every device',
-  'Website hosting',
+  'Hosting taken care of',
   'Regular updates and fixes',
   'Watched around the clock',
-  'Bug fixes',
+  'Quick to spot and fix issues',
   'Quick page loads',
   'Daily backups',
   'Content updates',
@@ -26,12 +26,12 @@ const CONTACT_STEPS = [
   {
     title: 'First call',
     description:
-      'You walk me through the business. I ask the questions I need to plan the work and give you a straight answer.',
+      'You walk me through the business. I ask the questions I need to plan the work and give you an honest answer.',
   },
   {
     title: 'Clear plan',
     description:
-      'You get a written plan: what gets built, how long it takes, what is included, and what happens after launch.',
+      'You get a written plan: what gets built, how long it takes, what’s included, and what happens after launch.',
   },
   {
     title: 'Build and go live',
@@ -91,7 +91,7 @@ ${formData.message}
     `.trim()
 
     window.location.href = `mailto:${SALES_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    toast('Opening your email. I will get back to you within 24 hours.')
+    toast('Opening your email. I’ll get back to you within 24 hours.')
   }
 
   const handleChange = e => {
@@ -105,8 +105,8 @@ ${formData.message}
   return (
     <div>
       <Seo
-        title="Contact a Baytown Website Designer"
-        description="Tell me about your Baytown or Houston-area business and what you need from a website. I get back to you within 24 hours."
+        title="Contact a Baytown Web Designer"
+        description="Tell me about your Baytown or Houston-area business and what you need from a website. I get back to you within 24 hours, with an honest answer."
         path="/contact"
         schema={[
           breadcrumbSchema([
@@ -122,9 +122,9 @@ ${formData.message}
         ]}
       />
       <PageHero
-        eyebrow="// 01 — Transmission"
+        eyebrow="// 01 — Get in touch"
         title="Let's talk about your website."
-        description="Tell me about your Baytown or Houston-area business. I get back to you within 24 hours, with a straight answer."
+        description="Tell me about your Baytown or Houston-area business. I get back within 24 hours, with an honest answer — no sales pitch."
       />
 
       <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
@@ -138,13 +138,13 @@ ${formData.message}
               <div>
                 <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                   <span className="h-px w-8 bg-accent" />
-                  // Channel
+                  // Get in touch
                 </p>
                 <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                   Start the conversation.
                 </h2>
                 <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
-                  New site, redo of an old one, or taking over a site someone else built —
+                  New site, redoing an old one, or taking over a site someone else built —
                   tell me about the business and what needs to change.
                 </p>
               </div>
@@ -176,7 +176,7 @@ ${formData.message}
                   <Clock className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
                     <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                      Response window
+                      Reply time
                     </p>
                     <p className="text-[14px] text-ink-paper">Within 24 hours</p>
                   </div>
@@ -185,7 +185,7 @@ ${formData.message}
 
               <div>
                 <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                  // After you send it
+                  // What happens next
                 </p>
                 <ol className="space-y-5 border-l border-accent/40 pl-5">
                   {CONTACT_STEPS.map((step, i) => (
@@ -209,10 +209,10 @@ ${formData.message}
             >
               <div className="mb-8 flex items-baseline justify-between border-b border-hair-paper pb-5">
                 <h3 className="text-[20px] font-semibold tracking-tight text-ink-paper">
-                  Project brief
+                  Tell me about it
                 </h3>
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                  Form / Inquiry-01
+                  Contact form
                 </span>
               </div>
               <form onSubmit={handleSubmit} className="space-y-7">
@@ -292,9 +292,9 @@ ${formData.message}
                       <option value="">Pick one</option>
                       <option value="new-website">A brand-new website</option>
                       <option value="redesign">Redo my current site</option>
-                      <option value="web-app">An online tool or booking system</option>
+                      <option value="web-app">Online booking or a custom tool</option>
                       <option value="optimization">Make my site faster</option>
-                      <option value="maintenance">Ongoing care for my site</option>
+                      <option value="maintenance">Take over hosting and care</option>
                     </select>
                   </div>
                 </div>
@@ -331,7 +331,7 @@ ${formData.message}
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </button>
                   <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                    Opens your email client
+                    Opens your email app
                   </p>
                 </div>
               </form>
@@ -353,17 +353,16 @@ ${formData.message}
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // Included
+                // What&apos;s included
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
-                Everything standard
+                What comes
                 <br />
                 <span className="text-accent">with every project.</span>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              No surprise charges for the basics. Ten things that ship with every build,
-              every time.
+              No surprise add-ons for the basics. Ten things that come standard, every time.
             </p>
           </motion.div>
           <div className="mt-12 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-5">
