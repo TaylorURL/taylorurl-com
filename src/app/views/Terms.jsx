@@ -60,7 +60,8 @@ export default function Terms() {
       <LegalPage
         title="Terms of Service"
         description="Please read these terms carefully before using my services."
-        effectiveDate="Effective Date: February 1, 2026"
+        eyebrow="// 01 — Terms"
+        effectiveDate="Effective · February 1, 2026"
         sections={SECTIONS}
         footer={{
           heading: 'Contact',
