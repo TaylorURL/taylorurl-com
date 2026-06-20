@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, Mail, Send, X } from 'lucide-react'
-import { BTN_PRIMARY, INPUT } from '@constants/ui'
+import { ArrowUpRight, Check, X } from 'lucide-react'
+import { INPUT } from '@constants/ui'
 
 const STORAGE_KEY = 'taylorurl_email_popup_v1'
 const SHOW_AFTER_MS = 6000
@@ -31,15 +31,15 @@ const markPopupSeen = reason => {
 /**
  * Site-wide email capture modal: appears ~6s after mount on first visit,
  * collects name + email, posts to the `collect-email` edge function, and
- * remembers (via localStorage) once a visitor has submitted or dismissed so it
- * never nags again. Self-contained — no provider/context needed.
+ * remembers (via localStorage) once a visitor has submitted or dismissed so
+ * it never nags again. Self-contained — no provider/context needed.
  */
 export default function EmailCapturePopup() {
   const [isOpen, setIsOpen] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [emailError, setEmailError] = useState('')
-  const [status, setStatus] = useState('idle') // 'idle' | 'submitting' | 'success' | 'error'
+  const [status, setStatus] = useState('idle')
   const [serverError, setServerError] = useState('')
 
   const dialogRef = useRef(null)
@@ -52,16 +52,13 @@ export default function EmailCapturePopup() {
     setIsOpen(false)
   }, [])
 
-  // Schedule the one-time appearance ~6 seconds after mount.
   useEffect(() => {
     if (typeof window === 'undefined') return
     if (hasSeenPopup()) return
-
     const timer = setTimeout(() => setIsOpen(true), SHOW_AFTER_MS)
     return () => clearTimeout(timer)
   }, [])
 
-  // Focus management + Escape handling + scroll lock while open.
   useEffect(() => {
     if (!isOpen) return
 
@@ -96,7 +93,6 @@ export default function EmailCapturePopup() {
     }
 
     document.addEventListener('keydown', handleKeyDown)
-
     return () => {
       clearTimeout(focusTimer)
       document.removeEventListener('keydown', handleKeyDown)
@@ -105,13 +101,9 @@ export default function EmailCapturePopup() {
     }
   }, [isOpen, close])
 
-  // After a successful submit, briefly show the thank-you then close.
   useEffect(() => {
     if (status !== 'success') return
-    successCloseTimerRef.current = setTimeout(
-      () => close('submitted'),
-      SUCCESS_AUTO_CLOSE_MS
-    )
+    successCloseTimerRef.current = setTimeout(() => close('submitted'), SUCCESS_AUTO_CLOSE_MS)
     return () => clearTimeout(successCloseTimerRef.current)
   }, [status, close])
 
@@ -179,7 +171,7 @@ export default function EmailCapturePopup() {
             type="button"
             aria-label="Close email signup"
             onClick={() => close('dismissed')}
-            className="absolute inset-0 cursor-default bg-gray-950/55 backdrop-blur-sm"
+            className="absolute inset-0 cursor-default bg-bg/70 backdrop-blur-sm"
           />
 
           <motion.div
@@ -188,56 +180,66 @@ export default function EmailCapturePopup() {
             aria-modal="true"
             aria-labelledby="email-popup-title"
             aria-describedby="email-popup-description"
-            initial={{ opacity: 0, y: 24, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 16, scale: 0.97 }}
-            transition={{ duration: 0.22, ease: 'easeOut' }}
-            className="relative w-full max-w-md overflow-hidden rounded-2xl border border-gray-200 bg-surface-overlay p-6 shadow-2xl sm:p-8"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 16 }}
+            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            className="relative w-full max-w-md overflow-hidden rounded-sm border border-hair-paper-strong bg-paper p-7 sm:p-9"
           >
+            <span
+              aria-hidden
+              className="absolute -top-px left-7 bg-paper px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
+            >
+              // Transmission
+            </span>
             <button
               type="button"
               onClick={() => close('dismissed')}
               aria-label="Close email signup"
-              className="absolute right-4 top-4 rounded-lg p-1.5 text-gray-400 transition hover:bg-gray-100 hover:text-gray-700"
+              className="absolute right-4 top-4 rounded-sm p-1.5 text-paper-faint transition hover:bg-ink-paper/5 hover:text-ink-paper"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </button>
 
             {status === 'success' ? (
-              <div className="py-4 text-center">
-                <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-                  <CheckCircle2 className="h-7 w-7 text-green-500" />
+              <div className="py-6 text-center">
+                <div className="mx-auto mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm border border-accent/30 bg-accent/5">
+                  <Check className="h-5 w-5 text-accent" strokeWidth={2} />
                 </div>
-                <h2 id="email-popup-title" className="mb-2 text-xl font-bold text-gray-900">
-                  You're on the list
+                <h2
+                  id="email-popup-title"
+                  className="mb-3 text-2xl font-semibold tracking-tightest text-ink-paper"
+                >
+                  Locked in.
                 </h2>
-                <p id="email-popup-description" className="text-sm text-gray-600">
+                <p id="email-popup-description" className="text-[15px] text-paper-soft">
                   Thanks for signing up — keep an eye on your inbox.
                 </p>
               </div>
             ) : (
               <>
-                <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                  <Mail className="h-5 w-5 text-blue-600" strokeWidth={1.75} />
-                </div>
                 <h2
                   id="email-popup-title"
-                  className="mb-2 text-2xl font-bold tracking-tight text-gray-900"
+                  className="mb-3 text-3xl font-semibold leading-[1.05] tracking-tightest text-ink-paper"
                 >
-                  Get updates from <span className="logo-wave-dark">TaylorURL</span>
+                  Notes for owners.{' '}
+                  <span className="text-accent">From me to you.</span>
                 </h2>
-                <p id="email-popup-description" className="mb-6 text-sm text-gray-600">
-                  Short, useful notes on getting found online and turning visitors into
-                  customers. Sent only when there's something worth saying.
+                <p
+                  id="email-popup-description"
+                  className="mb-7 text-[15px] leading-relaxed text-paper-soft"
+                >
+                  Short, useful field notes on getting found online and turning visitors into
+                  customers. Sent only when there&apos;s something worth saying.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                   <div>
                     <label
                       htmlFor="email-popup-name"
-                      className="mb-1.5 block text-sm font-medium text-gray-900"
+                      className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
                     >
-                      Name <span className="font-normal text-gray-400">(optional)</span>
+                      Name <span className="text-paper-faint">— optional</span>
                     </label>
                     <input
                       id="email-popup-name"
@@ -254,7 +256,7 @@ export default function EmailCapturePopup() {
                   <div>
                     <label
                       htmlFor="email-popup-email"
-                      className="mb-1.5 block text-sm font-medium text-gray-900"
+                      className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
                     >
                       Email
                     </label>
@@ -275,7 +277,7 @@ export default function EmailCapturePopup() {
                     {emailError && (
                       <p
                         id="email-popup-email-error"
-                        className="mt-1.5 text-sm text-red-500"
+                        className="mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-red-600"
                       >
                         {emailError}
                       </p>
@@ -285,7 +287,7 @@ export default function EmailCapturePopup() {
                   {serverError && (
                     <p
                       role="alert"
-                      className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+                      className="rounded-sm border border-red-300 bg-red-50 px-3 py-2 text-[13px] text-red-700"
                     >
                       {serverError}
                     </p>
@@ -295,17 +297,19 @@ export default function EmailCapturePopup() {
                     <button
                       type="button"
                       onClick={() => close('dismissed')}
-                      className="text-sm font-medium text-gray-500 transition hover:text-gray-700"
+                      className="font-mono text-[11px] uppercase tracking-[0.18em] text-paper-faint transition hover:text-ink-paper"
                     >
                       No thanks
                     </button>
                     <button
                       type="submit"
                       disabled={status === 'submitting'}
-                      className={`${BTN_PRIMARY} w-full sm:w-auto ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
+                      className={`group inline-flex items-center justify-center gap-2.5 rounded-sm bg-accent px-6 py-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98] ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
                     >
                       {status === 'submitting' ? 'Signing you up…' : 'Join the list'}
-                      {status !== 'submitting' && <Send className="h-4 w-4" />}
+                      {status !== 'submitting' && (
+                        <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                      )}
                     </button>
                   </div>
                 </form>
