@@ -3,15 +3,16 @@
  * a matter of appending one object — the page maps over the array, so no view
  * changes are required.
  *
+ * Previews are rendered as live iframes pointed at `url`, so each card shows
+ * the current production version of the site on every page load. No saved
+ * screenshot or build-time snapshot is involved.
+ *
  * Fields:
- * - `name`         Display name used as the card heading and image alt.
- * - `url`          Live site URL. Opens in a new tab from the card link.
+ * - `name`         Display name used as the card heading and iframe title.
+ * - `url`          Live site URL. Used both as the iframe src (with a
+ *                  per-page-load cache-buster) and as the card's outbound link.
  * - `displayUrl`   Hostname shown in the browser-chrome bar.
  * - `description`  One- or two-sentence pitch summarising the project.
- * - `image`        Path (under /public) to the captured 1280×800 screenshot
- *                  rendered inside the browser-chrome frame.
- * - `accent`       Tailwind gradient classes for the placeholder swatch shown
- *                  before the screenshot loads (and if it fails).
  */
 export const PORTFOLIO_PROJECTS = [
   {
@@ -20,8 +21,6 @@ export const PORTFOLIO_PROJECTS = [
     displayUrl: 'baytowngocarts.com',
     description:
       'A modern marketing site for a Baytown go-kart track — hours, pricing, group bookings, and directions in a layout built to convert local search traffic into walk-ins.',
-    image: '/images/portfolio/baytowngocarts.png',
-    accent: 'from-blue-500/30 via-indigo-500/20 to-slate-900/40',
   },
   {
     name: 'DeluxFit by Angie',
@@ -29,8 +28,6 @@ export const PORTFOLIO_PROJECTS = [
     displayUrl: 'deluxfitbyangie.com',
     description:
       'A polished brand site for a personal trainer — services, pricing, and a direct booking path designed to convert first-time visitors into scheduled sessions.',
-    image: '/images/portfolio/deluxfitbyangie.png',
-    accent: 'from-rose-500/30 via-fuchsia-500/20 to-slate-900/40',
   },
   {
     name: 'SETX Football',
@@ -38,8 +35,6 @@ export const PORTFOLIO_PROJECTS = [
     displayUrl: 'setxfootball.org',
     description:
       'A local youth sports league site for Southeast Texas — season sign-ups, schedules, and shirt-order management in one streamlined hub for parents and coaches.',
-    image: '/images/portfolio/setxfootball.png',
-    accent: 'from-green-500/30 via-lime-500/20 to-slate-900/40',
   },
   {
     name: 'Dickinson Bayou Fleeting',
@@ -47,7 +42,5 @@ export const PORTFOLIO_PROJECTS = [
     displayUrl: 'dickinsonbayoufleeting.com',
     description:
       'A professional site for a Galveston Bay barge fleeting company — services, fleet capacity, and contact details built to establish credibility with maritime clients.',
-    image: '/images/portfolio/dickinsonbayoufleeting.png',
-    accent: 'from-cyan-500/30 via-sky-500/20 to-slate-900/40',
   },
 ]
