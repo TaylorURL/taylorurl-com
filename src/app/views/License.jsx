@@ -38,11 +38,15 @@ const SECTIONS = [
   {
     title: 'Restrictions',
     content: (
-      <div className="space-y-4">
+      <div className="space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
         {RESTRICTIONS.map(item => (
-          <div key={item.title} className="rounded-lg border border-gray-200 p-4">
-            <h3 className="font-medium text-gray-900">{item.title}</h3>
-            <p className="mt-2 text-sm text-gray-600">{item.description}</p>
+          <div key={item.title} className="bg-paper p-5">
+            <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+              {item.title}
+            </h3>
+            <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
+              {item.description}
+            </p>
           </div>
         ))}
       </div>
