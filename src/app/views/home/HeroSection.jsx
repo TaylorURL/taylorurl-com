@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
-import BaytownMap from './BaytownMap'
+import BaytownMap, { HERO_INTRO_END_S } from './BaytownMap'
 
 const HERO_META = [
   { k: 'Based in', v: 'Baytown, TX' },
@@ -12,11 +12,27 @@ const HERO_META = [
 
 const AVATAR_INITIALS = ['MR', 'JM', 'SC', 'DK']
 
+const EASE_REVEAL = [0.22, 1, 0.36, 1]
+
 export default function HeroSection() {
+  const reduced = useReducedMotion()
+
+  // Hero copy waits for the BaytownMap intro to settle before revealing. With
+  // reduced motion, the offset collapses and everything is shown at once.
+  const after = step => (reduced ? 0 : HERO_INTRO_END_S + step)
+
   return (
-    <section className="relative isolate flex min-h-[100svh] items-stretch overflow-hidden bg-bg pt-24 text-ink">
+    <section className="hero-surface relative isolate flex min-h-[100svh] items-stretch overflow-hidden pt-24">
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <BaytownMap />
+
+      {/* Soft scrim behind the headline column so the bolder map stays
+          readable under the type without dimming the right side. */}
+      <div
+        className="pointer-events-none absolute inset-y-0 left-0 right-[35%] bg-gradient-to-r from-[color:var(--bg)]/65 via-[color:var(--bg)]/30 to-transparent"
+        aria-hidden="true"
+      />
+
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[640px] w-[1100px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-accent/15 blur-[160px]"
         aria-hidden="true"
@@ -31,7 +47,7 @@ export default function HeroSection() {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+          transition={{ duration: 0.4, delay: after(0), ease: EASE_REVEAL }}
           className="flex flex-wrap items-center gap-x-6 gap-y-2 border-b border-hair pb-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
         >
           <span className="flex items-center gap-2 text-accent">
@@ -54,7 +70,7 @@ export default function HeroSection() {
             <motion.h1
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.55, delay: after(0.1), ease: EASE_REVEAL }}
               className="text-[clamp(2.7rem,7.4vw,6.2rem)] font-semibold leading-[0.95] tracking-tightest text-ink"
             >
               Real websites
@@ -66,7 +82,7 @@ export default function HeroSection() {
             <motion.p
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.55, delay: after(0.25), ease: EASE_REVEAL }}
               className="mt-10 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
             >
               I&apos;m Trenton. I build custom websites for local businesses around Baytown,
@@ -78,7 +94,7 @@ export default function HeroSection() {
             <motion.div
               initial={{ opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.55, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              transition={{ duration: 0.55, delay: after(0.4), ease: EASE_REVEAL }}
               className="mt-10 flex flex-wrap items-center gap-4"
             >
               <Link
@@ -100,14 +116,14 @@ export default function HeroSection() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.5 }}
+              transition={{ duration: 0.5, delay: after(0.6) }}
               className="mt-12 flex items-center gap-5 border-l-2 border-accent/60 pl-5"
             >
               <div className="flex -space-x-2">
                 {AVATAR_INITIALS.map(i => (
                   <div
                     key={i}
-                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-hair-strong bg-surface-2 text-[10px] font-semibold uppercase tracking-[0.14em] text-ink"
+                    className="flex h-9 w-9 items-center justify-center rounded-sm border border-hair-strong bg-[color:var(--bg)] text-[10px] font-semibold uppercase tracking-[0.14em] text-ink"
                   >
                     {i}
                   </div>
@@ -128,15 +144,15 @@ export default function HeroSection() {
           <motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.35, ease: [0.22, 1, 0.36, 1] }}
+            transition={{ duration: 0.7, delay: after(0.5), ease: EASE_REVEAL }}
             className="hidden lg:flex lg:flex-col lg:items-end lg:gap-8"
           >
             <MockupCarousel />
 
-            <div className="relative w-full max-w-sm border border-hair p-5">
+            <div className="relative w-full max-w-sm border border-hair bg-[color:var(--bg)]/55 p-5 backdrop-blur-sm">
               <span
                 aria-hidden
-                className="absolute -top-px left-4 bg-bg px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
+                className="absolute -top-px left-4 bg-[color:var(--bg)] px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
               >
                 The basics
               </span>
@@ -156,7 +172,7 @@ export default function HeroSection() {
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.7 }}
+          transition={{ duration: 0.5, delay: after(0.85) }}
           className="mt-16 flex items-center justify-between border-t border-hair pt-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
         >
           <span>Scroll to keep reading</span>
