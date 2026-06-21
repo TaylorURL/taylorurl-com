@@ -115,10 +115,12 @@ export default function NotFound() {
 
         {/* Bug catching panel */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          ref={panelRef}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.34, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative w-full max-w-[320px] justify-self-center lg:justify-self-end"
+          style={{ transform: panelTransform }}
+          className="relative w-full max-w-[320px] justify-self-center will-change-transform lg:justify-self-end"
         >
           <div className="border border-hair p-5">
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
