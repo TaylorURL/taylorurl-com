@@ -1,7 +1,7 @@
 {
   "name": "taylorurl",
   "private": true,
-  "version": "5.2.57",
+  "version": "5.2.58",
   "type": "module",
   "scripts": {
     "dev": "vite",
