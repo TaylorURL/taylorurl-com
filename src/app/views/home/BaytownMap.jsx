@@ -416,7 +416,7 @@ export default function BaytownMap() {
             outside this group and stays rock-steady. */}
         <motion.g
           {...ambientMotion}
-          style={{ transformOrigin: '50% 50%', transformBox: 'fill-box' }}
+          style={{ transformOrigin: '50% 50%', transformBox: 'view-box' }}
         >
 
         {/* GRATICULE — faint 0.1° lat/lng lines for blueprint texture. */}
