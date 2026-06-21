@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Phone } from 'lucide-react'
-import { PHONE_NUMBER } from '@constants/navigation'
+import { ArrowUpRight } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 
 export default function FinalCtaSection() {
