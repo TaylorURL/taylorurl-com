@@ -36,9 +36,9 @@ export const PORTFOLIO_PROJECTS = [
       'A regional management tool for a concrete ready-mix operation. Tracks assets, personnel, productivity, and efficiency so the team can run the yard from one screen.',
   },
   {
-    name: 'Baytown Go Carts',
-    url: 'https://baytowngocarts.com',
-    displayUrl: 'baytowngocarts.com',
+    name: 'Baytown Go Karts',
+    url: 'https://baytowngokarts.com',
+    displayUrl: 'baytowngokarts.com',
     tagline: 'Local recreation · Conversion site',
     description:
       'A modern site for a Baytown go-kart track. Hours, pricing, group bookings, and directions — laid out to turn people searching for fun nearby into walk-ins through the gate.',
