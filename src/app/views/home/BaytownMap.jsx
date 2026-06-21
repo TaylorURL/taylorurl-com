@@ -393,6 +393,42 @@ export default function BaytownMap() {
           opacity="0.4"
         />
 
+        {/* GEOGRAPHIC LAYER — wrapped in an ambient drift so the whole map
+            breathes/parallaxes slowly after the intro settles. Chrome sits
+            outside this group and stays rock-steady. */}
+        <motion.g
+          {...ambientMotion}
+          style={{ transformOrigin: '50% 50%', transformBox: 'fill-box' }}
+        >
+
+        {/* GRATICULE — faint 0.1° lat/lng lines for blueprint texture. */}
+        <motion.g {...fadeIntro(0, 0.8)}>
+          {GRATICULE_LATS.map((y, i) => (
+            <line
+              key={`gr-lat-${i}`}
+              x1="0"
+              y1={y}
+              x2="1200"
+              y2={y}
+              style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
+              strokeWidth="0.5"
+              strokeDasharray="2 6"
+            />
+          ))}
+          {GRATICULE_LNGS.map((x, i) => (
+            <line
+              key={`gr-lng-${i}`}
+              x1={x}
+              y1="0"
+              x2={x}
+              y2={VIEWBOX_HEIGHT}
+              style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
+              strokeWidth="0.5"
+              strokeDasharray="2 6"
+            />
+          ))}
+        </motion.g>
+
         {/* WATER — Galveston + Trinity Bay fill, wave texture, light sheen. */}
         <motion.g {...fadeIntro(0, 0.7)}>
           <path d={BAY_FILL} fill="url(#bay-fill)" />
@@ -404,7 +440,22 @@ export default function BaytownMap() {
             fill="url(#wave-pattern)"
             mask="url(#bay-clip)"
           />
-          <path d={BAY_FILL} fill="url(#bay-sheen)" />
+          {/* Sheen pulses subtly to suggest water shimmer. */}
+          <motion.path
+            d={BAY_FILL}
+            fill="url(#bay-sheen)"
+            animate={reduced ? undefined : { opacity: [0.65, 1, 0.65] }}
+            transition={
+              reduced
+                ? undefined
+                : {
+                    duration: 7.5,
+                    delay: VEHICLE_DELAY,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }
+            }
+          />
         </motion.g>
 
         {/* COASTLINE — the real shoreline, drawing itself in first. */}
