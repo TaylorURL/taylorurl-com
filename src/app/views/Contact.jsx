@@ -9,6 +9,7 @@ import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { INPUT } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
+import { hasMinLength, isValidEmail } from '@utils/validation'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
