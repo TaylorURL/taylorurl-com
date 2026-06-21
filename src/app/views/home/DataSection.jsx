@@ -1,20 +1,9 @@
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Monitor, Smartphone, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { REVENUE_GROWTH_DATA } from '@data/home'
-
-const TOOLTIP_STYLE = {
-  backgroundColor: '#0a0a0a',
-  border: '1px solid rgba(255,255,255,0.18)',
-  borderRadius: '2px',
-  color: '#ffffff',
-  fontFamily: 'Geist Mono, ui-monospace, monospace',
-  fontSize: '11px',
-  letterSpacing: '0.05em',
-  textTransform: 'uppercase',
-}
+import RevenueGrowthChart from './RevenueGrowthChart'
 
 const FACTS = [
   {
