@@ -121,13 +121,166 @@ export const COASTLINE = {
 }
 
 // Highway alignments. Each value is an array of projected polyline paths
-// (a route can be several disjoint chains after simplification).
+// (a route can be several disjoint chains after simplification). Lat/lng
+// waypoints are real and projected through the same Mercator transform so
+// every alignment is internally consistent with the coastline and the bay.
+//
+// I-10 spans San Antonio → Houston → Beaumont. The visible Houston-Baytown
+// segment lives at index 0 (and powers car/glow/lane-dash effects); the long
+// regional extensions sit at indexes 1 and 2 so they draw with a slight
+// stagger but read as one continuous artery exiting the frame at the true
+// bearing of San Antonio (W) and Beaumont (E).
 export const ROADS = {
   i10: [
-    'M 744.6 267.7 L 733.6 268.0 L 708.5 280.1 L 633.5 294.4 L 615.4 295.3 L 587.3 306.8 L 582.2 306.8 L 570.1 301.1 L 564.9 301.0 L 552.9 305.7 L 542.0 307.8 L 508.3 322.1 L 474.0 331.6 L 441.9 332.5 L 422.0 331.1 L 400.4 332.7 L 382.0 328.3 L 365.0 328.4 L 353.4 326.4',
-    'M 552.4 306.0 L 567.5 300.9 L 581.6 306.9 L 587.5 307.0 L 615.6 295.5 L 633.8 294.5 L 708.8 280.2 L 735.3 267.8 L 750.9 267.9 L 860.4 256.9 L 918.1 245.2 L 1027.7 243.3 L 1111.6 246.9 L 1265.3 260.2 L 1315.3 260.0',
-    'M 350.7 326.1 L 364.3 328.6 L 382.4 328.6 L 400.1 332.9 L 421.9 331.4 L 441.9 332.7 L 472.2 332.0',
-    'M 880.0 252.6 L 855.6 257.2 L 744.6 267.7',
+    projectPath([
+      [-95.50, 29.78],
+      [-95.43, 29.78],
+      [-95.36, 29.78],
+      [-95.27, 29.785],
+      [-95.20, 29.79],
+      [-95.115, 29.79],
+      [-95.04, 29.78],
+      [-94.95, 29.79],
+      [-94.88, 29.83],
+    ]),
+    // Western extension: Beltway 8 W → Katy → Brookshire → Sealy → Columbus
+    // → Schulenburg → Luling → Seguin → San Antonio.
+    projectPath([
+      [-95.50, 29.78],
+      [-95.55, 29.78],
+      [-95.65, 29.79],
+      [-95.82, 29.79],
+      [-95.95, 29.79],
+      [-96.16, 29.78],
+      [-96.55, 29.71],
+      [-97.00, 29.71],
+      [-97.40, 29.70],
+      [-97.65, 29.68],
+      [-97.97, 29.57],
+      [-98.50, 29.42],
+    ]),
+    // Eastern extension: Mont Belvieu → Wallisville → Hankamer → Winnie →
+    // Hamshire → Beaumont.
+    projectPath([
+      [-94.88, 29.83],
+      [-94.78, 29.85],
+      [-94.65, 29.85],
+      [-94.45, 29.83],
+      [-94.30, 29.90],
+      [-94.20, 30.00],
+      [-94.10, 30.08],
+    ]),
+  ],
+  // I-45 — Dallas → Conroe → Houston → Galveston. Crosses I-10 at the
+  // downtown Houston stack interchange. The split mirrors I-10's: index 0 is
+  // the in-frame Houston spine, indexes 1 and 2 are the NW (Dallas) and SE
+  // (Galveston) regional extensions.
+  i45: [
+    projectPath([
+      [-95.43, 30.07],
+      [-95.41, 29.97],
+      [-95.39, 29.88],
+      [-95.376, 29.80],
+      [-95.36, 29.76],
+      [-95.34, 29.69],
+      [-95.31, 29.59],
+      [-95.28, 29.49],
+    ]),
+    // Northwest extension toward Dallas via Conroe / Huntsville / Madisonville
+    // / Corsicana — bearing tracks the true ~21° west-of-north toward Dallas.
+    projectPath([
+      [-95.43, 30.07],
+      [-95.45, 30.16],
+      [-95.46, 30.31],
+      [-95.55, 30.72],
+      [-95.83, 30.78],
+      [-95.92, 30.95],
+      [-96.06, 31.46],
+      [-96.30, 31.78],
+      [-96.47, 32.10],
+      [-96.59, 32.38],
+      [-96.71, 32.59],
+      [-96.797, 32.7767],
+    ]),
+    // Southeast extension toward Galveston via Dickinson / La Marque /
+    // Texas City / the Causeway.
+    projectPath([
+      [-95.28, 29.49],
+      [-95.255, 29.46],
+      [-95.21, 29.41],
+      [-95.15, 29.37],
+      [-95.085, 29.37],
+      [-95.02, 29.37],
+      [-94.92, 29.34],
+      [-94.84, 29.32],
+      [-94.7977, 29.3013],
+    ]),
+  ],
+  // US-59 / I-69 — Cleveland / Lufkin to the NE; Sugar Land / Wharton /
+  // Victoria / Laredo to the SW. Crosses I-10 at the downtown Houston stack.
+  us59: [
+    // Northeast leg: Houston → Humble → New Caney → Cleveland → Livingston →
+    // Lufkin.
+    projectPath([
+      [-95.36, 29.76],
+      [-95.345, 29.815],
+      [-95.31, 29.88],
+      [-95.27, 29.96],
+      [-95.235, 30.00],
+      [-95.19, 30.12],
+      [-95.13, 30.22],
+      [-95.09, 30.34],
+      [-94.93, 30.71],
+      [-94.78, 31.10],
+      [-94.7216, 31.3382],
+    ]),
+    // Southwest leg: Houston → Bellaire → Sugar Land → Rosenberg → Wharton
+    // → Edna → Victoria.
+    projectPath([
+      [-95.36, 29.76],
+      [-95.43, 29.73],
+      [-95.49, 29.70],
+      [-95.555, 29.665],
+      [-95.6349, 29.6197],
+      [-95.74, 29.59],
+      [-95.81, 29.56],
+      [-95.97, 29.42],
+      [-96.10, 29.31],
+      [-96.51, 29.07],
+      [-97.0036, 28.8053],
+    ]),
+  ],
+  // US-290 — NW from I-610 in Houston through Jersey Village / Cypress /
+  // Waller / Hempstead / Brenham toward Austin.
+  us290: [
+    projectPath([
+      [-95.39, 29.78],
+      [-95.43, 29.81],
+      [-95.50, 29.84],
+      [-95.59, 29.875],
+      [-95.70, 29.93],
+      [-95.87, 30.04],
+      [-96.0775, 30.0966],
+      [-96.27, 30.13],
+      [-96.40, 30.17],
+      [-96.92, 30.27],
+      [-97.37, 30.27],
+      [-97.7431, 30.2672],
+    ]),
+  ],
+  // TX-288 — S from downtown Houston through the Medical Center / Pearland
+  // / Angleton / Lake Jackson to Freeport.
+  tx288: [
+    projectPath([
+      [-95.376, 29.755],
+      [-95.378, 29.69],
+      [-95.376, 29.62],
+      [-95.367, 29.55],
+      [-95.378, 29.39],
+      [-95.41, 29.18],
+      [-95.43, 29.05],
+      [-95.3597, 28.9541],
+    ]),
   ],
   i610: [
     'M 351.2 324.8 L 349.3 336.5 L 350.1 367.7 L 347.9 386.7 L 348.4 408.5 L 329.3 424.0 L 315.7 428.6 L 294.6 426.9 L 271.3 439.1 L 247.3 447.5 L 206.6 447.6 L 192.3 450.5 L 172.1 451.4 L 158.8 449.0 L 139.0 449.2 L 135.6 447.1 L 133.1 387.9 L 138.4 356.2 L 138.1 324.1 L 142.3 315.9 L 142.2 306.5 L 145.4 292.7 L 152.1 284.7 L 165.6 278.8 L 215.7 277.0 L 249.5 277.1 L 272.8 284.5 L 304.1 282.9 L 315.6 289.0 L 330.7 289.9 L 343.7 299.8 L 351.3 318.3 L 351.2 324.8',
