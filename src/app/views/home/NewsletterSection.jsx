@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { ArrowUpRight, Check } from 'lucide-react'
 import { useToast } from '@hooks/useToast'
+import { fadeInUp, staggerChild } from '@constants/animations'
 import { INPUT_DARK } from '@constants/ui'
 
 const ENDPOINT = 'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/collect-email'
@@ -60,7 +62,10 @@ export default function NewsletterSection() {
     <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
       <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
       <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
-        <div className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]">
+        <motion.div
+          {...fadeInUp}
+          className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+        >
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
@@ -76,9 +81,13 @@ export default function NewsletterSection() {
             Practical tips on getting found on Google and turning more visitors into paying
             customers. Written by me, sent only when there’s something worth saying.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center">
+        <motion.div
+          {...fadeInUp}
+          transition={{ ...fadeInUp.transition, delay: 0.08 }}
+          className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center"
+        >
           {status === 'success' ? (
             <div className="flex items-center gap-4 border border-hair-strong p-8 text-ink">
               <div className="flex h-10 w-10 items-center justify-center rounded-sm border border-accent/50 bg-accent/10">
@@ -118,16 +127,23 @@ export default function NewsletterSection() {
             </form>
           )}
           <div className="grid grid-cols-2 gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-            <div>
-              <p className="mb-2 text-accent">// How often</p>
-              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing to say.</p>
-            </div>
-            <div>
-              <p className="mb-2 text-accent">// Unsubscribing</p>
-              <p className="text-ink-soft normal-case tracking-normal">One click and you&apos;re off. No follow-up emails.</p>
-            </div>
+            {[
+              {
+                heading: '// How often',
+                body: "Monthly at most. Skipped when there’s nothing to say.",
+              },
+              {
+                heading: '// Unsubscribing',
+                body: "One click and you’re off. No follow-up emails.",
+              },
+            ].map((item, i) => (
+              <motion.div key={item.heading} {...staggerChild(i, 0.06)}>
+                <p className="mb-2 text-accent">{item.heading}</p>
+                <p className="text-ink-soft normal-case tracking-normal">{item.body}</p>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

@@ -5,7 +5,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/useToast'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
-import { slideInLeftMount, slideInRightMount } from '@constants/animations'
+import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { INPUT } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
@@ -344,10 +344,7 @@ ${formData.message}
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+            {...fadeInUp}
             className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
             <div>
@@ -367,13 +364,17 @@ ${formData.message}
           </motion.div>
           <div className="mt-12 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-5">
             {INCLUDED_ITEMS.map((item, i) => (
-              <div key={item} className="flex items-start gap-3 border-t border-hair pt-3">
+              <motion.div
+                key={item}
+                {...staggerChild(i, 0.04)}
+                className="flex items-start gap-3 border-t border-hair pt-3"
+              >
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
                   {String(i + 1).padStart(2, '0')}
                 </span>
                 <span className="flex-1 text-[14px] text-ink-soft">{item}</span>
                 <Check className="h-3.5 w-3.5 flex-shrink-0 text-accent" strokeWidth={2} />
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
