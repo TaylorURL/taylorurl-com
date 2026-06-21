@@ -3,14 +3,21 @@
  * a matter of appending one object — the page maps over the array, so no view
  * changes are required.
  *
- * Previews are rendered as live iframes pointed at `url`, so each card shows
- * the current production version of the site on every page load. No saved
- * screenshot or build-time snapshot is involved.
+ * Previews are rendered as live, non-interactive <iframe> thumbnails pointed
+ * at `url`. The iframe is rendered at a desktop-class logical width and
+ * CSS-`transform: scale()`d down to fit the card, so each card shows the
+ * current production version of the site on every page load — never a saved
+ * screenshot or build-time snapshot.
+ *
+ * Fallback: if a site refuses framing (X-Frame-Options / CSP) or the iframe
+ * load times out, the card swaps to a fresh server-rendered screenshot from
+ * thum.io with a per-page-load cache-busting query param, so the fallback
+ * also reflects the current site rather than a stale cached snapshot.
  *
  * Fields:
  * - `name`         Display name used as the card heading and iframe title.
- * - `url`          Live site URL. Used both as the iframe src (with a
- *                  per-page-load cache-buster) and as the card's outbound link.
+ * - `url`          Live site URL. Used as the iframe src, the screenshot
+ *                  fallback source, and the card's outbound link.
  * - `displayUrl`   Hostname shown in the browser-chrome bar.
  * - `description`  One- or two-sentence pitch summarising the project.
  */
