@@ -431,6 +431,7 @@ export default function Blog() {
               ))}
 
               <button
+                type="button"
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
                 aria-label="Next page"
