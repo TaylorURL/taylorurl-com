@@ -133,7 +133,7 @@ function FeaturedPost({ post }) {
               </div>
             </dl>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.article>
   )
