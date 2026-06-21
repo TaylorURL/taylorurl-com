@@ -19,6 +19,7 @@ export default function BackToTop() {
     <AnimatePresence>
       {visible && (
         <motion.button
+          type="button"
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 12 }}
