@@ -96,7 +96,7 @@ const SHIELDS = [
   { label: '225', wide: false, strong: false, ...project(-95.19, 29.726) },
   { label: 'BW 8', wide: true, strong: false, ...project(-95.165, 29.86) },
   { label: '610', wide: false, strong: false, ...project(-95.265, 29.74) },
-  { label: '99', wide: false, strong: false, ...project(-94.835, 29.78) },
+  { label: '99', wide: false, strong: false, ...project(-94.86, 29.94) },
   { label: '330', wide: false, strong: false, ...project(-94.952, 29.77) },
 ]
 

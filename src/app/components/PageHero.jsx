@@ -1,33 +1,46 @@
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { useRef } from 'react'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 /**
  * Cinematic page hero used by every secondary view. Full-bleed black canvas
- * with a faint blueprint grid, monumental ink-on-black title, and parallax
- * fade as the user scrolls into the next section. Optional `eyebrow` lets each
- * route stamp its own section label (e.g. "// 03 — Process"); falls back to a
- * generic "// Document" when omitted.
+ * with a faint blueprint grid, monumental ink-on-black title, and a scroll-
+ * driven parallax — the headline column rises and softens as the user scrolls
+ * past, while the blueprint grid drifts at a slower rate behind it for depth.
+ * Reduced-motion users get the static composition with no transforms.
  */
 export default function PageHero({ title, description, eyebrow }) {
+  const reduced = useReducedMotion()
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const y = useTransform(scrollYProgress, [0, 1], [0, 80])
-  const opacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.2])
+
+  const rawOpacity = useTransform(scrollYProgress, [0, 0.85], [1, reduced ? 1 : 0.2])
+  const opacity = useSpring(rawOpacity, { stiffness: 140, damping: 32, mass: 0.4 })
+
+  const { transform: contentTransform } = useScrollParallax({ range: [0, reduced ? 0 : -90] })
+  const { ref: gridRef, transform: gridTransform } = useScrollParallax({
+    range: [0, reduced ? 0 : -40],
+  })
 
   return (
     <section
       ref={ref}
       className="relative isolate overflow-hidden bg-bg pb-20 pt-32 text-ink sm:pb-28 sm:pt-44"
     >
-      <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+      <motion.div
+        ref={gridRef}
+        style={{ transform: gridTransform }}
+        className="grid-blueprint absolute inset-0 opacity-60 will-change-transform"
+        aria-hidden="true"
+      />
       <div
         className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-hair-strong to-transparent"
         aria-hidden="true"
       />
 
       <motion.div
-        style={{ y, opacity }}
-        className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16"
+        style={{ transform: contentTransform, opacity }}
+        className="relative mx-auto w-full max-w-[1280px] px-6 will-change-transform sm:px-10 lg:px-16"
       >
         <motion.p
           initial={{ opacity: 0, y: 10 }}

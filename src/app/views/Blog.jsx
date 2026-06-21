@@ -16,6 +16,7 @@ import { fadeInUp } from '@constants/animations'
 import { INPUT } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const POSTS_PER_PAGE = 8
 
@@ -43,14 +44,27 @@ function CategoryChip({ category, active, onClick, count }) {
 }
 
 function FeaturedPost({ post }) {
+  // Scroll-driven backdrop — the blueprint grid drifts inside the featured
+  // card as the band scrolls past, plus a gentle parallax on the right-hand
+  // meta panel. Both are decorative, so the article copy stays readable.
+  const { ref, transform: gridTransform } = useScrollParallax({ range: [0, -60] })
+  const { ref: metaRef, transform: metaTransform } = useScrollParallax({
+    range: [50, -50],
+  })
+
   return (
     <motion.article
+      ref={ref}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
       className="relative overflow-hidden border border-hair bg-bg text-ink"
     >
-      <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
+      <motion.div
+        style={{ transform: gridTransform }}
+        className="grid-blueprint absolute inset-0 opacity-50 will-change-transform"
+        aria-hidden="true"
+      />
       <div className="relative grid gap-12 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:p-16">
         <div>
           <div className="mb-6 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
@@ -88,7 +102,11 @@ function FeaturedPost({ post }) {
           </Link>
         </div>
 
-        <div className="relative hidden lg:block">
+        <motion.div
+          ref={metaRef}
+          style={{ transform: metaTransform }}
+          className="relative hidden will-change-transform lg:block"
+        >
           <div className="border border-hair p-6">
             <span
               aria-hidden
@@ -115,7 +133,7 @@ function FeaturedPost({ post }) {
               </div>
             </dl>
           </div>
-        </div>
+        </motion.div>
       </div>
     </motion.article>
   )

@@ -4,6 +4,7 @@ import { ArrowUpRight, Check, Clock, Mail, MapPin } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/useToast'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { INPUT } from '@constants/ui'
@@ -101,6 +102,13 @@ ${formData.message}
   const labelClass =
     'mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint'
   const errorClass = 'mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-red-600'
+
+  // Scroll-driven backdrop on the "What's included" band — the blueprint grid
+  // drifts behind the static checklist as the band scrolls past, giving the
+  // dark section depth without touching the copy itself.
+  const { ref: includedRef, transform: includedGridTransform } = useScrollParallax({
+    range: [0, -70],
+  })
 
   return (
     <div>
@@ -340,8 +348,15 @@ ${formData.message}
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
-        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+      <section
+        ref={includedRef}
+        className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28"
+      >
+        <motion.div
+          style={{ transform: includedGridTransform }}
+          className="grid-blueprint absolute inset-0 opacity-60 will-change-transform"
+          aria-hidden="true"
+        />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
