@@ -810,6 +810,32 @@ export default function BaytownMap() {
           })}
         </g>
 
+        {/* REGIONAL CITY LABELS — Dallas, San Antonio, Beaumont, Galveston,
+            Freeport, etc. Most project to coordinates well outside the
+            viewBox and are naturally clipped; the few that fall near a
+            visible edge (Galveston at the south, Spring/Conroe just over
+            the top) read in the same faint town-label style as TOWNS. The
+            labels' positions anchor the highway exit bearings to their
+            true real-world bearings even when the city itself is invisible. */}
+        <motion.g
+          fontFamily="'Geist Mono', ui-monospace, monospace"
+          {...fadeIntro(DETAIL_DELAY + 0.18, DETAIL_DUR + 0.1)}
+        >
+          {MAJOR_CITY_PTS.map(c => (
+            <text
+              key={c.name}
+              x={c.x + c.dx}
+              y={c.y + c.dy}
+              textAnchor={c.anchor}
+              style={{ fill: INK_MUTE, fillOpacity: 0.85 }}
+              fontSize="8"
+              letterSpacing="2.4"
+            >
+              {c.name.toUpperCase()}
+            </text>
+          ))}
+        </motion.g>
+
         {/* TOWN + WATER LABELS. */}
         <motion.g
           fontFamily="'Geist Mono', ui-monospace, monospace"
