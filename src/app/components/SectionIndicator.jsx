@@ -76,6 +76,7 @@ export default function SectionIndicator() {
               return (
                 <button
                   key={section.id}
+                  type="button"
                   onClick={() => scrollTo(section.id)}
                   className="group flex items-center gap-3"
                   aria-label={`Go to ${section.label} section`}
