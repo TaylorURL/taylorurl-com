@@ -216,6 +216,7 @@ export default function HeroSection() {
           <span className="hidden sm:inline">A real person · a direct line · work you can be proud of</span>
           <span className="text-accent">↓</span>
         </motion.div>
+        </motion.div>
       </div>
     </section>
   )
