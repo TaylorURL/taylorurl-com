@@ -81,6 +81,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIn
   return (
     <motion.div {...staggerChild(index, 0.04)} className="border-t border-hair-paper">
       <button
+        type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
         aria-controls={panelId}
