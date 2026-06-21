@@ -82,7 +82,28 @@ const SHIELDS = [
   { label: '225', wide: false, strong: false, ...project(-95.19, 29.726) },
   { label: 'BW 8', wide: true, strong: false, ...project(-95.165, 29.86) },
   { label: '610', wide: false, strong: false, ...project(-95.265, 29.74) },
+  { label: '99', wide: false, strong: false, ...project(-94.835, 29.78) },
+  { label: '330', wide: false, strong: false, ...project(-94.952, 29.77) },
 ]
+
+// Graticule: faint horizontal/vertical lines at 0.1° lat/lng intervals across
+// the sheet — blueprint texture rather than a real lat/lng overlay.
+const GRATICULE_LATS = (() => {
+  const lines = []
+  const start = Math.ceil(BBOX.south * 10) / 10
+  for (let lat = start; lat <= BBOX.north; lat = +(lat + 0.1).toFixed(2)) {
+    lines.push(project(BBOX.west, lat).y)
+  }
+  return lines
+})()
+const GRATICULE_LNGS = (() => {
+  const lines = []
+  const start = Math.ceil(BBOX.west * 10) / 10
+  for (let lng = start; lng <= BBOX.east; lng = +(lng + 0.1).toFixed(2)) {
+    lines.push(project(lng, BBOX.south).x)
+  }
+  return lines
+})()
 
 // Houston downtown skyline glyph, drawn relative to Houston's projected point.
 const HOUSTON_PT = project(-95.3698, 29.7604)
