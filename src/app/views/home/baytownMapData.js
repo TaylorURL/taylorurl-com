@@ -46,6 +46,17 @@ export const PIXELS_PER_MILE = (() => {
   return Math.hypot(b.x - a.x, b.y - a.y) / (0.1 * 69.17)
 })()
 
+// Convert an array of [lng, lat] vertices into an SVG path string using the
+// same Mercator transform — used so new roads added in geographic coordinates
+// stay consistent with the baked OSM-derived alignments above.
+const projectPath = coords =>
+  coords
+    .map(([lng, lat], i) => {
+      const p = project(lng, lat)
+      return `${i ? 'L' : 'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
+    })
+    .join(' ')
+
 // Real [lng, lat] for every labeled place. `label` offsets keep text clear of
 // the bay and of neighboring pins.
 export const TOWNS = [
@@ -56,6 +67,15 @@ export const TOWNS = [
   { name: 'Pasadena', lng: -95.2091, lat: 29.6911, anchor: 'end', dx: -8, dy: 4 },
   { name: 'Deer Park', lng: -95.1235, lat: 29.705, anchor: 'middle', dx: 0, dy: 16 },
   { name: 'La Porte', lng: -95.0193, lat: 29.6658, anchor: 'end', dx: -8, dy: 4 },
+  { name: 'Lynchburg', lng: -95.0782, lat: 29.766, anchor: 'end', dx: -8, dy: 0 },
+  { name: "Morgan's Pt", lng: -94.99, lat: 29.682, anchor: 'start', dx: 8, dy: 12 },
+  { name: 'Shoreacres', lng: -95.0114, lat: 29.6177, anchor: 'end', dx: -8, dy: 4 },
+  { name: 'Seabrook', lng: -95.0277, lat: 29.5641, anchor: 'end', dx: -8, dy: 4 },
+  { name: 'Beach City', lng: -94.911, lat: 29.747, anchor: 'start', dx: 8, dy: 4 },
+  { name: 'Cove', lng: -94.832, lat: 29.79, anchor: 'start', dx: 8, dy: 4 },
+  { name: 'Anahuac', lng: -94.6783, lat: 29.767, anchor: 'middle', dx: 0, dy: 16 },
+  { name: 'Dayton', lng: -94.889, lat: 30.046, anchor: 'middle', dx: 0, dy: 16 },
+  { name: 'Crosby', lng: -95.0608, lat: 29.911, anchor: 'middle', dx: 0, dy: -10 },
 ]
 
 // Baytown — the "YOU ARE HERE" anchor.
