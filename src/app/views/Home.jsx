@@ -38,7 +38,9 @@ export default function Home() {
       <div id="cta">
         <FinalCtaSection />
       </div>
-      <EmailCapturePopup />
+      <Suspense fallback={null}>
+        <EmailCapturePopup />
+      </Suspense>
     </div>
   )
 }
