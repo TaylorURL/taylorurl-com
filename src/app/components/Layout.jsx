@@ -4,6 +4,7 @@ import Footer from './Footer'
 import ScrollProgress from './ScrollProgress'
 import BackToTop from './BackToTop'
 import SectionIndicator from './SectionIndicator'
+import ChatWidget from './ChatWidget'
 
 export default function Layout() {
   const location = useLocation()
@@ -19,6 +20,7 @@ export default function Layout() {
       <Footer />
       <BackToTop />
       {isHome && <SectionIndicator />}
+      <ChatWidget />
     </div>
   )
 }
