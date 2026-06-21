@@ -131,26 +131,19 @@ function LivePreviewFrame({
   const [previewLoaded, setPreviewLoaded] = useState(false)
   const { ref: stageRef, scale } = useStageScale(logicalWidth)
 
-  // Projects flagged as screenshot-only (e.g. SaaS dashboards whose root URL
-  // is a login form) never mount the live iframe — otherwise the browser's
-  // password manager latches onto the embedded password input and pops the
-  // autofill prompt on this page. See `previewMode` in @data/portfolio.
-  const screenshotOnly = project.previewMode === 'screenshot'
-  const showFallback = useFallback || screenshotOnly
-
   // Reset the load state when the iframe is unmounted (scrolled away) or when
   // the fallback path is swapped in, so the fade-in plays again on remount.
   useEffect(() => {
     setPreviewLoaded(false)
-  }, [showFallback, isLive])
+  }, [useFallback, isLive])
 
   useEffect(() => {
-    if (!isLive || showFallback || previewLoaded) return
+    if (!isLive || useFallback || previewLoaded) return
     const timeoutId = window.setTimeout(onFallback, IFRAME_LOAD_TIMEOUT_MS)
     return () => window.clearTimeout(timeoutId)
-  }, [isLive, showFallback, previewLoaded, onFallback])
+  }, [isLive, useFallback, previewLoaded, onFallback])
 
-  const livePreview = !showFallback ? (
+  const livePreview = !useFallback ? (
     <iframe
       {...PREVIEW_IFRAME_PROPS}
       src={project.url}
