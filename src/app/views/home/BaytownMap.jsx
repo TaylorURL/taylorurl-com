@@ -4,6 +4,7 @@ import {
   BAYTOWN,
   BBOX,
   COASTLINE,
+  MAJOR_CITIES,
   PIXELS_PER_MILE,
   ROADS,
   TOWNS,
