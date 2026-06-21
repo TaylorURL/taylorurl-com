@@ -203,16 +203,19 @@ export default function BaytownMap() {
     ))
 
   // Ambient breathing/parallax wrapper for the geographic layer — keeps the
-  // map subtly alive after the intro settles. Chrome (compass, scale, frame
-  // labels) sits OUTSIDE this group so it stays rock-steady. Reduced motion
-  // gets the static end-state.
+  // map subtly alive after the intro settles, AND bakes in the static 1.06
+  // overscan so road/coastline content bleeds past the viewBox edges at every
+  // aspect ratio. Chrome (compass, scale, frame labels) sits OUTSIDE this
+  // group so it stays rock-steady and on-screen. Reduced motion gets the
+  // static end-state at the same scale.
+  const OVERSCAN = 1.06
   const ambientMotion = reduced
-    ? { initial: false, animate: { scale: 1, x: 0, y: 0 } }
+    ? { initial: false, animate: { scale: OVERSCAN, x: 0, y: 0 } }
     : {
-        initial: { scale: 1, x: 0, y: 0 },
+        initial: { scale: OVERSCAN, x: 0, y: 0 },
         animate: {
-          scale: [1, 1.012, 1.006, 1],
-          x: [0, 4, -3, 0],
+          scale: [OVERSCAN, OVERSCAN + 0.012, OVERSCAN + 0.006, OVERSCAN],
+          x: [0, 5, -3, 0],
           y: [0, -3, 2, 0],
         },
         transition: {
