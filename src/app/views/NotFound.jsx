@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Bug } from 'lucide-react'
 import Seo from '@components/Seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const BUG_SIZE = 28
 const MOVE_INTERVAL_MS = 1200
