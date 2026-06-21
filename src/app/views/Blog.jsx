@@ -403,6 +403,7 @@ export default function Blog() {
           {totalPages > 1 && (
             <div className="mt-12 flex items-center justify-center gap-2">
               <button
+                type="button"
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage <= 1}
                 aria-label="Previous page"
