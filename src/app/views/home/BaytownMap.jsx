@@ -1324,7 +1324,11 @@ export default function BaytownMap() {
                 cy="0"
                 r="6"
                 fill="none"
-                style={{ stroke: ACCENT, transformOrigin: 'center' }}
+                style={{
+                  stroke: ACCENT,
+                  transformOrigin: 'center',
+                  transformBox: 'fill-box',
+                }}
                 strokeWidth="1.2"
                 initial={{ scale: 1, opacity: 0.75 }}
                 animate={{ scale: 6, opacity: 0 }}
@@ -1340,7 +1344,11 @@ export default function BaytownMap() {
                 cy="0"
                 r="6"
                 fill="none"
-                style={{ stroke: ACCENT, transformOrigin: 'center' }}
+                style={{
+                  stroke: ACCENT,
+                  transformOrigin: 'center',
+                  transformBox: 'fill-box',
+                }}
                 strokeWidth="1"
                 initial={{ scale: 1, opacity: 0.6 }}
                 animate={{ scale: 6, opacity: 0 }}
@@ -1356,7 +1364,11 @@ export default function BaytownMap() {
                 cy="0"
                 r="6"
                 fill="none"
-                style={{ stroke: ACCENT_HI, transformOrigin: 'center' }}
+                style={{
+                  stroke: ACCENT_HI,
+                  transformOrigin: 'center',
+                  transformBox: 'fill-box',
+                }}
                 strokeWidth="0.8"
                 initial={{ scale: 1, opacity: 0.5 }}
                 animate={{ scale: 6, opacity: 0 }}
@@ -1370,7 +1382,7 @@ export default function BaytownMap() {
 
               {/* Radar sweep — a soft wedge that rotates around the pin */}
               <motion.g
-                style={{ transformOrigin: 'center' }}
+                style={{ transformOrigin: '0px 0px' }}
                 animate={{ rotate: 360 }}
                 transition={{
                   duration: 9,
