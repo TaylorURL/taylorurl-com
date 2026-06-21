@@ -348,8 +348,15 @@ ${formData.message}
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
-        <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+      <section
+        ref={includedRef}
+        className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28"
+      >
+        <motion.div
+          style={{ transform: includedGridTransform }}
+          className="grid-blueprint absolute inset-0 opacity-60 will-change-transform"
+          aria-hidden="true"
+        />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
