@@ -138,7 +138,7 @@ export default function BlogPost() {
               {post.title}
             </h1>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Body — paper, prose rail */}
