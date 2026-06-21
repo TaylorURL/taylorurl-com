@@ -624,6 +624,38 @@ export default function BaytownMap() {
           />
         )}
 
+        {/* TX-146 + TX-225 FLOW DASHES — subtler, counter-flow on each. */}
+        {TX146_DRIVE && (
+          <motion.path
+            d={TX146_DRIVE}
+            fill="none"
+            strokeLinecap="round"
+            style={{ stroke: ACCENT_HI, strokeOpacity: 0.55 }}
+            strokeWidth="0.75"
+            strokeDasharray="6 14"
+            initial={false}
+            animate={reduced ? undefined : { strokeDashoffset: [0, 40] }}
+            transition={
+              reduced ? undefined : { duration: 3.4, repeat: Infinity, ease: 'linear' }
+            }
+          />
+        )}
+        {ROADS.tx225[0] && (
+          <motion.path
+            d={ROADS.tx225[0]}
+            fill="none"
+            strokeLinecap="round"
+            style={{ stroke: ACCENT_HI, strokeOpacity: 0.5 }}
+            strokeWidth="0.65"
+            strokeDasharray="5 13"
+            initial={false}
+            animate={reduced ? undefined : { strokeDashoffset: [0, -36] }}
+            transition={
+              reduced ? undefined : { duration: 3.0, repeat: Infinity, ease: 'linear' }
+            }
+          />
+        )}
+
         {/* DOWNTOWN HOUSTON SKYLINE — a compact glyph at Houston's real point. */}
         <motion.g {...fadeIntro(DETAIL_DELAY + 0.15, DETAIL_DUR + 0.1)}>
           {SKYLINE.map((b, i) => (
