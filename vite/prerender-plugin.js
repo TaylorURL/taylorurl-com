@@ -6,9 +6,15 @@ import { PRERENDER_ROUTES } from './site-routes.js'
 const ROOT_PLACEHOLDER = '<div id="root"></div>'
 const BODY_CLOSE_TAG = '</body>'
 
-/** Map a route to its static HTML output path (directory-style URLs). */
+/**
+ * Map a route to its static HTML output path. `/` is the site index, `/404`
+ * lands at the top-level `404.html` Vercel auto-serves for unknown URLs, and
+ * everything else uses directory-style URLs (`/about/` → `/about/index.html`).
+ */
 function outputPathFor(outDir, route) {
-  return route === '/' ? join(outDir, 'index.html') : join(outDir, route, 'index.html')
+  if (route === '/') return join(outDir, 'index.html')
+  if (route === '/404') return join(outDir, '404.html')
+  return join(outDir, route, 'index.html')
 }
 
 /**

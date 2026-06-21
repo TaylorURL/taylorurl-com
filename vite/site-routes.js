@@ -38,10 +38,13 @@ export const SITEMAP_ROUTES = [...STATIC_ROUTES, ...BLOG_ROUTES]
 /**
  * Every route to prerender to static HTML. Includes `/license` (a real page
  * that is intentionally kept out of the sitemap) so shared links still preview
- * correctly, plus every blog article.
+ * correctly, every blog article, and `/404` which is emitted as the top-level
+ * `404.html` Vercel auto-serves for unknown URLs (real 404 status instead of a
+ * soft-200 SPA fallback) — both are noindex.
  */
 export const PRERENDER_ROUTES = [
   ...STATIC_ROUTES.map(route => route.path),
   '/license',
+  '/404',
   ...BLOG_ROUTES.map(route => route.path),
 ]

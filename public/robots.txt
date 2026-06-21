@@ -1,8 +1,4 @@
 User-agent: *
 Allow: /
 
-Disallow: /auth
-Disallow: /license
-Disallow: /404
-
 Sitemap: https://taylorurl.com/sitemap.xml
