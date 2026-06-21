@@ -127,16 +127,23 @@ export default function NewsletterSection() {
             </form>
           )}
           <div className="grid grid-cols-2 gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-            <div>
-              <p className="mb-2 text-accent">// How often</p>
-              <p className="text-ink-soft normal-case tracking-normal">Monthly at most. Skipped when there&apos;s nothing to say.</p>
-            </div>
-            <div>
-              <p className="mb-2 text-accent">// Unsubscribing</p>
-              <p className="text-ink-soft normal-case tracking-normal">One click and you&apos;re off. No follow-up emails.</p>
-            </div>
+            {[
+              {
+                heading: '// How often',
+                body: "Monthly at most. Skipped when there’s nothing to say.",
+              },
+              {
+                heading: '// Unsubscribing',
+                body: "One click and you’re off. No follow-up emails.",
+              },
+            ].map((item, i) => (
+              <motion.div key={item.heading} {...staggerChild(i, 0.06)}>
+                <p className="mb-2 text-accent">{item.heading}</p>
+                <p className="text-ink-soft normal-case tracking-normal">{item.body}</p>
+              </motion.div>
+            ))}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )
