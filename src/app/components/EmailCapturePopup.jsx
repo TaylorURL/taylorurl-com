@@ -118,7 +118,7 @@ export default function EmailCapturePopup() {
     if (status === 'submitting') return
 
     const trimmedEmail = email.trim()
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
+    if (!isValidEmail(trimmedEmail)) {
       setEmailError('Please enter a valid email address.')
       emailInputRef.current?.focus()
       return
