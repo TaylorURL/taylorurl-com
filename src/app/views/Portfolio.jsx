@@ -99,7 +99,7 @@ function PortfolioCard({ project, index }) {
               inert={true}
               scrolling="no"
               loading="lazy"
-              sandbox="allow-scripts"
+              sandbox="allow-scripts allow-same-origin"
               onLoad={() => setPreviewLoaded(true)}
               onError={handleFallback}
               style={{
