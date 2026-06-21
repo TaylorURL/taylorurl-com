@@ -48,7 +48,10 @@ const EASE_DRAW = [0.65, 0, 0.35, 1]
 const EASE_REVEAL = [0.22, 1, 0.36, 1]
 
 // Intro timing — coordinated with HeroSection. Bump HERO_INTRO_END_S together
-// with this file when retuning the cadence.
+// with this file when retuning the cadence. The Baytown "you are here" pin is
+// the last intro element to land: PIN_DELAY (1.85) + 0.2 stagger + PIN_DUR +
+// 0.15 settle ≈ 2.65s, then HERO_INTRO_END_S adds a deliberate beat before the
+// hero content reveals so the map visibly completes first.
 const COASTLINE_DELAY = 0
 const COASTLINE_DUR = 1.5
 const ROAD_DELAY = 0.55
@@ -59,7 +62,7 @@ const PIN_DELAY = 1.85
 const PIN_DUR = 0.45
 const VEHICLE_DELAY = 2.15
 
-export const HERO_INTRO_END_S = 2.0
+export const HERO_INTRO_END_S = 3.2
 
 const VIEWBOX = `0 0 1200 ${VIEWBOX_HEIGHT}`
 
