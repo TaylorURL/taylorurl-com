@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Maximize2, Minimize2 } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
