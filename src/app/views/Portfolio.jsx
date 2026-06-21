@@ -96,8 +96,10 @@ function PortfolioCard({ project, index }) {
               title={`${project.name} live preview`}
               aria-hidden="true"
               tabIndex={-1}
+              inert={true}
               scrolling="no"
               loading="lazy"
+              sandbox="allow-scripts"
               onLoad={() => setPreviewLoaded(true)}
               onError={handleFallback}
               style={{
@@ -105,6 +107,7 @@ function PortfolioCard({ project, index }) {
                 height: `${PREVIEW_LOGICAL_HEIGHT}px`,
                 transform: `scale(${scale})`,
                 transformOrigin: 'top left',
+                overflow: 'hidden',
               }}
               className={`pointer-events-none absolute left-0 top-0 border-0 transition-opacity duration-500 ${
                 previewLoaded ? 'opacity-100' : 'opacity-0'
