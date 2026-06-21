@@ -960,7 +960,11 @@ export default function BaytownMap() {
                   cy={s.y}
                   r="4.2"
                   fill="none"
-                  style={{ stroke: ACCENT, transformOrigin: `${s.x}px ${s.y}px` }}
+                  style={{
+                    stroke: ACCENT,
+                    transformOrigin: 'center',
+                    transformBox: 'fill-box',
+                  }}
                   strokeWidth="0.8"
                   initial={{ scale: 1, opacity: 0.6 }}
                   animate={{ scale: 3, opacity: 0 }}
