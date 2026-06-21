@@ -77,6 +77,12 @@ const PROCESS = [
 ]
 
 export default function About() {
+  // Scroll-driven parallax — the stats column rises as the story section
+  // scrolls past, creating depth against the narrative copy beside it.
+  const { ref: storyRef, transform: statsTransform } = useScrollParallax({
+    range: [60, -60],
+  })
+
   return (
     <div>
       <Seo
