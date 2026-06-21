@@ -1380,9 +1380,14 @@ export default function BaytownMap() {
                 }}
               />
 
-              {/* Radar sweep — a soft wedge that rotates around the pin */}
+              {/* Radar sweep — a soft wedge that rotates around the pin. The
+                  wedge's bounding box spans (0, -22)→(55, 22), so its
+                  left-middle is the pivot point we want. */}
               <motion.g
-                style={{ transformOrigin: '0px 0px' }}
+                style={{
+                  transformOrigin: '0% 50%',
+                  transformBox: 'fill-box',
+                }}
                 animate={{ rotate: 360 }}
                 transition={{
                   duration: 9,
