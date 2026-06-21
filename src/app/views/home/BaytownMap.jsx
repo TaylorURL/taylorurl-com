@@ -53,7 +53,7 @@ const DOWNTOWN_LIGHTS = [
 const BAYTOWN_BLOCKS = Array.from({ length: 18 }, (_, i) => {
   const col = i % 6
   const row = Math.floor(i / 6)
-  return { x: 740 + col * 22, y: 308 + row * 22, w: 16, h: 16 }
+  return { x: 612 + col * 22, y: 472 + row * 22, w: 16, h: 16 }
 })
 
 const SATELLITE_TOWNS = [
