@@ -117,7 +117,10 @@ export default function About() {
       />
 
       {/* Story + stats */}
-      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
+      <section
+        ref={storyRef}
+        className="relative overflow-hidden bg-paper py-24 sm:py-32"
+      >
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
