@@ -153,7 +153,12 @@ export default function About() {
               </div>
             </motion.div>
 
-            <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+            <motion.div
+              {...fadeInUp}
+              transition={{ delay: 0.1 }}
+              style={{ transform: statsTransform }}
+              className="will-change-transform"
+            >
               <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
                 // The numbers
               </p>
