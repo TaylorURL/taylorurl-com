@@ -25,11 +25,6 @@
  * - `displayUrl`   Hostname shown in the browser-chrome bar.
  * - `tagline`      Short category / stack chip surfaced above the heading.
  * - `description`  One- or two-sentence pitch summarising the project.
- * - `previewMode`  Optional. `'screenshot'` skips the live <iframe> entirely
- *                  and renders only the thum.io screenshot. Use for sites
- *                  whose root URL is a credentialed login (SaaS dashboards)
- *                  — an embedded password input there triggers the browser's
- *                  autofill prompt on this page, which we don't want.
  */
 export const PORTFOLIO_PROJECTS = [
   {
