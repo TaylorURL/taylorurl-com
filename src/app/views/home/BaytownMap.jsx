@@ -202,15 +202,39 @@ export default function BaytownMap() {
       />
     ))
 
+  // Ambient breathing/parallax wrapper for the geographic layer — keeps the
+  // map subtly alive after the intro settles. Chrome (compass, scale, frame
+  // labels) sits OUTSIDE this group so it stays rock-steady. Reduced motion
+  // gets the static end-state.
+  const ambientMotion = reduced
+    ? { initial: false, animate: { scale: 1, x: 0, y: 0 } }
+    : {
+        initial: { scale: 1, x: 0, y: 0 },
+        animate: {
+          scale: [1, 1.012, 1.006, 1],
+          x: [0, 4, -3, 0],
+          y: [0, -3, 2, 0],
+        },
+        transition: {
+          duration: 26,
+          delay: VEHICLE_DELAY,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        },
+      }
+
   return (
     <div
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
+      {/* Slight negative inset + oversized SVG gives us overscan headroom
+          beyond `slice` cover behavior — the map always bleeds past every
+          edge on both desktop and mobile aspect ratios. */}
       <svg
         viewBox={VIEWBOX}
         preserveAspectRatio="xMidYMid slice"
-        className="absolute inset-0 h-full w-full opacity-[0.86]"
+        className="absolute -inset-[5%] h-[110%] w-[110%] opacity-[0.86]"
       >
         <defs>
           <linearGradient id="bay-fill" x1="0" y1="0" x2="0.2" y2="1">
