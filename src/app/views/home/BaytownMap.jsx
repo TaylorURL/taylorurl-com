@@ -228,13 +228,14 @@ export default function BaytownMap() {
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
-      {/* Slight negative inset + oversized SVG gives us overscan headroom
-          beyond `slice` cover behavior — the map always bleeds past every
-          edge on both desktop and mobile aspect ratios. */}
+      {/* `slice` gives cover behavior; the geographic group inside also gets
+          a static `scale(1.06)` transform so the road/coastline content bleeds
+          past the viewBox edges at every aspect ratio without clipping the
+          corner chrome (compass, scale bar, frame labels). */}
       <svg
         viewBox={VIEWBOX}
         preserveAspectRatio="xMidYMid slice"
-        className="absolute -inset-[5%] h-[110%] w-[110%] opacity-[0.86]"
+        className="absolute inset-0 h-full w-full opacity-[0.86]"
       >
         <defs>
           <linearGradient id="bay-fill" x1="0" y1="0" x2="0.2" y2="1">
