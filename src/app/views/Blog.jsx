@@ -416,6 +416,7 @@ export default function Blog() {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                 <button
                   key={page}
+                  type="button"
                   onClick={() => setPage(page)}
                   aria-label={`Page ${page}`}
                   aria-current={page === currentPage ? 'page' : undefined}
