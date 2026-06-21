@@ -303,11 +303,14 @@ export const ROADS = {
   ship: [
     'M 888.9 882.5 L 811.1 742.2 L 755.6 627.3 L 700.0 525.1 L 661.1 448.4 L 622.2 397.2 L 555.6 378.0 L 466.7 371.6 L 388.9 378.0 L 333.3 371.6',
   ],
-  // Grand Parkway (TX-99) — the outer loop. Real alignment is currently the
-  // partial-loop ring road around metro Houston; we draw the east arc
-  // (Spring → Crosby → Mont Belvieu → Bay) and the west arc (Spring →
-  // Cypress → Katy → Sugar Land → Pearland → Friendswood → Kemah) so the
-  // ring reads as a coherent outer parkway.
+  // Grand Parkway (TX-99) — the outer loop. The real alignment is a partial
+  // ring around metro Houston; the east arc is currently built/under
+  // construction only as far as Mont Belvieu / I-10 (Segments I-2 / H), so
+  // we draw the east arc (Spring → Porter → Crosby → north of Mont Belvieu
+  // → Cove, terminating on land at Trinity Bay's north shore) and the west
+  // arc (Spring → Cypress → Katy → Sugar Land → Pearland → Friendswood →
+  // Kemah). The loop intentionally does NOT close across Galveston Bay —
+  // no road runs there in reality.
   tx99: [
     projectPath([
       [-95.46, 30.05],
@@ -316,13 +319,10 @@ export const ROADS = {
       [-95.24, 29.93],
       [-95.13, 29.945],
       [-95.02, 29.95],
-      [-94.93, 29.93],
-      [-94.87, 29.89],
+      [-94.93, 29.96],
+      [-94.86, 29.94],
+      [-94.84, 29.88],
       [-94.83, 29.83],
-      [-94.82, 29.74],
-      [-94.84, 29.65],
-      [-94.9, 29.55],
-      [-94.99, 29.46],
     ]),
     projectPath([
       [-95.46, 30.05],
