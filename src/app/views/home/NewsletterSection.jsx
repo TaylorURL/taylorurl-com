@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { ArrowUpRight, Check } from 'lucide-react'
 import { useToast } from '@hooks/useToast'
+import { fadeInUp, staggerChild } from '@constants/animations'
 import { INPUT_DARK } from '@constants/ui'
 
 const ENDPOINT = 'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/collect-email'
