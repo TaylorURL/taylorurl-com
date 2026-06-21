@@ -9,6 +9,7 @@ import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
 import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { INPUT } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
+import { hasMinLength, isValidEmail } from '@utils/validation'
 
 const INCLUDED_ITEMS = [
   'Custom website design',
@@ -56,16 +57,13 @@ export default function Contact() {
   const validateForm = () => {
     const newErrors = {}
 
-    if (!formData.name || formData.name.trim().length < 2) {
+    if (!hasMinLength(formData.name, 2)) {
       newErrors.name = 'Name is required and must be at least 2 characters.'
     }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!formData.email || !emailRegex.test(formData.email)) {
+    if (!isValidEmail(formData.email)) {
       newErrors.email = 'A valid email address is required.'
     }
-
-    if (!formData.message || formData.message.trim().length < 10) {
+    if (!hasMinLength(formData.message, 10)) {
       newErrors.message = 'Message is required and must be at least 10 characters.'
     }
 
