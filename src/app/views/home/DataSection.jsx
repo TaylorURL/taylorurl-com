@@ -96,51 +96,7 @@ export default function DataSection() {
                 </span>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <LineChart
-                data={REVENUE_GROWTH_DATA}
-                margin={{ top: 10, right: 10, left: -10, bottom: 0 }}
-              >
-                <XAxis
-                  dataKey="month"
-                  tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 11, fontFamily: 'Geist Mono' }}
-                  axisLine={{ stroke: 'rgba(255,255,255,0.15)' }}
-                  tickLine={false}
-                />
-                <YAxis
-                  tick={{ fill: 'rgba(255,255,255,0.32)', fontSize: 10, fontFamily: 'Geist Mono' }}
-                  axisLine={false}
-                  tickLine={false}
-                  domain={[90, 220]}
-                />
-                <Tooltip
-                  formatter={(value, name) => [
-                    `${value}%`,
-                    name === 'withSite' ? 'With a website' : 'Without a website',
-                  ]}
-                  contentStyle={TOOLTIP_STYLE}
-                  labelStyle={{ color: 'rgba(255,255,255,0.5)' }}
-                  cursor={{ stroke: 'rgba(47,107,255,0.4)', strokeWidth: 1 }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="withSite"
-                  stroke="#2f6bff"
-                  strokeWidth={2}
-                  dot={{ fill: '#2f6bff', strokeWidth: 0, r: 3 }}
-                  name="withSite"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="withoutSite"
-                  stroke="rgba(255,255,255,0.4)"
-                  strokeWidth={1.25}
-                  strokeDasharray="4 4"
-                  dot={{ fill: 'rgba(255,255,255,0.4)', strokeWidth: 0, r: 2 }}
-                  name="withoutSite"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            <RevenueGrowthChart data={REVENUE_GROWTH_DATA} />
           </motion.div>
         </div>
 
