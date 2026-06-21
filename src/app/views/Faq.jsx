@@ -176,8 +176,15 @@ export default function Faq() {
         description="The questions I get most from owners — about timelines, how it works, who owns what, and what happens after launch."
       />
 
-      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
-        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+      <section
+        ref={faqSectionRef}
+        className="relative overflow-hidden bg-paper py-24 sm:py-32"
+      >
+        <motion.div
+          style={{ transform: gridTransform }}
+          className="grid-blueprint-paper-fine absolute inset-0 opacity-40 will-change-transform"
+          aria-hidden="true"
+        />
         <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
           <div className="space-y-20">
             {FAQ_CATEGORIES.map((category, catIndex) => (
