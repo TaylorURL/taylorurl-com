@@ -102,8 +102,8 @@ export default function BaytownMap() {
 
           <linearGradient id="vignette-mask" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#000" stopOpacity="0" />
-            <stop offset="35%" stopColor="#000" stopOpacity="0.55" />
-            <stop offset="100%" stopColor="#000" stopOpacity="0.85" />
+            <stop offset="38%" stopColor="#000" stopOpacity="0.35" />
+            <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
           </linearGradient>
 
           <pattern
