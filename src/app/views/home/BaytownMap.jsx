@@ -229,19 +229,19 @@ export default function BaytownMap() {
           {Array.from({ length: 5 }).map((_, i) => (
             <line
               key={`bt-h-${i}`}
-              x1={720}
-              y1={300 + i * 22}
-              x2={860}
-              y2={300 + i * 22}
+              x1={592}
+              y1={464 + i * 22}
+              x2={732}
+              y2={464 + i * 22}
             />
           ))}
           {Array.from({ length: 7 }).map((_, i) => (
             <line
               key={`bt-v-${i}`}
-              x1={720 + i * 22}
-              y1={300}
-              x2={720 + i * 22}
-              y2={388}
+              x1={592 + i * 22}
+              y1={464}
+              x2={592 + i * 22}
+              y2={552}
             />
           ))}
         </g>
