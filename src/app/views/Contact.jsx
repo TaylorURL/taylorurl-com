@@ -5,7 +5,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/useToast'
 import { COMPANY_LOCATION, SALES_EMAIL } from '@constants/navigation'
-import { slideInLeftMount, slideInRightMount } from '@constants/animations'
+import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { INPUT } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
