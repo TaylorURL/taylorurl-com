@@ -303,9 +303,11 @@ export const ROADS = {
   ship: [
     'M 888.9 882.5 L 811.1 742.2 L 755.6 627.3 L 700.0 525.1 L 661.1 448.4 L 622.2 397.2 L 555.6 378.0 L 466.7 371.6 L 388.9 378.0 L 333.3 371.6',
   ],
-  // Grand Parkway (TX-99) — eastern arc swinging from north of Houston around
-  // Mont Belvieu and down toward the bay's east shore. Real OSM alignment is
-  // segmented; we draw the through-corridor.
+  // Grand Parkway (TX-99) — the outer loop. Real alignment is currently the
+  // partial-loop ring road around metro Houston; we draw the east arc
+  // (Spring → Crosby → Mont Belvieu → Bay) and the west arc (Spring →
+  // Cypress → Katy → Sugar Land → Pearland → Friendswood → Kemah) so the
+  // ring reads as a coherent outer parkway.
   tx99: [
     projectPath([
       [-95.46, 30.05],
@@ -320,6 +322,22 @@ export const ROADS = {
       [-94.82, 29.74],
       [-94.84, 29.65],
       [-94.9, 29.55],
+      [-94.99, 29.46],
+    ]),
+    projectPath([
+      [-95.46, 30.05],
+      [-95.62, 30.01],
+      [-95.74, 29.95],
+      [-95.81, 29.86],
+      [-95.84, 29.77],
+      [-95.83, 29.68],
+      [-95.78, 29.60],
+      [-95.69, 29.53],
+      [-95.55, 29.48],
+      [-95.41, 29.47],
+      [-95.27, 29.47],
+      [-95.14, 29.49],
+      [-95.02, 29.49],
       [-94.99, 29.46],
     ]),
   ],
