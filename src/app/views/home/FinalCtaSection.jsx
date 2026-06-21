@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowUpRight, Phone } from 'lucide-react'
-import { PHONE_NUMBER } from '@constants/navigation'
+import { ArrowUpRight } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 
 export default function FinalCtaSection() {
@@ -33,7 +32,7 @@ export default function FinalCtaSection() {
           I take care of the tech side — keeping your site online, fast, and safe. You just
           tell me about the business and what you need.
         </p>
-        <div className="mt-12 flex flex-wrap justify-center gap-4">
+        <div className="mt-12 flex justify-center">
           <Link
             to="/contact"
             className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-8 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
@@ -41,13 +40,6 @@ export default function FinalCtaSection() {
             Get in touch
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </Link>
-          <a
-            href={`tel:${PHONE_NUMBER}`}
-            className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-strong px-8 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
-          >
-            <Phone className="h-4 w-4" />
-            Call
-          </a>
         </div>
         <p className="mx-auto mt-12 max-w-md font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
           Reply within 24 hours · No sales pitch · Honest answers
