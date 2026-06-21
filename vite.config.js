@@ -21,7 +21,6 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          recharts: ['recharts'],
           'framer-motion': ['framer-motion'],
         },
       },
