@@ -140,8 +140,14 @@ function formatShortDate(date) {
 }
 
 function LiveBand({ checkedAt, windowStart }) {
+  // Scroll-driven uptime column — drifts up against the static status copy as
+  // the band scrolls past, so the big "100.00%" feels like it's catching the
+  // user's eye instead of sitting flat with the rest of the card.
+  const { ref, transform } = useScrollParallax({ range: [40, -40] })
+
   return (
     <motion.div
+      ref={ref}
       {...fadeInUpMount}
       className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-[1.6fr_1fr]"
     >
