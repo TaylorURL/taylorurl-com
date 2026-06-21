@@ -312,12 +312,14 @@ function PortfolioRow({ project, index }) {
       </motion.div>
 
       <motion.div
-        ref={parallaxRef}
         {...mockupReveal}
-        style={{ transform: mockupTransform }}
-        className={`will-change-transform lg:col-span-7 ${mockupsOnLeft ? 'lg:order-1' : 'lg:order-2'}`}
+        className={`lg:col-span-7 ${mockupsOnLeft ? 'lg:order-1' : 'lg:order-2'}`}
       >
-        <div className="relative">
+        <motion.div
+          ref={parallaxRef}
+          style={{ transform: mockupTransform }}
+          className="relative will-change-transform"
+        >
           <DesktopMockup
             project={project}
             index={index}
@@ -339,7 +341,7 @@ function PortfolioRow({ project, index }) {
               onFallback={triggerFallback}
             />
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     </article>
   )
