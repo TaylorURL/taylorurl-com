@@ -5,6 +5,7 @@ import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const VALUES = [
   {
@@ -76,6 +77,12 @@ const PROCESS = [
 ]
 
 export default function About() {
+  // Scroll-driven parallax — the stats column rises as the story section
+  // scrolls past, creating depth against the narrative copy beside it.
+  const { ref: storyRef, transform: statsTransform } = useScrollParallax({
+    range: [60, -60],
+  })
+
   return (
     <div>
       <Seo
@@ -110,7 +117,10 @@ export default function About() {
       />
 
       {/* Story + stats */}
-      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
+      <section
+        ref={storyRef}
+        className="relative overflow-hidden bg-paper py-24 sm:py-32"
+      >
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
@@ -143,7 +153,12 @@ export default function About() {
               </div>
             </motion.div>
 
-            <motion.div {...fadeInUp} transition={{ delay: 0.1 }}>
+            <motion.div
+              {...fadeInUp}
+              transition={{ delay: 0.1 }}
+              style={{ transform: statsTransform }}
+              className="will-change-transform"
+            >
               <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
                 // The numbers
               </p>

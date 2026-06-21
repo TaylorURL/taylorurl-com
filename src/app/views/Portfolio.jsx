@@ -6,6 +6,7 @@ import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 // Logical viewports the iframes are rendered at before being CSS-scaled to fit
 // their device frames. Desktop uses a 1280×800 stage to render the site at a
@@ -254,6 +255,13 @@ function PortfolioRow({ project, index }) {
   const { ref: rowRef, isNear: isLive } = useIsRowNearViewport()
   const prefersReducedMotion = useReducedMotion()
 
+  // Scroll-driven mockup parallax — the device frames drift up across the row's
+  // own scroll window so the imagery feels alive against the static copy. The
+  // hook handles reduced-motion (range collapses to 0).
+  const { ref: parallaxRef, transform: mockupTransform } = useScrollParallax({
+    range: [70, -70],
+  })
+
   const triggerFallback = useCallback(() => {
     setUseFallback(true)
     setFallbackCacheBuster(Date.now())
@@ -307,7 +315,11 @@ function PortfolioRow({ project, index }) {
         {...mockupReveal}
         className={`lg:col-span-7 ${mockupsOnLeft ? 'lg:order-1' : 'lg:order-2'}`}
       >
-        <div className="relative">
+        <motion.div
+          ref={parallaxRef}
+          style={{ transform: mockupTransform }}
+          className="relative will-change-transform"
+        >
           <DesktopMockup
             project={project}
             index={index}
@@ -329,7 +341,7 @@ function PortfolioRow({ project, index }) {
               onFallback={triggerFallback}
             />
           </div>
-        </div>
+        </motion.div>
       </motion.div>
     </article>
   )

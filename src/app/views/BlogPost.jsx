@@ -1,11 +1,13 @@
 import { Link, useParams, Navigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { useRef } from 'react'
 import { ArrowLeft, ArrowUpRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BLOG_POSTS } from '@data/blog'
 import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
 import { fadeInUp } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const MAX_DESCRIPTION_LENGTH = 155
 
@@ -17,6 +19,24 @@ function clampDescription(text) {
 export default function BlogPost() {
   const { slug } = useParams()
   const post = BLOG_POSTS.find(p => p.slug === slug)
+
+  // Scroll-driven hero — the headline column rises and softens as the user
+  // scrolls into the article body, with the blueprint grid drifting slower
+  // behind it for depth. Reduced-motion users see no transform.
+  const reduced = useReducedMotion()
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  })
+  const rawHeroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, reduced ? 1 : 0.25])
+  const heroOpacity = useSpring(rawHeroOpacity, { stiffness: 140, damping: 32, mass: 0.4 })
+  const { ref: gridRef, transform: gridTransform } = useScrollParallax({
+    range: [0, reduced ? 0 : -50],
+  })
+  const { ref: copyRef, transform: copyTransform } = useScrollParallax({
+    range: [0, reduced ? 0 : -90],
+  })
 
   if (!post) return <Navigate to="/blog" replace />
 
@@ -71,9 +91,21 @@ export default function BlogPost() {
       />
 
       {/* Hero band — dark, mono header strip */}
-      <section className="relative overflow-hidden bg-bg pb-16 pt-32 text-ink sm:pb-24 sm:pt-44">
-        <div className="grid-blueprint absolute inset-0 opacity-55" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
+      <section
+        ref={heroRef}
+        className="relative overflow-hidden bg-bg pb-16 pt-32 text-ink sm:pb-24 sm:pt-44"
+      >
+        <motion.div
+          ref={gridRef}
+          style={{ transform: gridTransform }}
+          className="grid-blueprint absolute inset-0 opacity-55 will-change-transform"
+          aria-hidden="true"
+        />
+        <motion.div
+          ref={copyRef}
+          style={{ transform: copyTransform, opacity: heroOpacity }}
+          className="relative mx-auto w-full max-w-[1080px] px-6 will-change-transform sm:px-10 lg:px-16"
+        >
           <motion.div
             initial={{ opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
@@ -106,7 +138,7 @@ export default function BlogPost() {
               {post.title}
             </h1>
           </motion.div>
-        </div>
+        </motion.div>
       </section>
 
       {/* Body — paper, prose rail */}

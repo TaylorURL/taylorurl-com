@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Bug } from 'lucide-react'
 import Seo from '@components/Seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const BUG_SIZE = 28
 const MOVE_INTERVAL_MS = 1200
@@ -33,9 +34,27 @@ export default function NotFound() {
     moveBug()
   }
 
+  // Scroll-driven parallax — the blueprint grid backdrop drifts slowly and the
+  // bug-catcher panel rises faster, giving the otherwise-static 404 a small
+  // sense of depth on viewports tall enough to scroll. Both collapse under
+  // reduced motion via the hook's built-in handling.
+  const { ref: sectionRef, transform: gridTransform } = useScrollParallax({
+    range: [0, -50],
+  })
+  const { ref: panelRef, transform: panelTransform } = useScrollParallax({
+    range: [60, -60],
+  })
+
   return (
-    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-bg px-6 pb-16 pt-32 text-ink sm:pb-20 sm:pt-44">
-      <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+    <div
+      ref={sectionRef}
+      className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-bg px-6 pb-16 pt-32 text-ink sm:pb-20 sm:pt-44"
+    >
+      <motion.div
+        style={{ transform: gridTransform }}
+        className="grid-blueprint absolute inset-0 opacity-60 will-change-transform"
+        aria-hidden="true"
+      />
       <Seo title="Page Not Found" path="/404" noIndex />
 
       <div className="relative mx-auto grid w-full max-w-[1080px] items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
@@ -96,10 +115,12 @@ export default function NotFound() {
 
         {/* Bug catching panel */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+          ref={panelRef}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ delay: 0.34, duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-          className="relative w-full max-w-[320px] justify-self-center lg:justify-self-end"
+          style={{ transform: panelTransform }}
+          className="relative w-full max-w-[320px] justify-self-center will-change-transform lg:justify-self-end"
         >
           <div className="border border-hair p-5">
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">

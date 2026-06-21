@@ -6,6 +6,7 @@ import CtaBanner from '@components/CtaBanner'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const FAQ_CATEGORIES = [
   {
@@ -131,6 +132,13 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIn
 export default function Faq() {
   const [openItems, setOpenItems] = useState({})
 
+  // Scroll-driven backdrop drift — the blueprint grid behind the FAQ stack
+  // moves at its own slow rate against the page scroll, adding parallax depth
+  // without scrubbing the question text the user is reading.
+  const { ref: faqSectionRef, transform: gridTransform } = useScrollParallax({
+    range: [0, -80],
+  })
+
   const toggleItem = key => {
     setOpenItems(prev => ({ ...prev, [key]: !prev[key] }))
   }
@@ -168,8 +176,15 @@ export default function Faq() {
         description="The questions I get most from owners — about timelines, how it works, who owns what, and what happens after launch."
       />
 
-      <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
-        <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
+      <section
+        ref={faqSectionRef}
+        className="relative overflow-hidden bg-paper py-24 sm:py-32"
+      >
+        <motion.div
+          style={{ transform: gridTransform }}
+          className="grid-blueprint-paper-fine absolute inset-0 opacity-40 will-change-transform"
+          aria-hidden="true"
+        />
         <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
           <div className="space-y-20">
             {FAQ_CATEGORIES.map((category, catIndex) => (

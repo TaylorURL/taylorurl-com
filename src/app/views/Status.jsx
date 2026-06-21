@@ -13,6 +13,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const SERVICES = [
   {
@@ -139,8 +140,14 @@ function formatShortDate(date) {
 }
 
 function LiveBand({ checkedAt, windowStart }) {
+  // Scroll-driven uptime column — drifts up against the static status copy as
+  // the band scrolls past, so the big "100.00%" feels like it's catching the
+  // user's eye instead of sitting flat with the rest of the card.
+  const { ref, transform } = useScrollParallax({ range: [40, -40] })
+
   return (
     <motion.div
+      ref={ref}
       {...fadeInUpMount}
       className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-[1.6fr_1fr]"
     >
@@ -168,7 +175,10 @@ function LiveBand({ checkedAt, windowStart }) {
         </div>
       </div>
 
-      <div className="flex flex-col justify-center gap-3 bg-paper p-8 sm:p-10">
+      <motion.div
+        style={{ transform }}
+        className="flex flex-col justify-center gap-3 bg-paper p-8 will-change-transform sm:p-10"
+      >
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
           // Uptime · 90 days
         </p>
@@ -178,7 +188,7 @@ function LiveBand({ checkedAt, windowStart }) {
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
           {windowStart} → today
         </p>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
