@@ -102,7 +102,11 @@ function FeaturedPost({ post }) {
           </Link>
         </div>
 
-        <div className="relative hidden lg:block">
+        <motion.div
+          ref={metaRef}
+          style={{ transform: metaTransform }}
+          className="relative hidden will-change-transform lg:block"
+        >
           <div className="border border-hair p-6">
             <span
               aria-hidden
