@@ -34,9 +34,27 @@ export default function NotFound() {
     moveBug()
   }
 
+  // Scroll-driven parallax — the blueprint grid backdrop drifts slowly and the
+  // bug-catcher panel rises faster, giving the otherwise-static 404 a small
+  // sense of depth on viewports tall enough to scroll. Both collapse under
+  // reduced motion via the hook's built-in handling.
+  const { ref: sectionRef, transform: gridTransform } = useScrollParallax({
+    range: [0, -50],
+  })
+  const { ref: panelRef, transform: panelTransform } = useScrollParallax({
+    range: [60, -60],
+  })
+
   return (
-    <div className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-bg px-6 pb-16 pt-32 text-ink sm:pb-20 sm:pt-44">
-      <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+    <div
+      ref={sectionRef}
+      className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-bg px-6 pb-16 pt-32 text-ink sm:pb-20 sm:pt-44"
+    >
+      <motion.div
+        style={{ transform: gridTransform }}
+        className="grid-blueprint absolute inset-0 opacity-60 will-change-transform"
+        aria-hidden="true"
+      />
       <Seo title="Page Not Found" path="/404" noIndex />
 
       <div className="relative mx-auto grid w-full max-w-[1080px] items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
