@@ -6,6 +6,7 @@ import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 // Logical viewports the iframes are rendered at before being CSS-scaled to fit
 // their device frames. Desktop uses a 1280×800 stage to render the site at a
