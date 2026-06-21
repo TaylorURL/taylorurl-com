@@ -132,6 +132,13 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIn
 export default function Faq() {
   const [openItems, setOpenItems] = useState({})
 
+  // Scroll-driven backdrop drift — the blueprint grid behind the FAQ stack
+  // moves at its own slow rate against the page scroll, adding parallax depth
+  // without scrubbing the question text the user is reading.
+  const { ref: faqSectionRef, transform: gridTransform } = useScrollParallax({
+    range: [0, -80],
+  })
+
   const toggleItem = key => {
     setOpenItems(prev => ({ ...prev, [key]: !prev[key] }))
   }
