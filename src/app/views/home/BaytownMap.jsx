@@ -686,32 +686,53 @@ export default function BaytownMap() {
           ))}
         </motion.g>
 
-        {/* TOWN MARKERS — drop in at their projected positions. */}
+        {/* TOWN MARKERS — drop in at their projected positions. Every 3rd
+            dot also gets a slow opacity twinkle so the network feels alive
+            without being noisy. */}
         <g>
-          {TOWN_PTS.map((s, i) => (
-            <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
-              <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
-              <circle cx={s.x} cy={s.y} r="1.7" style={{ fill: ACCENT_HI }} />
-              {!reduced && (
+          {TOWN_PTS.map((s, i) => {
+            const twinkles = !reduced && i % 3 === 0
+            return (
+              <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
+                <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
                 <motion.circle
                   cx={s.x}
                   cy={s.y}
-                  r="4"
-                  fill="none"
-                  style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
-                  strokeWidth="0.8"
-                  initial={{ scale: 1, opacity: 0.55 }}
-                  animate={{ scale: 3, opacity: 0 }}
-                  transition={{
-                    duration: 3.4,
-                    delay: VEHICLE_DELAY + 1.2 + i * 0.45,
-                    repeat: Infinity,
-                    ease: 'easeOut',
-                  }}
+                  r="1.7"
+                  style={{ fill: ACCENT_HI }}
+                  animate={twinkles ? { opacity: [1, 0.45, 1] } : undefined}
+                  transition={
+                    twinkles
+                      ? {
+                          duration: 4.6 + (i % 5) * 0.6,
+                          delay: VEHICLE_DELAY + i * 0.35,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }
+                      : undefined
+                  }
                 />
-              )}
-            </motion.g>
-          ))}
+                {!reduced && (
+                  <motion.circle
+                    cx={s.x}
+                    cy={s.y}
+                    r="4"
+                    fill="none"
+                    style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
+                    strokeWidth="0.8"
+                    initial={{ scale: 1, opacity: 0.55 }}
+                    animate={{ scale: 3, opacity: 0 }}
+                    transition={{
+                      duration: 3.4,
+                      delay: VEHICLE_DELAY + 1.2 + i * 0.35,
+                      repeat: Infinity,
+                      ease: 'easeOut',
+                    }}
+                  />
+                )}
+              </motion.g>
+            )
+          })}
         </g>
 
         {/* TOWN + WATER LABELS. */}
