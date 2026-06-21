@@ -964,6 +964,9 @@ export default function BaytownMap() {
           </g>
         </motion.g>
 
+        </motion.g>
+        {/* /GEOGRAPHIC LAYER ↑ ambient drift ends; chrome below stays static. */}
+
         {/* COMPASS ROSE — top right. */}
         <motion.g
           transform="translate(1092 168)"
