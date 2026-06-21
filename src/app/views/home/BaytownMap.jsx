@@ -454,26 +454,22 @@ export default function BaytownMap() {
           {/* outer pulse rings */}
           {!reduced && (
             <>
-              <motion.circle
-                cx="0"
-                cy="0"
-                r="6"
-                fill="none"
-                stroke={ACCENT}
-                strokeWidth="1"
-                animate={{ r: [6, 30], opacity: [0.7, 0] }}
+              <motion.g
+                initial={{ scale: 1, opacity: 0.7 }}
+                animate={{ scale: 5, opacity: 0 }}
                 transition={{ duration: 2.6, repeat: Infinity, ease: 'easeOut' }}
-              />
-              <motion.circle
-                cx="0"
-                cy="0"
-                r="6"
-                fill="none"
-                stroke={ACCENT}
-                strokeWidth="0.8"
-                animate={{ r: [6, 30], opacity: [0.55, 0] }}
+                style={{ transformOrigin: 'center', transformBox: 'fill-box' }}
+              >
+                <circle cx="0" cy="0" r="6" fill="none" stroke={ACCENT} strokeWidth="1" />
+              </motion.g>
+              <motion.g
+                initial={{ scale: 1, opacity: 0.55 }}
+                animate={{ scale: 5, opacity: 0 }}
                 transition={{ duration: 2.6, repeat: Infinity, ease: 'easeOut', delay: 1.3 }}
-              />
+                style={{ transformOrigin: 'center', transformBox: 'fill-box' }}
+              >
+                <circle cx="0" cy="0" r="6" fill="none" stroke={ACCENT} strokeWidth="0.8" />
+              </motion.g>
             </>
           )}
           {/* targeting crosshair */}
