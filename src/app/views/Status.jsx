@@ -13,6 +13,7 @@ import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const SERVICES = [
   {
