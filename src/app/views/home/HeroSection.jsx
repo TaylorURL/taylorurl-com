@@ -238,7 +238,7 @@ export default function HeroSection() {
           <span className="text-accent">↓</span>
         </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   )
 }
