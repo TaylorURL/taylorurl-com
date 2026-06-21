@@ -14,7 +14,7 @@
 // differ in surface/border treatment, never in geometry.
 
 const BTN_BASE =
-  'inline-flex items-center justify-center gap-2.5 rounded-sm font-mono text-[11px] uppercase tracking-[0.18em] font-semibold transition duration-200 ease-out-soft active:scale-[0.98] focus-visible:outline-none'
+  'inline-flex items-center justify-center gap-2.5 rounded-sm font-mono text-[11px] uppercase tracking-[0.18em] font-semibold transition duration-200 ease-out-soft active:scale-[0.98]'
 
 export const BTN_PRIMARY = `${BTN_BASE} bg-accent text-white px-6 py-3.5 hover:bg-[color:var(--accent-hi)] shadow-[0_10px_30px_-12px_var(--accent-glow)]`
 export const BTN_PRIMARY_LG = `${BTN_BASE} bg-accent text-white px-7 py-4 text-[12px] hover:bg-[color:var(--accent-hi)] shadow-[0_14px_36px_-12px_var(--accent-glow)]`

@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { motion, useReducedMotion } from 'framer-motion'
+import { useRef, useState } from 'react'
+import { motion, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight, Maximize2, Minimize2 } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
@@ -18,6 +18,21 @@ const EASE_REVEAL = [0.22, 1, 0.36, 1]
 export default function HeroSection() {
   const reduced = useReducedMotion()
   const [contentHidden, setContentHidden] = useState(false)
+  const sectionRef = useRef(null)
+
+  // Scroll-progress parallax — the hero column drifts up and fades as the user
+  // scrolls past, handing off cleanly to the next section. Reduced-motion users
+  // see no transform; the motion values stay flat.
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  })
+  const heroY = useTransform(scrollYProgress, [0, 1], [0, reduced ? 0 : 80])
+  const heroOpacity = useTransform(
+    scrollYProgress,
+    [0, 0.85],
+    [1, reduced ? 1 : 0.25]
+  )
 
   // Hero copy waits for the BaytownMap intro to settle before revealing. With
   // reduced motion, the offset collapses and everything is shown at once.
@@ -28,7 +43,10 @@ export default function HeroSection() {
     : { duration: 0.5, ease: EASE_REVEAL }
 
   return (
-    <section className="hero-surface relative isolate flex min-h-[100svh] items-stretch overflow-hidden pt-24">
+    <section
+      ref={sectionRef}
+      className="hero-surface relative isolate flex min-h-[100svh] items-stretch overflow-hidden pt-24"
+    >
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <BaytownMap />
 
@@ -48,7 +66,10 @@ export default function HeroSection() {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 pb-16 pt-12 sm:px-10 sm:pb-24 lg:px-16">
+      <motion.div
+        style={{ y: heroY, opacity: heroOpacity }}
+        className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 pb-16 pt-12 sm:px-10 sm:pb-24 lg:px-16"
+      >
         {/* Map / content toggle — stays interactive in both states so the
             user can always restore the central content. */}
         <button
@@ -217,7 +238,7 @@ export default function HeroSection() {
           <span className="text-accent">↓</span>
         </motion.div>
         </motion.div>
-      </div>
+      </motion.div>
     </section>
   )
 }

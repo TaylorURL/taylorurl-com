@@ -4,6 +4,7 @@ import {
   BAYTOWN,
   BBOX,
   COASTLINE,
+  MAJOR_CITIES,
   PIXELS_PER_MILE,
   ROADS,
   TOWNS,
@@ -70,14 +71,27 @@ const VIEWBOX = `0 0 1200 ${VIEWBOX_HEIGHT}`
 // Projected anchor points (all flow through the single `project()` transform).
 const BAYTOWN_PT = project(BAYTOWN.lng, BAYTOWN.lat)
 const TOWN_PTS = TOWNS.map(town => ({ ...town, ...project(town.lng, town.lat) }))
+const MAJOR_CITY_PTS = MAJOR_CITIES.map(city => ({
+  ...city,
+  ...project(city.lng, city.lat),
+}))
 
-// Longest chain of each driveable route — used as the motion path for cars.
+// Visible Houston-Baytown segment of each driveable route — used as the
+// motion path for cars and the lane-flow dashes. Kept short so vehicles
+// pace correctly across the visible frame rather than racing along the full
+// regional extension out to San Antonio or Beaumont.
 const I10_DRIVE = ROADS.i10[0]
 const TX146_DRIVE = ROADS.tx146[0]
 
-// Highway shields, anchored at real points that sit on each route.
+// Highway shields, anchored at real points that sit on each route. `strong`
+// marks the interstate-grade shields (I-10, I-45) so they stand a step
+// above the US-highway and state-highway markers.
 const SHIELDS = [
   { label: 'I-10', wide: false, strong: true, ...project(-95.04, 29.781) },
+  { label: 'I-45', wide: false, strong: true, ...project(-95.385, 29.83) },
+  { label: '59', wide: false, strong: false, ...project(-95.30, 29.86) },
+  { label: '290', wide: false, strong: false, ...project(-95.495, 29.84) },
+  { label: '288', wide: false, strong: false, ...project(-95.376, 29.67) },
   { label: '146', wide: false, strong: false, ...project(-94.935, 29.64) },
   { label: '225', wide: false, strong: false, ...project(-95.19, 29.726) },
   { label: 'BW 8', wide: true, strong: false, ...project(-95.165, 29.86) },
@@ -402,7 +416,7 @@ export default function BaytownMap() {
             outside this group and stays rock-steady. */}
         <motion.g
           {...ambientMotion}
-          style={{ transformOrigin: '50% 50%', transformBox: 'fill-box' }}
+          style={{ transformOrigin: '50% 50%', transformBox: 'view-box' }}
         >
 
         {/* GRATICULE — faint 0.1° lat/lng lines for blueprint texture. */}
@@ -527,10 +541,32 @@ export default function BaytownMap() {
           )}
         </motion.g>
 
-        {/* ROAD SHADOWS — faint wider stroke under the lines for depth. */}
+        {/* ROAD SHADOWS — faint wider stroke under the interstates and the
+            two main US corridors for depth. Order matches the stroke
+            hierarchy below: interstates get the heaviest shadow, US
+            highways a lighter one, state highways lighter still. */}
         <motion.g fill="none" strokeLinecap="round" {...fadeIntro(ROAD_DELAY, 0.8)}>
           {ROADS.i10.map((d, i) => (
             <path key={`s10-${i}`} d={d} style={{ stroke: ROAD_SHADOW }} strokeWidth="6.5" />
+          ))}
+          {ROADS.i45.map((d, i) => (
+            <path key={`s45-${i}`} d={d} style={{ stroke: ROAD_SHADOW }} strokeWidth="6.5" />
+          ))}
+          {ROADS.us59.map((d, i) => (
+            <path
+              key={`s59-${i}`}
+              d={d}
+              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.85 }}
+              strokeWidth="5.4"
+            />
+          ))}
+          {ROADS.us290.map((d, i) => (
+            <path
+              key={`s290-${i}`}
+              d={d}
+              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.85 }}
+              strokeWidth="5.0"
+            />
           ))}
           {ROADS.tx146.map((d, i) => (
             <path
@@ -538,6 +574,14 @@ export default function BaytownMap() {
               d={d}
               style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.9 }}
               strokeWidth="5.5"
+            />
+          ))}
+          {ROADS.tx288.map((d, i) => (
+            <path
+              key={`s288-${i}`}
+              d={d}
+              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.8 }}
+              strokeWidth="4.6"
             />
           ))}
         </motion.g>
@@ -551,7 +595,9 @@ export default function BaytownMap() {
           })}
         </g>
 
-        {/* SECONDARY ROADS — Beltway 8, I-610 inner loop, Grand Parkway. */}
+        {/* RING ROADS — Beltway 8, I-610 inner loop, Grand Parkway (TX-99).
+            Lighter weight than the named through-corridors because they're
+            decorative texture around the visible Houston-Baytown spine. */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {drawPaths(ROADS.bw8, ROAD_DELAY + 0.35, ROAD_DUR - 0.15, {
             style: { stroke: INK_FAINT },
@@ -563,19 +609,35 @@ export default function BaytownMap() {
           })}
           {drawPaths(ROADS.tx99, ROAD_DELAY + 0.4, ROAD_DUR, {
             style: { stroke: INK_MUTE, strokeOpacity: 0.9 },
-            strokeWidth: 1.8,
+            strokeWidth: 1.6,
           })}
         </g>
 
-        {/* PRIMARY ROADS — I-10, SH-146, SH-225, Spur 330, Hartman Bridge. */}
+        {/* US HIGHWAYS — US-59 (I-69 corridor) toward Cleveland/Lufkin NE
+            and Sugar Land/Victoria SW; US-290 NW toward Hempstead/Brenham/
+            Austin. Medium stroke — between interstates and state highways. */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.i10, ROAD_DELAY, ROAD_DUR, {
-            style: { stroke: INK_SOFT },
-            strokeWidth: 3.4,
+          {drawPaths(ROADS.us59, ROAD_DELAY + 0.18, ROAD_DUR, {
+            style: { stroke: INK_MUTE },
+            strokeWidth: 2.8,
           })}
+          {drawPaths(ROADS.us290, ROAD_DELAY + 0.22, ROAD_DUR, {
+            style: { stroke: INK_MUTE },
+            strokeWidth: 2.6,
+          })}
+        </g>
+
+        {/* STATE HIGHWAYS — SH-146 (Mont Belvieu / La Porte spine), SH-225
+            (petrochemical corridor), TX-288 (S toward Freeport), plus the
+            short Spur 330 / Hartman Bridge into Baytown. */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {drawPaths(ROADS.tx146, ROAD_DELAY + 0.1, ROAD_DUR, {
             style: { stroke: INK_MUTE },
             strokeWidth: 2.6,
+          })}
+          {drawPaths(ROADS.tx288, ROAD_DELAY + 0.28, ROAD_DUR, {
+            style: { stroke: INK_MUTE },
+            strokeWidth: 2.4,
           })}
           {drawPaths(ROADS.tx225, ROAD_DELAY + 0.2, ROAD_DUR - 0.15, {
             style: { stroke: INK_MUTE },
@@ -588,6 +650,19 @@ export default function BaytownMap() {
           {drawPaths(ROADS.hartman, ROAD_DELAY + 0.55, ROAD_DUR - 0.35, {
             style: { stroke: INK_SOFT },
             strokeWidth: 2.0,
+          })}
+        </g>
+
+        {/* INTERSTATES — I-10 (E-W) and I-45 (NW-SE). Drawn last in the road
+            stack so they sit on top of every other class. */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {drawPaths(ROADS.i10, ROAD_DELAY, ROAD_DUR, {
+            style: { stroke: INK_SOFT },
+            strokeWidth: 3.4,
+          })}
+          {drawPaths(ROADS.i45, ROAD_DELAY + 0.08, ROAD_DUR, {
+            style: { stroke: INK_SOFT },
+            strokeWidth: 3.4,
           })}
         </g>
 
@@ -734,6 +809,32 @@ export default function BaytownMap() {
             )
           })}
         </g>
+
+        {/* REGIONAL CITY LABELS — Dallas, San Antonio, Beaumont, Galveston,
+            Freeport, etc. Most project to coordinates well outside the
+            viewBox and are naturally clipped; the few that fall near a
+            visible edge (Galveston at the south, Spring/Conroe just over
+            the top) read in the same faint town-label style as TOWNS. The
+            labels' positions anchor the highway exit bearings to their
+            true real-world bearings even when the city itself is invisible. */}
+        <motion.g
+          fontFamily="'Geist Mono', ui-monospace, monospace"
+          {...fadeIntro(DETAIL_DELAY + 0.18, DETAIL_DUR + 0.1)}
+        >
+          {MAJOR_CITY_PTS.map(c => (
+            <text
+              key={c.name}
+              x={c.x + c.dx}
+              y={c.y + c.dy}
+              textAnchor={c.anchor}
+              style={{ fill: INK_MUTE, fillOpacity: 0.85 }}
+              fontSize="8"
+              letterSpacing="2.4"
+            >
+              {c.name.toUpperCase()}
+            </text>
+          ))}
+        </motion.g>
 
         {/* TOWN + WATER LABELS. */}
         <motion.g

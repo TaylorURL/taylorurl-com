@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BLOG_POSTS } from '@data/blog'
 import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
+import { fadeInUp } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
 
 const MAX_DESCRIPTION_LENGTH = 155
@@ -147,7 +148,10 @@ export default function BlogPost() {
 
       <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
-        <div className="relative mx-auto w-full max-w-[1280px] px-6 text-center sm:px-10 lg:px-16">
+        <motion.div
+          {...fadeInUp}
+          className="relative mx-auto w-full max-w-[1280px] px-6 text-center sm:px-10 lg:px-16"
+        >
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
             // Next
@@ -167,7 +171,7 @@ export default function BlogPost() {
             Get in touch
             <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
           </Link>
-        </div>
+        </motion.div>
       </section>
     </div>
   )
