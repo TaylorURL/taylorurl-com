@@ -115,6 +115,7 @@ export default function NotFound() {
             >
               <div className="grid-blueprint-fine absolute inset-0 opacity-60" aria-hidden="true" />
               <motion.button
+                type="button"
                 onClick={catchBug}
                 animate={{ x: bugPos.x, y: bugPos.y }}
                 transition={{ type: 'spring', stiffness: 280, damping: 22 }}
