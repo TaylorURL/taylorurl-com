@@ -20,6 +20,24 @@ export default function BlogPost() {
   const { slug } = useParams()
   const post = BLOG_POSTS.find(p => p.slug === slug)
 
+  // Scroll-driven hero — the headline column rises and softens as the user
+  // scrolls into the article body, with the blueprint grid drifting slower
+  // behind it for depth. Reduced-motion users see no transform.
+  const reduced = useReducedMotion()
+  const heroRef = useRef(null)
+  const { scrollYProgress } = useScroll({
+    target: heroRef,
+    offset: ['start start', 'end start'],
+  })
+  const rawHeroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, reduced ? 1 : 0.25])
+  const heroOpacity = useSpring(rawHeroOpacity, { stiffness: 140, damping: 32, mass: 0.4 })
+  const { ref: gridRef, transform: gridTransform } = useScrollParallax({
+    range: [0, reduced ? 0 : -50],
+  })
+  const { ref: copyRef, transform: copyTransform } = useScrollParallax({
+    range: [0, reduced ? 0 : -90],
+  })
+
   if (!post) return <Navigate to="/blog" replace />
 
   const publishedTime = new Date(post.date).toISOString()
