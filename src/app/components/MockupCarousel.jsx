@@ -25,7 +25,7 @@ export default function MockupCarousel() {
   }, [])
 
   return (
-    <div className="relative h-[380px] w-[480px]">
+    <div className="mockup-light relative h-[380px] w-[480px]">
       {MOCKUPS.map((mockup, i) => {
         const posIndex = (i + rotation) % 3
         const pos = POSITIONS[posIndex]
