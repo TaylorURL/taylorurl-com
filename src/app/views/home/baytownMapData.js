@@ -76,10 +76,38 @@ export const TOWNS = [
   { name: 'Anahuac', lng: -94.6783, lat: 29.767, anchor: 'middle', dx: 0, dy: 16 },
   { name: 'Dayton', lng: -94.889, lat: 30.046, anchor: 'middle', dx: 0, dy: 16 },
   { name: 'Crosby', lng: -95.0608, lat: 29.911, anchor: 'middle', dx: 0, dy: -10 },
+  { name: 'Pearland', lng: -95.2861, lat: 29.5636, anchor: 'middle', dx: 0, dy: -10 },
+  { name: 'League City', lng: -95.0949, lat: 29.5075, anchor: 'middle', dx: 0, dy: 14 },
+  { name: 'Texas City', lng: -94.9027, lat: 29.3838, anchor: 'middle', dx: 0, dy: -10 },
+  { name: 'Kemah', lng: -95.0177, lat: 29.5424, anchor: 'start', dx: 8, dy: 4 },
 ]
 
 // Baytown — the "YOU ARE HERE" anchor.
 export const BAYTOWN = { name: 'Baytown', lng: -94.9774, lat: 29.7355 }
+
+// Regional cities that extend the geography beyond the visible frame. Most
+// project to coordinates well outside the viewBox (Dallas to the NW, San
+// Antonio / Austin to the W, Beaumont / Lake Charles to the E, Freeport to
+// the S), so they sit in the overscanned bleed and anchor the highway exit
+// bearings to their real-world bearings. Any that fall near a visible edge
+// (Galveston at the southern tip, Conroe / Spring just over the top) render
+// in the same faint town-label style as TOWNS above.
+export const MAJOR_CITIES = [
+  { name: 'Dallas', lng: -96.7970, lat: 32.7767, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'San Antonio', lng: -98.4936, lat: 29.4241, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'Austin', lng: -97.7431, lat: 30.2672, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'Beaumont', lng: -94.1018, lat: 30.0802, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'Lake Charles', lng: -93.2174, lat: 30.2266, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'Lufkin', lng: -94.7216, lat: 31.3382, anchor: 'middle', dx: 0, dy: -12 },
+  { name: 'Victoria', lng: -97.0036, lat: 28.8053, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'Galveston', lng: -94.7977, lat: 29.3013, anchor: 'middle', dx: 0, dy: -12 },
+  { name: 'Freeport', lng: -95.3597, lat: 28.9541, anchor: 'middle', dx: 0, dy: 18 },
+  { name: 'Conroe', lng: -95.4561, lat: 30.3119, anchor: 'middle', dx: 0, dy: -12 },
+  { name: 'Spring', lng: -95.4172, lat: 30.0799, anchor: 'middle', dx: 0, dy: -10 },
+  { name: 'Sugar Land', lng: -95.6349, lat: 29.6197, anchor: 'middle', dx: 0, dy: 20 },
+  { name: 'Liberty', lng: -94.7952, lat: 30.0577, anchor: 'middle', dx: 0, dy: -10 },
+  { name: 'Hempstead', lng: -96.0775, lat: 30.0966, anchor: 'middle', dx: 0, dy: -10 },
+]
 
 // Bay water — single closed polygon (Galveston Bay + Trinity Bay), used for
 // both the fill and the wave-pattern clip.
