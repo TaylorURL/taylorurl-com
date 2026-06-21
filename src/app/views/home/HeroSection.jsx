@@ -49,6 +49,37 @@ export default function HeroSection() {
       />
 
       <div className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 pb-16 pt-12 sm:px-10 sm:pb-24 lg:px-16">
+        {/* Map / content toggle — stays interactive in both states so the
+            user can always restore the central content. */}
+        <button
+          type="button"
+          onClick={() => setContentHidden(prev => !prev)}
+          aria-label={
+            contentHidden
+              ? 'Show hero content'
+              : 'Hide hero content to reveal the full map'
+          }
+          aria-pressed={contentHidden}
+          className="pointer-events-auto absolute right-6 top-2 z-20 inline-flex items-center gap-2 border border-hair bg-[color:var(--bg)]/55 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint backdrop-blur-sm transition duration-200 ease-out hover:border-hair-strong hover:text-ink sm:right-10 lg:right-16"
+        >
+          {contentHidden ? (
+            <Maximize2 className="h-3 w-3" aria-hidden="true" />
+          ) : (
+            <Minimize2 className="h-3 w-3" aria-hidden="true" />
+          )}
+          <span>{contentHidden ? 'Show' : 'Hide'}</span>
+        </button>
+
+        <motion.div
+          initial={false}
+          animate={{
+            opacity: contentHidden ? 0 : 1,
+            y: contentHidden ? -8 : 0,
+          }}
+          transition={toggleTransition}
+          aria-hidden={contentHidden}
+          className={`flex flex-1 flex-col ${contentHidden ? 'pointer-events-none' : ''}`}
+        >
         {/* Eyebrow strip */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
