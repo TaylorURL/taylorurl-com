@@ -255,6 +255,13 @@ function PortfolioRow({ project, index }) {
   const { ref: rowRef, isNear: isLive } = useIsRowNearViewport()
   const prefersReducedMotion = useReducedMotion()
 
+  // Scroll-driven mockup parallax — the device frames drift up across the row's
+  // own scroll window so the imagery feels alive against the static copy. The
+  // hook handles reduced-motion (range collapses to 0).
+  const { ref: parallaxRef, transform: mockupTransform } = useScrollParallax({
+    range: [70, -70],
+  })
+
   const triggerFallback = useCallback(() => {
     setUseFallback(true)
     setFallbackCacheBuster(Date.now())
