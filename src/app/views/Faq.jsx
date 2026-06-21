@@ -6,6 +6,7 @@ import CtaBanner from '@components/CtaBanner'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const FAQ_CATEGORIES = [
   {
