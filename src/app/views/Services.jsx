@@ -83,6 +83,62 @@ const CAPABILITIES = [
   { icon: Zap, label: 'Quick page loads' },
 ]
 
+// Scroll-driven row — the BrowserMockup column drifts up across the section's
+// scroll window while the copy column stays fixed, creating depth as the user
+// reads down the alternating list. Each row owns its own scroll progress so
+// rows out of view stay quiet.
+function ServiceRow({ service, index }) {
+  const Icon = service.icon
+  const isReversed = index % 2 === 1
+  const { ref, transform } = useScrollParallax({ range: [50, -50] })
+
+  return (
+    <motion.div
+      ref={ref}
+      {...staggerChild(index, 0.08)}
+      className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:gap-16 lg:py-24"
+    >
+      <div className={isReversed ? 'lg:order-2' : ''}>
+        <div className="mb-6 flex items-baseline justify-between border-b border-hair-paper pb-4">
+          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+            {String(index + 1).padStart(2, '0')} / 04
+          </span>
+          <Icon className="h-6 w-6 text-ink-paper" strokeWidth={1.25} />
+        </div>
+        <h3 className="mb-5 text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+          {service.title}
+        </h3>
+        <p className="mb-8 text-[16px] leading-relaxed text-paper-soft sm:text-[17px]">
+          {service.description}
+        </p>
+        <ul className="grid gap-3 sm:grid-cols-2">
+          {service.features.map(feature => (
+            <li
+              key={feature}
+              className="flex items-start gap-3 border-t border-hair-paper pt-3 text-[14px] leading-snug text-paper-soft"
+            >
+              <Check
+                className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent"
+                strokeWidth={2}
+              />
+              {feature}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <motion.div
+        style={{ transform }}
+        className={`will-change-transform ${isReversed ? 'lg:order-1' : ''}`}
+      >
+        <BrowserMockup
+          url={`yourbusiness.com${index === 1 ? '/before-after' : index === 2 ? '/performance' : ''}`}
+          variant={service.mockup}
+        />
+      </motion.div>
+    </motion.div>
+  )
+}
+
 export default function Services() {
   return (
     <div>
