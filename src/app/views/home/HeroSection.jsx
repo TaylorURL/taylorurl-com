@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, Maximize2, Minimize2 } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
 import BaytownMap, { HERO_INTRO_END_S } from './BaytownMap'
