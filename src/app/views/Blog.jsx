@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
   ArrowLeft,
@@ -17,10 +16,10 @@ import { INPUT } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
 import { breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import { useBlogFilters } from '@hooks/useBlogFilters'
 
 const POSTS_PER_PAGE = 8
-
-const CATEGORIES = ['All', ...Array.from(new Set(BLOG_POSTS.map(p => p.category)))]
+const REVEAL_EASE = [0.22, 1, 0.36, 1]
 
 function CategoryChip({ category, active, onClick, count }) {
   return (
@@ -57,7 +56,7 @@ function FeaturedPost({ post }) {
       ref={ref}
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.45, ease: REVEAL_EASE }}
       className="relative overflow-hidden border border-hair bg-bg text-ink"
     >
       <motion.div
@@ -183,10 +182,7 @@ function PostListItem({ post, index }) {
       transition={{ duration: 0.22, delay: index * 0.02 }}
       className="group bg-paper transition-colors hover:bg-ink-paper/[0.02]"
     >
-      <Link
-        to={`/blog/${post.slug}`}
-        className="flex items-start gap-4 px-4 py-4"
-      >
+      <Link to={`/blog/${post.slug}`} className="flex items-start gap-4 px-4 py-4">
         <div className="flex-1">
           <div className="mb-1.5 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.22em] text-paper-faint">
             <span className="text-accent">{post.category}</span>
@@ -203,78 +199,72 @@ function PostListItem({ post, index }) {
   )
 }
 
-export default function Blog() {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [search, setSearch] = useState(searchParams.get('q') || '')
-  const activeCategory = searchParams.get('category') || 'All'
-  const currentPage = parseInt(searchParams.get('page') || '1', 10)
+function Pagination({ currentPage, totalPages, onChange }) {
+  return (
+    <div className="mt-12 flex items-center justify-center gap-2">
+      <button
+        type="button"
+        onClick={() => onChange(currentPage - 1)}
+        disabled={currentPage <= 1}
+        aria-label="Previous page"
+        className="inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
+      >
+        <ArrowLeft className="h-3 w-3" />
+        Prev
+      </button>
 
-  const updateParams = (updates, options) => {
-    const params = new URLSearchParams(searchParams)
-    for (const [key, value] of Object.entries(updates)) {
-      if (value) params.set(key, value)
-      else params.delete(key)
-    }
-    setSearchParams(params, options)
-  }
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+        <button
+          key={page}
+          type="button"
+          onClick={() => onChange(page)}
+          aria-label={`Page ${page}`}
+          aria-current={page === currentPage ? 'page' : undefined}
+          className={`inline-flex h-9 w-9 items-center justify-center rounded-sm font-mono text-[11px] tracking-[0.18em] transition-colors ${
+            page === currentPage
+              ? 'bg-accent text-white'
+              : 'border border-hair-paper-strong text-paper-soft hover:bg-ink-paper hover:text-paper'
+          }`}
+        >
+          {String(page).padStart(2, '0')}
+        </button>
+      ))}
 
-  const setCategory = cat => updateParams({ category: cat === 'All' ? '' : cat, page: '' })
-
-  const setPage = page => {
-    updateParams({ page: page <= 1 ? '' : String(page) })
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-
-  const handleSearch = e => {
-    setSearch(e.target.value)
-    updateParams({ q: e.target.value, page: '' }, { replace: true })
-  }
-
-  const clearSearch = () => {
-    setSearch('')
-    updateParams({ q: '', page: '' }, { replace: true })
-  }
-
-  const filtered = useMemo(() => {
-    let posts = BLOG_POSTS
-
-    if (activeCategory !== 'All') {
-      posts = posts.filter(p => p.category === activeCategory)
-    }
-
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      posts = posts.filter(
-        p =>
-          p.title.toLowerCase().includes(q) ||
-          p.excerpt.toLowerCase().includes(q) ||
-          p.category.toLowerCase().includes(q)
-      )
-    }
-
-    return posts
-  }, [activeCategory, search])
-
-  const isDefaultView = activeCategory === 'All' && !search.trim() && currentPage === 1
-  const featuredPost = isDefaultView ? filtered[0] : null
-  const gridPosts = isDefaultView ? filtered.slice(1) : filtered
-
-  const totalPages = Math.ceil(gridPosts.length / POSTS_PER_PAGE)
-  const paginated = gridPosts.slice(
-    (currentPage - 1) * POSTS_PER_PAGE,
-    currentPage * POSTS_PER_PAGE
+      <button
+        type="button"
+        onClick={() => onChange(currentPage + 1)}
+        disabled={currentPage >= totalPages}
+        aria-label="Next page"
+        className="inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
+      >
+        Next
+        <ArrowRight className="h-3 w-3" />
+      </button>
+    </div>
   )
+}
 
-  const categoryCounts = useMemo(() => {
-    const counts = { All: BLOG_POSTS.length }
-    BLOG_POSTS.forEach(p => {
-      counts[p.category] = (counts[p.category] || 0) + 1
-    })
-    return counts
-  }, [])
+export default function Blog() {
+  const {
+    pagePosts,
+    featuredPost,
+    posts: filtered,
+    categories,
+    categoryCounts,
+    activeCategory,
+    search,
+    currentPage,
+    totalPages,
+    isDefaultView,
+    setCategory,
+    setPage,
+    setSearch,
+    clearSearch,
+    clearAll,
+  } = useBlogFilters({ posts: BLOG_POSTS, postsPerPage: POSTS_PER_PAGE })
 
-  const mainGridPosts = paginated.slice(0, 4)
-  const sidebarPosts = paginated.slice(4)
+  const mainGridPosts = pagePosts.slice(0, 4)
+  const sidebarPosts = pagePosts.slice(4)
 
   return (
     <div>
@@ -307,9 +297,12 @@ export default function Blog() {
       {/* Filters strip */}
       <section className="border-b border-hair-paper bg-paper">
         <div className="mx-auto w-full max-w-[1280px] px-6 py-8 sm:px-10 lg:px-16">
-          <motion.div {...fadeInUp} className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+          <motion.div
+            {...fadeInUp}
+            className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between"
+          >
             <div className="flex flex-wrap gap-2">
-              {CATEGORIES.map(cat => (
+              {categories.map(cat => (
                 <CategoryChip
                   key={cat}
                   category={cat}
@@ -328,7 +321,7 @@ export default function Blog() {
               <input
                 type="text"
                 value={search}
-                onChange={handleSearch}
+                onChange={event => setSearch(event.target.value)}
                 placeholder="Search articles…"
                 aria-label="Search articles"
                 className={`${INPUT} py-3 pl-10 pr-10 text-[14px]`}
@@ -370,7 +363,7 @@ export default function Blog() {
             </div>
           )}
 
-          {paginated.length > 0 ? (
+          {pagePosts.length > 0 ? (
             <AnimatePresence mode="popLayout">
               <div className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-3">
                 <div className="lg:col-span-2">
@@ -407,10 +400,7 @@ export default function Blog() {
               <p className="mt-3 text-[16px] text-ink-paper">No articles match that.</p>
               <button
                 type="button"
-                onClick={() => {
-                  clearSearch()
-                  setCategory('All')
-                }}
+                onClick={clearAll}
                 className="mt-6 font-mono text-[11px] uppercase tracking-[0.18em] text-accent hover:text-[color:var(--accent-hi)]"
               >
                 Clear filters
@@ -419,46 +409,11 @@ export default function Blog() {
           )}
 
           {totalPages > 1 && (
-            <div className="mt-12 flex items-center justify-center gap-2">
-              <button
-                type="button"
-                onClick={() => setPage(currentPage - 1)}
-                disabled={currentPage <= 1}
-                aria-label="Previous page"
-                className="inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
-              >
-                <ArrowLeft className="h-3 w-3" />
-                Prev
-              </button>
-
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                <button
-                  key={page}
-                  type="button"
-                  onClick={() => setPage(page)}
-                  aria-label={`Page ${page}`}
-                  aria-current={page === currentPage ? 'page' : undefined}
-                  className={`inline-flex h-9 w-9 items-center justify-center rounded-sm font-mono text-[11px] tracking-[0.18em] transition-colors ${
-                    page === currentPage
-                      ? 'bg-accent text-white'
-                      : 'border border-hair-paper-strong text-paper-soft hover:bg-ink-paper hover:text-paper'
-                  }`}
-                >
-                  {String(page).padStart(2, '0')}
-                </button>
-              ))}
-
-              <button
-                type="button"
-                onClick={() => setPage(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                aria-label="Next page"
-                className="inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
-              >
-                Next
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onChange={setPage}
+            />
           )}
         </div>
       </section>
@@ -467,10 +422,7 @@ export default function Blog() {
       <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
-          <motion.div
-            {...fadeInUp}
-            className="mx-auto max-w-3xl text-center"
-          >
+          <motion.div {...fadeInUp} className="mx-auto max-w-3xl text-center">
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
               // Next
