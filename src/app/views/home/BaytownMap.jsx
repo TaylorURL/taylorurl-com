@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import {
   BAY_FILL,
   BAYTOWN,
+  BBOX,
   COASTLINE,
   PIXELS_PER_MILE,
   ROADS,
