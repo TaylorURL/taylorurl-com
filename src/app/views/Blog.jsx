@@ -388,6 +388,7 @@ export default function Blog() {
               </p>
               <p className="mt-3 text-[16px] text-ink-paper">No articles match that.</p>
               <button
+                type="button"
                 onClick={() => {
                   clearSearch()
                   setCategory('All')
