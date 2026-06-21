@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { ArrowUpRight, Globe } from 'lucide-react'
 import PageHero from '@components/PageHero'
@@ -8,15 +8,59 @@ import { staggerChild } from '@constants/animations'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 
-// Server-rendered screenshot via WordPress mShots. Renders the target site
-// server-side and caches by URL, so client-site X-Frame-Options headers can't
-// black out the preview the way a live cross-origin iframe would.
-function buildScreenshotUrl(url) {
-  return `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1280&h=800`
+// Logical viewport the iframe is rendered at before being CSS-scaled down to
+// the card width. 1280 × 800 matches the card's 16:10 aspect ratio and gives
+// a desktop-class layout of the live site instead of a phone-narrow one.
+const PREVIEW_LOGICAL_WIDTH = 1280
+const PREVIEW_LOGICAL_HEIGHT = 800
+
+// If the live iframe doesn't fire onLoad within this window we assume the
+// site refused framing (X-Frame-Options / CSP) and swap to a fresh screenshot.
+// Cross-origin frames don't reliably fire onError on framing refusal, so the
+// timeout is the only dependable signal.
+const IFRAME_LOAD_TIMEOUT_MS = 8000
+
+// Fresh server-rendered screenshot from thum.io. The query param busts thum.io's
+// cache so the fallback also reflects the current site, not a stale snapshot.
+function buildFallbackScreenshotUrl(url, cacheBuster) {
+  return `https://image.thum.io/get/width/${PREVIEW_LOGICAL_WIDTH}/crop/${PREVIEW_LOGICAL_HEIGHT}/${url}?_=${cacheBuster}`
 }
 
 function PortfolioCard({ project, index }) {
-  const [imageLoaded, setImageLoaded] = useState(false)
+  const [previewLoaded, setPreviewLoaded] = useState(false)
+  const [useFallback, setUseFallback] = useState(false)
+  const [fallbackCacheBuster, setFallbackCacheBuster] = useState(0)
+  const [scale, setScale] = useState(0.5)
+  const stageRef = useRef(null)
+
+  useEffect(() => {
+    const stage = stageRef.current
+    if (!stage) return
+    const updateScale = () => {
+      const width = stage.getBoundingClientRect().width
+      if (width > 0) setScale(width / PREVIEW_LOGICAL_WIDTH)
+    }
+    updateScale()
+    const observer = new ResizeObserver(updateScale)
+    observer.observe(stage)
+    return () => observer.disconnect()
+  }, [])
+
+  useEffect(() => {
+    if (useFallback || previewLoaded) return
+    const timeoutId = window.setTimeout(() => {
+      setUseFallback(true)
+      setFallbackCacheBuster(Date.now())
+      setPreviewLoaded(false)
+    }, IFRAME_LOAD_TIMEOUT_MS)
+    return () => window.clearTimeout(timeoutId)
+  }, [useFallback, previewLoaded])
+
+  const handleFallback = () => {
+    setUseFallback(true)
+    setFallbackCacheBuster(Date.now())
+    setPreviewLoaded(false)
+  }
 
   return (
     <motion.a
@@ -42,18 +86,44 @@ function PortfolioCard({ project, index }) {
           </span>
         </div>
 
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-bg">
-          <img
-            src={buildScreenshotUrl(project.url)}
-            alt={`${project.name} website preview`}
-            loading="lazy"
-            decoding="async"
-            onLoad={() => setImageLoaded(true)}
-            className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500 ${
-              imageLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
-          />
-          {!imageLoaded && (
+        <div
+          ref={stageRef}
+          className="relative aspect-[16/10] w-full overflow-hidden bg-bg"
+        >
+          {!useFallback ? (
+            <iframe
+              src={project.url}
+              title={`${project.name} live preview`}
+              aria-hidden="true"
+              tabIndex={-1}
+              scrolling="no"
+              loading="lazy"
+              onLoad={() => setPreviewLoaded(true)}
+              onError={handleFallback}
+              style={{
+                width: `${PREVIEW_LOGICAL_WIDTH}px`,
+                height: `${PREVIEW_LOGICAL_HEIGHT}px`,
+                transform: `scale(${scale})`,
+                transformOrigin: 'top left',
+              }}
+              className={`pointer-events-none absolute left-0 top-0 border-0 transition-opacity duration-500 ${
+                previewLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          ) : (
+            <img
+              src={buildFallbackScreenshotUrl(project.url, fallbackCacheBuster)}
+              alt={`${project.name} website preview`}
+              loading="lazy"
+              decoding="async"
+              onLoad={() => setPreviewLoaded(true)}
+              className={`absolute inset-0 h-full w-full object-cover object-top transition-opacity duration-500 ${
+                previewLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
+            />
+          )}
+
+          {!previewLoaded && (
             <div className="absolute inset-0 grid place-items-center bg-bg">
               <div className="text-center">
                 <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
