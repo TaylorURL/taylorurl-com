@@ -106,10 +106,7 @@ function useIsRowNearViewport(rootMargin = LIVE_MOUNT_ROOT_MARGIN) {
 // non-interactive, non-focusable, non-scrollable. `credentialless` loads
 // the iframe in an ephemeral storage partition so the browser never offers
 // saved credentials for the embedded origin (unknown attr is ignored on
-// browsers that don't support it). Sites whose root URL is a login screen
-// still embed a password input though, which the browser's autofill
-// heuristics latch onto regardless — those are flagged in the data with
-// `previewMode: 'screenshot'` and short-circuit the iframe path entirely.
+// browsers that don't support it).
 const PREVIEW_IFRAME_PROPS = {
   'aria-hidden': true,
   tabIndex: -1,
