@@ -188,52 +188,9 @@ export default function Services() {
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <div className="divide-y divide-hair-paper border-y border-hair-paper">
-            {SERVICES.map((service, i) => {
-              const Icon = service.icon
-              const isReversed = i % 2 === 1
-              return (
-                <motion.div
-                  key={service.title}
-                  {...staggerChild(i, 0.08)}
-                  className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:gap-16 lg:py-24"
-                >
-                  <div className={isReversed ? 'lg:order-2' : ''}>
-                    <div className="mb-6 flex items-baseline justify-between border-b border-hair-paper pb-4">
-                      <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
-                        {String(i + 1).padStart(2, '0')} / 04
-                      </span>
-                      <Icon className="h-6 w-6 text-ink-paper" strokeWidth={1.25} />
-                    </div>
-                    <h3 className="mb-5 text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
-                      {service.title}
-                    </h3>
-                    <p className="mb-8 text-[16px] leading-relaxed text-paper-soft sm:text-[17px]">
-                      {service.description}
-                    </p>
-                    <ul className="grid gap-3 sm:grid-cols-2">
-                      {service.features.map(feature => (
-                        <li
-                          key={feature}
-                          className="flex items-start gap-3 border-t border-hair-paper pt-3 text-[14px] leading-snug text-paper-soft"
-                        >
-                          <Check
-                            className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent"
-                            strokeWidth={2}
-                          />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  <div className={isReversed ? 'lg:order-1' : ''}>
-                    <BrowserMockup
-                      url={`yourbusiness.com${i === 1 ? '/before-after' : i === 2 ? '/performance' : ''}`}
-                      variant={service.mockup}
-                    />
-                  </div>
-                </motion.div>
-              )
-            })}
+            {SERVICES.map((service, i) => (
+              <ServiceRow key={service.title} service={service} index={i} />
+            ))}
           </div>
         </div>
       </section>
