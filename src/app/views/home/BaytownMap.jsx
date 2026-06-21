@@ -538,7 +538,16 @@ export default function BaytownMap() {
           ))}
         </motion.g>
 
-        {/* SECONDARY ROADS — Beltway 8 and the I-610 inner loop. */}
+        {/* HAIRLINE SECONDARY MESH — county / FM-grade fill. Drawn first so
+            the named arterials sit on top. */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {drawPaths(ROADS.secondary, ROAD_DELAY + 0.25, ROAD_DUR - 0.25, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.6 },
+            strokeWidth: 0.7,
+          })}
+        </g>
+
+        {/* SECONDARY ROADS — Beltway 8, I-610 inner loop, Grand Parkway. */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {drawPaths(ROADS.bw8, ROAD_DELAY + 0.35, ROAD_DUR - 0.15, {
             style: { stroke: INK_FAINT },
@@ -548,9 +557,13 @@ export default function BaytownMap() {
             style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
             strokeWidth: 1.4,
           })}
+          {drawPaths(ROADS.tx99, ROAD_DELAY + 0.4, ROAD_DUR, {
+            style: { stroke: INK_MUTE, strokeOpacity: 0.9 },
+            strokeWidth: 1.8,
+          })}
         </g>
 
-        {/* PRIMARY ROADS — I-10, SH-146, SH-225. */}
+        {/* PRIMARY ROADS — I-10, SH-146, SH-225, Spur 330, Hartman Bridge. */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {drawPaths(ROADS.i10, ROAD_DELAY, ROAD_DUR, {
             style: { stroke: INK_SOFT },
@@ -563,6 +576,34 @@ export default function BaytownMap() {
           {drawPaths(ROADS.tx225, ROAD_DELAY + 0.2, ROAD_DUR - 0.15, {
             style: { stroke: INK_MUTE },
             strokeWidth: 2.0,
+          })}
+          {drawPaths(ROADS.spur330, ROAD_DELAY + 0.5, ROAD_DUR - 0.3, {
+            style: { stroke: INK_MUTE },
+            strokeWidth: 1.8,
+          })}
+          {drawPaths(ROADS.hartman, ROAD_DELAY + 0.55, ROAD_DUR - 0.35, {
+            style: { stroke: INK_SOFT },
+            strokeWidth: 2.0,
+          })}
+        </g>
+
+        {/* BAYTOWN SURFACE STREETS — Decker, Garth, Main/Alexander, Bayway. */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {drawPaths(ROADS.decker, ROAD_DELAY + 0.6, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
+            strokeWidth: 1.2,
+          })}
+          {drawPaths(ROADS.garth, ROAD_DELAY + 0.62, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
+            strokeWidth: 1.2,
+          })}
+          {drawPaths(ROADS.mainAlexander, ROAD_DELAY + 0.64, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.8 },
+            strokeWidth: 1.0,
+          })}
+          {drawPaths(ROADS.bayway, ROAD_DELAY + 0.66, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
+            strokeWidth: 1.1,
           })}
         </g>
 
