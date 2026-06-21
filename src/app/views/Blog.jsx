@@ -16,6 +16,7 @@ import { fadeInUp } from '@constants/animations'
 import { INPUT } from '@constants/ui'
 import { BLOG_POSTS } from '@data/blog'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const POSTS_PER_PAGE = 8
 
