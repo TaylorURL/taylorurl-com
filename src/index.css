@@ -68,6 +68,41 @@
 }
 
 @layer components {
+  /*
+   * HERO SURFACE — owns its own theme for the homepage hero. The site has no
+   * global dark/light toggle, so the hero adapts to the user's OS preference
+   * via prefers-color-scheme. CSS-only, no FOUC: the right palette is
+   * resolved on first paint.
+   *
+   * Children read existing tokens (text-ink, border-hair, bg-bg, etc.) and
+   * pick up the correct values through CSS-variable inheritance — including
+   * the BaytownMap, which channels every color through these vars.
+   */
+  .hero-surface {
+    --map-road-shadow: rgba(0, 0, 0, 0.55);
+    --map-paper-fill: #0a0a0a;
+    --map-glow: rgba(47, 107, 255, 0.55);
+    --map-water-ink: var(--accent-hi);
+    --map-water-bg: var(--accent);
+    background-color: var(--bg);
+    color: var(--ink);
+  }
+
+  @media (prefers-color-scheme: light) {
+    .hero-surface {
+      --bg: var(--paper);
+      --ink: var(--paper-ink);
+      --ink-soft: var(--paper-ink-soft);
+      --ink-mute: var(--paper-ink-mute);
+      --ink-faint: var(--paper-ink-faint);
+      --hair: var(--paper-hair);
+      --hair-strong: var(--paper-hair-strong);
+      --map-road-shadow: rgba(10, 10, 10, 0.16);
+      --map-paper-fill: #ffffff;
+      --map-glow: rgba(47, 107, 255, 0.28);
+    }
+  }
+
   .container-rail {
     @apply mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16;
   }
