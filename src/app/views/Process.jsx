@@ -242,72 +242,9 @@ export default function Process() {
           </motion.div>
 
           <div className="mt-16 space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
-            {TIMELINE_STEPS.map((step, i) => {
-              const Icon = step.icon
-              return (
-                <motion.article
-                  key={step.step}
-                  {...staggerChild(i, 0.05)}
-                  className="grid items-start gap-6 bg-paper p-8 sm:p-10 lg:grid-cols-[200px_1fr_1fr] lg:gap-10"
-                >
-                  <div className="flex items-start gap-5 lg:flex-col lg:gap-4">
-                    <span className="font-mono text-[clamp(3rem,5vw,4.4rem)] font-semibold leading-none text-paper-faint">
-                      {step.step}
-                    </span>
-                    <div className="flex flex-1 flex-col gap-3 lg:flex-none">
-                      <Icon className="h-5 w-5 text-accent" strokeWidth={1.25} />
-                      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-                        {step.duration}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="lg:col-span-1">
-                    <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink-paper sm:text-[26px]">
-                      {step.title}
-                    </h3>
-                    <p className="text-[15px] leading-relaxed text-paper-soft sm:text-[16px]">
-                      {step.description}
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:col-span-1">
-                    <div className="bg-paper p-5">
-                      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
-                        Your part
-                      </p>
-                      <ul className="space-y-2">
-                        {step.client.map(item => (
-                          <li
-                            key={item}
-                            className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
-                          >
-                            <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-paper-faint" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                    <div className="bg-paper p-5">
-                      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-                        My part
-                      </p>
-                      <ul className="space-y-2">
-                        {step.taylorurl.map(item => (
-                          <li
-                            key={item}
-                            className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
-                          >
-                            <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-accent" />
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                </motion.article>
-              )
-            })}
+            {TIMELINE_STEPS.map((step, i) => (
+              <TimelineRow key={step.step} step={step} index={i} />
+            ))}
           </div>
         </div>
       </section>
