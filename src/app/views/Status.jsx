@@ -175,7 +175,10 @@ function LiveBand({ checkedAt, windowStart }) {
         </div>
       </div>
 
-      <div className="flex flex-col justify-center gap-3 bg-paper p-8 sm:p-10">
+      <motion.div
+        style={{ transform }}
+        className="flex flex-col justify-center gap-3 bg-paper p-8 will-change-transform sm:p-10"
+      >
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
           // Uptime · 90 days
         </p>
@@ -185,7 +188,7 @@ function LiveBand({ checkedAt, windowStart }) {
         <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
           {windowStart} → today
         </p>
-      </div>
+      </motion.div>
     </motion.div>
   )
 }
