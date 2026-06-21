@@ -416,14 +416,14 @@ export default function BaytownMap() {
           style={{ offsetPath: `path('${I10_PATH}')`, offsetRotate: 'auto' }}
           transition={{ duration: 26, repeat: Infinity, ease: 'linear' }}
         >
-          <use href="#car-east" />
+          <use href="#car-east" x="-7" y="-3" width="14" height="6" />
         </motion.g>
         <motion.g
           animate={reduced ? undefined : { offsetDistance: ['100%', '0%'] }}
           style={{ offsetPath: `path('${I10_PATH}')`, offsetRotate: 'auto' }}
           transition={{ duration: 34, repeat: Infinity, ease: 'linear', delay: 4 }}
         >
-          <use href="#car-west" />
+          <use href="#car-west" x="-7" y="-3" width="14" height="6" />
         </motion.g>
 
         {/* CAR on TX-146 */}
@@ -432,7 +432,7 @@ export default function BaytownMap() {
           style={{ offsetPath: `path('${TX146_PATH}')`, offsetRotate: 'auto' }}
           transition={{ duration: 30, repeat: Infinity, ease: 'linear', delay: 8 }}
         >
-          <use href="#car-east" />
+          <use href="#car-east" x="-7" y="-3" width="14" height="6" />
         </motion.g>
 
         {/* BOAT drifting on the bay */}
@@ -445,7 +445,7 @@ export default function BaytownMap() {
             animate={reduced ? undefined : { y: [0, -1.5, 0] }}
             transition={{ duration: 4.2, repeat: Infinity, ease: 'easeInOut' }}
           >
-            <use href="#boat" />
+            <use href="#boat" x="-12" y="-12" width="24" height="24" />
           </motion.g>
         </motion.g>
 
