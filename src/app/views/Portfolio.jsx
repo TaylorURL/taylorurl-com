@@ -312,8 +312,10 @@ function PortfolioRow({ project, index }) {
       </motion.div>
 
       <motion.div
+        ref={parallaxRef}
         {...mockupReveal}
-        className={`lg:col-span-7 ${mockupsOnLeft ? 'lg:order-1' : 'lg:order-2'}`}
+        style={{ transform: mockupTransform }}
+        className={`will-change-transform lg:col-span-7 ${mockupsOnLeft ? 'lg:order-1' : 'lg:order-2'}`}
       >
         <div className="relative">
           <DesktopMockup
