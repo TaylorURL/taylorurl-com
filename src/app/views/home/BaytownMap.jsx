@@ -375,7 +375,7 @@ export default function BaytownMap() {
               I-10
             </text>
           </g>
-          <g transform="translate(848 188)">
+          <g transform="translate(700 188)">
             <rect x="-14" y="-10" width="28" height="20" fill="#0a0a0a" stroke={INK_MUTE} strokeWidth="0.7" />
             <text textAnchor="middle" y="4" fill={INK_MUTE} fontWeight="600">
               146
