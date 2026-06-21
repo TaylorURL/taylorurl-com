@@ -17,10 +17,15 @@ const EASE_REVEAL = [0.22, 1, 0.36, 1]
 
 export default function HeroSection() {
   const reduced = useReducedMotion()
+  const [contentHidden, setContentHidden] = useState(false)
 
   // Hero copy waits for the BaytownMap intro to settle before revealing. With
   // reduced motion, the offset collapses and everything is shown at once.
   const after = step => (reduced ? 0 : HERO_INTRO_END_S + step)
+
+  const toggleTransition = reduced
+    ? { duration: 0 }
+    : { duration: 0.5, ease: EASE_REVEAL }
 
   return (
     <section className="hero-surface relative isolate flex min-h-[100svh] items-stretch overflow-hidden pt-24">
