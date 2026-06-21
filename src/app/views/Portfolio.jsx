@@ -103,13 +103,20 @@ function useIsRowNearViewport(rootMargin = LIVE_MOUNT_ROOT_MARGIN) {
 }
 
 // Shared iframe attribute set — every preview frame stays purely visual:
-// non-interactive, non-focusable, non-scrollable, and not autofillable.
+// non-interactive, non-focusable, non-scrollable. `credentialless` loads
+// the iframe in an ephemeral storage partition so the browser never offers
+// saved credentials for the embedded origin (unknown attr is ignored on
+// browsers that don't support it). Sites whose root URL is a login screen
+// still embed a password input though, which the browser's autofill
+// heuristics latch onto regardless — those are flagged in the data with
+// `previewMode: 'screenshot'` and short-circuit the iframe path entirely.
 const PREVIEW_IFRAME_PROPS = {
   'aria-hidden': true,
   tabIndex: -1,
   inert: true,
   scrolling: 'no',
   loading: 'lazy',
+  credentialless: true,
   sandbox: 'allow-scripts allow-same-origin',
 }
 
@@ -127,19 +134,26 @@ function LivePreviewFrame({
   const [previewLoaded, setPreviewLoaded] = useState(false)
   const { ref: stageRef, scale } = useStageScale(logicalWidth)
 
+  // Projects flagged as screenshot-only (e.g. SaaS dashboards whose root URL
+  // is a login form) never mount the live iframe — otherwise the browser's
+  // password manager latches onto the embedded password input and pops the
+  // autofill prompt on this page. See `previewMode` in @data/portfolio.
+  const screenshotOnly = project.previewMode === 'screenshot'
+  const showFallback = useFallback || screenshotOnly
+
   // Reset the load state when the iframe is unmounted (scrolled away) or when
   // the fallback path is swapped in, so the fade-in plays again on remount.
   useEffect(() => {
     setPreviewLoaded(false)
-  }, [useFallback, isLive])
+  }, [showFallback, isLive])
 
   useEffect(() => {
-    if (!isLive || useFallback || previewLoaded) return
+    if (!isLive || showFallback || previewLoaded) return
     const timeoutId = window.setTimeout(onFallback, IFRAME_LOAD_TIMEOUT_MS)
     return () => window.clearTimeout(timeoutId)
-  }, [isLive, useFallback, previewLoaded, onFallback])
+  }, [isLive, showFallback, previewLoaded, onFallback])
 
-  const livePreview = !useFallback ? (
+  const livePreview = !showFallback ? (
     <iframe
       {...PREVIEW_IFRAME_PROPS}
       src={project.url}
