@@ -103,6 +103,27 @@
     }
   }
 
+  /*
+   * MOCKUP LIGHT SCOPE — browser previews shown in the hero carousel
+   * represent finished, polished websites and should always read as light
+   * pages, regardless of the surrounding hero theme (which adapts to OS
+   * preference) or the global root palette (which is dark). Scoping the
+   * paper tokens here keeps the BrowserMockup classes (`bg-bg`, `text-ink`,
+   * `border-hair`, `bg-surface-1`) untouched while routing them through
+   * the paper palette via CSS-variable inheritance.
+   */
+  .mockup-light {
+    --bg: var(--paper);
+    --ink: var(--paper-ink);
+    --ink-soft: var(--paper-ink-soft);
+    --ink-mute: var(--paper-ink-mute);
+    --ink-faint: var(--paper-ink-faint);
+    --hair: var(--paper-hair);
+    --hair-strong: var(--paper-hair-strong);
+    --surface-1: rgba(10, 10, 10, 0.04);
+    --surface-2: rgba(10, 10, 10, 0.06);
+  }
+
   .container-rail {
     @apply mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16;
   }
