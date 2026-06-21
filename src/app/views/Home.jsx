@@ -1,5 +1,5 @@
+import { lazy, Suspense } from 'react'
 import Seo from '@components/Seo'
-import EmailCapturePopup from '@components/EmailCapturePopup'
 import HeroSection from './home/HeroSection'
 import WhyWebsiteSection from './home/WhyWebsiteSection'
 import DataSection from './home/DataSection'
@@ -7,6 +7,10 @@ import TestimonialsSection from './home/TestimonialsSection'
 import HowItWorksSection from './home/HowItWorksSection'
 import NewsletterSection from './home/NewsletterSection'
 import FinalCtaSection from './home/FinalCtaSection'
+
+// Email popup hides itself for the first six seconds anyway, so its bundle
+// has no reason to be in the home critical path.
+const EmailCapturePopup = lazy(() => import('@components/EmailCapturePopup'))
 
 export default function Home() {
   return (
