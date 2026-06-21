@@ -66,7 +66,10 @@ export default function HeroSection() {
         aria-hidden="true"
       />
 
-      <div className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 pb-16 pt-12 sm:px-10 sm:pb-24 lg:px-16">
+      <motion.div
+        style={{ y: heroY, opacity: heroOpacity }}
+        className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 pb-16 pt-12 sm:px-10 sm:pb-24 lg:px-16"
+      >
         {/* Map / content toggle — stays interactive in both states so the
             user can always restore the central content. */}
         <button
