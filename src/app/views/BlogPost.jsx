@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowUpRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BLOG_POSTS } from '@data/blog'
 import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
+import { fadeInUp } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
 
 const MAX_DESCRIPTION_LENGTH = 155
