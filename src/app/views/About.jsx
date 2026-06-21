@@ -5,6 +5,7 @@ import CtaSection from '@components/CtaSection'
 import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const VALUES = [
   {
