@@ -34,7 +34,6 @@ export const PORTFOLIO_PROJECTS = [
     tagline: 'Operations SaaS · React · Supabase',
     description:
       'A regional management tool for a concrete ready-mix operation. Tracks assets, personnel, productivity, and efficiency so the team can run the yard from one screen.',
-    previewMode: 'screenshot',
   },
   {
     name: 'Baytown Go Carts',
