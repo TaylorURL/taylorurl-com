@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import {
   BAY_FILL,
   BAYTOWN,
+  BBOX,
   COASTLINE,
   PIXELS_PER_MILE,
   ROADS,
@@ -81,7 +82,28 @@ const SHIELDS = [
   { label: '225', wide: false, strong: false, ...project(-95.19, 29.726) },
   { label: 'BW 8', wide: true, strong: false, ...project(-95.165, 29.86) },
   { label: '610', wide: false, strong: false, ...project(-95.265, 29.74) },
+  { label: '99', wide: false, strong: false, ...project(-94.835, 29.78) },
+  { label: '330', wide: false, strong: false, ...project(-94.952, 29.77) },
 ]
+
+// Graticule: faint horizontal/vertical lines at 0.1° lat/lng intervals across
+// the sheet — blueprint texture rather than a real lat/lng overlay.
+const GRATICULE_LATS = (() => {
+  const lines = []
+  const start = Math.ceil(BBOX.south * 10) / 10
+  for (let lat = start; lat <= BBOX.north; lat = +(lat + 0.1).toFixed(2)) {
+    lines.push(project(BBOX.west, lat).y)
+  }
+  return lines
+})()
+const GRATICULE_LNGS = (() => {
+  const lines = []
+  const start = Math.ceil(BBOX.west * 10) / 10
+  for (let lng = start; lng <= BBOX.east; lng = +(lng + 0.1).toFixed(2)) {
+    lines.push(project(lng, BBOX.south).x)
+  }
+  return lines
+})()
 
 // Houston downtown skyline glyph, drawn relative to Houston's projected point.
 const HOUSTON_PT = project(-95.3698, 29.7604)
@@ -180,11 +202,39 @@ export default function BaytownMap() {
       />
     ))
 
+  // Ambient breathing/parallax wrapper for the geographic layer — keeps the
+  // map subtly alive after the intro settles, AND bakes in the static 1.06
+  // overscan so road/coastline content bleeds past the viewBox edges at every
+  // aspect ratio. Chrome (compass, scale, frame labels) sits OUTSIDE this
+  // group so it stays rock-steady and on-screen. Reduced motion gets the
+  // static end-state at the same scale.
+  const OVERSCAN = 1.06
+  const ambientMotion = reduced
+    ? { initial: false, animate: { scale: OVERSCAN, x: 0, y: 0 } }
+    : {
+        initial: { scale: OVERSCAN, x: 0, y: 0 },
+        animate: {
+          scale: [OVERSCAN, OVERSCAN + 0.012, OVERSCAN + 0.006, OVERSCAN],
+          x: [0, 5, -3, 0],
+          y: [0, -3, 2, 0],
+        },
+        transition: {
+          duration: 26,
+          delay: VEHICLE_DELAY,
+          repeat: Infinity,
+          ease: 'easeInOut',
+        },
+      }
+
   return (
     <div
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
+      {/* `slice` gives cover behavior; the geographic group inside also gets
+          a static `scale(1.06)` transform so the road/coastline content bleeds
+          past the viewBox edges at every aspect ratio without clipping the
+          corner chrome (compass, scale bar, frame labels). */}
       <svg
         viewBox={VIEWBOX}
         preserveAspectRatio="xMidYMid slice"
@@ -347,6 +397,42 @@ export default function BaytownMap() {
           opacity="0.4"
         />
 
+        {/* GEOGRAPHIC LAYER — wrapped in an ambient drift so the whole map
+            breathes/parallaxes slowly after the intro settles. Chrome sits
+            outside this group and stays rock-steady. */}
+        <motion.g
+          {...ambientMotion}
+          style={{ transformOrigin: '50% 50%', transformBox: 'fill-box' }}
+        >
+
+        {/* GRATICULE — faint 0.1° lat/lng lines for blueprint texture. */}
+        <motion.g {...fadeIntro(0, 0.8)}>
+          {GRATICULE_LATS.map((y, i) => (
+            <line
+              key={`gr-lat-${i}`}
+              x1="0"
+              y1={y}
+              x2="1200"
+              y2={y}
+              style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
+              strokeWidth="0.5"
+              strokeDasharray="2 6"
+            />
+          ))}
+          {GRATICULE_LNGS.map((x, i) => (
+            <line
+              key={`gr-lng-${i}`}
+              x1={x}
+              y1="0"
+              x2={x}
+              y2={VIEWBOX_HEIGHT}
+              style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
+              strokeWidth="0.5"
+              strokeDasharray="2 6"
+            />
+          ))}
+        </motion.g>
+
         {/* WATER — Galveston + Trinity Bay fill, wave texture, light sheen. */}
         <motion.g {...fadeIntro(0, 0.7)}>
           <path d={BAY_FILL} fill="url(#bay-fill)" />
@@ -358,7 +444,22 @@ export default function BaytownMap() {
             fill="url(#wave-pattern)"
             mask="url(#bay-clip)"
           />
-          <path d={BAY_FILL} fill="url(#bay-sheen)" />
+          {/* Sheen pulses subtly to suggest water shimmer. */}
+          <motion.path
+            d={BAY_FILL}
+            fill="url(#bay-sheen)"
+            animate={reduced ? undefined : { opacity: [0.65, 1, 0.65] }}
+            transition={
+              reduced
+                ? undefined
+                : {
+                    duration: 7.5,
+                    delay: VEHICLE_DELAY,
+                    repeat: Infinity,
+                    ease: 'easeInOut',
+                  }
+            }
+          />
         </motion.g>
 
         {/* COASTLINE — the real shoreline, drawing itself in first. */}
@@ -441,7 +542,16 @@ export default function BaytownMap() {
           ))}
         </motion.g>
 
-        {/* SECONDARY ROADS — Beltway 8 and the I-610 inner loop. */}
+        {/* HAIRLINE SECONDARY MESH — county / FM-grade fill. Drawn first so
+            the named arterials sit on top. */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {drawPaths(ROADS.secondary, ROAD_DELAY + 0.25, ROAD_DUR - 0.25, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.6 },
+            strokeWidth: 0.7,
+          })}
+        </g>
+
+        {/* SECONDARY ROADS — Beltway 8, I-610 inner loop, Grand Parkway. */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {drawPaths(ROADS.bw8, ROAD_DELAY + 0.35, ROAD_DUR - 0.15, {
             style: { stroke: INK_FAINT },
@@ -451,9 +561,13 @@ export default function BaytownMap() {
             style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
             strokeWidth: 1.4,
           })}
+          {drawPaths(ROADS.tx99, ROAD_DELAY + 0.4, ROAD_DUR, {
+            style: { stroke: INK_MUTE, strokeOpacity: 0.9 },
+            strokeWidth: 1.8,
+          })}
         </g>
 
-        {/* PRIMARY ROADS — I-10, SH-146, SH-225. */}
+        {/* PRIMARY ROADS — I-10, SH-146, SH-225, Spur 330, Hartman Bridge. */}
         <g fill="none" strokeLinecap="round" strokeLinejoin="round">
           {drawPaths(ROADS.i10, ROAD_DELAY, ROAD_DUR, {
             style: { stroke: INK_SOFT },
@@ -466,6 +580,34 @@ export default function BaytownMap() {
           {drawPaths(ROADS.tx225, ROAD_DELAY + 0.2, ROAD_DUR - 0.15, {
             style: { stroke: INK_MUTE },
             strokeWidth: 2.0,
+          })}
+          {drawPaths(ROADS.spur330, ROAD_DELAY + 0.5, ROAD_DUR - 0.3, {
+            style: { stroke: INK_MUTE },
+            strokeWidth: 1.8,
+          })}
+          {drawPaths(ROADS.hartman, ROAD_DELAY + 0.55, ROAD_DUR - 0.35, {
+            style: { stroke: INK_SOFT },
+            strokeWidth: 2.0,
+          })}
+        </g>
+
+        {/* BAYTOWN SURFACE STREETS — Decker, Garth, Main/Alexander, Bayway. */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          {drawPaths(ROADS.decker, ROAD_DELAY + 0.6, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
+            strokeWidth: 1.2,
+          })}
+          {drawPaths(ROADS.garth, ROAD_DELAY + 0.62, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
+            strokeWidth: 1.2,
+          })}
+          {drawPaths(ROADS.mainAlexander, ROAD_DELAY + 0.64, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.8 },
+            strokeWidth: 1.0,
+          })}
+          {drawPaths(ROADS.bayway, ROAD_DELAY + 0.66, ROAD_DUR - 0.4, {
+            style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
+            strokeWidth: 1.1,
           })}
         </g>
 
@@ -482,6 +624,38 @@ export default function BaytownMap() {
             animate={reduced ? undefined : { strokeDashoffset: [0, -40] }}
             transition={
               reduced ? undefined : { duration: 2.6, repeat: Infinity, ease: 'linear' }
+            }
+          />
+        )}
+
+        {/* TX-146 + TX-225 FLOW DASHES — subtler, counter-flow on each. */}
+        {TX146_DRIVE && (
+          <motion.path
+            d={TX146_DRIVE}
+            fill="none"
+            strokeLinecap="round"
+            style={{ stroke: ACCENT_HI, strokeOpacity: 0.55 }}
+            strokeWidth="0.75"
+            strokeDasharray="6 14"
+            initial={false}
+            animate={reduced ? undefined : { strokeDashoffset: [0, 40] }}
+            transition={
+              reduced ? undefined : { duration: 3.4, repeat: Infinity, ease: 'linear' }
+            }
+          />
+        )}
+        {ROADS.tx225[0] && (
+          <motion.path
+            d={ROADS.tx225[0]}
+            fill="none"
+            strokeLinecap="round"
+            style={{ stroke: ACCENT_HI, strokeOpacity: 0.5 }}
+            strokeWidth="0.65"
+            strokeDasharray="5 13"
+            initial={false}
+            animate={reduced ? undefined : { strokeDashoffset: [0, -36] }}
+            transition={
+              reduced ? undefined : { duration: 3.0, repeat: Infinity, ease: 'linear' }
             }
           />
         )}
@@ -512,32 +686,53 @@ export default function BaytownMap() {
           ))}
         </motion.g>
 
-        {/* TOWN MARKERS — drop in at their projected positions. */}
+        {/* TOWN MARKERS — drop in at their projected positions. Every 3rd
+            dot also gets a slow opacity twinkle so the network feels alive
+            without being noisy. */}
         <g>
-          {TOWN_PTS.map((s, i) => (
-            <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
-              <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
-              <circle cx={s.x} cy={s.y} r="1.7" style={{ fill: ACCENT_HI }} />
-              {!reduced && (
+          {TOWN_PTS.map((s, i) => {
+            const twinkles = !reduced && i % 3 === 0
+            return (
+              <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
+                <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
                 <motion.circle
                   cx={s.x}
                   cy={s.y}
-                  r="4"
-                  fill="none"
-                  style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
-                  strokeWidth="0.8"
-                  initial={{ scale: 1, opacity: 0.55 }}
-                  animate={{ scale: 3, opacity: 0 }}
-                  transition={{
-                    duration: 3.4,
-                    delay: VEHICLE_DELAY + 1.2 + i * 0.45,
-                    repeat: Infinity,
-                    ease: 'easeOut',
-                  }}
+                  r="1.7"
+                  style={{ fill: ACCENT_HI }}
+                  animate={twinkles ? { opacity: [1, 0.45, 1] } : undefined}
+                  transition={
+                    twinkles
+                      ? {
+                          duration: 4.6 + (i % 5) * 0.6,
+                          delay: VEHICLE_DELAY + i * 0.35,
+                          repeat: Infinity,
+                          ease: 'easeInOut',
+                        }
+                      : undefined
+                  }
                 />
-              )}
-            </motion.g>
-          ))}
+                {!reduced && (
+                  <motion.circle
+                    cx={s.x}
+                    cy={s.y}
+                    r="4"
+                    fill="none"
+                    style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
+                    strokeWidth="0.8"
+                    initial={{ scale: 1, opacity: 0.55 }}
+                    animate={{ scale: 3, opacity: 0 }}
+                    transition={{
+                      duration: 3.4,
+                      delay: VEHICLE_DELAY + 1.2 + i * 0.35,
+                      repeat: Infinity,
+                      ease: 'easeOut',
+                    }}
+                  />
+                )}
+              </motion.g>
+            )
+          })}
         </g>
 
         {/* TOWN + WATER LABELS. */}
@@ -768,6 +963,9 @@ export default function BaytownMap() {
             </text>
           </g>
         </motion.g>
+
+        </motion.g>
+        {/* /GEOGRAPHIC LAYER ↑ ambient drift ends; chrome below stays static. */}
 
         {/* COMPASS ROSE — top right. */}
         <motion.g

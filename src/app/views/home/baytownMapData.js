@@ -46,6 +46,17 @@ export const PIXELS_PER_MILE = (() => {
   return Math.hypot(b.x - a.x, b.y - a.y) / (0.1 * 69.17)
 })()
 
+// Convert an array of [lng, lat] vertices into an SVG path string using the
+// same Mercator transform — used so new roads added in geographic coordinates
+// stay consistent with the baked OSM-derived alignments above.
+const projectPath = coords =>
+  coords
+    .map(([lng, lat], i) => {
+      const p = project(lng, lat)
+      return `${i ? 'L' : 'M'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`
+    })
+    .join(' ')
+
 // Real [lng, lat] for every labeled place. `label` offsets keep text clear of
 // the bay and of neighboring pins.
 export const TOWNS = [
@@ -56,6 +67,15 @@ export const TOWNS = [
   { name: 'Pasadena', lng: -95.2091, lat: 29.6911, anchor: 'end', dx: -8, dy: 4 },
   { name: 'Deer Park', lng: -95.1235, lat: 29.705, anchor: 'middle', dx: 0, dy: 16 },
   { name: 'La Porte', lng: -95.0193, lat: 29.6658, anchor: 'end', dx: -8, dy: 4 },
+  { name: 'Lynchburg', lng: -95.0782, lat: 29.766, anchor: 'end', dx: -8, dy: 0 },
+  { name: "Morgan's Pt", lng: -94.99, lat: 29.682, anchor: 'start', dx: 8, dy: 12 },
+  { name: 'Shoreacres', lng: -95.0114, lat: 29.6177, anchor: 'end', dx: -8, dy: 4 },
+  { name: 'Seabrook', lng: -95.0277, lat: 29.5641, anchor: 'end', dx: -8, dy: 4 },
+  { name: 'Beach City', lng: -94.911, lat: 29.747, anchor: 'start', dx: 8, dy: 4 },
+  { name: 'Cove', lng: -94.832, lat: 29.79, anchor: 'start', dx: 8, dy: 4 },
+  { name: 'Anahuac', lng: -94.6783, lat: 29.767, anchor: 'middle', dx: 0, dy: 16 },
+  { name: 'Dayton', lng: -94.889, lat: 30.046, anchor: 'middle', dx: 0, dy: 16 },
+  { name: 'Crosby', lng: -95.0608, lat: 29.911, anchor: 'middle', dx: 0, dy: -10 },
 ]
 
 // Baytown — the "YOU ARE HERE" anchor.
@@ -101,5 +121,108 @@ export const ROADS = {
   ],
   ship: [
     'M 888.9 882.5 L 811.1 742.2 L 755.6 627.3 L 700.0 525.1 L 661.1 448.4 L 622.2 397.2 L 555.6 378.0 L 466.7 371.6 L 388.9 378.0 L 333.3 371.6',
+  ],
+  // Grand Parkway (TX-99) — eastern arc swinging from north of Houston around
+  // Mont Belvieu and down toward the bay's east shore. Real OSM alignment is
+  // segmented; we draw the through-corridor.
+  tx99: [
+    projectPath([
+      [-95.46, 30.05],
+      [-95.42, 29.97],
+      [-95.34, 29.93],
+      [-95.24, 29.93],
+      [-95.13, 29.945],
+      [-95.02, 29.95],
+      [-94.93, 29.93],
+      [-94.87, 29.89],
+      [-94.83, 29.83],
+      [-94.82, 29.74],
+      [-94.84, 29.65],
+      [-94.9, 29.55],
+      [-94.99, 29.46],
+    ]),
+  ],
+  // Spur 330 — short freeway connector from I-10 down into central Baytown.
+  spur330: [
+    projectPath([
+      [-94.944, 29.792],
+      [-94.949, 29.776],
+      [-94.957, 29.762],
+      [-94.964, 29.748],
+    ]),
+  ],
+  // Fred Hartman Bridge — the cable-stay crossing of the Houston Ship Channel
+  // from La Porte over to Baytown's Bayway Dr approach.
+  hartman: [
+    projectPath([
+      [-95.022, 29.679],
+      [-95.014, 29.692],
+      [-95.005, 29.706],
+      [-94.997, 29.72],
+    ]),
+  ],
+  // Decker Dr (TX-330 surface) — east-west arterial under I-10 through Baytown.
+  decker: [
+    projectPath([
+      [-95.015, 29.755],
+      [-94.99, 29.75],
+      [-94.965, 29.747],
+      [-94.94, 29.745],
+      [-94.915, 29.744],
+    ]),
+  ],
+  // Garth Rd — Baytown's main north-south arterial.
+  garth: [
+    projectPath([
+      [-94.969, 29.808],
+      [-94.972, 29.78],
+      [-94.976, 29.75],
+      [-94.978, 29.72],
+      [-94.982, 29.69],
+    ]),
+  ],
+  // N Main / Alexander Dr — parallel N-S corridor west of Garth.
+  mainAlexander: [
+    projectPath([
+      [-95.005, 29.785],
+      [-95.008, 29.76],
+      [-95.005, 29.735],
+      [-94.998, 29.71],
+    ]),
+  ],
+  // Bayway Dr — south-Baytown surface, feeds the Hartman Bridge approach.
+  bayway: [
+    projectPath([
+      [-94.978, 29.745],
+      [-94.987, 29.725],
+      [-94.998, 29.71],
+      [-95.012, 29.694],
+    ]),
+  ],
+  // Secondary / county-grade roads — thin mesh to suggest a real road network
+  // out past the named arterials. These are stylized representations of FM
+  // routes (Dayton↔Cove, Anahuac↔Mont Belvieu, Crosby↔Highlands, etc.).
+  secondary: [
+    // Dayton south to Cove
+    projectPath([[-94.892, 30.04], [-94.88, 29.97], [-94.87, 29.88], [-94.85, 29.81]]),
+    // Anahuac west to Mont Belvieu
+    projectPath([[-94.678, 29.77], [-94.78, 29.79], [-94.85, 29.83], [-94.886, 29.85]]),
+    // Crosby south to Channelview / I-10
+    projectPath([[-95.062, 29.91], [-95.05, 29.86], [-95.03, 29.82], [-95.02, 29.78]]),
+    // Highlands east to Mont Belvieu connector (FM-565-ish)
+    projectPath([[-95.05, 29.82], [-94.99, 29.83], [-94.94, 29.85], [-94.89, 29.85]]),
+    // Lynchburg ferry road east-west
+    projectPath([[-95.085, 29.768], [-95.04, 29.77], [-94.99, 29.772]]),
+    // Bayshore drive: La Porte / Shoreacres / Seabrook south
+    projectPath([
+      [-95.02, 29.665],
+      [-95.012, 29.617],
+      [-95.028, 29.564],
+      [-95.04, 29.52],
+    ]),
+    // Trinity Bay east shore service road
+    projectPath([[-94.69, 29.79], [-94.685, 29.72], [-94.7, 29.66], [-94.74, 29.6]]),
+    // Galveston Bay north loop (eastern shore mesh)
+    projectPath([[-94.83, 29.83], [-94.83, 29.77], [-94.85, 29.71], [-94.88, 29.65]]),
   ],
 }
