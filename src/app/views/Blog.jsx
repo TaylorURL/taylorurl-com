@@ -24,6 +24,7 @@ const CATEGORIES = ['All', ...Array.from(new Set(BLOG_POSTS.map(p => p.category)
 function CategoryChip({ category, active, onClick, count }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-pressed={active}
       className={`group inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
