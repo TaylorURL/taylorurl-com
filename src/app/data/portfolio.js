@@ -43,4 +43,18 @@ export const PORTFOLIO_PROJECTS = [
     description:
       'A professional site for a Galveston Bay barge fleeting company. Services, fleet capacity, and contact details laid out to look like the serious operation it is.',
   },
+  {
+    name: 'Hollingshead Harbor',
+    url: 'https://hollingsheadharbor.com',
+    displayUrl: 'hollingsheadharbor.com',
+    description:
+      'The official site for Hollingshead Harbor. A clear front door for customers — learn about the company, apply, and get in touch — all in one place.',
+  },
+  {
+    name: 'Smyrna Tools',
+    url: 'https://smyrnatools.com',
+    displayUrl: 'smyrnatools.com',
+    description:
+      'A regional management tool for a concrete ready-mix operation. Tracks assets, personnel, productivity, and efficiency so the team can run the yard from one screen.',
+  },
 ]

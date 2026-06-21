@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
+import TopographicDotField from './TopographicDotField'
 
 const HERO_META = [
   { k: 'Based in', v: 'Baytown, TX' },
@@ -15,6 +16,7 @@ export default function HeroSection() {
   return (
     <section className="relative isolate flex min-h-[100svh] items-stretch overflow-hidden bg-bg pt-24 text-ink">
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
+      <TopographicDotField />
       <div
         className="pointer-events-none absolute left-1/2 top-0 h-[640px] w-[1100px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-accent/15 blur-[160px]"
         aria-hidden="true"
