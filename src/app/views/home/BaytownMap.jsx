@@ -449,8 +449,8 @@ export default function BaytownMap() {
           </motion.g>
         </motion.g>
 
-        {/* BAYTOWN "YOU ARE HERE" MARKER */}
-        <g transform="translate(820 360)">
+        {/* BAYTOWN "YOU ARE HERE" MARKER — pinned where Baytown meets the bay */}
+        <g transform="translate(900 560)">
           {/* outer pulse rings */}
           {!reduced && (
             <>
