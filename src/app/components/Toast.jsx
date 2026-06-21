@@ -67,6 +67,7 @@ export function ToastProvider({ children }) {
                 )}
                 <span className="text-[14px] font-medium tracking-tight">{toast.message}</span>
                 <button
+                  type="button"
                   onClick={() => removeToast(toast.id)}
                   className="ml-2 text-ink-faint transition-colors hover:text-ink"
                   aria-label="Dismiss notification"

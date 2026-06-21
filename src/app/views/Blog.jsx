@@ -24,6 +24,7 @@ const CATEGORIES = ['All', ...Array.from(new Set(BLOG_POSTS.map(p => p.category)
 function CategoryChip({ category, active, onClick, count }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       aria-pressed={active}
       className={`group inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
@@ -316,7 +317,9 @@ export default function Blog() {
               />
               {search && (
                 <button
+                  type="button"
                   onClick={clearSearch}
+                  aria-label="Clear search"
                   className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-paper-faint hover:text-ink-paper"
                 >
                   <X className="h-3.5 w-3.5" />
@@ -385,6 +388,7 @@ export default function Blog() {
               </p>
               <p className="mt-3 text-[16px] text-ink-paper">No articles match that.</p>
               <button
+                type="button"
                 onClick={() => {
                   clearSearch()
                   setCategory('All')
@@ -399,6 +403,7 @@ export default function Blog() {
           {totalPages > 1 && (
             <div className="mt-12 flex items-center justify-center gap-2">
               <button
+                type="button"
                 onClick={() => setPage(currentPage - 1)}
                 disabled={currentPage <= 1}
                 aria-label="Previous page"
@@ -411,6 +416,7 @@ export default function Blog() {
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                 <button
                   key={page}
+                  type="button"
                   onClick={() => setPage(page)}
                   aria-label={`Page ${page}`}
                   aria-current={page === currentPage ? 'page' : undefined}
@@ -425,6 +431,7 @@ export default function Blog() {
               ))}
 
               <button
+                type="button"
                 onClick={() => setPage(currentPage + 1)}
                 disabled={currentPage >= totalPages}
                 aria-label="Next page"
