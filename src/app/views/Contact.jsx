@@ -103,6 +103,13 @@ ${formData.message}
     'mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint'
   const errorClass = 'mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-red-600'
 
+  // Scroll-driven backdrop on the "What's included" band — the blueprint grid
+  // drifts behind the static checklist as the band scrolls past, giving the
+  // dark section depth without touching the copy itself.
+  const { ref: includedRef, transform: includedGridTransform } = useScrollParallax({
+    range: [0, -70],
+  })
+
   return (
     <div>
       <Seo
