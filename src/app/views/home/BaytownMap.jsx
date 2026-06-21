@@ -71,14 +71,27 @@ const VIEWBOX = `0 0 1200 ${VIEWBOX_HEIGHT}`
 // Projected anchor points (all flow through the single `project()` transform).
 const BAYTOWN_PT = project(BAYTOWN.lng, BAYTOWN.lat)
 const TOWN_PTS = TOWNS.map(town => ({ ...town, ...project(town.lng, town.lat) }))
+const MAJOR_CITY_PTS = MAJOR_CITIES.map(city => ({
+  ...city,
+  ...project(city.lng, city.lat),
+}))
 
-// Longest chain of each driveable route — used as the motion path for cars.
+// Visible Houston-Baytown segment of each driveable route — used as the
+// motion path for cars and the lane-flow dashes. Kept short so vehicles
+// pace correctly across the visible frame rather than racing along the full
+// regional extension out to San Antonio or Beaumont.
 const I10_DRIVE = ROADS.i10[0]
 const TX146_DRIVE = ROADS.tx146[0]
 
-// Highway shields, anchored at real points that sit on each route.
+// Highway shields, anchored at real points that sit on each route. `strong`
+// marks the interstate-grade shields (I-10, I-45) so they stand a step
+// above the US-highway and state-highway markers.
 const SHIELDS = [
   { label: 'I-10', wide: false, strong: true, ...project(-95.04, 29.781) },
+  { label: 'I-45', wide: false, strong: true, ...project(-95.385, 29.83) },
+  { label: '59', wide: false, strong: false, ...project(-95.30, 29.86) },
+  { label: '290', wide: false, strong: false, ...project(-95.495, 29.84) },
+  { label: '288', wide: false, strong: false, ...project(-95.376, 29.67) },
   { label: '146', wide: false, strong: false, ...project(-94.935, 29.64) },
   { label: '225', wide: false, strong: false, ...project(-95.19, 29.726) },
   { label: 'BW 8', wide: true, strong: false, ...project(-95.165, 29.86) },
