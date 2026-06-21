@@ -1,11 +1,13 @@
 import { Link, useParams, Navigate } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { useRef } from 'react'
 import { ArrowLeft, ArrowUpRight, Calendar, Clock, Tag } from 'lucide-react'
 import Seo from '@components/Seo'
 import { BLOG_POSTS } from '@data/blog'
 import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
 import { fadeInUp } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
+import { useScrollParallax } from '@hooks/useScrollParallax'
 
 const MAX_DESCRIPTION_LENGTH = 155
 
