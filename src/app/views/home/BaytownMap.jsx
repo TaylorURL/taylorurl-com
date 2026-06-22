@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { useRef } from 'react'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 import {
   BAY_FILL,
   BAYTOWN,
@@ -173,6 +174,9 @@ const CLOUDS = [
 
 export default function BaytownMap() {
   const reduced = useReducedMotion()
+  const containerRef = useRef(null)
+  const inView = useInView(containerRef, { margin: '200px 0px' })
+  const ambient = inView && !reduced
 
   // Stroke-draw intro for roads / coastline. With `pathLength=1` the dash math
   // is normalized regardless of the path's real length.
@@ -223,9 +227,8 @@ export default function BaytownMap() {
   // group so it stays rock-steady and on-screen. Reduced motion gets the
   // static end-state at the same scale.
   const OVERSCAN = 1.06
-  const ambientMotion = reduced
-    ? { initial: false, animate: { scale: OVERSCAN, x: 0, y: 0 } }
-    : {
+  const ambientMotion = ambient
+    ? {
         initial: { scale: OVERSCAN, x: 0, y: 0 },
         animate: {
           scale: [OVERSCAN, OVERSCAN + 0.012, OVERSCAN + 0.006, OVERSCAN],
@@ -239,9 +242,11 @@ export default function BaytownMap() {
           ease: 'easeInOut',
         },
       }
+    : { initial: false, animate: { scale: OVERSCAN, x: 0, y: 0 } }
 
   return (
     <div
+      ref={containerRef}
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
@@ -462,16 +467,16 @@ export default function BaytownMap() {
           <motion.path
             d={BAY_FILL}
             fill="url(#bay-sheen)"
-            animate={reduced ? undefined : { opacity: [0.65, 1, 0.65] }}
+            animate={ambient ? { opacity: [0.65, 1, 0.65] } : undefined}
             transition={
-              reduced
-                ? undefined
-                : {
+              ambient
+                ? {
                     duration: 7.5,
                     delay: VEHICLE_DELAY,
                     repeat: Infinity,
                     ease: 'easeInOut',
                   }
+                : undefined
             }
           />
         </motion.g>
@@ -696,9 +701,9 @@ export default function BaytownMap() {
             strokeWidth="0.9"
             strokeDasharray="8 12"
             initial={false}
-            animate={reduced ? undefined : { strokeDashoffset: [0, -40] }}
+            animate={ambient ? { strokeDashoffset: [0, -40] } : undefined}
             transition={
-              reduced ? undefined : { duration: 2.6, repeat: Infinity, ease: 'linear' }
+              ambient ? { duration: 2.6, repeat: Infinity, ease: 'linear' } : undefined
             }
           />
         )}
@@ -713,9 +718,9 @@ export default function BaytownMap() {
             strokeWidth="0.75"
             strokeDasharray="6 14"
             initial={false}
-            animate={reduced ? undefined : { strokeDashoffset: [0, 40] }}
+            animate={ambient ? { strokeDashoffset: [0, 40] } : undefined}
             transition={
-              reduced ? undefined : { duration: 3.4, repeat: Infinity, ease: 'linear' }
+              ambient ? { duration: 3.4, repeat: Infinity, ease: 'linear' } : undefined
             }
           />
         )}
@@ -728,9 +733,9 @@ export default function BaytownMap() {
             strokeWidth="0.65"
             strokeDasharray="5 13"
             initial={false}
-            animate={reduced ? undefined : { strokeDashoffset: [0, -36] }}
+            animate={ambient ? { strokeDashoffset: [0, -36] } : undefined}
             transition={
-              reduced ? undefined : { duration: 3.0, repeat: Infinity, ease: 'linear' }
+              ambient ? { duration: 3.0, repeat: Infinity, ease: 'linear' } : undefined
             }
           />
         )}
@@ -766,7 +771,7 @@ export default function BaytownMap() {
             without being noisy. */}
         <g>
           {TOWN_PTS.map((s, i) => {
-            const twinkles = !reduced && i % 3 === 0
+            const twinkles = ambient && i % 3 === 0
             return (
               <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
                 <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
@@ -787,7 +792,7 @@ export default function BaytownMap() {
                       : undefined
                   }
                 />
-                {!reduced && (
+                {ambient && (
                   <motion.circle
                     cx={s.x}
                     cy={s.y}
@@ -919,7 +924,7 @@ export default function BaytownMap() {
               y={c.y}
               width={80 * c.scale}
               height={24 * c.scale}
-              animate={reduced ? undefined : { x: [-160, 1320] }}
+              animate={ambient ? { x: [-160, 1320] } : undefined}
               transition={{
                 duration: c.duration,
                 delay: VEHICLE_DELAY + c.delay,
@@ -940,7 +945,7 @@ export default function BaytownMap() {
           ].map((v, i) => (
             <motion.g
               key={`car-${i}`}
-              animate={reduced ? undefined : { offsetDistance: v.dir }}
+              animate={ambient ? { offsetDistance: v.dir } : undefined}
               style={{ offsetPath: `path('${I10_DRIVE}')`, offsetRotate: 'auto' }}
               transition={{
                 duration: v.duration,
@@ -957,7 +962,7 @@ export default function BaytownMap() {
         {BOAT_ROUTES.map((r, i) => (
           <motion.g
             key={`boat-${i}`}
-            animate={reduced ? undefined : { offsetDistance: ['0%', '100%'] }}
+            animate={ambient ? { offsetDistance: ['0%', '100%'] } : undefined}
             style={{ offsetPath: `path('${r.d}')`, offsetRotate: 'auto' }}
             transition={{
               duration: r.duration,
@@ -967,7 +972,7 @@ export default function BaytownMap() {
             }}
           >
             <motion.g
-              animate={reduced ? undefined : { y: [0, -1.5, 0] }}
+              animate={ambient ? { y: [0, -1.5, 0] } : undefined}
               transition={{
                 duration: 4.2 + i * 0.6,
                 delay: VEHICLE_DELAY,
@@ -988,7 +993,7 @@ export default function BaytownMap() {
         >
           <circle cx="0" cy="0" r="50" fill="url(#pin-glow)" />
 
-          {!reduced &&
+          {ambient &&
             [0, 1.1, 2.2].map((delay, i) => (
               <motion.circle
                 key={`ring-${i}`}

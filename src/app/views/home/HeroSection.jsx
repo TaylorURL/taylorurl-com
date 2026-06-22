@@ -58,11 +58,13 @@ export default function HeroSection() {
       />
 
       <div
-        className="pointer-events-none absolute left-1/2 top-0 h-[640px] w-[1100px] -translate-x-1/2 -translate-y-1/3 rounded-full bg-accent/15 blur-[160px]"
+        className="pointer-events-none absolute left-1/2 top-0 h-[960px] w-[1420px] -translate-x-1/2 -translate-y-1/3 rounded-full opacity-[0.15]"
+        style={{ background: 'radial-gradient(ellipse at center, var(--accent), transparent 70%)' }}
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -right-32 bottom-0 h-[420px] w-[640px] rounded-full bg-accent/10 blur-[140px]"
+        className="pointer-events-none absolute -right-32 bottom-0 h-[700px] w-[920px] rounded-full opacity-10"
+        style={{ background: 'radial-gradient(ellipse at center, var(--accent), transparent 70%)' }}
         aria-hidden="true"
       />
 
