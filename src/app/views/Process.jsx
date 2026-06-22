@@ -153,7 +153,7 @@ function TimelineRow({ step, index }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:col-span-1">
+      <div className="grid grid-cols-1 gap-px overflow-hidden border border-hair-paper bg-hair-paper sm:grid-cols-2 lg:col-span-1">
         <div className="bg-paper p-5">
           <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
             Your part
