@@ -701,9 +701,9 @@ export default function BaytownMap() {
             strokeWidth="0.9"
             strokeDasharray="8 12"
             initial={false}
-            animate={reduced ? undefined : { strokeDashoffset: [0, -40] }}
+            animate={ambient ? { strokeDashoffset: [0, -40] } : undefined}
             transition={
-              reduced ? undefined : { duration: 2.6, repeat: Infinity, ease: 'linear' }
+              ambient ? { duration: 2.6, repeat: Infinity, ease: 'linear' } : undefined
             }
           />
         )}
