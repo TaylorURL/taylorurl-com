@@ -993,7 +993,7 @@ export default function BaytownMap() {
         >
           <circle cx="0" cy="0" r="50" fill="url(#pin-glow)" />
 
-          {!reduced &&
+          {ambient &&
             [0, 1.1, 2.2].map((delay, i) => (
               <motion.circle
                 key={`ring-${i}`}
