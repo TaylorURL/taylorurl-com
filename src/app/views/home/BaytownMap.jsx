@@ -771,7 +771,7 @@ export default function BaytownMap() {
             without being noisy. */}
         <g>
           {TOWN_PTS.map((s, i) => {
-            const twinkles = !reduced && i % 3 === 0
+            const twinkles = ambient && i % 3 === 0
             return (
               <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
                 <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
