@@ -303,7 +303,7 @@ export default function About() {
                     {step.description}
                   </p>
                 </div>
-                <div className="mt-auto grid grid-cols-2 gap-px overflow-hidden border-t border-hair-paper pt-5">
+                <div className="mt-auto grid grid-cols-1 gap-px overflow-hidden border-t border-hair-paper pt-5 sm:grid-cols-2">
                   <div className="pr-4">
                     <p className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
                       <Users className="h-3 w-3" /> You
