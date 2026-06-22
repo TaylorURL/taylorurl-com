@@ -227,9 +227,8 @@ export default function BaytownMap() {
   // group so it stays rock-steady and on-screen. Reduced motion gets the
   // static end-state at the same scale.
   const OVERSCAN = 1.06
-  const ambientMotion = reduced
-    ? { initial: false, animate: { scale: OVERSCAN, x: 0, y: 0 } }
-    : {
+  const ambientMotion = ambient
+    ? {
         initial: { scale: OVERSCAN, x: 0, y: 0 },
         animate: {
           scale: [OVERSCAN, OVERSCAN + 0.012, OVERSCAN + 0.006, OVERSCAN],
@@ -243,6 +242,7 @@ export default function BaytownMap() {
           ease: 'easeInOut',
         },
       }
+    : { initial: false, animate: { scale: OVERSCAN, x: 0, y: 0 } }
 
   return (
     <div
