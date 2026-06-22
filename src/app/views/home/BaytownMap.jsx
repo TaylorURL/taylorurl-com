@@ -733,9 +733,9 @@ export default function BaytownMap() {
             strokeWidth="0.65"
             strokeDasharray="5 13"
             initial={false}
-            animate={reduced ? undefined : { strokeDashoffset: [0, -36] }}
+            animate={ambient ? { strokeDashoffset: [0, -36] } : undefined}
             transition={
-              reduced ? undefined : { duration: 3.0, repeat: Infinity, ease: 'linear' }
+              ambient ? { duration: 3.0, repeat: Infinity, ease: 'linear' } : undefined
             }
           />
         )}
