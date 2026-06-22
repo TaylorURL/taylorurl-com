@@ -945,7 +945,7 @@ export default function BaytownMap() {
           ].map((v, i) => (
             <motion.g
               key={`car-${i}`}
-              animate={reduced ? undefined : { offsetDistance: v.dir }}
+              animate={ambient ? { offsetDistance: v.dir } : undefined}
               style={{ offsetPath: `path('${I10_DRIVE}')`, offsetRotate: 'auto' }}
               transition={{
                 duration: v.duration,
