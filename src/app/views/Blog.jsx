@@ -27,7 +27,7 @@ function CategoryChip({ category, active, onClick, count }) {
       type="button"
       onClick={onClick}
       aria-pressed={active}
-      className={`group inline-flex items-center gap-2 rounded-sm border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
+      className={`group inline-flex items-center gap-2 rounded-sm border px-3 py-2.5 font-mono text-[10px] uppercase tracking-[0.18em] transition-all ${
         active
           ? 'border-accent bg-accent text-white'
           : 'border-hair-paper-strong text-paper-soft hover:border-ink-paper hover:text-ink-paper'
@@ -331,7 +331,7 @@ export default function Blog() {
                   type="button"
                   onClick={clearSearch}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-paper-faint hover:text-ink-paper"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-2 text-paper-faint hover:text-ink-paper"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>

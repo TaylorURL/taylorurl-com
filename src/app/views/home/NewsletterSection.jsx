@@ -112,7 +112,7 @@ export default function NewsletterSection() {
                 placeholder="you@yourbusiness.com"
                 required
                 aria-label="Email address"
-                className={`${INPUT_DARK} flex-1 border-none bg-transparent px-4 py-3.5 ring-0 focus:ring-0 focus:border-transparent`}
+                className={`${INPUT_DARK} flex-1 border-none bg-transparent px-4 py-3.5`}
               />
               <button
                 type="submit"
