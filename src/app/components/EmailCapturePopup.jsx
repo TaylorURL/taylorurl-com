@@ -196,7 +196,7 @@ export default function EmailCapturePopup() {
               type="button"
               onClick={() => close('dismissed')}
               aria-label="Close email signup"
-              className="absolute right-4 top-4 rounded-sm p-1.5 text-paper-faint transition hover:bg-ink-paper/5 hover:text-ink-paper"
+              className="absolute right-4 top-4 rounded-sm p-2.5 text-paper-faint transition hover:bg-ink-paper/5 hover:text-ink-paper"
             >
               <X className="h-4 w-4" />
             </button>
