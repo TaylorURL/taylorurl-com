@@ -220,7 +220,7 @@ function Pagination({ currentPage, totalPages, onChange }) {
           onClick={() => onChange(page)}
           aria-label={`Page ${page}`}
           aria-current={page === currentPage ? 'page' : undefined}
-          className={`inline-flex h-9 w-9 items-center justify-center rounded-sm font-mono text-[11px] tracking-[0.18em] transition-colors ${
+          className={`inline-flex h-10 w-10 items-center justify-center rounded-sm font-mono text-[11px] tracking-[0.18em] transition-colors ${
             page === currentPage
               ? 'bg-accent text-white'
               : 'border border-hair-paper-strong text-paper-soft hover:bg-ink-paper hover:text-paper'
