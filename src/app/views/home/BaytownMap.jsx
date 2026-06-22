@@ -792,7 +792,7 @@ export default function BaytownMap() {
                       : undefined
                   }
                 />
-                {!reduced && (
+                {ambient && (
                   <motion.circle
                     cx={s.x}
                     cy={s.y}
