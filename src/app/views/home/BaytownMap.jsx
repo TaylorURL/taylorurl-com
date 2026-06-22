@@ -924,7 +924,7 @@ export default function BaytownMap() {
               y={c.y}
               width={80 * c.scale}
               height={24 * c.scale}
-              animate={reduced ? undefined : { x: [-160, 1320] }}
+              animate={ambient ? { x: [-160, 1320] } : undefined}
               transition={{
                 duration: c.duration,
                 delay: VEHICLE_DELAY + c.delay,
