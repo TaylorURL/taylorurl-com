@@ -8,7 +8,8 @@ export default function FinalCtaSection() {
     <section className="relative overflow-hidden border-t border-hair bg-bg py-28 text-ink sm:py-40">
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <div
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[420px] w-[820px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-accent/15 blur-[140px]"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[700px] w-[1100px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.15]"
+        style={{ background: 'radial-gradient(ellipse at center, var(--accent), transparent 70%)' }}
         aria-hidden="true"
       />
       <div
