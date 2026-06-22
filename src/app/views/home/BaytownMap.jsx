@@ -962,7 +962,7 @@ export default function BaytownMap() {
         {BOAT_ROUTES.map((r, i) => (
           <motion.g
             key={`boat-${i}`}
-            animate={reduced ? undefined : { offsetDistance: ['0%', '100%'] }}
+            animate={ambient ? { offsetDistance: ['0%', '100%'] } : undefined}
             style={{ offsetPath: `path('${r.d}')`, offsetRotate: 'auto' }}
             transition={{
               duration: r.duration,
