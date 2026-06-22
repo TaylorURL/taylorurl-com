@@ -331,7 +331,7 @@ export default function Blog() {
                   type="button"
                   onClick={clearSearch}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-0.5 text-paper-faint hover:text-ink-paper"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-2 text-paper-faint hover:text-ink-paper"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
