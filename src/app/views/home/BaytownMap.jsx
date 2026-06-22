@@ -174,6 +174,9 @@ const CLOUDS = [
 
 export default function BaytownMap() {
   const reduced = useReducedMotion()
+  const containerRef = useRef(null)
+  const inView = useInView(containerRef, { margin: '200px 0px' })
+  const ambient = inView && !reduced
 
   // Stroke-draw intro for roads / coastline. With `pathLength=1` the dash math
   // is normalized regardless of the path's real length.
