@@ -972,7 +972,7 @@ export default function BaytownMap() {
             }}
           >
             <motion.g
-              animate={reduced ? undefined : { y: [0, -1.5, 0] }}
+              animate={ambient ? { y: [0, -1.5, 0] } : undefined}
               transition={{
                 duration: 4.2 + i * 0.6,
                 delay: VEHICLE_DELAY,
