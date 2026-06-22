@@ -467,16 +467,16 @@ export default function BaytownMap() {
           <motion.path
             d={BAY_FILL}
             fill="url(#bay-sheen)"
-            animate={reduced ? undefined : { opacity: [0.65, 1, 0.65] }}
+            animate={ambient ? { opacity: [0.65, 1, 0.65] } : undefined}
             transition={
-              reduced
-                ? undefined
-                : {
+              ambient
+                ? {
                     duration: 7.5,
                     delay: VEHICLE_DELAY,
                     repeat: Infinity,
                     ease: 'easeInOut',
                   }
+                : undefined
             }
           />
         </motion.g>
