@@ -246,6 +246,7 @@ export default function BaytownMap() {
 
   return (
     <div
+      ref={containerRef}
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
