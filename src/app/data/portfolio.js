@@ -31,7 +31,7 @@ export const PORTFOLIO_PROJECTS = [
     name: 'Smyrna Tools',
     url: 'https://smyrnatools.com',
     displayUrl: 'smyrnatools.com',
-    tagline: 'Operations SaaS · React · Supabase',
+    tagline: 'Operations SaaS · Management dashboard',
     description:
       'A regional management tool for a concrete ready-mix operation. Tracks assets, personnel, productivity, and efficiency so the team can run the yard from one screen.',
   },
