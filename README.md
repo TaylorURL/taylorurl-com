@@ -1,18 +1,22 @@
-<p align="center"><img src="public/images/TaylorURL-Logo.png" alt="TaylorURL" width="200"></p>
+<p align="center"><img src="public/images/TaylorURL-Logo.png" width="200" alt="TaylorURL" /></p>
 
 <h1 align="center">TaylorURL</h1>
 
-<p align="center">The studio site for <strong>TaylorURL LLC</strong> — custom websites and JavaScript applications for local businesses across Baytown and the greater Houston area. Live at <a href="https://taylorurl.com">taylorurl.com</a>.</p>
+<p align="center"><b>Custom websites and JavaScript applications for local businesses.</b></p>
+
+<p align="center">The studio site for TaylorURL LLC, serving Baytown and the greater Houston area.<br />Live at <a href="https://taylorurl.com">taylorurl.com</a>.</p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-5.2.61-2f6bff?style=flat-square" alt="Version 5.2.61">
-  <img src="https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React 19">
-  <img src="https://img.shields.io/badge/Vite-7-646CFF?style=flat-square&logo=vite&logoColor=white" alt="Vite 7">
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3-38BDF8?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3">
-  <img src="https://img.shields.io/badge/Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
-  <img src="https://img.shields.io/badge/Claude-D97757?style=flat-square&logo=anthropic&logoColor=white" alt="Anthropic Claude">
-  <img src="https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel">
+  <img src="https://img.shields.io/badge/version-5.2.61-2f6bff?style=for-the-badge" alt="Version 5.2.61" />
+  <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
+  <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
+  <img src="https://img.shields.io/badge/Supabase-2f6bff?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Claude-2f6bff?style=for-the-badge&logo=anthropic&logoColor=white" alt="Anthropic Claude" />
+  <img src="https://img.shields.io/badge/Vercel-2f6bff?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
 </p>
+
+<br />
 
 - **A marketing site built to rank** — every route is prerendered to static HTML at build time with per-page meta and JSON-LD, so crawlers get real SEO markup instead of an empty SPA shell.
 - **An AI live-chat that captures leads** — a floating assistant streams Anthropic's Claude from a Supabase edge function, answers project questions, and files qualified leads mid-conversation through a `capture_lead` tool.
