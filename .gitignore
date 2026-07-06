@@ -22,4 +22,7 @@ key/
 taylorurl.key
 .env
 .env.local
-supabase/.temp/
+supabase/.temp/.idea/
+.vscode/
+*.iml
+*.sql
