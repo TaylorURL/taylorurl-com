@@ -120,9 +120,9 @@ taylorurl-com/
 │   ├── app/
 │   │   ├── components/        Layout, Navigation, ChatWidget, mockups, Seo
 │   │   ├── views/             Route views (Home, Services, Portfolio, Blog, Status…)
-│   │   ├── hooks/             Toast + scroll/parallax hooks
+│   │   ├── hooks/             auth, toast, blog filters, scroll/parallax
 │   │   ├── constants/         navigation, seo, animations, ui
-│   │   ├── data/              blog articles, portfolio, supabaseClient
+│   │   ├── data/              blog articles, portfolio, home copy, supabaseClient
 │   │   └── utils/             blog-HTML sanitization (DOMPurify), validation
 │   ├── lib/sunday-analyzer/   First-party cookieless pageview analytics
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
