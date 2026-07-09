@@ -16,10 +16,3 @@ verify_jwt = false
 
 [functions.error-reporting-service]
 verify_jwt = false
-
-# Live-chat assistant. Called from the public site widget on every page; the
-# browser cannot send a real JWT, so the gateway must accept the anon key
-# without verifying. The function still validates origin + applies its own
-# per-session rate limit.
-[functions.livechat-service]
-verify_jwt = false
