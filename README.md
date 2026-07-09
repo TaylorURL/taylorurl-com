@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-5.2.61-2563eb?style=for-the-badge" alt="Version 5.2.61" />
+  <img src="https://img.shields.io/badge/version-5.2.62-2563eb?style=for-the-badge" alt="Version 5.2.62" />
   <img src="https://img.shields.io/badge/React-19-2563eb?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2563eb?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2563eb?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -101,7 +101,8 @@ taylorurl-com/
 ├── api/                       Vercel serverless functions (Trustpilot rating fetch)
 ├── onboarding/                Standalone HTML client-onboarding guides
 ├── public/                    Static assets — logo, portfolio shots, robots.txt
-├── supabase/                  config.toml for analytics + error-reporting edge functions
+├── supabase/
+│   └── config.toml            Per-function runtime config for analytics + error-reporting edge functions
 ├── vite/                      Build plugins (prerender, sitemap) + shared route table
 ├── src/
 │   ├── app/
