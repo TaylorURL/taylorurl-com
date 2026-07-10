@@ -363,7 +363,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: "When I say I build custom websites, people sometimes ask what that actually means. Fair question. I do not use WordPress, Wix, or Squarespace. I build each site from scratch using modern tools that keep it quick, safe, and easy to update. <strong>Here is the version without the techie talk.</strong>",
+        text: 'When I say I build custom websites, people sometimes ask what that actually means. Fair question. I do not use WordPress, Wix, or Squarespace. I build each site from scratch using modern tools that keep it quick, safe, and easy to update. <strong>Here is the version without the techie talk.</strong>',
       },
       { type: 'h2', text: 'What People See' },
       {
@@ -377,7 +377,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'Where Your Site Lives' },
       {
         type: 'p',
-        text: "I keep your site on modern hosting that spreads it across servers around the world. When someone in Baytown opens your site, they get it from a nearby server — not one across the country. That is a big part of why my sites load so quickly, no matter where someone is browsing from.",
+        text: 'I keep your site on modern hosting that spreads it across servers around the world. When someone in Baytown opens your site, they get it from a nearby server — not one across the country. That is a big part of why my sites load so quickly, no matter where someone is browsing from.',
       },
       {
         type: 'p',
@@ -386,16 +386,16 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'Why I Skip Page-Builder Platforms' },
       {
         type: 'p',
-        text: "WordPress and the do-it-yourself builders power a lot of small business sites, but they come with baggage. Constant updates, monthly fees, security holes from add-ons, and pages that get slower the more you bolt on. I have cleaned up enough of them to know they are not the right fit for most local businesses.",
+        text: 'WordPress and the do-it-yourself builders power a lot of small business sites, but they come with baggage. Constant updates, monthly fees, security holes from add-ons, and pages that get slower the more you bolt on. I have cleaned up enough of them to know they are not the right fit for most local businesses.',
       },
       {
         type: 'p',
-        text: "My approach gives you a site that is faster, safer, and does not ask you to log in and click \"Update\" every week. <strong>I would rather build something that just works.</strong>",
+        text: 'My approach gives you a site that is faster, safer, and does not ask you to log in and click "Update" every week. <strong>I would rather build something that just works.</strong>',
       },
       { type: 'h2', text: 'What This Means for You' },
       {
         type: 'p',
-        text: "You do not need to understand any of this to work with me — that is literally my job. But I like to be straight with people about how I work. When you hire me, you get a site built the way the best online stores and brands build theirs — tuned for speed and built to last. No templates, no builders, no clutter.",
+        text: 'You do not need to understand any of this to work with me — that is literally my job. But I like to be straight with people about how I work. When you hire me, you get a site built the way the best online stores and brands build theirs — tuned for speed and built to last. No templates, no builders, no clutter.',
       },
     ],
   },

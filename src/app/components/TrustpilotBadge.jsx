@@ -49,8 +49,8 @@ export default function TrustpilotBadge({ profileUrl, variant = 'paper' }) {
       rel="noopener noreferrer"
       className={`group inline-flex items-center gap-4 rounded-sm border px-5 py-3 transition duration-200 ease-out ${
         onDark
-          ? 'border-hair-strong bg-bg text-ink hover:border-accent/60'
-          : 'border-hair-paper-strong bg-paper text-ink-paper hover:border-accent/60'
+          ? 'border-hair-strong hover:border-accent/60 bg-bg text-ink'
+          : 'border-hair-paper-strong hover:border-accent/60 bg-paper text-ink-paper'
       }`}
       aria-label={`${label} — ${ratingValue} out of 5 based on ${reviewCount} Trustpilot reviews`}
     >

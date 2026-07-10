@@ -13,27 +13,6 @@ export const fadeInUp = {
   transition: { duration: 0.4, ease: EASE },
 }
 
-export const fadeInUpLarge = {
-  initial: { opacity: 0, y: 24 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: '-10% 0px' },
-  transition: { duration: 0.45, ease: EASE },
-}
-
-export const slideInLeft = {
-  initial: { opacity: 0, x: -24 },
-  whileInView: { opacity: 1, x: 0 },
-  viewport: { once: true, margin: '-10% 0px' },
-  transition: { duration: 0.45, ease: EASE },
-}
-
-export const slideInRight = {
-  initial: { opacity: 0, x: 24 },
-  whileInView: { opacity: 1, x: 0 },
-  viewport: { once: true, margin: '-10% 0px' },
-  transition: { duration: 0.45, ease: EASE },
-}
-
 export const pageTransition = {
   initial: { opacity: 0 },
   animate: { opacity: 1 },
@@ -65,9 +44,3 @@ export const slideInRightMount = {
   animate: { opacity: 1, x: 0 },
   transition: { duration: 0.45, ease: EASE },
 }
-
-export const staggerChildMount = (index, delay = 0.06) => ({
-  initial: { opacity: 0, y: 16 },
-  animate: { opacity: 1, y: 0 },
-  transition: { delay: index * delay, duration: 0.42, ease: EASE },
-})

@@ -31,13 +31,9 @@ export default function TypingRotator() {
       <span aria-hidden="true" className="mr-2 text-accent">
         ⟶
       </span>
-      <span className="sr-only">
-        {WORDS.join(', ')}
-      </span>
+      <span className="sr-only">{WORDS.join(', ')}</span>
       <span aria-hidden="true" className="relative inline-grid">
-        <span className="invisible col-start-1 row-start-1 whitespace-nowrap">
-          {LONGEST_WORD}
-        </span>
+        <span className="invisible col-start-1 row-start-1 whitespace-nowrap">{LONGEST_WORD}</span>
         <AnimatePresence mode="wait">
           <motion.span
             key={WORDS[index]}

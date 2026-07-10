@@ -11,14 +11,14 @@ import {
   TOWNS,
   VIEWBOX_HEIGHT,
   project,
-} from './baytownMapData'
+} from '@data/baytownMap'
 
 /**
  * Geographically accurate, to-scale map of the Baytown / Galveston Bay /
  * Houston corridor, drawn in the site's engineering-blueprint vocabulary
  * (hairline strokes, accent ink, mono labels, paper feel). Every spatial
  * element comes from real coordinates projected through a single Web Mercator
- * transform (see `baytownMapData.js`): the bay outline is OpenStreetMap
+ * transform (see `@data/baytownMap`): the bay outline is OpenStreetMap
  * coastline, the highways are real I-10 / I-610 / Beltway 8 / SH-146 / SH-225
  * alignments, and the towns sit at their true lat/lng — so relative distances
  * and bearings are correct (downtown Houston ~24 mi west of Baytown, Mont
@@ -90,7 +90,7 @@ const TX146_DRIVE = ROADS.tx146[0]
 const SHIELDS = [
   { label: 'I-10', wide: false, strong: true, ...project(-95.04, 29.781) },
   { label: 'I-45', wide: false, strong: true, ...project(-95.385, 29.83) },
-  { label: '59', wide: false, strong: false, ...project(-95.30, 29.86) },
+  { label: '59', wide: false, strong: false, ...project(-95.3, 29.86) },
   { label: '290', wide: false, strong: false, ...project(-95.495, 29.84) },
   { label: '288', wide: false, strong: false, ...project(-95.376, 29.67) },
   { label: '146', wide: false, strong: false, ...project(-94.935, 29.64) },
@@ -357,19 +357,9 @@ export default function BaytownMap() {
               style={{ fill: INK_SOFT, stroke: ACCENT_HI }}
               strokeWidth="0.7"
             />
-            <line
-              x1="0"
-              y1="4"
-              x2="0"
-              y2="-8"
-              style={{ stroke: ACCENT_HI }}
-              strokeWidth="0.9"
-            />
+            <line x1="0" y1="4" x2="0" y2="-8" style={{ stroke: ACCENT_HI }} strokeWidth="0.9" />
             <path d="M 0 -8 L 5.5 1 L 0 1 Z" style={{ fill: ACCENT_HI }} />
-            <path
-              d="M 0 -6 L -4.5 1 L 0 1 Z"
-              style={{ fill: ACCENT, fillOpacity: 0.78 }}
-            />
+            <path d="M 0 -6 L -4.5 1 L 0 1 Z" style={{ fill: ACCENT, fillOpacity: 0.78 }} />
           </symbol>
 
           <symbol id="car-east" viewBox="-7 -3 14 6" overflow="visible">
@@ -423,653 +413,669 @@ export default function BaytownMap() {
           {...ambientMotion}
           style={{ transformOrigin: '50% 50%', transformBox: 'view-box' }}
         >
+          {/* GRATICULE — faint 0.1° lat/lng lines for blueprint texture. */}
+          <motion.g {...fadeIntro(0, 0.8)}>
+            {GRATICULE_LATS.map((y, i) => (
+              <line
+                key={`gr-lat-${i}`}
+                x1="0"
+                y1={y}
+                x2="1200"
+                y2={y}
+                style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
+                strokeWidth="0.5"
+                strokeDasharray="2 6"
+              />
+            ))}
+            {GRATICULE_LNGS.map((x, i) => (
+              <line
+                key={`gr-lng-${i}`}
+                x1={x}
+                y1="0"
+                x2={x}
+                y2={VIEWBOX_HEIGHT}
+                style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
+                strokeWidth="0.5"
+                strokeDasharray="2 6"
+              />
+            ))}
+          </motion.g>
 
-        {/* GRATICULE — faint 0.1° lat/lng lines for blueprint texture. */}
-        <motion.g {...fadeIntro(0, 0.8)}>
-          {GRATICULE_LATS.map((y, i) => (
-            <line
-              key={`gr-lat-${i}`}
-              x1="0"
-              y1={y}
-              x2="1200"
-              y2={y}
-              style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
-              strokeWidth="0.5"
-              strokeDasharray="2 6"
+          {/* WATER — Galveston + Trinity Bay fill, wave texture, light sheen. */}
+          <motion.g {...fadeIntro(0, 0.7)}>
+            <path d={BAY_FILL} fill="url(#bay-fill)" />
+            <rect
+              x="0"
+              y="0"
+              width="1200"
+              height={VIEWBOX_HEIGHT}
+              fill="url(#wave-pattern)"
+              mask="url(#bay-clip)"
             />
-          ))}
-          {GRATICULE_LNGS.map((x, i) => (
-            <line
-              key={`gr-lng-${i}`}
-              x1={x}
-              y1="0"
-              x2={x}
-              y2={VIEWBOX_HEIGHT}
-              style={{ stroke: INK_FAINT, strokeOpacity: 0.18 }}
-              strokeWidth="0.5"
-              strokeDasharray="2 6"
+            {/* Sheen pulses subtly to suggest water shimmer. */}
+            <motion.path
+              d={BAY_FILL}
+              fill="url(#bay-sheen)"
+              animate={ambient ? { opacity: [0.65, 1, 0.65] } : undefined}
+              transition={
+                ambient
+                  ? {
+                      duration: 7.5,
+                      delay: VEHICLE_DELAY,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
+                    }
+                  : undefined
+              }
             />
-          ))}
-        </motion.g>
+          </motion.g>
 
-        {/* WATER — Galveston + Trinity Bay fill, wave texture, light sheen. */}
-        <motion.g {...fadeIntro(0, 0.7)}>
-          <path d={BAY_FILL} fill="url(#bay-fill)" />
-          <rect
-            x="0"
-            y="0"
-            width="1200"
-            height={VIEWBOX_HEIGHT}
-            fill="url(#wave-pattern)"
-            mask="url(#bay-clip)"
-          />
-          {/* Sheen pulses subtly to suggest water shimmer. */}
-          <motion.path
-            d={BAY_FILL}
-            fill="url(#bay-sheen)"
-            animate={ambient ? { opacity: [0.65, 1, 0.65] } : undefined}
-            transition={
-              ambient
-                ? {
-                    duration: 7.5,
-                    delay: VEHICLE_DELAY,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                  }
-                : undefined
-            }
-          />
-        </motion.g>
-
-        {/* COASTLINE — the real shoreline, drawing itself in first. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          <motion.path
-            d={COASTLINE.main}
-            pathLength={1}
-            strokeDasharray={1}
-            style={{ stroke: ACCENT_HI, strokeOpacity: 0.72 }}
-            strokeWidth="1.8"
-            {...drawIntro(COASTLINE_DELAY, COASTLINE_DUR)}
-          />
-          <motion.path
-            d={COASTLINE.bolivar}
-            pathLength={1}
-            strokeDasharray={1}
-            style={{ stroke: ACCENT_HI, strokeOpacity: 0.6 }}
-            strokeWidth="1.4"
-            {...drawIntro(COASTLINE_DELAY + 0.25, COASTLINE_DUR)}
-          />
-          <motion.path
-            d={COASTLINE.galveston}
-            pathLength={1}
-            strokeDasharray={1}
-            style={{ stroke: ACCENT_HI, strokeOpacity: 0.5 }}
-            strokeWidth="1.2"
-            {...drawIntro(COASTLINE_DELAY + 0.45, COASTLINE_DUR)}
-          />
-        </g>
-
-        {/* SHIP CHANNEL — the dredged shipping lane crossing the bay toward
-            the Houston turning basin, as a dashed accent water route. */}
-        <motion.g fill="none" strokeLinecap="round" {...fadeIntro(COASTLINE_DELAY + 0.7, 0.9)}>
-          {ROADS.ship.map((d, i) => (
-            <path
-              key={i}
-              d={d}
-              style={{ stroke: ACCENT_HI, strokeOpacity: 0.55 }}
+          {/* COASTLINE — the real shoreline, drawing itself in first. */}
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            <motion.path
+              d={COASTLINE.main}
+              pathLength={1}
+              strokeDasharray={1}
+              style={{ stroke: ACCENT_HI, strokeOpacity: 0.72 }}
+              strokeWidth="1.8"
+              {...drawIntro(COASTLINE_DELAY, COASTLINE_DUR)}
+            />
+            <motion.path
+              d={COASTLINE.bolivar}
+              pathLength={1}
+              strokeDasharray={1}
+              style={{ stroke: ACCENT_HI, strokeOpacity: 0.6 }}
               strokeWidth="1.4"
-              strokeDasharray="2 4"
+              {...drawIntro(COASTLINE_DELAY + 0.25, COASTLINE_DUR)}
             />
-          ))}
-        </motion.g>
+            <motion.path
+              d={COASTLINE.galveston}
+              pathLength={1}
+              strokeDasharray={1}
+              style={{ stroke: ACCENT_HI, strokeOpacity: 0.5 }}
+              strokeWidth="1.2"
+              {...drawIntro(COASTLINE_DELAY + 0.45, COASTLINE_DUR)}
+            />
+          </g>
 
-        {/* DOWNTOWN HALO — soft accent puddle behind the Houston skyline. */}
-        <motion.ellipse
-          cx={HOUSTON_PT.x}
-          cy={HOUSTON_PT.y - 6}
-          rx="150"
-          ry="96"
-          fill="url(#downtown-fade)"
-          {...fadeIntro(DETAIL_DELAY + 0.1, 0.9)}
-        />
+          {/* SHIP CHANNEL — the dredged shipping lane crossing the bay toward
+            the Houston turning basin, as a dashed accent water route. */}
+          <motion.g fill="none" strokeLinecap="round" {...fadeIntro(COASTLINE_DELAY + 0.7, 0.9)}>
+            {ROADS.ship.map((d, i) => (
+              <path
+                key={i}
+                d={d}
+                style={{ stroke: ACCENT_HI, strokeOpacity: 0.55 }}
+                strokeWidth="1.4"
+                strokeDasharray="2 4"
+              />
+            ))}
+          </motion.g>
 
-        {/* ROUTE GLOW — accent bloom under the primary corridors. */}
-        <motion.g
-          fill="none"
-          strokeLinecap="round"
-          style={{ filter: 'blur(7px)' }}
-          {...fadeIntro(ROAD_DELAY + 0.15, 0.9)}
-        >
-          {I10_DRIVE && <path d={I10_DRIVE} style={{ stroke: GLOW }} strokeWidth="9" />}
-          {TX146_DRIVE && (
-            <path d={TX146_DRIVE} style={{ stroke: GLOW, strokeOpacity: 0.85 }} strokeWidth="7" />
-          )}
-        </motion.g>
+          {/* DOWNTOWN HALO — soft accent puddle behind the Houston skyline. */}
+          <motion.ellipse
+            cx={HOUSTON_PT.x}
+            cy={HOUSTON_PT.y - 6}
+            rx="150"
+            ry="96"
+            fill="url(#downtown-fade)"
+            {...fadeIntro(DETAIL_DELAY + 0.1, 0.9)}
+          />
 
-        {/* ROAD SHADOWS — faint wider stroke under the interstates and the
+          {/* ROUTE GLOW — accent bloom under the primary corridors. */}
+          <motion.g
+            fill="none"
+            strokeLinecap="round"
+            style={{ filter: 'blur(7px)' }}
+            {...fadeIntro(ROAD_DELAY + 0.15, 0.9)}
+          >
+            {I10_DRIVE && <path d={I10_DRIVE} style={{ stroke: GLOW }} strokeWidth="9" />}
+            {TX146_DRIVE && (
+              <path d={TX146_DRIVE} style={{ stroke: GLOW, strokeOpacity: 0.85 }} strokeWidth="7" />
+            )}
+          </motion.g>
+
+          {/* ROAD SHADOWS — faint wider stroke under the interstates and the
             two main US corridors for depth. Order matches the stroke
             hierarchy below: interstates get the heaviest shadow, US
             highways a lighter one, state highways lighter still. */}
-        <motion.g fill="none" strokeLinecap="round" {...fadeIntro(ROAD_DELAY, 0.8)}>
-          {ROADS.i10.map((d, i) => (
-            <path key={`s10-${i}`} d={d} style={{ stroke: ROAD_SHADOW }} strokeWidth="6.5" />
-          ))}
-          {ROADS.i45.map((d, i) => (
-            <path key={`s45-${i}`} d={d} style={{ stroke: ROAD_SHADOW }} strokeWidth="6.5" />
-          ))}
-          {ROADS.us59.map((d, i) => (
-            <path
-              key={`s59-${i}`}
-              d={d}
-              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.85 }}
-              strokeWidth="5.4"
-            />
-          ))}
-          {ROADS.us290.map((d, i) => (
-            <path
-              key={`s290-${i}`}
-              d={d}
-              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.85 }}
-              strokeWidth="5.0"
-            />
-          ))}
-          {ROADS.tx146.map((d, i) => (
-            <path
-              key={`s146-${i}`}
-              d={d}
-              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.9 }}
-              strokeWidth="5.5"
-            />
-          ))}
-          {ROADS.tx288.map((d, i) => (
-            <path
-              key={`s288-${i}`}
-              d={d}
-              style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.8 }}
-              strokeWidth="4.6"
-            />
-          ))}
-        </motion.g>
+          <motion.g fill="none" strokeLinecap="round" {...fadeIntro(ROAD_DELAY, 0.8)}>
+            {ROADS.i10.map((d, i) => (
+              <path key={`s10-${i}`} d={d} style={{ stroke: ROAD_SHADOW }} strokeWidth="6.5" />
+            ))}
+            {ROADS.i45.map((d, i) => (
+              <path key={`s45-${i}`} d={d} style={{ stroke: ROAD_SHADOW }} strokeWidth="6.5" />
+            ))}
+            {ROADS.us59.map((d, i) => (
+              <path
+                key={`s59-${i}`}
+                d={d}
+                style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.85 }}
+                strokeWidth="5.4"
+              />
+            ))}
+            {ROADS.us290.map((d, i) => (
+              <path
+                key={`s290-${i}`}
+                d={d}
+                style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.85 }}
+                strokeWidth="5.0"
+              />
+            ))}
+            {ROADS.tx146.map((d, i) => (
+              <path
+                key={`s146-${i}`}
+                d={d}
+                style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.9 }}
+                strokeWidth="5.5"
+              />
+            ))}
+            {ROADS.tx288.map((d, i) => (
+              <path
+                key={`s288-${i}`}
+                d={d}
+                style={{ stroke: ROAD_SHADOW, strokeOpacity: 0.8 }}
+                strokeWidth="4.6"
+              />
+            ))}
+          </motion.g>
 
-        {/* HAIRLINE SECONDARY MESH — county / FM-grade fill. Drawn first so
+          {/* HAIRLINE SECONDARY MESH — county / FM-grade fill. Drawn first so
             the named arterials sit on top. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.secondary, ROAD_DELAY + 0.25, ROAD_DUR - 0.25, {
-            style: { stroke: INK_FAINT, strokeOpacity: 0.6 },
-            strokeWidth: 0.7,
-          })}
-        </g>
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawPaths(ROADS.secondary, ROAD_DELAY + 0.25, ROAD_DUR - 0.25, {
+              style: { stroke: INK_FAINT, strokeOpacity: 0.6 },
+              strokeWidth: 0.7,
+            })}
+          </g>
 
-        {/* RING ROADS — Beltway 8, I-610 inner loop, Grand Parkway (TX-99).
+          {/* RING ROADS — Beltway 8, I-610 inner loop, Grand Parkway (TX-99).
             Lighter weight than the named through-corridors because they're
             decorative texture around the visible Houston-Baytown spine. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.bw8, ROAD_DELAY + 0.35, ROAD_DUR - 0.15, {
-            style: { stroke: INK_FAINT },
-            strokeWidth: 1.6,
-          })}
-          {drawPaths(ROADS.i610, ROAD_DELAY + 0.45, ROAD_DUR - 0.2, {
-            style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
-            strokeWidth: 1.4,
-          })}
-          {drawPaths(ROADS.tx99, ROAD_DELAY + 0.4, ROAD_DUR, {
-            style: { stroke: INK_MUTE, strokeOpacity: 0.9 },
-            strokeWidth: 1.6,
-          })}
-        </g>
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawPaths(ROADS.bw8, ROAD_DELAY + 0.35, ROAD_DUR - 0.15, {
+              style: { stroke: INK_FAINT },
+              strokeWidth: 1.6,
+            })}
+            {drawPaths(ROADS.i610, ROAD_DELAY + 0.45, ROAD_DUR - 0.2, {
+              style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
+              strokeWidth: 1.4,
+            })}
+            {drawPaths(ROADS.tx99, ROAD_DELAY + 0.4, ROAD_DUR, {
+              style: { stroke: INK_MUTE, strokeOpacity: 0.9 },
+              strokeWidth: 1.6,
+            })}
+          </g>
 
-        {/* US HIGHWAYS — US-59 (I-69 corridor) toward Cleveland/Lufkin NE
+          {/* US HIGHWAYS — US-59 (I-69 corridor) toward Cleveland/Lufkin NE
             and Sugar Land/Victoria SW; US-290 NW toward Hempstead/Brenham/
             Austin. Medium stroke — between interstates and state highways. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.us59, ROAD_DELAY + 0.18, ROAD_DUR, {
-            style: { stroke: INK_MUTE },
-            strokeWidth: 2.8,
-          })}
-          {drawPaths(ROADS.us290, ROAD_DELAY + 0.22, ROAD_DUR, {
-            style: { stroke: INK_MUTE },
-            strokeWidth: 2.6,
-          })}
-        </g>
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawPaths(ROADS.us59, ROAD_DELAY + 0.18, ROAD_DUR, {
+              style: { stroke: INK_MUTE },
+              strokeWidth: 2.8,
+            })}
+            {drawPaths(ROADS.us290, ROAD_DELAY + 0.22, ROAD_DUR, {
+              style: { stroke: INK_MUTE },
+              strokeWidth: 2.6,
+            })}
+          </g>
 
-        {/* STATE HIGHWAYS — SH-146 (Mont Belvieu / La Porte spine), SH-225
+          {/* STATE HIGHWAYS — SH-146 (Mont Belvieu / La Porte spine), SH-225
             (petrochemical corridor), TX-288 (S toward Freeport), plus the
             short Spur 330 / Hartman Bridge into Baytown. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.tx146, ROAD_DELAY + 0.1, ROAD_DUR, {
-            style: { stroke: INK_MUTE },
-            strokeWidth: 2.6,
-          })}
-          {drawPaths(ROADS.tx288, ROAD_DELAY + 0.28, ROAD_DUR, {
-            style: { stroke: INK_MUTE },
-            strokeWidth: 2.4,
-          })}
-          {drawPaths(ROADS.tx225, ROAD_DELAY + 0.2, ROAD_DUR - 0.15, {
-            style: { stroke: INK_MUTE },
-            strokeWidth: 2.0,
-          })}
-          {drawPaths(ROADS.spur330, ROAD_DELAY + 0.5, ROAD_DUR - 0.3, {
-            style: { stroke: INK_MUTE },
-            strokeWidth: 1.8,
-          })}
-          {drawPaths(ROADS.hartman, ROAD_DELAY + 0.55, ROAD_DUR - 0.35, {
-            style: { stroke: INK_SOFT },
-            strokeWidth: 2.0,
-          })}
-        </g>
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawPaths(ROADS.tx146, ROAD_DELAY + 0.1, ROAD_DUR, {
+              style: { stroke: INK_MUTE },
+              strokeWidth: 2.6,
+            })}
+            {drawPaths(ROADS.tx288, ROAD_DELAY + 0.28, ROAD_DUR, {
+              style: { stroke: INK_MUTE },
+              strokeWidth: 2.4,
+            })}
+            {drawPaths(ROADS.tx225, ROAD_DELAY + 0.2, ROAD_DUR - 0.15, {
+              style: { stroke: INK_MUTE },
+              strokeWidth: 2.0,
+            })}
+            {drawPaths(ROADS.spur330, ROAD_DELAY + 0.5, ROAD_DUR - 0.3, {
+              style: { stroke: INK_MUTE },
+              strokeWidth: 1.8,
+            })}
+            {drawPaths(ROADS.hartman, ROAD_DELAY + 0.55, ROAD_DUR - 0.35, {
+              style: { stroke: INK_SOFT },
+              strokeWidth: 2.0,
+            })}
+          </g>
 
-        {/* INTERSTATES — I-10 (E-W) and I-45 (NW-SE). Drawn last in the road
+          {/* INTERSTATES — I-10 (E-W) and I-45 (NW-SE). Drawn last in the road
             stack so they sit on top of every other class. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.i10, ROAD_DELAY, ROAD_DUR, {
-            style: { stroke: INK_SOFT },
-            strokeWidth: 3.4,
-          })}
-          {drawPaths(ROADS.i45, ROAD_DELAY + 0.08, ROAD_DUR, {
-            style: { stroke: INK_SOFT },
-            strokeWidth: 3.4,
-          })}
-        </g>
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawPaths(ROADS.i10, ROAD_DELAY, ROAD_DUR, {
+              style: { stroke: INK_SOFT },
+              strokeWidth: 3.4,
+            })}
+            {drawPaths(ROADS.i45, ROAD_DELAY + 0.08, ROAD_DUR, {
+              style: { stroke: INK_SOFT },
+              strokeWidth: 3.4,
+            })}
+          </g>
 
-        {/* BAYTOWN SURFACE STREETS — Decker, Garth, Main/Alexander, Bayway. */}
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {drawPaths(ROADS.decker, ROAD_DELAY + 0.6, ROAD_DUR - 0.4, {
-            style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
-            strokeWidth: 1.2,
-          })}
-          {drawPaths(ROADS.garth, ROAD_DELAY + 0.62, ROAD_DUR - 0.4, {
-            style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
-            strokeWidth: 1.2,
-          })}
-          {drawPaths(ROADS.mainAlexander, ROAD_DELAY + 0.64, ROAD_DUR - 0.4, {
-            style: { stroke: INK_FAINT, strokeOpacity: 0.8 },
-            strokeWidth: 1.0,
-          })}
-          {drawPaths(ROADS.bayway, ROAD_DELAY + 0.66, ROAD_DUR - 0.4, {
-            style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
-            strokeWidth: 1.1,
-          })}
-        </g>
+          {/* BAYTOWN SURFACE STREETS — Decker, Garth, Main/Alexander, Bayway. */}
+          <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+            {drawPaths(ROADS.decker, ROAD_DELAY + 0.6, ROAD_DUR - 0.4, {
+              style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
+              strokeWidth: 1.2,
+            })}
+            {drawPaths(ROADS.garth, ROAD_DELAY + 0.62, ROAD_DUR - 0.4, {
+              style: { stroke: INK_FAINT, strokeOpacity: 0.9 },
+              strokeWidth: 1.2,
+            })}
+            {drawPaths(ROADS.mainAlexander, ROAD_DELAY + 0.64, ROAD_DUR - 0.4, {
+              style: { stroke: INK_FAINT, strokeOpacity: 0.8 },
+              strokeWidth: 1.0,
+            })}
+            {drawPaths(ROADS.bayway, ROAD_DELAY + 0.66, ROAD_DUR - 0.4, {
+              style: { stroke: INK_FAINT, strokeOpacity: 0.85 },
+              strokeWidth: 1.1,
+            })}
+          </g>
 
-        {/* I-10 LANE DASHES — slow crawl east to suggest flowing traffic. */}
-        {I10_DRIVE && (
-          <motion.path
-            d={I10_DRIVE}
-            fill="none"
-            strokeLinecap="round"
-            style={{ stroke: ACCENT_HI, strokeOpacity: 0.7 }}
-            strokeWidth="0.9"
-            strokeDasharray="8 12"
-            initial={false}
-            animate={ambient ? { strokeDashoffset: [0, -40] } : undefined}
-            transition={
-              ambient ? { duration: 2.6, repeat: Infinity, ease: 'linear' } : undefined
-            }
-          />
-        )}
+          {/* I-10 LANE DASHES — slow crawl east to suggest flowing traffic. */}
+          {I10_DRIVE && (
+            <motion.path
+              d={I10_DRIVE}
+              fill="none"
+              strokeLinecap="round"
+              style={{ stroke: ACCENT_HI, strokeOpacity: 0.7 }}
+              strokeWidth="0.9"
+              strokeDasharray="8 12"
+              initial={false}
+              animate={ambient ? { strokeDashoffset: [0, -40] } : undefined}
+              transition={ambient ? { duration: 2.6, repeat: Infinity, ease: 'linear' } : undefined}
+            />
+          )}
 
-        {/* TX-146 + TX-225 FLOW DASHES — subtler, counter-flow on each. */}
-        {TX146_DRIVE && (
-          <motion.path
-            d={TX146_DRIVE}
-            fill="none"
-            strokeLinecap="round"
-            style={{ stroke: ACCENT_HI, strokeOpacity: 0.55 }}
-            strokeWidth="0.75"
-            strokeDasharray="6 14"
-            initial={false}
-            animate={ambient ? { strokeDashoffset: [0, 40] } : undefined}
-            transition={
-              ambient ? { duration: 3.4, repeat: Infinity, ease: 'linear' } : undefined
-            }
-          />
-        )}
-        {ROADS.tx225[0] && (
-          <motion.path
-            d={ROADS.tx225[0]}
-            fill="none"
-            strokeLinecap="round"
-            style={{ stroke: ACCENT_HI, strokeOpacity: 0.5 }}
-            strokeWidth="0.65"
-            strokeDasharray="5 13"
-            initial={false}
-            animate={ambient ? { strokeDashoffset: [0, -36] } : undefined}
-            transition={
-              ambient ? { duration: 3.0, repeat: Infinity, ease: 'linear' } : undefined
-            }
-          />
-        )}
+          {/* TX-146 + TX-225 FLOW DASHES — subtler, counter-flow on each. */}
+          {TX146_DRIVE && (
+            <motion.path
+              d={TX146_DRIVE}
+              fill="none"
+              strokeLinecap="round"
+              style={{ stroke: ACCENT_HI, strokeOpacity: 0.55 }}
+              strokeWidth="0.75"
+              strokeDasharray="6 14"
+              initial={false}
+              animate={ambient ? { strokeDashoffset: [0, 40] } : undefined}
+              transition={ambient ? { duration: 3.4, repeat: Infinity, ease: 'linear' } : undefined}
+            />
+          )}
+          {ROADS.tx225[0] && (
+            <motion.path
+              d={ROADS.tx225[0]}
+              fill="none"
+              strokeLinecap="round"
+              style={{ stroke: ACCENT_HI, strokeOpacity: 0.5 }}
+              strokeWidth="0.65"
+              strokeDasharray="5 13"
+              initial={false}
+              animate={ambient ? { strokeDashoffset: [0, -36] } : undefined}
+              transition={ambient ? { duration: 3.0, repeat: Infinity, ease: 'linear' } : undefined}
+            />
+          )}
 
-        {/* DOWNTOWN HOUSTON SKYLINE — a compact glyph at Houston's real point. */}
-        <motion.g {...fadeIntro(DETAIL_DELAY + 0.15, DETAIL_DUR + 0.1)}>
-          {SKYLINE.map((b, i) => (
-            <g key={`bld-${i}`}>
-              <rect
-                x={HOUSTON_PT.x + b.dx}
-                y={HOUSTON_PT.y + b.top}
-                width={b.w}
-                height={-b.top}
-                style={{ fill: PAPER_FILL, stroke: INK_MUTE }}
-                strokeWidth="0.7"
-              />
-              {b.ant && (
-                <line
-                  x1={HOUSTON_PT.x + b.dx + b.w / 2}
-                  y1={HOUSTON_PT.y + b.top}
-                  x2={HOUSTON_PT.x + b.dx + b.w / 2}
-                  y2={HOUSTON_PT.y + b.top - 7}
-                  style={{ stroke: INK_MUTE }}
-                  strokeWidth="0.6"
+          {/* DOWNTOWN HOUSTON SKYLINE — a compact glyph at Houston's real point. */}
+          <motion.g {...fadeIntro(DETAIL_DELAY + 0.15, DETAIL_DUR + 0.1)}>
+            {SKYLINE.map((b, i) => (
+              <g key={`bld-${i}`}>
+                <rect
+                  x={HOUSTON_PT.x + b.dx}
+                  y={HOUSTON_PT.y + b.top}
+                  width={b.w}
+                  height={-b.top}
+                  style={{ fill: PAPER_FILL, stroke: INK_MUTE }}
+                  strokeWidth="0.7"
                 />
-              )}
-            </g>
-          ))}
-        </motion.g>
+                {b.ant && (
+                  <line
+                    x1={HOUSTON_PT.x + b.dx + b.w / 2}
+                    y1={HOUSTON_PT.y + b.top}
+                    x2={HOUSTON_PT.x + b.dx + b.w / 2}
+                    y2={HOUSTON_PT.y + b.top - 7}
+                    style={{ stroke: INK_MUTE }}
+                    strokeWidth="0.6"
+                  />
+                )}
+              </g>
+            ))}
+          </motion.g>
 
-        {/* TOWN MARKERS — drop in at their projected positions. Every 3rd
+          {/* TOWN MARKERS — drop in at their projected positions. Every 3rd
             dot also gets a slow opacity twinkle so the network feels alive
             without being noisy. */}
-        <g>
-          {TOWN_PTS.map((s, i) => {
-            const twinkles = ambient && i % 3 === 0
-            return (
-              <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
-                <circle cx={s.x} cy={s.y} r="4" fill="none" style={{ stroke: INK_MUTE }} strokeWidth="0.9" />
-                <motion.circle
-                  cx={s.x}
-                  cy={s.y}
-                  r="1.7"
-                  style={{ fill: ACCENT_HI }}
-                  animate={twinkles ? { opacity: [1, 0.45, 1] } : undefined}
-                  transition={
-                    twinkles
-                      ? {
-                          duration: 4.6 + (i % 5) * 0.6,
-                          delay: VEHICLE_DELAY + i * 0.35,
-                          repeat: Infinity,
-                          ease: 'easeInOut',
-                        }
-                      : undefined
-                  }
-                />
-                {ambient && (
-                  <motion.circle
+          <g>
+            {TOWN_PTS.map((s, i) => {
+              const twinkles = ambient && i % 3 === 0
+              return (
+                <motion.g key={s.name} {...dropIntro(PIN_DELAY + i * 0.04, PIN_DUR)}>
+                  <circle
                     cx={s.x}
                     cy={s.y}
                     r="4"
                     fill="none"
-                    style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
-                    strokeWidth="0.8"
-                    initial={{ scale: 1, opacity: 0.55 }}
-                    animate={{ scale: 3, opacity: 0 }}
-                    transition={{
-                      duration: 3.4,
-                      delay: VEHICLE_DELAY + 1.2 + i * 0.35,
-                      repeat: Infinity,
-                      ease: 'easeOut',
-                    }}
+                    style={{ stroke: INK_MUTE }}
+                    strokeWidth="0.9"
                   />
-                )}
-              </motion.g>
-            )
-          })}
-        </g>
+                  <motion.circle
+                    cx={s.x}
+                    cy={s.y}
+                    r="1.7"
+                    style={{ fill: ACCENT_HI }}
+                    animate={twinkles ? { opacity: [1, 0.45, 1] } : undefined}
+                    transition={
+                      twinkles
+                        ? {
+                            duration: 4.6 + (i % 5) * 0.6,
+                            delay: VEHICLE_DELAY + i * 0.35,
+                            repeat: Infinity,
+                            ease: 'easeInOut',
+                          }
+                        : undefined
+                    }
+                  />
+                  {ambient && (
+                    <motion.circle
+                      cx={s.x}
+                      cy={s.y}
+                      r="4"
+                      fill="none"
+                      style={{
+                        stroke: ACCENT,
+                        transformOrigin: 'center',
+                        transformBox: 'fill-box',
+                      }}
+                      strokeWidth="0.8"
+                      initial={{ scale: 1, opacity: 0.55 }}
+                      animate={{ scale: 3, opacity: 0 }}
+                      transition={{
+                        duration: 3.4,
+                        delay: VEHICLE_DELAY + 1.2 + i * 0.35,
+                        repeat: Infinity,
+                        ease: 'easeOut',
+                      }}
+                    />
+                  )}
+                </motion.g>
+              )
+            })}
+          </g>
 
-        {/* REGIONAL CITY LABELS — Dallas, San Antonio, Beaumont, Galveston,
+          {/* REGIONAL CITY LABELS — Dallas, San Antonio, Beaumont, Galveston,
             Freeport, etc. Most project to coordinates well outside the
             viewBox and are naturally clipped; the few that fall near a
             visible edge (Galveston at the south, Spring/Conroe just over
             the top) read in the same faint town-label style as TOWNS. The
             labels' positions anchor the highway exit bearings to their
             true real-world bearings even when the city itself is invisible. */}
-        <motion.g
-          fontFamily="'Geist Mono', ui-monospace, monospace"
-          {...fadeIntro(DETAIL_DELAY + 0.18, DETAIL_DUR + 0.1)}
-        >
-          {MAJOR_CITY_PTS.map(c => (
-            <text
-              key={c.name}
-              x={c.x + c.dx}
-              y={c.y + c.dy}
-              textAnchor={c.anchor}
-              style={{ fill: INK_MUTE, fillOpacity: 0.85 }}
-              fontSize="8"
-              letterSpacing="2.4"
-            >
-              {c.name.toUpperCase()}
-            </text>
-          ))}
-        </motion.g>
-
-        {/* TOWN + WATER LABELS. */}
-        <motion.g
-          fontFamily="'Geist Mono', ui-monospace, monospace"
-          {...fadeIntro(DETAIL_DELAY + 0.2, DETAIL_DUR + 0.1)}
-        >
-          {TOWN_PTS.map(t => (
-            <text
-              key={t.name}
-              x={t.x + t.dx}
-              y={t.y + t.dy}
-              textAnchor={t.anchor}
-              style={{ fill: t.primary ? INK_SOFT : INK_MUTE }}
-              fontSize={t.primary ? 11 : 8}
-              letterSpacing={t.primary ? 3 : 1.8}
-            >
-              {t.name.toUpperCase()}
-            </text>
-          ))}
-          <text
-            x={project(-94.72, 29.62).x}
-            y={project(-94.72, 29.62).y}
-            textAnchor="middle"
-            style={{ fill: ACCENT_HI, fillOpacity: 0.9 }}
-            fontSize="9"
-            letterSpacing="3"
-          >
-            TRINITY BAY
-          </text>
-          <text
-            x={project(-94.92, 29.5).x}
-            y={project(-94.92, 29.5).y}
-            textAnchor="middle"
-            style={{ fill: ACCENT_HI, fillOpacity: 0.78 }}
-            fontSize="9"
-            letterSpacing="3"
-          >
-            GALVESTON BAY
-          </text>
-        </motion.g>
-
-        {/* HIGHWAY SHIELDS — placed on their routes. */}
-        <motion.g
-          fontFamily="'Geist Mono', ui-monospace, monospace"
-          fontSize="8"
-          letterSpacing="1"
-          {...fadeIntro(DETAIL_DELAY + 0.25, DETAIL_DUR + 0.1)}
-        >
-          {SHIELDS.map(shield => (
-            <g key={shield.label} transform={`translate(${shield.x} ${shield.y})`}>
-              <rect
-                x={shield.wide ? -16 : -14}
-                y="-10"
-                width={shield.wide ? 32 : 28}
-                height="20"
-                style={{
-                  fill: PAPER_FILL,
-                  stroke: shield.strong ? INK_SOFT : INK_MUTE,
-                }}
-                strokeWidth={shield.strong ? 1 : 0.9}
-              />
-              <text
-                textAnchor="middle"
-                y="4"
-                style={{ fill: shield.strong ? INK_SOFT : INK_MUTE }}
-                fontWeight="600"
-                fontSize={shield.wide ? 7 : 8}
-              >
-                {shield.label}
-              </text>
-            </g>
-          ))}
-        </motion.g>
-
-        {/* DRIFTING CLOUDS — ambient. */}
-        <g>
-          {CLOUDS.map((c, i) => (
-            <motion.use
-              key={`cl-${i}`}
-              href="#cloud"
-              x="0"
-              y={c.y}
-              width={80 * c.scale}
-              height={24 * c.scale}
-              animate={ambient ? { x: [-160, 1320] } : undefined}
-              transition={{
-                duration: c.duration,
-                delay: VEHICLE_DELAY + c.delay,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            />
-          ))}
-        </g>
-
-        {/* CARS on I-10 — eastbound + westbound ambient loops. */}
-        {I10_DRIVE &&
-          [
-            { dir: ['0%', '100%'], car: 'car-east', duration: 26, delay: 0 },
-            { dir: ['0%', '100%'], car: 'car-east', duration: 30, delay: 12 },
-            { dir: ['100%', '0%'], car: 'car-west', duration: 34, delay: 4 },
-            { dir: ['100%', '0%'], car: 'car-west', duration: 40, delay: 18 },
-          ].map((v, i) => (
-            <motion.g
-              key={`car-${i}`}
-              animate={ambient ? { offsetDistance: v.dir } : undefined}
-              style={{ offsetPath: `path('${I10_DRIVE}')`, offsetRotate: 'auto' }}
-              transition={{
-                duration: v.duration,
-                delay: VEHICLE_DELAY + v.delay,
-                repeat: Infinity,
-                ease: 'linear',
-              }}
-            >
-              <use href={`#${v.car}`} x="-7" y="-3" width="14" height="6" />
-            </motion.g>
-          ))}
-
-        {/* BOATS drifting on the bay. */}
-        {BOAT_ROUTES.map((r, i) => (
           <motion.g
-            key={`boat-${i}`}
-            animate={ambient ? { offsetDistance: ['0%', '100%'] } : undefined}
-            style={{ offsetPath: `path('${r.d}')`, offsetRotate: 'auto' }}
-            transition={{
-              duration: r.duration,
-              delay: VEHICLE_DELAY + r.delay,
-              repeat: Infinity,
-              ease: EASE_DRIFT,
-            }}
+            fontFamily="'Geist Mono', ui-monospace, monospace"
+            {...fadeIntro(DETAIL_DELAY + 0.18, DETAIL_DUR + 0.1)}
           >
-            <motion.g
-              animate={ambient ? { y: [0, -1.5, 0] } : undefined}
-              transition={{
-                duration: 4.2 + i * 0.6,
-                delay: VEHICLE_DELAY,
-                repeat: Infinity,
-                ease: 'easeInOut',
-              }}
-            >
-              <use href="#boat" x="-14" y="-14" width="28" height="28" />
-            </motion.g>
+            {MAJOR_CITY_PTS.map(c => (
+              <text
+                key={c.name}
+                x={c.x + c.dx}
+                y={c.y + c.dy}
+                textAnchor={c.anchor}
+                style={{ fill: INK_MUTE, fillOpacity: 0.85 }}
+                fontSize="8"
+                letterSpacing="2.4"
+              >
+                {c.name.toUpperCase()}
+              </text>
+            ))}
           </motion.g>
-        ))}
 
-        {/* BAYTOWN "YOU ARE HERE" MARKER — pinned at Baytown's real point.
-            Drops in last, then holds a soft glow and a gentle service ping. */}
-        <motion.g
-          transform={`translate(${BAYTOWN_PT.x} ${BAYTOWN_PT.y})`}
-          {...dropIntro(PIN_DELAY + 0.2, PIN_DUR + 0.15)}
-        >
-          <circle cx="0" cy="0" r="50" fill="url(#pin-glow)" />
+          {/* TOWN + WATER LABELS. */}
+          <motion.g
+            fontFamily="'Geist Mono', ui-monospace, monospace"
+            {...fadeIntro(DETAIL_DELAY + 0.2, DETAIL_DUR + 0.1)}
+          >
+            {TOWN_PTS.map(t => (
+              <text
+                key={t.name}
+                x={t.x + t.dx}
+                y={t.y + t.dy}
+                textAnchor={t.anchor}
+                style={{ fill: t.primary ? INK_SOFT : INK_MUTE }}
+                fontSize={t.primary ? 11 : 8}
+                letterSpacing={t.primary ? 3 : 1.8}
+              >
+                {t.name.toUpperCase()}
+              </text>
+            ))}
+            <text
+              x={project(-94.72, 29.62).x}
+              y={project(-94.72, 29.62).y}
+              textAnchor="middle"
+              style={{ fill: ACCENT_HI, fillOpacity: 0.9 }}
+              fontSize="9"
+              letterSpacing="3"
+            >
+              TRINITY BAY
+            </text>
+            <text
+              x={project(-94.92, 29.5).x}
+              y={project(-94.92, 29.5).y}
+              textAnchor="middle"
+              style={{ fill: ACCENT_HI, fillOpacity: 0.78 }}
+              fontSize="9"
+              letterSpacing="3"
+            >
+              GALVESTON BAY
+            </text>
+          </motion.g>
 
-          {ambient &&
-            [0, 1.1, 2.2].map((delay, i) => (
-              <motion.circle
-                key={`ring-${i}`}
-                cx="0"
-                cy="0"
-                r="6"
-                fill="none"
-                style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
-                strokeWidth={1.2 - i * 0.2}
-                initial={{ scale: 1, opacity: 0.7 - i * 0.1 }}
-                animate={{ scale: 6, opacity: 0 }}
+          {/* HIGHWAY SHIELDS — placed on their routes. */}
+          <motion.g
+            fontFamily="'Geist Mono', ui-monospace, monospace"
+            fontSize="8"
+            letterSpacing="1"
+            {...fadeIntro(DETAIL_DELAY + 0.25, DETAIL_DUR + 0.1)}
+          >
+            {SHIELDS.map(shield => (
+              <g key={shield.label} transform={`translate(${shield.x} ${shield.y})`}>
+                <rect
+                  x={shield.wide ? -16 : -14}
+                  y="-10"
+                  width={shield.wide ? 32 : 28}
+                  height="20"
+                  style={{
+                    fill: PAPER_FILL,
+                    stroke: shield.strong ? INK_SOFT : INK_MUTE,
+                  }}
+                  strokeWidth={shield.strong ? 1 : 0.9}
+                />
+                <text
+                  textAnchor="middle"
+                  y="4"
+                  style={{ fill: shield.strong ? INK_SOFT : INK_MUTE }}
+                  fontWeight="600"
+                  fontSize={shield.wide ? 7 : 8}
+                >
+                  {shield.label}
+                </text>
+              </g>
+            ))}
+          </motion.g>
+
+          {/* DRIFTING CLOUDS — ambient. */}
+          <g>
+            {CLOUDS.map((c, i) => (
+              <motion.use
+                key={`cl-${i}`}
+                href="#cloud"
+                x="0"
+                y={c.y}
+                width={80 * c.scale}
+                height={24 * c.scale}
+                animate={ambient ? { x: [-160, 1320] } : undefined}
                 transition={{
-                  duration: 3.4,
-                  delay: VEHICLE_DELAY + delay,
+                  duration: c.duration,
+                  delay: VEHICLE_DELAY + c.delay,
                   repeat: Infinity,
-                  ease: 'easeOut',
+                  ease: 'linear',
                 }}
               />
             ))}
-
-          {/* targeting crosshair */}
-          {[
-            [-13, 0, -6, 0],
-            [6, 0, 13, 0],
-            [0, -13, 0, -6],
-            [0, 6, 0, 13],
-          ].map((l, i) => (
-            <line
-              key={`ch-${i}`}
-              x1={l[0]}
-              y1={l[1]}
-              x2={l[2]}
-              y2={l[3]}
-              style={{ stroke: ACCENT_HI }}
-              strokeWidth="1"
-            />
-          ))}
-          <circle cx="0" cy="0" r="6.5" fill="none" style={{ stroke: ACCENT }} strokeWidth="0.9" />
-          <circle cx="0" cy="0" r="5" style={{ fill: ACCENT }} />
-          <circle cx="0" cy="0" r="2.2" fill="#fff" />
-
-          {/* callout flag */}
-          <line x1="0" y1="0" x2="0" y2="-34" style={{ stroke: ACCENT }} strokeWidth="1.1" />
-          <g transform="translate(0 -54)">
-            <rect x="-43" y="-13" width="88" height="22" style={{ fill: ROAD_SHADOW, fillOpacity: 0.55 }} />
-            <rect
-              x="-44"
-              y="-14"
-              width="88"
-              height="22"
-              style={{ fill: PAPER_FILL, stroke: ACCENT }}
-              strokeWidth="1.1"
-            />
-            <text
-              textAnchor="middle"
-              y="1"
-              fontFamily="'Geist Mono', ui-monospace, monospace"
-              fontSize="9"
-              letterSpacing="2.5"
-              style={{ fill: INK }}
-            >
-              BAYTOWN
-            </text>
-            <text
-              textAnchor="middle"
-              y="22"
-              fontFamily="'Geist Mono', ui-monospace, monospace"
-              fontSize="6.5"
-              letterSpacing="3"
-              style={{ fill: ACCENT_HI }}
-            >
-              YOU ARE HERE
-            </text>
           </g>
-        </motion.g>
 
+          {/* CARS on I-10 — eastbound + westbound ambient loops. */}
+          {I10_DRIVE &&
+            [
+              { dir: ['0%', '100%'], car: 'car-east', duration: 26, delay: 0 },
+              { dir: ['0%', '100%'], car: 'car-east', duration: 30, delay: 12 },
+              { dir: ['100%', '0%'], car: 'car-west', duration: 34, delay: 4 },
+              { dir: ['100%', '0%'], car: 'car-west', duration: 40, delay: 18 },
+            ].map((v, i) => (
+              <motion.g
+                key={`car-${i}`}
+                animate={ambient ? { offsetDistance: v.dir } : undefined}
+                style={{ offsetPath: `path('${I10_DRIVE}')`, offsetRotate: 'auto' }}
+                transition={{
+                  duration: v.duration,
+                  delay: VEHICLE_DELAY + v.delay,
+                  repeat: Infinity,
+                  ease: 'linear',
+                }}
+              >
+                <use href={`#${v.car}`} x="-7" y="-3" width="14" height="6" />
+              </motion.g>
+            ))}
+
+          {/* BOATS drifting on the bay. */}
+          {BOAT_ROUTES.map((r, i) => (
+            <motion.g
+              key={`boat-${i}`}
+              animate={ambient ? { offsetDistance: ['0%', '100%'] } : undefined}
+              style={{ offsetPath: `path('${r.d}')`, offsetRotate: 'auto' }}
+              transition={{
+                duration: r.duration,
+                delay: VEHICLE_DELAY + r.delay,
+                repeat: Infinity,
+                ease: EASE_DRIFT,
+              }}
+            >
+              <motion.g
+                animate={ambient ? { y: [0, -1.5, 0] } : undefined}
+                transition={{
+                  duration: 4.2 + i * 0.6,
+                  delay: VEHICLE_DELAY,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                }}
+              >
+                <use href="#boat" x="-14" y="-14" width="28" height="28" />
+              </motion.g>
+            </motion.g>
+          ))}
+
+          {/* BAYTOWN "YOU ARE HERE" MARKER — pinned at Baytown's real point.
+            Drops in last, then holds a soft glow and a gentle service ping. */}
+          <motion.g
+            transform={`translate(${BAYTOWN_PT.x} ${BAYTOWN_PT.y})`}
+            {...dropIntro(PIN_DELAY + 0.2, PIN_DUR + 0.15)}
+          >
+            <circle cx="0" cy="0" r="50" fill="url(#pin-glow)" />
+
+            {ambient &&
+              [0, 1.1, 2.2].map((delay, i) => (
+                <motion.circle
+                  key={`ring-${i}`}
+                  cx="0"
+                  cy="0"
+                  r="6"
+                  fill="none"
+                  style={{ stroke: ACCENT, transformOrigin: 'center', transformBox: 'fill-box' }}
+                  strokeWidth={1.2 - i * 0.2}
+                  initial={{ scale: 1, opacity: 0.7 - i * 0.1 }}
+                  animate={{ scale: 6, opacity: 0 }}
+                  transition={{
+                    duration: 3.4,
+                    delay: VEHICLE_DELAY + delay,
+                    repeat: Infinity,
+                    ease: 'easeOut',
+                  }}
+                />
+              ))}
+
+            {/* targeting crosshair */}
+            {[
+              [-13, 0, -6, 0],
+              [6, 0, 13, 0],
+              [0, -13, 0, -6],
+              [0, 6, 0, 13],
+            ].map((l, i) => (
+              <line
+                key={`ch-${i}`}
+                x1={l[0]}
+                y1={l[1]}
+                x2={l[2]}
+                y2={l[3]}
+                style={{ stroke: ACCENT_HI }}
+                strokeWidth="1"
+              />
+            ))}
+            <circle
+              cx="0"
+              cy="0"
+              r="6.5"
+              fill="none"
+              style={{ stroke: ACCENT }}
+              strokeWidth="0.9"
+            />
+            <circle cx="0" cy="0" r="5" style={{ fill: ACCENT }} />
+            <circle cx="0" cy="0" r="2.2" fill="#fff" />
+
+            {/* callout flag */}
+            <line x1="0" y1="0" x2="0" y2="-34" style={{ stroke: ACCENT }} strokeWidth="1.1" />
+            <g transform="translate(0 -54)">
+              <rect
+                x="-43"
+                y="-13"
+                width="88"
+                height="22"
+                style={{ fill: ROAD_SHADOW, fillOpacity: 0.55 }}
+              />
+              <rect
+                x="-44"
+                y="-14"
+                width="88"
+                height="22"
+                style={{ fill: PAPER_FILL, stroke: ACCENT }}
+                strokeWidth="1.1"
+              />
+              <text
+                textAnchor="middle"
+                y="1"
+                fontFamily="'Geist Mono', ui-monospace, monospace"
+                fontSize="9"
+                letterSpacing="2.5"
+                style={{ fill: INK }}
+              >
+                BAYTOWN
+              </text>
+              <text
+                textAnchor="middle"
+                y="22"
+                fontFamily="'Geist Mono', ui-monospace, monospace"
+                fontSize="6.5"
+                letterSpacing="3"
+                style={{ fill: ACCENT_HI }}
+              >
+                YOU ARE HERE
+              </text>
+            </g>
+          </motion.g>
         </motion.g>
         {/* /GEOGRAPHIC LAYER ↑ ambient drift ends; chrome below stays static. */}
 
@@ -1079,8 +1085,22 @@ export default function BaytownMap() {
           fontFamily="'Geist Mono', ui-monospace, monospace"
           {...fadeIntro(DETAIL_DELAY + 0.3, DETAIL_DUR + 0.1)}
         >
-          <circle cx="0" cy="0" r="30" fill="none" style={{ stroke: INK_FAINT }} strokeWidth="0.9" />
-          <circle cx="0" cy="0" r="24" fill="none" style={{ stroke: HAIR_STRONG }} strokeWidth="0.6" />
+          <circle
+            cx="0"
+            cy="0"
+            r="30"
+            fill="none"
+            style={{ stroke: INK_FAINT }}
+            strokeWidth="0.9"
+          />
+          <circle
+            cx="0"
+            cy="0"
+            r="24"
+            fill="none"
+            style={{ stroke: HAIR_STRONG }}
+            strokeWidth="0.6"
+          />
           <circle
             cx="0"
             cy="0"
@@ -1105,19 +1125,56 @@ export default function BaytownMap() {
               />
             )
           })}
-          <path d="M 0 -24 L 5 0 L 0 24 L -5 0 Z" style={{ fill: PAPER_FILL, stroke: INK_SOFT }} strokeWidth="0.9" />
+          <path
+            d="M 0 -24 L 5 0 L 0 24 L -5 0 Z"
+            style={{ fill: PAPER_FILL, stroke: INK_SOFT }}
+            strokeWidth="0.9"
+          />
           <path d="M 0 -24 L 5 0 L -5 0 Z" style={{ fill: ACCENT }} />
-          <circle cx="0" cy="0" r="1.8" style={{ fill: PAPER_FILL, stroke: ACCENT }} strokeWidth="0.7" />
-          <text textAnchor="middle" y="-36" fontSize="8" letterSpacing="2" style={{ fill: ACCENT_HI }} fontWeight="600">
+          <circle
+            cx="0"
+            cy="0"
+            r="1.8"
+            style={{ fill: PAPER_FILL, stroke: ACCENT }}
+            strokeWidth="0.7"
+          />
+          <text
+            textAnchor="middle"
+            y="-36"
+            fontSize="8"
+            letterSpacing="2"
+            style={{ fill: ACCENT_HI }}
+            fontWeight="600"
+          >
             N
           </text>
-          <text textAnchor="middle" y="42" fontSize="7" letterSpacing="2" style={{ fill: INK_FAINT }}>
+          <text
+            textAnchor="middle"
+            y="42"
+            fontSize="7"
+            letterSpacing="2"
+            style={{ fill: INK_FAINT }}
+          >
             S
           </text>
-          <text textAnchor="middle" x="-36" y="3" fontSize="7" letterSpacing="2" style={{ fill: INK_FAINT }}>
+          <text
+            textAnchor="middle"
+            x="-36"
+            y="3"
+            fontSize="7"
+            letterSpacing="2"
+            style={{ fill: INK_FAINT }}
+          >
             W
           </text>
-          <text textAnchor="middle" x="36" y="3" fontSize="7" letterSpacing="2" style={{ fill: INK_FAINT }}>
+          <text
+            textAnchor="middle"
+            x="36"
+            y="3"
+            fontSize="7"
+            letterSpacing="2"
+            style={{ fill: INK_FAINT }}
+          >
             E
           </text>
         </motion.g>

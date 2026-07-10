@@ -22,18 +22,16 @@ export default function BrowserMockup({
 }) {
   return (
     <div
-      className={`w-full overflow-hidden rounded-sm border border-hair bg-bg text-ink shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] ${className}`}
+      className={`border-hair w-full overflow-hidden rounded-sm border bg-bg text-ink shadow-[0_30px_80px_-30px_rgba(0,0,0,0.55)] ${className}`}
     >
-      <div className="flex items-center gap-2 border-b border-hair bg-bg px-4 py-3">
+      <div className="border-hair flex items-center gap-2 border-b bg-bg px-4 py-3">
         <span className="h-2 w-2 rounded-full bg-ink-faint" />
         <span className="h-2 w-2 rounded-full bg-ink-faint" />
         <span className="h-2 w-2 rounded-full bg-ink-faint" />
-        <div className="ml-3 flex-1 rounded-sm border border-hair bg-surface-1 px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-faint">
+        <div className="border-hair bg-surface-1 ml-3 flex-1 rounded-sm border px-3 py-1 font-mono text-[11px] uppercase tracking-[0.12em] text-ink-faint">
           {url}
         </div>
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-          v1
-        </span>
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">v1</span>
       </div>
       <div className="p-5">
         {variant === 'default' && <DefaultContent />}
@@ -49,26 +47,24 @@ export default function BrowserMockup({
 function DefaultContent() {
   return (
     <div className="space-y-3">
-      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-        // hero
-      </p>
+      <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">// hero</p>
       <motion.div
-        className="h-5 w-3/4 origin-left rounded-sm bg-ink/20"
+        className="bg-ink/20 h-5 w-3/4 origin-left rounded-sm"
         {...BAR_VARIANTS}
         custom={0}
       />
       <motion.div
-        className="h-3 w-full origin-left rounded-sm bg-ink/10"
+        className="bg-ink/10 h-3 w-full origin-left rounded-sm"
         {...BAR_VARIANTS}
         custom={1}
       />
       <motion.div
-        className="h-3 w-5/6 origin-left rounded-sm bg-ink/10"
+        className="bg-ink/10 h-3 w-5/6 origin-left rounded-sm"
         {...BAR_VARIANTS}
         custom={2}
       />
       <motion.div
-        className="mt-4 h-28 rounded-sm border border-hair bg-accent/10"
+        className="border-hair bg-accent/10 mt-4 h-28 rounded-sm border"
         initial={{ opacity: 0, scale: 0.96 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5, delay: 1.1, ease: [0.22, 1, 0.36, 1] }}
@@ -84,7 +80,7 @@ function DefaultContent() {
           animate={{ opacity: [0.75, 1] }}
           transition={PULSE_TRANSITION}
         />
-        <div className="h-8 w-20 rounded-sm border border-hair-strong" />
+        <div className="border-hair-strong h-8 w-20 rounded-sm border" />
       </motion.div>
     </div>
   )
@@ -100,7 +96,7 @@ function AnalyticsContent() {
           // traffic — last 7d
         </p>
         <motion.div
-          className="rounded-sm border border-accent/40 px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent"
+          className="border-accent/40 rounded-sm border px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.14em] text-accent"
           animate={{ opacity: [0.7, 1] }}
           transition={PULSE_TRANSITION}
         >
@@ -134,27 +130,27 @@ function AnalyticsContent() {
 function MobileContent() {
   return (
     <div className="flex justify-center">
-      <div className="w-[140px] rounded-sm border border-hair bg-bg p-2">
+      <div className="border-hair w-[140px] rounded-sm border bg-bg p-2">
         <div className="mx-auto mb-2 h-1 w-10 rounded-full bg-ink-faint" />
         <motion.div
-          className="mb-2 h-16 rounded-sm bg-accent/15"
+          className="bg-accent/15 mb-2 h-16 rounded-sm"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.6 }}
         />
         <div className="space-y-1.5">
           <motion.div
-            className="h-2 w-full origin-left rounded-sm bg-ink/10"
+            className="bg-ink/10 h-2 w-full origin-left rounded-sm"
             {...BAR_VARIANTS}
             custom={0}
           />
           <motion.div
-            className="h-2 w-4/5 origin-left rounded-sm bg-ink/10"
+            className="bg-ink/10 h-2 w-4/5 origin-left rounded-sm"
             {...BAR_VARIANTS}
             custom={1}
           />
           <motion.div
-            className="h-2 w-3/5 origin-left rounded-sm bg-ink/10"
+            className="bg-ink/10 h-2 w-3/5 origin-left rounded-sm"
             {...BAR_VARIANTS}
             custom={2}
           />
@@ -181,7 +177,7 @@ function CodeContent() {
   ]
 
   return (
-    <div className="space-y-2 rounded-sm border border-hair bg-bg p-4">
+    <div className="border-hair space-y-2 rounded-sm border bg-bg p-4">
       {lines.map((line, i) => (
         <div key={i} className="flex items-center gap-3">
           <span className="w-4 text-right font-mono text-[10px] text-ink-faint">{i + 1}</span>
@@ -210,10 +206,10 @@ function DashboardContent() {
           // monitor
         </p>
         <div className="flex gap-1.5">
-          <div className="rounded-sm border border-hair px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
+          <div className="border-hair rounded-sm border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ink-faint">
             Today
           </div>
-          <div className="rounded-sm border border-accent/50 bg-accent/10 px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-accent">
+          <div className="border-accent/50 bg-accent/10 rounded-sm border px-2 py-0.5 font-mono text-[9px] uppercase tracking-[0.14em] text-accent">
             Week
           </div>
         </div>
@@ -226,7 +222,7 @@ function DashboardContent() {
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            className="rounded-sm border border-hair p-2 text-center"
+            className="border-hair rounded-sm border p-2 text-center"
             initial={{ opacity: 0, y: 6 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.7 + i * 0.1 }}
@@ -239,7 +235,7 @@ function DashboardContent() {
         ))}
       </div>
       <motion.div
-        className="h-16 rounded-sm border border-hair bg-gradient-to-r from-accent/10 via-accent/5 to-transparent"
+        className="border-hair from-accent/10 via-accent/5 h-16 rounded-sm border bg-gradient-to-r to-transparent"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5, delay: 1 }}
@@ -253,7 +249,7 @@ function DashboardContent() {
           style={{ originX: 0 }}
         />
         <motion.div
-          className="h-1.5 w-1/4 rounded-sm bg-ink/30"
+          className="bg-ink/30 h-1.5 w-1/4 rounded-sm"
           initial={{ scaleX: 0 }}
           animate={{ scaleX: 1 }}
           transition={{ duration: 0.5, delay: 1.25 }}

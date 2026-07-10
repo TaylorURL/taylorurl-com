@@ -123,9 +123,7 @@ const STATUS = {
   },
 }
 
-const SERVICE_STATE = Object.fromEntries(
-  SERVICES.map(service => [service.name, 'operational'])
-)
+const SERVICE_STATE = Object.fromEntries(SERVICES.map(service => [service.name, 'operational']))
 
 function formatTime(date) {
   const hour24 = date.getHours()
@@ -149,12 +147,12 @@ function LiveBand({ checkedAt, windowStart }) {
     <motion.div
       ref={ref}
       {...fadeInUpMount}
-      className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-[1.6fr_1fr]"
+      className="border-hair-paper bg-hair-paper grid gap-px overflow-hidden border lg:grid-cols-[1.6fr_1fr]"
     >
       <div className="flex flex-col gap-6 bg-paper p-8 sm:p-10">
         <div className="flex items-start gap-4">
           <span aria-hidden="true" className="relative mt-2 flex h-2.5 w-2.5 flex-shrink-0">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent/60" />
+            <span className="bg-accent/60 absolute inline-flex h-full w-full animate-ping rounded-full" />
             <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
           </span>
           <div>
@@ -179,13 +177,13 @@ function LiveBand({ checkedAt, windowStart }) {
         style={{ transform }}
         className="flex flex-col justify-center gap-3 bg-paper p-8 will-change-transform sm:p-10"
       >
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+        <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
           // Uptime · 90 days
         </p>
         <p className="font-mono text-[clamp(2.4rem,5vw,3.4rem)] font-semibold leading-none text-ink-paper">
           100.00<span className="text-paper-faint">%</span>
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+        <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
           {windowStart} → today
         </p>
       </motion.div>
@@ -224,7 +222,7 @@ function GroupSection({ group, services, index }) {
       transition={{ delay: 0.05 + index * 0.05 }}
       aria-label={`${group.key} components`}
     >
-      <div className="mb-4 flex items-baseline gap-4 border-b border-hair-paper pb-3">
+      <div className="border-hair-paper mb-4 flex items-baseline gap-4 border-b pb-3">
         <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
           {String(index + 1).padStart(2, '0')}
         </span>
@@ -232,15 +230,13 @@ function GroupSection({ group, services, index }) {
         <h3 className="text-[18px] font-semibold tracking-tight text-ink-paper sm:text-[20px]">
           {group.key}
         </h3>
-        <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+        <span className="text-paper-faint ml-auto font-mono text-[10px] uppercase tracking-[0.22em]">
           {String(services.length).padStart(2, '0')} comp
         </span>
       </div>
-      <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-paper-soft">
-        {group.blurb}
-      </p>
-      <div className="overflow-hidden border border-hair-paper">
-        <div className="divide-y divide-hair-paper">
+      <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-paper-soft">{group.blurb}</p>
+      <div className="border-hair-paper overflow-hidden border">
+        <div className="divide-hair-paper divide-y">
           {services.map(service => (
             <ServiceRow key={service.name} service={service} />
           ))}
@@ -288,8 +284,8 @@ export default function Status() {
               What I&apos;m watching.
             </h2>
             <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-paper-soft">
-              Four groups, twelve checks. Each row shows its own state — and the band up
-              top changes color the moment any one of them does.
+              Four groups, twelve checks. Each row shows its own state — and the band up top changes
+              color the moment any one of them does.
             </p>
           </motion.div>
 
@@ -306,7 +302,7 @@ export default function Status() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-20 text-ink sm:py-28">
         <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
           <motion.div
@@ -329,19 +325,18 @@ export default function Status() {
                 Clean stretch since {windowStart}.
               </h3>
               <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">
-                No outages and no slowdowns worth reporting. If something does break, this
-                is where you’ll see it first — and you’ll hear from me before it ever shows
-                up here.
+                No outages and no slowdowns worth reporting. If something does break, this is where
+                you’ll see it first — and you’ll hear from me before it ever shows up here.
               </p>
             </div>
           </motion.div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div
-          className="pointer-events-none absolute right-0 top-0 h-72 w-72 -translate-y-1/3 translate-x-1/4 rounded-full bg-accent/12 blur-3xl"
+          className="bg-accent/12 pointer-events-none absolute right-0 top-0 h-72 w-72 -translate-y-1/3 translate-x-1/4 rounded-full blur-3xl"
           aria-hidden="true"
         />
         <motion.div
@@ -357,8 +352,8 @@ export default function Status() {
             Tell me — I&apos;ll <span className="text-accent">look into it</span>.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            If something on your site is acting up, send a quick message. I&apos;ll dig in
-            and get back to you.
+            If something on your site is acting up, send a quick message. I&apos;ll dig in and get
+            back to you.
           </p>
           <a
             href={`mailto:${SUPPORT_EMAIL}`}

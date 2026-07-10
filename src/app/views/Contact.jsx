@@ -97,8 +97,7 @@ ${formData.message}
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const labelClass =
-    'mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint'
+  const labelClass = 'mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint'
   const errorClass = 'mt-2 font-mono text-[11px] uppercase tracking-[0.14em] text-red-600'
 
   // Scroll-driven backdrop on the "What's included" band — the blueprint grid
@@ -136,7 +135,7 @@ ${formData.message}
       <section className="relative overflow-hidden bg-paper py-24 sm:py-32">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
-          <div className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-[1fr_1.4fr]">
+          <div className="border-hair-paper bg-hair-paper grid gap-px overflow-hidden border lg:grid-cols-[1fr_1.4fr]">
             <motion.aside
               {...slideInLeftMount}
               className="flex flex-col gap-10 bg-paper p-8 sm:p-12"
@@ -150,29 +149,29 @@ ${formData.message}
                   Start the conversation.
                 </h2>
                 <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
-                  New site, redoing an old one, or taking over a site someone else built —
-                  tell me about the business and what needs to change.
+                  New site, redoing an old one, or taking over a site someone else built — tell me
+                  about the business and what needs to change.
                 </p>
               </div>
 
-              <div className="space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
+              <div className="border-hair-paper bg-hair-paper space-y-px overflow-hidden border">
                 <a
                   href={`mailto:${SALES_EMAIL}`}
-                  className="group flex items-center gap-4 bg-paper p-5 transition-colors hover:bg-ink-paper/[0.02]"
+                  className="hover:bg-ink-paper/[0.02] group flex items-center gap-4 bg-paper p-5 transition-colors"
                 >
                   <Mail className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div className="min-w-0 flex-1">
-                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
                       Email
                     </p>
                     <p className="truncate text-[14px] text-ink-paper">{SALES_EMAIL}</p>
                   </div>
-                  <ArrowUpRight className="h-4 w-4 text-paper-faint transition-colors group-hover:text-accent" />
+                  <ArrowUpRight className="text-paper-faint h-4 w-4 transition-colors group-hover:text-accent" />
                 </a>
                 <div className="flex items-center gap-4 bg-paper p-5">
                   <MapPin className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
                       Location
                     </p>
                     <p className="text-[14px] text-ink-paper">{COMPANY_LOCATION}</p>
@@ -181,7 +180,7 @@ ${formData.message}
                 <div className="flex items-center gap-4 bg-paper p-5">
                   <Clock className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
                       Reply time
                     </p>
                     <p className="text-[14px] text-ink-paper">Within 24 hours</p>
@@ -190,10 +189,10 @@ ${formData.message}
               </div>
 
               <div>
-                <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                <p className="text-paper-faint mb-4 font-mono text-[10px] uppercase tracking-[0.22em]">
                   // What happens next
                 </p>
-                <ol className="space-y-5 border-l border-accent/40 pl-5">
+                <ol className="border-accent/40 space-y-5 border-l pl-5">
                   {CONTACT_STEPS.map((step, i) => (
                     <li key={step.title} className="relative">
                       <span className="absolute -left-[27px] top-0.5 flex h-4 w-4 items-center justify-center rounded-full border border-accent bg-paper font-mono text-[9px] font-semibold text-accent">
@@ -209,15 +208,12 @@ ${formData.message}
               </div>
             </motion.aside>
 
-            <motion.div
-              {...slideInRightMount}
-              className="bg-paper p-8 sm:p-12"
-            >
-              <div className="mb-8 flex items-baseline justify-between border-b border-hair-paper pb-5">
+            <motion.div {...slideInRightMount} className="bg-paper p-8 sm:p-12">
+              <div className="border-hair-paper mb-8 flex items-baseline justify-between border-b pb-5">
                 <h3 className="text-[20px] font-semibold tracking-tight text-ink-paper">
                   Tell me about it
                 </h3>
-                <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                <span className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
                   Contact form
                 </span>
               </div>
@@ -328,7 +324,7 @@ ${formData.message}
                   )}
                 </div>
 
-                <div className="flex flex-col gap-4 border-t border-hair-paper pt-6 sm:flex-row sm:items-center sm:justify-between">
+                <div className="border-hair-paper flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
                   <button
                     type="submit"
                     className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
@@ -336,7 +332,7 @@ ${formData.message}
                     Send message
                     <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </button>
-                  <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                  <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
                     Opens your email app
                   </p>
                 </div>
@@ -348,7 +344,7 @@ ${formData.message}
 
       <section
         ref={includedRef}
-        className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28"
+        className="border-hair relative overflow-hidden border-t bg-bg py-20 text-ink sm:py-28"
       >
         <motion.div
           style={{ transform: includedGridTransform }}
@@ -358,7 +354,7 @@ ${formData.message}
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+            className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -380,7 +376,7 @@ ${formData.message}
               <motion.div
                 key={item}
                 {...staggerChild(i, 0.04)}
-                className="flex items-start gap-3 border-t border-hair pt-3"
+                className="border-hair flex items-start gap-3 border-t pt-3"
               >
                 <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
                   {String(i + 1).padStart(2, '0')}

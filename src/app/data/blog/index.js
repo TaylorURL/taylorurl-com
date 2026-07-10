@@ -74,12 +74,12 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: "Why are they slow? Because every Wix page loads a pile of extra code you never asked for. Tracking scripts, animation files, their own platform code — it all gets dumped onto your page whether you need it or not. A simple five-page site should not be that heavy. But on Wix, it is.",
+        text: 'Why are they slow? Because every Wix page loads a pile of extra code you never asked for. Tracking scripts, animation files, their own platform code — it all gets dumped onto your page whether you need it or not. A simple five-page site should not be that heavy. But on Wix, it is.',
       },
       { type: 'h2', text: 'The SEO Problem' },
       {
         type: 'p',
-        text: "Google cares about site speed, how the site behaves on a phone, clean structure, and clear page titles. Wix makes all of those harder. The page structure it generates is bloated and messy. The web addresses are weird. The labels Google reads are limited. You can do SEO on Wix, but it is like running a race in boots — technically possible, but why would you?",
+        text: 'Google cares about site speed, how the site behaves on a phone, clean structure, and clear page titles. Wix makes all of those harder. The page structure it generates is bloated and messy. The web addresses are weird. The labels Google reads are limited. You can do SEO on Wix, but it is like running a race in boots — technically possible, but why would you?',
       },
       {
         type: 'p',

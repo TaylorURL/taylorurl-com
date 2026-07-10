@@ -30,12 +30,6 @@ export const BTN_GHOST_DARK =
 export const BTN_GHOST_DARK_LG =
   'inline-flex items-center justify-center gap-2.5 rounded-sm border border-hair-strong px-7 py-4 font-mono text-[12px] uppercase tracking-[0.18em] font-semibold text-ink transition duration-200 ease-out-soft hover:bg-ink hover:text-bg active:scale-[0.98]'
 
-// Legacy aliases — keep importers compiling while every surface migrates.
-export const BTN_SECONDARY = BTN_GHOST
-export const BTN_SECONDARY_LG = BTN_GHOST_LG
-export const BTN_SECONDARY_DARK = BTN_GHOST_DARK
-export const BTN_SECONDARY_DARK_LG = BTN_GHOST_DARK_LG
-
 // ─── Inputs ────────────────────────────────────────────────────────────────
 export const INPUT =
   'w-full rounded-sm border border-hair-paper-strong bg-paper px-4 py-3.5 font-sans text-[15px] text-ink-paper transition duration-200 ease-out-soft placeholder:text-paper-faint focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30'
@@ -62,11 +56,9 @@ export const BADGE_BLUE =
 // ─── Section header pieces ────────────────────────────────────────────────
 export const EYEBROW = 'font-mono text-[11px] uppercase tracking-[0.22em] text-accent'
 
-export const EYEBROW_MUTE =
-  'font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint'
+export const EYEBROW_MUTE = 'font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint'
 
-export const EYEBROW_MUTE_DARK =
-  'font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint'
+export const EYEBROW_MUTE_DARK = 'font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint'
 
 // Display headings — large, tight, ink-on-paper or ink-on-dark.
 export const SECTION_H2 =

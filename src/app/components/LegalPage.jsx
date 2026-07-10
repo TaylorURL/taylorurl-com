@@ -35,7 +35,7 @@ export default function LegalPage({
         <div className="container-rail-tight">
           <div className="mx-auto max-w-[760px]">
             {effectiveDate && (
-              <p className="mb-10 font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint">
+              <p className="text-paper-faint mb-10 font-mono text-[11px] uppercase tracking-[0.22em]">
                 {effectiveDate}
               </p>
             )}
@@ -58,9 +58,7 @@ export default function LegalPage({
                     </h2>
                   </div>
                   {typeof section.content === 'string' ? (
-                    <p className="text-[16px] leading-relaxed text-paper-soft">
-                      {section.content}
-                    </p>
+                    <p className="text-[16px] leading-relaxed text-paper-soft">{section.content}</p>
                   ) : (
                     section.content
                   )}
@@ -69,7 +67,7 @@ export default function LegalPage({
             </div>
 
             {footer && (
-              <div className="mt-16 rounded-sm border border-hair-paper-strong p-6 sm:p-8">
+              <div className="border-hair-paper-strong mt-16 rounded-sm border p-6 sm:p-8">
                 <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                   {footer.heading}
                 </p>

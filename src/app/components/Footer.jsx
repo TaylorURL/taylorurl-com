@@ -28,16 +28,16 @@ export default function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="relative overflow-hidden border-t border-hair bg-bg text-ink">
+    <footer className="border-hair relative overflow-hidden border-t bg-bg text-ink">
       <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent" />
+      <div className="via-accent/60 absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent" />
 
       <motion.div
         {...fadeInUp}
         className="relative mx-auto w-full max-w-[1280px] px-6 pb-12 pt-24 sm:px-10 sm:pt-28 lg:px-16"
       >
         {/* Top monolithic mark */}
-        <div className="mb-16 grid gap-10 border-b border-hair pb-16 sm:mb-20 sm:pb-20 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        <div className="border-hair mb-16 grid gap-10 border-b pb-16 sm:mb-20 sm:pb-20 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-md">
             <Link to="/" className="mb-8 inline-block">
               <img
@@ -52,9 +52,9 @@ export default function Footer() {
               />
             </Link>
             <p className="mb-8 text-[15px] leading-relaxed text-ink-soft">
-              Custom websites for shops, restaurants, trades, contractors, and independent
-              pros around Baytown, Houston, and the rest of Southeast Texas. Built and
-              looked after by one person, with a direct line you can actually reach.
+              Custom websites for shops, restaurants, trades, contractors, and independent pros
+              around Baytown, Houston, and the rest of Southeast Texas. Built and looked after by
+              one person, with a direct line you can actually reach.
             </p>
             <div className="space-y-3">
               <div className="flex items-center gap-3 text-[13px] text-ink-mute">
@@ -164,7 +164,7 @@ export default function Footer() {
             </p>
             <Link
               to="/contact"
-              className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-strong px-5 py-3 font-mono text-[11px] uppercase tracking-[0.18em] font-semibold text-ink transition duration-200 ease-out hover:bg-accent hover:border-accent active:scale-[0.98]"
+              className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:border-accent hover:bg-accent active:scale-[0.98]"
             >
               Start a project
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -194,7 +194,7 @@ export default function Footer() {
           <p className="sr-only">Serving {SERVING.join(', ')}.</p>
         </div>
 
-        <div className="flex flex-col gap-6 border-t border-hair pt-8 sm:flex-row sm:items-center sm:justify-between">
+        <div className="border-hair flex flex-col gap-6 border-t pt-8 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
             <span>© {currentYear} TaylorURL LLC</span>
             <span className="hidden sm:inline">·</span>
