@@ -5,7 +5,7 @@ import { fadeInUp } from '@constants/animations'
 
 export default function FinalCtaSection() {
   return (
-    <section className="relative overflow-hidden border-t border-hair bg-bg py-28 text-ink sm:py-40">
+    <section className="border-hair relative overflow-hidden border-t bg-bg py-28 text-ink sm:py-40">
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <div
         className="pointer-events-none absolute left-1/2 top-1/2 h-[700px] w-[1100px] -translate-x-1/2 -translate-y-1/2 rounded-full opacity-[0.15]"
@@ -13,7 +13,7 @@ export default function FinalCtaSection() {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/60 to-transparent"
+        className="via-accent/60 absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent to-transparent"
         aria-hidden="true"
       />
 
@@ -30,8 +30,8 @@ export default function FinalCtaSection() {
           Ready to <span className="text-accent">get started</span>?
         </h2>
         <p className="mx-auto mt-8 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]">
-          I take care of the tech side — keeping your site online, fast, and safe. You just
-          tell me about the business and what you need.
+          I take care of the tech side — keeping your site online, fast, and safe. You just tell me
+          about the business and what you need.
         </p>
         <div className="mt-12 flex justify-center">
           <Link

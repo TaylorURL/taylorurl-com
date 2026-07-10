@@ -99,7 +99,7 @@ function ServiceRow({ service, index }) {
       className="grid items-center gap-10 py-16 lg:grid-cols-2 lg:gap-16 lg:py-24"
     >
       <div className={isReversed ? 'lg:order-2' : ''}>
-        <div className="mb-6 flex items-baseline justify-between border-b border-hair-paper pb-4">
+        <div className="border-hair-paper mb-6 flex items-baseline justify-between border-b pb-4">
           <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             {String(index + 1).padStart(2, '0')} / 04
           </span>
@@ -115,12 +115,9 @@ function ServiceRow({ service, index }) {
           {service.features.map(feature => (
             <li
               key={feature}
-              className="flex items-start gap-3 border-t border-hair-paper pt-3 text-[14px] leading-snug text-paper-soft"
+              className="border-hair-paper flex items-start gap-3 border-t pt-3 text-[14px] leading-snug text-paper-soft"
             >
-              <Check
-                className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent"
-                strokeWidth={2}
-              />
+              <Check className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent" strokeWidth={2} />
               {feature}
             </li>
           ))}
@@ -187,7 +184,7 @@ export default function Services() {
       <section className="relative overflow-hidden bg-paper py-24 sm:py-36">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
-          <div className="divide-y divide-hair-paper border-y border-hair-paper">
+          <div className="divide-hair-paper border-hair-paper divide-y border-y">
             {SERVICES.map((service, i) => (
               <ServiceRow key={service.title} service={service} index={i} />
             ))}
@@ -196,10 +193,10 @@ export default function Services() {
       </section>
 
       {/* Capabilities strip — engineering spec list */}
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-20 text-ink sm:py-28">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-20 text-ink sm:py-28">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
-          <motion.div {...fadeInUp} className="mb-12 border-b border-hair pb-8">
+          <motion.div {...fadeInUp} className="border-hair mb-12 border-b pb-8">
             <p className="mb-4 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
               // Comes with every site
@@ -208,7 +205,7 @@ export default function Services() {
               Six things every site I build comes with.
             </h2>
           </motion.div>
-          <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair bg-hair md:grid-cols-3 lg:grid-cols-6">
+          <div className="border-hair bg-hair grid grid-cols-2 gap-px overflow-hidden border md:grid-cols-3 lg:grid-cols-6">
             {CAPABILITIES.map((cap, i) => {
               const Icon = cap.icon
               return (
@@ -223,9 +220,7 @@ export default function Services() {
                       {String(i + 1).padStart(2, '0')}
                     </span>
                   </div>
-                  <span className="text-[13px] font-medium leading-snug text-ink">
-                    {cap.label}
-                  </span>
+                  <span className="text-[13px] font-medium leading-snug text-ink">{cap.label}</span>
                 </motion.div>
               )
             })}
@@ -234,7 +229,7 @@ export default function Services() {
       </section>
 
       {/* Service area */}
-      <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-20 sm:py-28">
+      <section className="border-hair-paper relative overflow-hidden border-t bg-paper py-20 sm:py-28">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div {...fadeInUp} className="grid items-end gap-10 lg:grid-cols-[1.4fr_1fr]">
@@ -258,12 +253,12 @@ export default function Services() {
           <motion.div
             {...fadeInUp}
             transition={{ delay: 0.1 }}
-            className="mt-10 flex flex-wrap gap-x-3 gap-y-2 border-t border-hair-paper pt-8"
+            className="border-hair-paper mt-10 flex flex-wrap gap-x-3 gap-y-2 border-t pt-8"
           >
             {SERVICE_AREAS.map(area => (
               <span
                 key={area}
-                className="rounded-sm border border-hair-paper-strong px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-paper-soft"
+                className="border-hair-paper-strong rounded-sm border px-3 py-1.5 font-mono text-[11px] uppercase tracking-[0.18em] text-paper-soft"
               >
                 {area}
               </span>

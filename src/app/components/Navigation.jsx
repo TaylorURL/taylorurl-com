@@ -70,8 +70,7 @@ export default function Navigation() {
   const isTransparent = !scrolled && !mobileOpen
   const useDarkChrome = onDark
 
-  const isActive = to =>
-    to === '/' ? location.pathname === '/' : location.pathname.startsWith(to)
+  const isActive = to => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
 
   const linkBaseDark = 'text-ink-soft hover:text-ink'
   const linkBaseLight = 'text-paper-mute hover:text-ink-paper'
@@ -96,8 +95,8 @@ export default function Navigation() {
           isTransparent
             ? 'border-b border-transparent bg-transparent'
             : useDarkChrome
-              ? 'border-b border-hair bg-bg/85 backdrop-blur-xl'
-              : 'border-b border-hair-paper bg-paper/85 backdrop-blur-xl'
+              ? 'border-hair bg-bg/85 border-b backdrop-blur-xl'
+              : 'border-hair-paper bg-paper/85 border-b backdrop-blur-xl'
         }`}
       >
         <div className="mx-auto flex h-[68px] max-w-[1280px] items-center justify-between gap-6 px-6 sm:px-10 lg:h-[76px] lg:px-16">
@@ -151,9 +150,7 @@ export default function Navigation() {
             aria-label={mobileOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileOpen}
             className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-sm transition-colors duration-200 lg:hidden ${
-              useDarkChrome
-                ? 'text-ink hover:bg-ink/10'
-                : 'text-ink-paper hover:bg-ink-paper/10'
+              useDarkChrome ? 'hover:bg-ink/10 text-ink' : 'hover:bg-ink-paper/10 text-ink-paper'
             }`}
           >
             {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -170,7 +167,7 @@ export default function Navigation() {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               aria-hidden="true"
-              className="fixed inset-0 z-[60] bg-bg/70 backdrop-blur-sm lg:hidden"
+              className="bg-bg/70 fixed inset-0 z-[60] backdrop-blur-sm lg:hidden"
               onClick={() => setMobileOpen(false)}
             />
 
@@ -182,9 +179,9 @@ export default function Navigation() {
               role="dialog"
               aria-modal="true"
               aria-label="Site menu"
-              className="fixed inset-x-0 top-0 z-[61] flex max-h-[92vh] flex-col overflow-y-auto border-b border-hair bg-bg text-ink shadow-2xl lg:hidden"
+              className="border-hair fixed inset-x-0 top-0 z-[61] flex max-h-[92vh] flex-col overflow-y-auto border-b bg-bg text-ink shadow-2xl lg:hidden"
             >
-              <div className="flex h-[68px] shrink-0 items-center justify-between border-b border-hair px-6">
+              <div className="border-hair flex h-[68px] shrink-0 items-center justify-between border-b px-6">
                 <Link to="/" aria-label="TaylorURL home" onClick={() => setMobileOpen(false)}>
                   <Wordmark invert sizeClass="h-9 w-[150px]" />
                 </Link>
@@ -192,7 +189,7 @@ export default function Navigation() {
                   type="button"
                   onClick={() => setMobileOpen(false)}
                   aria-label="Close menu"
-                  className="flex h-11 w-11 items-center justify-center rounded-sm text-ink transition-colors duration-200 hover:bg-ink/10"
+                  className="hover:bg-ink/10 flex h-11 w-11 items-center justify-center rounded-sm text-ink transition-colors duration-200"
                 >
                   <X className="h-5 w-5" />
                 </button>
@@ -215,14 +212,12 @@ export default function Navigation() {
                         to={link.to}
                         onClick={() => setMobileOpen(false)}
                         aria-current={active ? 'page' : undefined}
-                        className={`flex items-center justify-between border-b border-hair py-4 transition-colors duration-150 ${
+                        className={`border-hair flex items-center justify-between border-b py-4 transition-colors duration-150 ${
                           active ? 'text-accent' : 'text-ink-soft hover:text-ink'
                         }`}
                       >
                         <span className="flex items-center gap-3">
-                          <span className="font-mono text-[10px] text-ink-faint">
-                            0{i + 1}
-                          </span>
+                          <span className="font-mono text-[10px] text-ink-faint">0{i + 1}</span>
                           <span className="text-[22px] font-semibold tracking-tight">
                             {link.label}
                           </span>
@@ -234,7 +229,7 @@ export default function Navigation() {
                 })}
               </div>
 
-              <div className="mt-auto border-t border-hair px-6 py-8">
+              <div className="border-hair mt-auto border-t px-6 py-8">
                 <Link
                   to="/contact"
                   onClick={() => setMobileOpen(false)}

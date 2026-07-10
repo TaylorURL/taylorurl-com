@@ -93,7 +93,11 @@ const TIMELINE_STEPS = [
     duration: 'Week 3-4',
     description:
       'You click through the whole site. I fix whatever needs fixing. Once you give the go-ahead, I put it online for the world to see.',
-    client: ['Click through the whole site', 'Send any final changes', 'Give the go-ahead to launch'],
+    client: [
+      'Click through the whole site',
+      'Send any final changes',
+      'Give the go-ahead to launch',
+    ],
     taylorurl: [
       'Fix anything you find',
       'Tune up speed and Google visibility',
@@ -133,7 +137,7 @@ function TimelineRow({ step, index }) {
         style={{ transform }}
         className="flex items-start gap-5 will-change-transform lg:flex-col lg:gap-4"
       >
-        <span className="font-mono text-[clamp(3rem,5vw,4.4rem)] font-semibold leading-none text-paper-faint">
+        <span className="text-paper-faint font-mono text-[clamp(3rem,5vw,4.4rem)] font-semibold leading-none">
           {step.step}
         </span>
         <div className="flex flex-1 flex-col gap-3 lg:flex-none">
@@ -153,9 +157,9 @@ function TimelineRow({ step, index }) {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-px overflow-hidden border border-hair-paper bg-hair-paper sm:grid-cols-2 lg:col-span-1">
+      <div className="border-hair-paper bg-hair-paper grid grid-cols-1 gap-px overflow-hidden border sm:grid-cols-2 lg:col-span-1">
         <div className="bg-paper p-5">
-          <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+          <p className="text-paper-faint mb-3 font-mono text-[10px] uppercase tracking-[0.22em]">
             Your part
           </p>
           <ul className="space-y-2">
@@ -164,7 +168,7 @@ function TimelineRow({ step, index }) {
                 key={item}
                 className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
               >
-                <span className="mt-1 h-1 w-1 flex-shrink-0 rounded-full bg-paper-faint" />
+                <span className="bg-paper-faint mt-1 h-1 w-1 flex-shrink-0 rounded-full" />
                 {item}
               </li>
             ))}
@@ -222,7 +226,7 @@ export default function Process() {
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
+            className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -236,12 +240,12 @@ export default function Process() {
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              Most projects wrap up in three to four weeks. Here’s what each step looks
-              like — your part and my part, side by side.
+              Most projects wrap up in three to four weeks. Here’s what each step looks like — your
+              part and my part, side by side.
             </p>
           </motion.div>
 
-          <div className="mt-16 space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
+          <div className="border-hair-paper bg-hair-paper mt-16 space-y-px overflow-hidden border">
             {TIMELINE_STEPS.map((step, i) => (
               <TimelineRow key={step.step} step={step} index={i} />
             ))}
@@ -249,12 +253,12 @@ export default function Process() {
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+            className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -268,12 +272,12 @@ export default function Process() {
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              Doesn&apos;t need to be perfect or finished. I can work with whatever you have
-              and help fill in the gaps as we go.
+              Doesn&apos;t need to be perfect or finished. I can work with whatever you have and
+              help fill in the gaps as we go.
             </p>
           </motion.div>
 
-          <div className="mt-12 grid gap-px overflow-hidden border border-hair bg-hair sm:grid-cols-2 lg:grid-cols-5">
+          <div className="border-hair bg-hair mt-12 grid gap-px overflow-hidden border sm:grid-cols-2 lg:grid-cols-5">
             {WHAT_YOULL_NEED.map((item, i) => {
               const Icon = item.icon
               return (

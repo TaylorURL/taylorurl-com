@@ -3,12 +3,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowUpRight, Check, X } from 'lucide-react'
 import { INPUT } from '@constants/ui'
 import { isValidEmail } from '@utils/validation'
+import { submitEmailSignup, signupErrorMessage } from '@data/collectEmail'
 
 const STORAGE_KEY = 'taylorurl_email_popup_v1'
 const SHOW_AFTER_MS = 6000
 const SUCCESS_AUTO_CLOSE_MS = 2400
-const ENDPOINT = 'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/collect-email'
-const PUBLISHABLE_KEY = 'sb_publishable_qn4ZWB2n95HGMJm0L58I0w_ClE_Qu4M'
 const FOCUSABLE_SELECTOR =
   'a[href], area[href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), iframe, [tabindex]:not([tabindex="-1"])'
 
@@ -128,32 +127,11 @@ export default function EmailCapturePopup() {
     setServerError('')
 
     try {
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          name: name.trim(),
-          email: trimmedEmail,
-          source: 'taylorurl',
-        }),
-      })
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error || 'Something went wrong. Please try again.')
-      }
-
+      await submitEmailSignup({ name, email: trimmedEmail, source: 'taylorurl' })
       setStatus('success')
     } catch (error) {
       setStatus('error')
-      setServerError(
-        error?.message?.length && error.message.length < 200
-          ? error.message
-          : "Couldn't sign you up just now. Please try again."
-      )
+      setServerError(signupErrorMessage(error))
     }
   }
 
@@ -171,7 +149,7 @@ export default function EmailCapturePopup() {
             type="button"
             aria-label="Close email signup"
             onClick={() => close('dismissed')}
-            className="absolute inset-0 cursor-default bg-bg/70 backdrop-blur-sm"
+            className="bg-bg/70 absolute inset-0 cursor-default backdrop-blur-sm"
           />
 
           <motion.div
@@ -184,11 +162,11 @@ export default function EmailCapturePopup() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 16 }}
             transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-            className="relative w-full max-w-md overflow-hidden rounded-sm border border-hair-paper-strong bg-paper p-7 sm:p-9"
+            className="border-hair-paper-strong relative w-full max-w-md overflow-hidden rounded-sm border bg-paper p-7 sm:p-9"
           >
             <span
               aria-hidden
-              className="absolute -top-px left-7 bg-paper px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
+              className="text-paper-faint absolute -top-px left-7 bg-paper px-2 font-mono text-[10px] uppercase tracking-[0.22em]"
             >
               // Newsletter
             </span>
@@ -196,14 +174,14 @@ export default function EmailCapturePopup() {
               type="button"
               onClick={() => close('dismissed')}
               aria-label="Close email signup"
-              className="absolute right-4 top-4 rounded-sm p-2.5 text-paper-faint transition hover:bg-ink-paper/5 hover:text-ink-paper"
+              className="text-paper-faint hover:bg-ink-paper/5 absolute right-4 top-4 rounded-sm p-2.5 transition hover:text-ink-paper"
             >
               <X className="h-4 w-4" />
             </button>
 
             {status === 'success' ? (
               <div className="py-6 text-center">
-                <div className="mx-auto mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm border border-accent/30 bg-accent/5">
+                <div className="border-accent/30 bg-accent/5 mx-auto mb-4 inline-flex h-10 w-10 items-center justify-center rounded-sm border">
                   <Check className="h-5 w-5 text-accent" strokeWidth={2} />
                 </div>
                 <h2
@@ -222,22 +200,21 @@ export default function EmailCapturePopup() {
                   id="email-popup-title"
                   className="mb-3 text-3xl font-semibold leading-[1.05] tracking-tightest text-ink-paper"
                 >
-                  Short notes for owners.{' '}
-                  <span className="text-accent">Straight from me.</span>
+                  Short notes for owners. <span className="text-accent">Straight from me.</span>
                 </h2>
                 <p
                   id="email-popup-description"
                   className="mb-7 text-[15px] leading-relaxed text-paper-soft"
                 >
-                  Practical tips on getting found online and turning visitors into paying
-                  customers. Sent only when there&apos;s something worth saying.
+                  Practical tips on getting found online and turning visitors into paying customers.
+                  Sent only when there&apos;s something worth saying.
                 </p>
 
                 <form onSubmit={handleSubmit} className="space-y-4" noValidate>
                   <div>
                     <label
                       htmlFor="email-popup-name"
-                      className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
+                      className="text-paper-faint mb-2 block font-mono text-[10px] uppercase tracking-[0.22em]"
                     >
                       Name <span className="text-paper-faint">— optional</span>
                     </label>
@@ -256,7 +233,7 @@ export default function EmailCapturePopup() {
                   <div>
                     <label
                       htmlFor="email-popup-email"
-                      className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint"
+                      className="text-paper-faint mb-2 block font-mono text-[10px] uppercase tracking-[0.22em]"
                     >
                       Email
                     </label>
@@ -297,7 +274,7 @@ export default function EmailCapturePopup() {
                     <button
                       type="button"
                       onClick={() => close('dismissed')}
-                      className="font-mono text-[11px] uppercase tracking-[0.18em] text-paper-faint transition hover:text-ink-paper"
+                      className="text-paper-faint font-mono text-[11px] uppercase tracking-[0.18em] transition hover:text-ink-paper"
                     >
                       No thanks
                     </button>

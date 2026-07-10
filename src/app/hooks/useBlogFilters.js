@@ -77,7 +77,7 @@ export function useBlogFilters({ posts, postsPerPage }) {
 
   const categories = useMemo(
     () => ['All', ...Array.from(new Set(posts.map(p => p.category)))],
-    [posts],
+    [posts]
   )
 
   const categoryCounts = useMemo(() => {
@@ -88,16 +88,12 @@ export function useBlogFilters({ posts, postsPerPage }) {
     return counts
   }, [posts])
 
-  const isDefaultView =
-    activeCategory === 'All' && !search.trim() && currentPage === 1
+  const isDefaultView = activeCategory === 'All' && !search.trim() && currentPage === 1
   const featuredPost = isDefaultView ? filtered[0] || null : null
   const gridPosts = isDefaultView ? filtered.slice(1) : filtered
 
   const totalPages = Math.max(1, Math.ceil(gridPosts.length / postsPerPage))
-  const pagePosts = gridPosts.slice(
-    (currentPage - 1) * postsPerPage,
-    currentPage * postsPerPage,
-  )
+  const pagePosts = gridPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage)
 
   return {
     posts: filtered,

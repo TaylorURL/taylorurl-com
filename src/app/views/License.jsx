@@ -38,15 +38,13 @@ const SECTIONS = [
   {
     title: 'Restrictions',
     content: (
-      <div className="space-y-px overflow-hidden border border-hair-paper bg-hair-paper">
+      <div className="border-hair-paper bg-hair-paper space-y-px overflow-hidden border">
         {RESTRICTIONS.map(item => (
           <div key={item.title} className="bg-paper p-5">
             <h3 className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
               {item.title}
             </h3>
-            <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
-              {item.description}
-            </p>
+            <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">{item.description}</p>
           </div>
         ))}
       </div>
@@ -95,11 +93,11 @@ export default function License() {
           ),
         }}
       >
-        <div className="mb-10 border border-hair-paper-strong p-6">
+        <div className="border-hair-paper-strong mb-10 border p-6">
           <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
             // MIT License with additional restrictions
           </p>
-          <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.18em] text-paper-faint">
+          <p className="text-paper-faint mt-2 font-mono text-[12px] uppercase tracking-[0.18em]">
             Copyright (c) 2026 TaylorURL LLC · Trenton Taylor
           </p>
         </div>

@@ -23,7 +23,10 @@ export function ToastProvider({ children }) {
     (message, type = 'success', duration = DEFAULT_TOAST_DURATION) => {
       const id = (nextIdRef.current += 1)
       setToasts(prev => [...prev, { id, message, type }])
-      timersRef.current.set(id, setTimeout(() => removeToast(id), duration))
+      timersRef.current.set(
+        id,
+        setTimeout(() => removeToast(id), duration)
+      )
     },
     [removeToast]
   )

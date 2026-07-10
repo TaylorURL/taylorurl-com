@@ -31,12 +31,12 @@ const FACTS = [
 
 export default function DataSection() {
   return (
-    <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-36">
+    <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-36">
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
         <motion.div
           {...fadeInUp}
-          className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+          className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
         >
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -50,12 +50,12 @@ export default function DataSection() {
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-            Local businesses with a real website grow faster, get found more often, and win
-            more customers. The ones without are leaning on referrals and luck.
+            Local businesses with a real website grow faster, get found more often, and win more
+            customers. The ones without are leaning on referrals and luck.
           </p>
         </motion.div>
 
-        <div className="mt-12 grid items-stretch gap-px overflow-hidden border border-hair bg-hair sm:mt-16 lg:grid-cols-[1fr_1.2fr]">
+        <div className="border-hair bg-hair mt-12 grid items-stretch gap-px overflow-hidden border sm:mt-16 lg:grid-cols-[1fr_1.2fr]">
           <motion.div
             {...fadeInUp}
             className="flex flex-col justify-between gap-8 bg-bg p-8 sm:p-12"
@@ -65,13 +65,13 @@ export default function DataSection() {
                 // The short version
               </p>
               <p className="text-[17px] leading-relaxed text-ink-soft">
-                A well-built website puts your business right where people are already
-                looking when they need someone to call.
+                A well-built website puts your business right where people are already looking when
+                they need someone to call.
               </p>
             </div>
             <Link
               to="/contact"
-              className="group inline-flex w-fit items-center gap-2.5 rounded-sm border border-hair-strong px-6 py-3.5 font-mono text-[11px] uppercase tracking-[0.18em] font-semibold text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+              className="border-hair-strong group inline-flex w-fit items-center gap-2.5 rounded-sm border px-6 py-3.5 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
             >
               Start a project
               <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -100,7 +100,7 @@ export default function DataSection() {
           </motion.div>
         </div>
 
-        <div className="mt-12 grid gap-px overflow-hidden border border-hair bg-hair sm:mt-16 md:grid-cols-3">
+        <div className="border-hair bg-hair mt-12 grid gap-px overflow-hidden border sm:mt-16 md:grid-cols-3">
           {FACTS.map((fact, i) => {
             const Icon = fact.icon
             return (
@@ -122,9 +122,7 @@ export default function DataSection() {
                   <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
                     {fact.label}
                   </p>
-                  <p className="mt-5 text-[14px] leading-relaxed text-ink-soft">
-                    {fact.detail}
-                  </p>
+                  <p className="mt-5 text-[14px] leading-relaxed text-ink-soft">{fact.detail}</p>
                 </div>
               </motion.div>
             )

@@ -26,7 +26,7 @@ export default function BackToTop() {
           transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
           whileTap={{ scale: 0.94 }}
           onClick={scrollToTop}
-          className="group fixed bottom-20 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-sm border border-hair-paper-strong bg-paper text-ink-paper transition-colors duration-200 hover:bg-ink-paper hover:text-paper sm:bottom-24"
+          className="border-hair-paper-strong group fixed bottom-20 right-6 z-40 flex h-11 w-11 items-center justify-center rounded-sm border bg-paper text-ink-paper transition-colors duration-200 hover:bg-ink-paper hover:text-paper sm:bottom-24"
           aria-label="Scroll to top"
         >
           <ArrowUp className="h-4 w-4 transition-transform duration-200 group-hover:-translate-y-0.5" />

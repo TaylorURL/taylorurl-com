@@ -80,7 +80,7 @@ const FAQ_CATEGORIES = [
 
 function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIndex }) {
   return (
-    <motion.div {...staggerChild(index, 0.04)} className="border-t border-hair-paper">
+    <motion.div {...staggerChild(index, 0.04)} className="border-hair-paper border-t">
       <button
         type="button"
         onClick={onToggle}
@@ -89,7 +89,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIn
         className="group flex w-full items-baseline justify-between gap-4 py-6 text-left"
       >
         <div className="flex items-baseline gap-5">
-          <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint">
+          <span className="text-paper-faint font-mono text-[11px] uppercase tracking-[0.22em]">
             {String(sectionIndex + 1).padStart(2, '0')}.{String(index + 1).padStart(2, '0')}
           </span>
           <span className="text-[17px] font-medium tracking-tight text-ink-paper transition-colors group-hover:text-accent sm:text-[19px]">
@@ -176,10 +176,7 @@ export default function Faq() {
         description="The questions I get most from owners — about timelines, how it works, who owns what, and what happens after launch."
       />
 
-      <section
-        ref={faqSectionRef}
-        className="relative overflow-hidden bg-paper py-24 sm:py-32"
-      >
+      <section ref={faqSectionRef} className="relative overflow-hidden bg-paper py-24 sm:py-32">
         <motion.div
           style={{ transform: gridTransform }}
           className="grid-blueprint-paper-fine absolute inset-0 opacity-40 will-change-transform"
@@ -188,15 +185,19 @@ export default function Faq() {
         <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
           <div className="space-y-20">
             {FAQ_CATEGORIES.map((category, catIndex) => (
-              <motion.div key={category.title} {...fadeInUp} transition={{ delay: catIndex * 0.08 }}>
-                <div className="flex items-baseline gap-5 border-b border-hair-paper pb-5">
+              <motion.div
+                key={category.title}
+                {...fadeInUp}
+                transition={{ delay: catIndex * 0.08 }}
+              >
+                <div className="border-hair-paper flex items-baseline gap-5 border-b pb-5">
                   <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                     {String(catIndex + 1).padStart(2, '0')}
                   </span>
                   <h2 className="text-[clamp(1.6rem,3.4vw,2.4rem)] font-semibold tracking-tightest text-ink-paper">
                     {category.title}
                   </h2>
-                  <span className="ml-auto font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                  <span className="text-paper-faint ml-auto font-mono text-[10px] uppercase tracking-[0.22em]">
                     {String(category.questions.length).padStart(2, '0')} entries
                   </span>
                 </div>

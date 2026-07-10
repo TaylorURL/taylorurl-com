@@ -24,7 +24,7 @@ function ClientAvatar({ name }) {
     .map(part => part[0])
     .join('')
   return (
-    <div className="flex h-11 w-11 items-center justify-center rounded-sm border border-hair-paper-strong bg-paper text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-paper">
+    <div className="border-hair-paper-strong flex h-11 w-11 items-center justify-center rounded-sm border bg-paper text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-paper">
       {initials}
     </div>
   )
@@ -38,18 +38,18 @@ function ClientTestimonialCard({ testimonial, index }) {
     >
       <div className="flex items-center justify-between">
         <ClientStarRow />
-        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+        <span className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
           {String(index + 1).padStart(2, '0')} / 03
         </span>
       </div>
       <blockquote className="flex-1 text-[18px] leading-[1.5] tracking-tight text-ink-paper">
         &ldquo;{testimonial.quote}&rdquo;
       </blockquote>
-      <figcaption className="flex items-center gap-4 border-t border-hair-paper pt-5">
+      <figcaption className="border-hair-paper flex items-center gap-4 border-t pt-5">
         <ClientAvatar name={testimonial.name} />
         <div>
           <div className="text-[14px] font-semibold text-ink-paper">{testimonial.name}</div>
-          <div className="font-mono text-[10px] uppercase tracking-[0.18em] text-paper-faint">
+          <div className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.18em]">
             {testimonial.role} — {testimonial.business}
           </div>
         </div>
@@ -60,12 +60,12 @@ function ClientTestimonialCard({ testimonial, index }) {
 
 export default function TestimonialsSection() {
   return (
-    <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-24 sm:py-36">
+    <section className="border-hair-paper relative overflow-hidden border-t bg-paper py-24 sm:py-36">
       <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
       <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
         <motion.div
           {...fadeInUp}
-          className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
+          className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
         >
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -80,20 +80,16 @@ export default function TestimonialsSection() {
           </div>
           <div className="flex flex-col items-start gap-6 lg:items-end">
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              A few words from local business owners I’ve built and looked after sites for
-              around Baytown and the Houston area.
+              A few words from local business owners I’ve built and looked after sites for around
+              Baytown and the Houston area.
             </p>
             <TrustpilotBadge profileUrl={TRUSTPILOT_PROFILE_URL} variant="paper" />
           </div>
         </motion.div>
 
-        <div className="mt-12 grid gap-px overflow-hidden border border-hair-paper bg-hair-paper md:mt-16 md:grid-cols-3">
+        <div className="border-hair-paper bg-hair-paper mt-12 grid gap-px overflow-hidden border md:mt-16 md:grid-cols-3">
           {CLIENT_TESTIMONIALS.map((testimonial, index) => (
-            <ClientTestimonialCard
-              key={testimonial.name}
-              testimonial={testimonial}
-              index={index}
-            />
+            <ClientTestimonialCard key={testimonial.name} testimonial={testimonial} index={index} />
           ))}
         </div>
 
@@ -112,7 +108,7 @@ export default function TestimonialsSection() {
             href={TRUSTPILOT_PROFILE_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-paper-strong px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink-paper transition duration-200 ease-out hover:bg-ink-paper hover:text-paper active:scale-[0.98]"
+            className="border-hair-paper-strong group inline-flex items-center gap-2.5 rounded-sm border px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink-paper transition duration-200 ease-out hover:bg-ink-paper hover:text-paper active:scale-[0.98]"
           >
             See all reviews
             <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />

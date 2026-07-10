@@ -119,7 +119,7 @@ export default function BlogPost() {
               Back to the blog
             </Link>
 
-            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-b border-hair pb-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+            <div className="border-hair mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-b pb-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               <span className="flex items-center gap-2 text-accent">
                 <Tag className="h-3 w-3" />
                 {post.category}
@@ -178,7 +178,7 @@ export default function BlogPost() {
         </div>
       </article>
 
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <motion.div
           {...fadeInUp}
@@ -193,8 +193,8 @@ export default function BlogPost() {
             Need help with <span className="text-accent">your website</span>?
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            I build custom websites for local businesses. Made from scratch, looked after
-            by me, and a direct line to call whenever something needs to change.
+            I build custom websites for local businesses. Made from scratch, looked after by me, and
+            a direct line to call whenever something needs to change.
           </p>
           <Link
             to="/contact"

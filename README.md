@@ -64,7 +64,7 @@ npm run dev           # Vite dev server
 npm run build         # production build, then static prerender of every route
 ```
 
-Copy `.env.example` to `.env.local` and set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` — the newsletter and email capture call Supabase. The app renders without them, but those features stay inert.
+No environment configuration is required to run the site locally — the newsletter and email-capture forms post directly to the Supabase `collect-email` edge function with a publishable key.
 
 ### Scripts
 
@@ -92,7 +92,7 @@ flowchart TD
 - **Prerendered for SEO.** The site is a React SPA that also renders every route to static HTML at build time. `vite/prerender-plugin.js` loads `src/entry-server.jsx` through Vite's SSR loader — no headless browser — and writes a real document per route, directory-style URLs plus a top-level `404.html`.
 - **Real markup in the head.** React 19 hoists each page's `react-helmet-async` title, meta, canonical, Open Graph, and JSON-LD into the prerendered `<head>`, and `vite/sitemap-plugin.js` emits `sitemap.xml` from the same route table.
 - **Targeted at local search.** Pages carry `geo.*` meta and a `LocalBusiness` / `ProfessionalService` schema for Baytown, TX and the greater Houston area.
-- **Secrets stay on the server.** Newsletter subscribers and lead submissions are written to Postgres tables whose RLS is locked to the service role — the browser's anon key can neither read nor write them.
+- **Secrets stay on the server.** Newsletter subscribers and lead submissions are written to Postgres tables whose RLS is locked to the service role — the browser's publishable key can neither read nor write them.
 
 ## Project structure
 
@@ -108,9 +108,9 @@ taylorurl-com/
 │   ├── app/
 │   │   ├── components/        Layout, Navigation, mockups, Seo
 │   │   ├── views/             Route views (Home, Services, Portfolio, Blog, Status…)
-│   │   ├── hooks/             auth, toast, blog filters, scroll/parallax
+│   │   ├── hooks/             toast, blog filters, scroll/parallax
 │   │   ├── constants/         navigation, seo, animations, ui
-│   │   ├── data/              blog articles, portfolio, home copy, supabaseClient
+│   │   ├── data/              blog articles, portfolio, home copy, email signup, map data
 │   │   └── utils/             blog-HTML sanitization (DOMPurify), validation
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   └── main.jsx               Browser entry

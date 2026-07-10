@@ -34,7 +34,7 @@ export default function PageHero({ title, description, eyebrow }) {
         aria-hidden="true"
       />
       <div
-        className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-hair-strong to-transparent"
+        className="via-hair-strong absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent to-transparent"
         aria-hidden="true"
       />
 

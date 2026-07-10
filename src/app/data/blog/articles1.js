@@ -146,12 +146,12 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'Speed Costs You Customers' },
       {
         type: 'p',
-        text: "A typical WordPress site loaded up with a theme and a stack of plugins takes 4 to 7 seconds to open on a phone. That is unacceptable. Google says over half of mobile users bail if a page takes more than 3 seconds. <strong>A custom-built site opens in under 2 seconds because it only runs what it actually needs.</strong> No bloated theme, no add-ons firing in the background, no extra lookups on every page.",
+        text: 'A typical WordPress site loaded up with a theme and a stack of plugins takes 4 to 7 seconds to open on a phone. That is unacceptable. Google says over half of mobile users bail if a page takes more than 3 seconds. <strong>A custom-built site opens in under 2 seconds because it only runs what it actually needs.</strong> No bloated theme, no add-ons firing in the background, no extra lookups on every page.',
       },
       { type: 'h2', text: 'What I Build Instead' },
       {
         type: 'p',
-        text: "Every site I deliver is built from scratch for your business. It is faster, safer, fully yours, and not tied to any platform or plugin store. It costs more upfront than a WordPress template, but it does not need constant patching, it will not get hacked through some random add-on, and it will not slow down as you add content. <strong>Your website is too important to be held together by plugins and prayers.</strong>",
+        text: 'Every site I deliver is built from scratch for your business. It is faster, safer, fully yours, and not tied to any platform or plugin store. It costs more upfront than a WordPress template, but it does not need constant patching, it will not get hacked through some random add-on, and it will not slow down as you add content. <strong>Your website is too important to be held together by plugins and prayers.</strong>',
       },
     ],
   },

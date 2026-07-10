@@ -36,7 +36,7 @@ const toSmoothPath = points => {
     const cp2x = p2.x - (p3.x - p1.x) / 6
     const cp2y = p2.y - (p3.y - p1.y) / 6
     segments.push(
-      `C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`,
+      `C ${cp1x.toFixed(2)} ${cp1y.toFixed(2)}, ${cp2x.toFixed(2)} ${cp2y.toFixed(2)}, ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`
     )
   }
   return segments.join(' ')
@@ -131,7 +131,13 @@ export default function RevenueGrowthChart({ data }) {
           </text>
         ))}
 
-        <path d={withoutPath} fill="none" stroke={WITHOUT_COLOR} strokeWidth="1.25" strokeDasharray="4 4" />
+        <path
+          d={withoutPath}
+          fill="none"
+          stroke={WITHOUT_COLOR}
+          strokeWidth="1.25"
+          strokeDasharray="4 4"
+        />
         <path d={withPath} fill="none" stroke={WITH_COLOR} strokeWidth="2" />
 
         {withoutPoints.map((p, i) => (

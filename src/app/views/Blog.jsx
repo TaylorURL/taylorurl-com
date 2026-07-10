@@ -1,14 +1,6 @@
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  Calendar,
-  Clock,
-  Search,
-  X,
-} from 'lucide-react'
+import { ArrowLeft, ArrowRight, ArrowUpRight, Calendar, Clock, Search, X } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp } from '@constants/animations'
@@ -57,7 +49,7 @@ function FeaturedPost({ post }) {
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.45, ease: REVEAL_EASE }}
-      className="relative overflow-hidden border border-hair bg-bg text-ink"
+      className="border-hair relative overflow-hidden border bg-bg text-ink"
     >
       <motion.div
         style={{ transform: gridTransform }}
@@ -106,7 +98,7 @@ function FeaturedPost({ post }) {
           style={{ transform: metaTransform }}
           className="relative hidden will-change-transform lg:block"
         >
-          <div className="border border-hair p-6">
+          <div className="border-hair border p-6">
             <span
               aria-hidden
               className="absolute -top-px left-4 bg-bg px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
@@ -146,10 +138,10 @@ function PostCard({ post, index }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: index * 0.04 }}
-      className="group bg-paper transition-colors duration-300 hover:bg-ink-paper/[0.02]"
+      className="hover:bg-ink-paper/[0.02] group bg-paper transition-colors duration-300"
     >
       <Link to={`/blog/${post.slug}`} className="flex h-full flex-col gap-5 p-7">
-        <div className="flex items-center justify-between border-b border-hair-paper pb-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+        <div className="border-hair-paper text-paper-faint flex items-center justify-between border-b pb-3 font-mono text-[10px] uppercase tracking-[0.22em]">
           <span className="text-accent">// {post.category}</span>
           <span>{post.readTime}</span>
         </div>
@@ -160,7 +152,7 @@ function PostCard({ post, index }) {
 
         <p className="flex-1 text-[14px] leading-relaxed text-paper-soft">{post.excerpt}</p>
 
-        <div className="flex items-center justify-between border-t border-hair-paper pt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+        <div className="border-hair-paper text-paper-faint flex items-center justify-between border-t pt-4 font-mono text-[10px] uppercase tracking-[0.22em]">
           <span>{post.date}</span>
           <span className="flex items-center gap-1 text-accent opacity-0 transition-opacity group-hover:opacity-100">
             Read
@@ -180,11 +172,11 @@ function PostListItem({ post, index }) {
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.22, delay: index * 0.02 }}
-      className="group bg-paper transition-colors hover:bg-ink-paper/[0.02]"
+      className="hover:bg-ink-paper/[0.02] group bg-paper transition-colors"
     >
       <Link to={`/blog/${post.slug}`} className="flex items-start gap-4 px-4 py-4">
         <div className="flex-1">
-          <div className="mb-1.5 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.22em] text-paper-faint">
+          <div className="text-paper-faint mb-1.5 flex items-center gap-3 font-mono text-[9px] uppercase tracking-[0.22em]">
             <span className="text-accent">{post.category}</span>
             <span>·</span>
             <span>{post.date}</span>
@@ -193,7 +185,7 @@ function PostListItem({ post, index }) {
             {post.title}
           </h3>
         </div>
-        <ArrowUpRight className="mt-2 h-3.5 w-3.5 flex-shrink-0 text-paper-faint transition-colors group-hover:text-accent" />
+        <ArrowUpRight className="text-paper-faint mt-2 h-3.5 w-3.5 flex-shrink-0 transition-colors group-hover:text-accent" />
       </Link>
     </motion.article>
   )
@@ -207,7 +199,7 @@ function Pagination({ currentPage, totalPages, onChange }) {
         onClick={() => onChange(currentPage - 1)}
         disabled={currentPage <= 1}
         aria-label="Previous page"
-        className="inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
+        className="border-hair-paper-strong inline-flex items-center gap-1.5 rounded-sm border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
       >
         <ArrowLeft className="h-3 w-3" />
         Prev
@@ -223,7 +215,7 @@ function Pagination({ currentPage, totalPages, onChange }) {
           className={`inline-flex h-10 w-10 items-center justify-center rounded-sm font-mono text-[11px] tracking-[0.18em] transition-colors ${
             page === currentPage
               ? 'bg-accent text-white'
-              : 'border border-hair-paper-strong text-paper-soft hover:bg-ink-paper hover:text-paper'
+              : 'border-hair-paper-strong border text-paper-soft hover:bg-ink-paper hover:text-paper'
           }`}
         >
           {String(page).padStart(2, '0')}
@@ -235,7 +227,7 @@ function Pagination({ currentPage, totalPages, onChange }) {
         onClick={() => onChange(currentPage + 1)}
         disabled={currentPage >= totalPages}
         aria-label="Next page"
-        className="inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
+        className="border-hair-paper-strong inline-flex items-center gap-1.5 rounded-sm border px-3 py-2 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft transition-colors hover:bg-ink-paper hover:text-paper disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-paper-soft"
       >
         Next
         <ArrowRight className="h-3 w-3" />
@@ -295,7 +287,7 @@ export default function Blog() {
       />
 
       {/* Filters strip */}
-      <section className="border-b border-hair-paper bg-paper">
+      <section className="border-hair-paper border-b bg-paper">
         <div className="mx-auto w-full max-w-[1280px] px-6 py-8 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
@@ -315,7 +307,7 @@ export default function Blog() {
 
             <div className="relative w-full lg:w-72">
               <Search
-                className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-paper-faint"
+                className="text-paper-faint absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
                 strokeWidth={1.5}
               />
               <input
@@ -331,7 +323,7 @@ export default function Blog() {
                   type="button"
                   onClick={clearSearch}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-2 text-paper-faint hover:text-ink-paper"
+                  className="text-paper-faint absolute right-3 top-1/2 -translate-y-1/2 rounded-sm p-2 hover:text-ink-paper"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -348,7 +340,7 @@ export default function Blog() {
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="mb-8 font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint"
+              className="text-paper-faint mb-8 font-mono text-[11px] uppercase tracking-[0.22em]"
             >
               {filtered.length.toString().padStart(2, '0')} result
               {filtered.length !== 1 ? 's' : ''}
@@ -365,9 +357,9 @@ export default function Blog() {
 
           {pagePosts.length > 0 ? (
             <AnimatePresence mode="popLayout">
-              <div className="grid gap-px overflow-hidden border border-hair-paper bg-hair-paper lg:grid-cols-3">
+              <div className="border-hair-paper bg-hair-paper grid gap-px overflow-hidden border lg:grid-cols-3">
                 <div className="lg:col-span-2">
-                  <div className="grid gap-px bg-hair-paper sm:grid-cols-2">
+                  <div className="bg-hair-paper grid gap-px sm:grid-cols-2">
                     {mainGridPosts.map((post, i) => (
                       <PostCard key={post.slug} post={post} index={i} />
                     ))}
@@ -376,10 +368,10 @@ export default function Blog() {
 
                 {sidebarPosts.length > 0 && (
                   <div className="bg-paper">
-                    <p className="border-b border-hair-paper px-5 py-4 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    <p className="border-hair-paper text-paper-faint border-b px-5 py-4 font-mono text-[10px] uppercase tracking-[0.22em]">
                       // More articles
                     </p>
-                    <div className="divide-y divide-hair-paper">
+                    <div className="divide-hair-paper divide-y">
                       {sidebarPosts.map((post, i) => (
                         <PostListItem key={post.slug} post={post} index={i} />
                       ))}
@@ -392,9 +384,9 @@ export default function Blog() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="border border-hair-paper py-20 text-center"
+              className="border-hair-paper border py-20 text-center"
             >
-              <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint">
+              <p className="text-paper-faint font-mono text-[11px] uppercase tracking-[0.22em]">
                 // Nothing found
               </p>
               <p className="mt-3 text-[16px] text-ink-paper">No articles match that.</p>
@@ -409,17 +401,13 @@ export default function Blog() {
           )}
 
           {totalPages > 1 && (
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onChange={setPage}
-            />
+            <Pagination currentPage={currentPage} totalPages={totalPages} onChange={setPage} />
           )}
         </div>
       </section>
 
       {/* CTA — dark band */}
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div {...fadeInUp} className="mx-auto max-w-3xl text-center">

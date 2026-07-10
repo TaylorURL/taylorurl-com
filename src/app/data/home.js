@@ -78,7 +78,7 @@ export const CLIENT_TESTIMONIALS = [
     role: 'Owner',
     color: 'bg-orange-500',
     quote:
-      "He just handles it. I don’t know anything about websites and I don’t want to. Online orders are up about 40% since launch and I haven’t had to learn a thing.",
+      'He just handles it. I don’t know anything about websites and I don’t want to. Online orders are up about 40% since launch and I haven’t had to learn a thing.',
   },
   {
     name: 'James Mitchell',
@@ -94,6 +94,6 @@ export const CLIENT_TESTIMONIALS = [
     role: 'General Manager',
     color: 'bg-emerald-500',
     quote:
-      "We had nothing online before. Now we’re one of the first names that shows up in our area. The site paid for itself the first month from new customers alone.",
+      'We had nothing online before. Now we’re one of the first names that shows up in our area. The site paid for itself the first month from new customers alone.',
   },
 ]
