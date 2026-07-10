@@ -44,6 +44,14 @@ export const PORTFOLIO_PROJECTS = [
       'A modern site for a Baytown go-kart track. Hours, pricing, group bookings, and directions — laid out to turn people searching for fun nearby into walk-ins through the gate.',
   },
   {
+    name: 'DomeBreak',
+    url: 'https://domebreak.com',
+    displayUrl: 'domebreak.com',
+    tagline: 'Strategy game · Real-time web app',
+    description:
+      'A real-time missile defense and offense game played across a live world map. Built for fast, tactical rounds where every player can see the fight unfold globally as it happens.',
+  },
+  {
     name: 'Dickinson Bayou Fleeting',
     url: 'https://dickinsonbayoufleeting.com',
     displayUrl: 'dickinsonbayoufleeting.com',
