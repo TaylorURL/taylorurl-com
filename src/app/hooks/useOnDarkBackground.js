@@ -40,7 +40,9 @@ export function useOnDarkBackground(probeRef, ignoreRefs = []) {
     if (!el) return
     const rect = el.getBoundingClientRect()
     const ignoreNodes = ignoreRefs.map(ref => ref?.current).filter(Boolean)
-    setOnDark(getBackgroundAtPoint(rect.left + rect.width / 2, rect.top + rect.height / 2, ignoreNodes))
+    setOnDark(
+      getBackgroundAtPoint(rect.left + rect.width / 2, rect.top + rect.height / 2, ignoreNodes)
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [probeRef, ...ignoreRefs])
 

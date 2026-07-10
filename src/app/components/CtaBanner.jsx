@@ -34,7 +34,7 @@ export default function CtaBanner({
 
   return (
     <section
-      className={`relative overflow-hidden ${isDark ? 'bg-bg text-ink' : 'bg-paper text-ink-paper border-t border-hair-paper'}`}
+      className={`relative overflow-hidden ${isDark ? 'bg-bg text-ink' : 'border-hair-paper border-t bg-paper text-ink-paper'}`}
     >
       <div
         className={`absolute inset-0 ${isDark ? 'grid-blueprint opacity-50' : 'grid-blueprint-paper opacity-50'}`}
@@ -76,7 +76,7 @@ export default function CtaBanner({
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
               <Link
                 to={primaryTo}
-                className="group inline-flex items-center justify-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] uppercase tracking-[0.18em] font-semibold text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+                className="group inline-flex items-center justify-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
               >
                 {primaryLabel}
                 <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -84,10 +84,10 @@ export default function CtaBanner({
               {secondaryLabel && secondaryTo && (
                 <Link
                   to={secondaryTo}
-                  className={`inline-flex items-center justify-center gap-2.5 rounded-sm px-7 py-4 font-mono text-[12px] uppercase tracking-[0.18em] font-semibold transition duration-200 ease-out active:scale-[0.98] ${
+                  className={`inline-flex items-center justify-center gap-2.5 rounded-sm px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] transition duration-200 ease-out active:scale-[0.98] ${
                     isDark
-                      ? 'border border-hair-strong text-ink hover:bg-ink hover:text-bg'
-                      : 'border border-hair-paper-strong text-ink-paper hover:bg-ink-paper hover:text-paper'
+                      ? 'border-hair-strong border text-ink hover:bg-ink hover:text-bg'
+                      : 'border-hair-paper-strong border text-ink-paper hover:bg-ink-paper hover:text-paper'
                   }`}
                 >
                   {secondaryLabel}

@@ -87,8 +87,8 @@ export default function NotFound() {
             transition={{ delay: 0.18, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-soft"
           >
-            This page doesn&apos;t exist. Catch a few bugs while you&apos;re here, or head
-            back to the home page.
+            This page doesn&apos;t exist. Catch a few bugs while you&apos;re here, or head back to
+            the home page.
           </motion.p>
 
           <motion.div
@@ -106,7 +106,7 @@ export default function NotFound() {
             </Link>
             <Link
               to="/contact"
-              className="group inline-flex items-center gap-2.5 rounded-sm border border-hair-strong px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+              className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
             >
               Get in touch
             </Link>
@@ -122,16 +122,17 @@ export default function NotFound() {
           style={{ transform: panelTransform }}
           className="relative w-full max-w-[320px] justify-self-center will-change-transform lg:justify-self-end"
         >
-          <div className="border border-hair p-5">
+          <div className="border-hair border p-5">
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               <span>// Bug catcher</span>
               <span className="text-accent">
-                Caught · <span className="font-semibold text-ink">{String(score).padStart(2, '0')}</span>
+                Caught ·{' '}
+                <span className="font-semibold text-ink">{String(score).padStart(2, '0')}</span>
               </span>
             </div>
             <div
               ref={gridRef}
-              className="relative mx-auto w-full overflow-hidden border border-dashed border-hair-strong bg-surface-1"
+              className="border-hair-strong bg-surface-1 relative mx-auto w-full overflow-hidden border border-dashed"
               style={{ aspectRatio: '1 / 1' }}
             >
               <div className="grid-blueprint-fine absolute inset-0 opacity-60" aria-hidden="true" />

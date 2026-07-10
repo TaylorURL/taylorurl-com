@@ -4,10 +4,8 @@ import { ArrowUpRight, Check } from 'lucide-react'
 import { useToast } from '@hooks/useToast'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { INPUT_DARK } from '@constants/ui'
-
-const ENDPOINT = 'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/collect-email'
-const PUBLISHABLE_KEY = 'sb_publishable_qn4ZWB2n95HGMJm0L58I0w_ClE_Qu4M'
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+import { isValidEmail } from '@utils/validation'
+import { submitEmailSignup, signupErrorMessage } from '@data/collectEmail'
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -19,7 +17,7 @@ export default function NewsletterSection() {
     if (status === 'submitting') return
 
     const trimmedEmail = email.trim()
-    if (!EMAIL_REGEX.test(trimmedEmail)) {
+    if (!isValidEmail(trimmedEmail)) {
       toast('Please enter a valid email address.')
       return
     }
@@ -27,44 +25,23 @@ export default function NewsletterSection() {
     setStatus('submitting')
 
     try {
-      const response = await fetch(ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: PUBLISHABLE_KEY,
-        },
-        body: JSON.stringify({
-          name: '',
-          email: trimmedEmail,
-          source: 'taylorurl-home',
-        }),
-      })
-
-      if (!response.ok) {
-        const payload = await response.json().catch(() => null)
-        throw new Error(payload?.error || 'Something went wrong. Please try again.')
-      }
-
+      await submitEmailSignup({ email: trimmedEmail, source: 'taylorurl-home' })
       setStatus('success')
       setEmail('')
       toast("You're on the list. Thanks for signing up.")
     } catch (error) {
       setStatus('idle')
-      toast(
-        error?.message?.length && error.message.length < 200
-          ? error.message
-          : "Couldn't sign you up just now. Please try again."
-      )
+      toast(signupErrorMessage(error))
     }
   }
 
   return (
-    <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+    <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
       <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
       <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
         <motion.div
           {...fadeInUp}
-          className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+          className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
         >
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -89,8 +66,8 @@ export default function NewsletterSection() {
           className="mt-12 grid gap-10 lg:grid-cols-[1.4fr_1fr] lg:items-center"
         >
           {status === 'success' ? (
-            <div className="flex items-center gap-4 border border-hair-strong p-8 text-ink">
-              <div className="flex h-10 w-10 items-center justify-center rounded-sm border border-accent/50 bg-accent/10">
+            <div className="border-hair-strong flex items-center gap-4 border p-8 text-ink">
+              <div className="border-accent/50 bg-accent/10 flex h-10 w-10 items-center justify-center rounded-sm border">
                 <Check className="h-4 w-4 text-accent" strokeWidth={2} />
               </div>
               <div>
@@ -103,7 +80,7 @@ export default function NewsletterSection() {
           ) : (
             <form
               onSubmit={handleNewsletterSubmit}
-              className="flex flex-col gap-3 border border-hair p-3 sm:flex-row sm:items-stretch sm:p-2"
+              className="border-hair flex flex-col gap-3 border p-3 sm:flex-row sm:items-stretch sm:p-2"
             >
               <input
                 type="email"
@@ -130,16 +107,16 @@ export default function NewsletterSection() {
             {[
               {
                 heading: '// How often',
-                body: "Monthly at most. Skipped when there’s nothing to say.",
+                body: 'Monthly at most. Skipped when there’s nothing to say.',
               },
               {
                 heading: '// Unsubscribing',
-                body: "One click and you’re off. No follow-up emails.",
+                body: 'One click and you’re off. No follow-up emails.',
               },
             ].map((item, i) => (
               <motion.div key={item.heading} {...staggerChild(i, 0.06)}>
                 <p className="mb-2 text-accent">{item.heading}</p>
-                <p className="text-ink-soft normal-case tracking-normal">{item.body}</p>
+                <p className="normal-case tracking-normal text-ink-soft">{item.body}</p>
               </motion.div>
             ))}
           </div>

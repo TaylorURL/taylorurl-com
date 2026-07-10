@@ -117,10 +117,7 @@ export default function About() {
       />
 
       {/* Story + stats */}
-      <section
-        ref={storyRef}
-        className="relative overflow-hidden bg-paper py-24 sm:py-32"
-      >
+      <section ref={storyRef} className="relative overflow-hidden bg-paper py-24 sm:py-32">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
@@ -134,21 +131,20 @@ export default function About() {
               </h2>
               <div className="mt-10 space-y-6 text-[17px] leading-relaxed text-paper-soft">
                 <p>
-                  I started the business in Baytown because the local shops around me —
-                  restaurants, trades, salons, independent pros — kept ending up with one of
-                  two outcomes: a generic agency site that cost too much, or a dated DIY
-                  page that no longer matched the business.
+                  I started the business in Baytown because the local shops around me — restaurants,
+                  trades, salons, independent pros — kept ending up with one of two outcomes: a
+                  generic agency site that cost too much, or a dated DIY page that no longer matched
+                  the business.
                 </p>
                 <p>
-                  Neither one works for long. So I build sites the way the best businesses
-                  online do: clean design, fast pages, and ongoing care from the person who
-                  built it. No sales reps, no support queue, no handoffs.
+                  Neither one works for long. So I build sites the way the best businesses online
+                  do: clean design, fast pages, and ongoing care from the person who built it. No
+                  sales reps, no support queue, no handoffs.
                 </p>
                 <p>
-                  You get a site that’s quick, easy on the eyes, and built around the
-                  customers you actually want — with a direct line to me whenever something
-                  needs to change. No platform you’re stuck on, no monthly fees that creep
-                  up, no surprises.
+                  You get a site that’s quick, easy on the eyes, and built around the customers you
+                  actually want — with a direct line to me whenever something needs to change. No
+                  platform you’re stuck on, no monthly fees that creep up, no surprises.
                 </p>
               </div>
             </motion.div>
@@ -159,24 +155,24 @@ export default function About() {
               style={{ transform: statsTransform }}
               className="will-change-transform"
             >
-              <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+              <p className="text-paper-faint mb-5 font-mono text-[10px] uppercase tracking-[0.22em]">
                 // The numbers
               </p>
-              <div className="grid grid-cols-2 gap-px overflow-hidden border border-hair-paper bg-hair-paper">
+              <div className="border-hair-paper bg-hair-paper grid grid-cols-2 gap-px overflow-hidden border">
                 {STATS.map(stat => (
                   <div key={stat.label} className="bg-paper p-6">
                     <div className="font-mono text-[clamp(2rem,3.6vw,2.8rem)] font-semibold leading-none text-ink-paper">
                       {stat.value}
                       {stat.unit && <span className="text-accent">{stat.unit}</span>}
                     </div>
-                    <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    <div className="text-paper-faint mt-3 font-mono text-[10px] uppercase tracking-[0.22em]">
                       {stat.label}
                     </div>
                   </div>
                 ))}
               </div>
 
-              <div className="mt-px border border-hair-paper bg-paper p-6">
+              <div className="border-hair-paper mt-px border bg-paper p-6">
                 <div className="flex items-start gap-3">
                   <Heart className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
@@ -184,10 +180,10 @@ export default function About() {
                       Baytown, TX
                     </p>
                     <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
-                      Working with local businesses around Baytown, Mont Belvieu,
-                      Channelview, Crosby, La Porte, Deer Park, Pasadena, and the rest of
-                      the Houston area. The whole project happens by phone, text, and
-                      email — no in-person meetings required.
+                      Working with local businesses around Baytown, Mont Belvieu, Channelview,
+                      Crosby, La Porte, Deer Park, Pasadena, and the rest of the Houston area. The
+                      whole project happens by phone, text, and email — no in-person meetings
+                      required.
                     </p>
                   </div>
                 </div>
@@ -198,12 +194,12 @@ export default function About() {
       </section>
 
       {/* Values */}
-      <section className="relative overflow-hidden border-t border-hair bg-bg py-24 text-ink sm:py-32">
+      <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            className="grid items-end gap-10 border-b border-hair pb-12 lg:grid-cols-[1.4fr_1fr]"
+            className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -217,12 +213,12 @@ export default function About() {
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              Four things I won&apos;t budge on: direct, fast, custom, and built for the
-              people actually running the shop.
+              Four things I won&apos;t budge on: direct, fast, custom, and built for the people
+              actually running the shop.
             </p>
           </motion.div>
 
-          <div className="mt-12 grid gap-px overflow-hidden border border-hair bg-hair md:grid-cols-2">
+          <div className="border-hair bg-hair mt-12 grid gap-px overflow-hidden border md:grid-cols-2">
             {VALUES.map((item, i) => {
               const Icon = item.icon
               return (
@@ -244,9 +240,7 @@ export default function About() {
                     <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink">
                       {item.title}
                     </h3>
-                    <p className="text-[15px] leading-relaxed text-ink-soft">
-                      {item.description}
-                    </p>
+                    <p className="text-[15px] leading-relaxed text-ink-soft">{item.description}</p>
                   </div>
                 </motion.div>
               )
@@ -256,12 +250,12 @@ export default function About() {
       </section>
 
       {/* Process */}
-      <section className="relative overflow-hidden border-t border-hair-paper bg-paper py-24 sm:py-32">
+      <section className="border-hair-paper relative overflow-hidden border-t bg-paper py-24 sm:py-32">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
           <motion.div
             {...fadeInUp}
-            className="grid items-end gap-10 border-b border-hair-paper pb-12 lg:grid-cols-[1.4fr_1fr]"
+            className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
           >
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
@@ -275,12 +269,12 @@ export default function About() {
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              No twelve-step onboarding. No project charts. No drawn-out planning. This is
-              the whole thing, start to finish.
+              No twelve-step onboarding. No project charts. No drawn-out planning. This is the whole
+              thing, start to finish.
             </p>
           </motion.div>
 
-          <div className="mt-12 grid gap-px overflow-hidden border border-hair-paper bg-hair-paper md:grid-cols-2">
+          <div className="border-hair-paper bg-hair-paper mt-12 grid gap-px overflow-hidden border md:grid-cols-2">
             {PROCESS.map((step, i) => (
               <motion.div
                 key={step.num}
@@ -288,7 +282,7 @@ export default function About() {
                 className="flex flex-col gap-7 bg-paper p-8 sm:p-10"
               >
                 <div className="flex items-baseline justify-between">
-                  <span className="font-mono text-[clamp(2.4rem,4vw,3.4rem)] font-semibold leading-none text-paper-faint">
+                  <span className="text-paper-faint font-mono text-[clamp(2.4rem,4vw,3.4rem)] font-semibold leading-none">
                     {step.num}
                   </span>
                   <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
@@ -299,18 +293,16 @@ export default function About() {
                   <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink-paper">
                     {step.title}
                   </h3>
-                  <p className="text-[15px] leading-relaxed text-paper-soft">
-                    {step.description}
-                  </p>
+                  <p className="text-[15px] leading-relaxed text-paper-soft">{step.description}</p>
                 </div>
-                <div className="mt-auto grid grid-cols-1 gap-px overflow-hidden border-t border-hair-paper pt-5 sm:grid-cols-2">
+                <div className="border-hair-paper mt-auto grid grid-cols-1 gap-px overflow-hidden border-t pt-5 sm:grid-cols-2">
                   <div className="pr-4">
-                    <p className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-paper-faint">
+                    <p className="text-paper-faint mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em]">
                       <Users className="h-3 w-3" /> You
                     </p>
                     <p className="text-[13px] text-paper-soft">{step.you}</p>
                   </div>
-                  <div className="border-l border-hair-paper pl-4">
+                  <div className="border-hair-paper border-l pl-4">
                     <p className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
                       <Monitor className="h-3 w-3" /> Me
                     </p>

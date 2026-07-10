@@ -39,7 +39,7 @@ const ROW_REVEAL = {
   viewport: { once: true, margin: '-12% 0px' },
   transition: { duration: 0.55, ease: REVEAL_EASE },
 }
-const MOCKUP_REVEAL = (fromLeft) => ({
+const MOCKUP_REVEAL = fromLeft => ({
   initial: { opacity: 0, x: fromLeft ? -36 : 36 },
   whileInView: { opacity: 1, x: 0 },
   viewport: { once: true, margin: '-12% 0px' },
@@ -91,10 +91,10 @@ function useIsRowNearViewport(rootMargin = LIVE_MOUNT_ROOT_MARGIN) {
       return
     }
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         for (const entry of entries) setIsNear(entry.isIntersecting)
       },
-      { rootMargin },
+      { rootMargin }
     )
     observer.observe(element)
     return () => observer.disconnect()
@@ -168,7 +168,7 @@ function LivePreviewFrame({
         project.url,
         fallbackCacheBuster,
         logicalWidth,
-        logicalHeight,
+        logicalHeight
       )}
       alt={`${project.name} website preview`}
       loading="lazy"
@@ -199,16 +199,16 @@ function LivePreviewFrame({
 
 function DesktopMockup({ project, index, isLive, useFallback, fallbackCacheBuster, onFallback }) {
   return (
-    <div className="relative overflow-hidden rounded-[14px] border border-hair-paper bg-paper shadow-[0_30px_80px_-40px_rgba(10,10,10,0.35)]">
-      <div className="flex items-center gap-1.5 border-b border-hair-paper bg-paper px-4 py-2.5">
-        <span className="h-2 w-2 rounded-full bg-paper-faint/60" />
-        <span className="h-2 w-2 rounded-full bg-paper-faint/60" />
-        <span className="h-2 w-2 rounded-full bg-paper-faint/60" />
-        <div className="ml-3 flex flex-1 items-center gap-1.5 truncate rounded-full border border-hair-paper bg-bg/40 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em] text-paper-faint">
+    <div className="border-hair-paper relative overflow-hidden rounded-[14px] border bg-paper shadow-[0_30px_80px_-40px_rgba(10,10,10,0.35)]">
+      <div className="border-hair-paper flex items-center gap-1.5 border-b bg-paper px-4 py-2.5">
+        <span className="bg-paper-faint/60 h-2 w-2 rounded-full" />
+        <span className="bg-paper-faint/60 h-2 w-2 rounded-full" />
+        <span className="bg-paper-faint/60 h-2 w-2 rounded-full" />
+        <div className="border-hair-paper bg-bg/40 text-paper-faint ml-3 flex flex-1 items-center gap-1.5 truncate rounded-full border px-3 py-1 font-mono text-[10px] uppercase tracking-[0.14em]">
           <Globe className="h-3 w-3" strokeWidth={1.75} />
           <span className="truncate">{project.displayUrl}</span>
         </div>
-        <span className="hidden font-mono text-[9px] uppercase tracking-[0.22em] text-paper-faint sm:inline">
+        <span className="text-paper-faint hidden font-mono text-[9px] uppercase tracking-[0.22em] sm:inline">
           Live · {String(index + 1).padStart(2, '0')}
         </span>
       </div>
@@ -228,7 +228,7 @@ function DesktopMockup({ project, index, isLive, useFallback, fallbackCacheBuste
 
 function PhoneMockup({ project, isLive, useFallback, fallbackCacheBuster, onFallback }) {
   return (
-    <div className="relative w-[200px] rounded-[2.25rem] border border-hair-paper bg-ink-paper p-[6px] shadow-[0_30px_60px_-25px_rgba(10,10,10,0.55)] sm:w-[228px]">
+    <div className="border-hair-paper relative w-[200px] rounded-[2.25rem] border bg-ink-paper p-[6px] shadow-[0_30px_60px_-25px_rgba(10,10,10,0.55)] sm:w-[228px]">
       <div className="relative overflow-hidden rounded-[1.85rem] bg-bg">
         <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex justify-center pt-1.5">
           <span className="h-4 w-20 rounded-full bg-ink-paper" />
@@ -282,7 +282,7 @@ function PortfolioRow({ project, index }) {
         {...rowReveal}
         className={`lg:col-span-5 ${mockupsOnLeft ? 'lg:order-2 lg:pl-4' : 'lg:order-1 lg:pr-4'}`}
       >
-        <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.24em] text-paper-faint">
+        <p className="text-paper-faint mb-5 font-mono text-[10px] uppercase tracking-[0.24em]">
           // {numberLabel} — Client
         </p>
         <h3 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-tight text-ink-paper">
@@ -301,10 +301,10 @@ function PortfolioRow({ project, index }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={`Open ${project.name} in a new tab`}
-          className="group mt-8 inline-flex items-center gap-2 border-t border-hair-paper pt-5 font-mono text-[11px] uppercase tracking-[0.2em] font-semibold text-accent transition-colors hover:text-ink-paper"
+          className="border-hair-paper group mt-8 inline-flex items-center gap-2 border-t pt-5 font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-accent transition-colors hover:text-ink-paper"
         >
           Visit live site
-          <span className="truncate text-paper-faint normal-case tracking-normal group-hover:text-paper-soft">
+          <span className="text-paper-faint truncate normal-case tracking-normal group-hover:text-paper-soft">
             {project.displayUrl}
           </span>
           <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
@@ -329,7 +329,7 @@ function PortfolioRow({ project, index }) {
             onFallback={triggerFallback}
           />
           <div
-            className={`mt-6 flex justify-center lg:absolute lg:mt-0 lg:bottom-[-48px] ${
+            className={`mt-6 flex justify-center lg:absolute lg:bottom-[-48px] lg:mt-0 ${
               mockupsOnLeft ? 'lg:right-[-28px] lg:justify-end' : 'lg:left-[-28px] lg:justify-start'
             }`}
           >
