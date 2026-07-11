@@ -9,6 +9,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@components': path.resolve(__dirname, 'src/app/components'),
+      '@reactbits': path.resolve(__dirname, 'src/app/components/reactbits'),
       '@hooks': path.resolve(__dirname, 'src/app/hooks'),
       '@views': path.resolve(__dirname, 'src/app/views'),
       '@constants': path.resolve(__dirname, 'src/app/constants'),

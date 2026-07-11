@@ -4,6 +4,8 @@ import { Link } from 'react-router-dom'
 import { ArrowUpRight, Maximize2, Minimize2 } from 'lucide-react'
 import MockupCarousel from '@components/MockupCarousel'
 import TypingRotator from '@components/TypingRotator'
+import Magnet from '@reactbits/Magnet/Magnet'
+import ShinyText from '@reactbits/ShinyText/ShinyText'
 import BaytownMap, { HERO_INTRO_END_S } from './BaytownMap'
 
 const HERO_META = [
@@ -107,7 +109,7 @@ export default function HeroSection() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
               </span>
-              Open for new projects
+              <ShinyText text="Open for new projects" color="#2f6bff" shineColor="#bcd2ff" speed={4} />
             </span>
             <span className="hidden sm:inline">·</span>
             <span>TaylorURL LLC</span>
@@ -148,20 +150,24 @@ export default function HeroSection() {
                 transition={{ duration: 0.55, delay: after(0.4), ease: EASE_REVEAL }}
                 className="mt-10 flex flex-wrap items-center gap-4"
               >
-                <Link
-                  to="/contact"
-                  className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
-                >
-                  Start a project
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </Link>
-                <Link
-                  to="/services"
-                  className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
-                >
-                  See services
-                  <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </Link>
+                <Magnet padding={70} magnetStrength={4}>
+                  <Link
+                    to="/contact"
+                    className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+                  >
+                    Start a project
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </Link>
+                </Magnet>
+                <Magnet padding={70} magnetStrength={4}>
+                  <Link
+                    to="/services"
+                    className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+                  >
+                    See services
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </Link>
+                </Magnet>
               </motion.div>
 
               <motion.div

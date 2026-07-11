@@ -6,6 +6,9 @@ import { fadeInUp, staggerChild } from '@constants/animations'
 import { INPUT_DARK } from '@constants/ui'
 import { isValidEmail } from '@utils/validation'
 import { submitEmailSignup, signupErrorMessage } from '@data/collectEmail'
+import Magnet from '@reactbits/Magnet/Magnet'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
 
 export default function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -46,12 +49,18 @@ export default function NewsletterSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // Newsletter
+              <DecryptedText
+                text="// Newsletter"
+                animateOn="view"
+                sequential
+                speed={40}
+                maxIterations={12}
+              />
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
               Short notes for owners.
               <br />
-              <span className="text-accent">Only when worth sending.</span>
+              <AccentGradient>Only when worth sending.</AccentGradient>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
@@ -91,16 +100,18 @@ export default function NewsletterSection() {
                 aria-label="Email address"
                 className={`${INPUT_DARK} flex-1 border-none bg-transparent px-4 py-3.5`}
               />
-              <button
-                type="submit"
-                disabled={status === 'submitting'}
-                className={`group inline-flex items-center justify-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98] ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
-              >
-                {status === 'submitting' ? 'Subscribing…' : 'Subscribe'}
-                {status !== 'submitting' && (
-                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                )}
-              </button>
+              <Magnet padding={60} magnetStrength={5}>
+                <button
+                  type="submit"
+                  disabled={status === 'submitting'}
+                  className={`group inline-flex w-full items-center justify-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98] ${status === 'submitting' ? 'cursor-not-allowed opacity-70' : ''}`}
+                >
+                  {status === 'submitting' ? 'Subscribing…' : 'Subscribe'}
+                  {status !== 'submitting' && (
+                    <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  )}
+                </button>
+              </Magnet>
             </form>
           )}
           <div className="grid grid-cols-2 gap-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">

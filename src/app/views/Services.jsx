@@ -18,6 +18,16 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SERVICE_AREAS, breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
+
+const EYEBROW_DECRYPT = {
+  animateOn: 'view',
+  sequential: true,
+  speed: 40,
+  maxIterations: 12,
+}
 
 const SERVICES = [
   {
@@ -199,7 +209,7 @@ export default function Services() {
           <motion.div {...fadeInUp} className="border-hair mb-12 border-b pb-8">
             <p className="mb-4 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // Comes with every site
+              <DecryptedText text="// Comes with every site" {...EYEBROW_DECRYPT} />
             </p>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
               Six things every site I build comes with.
@@ -209,18 +219,21 @@ export default function Services() {
             {CAPABILITIES.map((cap, i) => {
               const Icon = cap.icon
               return (
-                <motion.div
-                  key={cap.label}
-                  {...staggerChild(i, 0.04)}
-                  className="flex flex-col gap-3 bg-bg p-5 text-left"
-                >
-                  <div className="flex items-center justify-between">
-                    <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
-                    <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-faint">
-                      {String(i + 1).padStart(2, '0')}
+                <motion.div key={cap.label} {...staggerChild(i, 0.04)}>
+                  <SpotlightCard
+                    className="flex h-full flex-col gap-3 bg-bg p-5 text-left"
+                    spotlightColor="rgba(47,107,255,0.2)"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                      <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-faint">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <span className="text-[13px] font-medium leading-snug text-ink">
+                      {cap.label}
                     </span>
-                  </div>
-                  <span className="text-[13px] font-medium leading-snug text-ink">{cap.label}</span>
+                  </SpotlightCard>
                 </motion.div>
               )
             })}
@@ -236,12 +249,12 @@ export default function Services() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // Where I work
+                <DecryptedText text="// Where I work" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                 Local businesses across
                 <br />
-                <span className="text-accent">the Houston area.</span>
+                <AccentGradient>the Houston area.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[15px] leading-relaxed text-paper-soft lg:text-right">

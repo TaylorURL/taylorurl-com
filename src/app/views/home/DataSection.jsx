@@ -4,25 +4,33 @@ import { Link } from 'react-router-dom'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { REVENUE_GROWTH_DATA } from '@data/home'
 import RevenueGrowthChart from './RevenueGrowthChart'
+import CountUp from '@reactbits/CountUp/CountUp'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
 
 const FACTS = [
   {
     icon: TrendingUp,
-    stat: '+110%',
+    prefix: '+',
+    to: 110,
+    suffix: '%',
     label: 'more revenue',
     detail:
       'Local businesses with a real website grow faster than the ones without — and the gap gets wider every quarter.',
   },
   {
     icon: Smartphone,
-    stat: '70%',
+    to: 70,
+    suffix: '%',
     label: 'searches happen on phones',
     detail:
       'Most people looking for what you do are on their phone. If your site is slow or hard to use there, they’re gone before they ever see your work.',
   },
   {
     icon: Monitor,
-    stat: '<2s',
+    prefix: '<',
+    to: 2,
+    suffix: 's',
     label: 'page load',
     detail:
       'Every site I build opens in under two seconds. Quick pages keep more visitors, and Google rewards them with better spots in search.',
@@ -41,12 +49,18 @@ export default function DataSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 02 — By the numbers
+              <DecryptedText
+                text="// 02 — By the numbers"
+                animateOn="view"
+                sequential
+                speed={40}
+                maxIterations={12}
+              />
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
               A real website
               <br />
-              <span className="text-accent">pulls its weight.</span>
+              <AccentGradient>pulls its weight.</AccentGradient>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
@@ -117,7 +131,9 @@ export default function DataSection() {
                 </div>
                 <div>
                   <p className="font-mono text-[clamp(2.4rem,5vw,3.6rem)] font-semibold leading-none text-ink">
-                    {fact.stat}
+                    {fact.prefix}
+                    <CountUp to={fact.to} duration={1.6} />
+                    {fact.suffix}
                   </p>
                   <p className="mt-2 font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
                     {fact.label}

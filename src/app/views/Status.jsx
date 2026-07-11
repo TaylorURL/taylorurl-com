@@ -14,6 +14,13 @@ import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import CountUp from '@reactbits/CountUp/CountUp'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import Magnet from '@reactbits/Magnet/Magnet'
+import { AccentGradient } from '@reactbits/kit'
+
+const EYEBROW_DECRYPT = { animateOn: 'view', sequential: true, speed: 40, maxIterations: 12 }
 
 const SERVICES = [
   {
@@ -157,7 +164,7 @@ function LiveBand({ checkedAt, windowStart }) {
           </span>
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-              // All sites up
+              <DecryptedText text="// All sites up" {...EYEBROW_DECRYPT} />
             </p>
             <p className="mt-3 text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
               All clear.
@@ -178,10 +185,10 @@ function LiveBand({ checkedAt, windowStart }) {
         className="flex flex-col justify-center gap-3 bg-paper p-8 will-change-transform sm:p-10"
       >
         <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
-          // Uptime · 90 days
+          <DecryptedText text="// Uptime · 90 days" {...EYEBROW_DECRYPT} />
         </p>
         <p className="font-mono text-[clamp(2.4rem,5vw,3.4rem)] font-semibold leading-none text-ink-paper">
-          100.00<span className="text-paper-faint">%</span>
+          <CountUp to={100} duration={2.2} />.00<span className="text-paper-faint">%</span>
         </p>
         <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
           {windowStart} → today
@@ -235,13 +242,16 @@ function GroupSection({ group, services, index }) {
         </span>
       </div>
       <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-paper-soft">{group.blurb}</p>
-      <div className="border-hair-paper overflow-hidden border">
+      <SpotlightCard
+        className="border-hair-paper border"
+        spotlightColor="rgba(47,107,255,0.12)"
+      >
         <div className="divide-hair-paper divide-y">
           {services.map(service => (
             <ServiceRow key={service.name} service={service} />
           ))}
         </div>
-      </div>
+      </SpotlightCard>
     </motion.section>
   )
 }
@@ -278,7 +288,7 @@ export default function Status() {
           <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="mb-12 mt-20">
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 02 — What I watch
+              <DecryptedText text="// 02 — What I watch" {...EYEBROW_DECRYPT} />
             </p>
             <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
               What I&apos;m watching.
@@ -345,23 +355,27 @@ export default function Status() {
         >
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
-            // Spot something off?
+            <DecryptedText text="// Spot something off?" {...EYEBROW_DECRYPT} />
             <span className="h-px w-8 bg-accent" />
           </p>
           <h2 className="text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink">
-            Tell me — I&apos;ll <span className="text-accent">look into it</span>.
+            Tell me — I&apos;ll <AccentGradient>look into it</AccentGradient>.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
             If something on your site is acting up, send a quick message. I&apos;ll dig in and get
             back to you.
           </p>
-          <a
-            href={`mailto:${SUPPORT_EMAIL}`}
-            className="group mt-10 inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
-          >
-            Get in touch
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </a>
+          <div className="mt-10 flex justify-center">
+            <Magnet padding={70} magnetStrength={4}>
+              <a
+                href={`mailto:${SUPPORT_EMAIL}`}
+                className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+              >
+                Get in touch
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+            </Magnet>
+          </div>
         </motion.div>
       </section>
     </div>

@@ -1,6 +1,9 @@
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import BlurText from '@reactbits/BlurText/BlurText'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { LazyParticles } from '@reactbits/LazyBg'
 
 /**
  * Cinematic page hero used by every secondary view. Full-bleed black canvas
@@ -34,6 +37,20 @@ export default function PageHero({ title, description, eyebrow }) {
         aria-hidden="true"
       />
       <div
+        className="pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]"
+        aria-hidden="true"
+      >
+        <LazyParticles
+          particleColors={['#2f6bff', '#4f86ff', '#9dbcff']}
+          particleCount={140}
+          particleSpread={12}
+          speed={0.06}
+          particleBaseSize={64}
+          alphaParticles
+          disableRotation
+        />
+      </div>
+      <div
         className="via-hair-strong absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent to-transparent"
         aria-hidden="true"
       />
@@ -49,7 +66,13 @@ export default function PageHero({ title, description, eyebrow }) {
           className="mb-8 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent"
         >
           <span className="h-px w-8 bg-accent" />
-          {eyebrow || '// Document'}
+          <DecryptedText
+            text={eyebrow || '// Document'}
+            animateOn="view"
+            sequential
+            speed={38}
+            maxIterations={14}
+          />
         </motion.p>
 
         <motion.h1
@@ -58,7 +81,11 @@ export default function PageHero({ title, description, eyebrow }) {
           transition={{ duration: 0.5, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
           className="max-w-3xl text-[clamp(2.4rem,6.4vw,5rem)] font-semibold leading-[0.98] tracking-tightest text-ink"
         >
-          {title}
+          {typeof title === 'string' ? (
+            <BlurText text={title} delay={90} animateBy="words" direction="top" stepDuration={0.4} />
+          ) : (
+            title
+          )}
         </motion.h1>
 
         {description && (
