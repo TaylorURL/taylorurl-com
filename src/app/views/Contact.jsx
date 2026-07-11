@@ -10,6 +10,12 @@ import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@co
 import { INPUT } from '@constants/ui'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { hasMinLength, isValidEmail } from '@utils/validation'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import Magnet from '@reactbits/Magnet/Magnet'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
+
+const EYEBROW_DECRYPT = { animateOn: 'view', sequential: true, speed: 40, maxIterations: 12 }
 
 const INCLUDED_ITEMS = [
   'Custom website design',
@@ -143,7 +149,7 @@ ${formData.message}
               <div>
                 <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                   <span className="h-px w-8 bg-accent" />
-                  // Get in touch
+                  <DecryptedText text="// Get in touch" {...EYEBROW_DECRYPT} />
                 </p>
                 <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                   Start the conversation.
@@ -154,7 +160,10 @@ ${formData.message}
                 </p>
               </div>
 
-              <div className="border-hair-paper bg-hair-paper space-y-px overflow-hidden border">
+              <SpotlightCard
+                className="border-hair-paper bg-hair-paper space-y-px border"
+                spotlightColor="rgba(47,107,255,0.12)"
+              >
                 <a
                   href={`mailto:${SALES_EMAIL}`}
                   className="hover:bg-ink-paper/[0.02] group flex items-center gap-4 bg-paper p-5 transition-colors"
@@ -186,7 +195,7 @@ ${formData.message}
                     <p className="text-[14px] text-ink-paper">Within 24 hours</p>
                   </div>
                 </div>
-              </div>
+              </SpotlightCard>
 
               <div>
                 <p className="text-paper-faint mb-4 font-mono text-[10px] uppercase tracking-[0.22em]">
@@ -325,13 +334,15 @@ ${formData.message}
                 </div>
 
                 <div className="border-hair-paper flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-                  <button
-                    type="submit"
-                    className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
-                  >
-                    Send message
-                    <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                  </button>
+                  <Magnet padding={60} magnetStrength={5}>
+                    <button
+                      type="submit"
+                      className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+                    >
+                      Send message
+                      <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                    </button>
+                  </Magnet>
                   <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
                     Opens your email app
                   </p>
@@ -359,12 +370,12 @@ ${formData.message}
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // What&apos;s included
+                <DecryptedText text="// What's included" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
                 What comes
                 <br />
-                <span className="text-accent">with every project.</span>
+                <AccentGradient>with every project.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">

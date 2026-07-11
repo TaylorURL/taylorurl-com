@@ -7,6 +7,7 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 
 const FAQ_CATEGORIES = [
   {
@@ -81,6 +82,7 @@ const FAQ_CATEGORIES = [
 function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIndex }) {
   return (
     <motion.div {...staggerChild(index, 0.04)} className="border-hair-paper border-t">
+      <SpotlightCard className="bg-transparent px-2" spotlightColor="rgba(47,107,255,0.1)">
       <button
         type="button"
         onClick={onToggle}
@@ -125,6 +127,7 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIn
           </motion.div>
         )}
       </AnimatePresence>
+      </SpotlightCard>
     </motion.div>
   )
 }

@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight, Facebook, Mail, MapPin } from 'lucide-react'
 import { COMPANY_LOCATION, LEGAL_LINKS, PRIMARY_LINKS, SUPPORT_EMAIL } from '@constants/navigation'
 import { fadeInUp } from '@constants/animations'
+import Magnet from '@reactbits/Magnet/Magnet'
+import ShinyText from '@reactbits/ShinyText/ShinyText'
 
 const SERVING = [
   'Baytown',
@@ -162,13 +164,15 @@ export default function Footer() {
             <p className="mb-5 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               Talk
             </p>
-            <Link
-              to="/contact"
-              className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:border-accent hover:bg-accent active:scale-[0.98]"
-            >
-              Start a project
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </Link>
+            <Magnet padding={50} magnetStrength={6}>
+              <Link
+                to="/contact"
+                className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-5 py-3 font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:border-accent hover:bg-accent active:scale-[0.98]"
+              >
+                Start a project
+                <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
+            </Magnet>
             <p className="mt-5 text-[13px] leading-relaxed text-ink-mute">
               Send a note. You’ll hear back within 24 hours.
             </p>
@@ -208,7 +212,7 @@ export default function Footer() {
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-accent" />
             </span>
-            All sites up and running
+            <ShinyText text="All sites up and running" color="rgba(255,255,255,0.5)" shineColor="#ffffff" speed={4} />
           </Link>
         </div>
       </motion.div>

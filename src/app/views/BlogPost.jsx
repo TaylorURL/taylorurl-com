@@ -8,6 +8,9 @@ import { sanitizeBlogHtml } from '@utils/sanitizeBlogHtml'
 import { fadeInUp } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import Magnet from '@reactbits/Magnet/Magnet'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
 
 const MAX_DESCRIPTION_LENGTH = 155
 
@@ -122,7 +125,7 @@ export default function BlogPost() {
             <div className="border-hair mt-8 flex flex-wrap items-center gap-x-6 gap-y-3 border-b pb-6 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               <span className="flex items-center gap-2 text-accent">
                 <Tag className="h-3 w-3" />
-                {post.category}
+                <DecryptedText text={post.category} animateOn="view" sequential speed={40} maxIterations={12} />
               </span>
               <span className="flex items-center gap-2">
                 <Calendar className="h-3 w-3" />
@@ -186,23 +189,27 @@ export default function BlogPost() {
         >
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
-            // Next
+            <DecryptedText text="// Next" animateOn="view" sequential speed={40} maxIterations={12} />
             <span className="h-px w-8 bg-accent" />
           </p>
           <h2 className="mx-auto max-w-2xl text-[clamp(2rem,4.6vw,3.2rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
-            Need help with <span className="text-accent">your website</span>?
+            Need help with <AccentGradient>your website</AccentGradient>?
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
             I build custom websites for local businesses. Made from scratch, looked after by me, and
             a direct line to call whenever something needs to change.
           </p>
-          <Link
-            to="/contact"
-            className="group mt-10 inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
-          >
-            Get in touch
-            <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-          </Link>
+          <div className="mt-10 flex justify-center">
+            <Magnet padding={70} magnetStrength={4}>
+              <Link
+                to="/contact"
+                className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+              >
+                Get in touch
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
+            </Magnet>
+          </div>
         </motion.div>
       </section>
     </div>

@@ -16,6 +16,11 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
+
+const EYEBROW_DECRYPT = { animateOn: 'view', sequential: true, speed: 40, maxIterations: 12 }
 
 const TIMELINE_STEPS = [
   {
@@ -231,12 +236,12 @@ export default function Process() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // 02 — Timeline
+                <DecryptedText text="// 02 — Timeline" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                 Six steps.
                 <br />
-                <span className="text-accent">Three to four weeks.</span>
+                <AccentGradient>Three to four weeks.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
@@ -263,12 +268,12 @@ export default function Process() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // 03 — What you bring
+                <DecryptedText text="// 03 — What you bring" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink">
                 What I&apos;ll need
                 <br />
-                <span className="text-accent">from you.</span>
+                <AccentGradient>from you.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
@@ -281,20 +286,21 @@ export default function Process() {
             {WHAT_YOULL_NEED.map((item, i) => {
               const Icon = item.icon
               return (
-                <motion.div
-                  key={item.label}
-                  {...staggerChild(i, 0.05)}
-                  className="flex flex-col gap-5 bg-bg p-6"
-                >
-                  <div className="flex items-center justify-between">
-                    <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
-                    <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-faint">
-                      {String(i + 1).padStart(2, '0')}
+                <motion.div key={item.label} {...staggerChild(i, 0.05)}>
+                  <SpotlightCard
+                    className="flex h-full flex-col gap-5 bg-bg p-6"
+                    spotlightColor="rgba(47,107,255,0.2)"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
+                      <span className="font-mono text-[9px] uppercase tracking-[0.22em] text-ink-faint">
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                    </div>
+                    <span className="text-[13px] font-medium leading-snug text-ink">
+                      {item.label}
                     </span>
-                  </div>
-                  <span className="text-[13px] font-medium leading-snug text-ink">
-                    {item.label}
-                  </span>
+                  </SpotlightCard>
                 </motion.div>
               )
             })}

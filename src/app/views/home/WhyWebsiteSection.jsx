@@ -1,6 +1,8 @@
 import { motion } from 'framer-motion'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { WHY_WEBSITE_CARDS } from '@data/home'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
 
 export default function WhyWebsiteSection() {
   return (
@@ -14,12 +16,18 @@ export default function WhyWebsiteSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 01 — Why a website
+              <DecryptedText
+                text="// 01 — Why a website"
+                animateOn="view"
+                sequential
+                speed={40}
+                maxIterations={12}
+              />
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               A website is the difference between
               <br />
-              <span className="text-accent">getting the call</span> and getting skipped.
+              <AccentGradient>getting the call</AccentGradient> and getting skipped.
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">

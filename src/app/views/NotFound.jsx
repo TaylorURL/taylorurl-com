@@ -4,6 +4,10 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight, Bug } from 'lucide-react'
 import Seo from '@components/Seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import Magnet from '@reactbits/Magnet/Magnet'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { LazyAurora } from '@reactbits/LazyBg'
+import { AccentGradient } from '@reactbits/kit'
 
 const BUG_SIZE = 28
 const MOVE_INTERVAL_MS = 1200
@@ -50,6 +54,12 @@ export default function NotFound() {
       ref={sectionRef}
       className="relative flex min-h-[calc(100vh-80px)] items-center justify-center overflow-hidden bg-bg px-6 pb-16 pt-32 text-ink sm:pb-20 sm:pt-44"
     >
+      <div
+        className="pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+        aria-hidden="true"
+      >
+        <LazyAurora colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']} amplitude={1.2} blend={0.6} speed={0.7} />
+      </div>
       <motion.div
         style={{ transform: gridTransform }}
         className="grid-blueprint absolute inset-0 opacity-60 will-change-transform"
@@ -61,7 +71,13 @@ export default function NotFound() {
         <div>
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
-            // Page not found — 404
+            <DecryptedText
+              text="// Page not found — 404"
+              animateOn="view"
+              sequential
+              speed={38}
+              maxIterations={14}
+            />
           </p>
           <motion.p
             initial={{ opacity: 0, y: 12 }}
@@ -69,7 +85,7 @@ export default function NotFound() {
             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="font-mono text-[clamp(5rem,16vw,12rem)] font-semibold leading-none tracking-tightest text-ink"
           >
-            404
+            <AccentGradient>404</AccentGradient>
           </motion.p>
 
           <motion.h1
@@ -97,19 +113,23 @@ export default function NotFound() {
             transition={{ delay: 0.26, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             className="mt-10 flex flex-wrap gap-4"
           >
-            <Link
-              to="/"
-              className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
-            >
-              Return to home
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </Link>
-            <Link
-              to="/contact"
-              className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
-            >
-              Get in touch
-            </Link>
+            <Magnet padding={60} magnetStrength={5}>
+              <Link
+                to="/"
+                className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+              >
+                Return to home
+                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </Link>
+            </Magnet>
+            <Magnet padding={60} magnetStrength={5}>
+              <Link
+                to="/contact"
+                className="border-hair-strong group inline-flex items-center gap-2.5 rounded-sm border px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-ink transition duration-200 ease-out hover:bg-ink hover:text-bg active:scale-[0.98]"
+              >
+                Get in touch
+              </Link>
+            </Magnet>
           </motion.div>
         </div>
 
@@ -124,7 +144,9 @@ export default function NotFound() {
         >
           <div className="border-hair border p-5">
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-              <span>// Bug catcher</span>
+              <span>
+                <DecryptedText text="// Bug catcher" animateOn="view" sequential speed={38} maxIterations={12} />
+              </span>
               <span className="text-accent">
                 Caught ·{' '}
                 <span className="font-semibold text-ink">{String(score).padStart(2, '0')}</span>

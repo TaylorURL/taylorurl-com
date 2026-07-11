@@ -9,6 +9,10 @@ import { BLOG_POSTS } from '@data/blog'
 import { breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
 import { useBlogFilters } from '@hooks/useBlogFilters'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import Magnet from '@reactbits/Magnet/Magnet'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
 
 const POSTS_PER_PAGE = 8
 const REVEAL_EASE = [0.22, 1, 0.36, 1]
@@ -138,8 +142,9 @@ function PostCard({ post, index }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.3, delay: index * 0.04 }}
-      className="hover:bg-ink-paper/[0.02] group bg-paper transition-colors duration-300"
+      className="group h-full bg-paper"
     >
+      <SpotlightCard className="h-full bg-paper" spotlightColor="rgba(47,107,255,0.12)">
       <Link to={`/blog/${post.slug}`} className="flex h-full flex-col gap-5 p-7">
         <div className="border-hair-paper text-paper-faint flex items-center justify-between border-b pb-3 font-mono text-[10px] uppercase tracking-[0.22em]">
           <span className="text-accent">// {post.category}</span>
@@ -160,6 +165,7 @@ function PostCard({ post, index }) {
           </span>
         </div>
       </Link>
+      </SpotlightCard>
     </motion.article>
   )
 }
@@ -413,22 +419,26 @@ export default function Blog() {
           <motion.div {...fadeInUp} className="mx-auto max-w-3xl text-center">
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // Next
+              <DecryptedText text="// Next" animateOn="view" sequential speed={40} maxIterations={12} />
               <span className="h-px w-8 bg-accent" />
             </p>
             <h2 className="text-[clamp(2rem,5vw,3.6rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
-              Ready to fix your <span className="text-accent">website</span>?
+              Ready to fix your <AccentGradient>website</AccentGradient>?
             </h2>
             <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft sm:text-[18px]">
               Tell me about the business and what isn’t working. I’ll take it from there.
             </p>
-            <Link
-              to="/contact"
-              className="group mt-10 inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
-            >
-              Get in touch
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </Link>
+            <div className="mt-10 flex justify-center">
+              <Magnet padding={70} magnetStrength={4}>
+                <Link
+                  to="/contact"
+                  className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
+                >
+                  Get in touch
+                  <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              </Magnet>
+            </div>
           </motion.div>
         </div>
       </section>
