@@ -6,6 +6,12 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import CountUp from '@reactbits/CountUp/CountUp'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
+
+const EYEBROW_DECRYPT = { animateOn: 'view', sequential: true, speed: 40, maxIterations: 12 }
 
 const VALUES = [
   {
@@ -36,8 +42,8 @@ const VALUES = [
 
 const STATS = [
   { value: '2-4', unit: 'wk', label: 'Average build time' },
-  { value: '97+', unit: '', label: 'Average PageSpeed score' },
-  { value: '50+', unit: '', label: 'Clients served' },
+  { to: 97, suffix: '+', unit: '', label: 'Average PageSpeed score' },
+  { to: 50, suffix: '+', unit: '', label: 'Clients served' },
   { value: '24/7', unit: '', label: 'Support after launch' },
 ]
 
@@ -124,7 +130,7 @@ export default function About() {
             <motion.div {...fadeInUp}>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // My story
+                <DecryptedText text="// My story" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
                 I build websites for Baytown and Houston-area small businesses.
@@ -156,13 +162,20 @@ export default function About() {
               className="will-change-transform"
             >
               <p className="text-paper-faint mb-5 font-mono text-[10px] uppercase tracking-[0.22em]">
-                // The numbers
+                <DecryptedText text="// The numbers" {...EYEBROW_DECRYPT} />
               </p>
               <div className="border-hair-paper bg-hair-paper grid grid-cols-2 gap-px overflow-hidden border">
                 {STATS.map(stat => (
                   <div key={stat.label} className="bg-paper p-6">
                     <div className="font-mono text-[clamp(2rem,3.6vw,2.8rem)] font-semibold leading-none text-ink-paper">
-                      {stat.value}
+                      {stat.to ? (
+                        <>
+                          <CountUp to={stat.to} duration={1.8} />
+                          {stat.suffix}
+                        </>
+                      ) : (
+                        stat.value
+                      )}
                       {stat.unit && <span className="text-accent">{stat.unit}</span>}
                     </div>
                     <div className="text-paper-faint mt-3 font-mono text-[10px] uppercase tracking-[0.22em]">
@@ -204,12 +217,12 @@ export default function About() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // 02 — How I work
+                <DecryptedText text="// 02 — How I work" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink">
                 Why owners
                 <br />
-                <span className="text-accent">work with me.</span>
+                <AccentGradient>work with me.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
@@ -222,11 +235,11 @@ export default function About() {
             {VALUES.map((item, i) => {
               const Icon = item.icon
               return (
-                <motion.div
-                  key={item.title}
-                  {...staggerChild(i, 0.06)}
-                  className="group flex flex-col gap-6 bg-bg p-8 sm:p-10"
-                >
+                <motion.div key={item.title} {...staggerChild(i, 0.06)}>
+                  <SpotlightCard
+                    className="group flex h-full flex-col gap-6 bg-bg p-8 sm:p-10"
+                    spotlightColor="rgba(47,107,255,0.2)"
+                  >
                   <div className="flex items-baseline justify-between">
                     <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
                       {String(i + 1).padStart(2, '0')} / 04
@@ -242,6 +255,7 @@ export default function About() {
                     </h3>
                     <p className="text-[15px] leading-relaxed text-ink-soft">{item.description}</p>
                   </div>
+                  </SpotlightCard>
                 </motion.div>
               )
             })}
@@ -260,12 +274,12 @@ export default function About() {
             <div>
               <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
                 <span className="h-px w-8 bg-accent" />
-                // 03 — Process
+                <DecryptedText text="// 03 — Process" {...EYEBROW_DECRYPT} />
               </p>
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
                 Four steps from
                 <br />
-                <span className="text-accent">first call to launch.</span>
+                <AccentGradient>first call to launch.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">

@@ -7,6 +7,9 @@ import Seo from '@components/Seo'
 import { PORTFOLIO_PROJECTS } from '@data/portfolio'
 import { breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import GlareHover from '@reactbits/GlareHover/GlareHover'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import ShinyText from '@reactbits/ShinyText/ShinyText'
 
 // Logical viewports the iframes are rendered at before being CSS-scaled to fit
 // their device frames. Desktop uses a 1280×800 stage to render the site at a
@@ -199,7 +202,19 @@ function LivePreviewFrame({
 
 function DesktopMockup({ project, index, isLive, useFallback, fallbackCacheBuster, onFallback }) {
   return (
-    <div className="border-hair-paper relative overflow-hidden rounded-[14px] border bg-paper shadow-[0_30px_80px_-40px_rgba(10,10,10,0.35)]">
+    <GlareHover
+      width="100%"
+      height="100%"
+      background="transparent"
+      borderColor="transparent"
+      borderRadius="14px"
+      glareColor="#ffffff"
+      glareOpacity={0.28}
+      glareAngle={-40}
+      glareSize={260}
+      transitionDuration={900}
+      className="!block border-hair-paper overflow-hidden rounded-[14px] border bg-paper shadow-[0_30px_80px_-40px_rgba(10,10,10,0.35)]"
+    >
       <div className="border-hair-paper flex items-center gap-1.5 border-b bg-paper px-4 py-2.5">
         <span className="bg-paper-faint/60 h-2 w-2 rounded-full" />
         <span className="bg-paper-faint/60 h-2 w-2 rounded-full" />
@@ -222,7 +237,7 @@ function DesktopMockup({ project, index, isLive, useFallback, fallbackCacheBuste
         onFallback={onFallback}
         stageClassName="aspect-[16/10] w-full"
       />
-    </div>
+    </GlareHover>
   )
 }
 
@@ -283,14 +298,20 @@ function PortfolioRow({ project, index }) {
         className={`lg:col-span-5 ${mockupsOnLeft ? 'lg:order-2 lg:pl-4' : 'lg:order-1 lg:pr-4'}`}
       >
         <p className="text-paper-faint mb-5 font-mono text-[10px] uppercase tracking-[0.24em]">
-          // {numberLabel} — Client
+          <DecryptedText
+            text={`// ${numberLabel} — Client`}
+            animateOn="view"
+            sequential
+            speed={40}
+            maxIterations={12}
+          />
         </p>
         <h3 className="text-[clamp(2rem,4vw,3rem)] font-semibold leading-[1.05] tracking-tight text-ink-paper">
           {project.name}
         </h3>
         {project.tagline && (
           <p className="mt-4 font-mono text-[11px] uppercase tracking-[0.2em] text-accent">
-            {project.tagline}
+            <ShinyText text={project.tagline} color="#2f6bff" shineColor="#bcd2ff" speed={4} />
           </p>
         )}
         <p className="mt-6 max-w-[46ch] text-[15px] leading-relaxed text-paper-soft sm:text-[16px]">

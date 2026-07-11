@@ -3,6 +3,9 @@ import { ArrowUpRight, PencilLine, Star } from 'lucide-react'
 import TrustpilotBadge from '@components/TrustpilotBadge'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { CLIENT_TESTIMONIALS } from '@data/home'
+import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
+import { AccentGradient } from '@reactbits/kit'
 
 const TRUSTPILOT_DOMAIN = 'taylorurl.com'
 const TRUSTPILOT_PROFILE_URL = `https://www.trustpilot.com/review/${TRUSTPILOT_DOMAIN}`
@@ -32,10 +35,11 @@ function ClientAvatar({ name }) {
 
 function ClientTestimonialCard({ testimonial, index }) {
   return (
-    <motion.figure
-      {...staggerChild(index, 0.06)}
-      className="group relative flex h-full flex-col gap-8 bg-paper p-8 sm:p-10"
-    >
+    <motion.figure {...staggerChild(index, 0.06)} className="h-full">
+      <SpotlightCard
+        className="group flex h-full flex-col gap-8 bg-paper p-8 sm:p-10"
+        spotlightColor="rgba(47,107,255,0.14)"
+      >
       <div className="flex items-center justify-between">
         <ClientStarRow />
         <span className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
@@ -54,6 +58,7 @@ function ClientTestimonialCard({ testimonial, index }) {
           </div>
         </div>
       </figcaption>
+      </SpotlightCard>
     </motion.figure>
   )
 }
@@ -70,12 +75,18 @@ export default function TestimonialsSection() {
           <div>
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              // 03 — Reviews
+              <DecryptedText
+                text="// 03 — Reviews"
+                animateOn="view"
+                sequential
+                speed={40}
+                maxIterations={12}
+              />
             </p>
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               Owners who
               <br />
-              <span className="text-accent">picked up the phone.</span>
+              <AccentGradient>picked up the phone.</AccentGradient>
             </h2>
           </div>
           <div className="flex flex-col items-start gap-6 lg:items-end">
