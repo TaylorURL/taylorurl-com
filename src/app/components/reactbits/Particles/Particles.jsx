@@ -220,6 +220,11 @@ const Particles = ({
       if (container.contains(gl.canvas)) {
         container.removeChild(gl.canvas);
       }
+      // Release the WebGL context explicitly. Browsers cap the number of live
+      // contexts (~16); without this, every navigation to a page with this
+      // background leaks one until the browser force-drops the oldest — which
+      // can surface as a lost-context error on a later page.
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
