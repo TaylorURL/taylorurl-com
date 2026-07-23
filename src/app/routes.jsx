@@ -17,6 +17,10 @@ const ROUTE_DEFINITIONS = [
   { key: 'License', path: 'license' },
   { key: 'Process', path: 'process' },
   { key: 'Portfolio', path: 'portfolio' },
+  // Unlisted soft-launch page for Spigot/Minecraft plugin work: reachable and
+  // prerendered (see vite/site-routes.js) but intentionally kept out of the
+  // primary nav and sitemap.
+  { key: 'Spigot', path: 'spigot' },
   { key: 'Blog', path: 'blog' },
   { key: 'BlogPost', path: 'blog/:slug' },
   { key: 'Faq', path: 'faq' },

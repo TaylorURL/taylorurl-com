@@ -124,6 +124,40 @@
     --surface-2: rgba(10, 10, 10, 0.06);
   }
 
+  /*
+   * SPIGOT SCOPE — the /spigot page is a TaylorURL sub-brand for Minecraft
+   * plugin work. It keeps the site's refined dark aesthetic but runs a
+   * deliberate tri-colour system that tells the whole story:
+   *   blue   = TaylorURL (the studio / parent brand)
+   *   green  = Minecraft (the platform)
+   *   orange = Spigot   (the server tool the plugins run on)
+   * --accent is left as the site blue so shared chrome (the closing CtaSection)
+   * still anchors to the parent brand; green and orange are placed by hand in
+   * this page's own sections, and --tri is the signature spectrum used for
+   * headline words, hairlines, the primary CTA, and glows. The canvas is a
+   * neutral near-black so all three colours read cleanly.
+   */
+  .spigot-scope {
+    --c-blue: #2f6bff;
+    --c-green: #46b24e;
+    --c-orange: #f0851f;
+    --tri: linear-gradient(90deg, var(--c-blue) 0%, var(--c-green) 52%, var(--c-orange) 100%);
+    --bg: #050609;
+    --surface-1: #0c0f14;
+    --surface-2: #12161d;
+  }
+
+  .tri-text {
+    background-image: var(--tri);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .tri-fill {
+    background-image: var(--tri);
+  }
+
   .container-rail {
     @apply mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16;
   }
