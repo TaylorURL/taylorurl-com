@@ -16,6 +16,7 @@ const views = {
   License: lazyWithRetry(() => import('@views/License')),
   Process: lazyWithRetry(() => import('@views/Process')),
   Portfolio: lazyWithRetry(() => import('@views/Portfolio')),
+  Spigot: lazyWithRetry(() => import('@views/Spigot')),
   Blog: lazyWithRetry(() => import('@views/Blog')),
   BlogPost: lazyWithRetry(() => import('@views/BlogPost')),
   Faq: lazyWithRetry(() => import('@views/Faq')),

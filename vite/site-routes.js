@@ -45,6 +45,10 @@ export const SITEMAP_ROUTES = [...STATIC_ROUTES, ...BLOG_ROUTES]
 export const PRERENDER_ROUTES = [
   ...STATIC_ROUTES.map(route => route.path),
   '/license',
+  // Unlisted Spigot plugin-work page. Prerendered so a shared link previews and
+  // renders real SEO markup, but deliberately absent from STATIC_ROUTES (and
+  // therefore the sitemap) and from the primary nav — a soft launch.
+  '/spigot',
   '/404',
   ...BLOG_ROUTES.map(route => route.path),
 ]
