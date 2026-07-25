@@ -4,8 +4,6 @@ import { createContext, useContext } from 'react'
 export const ToastContext = createContext(null)
 
 /**
- * Access the toast dispatcher.
- *
  * @returns {(message: string, type?: 'success' | 'error', duration?: number) => void}
  *   the `addToast` function. Must be called within a <ToastProvider>.
  */

@@ -1,12 +1,8 @@
 import { BLOG_POSTS } from '../src/app/data/blog/index.js'
 
-/** Canonical origin for the production site. */
 export const SITE_URL = 'https://taylorurl.com'
 
-/**
- * Static content routes paired with their sitemap metadata. Ordered by
- * importance so the generated sitemap reads sensibly top to bottom.
- */
+// Order matters — the generated sitemap preserves it, most important first.
 export const STATIC_ROUTES = [
   { path: '/', changefreq: 'weekly', priority: '1.0' },
   { path: '/services', changefreq: 'monthly', priority: '0.9' },
@@ -32,7 +28,6 @@ export const BLOG_ROUTES = BLOG_POSTS.map(post => ({
   priority: '0.6',
 }))
 
-/** Every route the sitemap should list. */
 export const SITEMAP_ROUTES = [...STATIC_ROUTES, ...BLOG_ROUTES]
 
 /**

@@ -9,11 +9,8 @@ import { Boxes, Coins, Gamepad2, Gauge, Terminal, Webhook } from 'lucide-react'
  * capabilities so the page can grow into a services sub-site honestly.
  */
 
-/**
- * What a commissioned plugin can be. Rendered as an engineering spec grid; each
- * card carries one of the three brand colours so the spectrum stays balanced
- * across the grid rather than leaning on any single hue.
- */
+// Colours cycle through the three brand hues so the grid stays balanced rather
+// than leaning on any one of them.
 export const SPIGOT_CAPABILITIES = [
   {
     icon: Boxes,
@@ -59,7 +56,6 @@ export const SPIGOT_CAPABILITIES = [
   },
 ]
 
-/** Stack chips — the tools these builds are made with. */
 export const SPIGOT_STACK = [
   'Java 21',
   'Kotlin',
@@ -81,10 +77,7 @@ export const SPIGOT_STACK = [
   'Git',
 ]
 
-/**
- * The relationship story, told in three nodes — the spine of the page's
- * tri-colour system. Each stage owns one brand colour.
- */
+// One brand colour per stage — this is where the page's tri-colour spine is set.
 export const SPIGOT_STORY = [
   {
     color: 'var(--c-blue)',
@@ -109,7 +102,6 @@ export const SPIGOT_STORY = [
   },
 ]
 
-/** How a build goes, start to finish. */
 export const SPIGOT_PROCESS = [
   {
     title: 'Spec & scope',
@@ -133,7 +125,6 @@ export const SPIGOT_PROCESS = [
   },
 ]
 
-/** Straight answers to the questions that come up first. */
 export const SPIGOT_FAQ = [
   {
     q: 'Which versions do you support?',

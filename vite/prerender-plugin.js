@@ -7,9 +7,9 @@ const ROOT_PLACEHOLDER = '<div id="root"></div>'
 const BODY_CLOSE_TAG = '</body>'
 
 /**
- * Map a route to its static HTML output path. `/` is the site index, `/404`
- * lands at the top-level `404.html` Vercel auto-serves for unknown URLs, and
- * everything else uses directory-style URLs (`/about/` → `/about/index.html`).
+ * Directory-style output (`/about/` → `/about/index.html`) for everything but
+ * two special cases: `/` is the site index, and `/404` has to land at the
+ * top-level `404.html` Vercel serves for unknown URLs.
  */
 function outputPathFor(outDir, route) {
   if (route === '/') return join(outDir, 'index.html')
@@ -17,11 +17,8 @@ function outputPathFor(outDir, route) {
   return join(outDir, route, 'index.html')
 }
 
-/**
- * Split the built index.html into the pieces the prerender reuses for every
- * route: the <head> inner HTML (asset tags, site-wide meta, JSON-LD) and the
- * trailing body markup that follows the empty root div (e.g. the analytics tag).
- */
+// Every route reuses the same built <head> (hashed asset tags, site-wide meta)
+// and the body markup trailing the empty root div.
 function parseTemplate(template) {
   const headOpenTag = template.match(/<head[^>]*>/)[0]
   const headInner = template.slice(
@@ -36,13 +33,11 @@ function parseTemplate(template) {
 }
 
 /**
- * Build-time Vite plugin that renders each route to static HTML with
- * react-dom/server and React 19's native head hoisting, so social and AI
- * crawlers (which don't run JS) receive each page's real per-route
- * title/description/canonical/OG markup instead of the SPA shell.
+ * Renders every route to static HTML at build time so crawlers that don't run
+ * JS see real per-route SEO markup rather than the SPA shell.
  *
- * Rendering happens in-process via Vite's SSR module loader — no headless
- * browser — so it runs anywhere `vite build` does, including Vercel's sandbox.
+ * Uses Vite's SSR module loader in-process rather than a headless browser,
+ * which is what lets it run inside Vercel's build sandbox.
  */
 export default function prerenderPlugin() {
   let outDir = 'dist'

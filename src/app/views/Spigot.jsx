@@ -14,7 +14,6 @@ import {
   SPIGOT_STORY,
 } from '@data/spigot'
 
-/** Mono section label — house style, with a short Spigot-orange rule. */
 function SectionLabel({ children }) {
   return (
     <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-ink-mute">
@@ -24,7 +23,6 @@ function SectionLabel({ children }) {
   )
 }
 
-/** Paper-surface variant of the section label. */
 function SectionLabelPaper({ children }) {
   return (
     <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-paper-mute">
