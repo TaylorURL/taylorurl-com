@@ -8,9 +8,8 @@ import GradientText from './GradientText/GradientText'
 const ACCENT_STOPS = ['#2f6bff', '#4f86ff', '#9dbcff', '#4f86ff', '#2f6bff']
 
 /**
- * Animated accent phrase for headlines. Drops in where the site previously used
- * `<span className="text-accent">…</span>`, adding a slow gradient sweep through
- * the brand blues while inheriting the heading's weight and line height.
+ * Drop-in replacement for `<span className="text-accent">` in headlines — adds a
+ * slow gradient sweep while inheriting the heading's weight and line height.
  */
 export function AccentGradient({ children, className = '', animationSpeed = 9 }) {
   return (

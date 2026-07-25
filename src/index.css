@@ -302,7 +302,6 @@
     background-size: 48px 48px;
   }
 
-  /* Corner ticks — diagrammatic anchors for cards, hero canvases, etc. */
   .corner-ticks::before,
   .corner-ticks::after {
     content: '';
@@ -327,7 +326,6 @@
     border-right: 1px solid;
   }
 
-  /* Quiet, slow oscillation for status indicators */
   .pulse-soft {
     animation: pulseSoft 2.4s ease-in-out infinite;
   }

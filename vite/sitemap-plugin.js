@@ -10,10 +10,7 @@ function toUrlEntry({ path, lastmod, changefreq, priority }) {
   return `  <url>\n${lines.join('\n')}\n  </url>`
 }
 
-/**
- * Build-time Vite plugin that generates `sitemap.xml` from the shared route
- * list (static pages + every blog article) so it never has to be hand-kept.
- */
+// Generated from the shared route list so it can't drift out of sync.
 export default function sitemapPlugin() {
   let outDir = 'dist'
   return {

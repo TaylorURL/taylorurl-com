@@ -43,11 +43,8 @@ const toSmoothPath = points => {
 }
 
 /**
- * Lean replacement for the recharts LineChart we used on the home "by the
- * numbers" panel. Same visual treatment (two interpolated lines, dotted dots,
- * mono-uppercase axes, hover tooltip with crosshair) at a tiny fraction of the
- * bundle weight — recharts itself was ~100 kB gzip for one trivial 6-point
- * chart.
+ * Hand-rolled rather than pulled from a charting library: this is a six-point
+ * line chart, and recharts alone costs ~100 kB gzip to draw it.
  */
 export default function RevenueGrowthChart({ data }) {
   const [hoverIndex, setHoverIndex] = useState(null)

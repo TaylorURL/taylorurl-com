@@ -1,17 +1,12 @@
 /**
- * Shared UI primitives — the single source of truth for buttons, inputs,
- * cards, badges, and section headers across every surface. The design contract
- * is monochrome (true black / paper-white) with blue (`var(--accent)`) as the
- * only color used for emphasis. Type is Geist for display and body, Geist Mono
- * for labels, eyebrows, and numerical readouts. Borders are hairline; corners
- * are sharp (`rounded-none` / `rounded-sm`) to read as engineered rather than
- * decorative. Motion is capped at 220ms with an ease-out curve.
+ * The design contract these encode: monochrome, with blue (`var(--accent)`) as
+ * the only emphasis colour; hairline borders and sharp corners so surfaces read
+ * as engineered rather than decorative; motion capped at 220ms, ease-out.
+ * Anything that breaks one of those rules doesn't belong here.
  */
 
-// ─── Buttons ───────────────────────────────────────────────────────────────
-// All buttons share the same shape language: rectangular with a 2px corner
-// radius, mono uppercase label, and an inline arrow indicator. Variants only
-// differ in surface/border treatment, never in geometry.
+// Variants differ only in surface and border treatment — never in geometry.
+// Every button is rectangular, 2px radius, mono uppercase, arrow indicator.
 
 const BTN_BASE =
   'inline-flex items-center justify-center gap-2.5 rounded-sm font-mono text-[11px] uppercase tracking-[0.18em] font-semibold transition duration-200 ease-out-soft active:scale-[0.98]'
@@ -30,14 +25,14 @@ export const BTN_GHOST_DARK =
 export const BTN_GHOST_DARK_LG =
   'inline-flex items-center justify-center gap-2.5 rounded-sm border border-hair-strong px-7 py-4 font-mono text-[12px] uppercase tracking-[0.18em] font-semibold text-ink transition duration-200 ease-out-soft hover:bg-ink hover:text-bg active:scale-[0.98]'
 
-// ─── Inputs ────────────────────────────────────────────────────────────────
+// Inputs
 export const INPUT =
   'w-full rounded-sm border border-hair-paper-strong bg-paper px-4 py-3.5 font-sans text-[15px] text-ink-paper transition duration-200 ease-out-soft placeholder:text-paper-faint focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30'
 
 export const INPUT_DARK =
   'w-full rounded-sm border border-hair-strong bg-surface-1 px-4 py-3.5 font-sans text-[15px] text-ink transition duration-200 ease-out-soft placeholder:text-ink-faint focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/30'
 
-// ─── Surfaces / Cards ──────────────────────────────────────────────────────
+// Surfaces and cards
 export const CARD =
   'group relative rounded-sm border border-hair-paper bg-paper p-7 transition duration-300 ease-out-soft hover:border-hair-paper-strong'
 
@@ -46,21 +41,20 @@ export const CARD_STATIC = 'relative rounded-sm border border-hair-paper bg-pape
 export const CARD_DARK =
   'group relative rounded-sm border border-hair bg-surface-1 p-7 transition duration-300 ease-out-soft hover:border-hair-strong'
 
-// ─── Badges / pills ────────────────────────────────────────────────────────
+// Badges and pills
 export const BADGE =
   'inline-flex items-center gap-1.5 rounded-sm border border-hair-paper-strong px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-paper-soft'
 
 export const BADGE_BLUE =
   'inline-flex items-center gap-1.5 rounded-sm border border-accent/40 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-accent'
 
-// ─── Section header pieces ────────────────────────────────────────────────
+// Section header pieces
 export const EYEBROW = 'font-mono text-[11px] uppercase tracking-[0.22em] text-accent'
 
 export const EYEBROW_MUTE = 'font-mono text-[11px] uppercase tracking-[0.22em] text-paper-faint'
 
 export const EYEBROW_MUTE_DARK = 'font-mono text-[11px] uppercase tracking-[0.22em] text-ink-faint'
 
-// Display headings — large, tight, ink-on-paper or ink-on-dark.
 export const SECTION_H2 =
   'text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper'
 

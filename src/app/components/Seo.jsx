@@ -9,10 +9,8 @@ const DEFAULT_DESCRIPTION =
   'Baytown, TX web designer building custom websites for shops, restaurants, trades, and local pros across the Houston area. Show up on Google. Bring in more customers.'
 const TITLE_SUFFIX = ` | ${BRAND_NAME}`
 
-/**
- * Compose the final <title>. Caps at ~60 chars by trimming the page-specific
- * title first if needed, then falling back to the bare suffix.
- */
+// 60 chars is where search results start truncating, so the page-specific part
+// gets trimmed before the brand suffix does.
 function composeTitle(title) {
   if (!title) return DEFAULT_HOME_TITLE
   const composed = `${title}${TITLE_SUFFIX}`
@@ -27,10 +25,6 @@ function toSchemaArray(schema) {
 }
 
 /**
- * Per-route SEO tags hoisted into <head> at prerender time. Keeps titles ≤60
- * chars and descriptions ≤155, populates Open Graph + Twitter cards, and emits
- * any provided JSON-LD nodes (single object or array).
- *
  * @param {object} props
  * @param {string} [props.title] - Page-specific title (omit on the home page).
  * @param {string} [props.description] - Meta description (≤155 chars).
