@@ -9,9 +9,8 @@ node_modules
 dist
 dist-ssr
 *.local
-.vscode/*
-!.vscode/extensions.json
-.idea
+.vscode/
+.idea/
 .DS_Store
 *.suo
 *.ntvs*
@@ -25,9 +24,8 @@ taylorurl.key
 !.env.example
 supabase/.temp/
 .claude/
-.idea/
-.vscode/
 *.iml
+.fleet/
 *.sql
 *.pem
 *.p12
