@@ -22,11 +22,6 @@ function getBackgroundAtPoint(x, y, ignoreEls) {
 }
 
 /**
- * Tracks whether the section directly behind a probe element has a dark
- * background. Returns a stable boolean that flips as the user scrolls past
- * dark/light section boundaries. Use to drive theme-aware overlay chrome
- * (nav, indicators) so text/icons stay readable over any section.
- *
  * @param {React.RefObject<HTMLElement>} probeRef Element whose center is sampled.
  * @param {React.RefObject<HTMLElement>[]} [ignoreRefs] Refs whose subtrees should
  *   be skipped during sampling (e.g. the overlay chrome itself).

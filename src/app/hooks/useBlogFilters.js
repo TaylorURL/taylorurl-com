@@ -2,11 +2,6 @@ import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
 /**
- * URL-synced state for the /blog index: search query, category, current page.
- * The URL is the source of truth for `category` and `page` so deep links and
- * back/forward navigation work, while `search` is mirrored as `?q=` with
- * `replace` history so each keystroke does not stack history entries.
- *
  * @param {{ posts: Array<{ category: string }>, postsPerPage: number }} options
  * @returns {{
  *   posts: Array,                 // posts filtered by category + search

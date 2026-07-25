@@ -7,11 +7,6 @@ import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
 import { LazyAurora } from '@reactbits/LazyBg'
 
 /**
- * Closing call-to-action band shared across marketing routes. Two visual
- * treatments map to the section above: `dark` (cinematic, ink-on-black) and
- * `light` (paper). Both layouts share the same engineering eyebrow, oversized
- * display title, and single primary action — restraint over decoration.
- *
  * @param {object} props
  * @param {import('react').ReactNode} props.title - heading content
  * @param {string} props.description - supporting paragraph

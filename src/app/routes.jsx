@@ -2,10 +2,10 @@ import { Route, Routes } from 'react-router-dom'
 import Layout from '@components/Layout'
 
 /**
- * The site's route table as data, decoupled from how each view module is
- * loaded. The browser entry supplies lazy views for code splitting; the
- * prerender entry supplies eager views so server rendering stays synchronous.
- * Each `key` matches the view's file name under `@views` (e.g. `BlogPost`).
+ * Routes are data so the two entry points can load views differently: the
+ * browser entry passes lazy() views for code splitting, the prerender entry
+ * passes eager ones because static rendering can't await. Each `key` is the
+ * view's file name under `@views`.
  */
 const ROUTE_DEFINITIONS = [
   { key: 'Home', index: true },
@@ -29,8 +29,6 @@ const ROUTE_DEFINITIONS = [
 ]
 
 /**
- * Renders the shared route tree under the site `Layout`.
- *
  * @param {{ views: Record<string, React.ComponentType> }} props - Maps each
  *   route key to its view component (lazy in the browser, eager at build time).
  */

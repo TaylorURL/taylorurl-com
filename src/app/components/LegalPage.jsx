@@ -3,10 +3,6 @@ import PageHero from './PageHero'
 import { pageTransition, staggerChild } from '@constants/animations'
 
 /**
- * Shared layout for legal pages (Privacy, Terms, License). Sets the cinematic
- * page hero, then renders dense long-form copy in a centred prose rail with
- * mono-numbered section headings to keep the engineering tone consistent.
- *
  * @param {object} props
  * @param {string} props.title - page heading
  * @param {string} props.description - subtitle text

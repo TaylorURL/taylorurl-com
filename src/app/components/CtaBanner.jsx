@@ -8,10 +8,6 @@ import { LazyAurora } from '@reactbits/LazyBg'
 import { AccentGradient } from '@reactbits/kit'
 
 /**
- * Reusable closing CTA band. Mirrors the contract used by `CtaSection` but
- * exposes optional secondary actions and an `accentText` slot for routes that
- * want a phrase rendered in the accent color (e.g. "Ready to get started?").
- *
  * @param {object} props
  * @param {string} props.heading - main heading text
  * @param {string} [props.accentText] - text rendered in the accent color
