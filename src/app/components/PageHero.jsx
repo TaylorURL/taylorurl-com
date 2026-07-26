@@ -6,11 +6,10 @@ import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
 import { LazyParticles } from '@reactbits/LazyBg'
 
 /**
- * Cinematic page hero used by every secondary view. Full-bleed black canvas
- * with a faint blueprint grid, monumental ink-on-black title, and a scroll-
- * driven parallax — the headline column rises and softens as the user scrolls
- * past, while the blueprint grid drifts at a slower rate behind it for depth.
- * Reduced-motion users get the static composition with no transforms.
+ * Shared hero for every secondary view: full-bleed black canvas, faint
+ * blueprint grid, scroll-driven parallax. The headline column rises and softens
+ * as the user scrolls past while the grid drifts slower behind it, so the two
+ * layers separate. Reduced-motion users get the static composition.
  */
 export default function PageHero({ title, description, eyebrow }) {
   const reduced = useReducedMotion()

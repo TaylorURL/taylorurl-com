@@ -15,12 +15,10 @@ function trustScoreLabel(rating) {
 }
 
 /**
- * Renders the live Trustpilot rating for the site. Fetches the cached
- * `/api/trustpilot` endpoint and gracefully returns `null` if the score is
- * unavailable (no reviews yet, fetch failure, or parse failure) so the
- * surrounding section can lay out without an empty hole. Styled to read as a
- * monochrome credibility chip — the accent dot makes it part of the same
- * visual language as the rest of the site.
+ * Renders the live Trustpilot rating. Fetches the cached `/api/trustpilot`
+ * endpoint and returns `null` when the score is unavailable (no reviews yet,
+ * fetch failure, or parse failure) so the surrounding section lays out without
+ * an empty hole rather than showing a zero score.
  */
 export default function TrustpilotBadge({ profileUrl, variant = 'paper' }) {
   const [rating, setRating] = useState(null)

@@ -38,7 +38,6 @@ export default function Footer() {
         {...fadeInUp}
         className="relative mx-auto w-full max-w-[1280px] px-6 pb-12 pt-24 sm:px-10 sm:pt-28 lg:px-16"
       >
-        {/* Top monolithic mark */}
         <div className="border-hair mb-16 grid gap-10 border-b pb-16 sm:mb-20 sm:pb-20 lg:grid-cols-[1.4fr_1fr_1fr_1fr]">
           <div className="max-w-md">
             <Link to="/" className="mb-8 inline-block">
@@ -179,7 +178,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Monumental wordmark band */}
         <div className="mb-16 sm:mb-20">
           <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
             Working with businesses in
