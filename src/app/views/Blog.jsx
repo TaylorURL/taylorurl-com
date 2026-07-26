@@ -292,7 +292,6 @@ export default function Blog() {
         description="Practical tips on websites, Google, and getting more customers — written for local businesses. No buzzwords, no fluff."
       />
 
-      {/* Filters strip */}
       <section className="border-hair-paper border-b bg-paper">
         <div className="mx-auto w-full max-w-[1280px] px-6 py-8 sm:px-10 lg:px-16">
           <motion.div
@@ -412,7 +411,6 @@ export default function Blog() {
         </div>
       </section>
 
-      {/* CTA — dark band */}
       <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
