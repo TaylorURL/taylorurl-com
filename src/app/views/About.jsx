@@ -122,7 +122,6 @@ export default function About() {
         description="I'm Trenton Taylor — TaylorURL LLC is me. I work with local businesses around Baytown and the Houston area, from the first call all the way through every change you ever need after launch."
       />
 
-      {/* Story + stats */}
       <section ref={storyRef} className="relative overflow-hidden bg-paper py-24 sm:py-32">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
@@ -206,7 +205,6 @@ export default function About() {
         </div>
       </section>
 
-      {/* Values */}
       <section className="border-hair relative overflow-hidden border-t bg-bg py-24 text-ink sm:py-32">
         <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
@@ -263,7 +261,6 @@ export default function About() {
         </div>
       </section>
 
-      {/* Process */}
       <section className="border-hair-paper relative overflow-hidden border-t bg-paper py-24 sm:py-32">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">

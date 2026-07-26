@@ -133,7 +133,6 @@ export default function NotFound() {
           </motion.div>
         </div>
 
-        {/* Bug catching panel */}
         <motion.div
           ref={panelRef}
           initial={{ opacity: 0 }}

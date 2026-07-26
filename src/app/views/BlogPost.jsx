@@ -93,7 +93,6 @@ export default function BlogPost() {
         ]}
       />
 
-      {/* Hero band — dark, mono header strip */}
       <section
         ref={heroRef}
         className="relative overflow-hidden bg-bg pb-16 pt-32 text-ink sm:pb-24 sm:pt-44"
@@ -144,7 +143,6 @@ export default function BlogPost() {
         </motion.div>
       </section>
 
-      {/* Body — paper, prose rail */}
       <article className="relative overflow-hidden bg-paper py-20 sm:py-28">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-30" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[760px] px-6 sm:px-10">
