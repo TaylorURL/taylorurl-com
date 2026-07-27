@@ -52,7 +52,6 @@ export default function SpigotHero() {
         style={{ y, opacity }}
         className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 pb-16 pt-12 will-change-transform sm:px-10 sm:pb-24 lg:px-16"
       >
-        {/* Eyebrow strip */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -78,7 +77,6 @@ export default function SpigotHero() {
         </motion.div>
 
         <div className="mt-12 grid flex-1 items-center gap-12 lg:mt-12 lg:grid-cols-[1.15fr_1fr] lg:gap-8">
-          {/* Copy column */}
           <div>
             <motion.p
               initial={{ opacity: 0, y: 10 }}
@@ -137,7 +135,6 @@ export default function SpigotHero() {
             </motion.div>
           </div>
 
-          {/* Artwork column */}
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}

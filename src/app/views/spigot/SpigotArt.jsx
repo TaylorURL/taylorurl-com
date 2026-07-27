@@ -110,14 +110,11 @@ export function BlockMotif({ className = '' }) {
         </linearGradient>
       </defs>
 
-      {/* Ambient tri glow */}
       <ellipse cx="200" cy="150" rx="180" ry="120" fill="url(#halo-blue)" opacity="0.5" />
       <ellipse cx="250" cy="170" rx="150" ry="110" fill="url(#halo-orange)" opacity="0.5" />
 
-      {/* Ground shadow */}
       <ellipse cx={OX} cy="300" rx="120" ry="26" fill="rgba(0,0,0,0.4)" />
 
-      {/* Plinth */}
       {PLINTH.map(block => (
         <Cube key={`p-${block.gx}-${block.gy}-${block.gz}`} {...block} ox={OX} oy={OY} />
       ))}
