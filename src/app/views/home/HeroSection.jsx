@@ -97,7 +97,6 @@ export default function HeroSection() {
           aria-hidden={contentHidden}
           className={`flex flex-1 flex-col ${contentHidden ? 'pointer-events-none' : ''}`}
         >
-          {/* Eyebrow strip */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -118,7 +117,6 @@ export default function HeroSection() {
             <span className="ml-auto hidden sm:inline">Home</span>
           </motion.div>
 
-          {/* Headline grid */}
           <div className="mt-12 grid flex-1 items-center gap-12 lg:mt-20 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
             <div>
               <motion.h1
@@ -225,7 +223,6 @@ export default function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Scroll hint */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

@@ -190,7 +190,6 @@ export default function Services() {
         description="Custom websites, redesigns, and online tools for shops, restaurants, trades, and pros around Baytown and the Houston area."
       />
 
-      {/* Services — alternating split layout */}
       <section className="relative overflow-hidden bg-paper py-24 sm:py-36">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
@@ -241,7 +240,6 @@ export default function Services() {
         </div>
       </section>
 
-      {/* Service area */}
       <section className="border-hair-paper relative overflow-hidden border-t bg-paper py-20 sm:py-28">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1280px] px-6 sm:px-10 lg:px-16">
