@@ -40,7 +40,6 @@ export default function SpigotCodeCard({ className = '' }) {
     <div
       className={`border-hair overflow-hidden rounded-md border bg-[color:var(--surface-1)] shadow-2xl ${className}`}
     >
-      {/* Title bar */}
       <div className="border-hair flex items-center gap-3 border-b bg-[color:var(--surface-2)] px-4 py-3">
         <div className="flex gap-1.5" aria-hidden="true">
           <span className="h-2.5 w-2.5 rounded-[2px]" style={{ backgroundColor: 'var(--c-blue)' }} />
@@ -59,7 +58,6 @@ export default function SpigotCodeCard({ className = '' }) {
         </span>
       </div>
 
-      {/* Code body */}
       <div className="overflow-x-auto p-5">
         <pre className="font-mono text-[12.5px] leading-[1.7] sm:text-[13px]">
           <code>
