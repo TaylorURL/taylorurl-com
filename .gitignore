@@ -25,6 +25,7 @@ taylorurl.key
 !.env.example
 supabase/.temp/
 .claude/
+CLAUDE.md
 *.iml
 .fleet/
 *.sql
