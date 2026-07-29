@@ -34,3 +34,9 @@ CLAUDE.md
 *.pfx
 id_rsa
 id_ed25519
+
+# Vercel CLI link state (project/org ids) is per-machine.
+.vercel
+
+# Windows folder metadata
+desktop.ini
