@@ -29,7 +29,7 @@ const IFRAME_LOAD_TIMEOUT_MS = 8000
 // Live iframes mount when the row is within this distance of the viewport
 // and unmount when it scrolls beyond. Embedded SPAs are expensive — gating
 // on a tight rootMargin keeps the concurrent live-app count to the 1–2 rows
-// the user is actually about to see, instead of all 6 booting at page load.
+// the user is actually about to see, instead of every row booting at page load.
 const LIVE_MOUNT_ROOT_MARGIN = '400px 0px 400px 0px'
 
 // Curve and reveal config — matches the rest of the site's motion language.
