@@ -28,6 +28,7 @@ supabase/.temp/
 CLAUDE.md
 *.iml
 .fleet/
+.junie/
 *.sql
 *.pem
 *.p12
