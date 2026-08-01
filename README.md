@@ -13,12 +13,12 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-5.2.72-2563eb?style=for-the-badge" alt="Version 5.2.72" />
-  <img src="https://img.shields.io/badge/React-19-2563eb?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
-  <img src="https://img.shields.io/badge/Vite-7-2563eb?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
-  <img src="https://img.shields.io/badge/Tailwind_CSS-3-2563eb?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
-  <img src="https://img.shields.io/badge/Supabase-3b82f6?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
-  <img src="https://img.shields.io/badge/Vercel-2563eb?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
+  <img src="https://img.shields.io/badge/version-5.2.72-2f6bff?style=for-the-badge" alt="Version 5.2.72" />
+  <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
+  <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
+  <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
+  <img src="https://img.shields.io/badge/Supabase-4f86ff?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase" />
+  <img src="https://img.shields.io/badge/Vercel-2f6bff?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel" />
 </p>
 
 <br />
@@ -51,7 +51,8 @@ Most small-business sites are either a static template that never ranks or a sin
 | Styling | Tailwind CSS 3 + `tailwindcss-animate` |
 | Animation | Framer Motion 12 |
 | Icons | `lucide-react` |
-| Backend | Supabase (Postgres + Edge Functions) |
+| WebGL effects | `ogl` — particles, aurora backdrop |
+| Backend | Supabase Edge Functions (email capture, analytics, error reporting) |
 | Analytics | First-party, cookieless |
 | SEO | `react-helmet-async` + build-time static prerender |
 | Serverless & hosting | Vercel Functions + Vercel |
@@ -64,7 +65,7 @@ npm run dev           # Vite dev server
 npm run build         # production build, then static prerender of every route
 ```
 
-No environment configuration is required to run the site locally — the newsletter and email-capture forms post directly to the Supabase `collect-email` edge function with a publishable key.
+No environment configuration is required to run the site locally — the newsletter and email-capture forms `fetch` the Supabase `collect-email` edge function directly with a publishable key, so there is no `.env` to fill in and no Supabase client to configure.
 
 ### Scripts
 
@@ -107,6 +108,7 @@ taylorurl-com/
 ├── src/
 │   ├── app/
 │   │   ├── components/        Layout, Navigation, mockups, Seo
+│   │   │   └── reactbits/     WebGL + motion effects (Aurora, Particles, ShinyText…)
 │   │   ├── views/             Route views (Home, Services, Portfolio, Blog, Status…)
 │   │   ├── hooks/             toast, blog filters, scroll/parallax
 │   │   ├── constants/         navigation, seo, animations, ui
