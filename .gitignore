@@ -30,6 +30,7 @@ CLAUDE.md
 .fleet/
 .junie/
 *.sql
+!supabase/cleanup/*.sql
 *.pem
 *.p12
 *.pfx
