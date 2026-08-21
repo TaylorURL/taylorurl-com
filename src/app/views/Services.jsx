@@ -252,7 +252,7 @@ export default function Services() {
               <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
                 Local businesses across
                 <br />
-                <AccentGradient>the Houston area.</AccentGradient>
+                <AccentGradient on="paper">the Houston area.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[15px] leading-relaxed text-paper-soft lg:text-right">

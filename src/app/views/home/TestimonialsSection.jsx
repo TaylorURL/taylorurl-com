@@ -40,24 +40,24 @@ function ClientTestimonialCard({ testimonial, index }) {
         className="group flex h-full flex-col gap-8 bg-paper p-8 sm:p-10"
         spotlightColor="rgba(47,107,255,0.14)"
       >
-      <div className="flex items-center justify-between">
-        <ClientStarRow />
-        <span className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
-          {String(index + 1).padStart(2, '0')} / 03
-        </span>
-      </div>
-      <blockquote className="flex-1 text-[18px] leading-[1.5] tracking-tight text-ink-paper">
-        &ldquo;{testimonial.quote}&rdquo;
-      </blockquote>
-      <figcaption className="border-hair-paper flex items-center gap-4 border-t pt-5">
-        <ClientAvatar name={testimonial.name} />
-        <div>
-          <div className="text-[14px] font-semibold text-ink-paper">{testimonial.name}</div>
-          <div className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.18em]">
-            {testimonial.role} — {testimonial.business}
-          </div>
+        <div className="flex items-center justify-between">
+          <ClientStarRow />
+          <span className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
+            {String(index + 1).padStart(2, '0')} / 03
+          </span>
         </div>
-      </figcaption>
+        <blockquote className="flex-1 text-[18px] leading-[1.5] tracking-tight text-ink-paper">
+          &ldquo;{testimonial.quote}&rdquo;
+        </blockquote>
+        <figcaption className="border-hair-paper flex items-center gap-4 border-t pt-5">
+          <ClientAvatar name={testimonial.name} />
+          <div>
+            <div className="text-[14px] font-semibold text-ink-paper">{testimonial.name}</div>
+            <div className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.18em]">
+              {testimonial.role} — {testimonial.business}
+            </div>
+          </div>
+        </figcaption>
       </SpotlightCard>
     </motion.figure>
   )
@@ -86,7 +86,7 @@ export default function TestimonialsSection() {
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               Owners who
               <br />
-              <AccentGradient>picked up the phone.</AccentGradient>
+              <AccentGradient on="paper">picked up the phone.</AccentGradient>
             </h2>
           </div>
           <div className="flex flex-col items-start gap-6 lg:items-end">

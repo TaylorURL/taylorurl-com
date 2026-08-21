@@ -89,8 +89,12 @@ export default function NewsletterSection() {
           ) : (
             <form
               onSubmit={handleNewsletterSubmit}
-              className="border-hair flex flex-col gap-3 border p-3 sm:flex-row sm:items-stretch sm:p-2"
+              className="border-hair relative flex flex-col gap-3 border p-3 sm:flex-row sm:items-stretch sm:p-2"
             >
+              <span
+                aria-hidden="true"
+                className="corner-ticks pointer-events-none absolute inset-0 text-ink-faint"
+              />
               <input
                 type="email"
                 value={email}

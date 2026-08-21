@@ -27,7 +27,7 @@ export default function WhyWebsiteSection() {
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               A website is the difference between
               <br />
-              <AccentGradient>getting the call</AccentGradient> and getting skipped.
+              <AccentGradient on="paper">getting the call</AccentGradient> and getting skipped.
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">

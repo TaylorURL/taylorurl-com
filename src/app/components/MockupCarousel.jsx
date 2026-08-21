@@ -10,8 +10,8 @@ const MOCKUPS = [
 
 const POSITIONS = [
   { x: 0, y: 0, scale: 1, zIndex: 3, opacity: 1 },
-  { x: -135, y: 30, scale: 0.78, zIndex: 1, opacity: 0.45 },
-  { x: 135, y: 30, scale: 0.78, zIndex: 2, opacity: 0.45 },
+  { x: -120, y: 30, scale: 0.78, zIndex: 1, opacity: 0.45 },
+  { x: 120, y: 30, scale: 0.78, zIndex: 2, opacity: 0.45 },
 ]
 
 export default function MockupCarousel() {
@@ -24,8 +24,13 @@ export default function MockupCarousel() {
     return () => clearInterval(interval)
   }, [])
 
+  // Fluid stage: fills the hero's right column (which is narrower than 480px
+  // once the grid respects the rail) instead of forcing a fixed width past it.
   return (
-    <div className="mockup-light relative h-[380px] w-[480px]" aria-hidden="true">
+    <div
+      className="mockup-light relative h-[380px] w-full min-w-[380px] max-w-[480px]"
+      aria-hidden="true"
+    >
       {MOCKUPS.map((mockup, i) => {
         const posIndex = (i + rotation) % 3
         const pos = POSITIONS[posIndex]
