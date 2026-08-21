@@ -168,17 +168,18 @@
       "publisher": { "@id": "https://taylorurl.com/#business" }
     }
     </script>
-    <script>
+      <script>
       (function () {
         var endpoint = "https://sunday.tail1f78d7.ts.net/report";
         var site = "TaylorURL";
         var sent = 0;
-        function report(message, stack) {
-          if (sent >= 5) return;
+        function report(kind, message, stack) {
+          if (sent >= 10) return;
           sent += 1;
           try {
             var body = JSON.stringify({
               site: site,
+              kind: kind,
               message: String(message || "Unknown error").slice(0, 1500),
               stack: String(stack || "").slice(0, 4000),
               url: location.href,
@@ -191,13 +192,48 @@
             }
           } catch (ignored) {}
         }
+        // Capture phase, because element load failures fire error events that do not bubble.
         window.addEventListener("error", function (event) {
-          report(event.message, event.error && event.error.stack);
-        });
+          if (event.target && event.target !== window && event.target.tagName) {
+            report("resource", "Failed to load " + event.target.tagName.toLowerCase() + ": " + (event.target.src || event.target.href || ""));
+          } else {
+            report("uncaught", event.message, event.error && event.error.stack);
+          }
+        }, true);
         window.addEventListener("unhandledrejection", function (event) {
           var reason = event.reason;
-          report(reason && reason.message ? reason.message : reason, reason && reason.stack);
+          report("rejection", reason && reason.message ? reason.message : reason, reason && reason.stack);
         });
+        var consoleError = console.error;
+        console.error = function () {
+          var parts = [];
+          for (var i = 0; i < arguments.length; i += 1) {
+            var piece = arguments[i];
+            if (piece && piece.stack) {
+              parts.push(piece.stack);
+            } else if (typeof piece === "object") {
+              try { parts.push(JSON.stringify(piece)); } catch (ignored) { parts.push(String(piece)); }
+            } else {
+              parts.push(String(piece));
+            }
+          }
+          report("console", parts.join(" "));
+          return consoleError.apply(console, arguments);
+        };
+        if (window.fetch) {
+          var originalFetch = window.fetch;
+          window.fetch = function (input) {
+            var target = typeof input === "string" ? input : (input && input.url) || "";
+            if (target.indexOf(endpoint) === 0) return originalFetch.apply(window, arguments);
+            return originalFetch.apply(window, arguments).then(function (response) {
+              if (response.status >= 500) report("http", "HTTP " + response.status + " from " + target.split("?")[0]);
+              return response;
+            }, function (error) {
+              report("network", (error && error.message ? error.message : String(error)) + " fetching " + target.split("?")[0]);
+              throw error;
+            });
+          };
+        }
       })();
     </script>
   </head>
