@@ -217,7 +217,11 @@ ${formData.message}
               </div>
             </motion.aside>
 
-            <motion.div {...slideInRightMount} className="bg-paper p-8 sm:p-12">
+            <motion.div {...slideInRightMount} className="relative bg-paper p-8 sm:p-12">
+              <span
+                aria-hidden="true"
+                className="corner-ticks text-paper-faint pointer-events-none absolute inset-0"
+              />
               <div className="border-hair-paper mb-8 flex items-baseline justify-between border-b pb-5">
                 <h3 className="text-[20px] font-semibold tracking-tight text-ink-paper">
                   Tell me about it
@@ -298,7 +302,7 @@ ${formData.message}
                       name="projectType"
                       value={formData.projectType}
                       onChange={handleChange}
-                      className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.1rem] bg-[position:right_0.85rem_center] bg-no-repeat pr-10`}
+                      className={`${INPUT} bg-[url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%230a0a0a' stroke-opacity='0.55'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")] appearance-none bg-[length:1.1rem] bg-[position:right_0.85rem_center] bg-no-repeat pr-10`}
                     >
                       <option value="">Pick one</option>
                       <option value="new-website">A brand-new website</option>

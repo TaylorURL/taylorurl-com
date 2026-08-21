@@ -238,21 +238,23 @@ export default function About() {
                     className="group flex h-full flex-col gap-6 bg-bg p-8 sm:p-10"
                     spotlightColor="rgba(47,107,255,0.2)"
                   >
-                  <div className="flex items-baseline justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                      {String(i + 1).padStart(2, '0')} / 04
-                    </span>
-                    <Icon
-                      className="h-5 w-5 text-ink transition-colors duration-300 group-hover:text-accent"
-                      strokeWidth={1.25}
-                    />
-                  </div>
-                  <div>
-                    <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink">
-                      {item.title}
-                    </h3>
-                    <p className="text-[15px] leading-relaxed text-ink-soft">{item.description}</p>
-                  </div>
+                    <div className="flex items-baseline justify-between">
+                      <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
+                        {String(i + 1).padStart(2, '0')} / 04
+                      </span>
+                      <Icon
+                        className="h-5 w-5 text-ink transition-colors duration-300 group-hover:text-accent"
+                        strokeWidth={1.25}
+                      />
+                    </div>
+                    <div>
+                      <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink">
+                        {item.title}
+                      </h3>
+                      <p className="text-[15px] leading-relaxed text-ink-soft">
+                        {item.description}
+                      </p>
+                    </div>
                   </SpotlightCard>
                 </motion.div>
               )
@@ -276,7 +278,7 @@ export default function About() {
               <h2 className="text-[clamp(2rem,4.4vw,3.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
                 Four steps from
                 <br />
-                <AccentGradient>first call to launch.</AccentGradient>
+                <AccentGradient on="paper">first call to launch.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">

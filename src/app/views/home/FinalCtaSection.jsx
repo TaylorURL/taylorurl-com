@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 import Magnet from '@reactbits/Magnet/Magnet'
+import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
 import { LazyAurora } from '@reactbits/LazyBg'
 import { AccentGradient } from '@reactbits/kit'
 
@@ -13,7 +14,12 @@ export default function FinalCtaSection() {
         className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-50 [mask-image:linear-gradient(to_bottom,black,transparent)]"
         aria-hidden="true"
       >
-        <LazyAurora colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']} amplitude={1.1} blend={0.6} speed={0.7} />
+        <LazyAurora
+          colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']}
+          amplitude={1.1}
+          blend={0.6}
+          speed={0.7}
+        />
       </div>
       <div className="grid-blueprint absolute inset-0 opacity-60" aria-hidden="true" />
       <div
@@ -32,7 +38,13 @@ export default function FinalCtaSection() {
       >
         <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
           <span className="h-px w-8 bg-accent" />
-          // 05 — Let&apos;s talk
+          <DecryptedText
+            text="// 05 — Let's talk"
+            animateOn="view"
+            sequential
+            speed={40}
+            maxIterations={12}
+          />
           <span className="h-px w-8 bg-accent" />
         </p>
         <h2 className="mx-auto max-w-4xl text-[clamp(2.4rem,7vw,5.6rem)] font-semibold leading-[0.98] tracking-tightest text-ink">

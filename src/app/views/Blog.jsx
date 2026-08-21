@@ -102,7 +102,11 @@ function FeaturedPost({ post }) {
           style={{ transform: metaTransform }}
           className="relative hidden will-change-transform lg:block"
         >
-          <div className="border-hair border p-6">
+          <div className="border-hair relative border p-6">
+            <span
+              aria-hidden="true"
+              className="corner-ticks pointer-events-none absolute inset-0 text-ink-faint"
+            />
             <span
               aria-hidden
               className="absolute -top-px left-4 bg-bg px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
@@ -145,26 +149,26 @@ function PostCard({ post, index }) {
       className="group h-full bg-paper"
     >
       <SpotlightCard className="h-full bg-paper" spotlightColor="rgba(47,107,255,0.12)">
-      <Link to={`/blog/${post.slug}`} className="flex h-full flex-col gap-5 p-7">
-        <div className="border-hair-paper text-paper-faint flex items-center justify-between border-b pb-3 font-mono text-[10px] uppercase tracking-[0.22em]">
-          <span className="text-accent">// {post.category}</span>
-          <span>{post.readTime}</span>
-        </div>
+        <Link to={`/blog/${post.slug}`} className="flex h-full flex-col gap-5 p-7">
+          <div className="border-hair-paper text-paper-faint flex items-center justify-between border-b pb-3 font-mono text-[10px] uppercase tracking-[0.22em]">
+            <span className="text-accent">// {post.category}</span>
+            <span>{post.readTime}</span>
+          </div>
 
-        <h3 className="text-[18px] font-semibold leading-[1.25] tracking-tight text-ink-paper transition-colors group-hover:text-accent sm:text-[20px]">
-          {post.title}
-        </h3>
+          <h3 className="text-[18px] font-semibold leading-[1.25] tracking-tight text-ink-paper transition-colors group-hover:text-accent sm:text-[20px]">
+            {post.title}
+          </h3>
 
-        <p className="flex-1 text-[14px] leading-relaxed text-paper-soft">{post.excerpt}</p>
+          <p className="flex-1 text-[14px] leading-relaxed text-paper-soft">{post.excerpt}</p>
 
-        <div className="border-hair-paper text-paper-faint flex items-center justify-between border-t pt-4 font-mono text-[10px] uppercase tracking-[0.22em]">
-          <span>{post.date}</span>
-          <span className="flex items-center gap-1 text-accent opacity-0 transition-opacity group-hover:opacity-100">
-            Read
-            <ArrowUpRight className="h-3 w-3" />
-          </span>
-        </div>
-      </Link>
+          <div className="border-hair-paper text-paper-faint flex items-center justify-between border-t pt-4 font-mono text-[10px] uppercase tracking-[0.22em]">
+            <span>{post.date}</span>
+            <span className="flex items-center gap-1 text-accent opacity-0 transition-opacity group-hover:opacity-100">
+              Read
+              <ArrowUpRight className="h-3 w-3" />
+            </span>
+          </div>
+        </Link>
       </SpotlightCard>
     </motion.article>
   )
@@ -417,7 +421,13 @@ export default function Blog() {
           <motion.div {...fadeInUp} className="mx-auto max-w-3xl text-center">
             <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
               <span className="h-px w-8 bg-accent" />
-              <DecryptedText text="// Next" animateOn="view" sequential speed={40} maxIterations={12} />
+              <DecryptedText
+                text="// Next"
+                animateOn="view"
+                sequential
+                speed={40}
+                maxIterations={12}
+              />
               <span className="h-px w-8 bg-accent" />
             </p>
             <h2 className="text-[clamp(2rem,5vw,3.6rem)] font-semibold leading-[1.02] tracking-tightest text-ink">

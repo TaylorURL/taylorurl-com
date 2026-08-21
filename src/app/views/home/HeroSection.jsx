@@ -108,7 +108,12 @@ export default function HeroSection() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
               </span>
-              <ShinyText text="Open for new projects" color="#2f6bff" shineColor="#bcd2ff" speed={4} />
+              <ShinyText
+                text="Open for new projects"
+                color="#2f6bff"
+                shineColor="#bcd2ff"
+                speed={4}
+              />
             </span>
             <span className="hidden sm:inline">·</span>
             <span>TaylorURL LLC</span>
@@ -117,7 +122,10 @@ export default function HeroSection() {
             <span className="ml-auto hidden sm:inline">Home</span>
           </motion.div>
 
-          <div className="mt-12 grid flex-1 items-center gap-12 lg:mt-20 lg:grid-cols-[1.6fr_1fr] lg:gap-16">
+          {/* minmax(0,…) keeps the fixed-width mockup column from forcing the
+              grid past the 1280 rail — without it the right column overflows
+              and gets clipped at common laptop widths. */}
+          <div className="mt-12 grid flex-1 items-center gap-12 lg:mt-20 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-16">
             <div>
               <motion.h1
                 initial={{ opacity: 0, y: 20 }}
@@ -205,6 +213,10 @@ export default function HeroSection() {
               <MockupCarousel />
 
               <div className="border-hair bg-[color:var(--bg)]/55 relative w-full max-w-sm border p-5 backdrop-blur-sm">
+                <span
+                  aria-hidden="true"
+                  className="corner-ticks pointer-events-none absolute inset-0 text-ink-faint"
+                />
                 <span
                   aria-hidden
                   className="absolute -top-px left-4 bg-[color:var(--bg)] px-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint"
