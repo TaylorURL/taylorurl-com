@@ -1,11 +1,12 @@
 {
   "name": "taylorurl",
   "private": true,
-  "version": "5.2.74",
+  "version": "5.2.75",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "capture:portfolio": "node scripts/capture-portfolio.js",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,css}\"",
