@@ -44,6 +44,7 @@ const INCIDENT_STATE = {
 }
 
 const MONO_LABEL = 'font-mono text-[10px] uppercase tracking-[0.18em]'
+const OPEN_ISSUES_SHOWN = 5
 const TH = `${MONO_LABEL} text-paper-faint px-4 py-2.5 text-left font-medium`
 
 function formatClock(date) {
@@ -305,6 +306,7 @@ function Breakdown({ incidents, windowDays }) {
 export default function Status() {
   const { data, error, fetchedAt, loading } = useStatusFeed()
   const now = useNow(10_000)
+  const [showAllOpen, setShowAllOpen] = useState(false)
 
   const overall = data ? OVERALL[data.overall] || OVERALL.unknown : OVERALL.unknown
   const sites = data?.sites || []
@@ -314,6 +316,10 @@ export default function Status() {
     () => incidents.filter(i => i.status === 'resolved').slice(0, 15),
     [incidents]
   )
+  const visibleOpenIncidents = showAllOpen
+    ? openIncidents
+    : openIncidents.slice(0, OPEN_ISSUES_SHOWN)
+  const hiddenOpenCount = openIncidents.length - visibleOpenIncidents.length
   const upCount = sites.filter(s => s.status === 'operational').length
   const averageUptime = sites.length
     ? sites.reduce((sum, s) => sum + (s.uptime_30d ?? 100), 0) / sites.length
@@ -486,7 +492,7 @@ export default function Status() {
             </div>
           </Panel>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+          <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <Panel
               title="Open Issues"
               aside={loading || feedDown ? '' : `${openIncidents.length} open`}
@@ -514,7 +520,7 @@ export default function Status() {
                         </td>
                       </tr>
                     ) : openIncidents.length ? (
-                      openIncidents.map(incident => (
+                      visibleOpenIncidents.map(incident => (
                         <tr key={incident.id} className="border-hair-paper border-t align-top">
                           <td className="whitespace-nowrap px-4 py-3 font-mono text-[11px] text-paper-soft">
                             {formatWhen(incident.opened_at)}
@@ -555,6 +561,16 @@ export default function Status() {
                   </tbody>
                 </table>
               </div>
+              {(hiddenOpenCount > 0 || showAllOpen) && (
+                <button
+                  type="button"
+                  onClick={() => setShowAllOpen(open => !open)}
+                  aria-expanded={showAllOpen}
+                  className={`${MONO_LABEL} border-hair-paper w-full border-t px-4 py-2.5 text-left text-accent transition-colors duration-200 ease-out-soft hover:bg-[color:var(--paper-hair)] hover:text-[color:var(--accent-hi)]`}
+                >
+                  {showAllOpen ? 'Show Fewer' : `Show ${hiddenOpenCount} More`}
+                </button>
+              )}
             </Panel>
 
             <Panel title="Last 30 Days" aside="by site">
