@@ -2,6 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 const STATUS_FEED_PATH = '/api/status-feed'
 const POLL_MS = 30_000
+// A failed read is usually a restart or a blip a couple of seconds wide.
+// Waiting a full poll to discover that leaves the page reporting a problem it
+// no longer has, so a failure retries soon and backs off if the feed is
+// genuinely gone.
+const RETRY_MS = [3_000, 5_000, 10_000]
 
 /**
  * Live status feed for the status page. Polls the server-side proxy while the
@@ -14,6 +19,7 @@ export function useStatusFeed() {
   const [error, setError] = useState(null)
   const [fetchedAt, setFetchedAt] = useState(null)
   const timer = useRef(null)
+  const failures = useRef(0)
 
   const load = useCallback(async () => {
     try {
@@ -21,24 +27,31 @@ export function useStatusFeed() {
       if (!response.ok) throw new Error(`feed answered ${response.status}`)
       const payload = await response.json()
       if (!Array.isArray(payload.sites)) throw new Error('feed shape')
+      failures.current = 0
       setData(payload)
       setError(null)
       setFetchedAt(new Date())
+      return true
     } catch (cause) {
+      failures.current += 1
       setError(cause)
+      return false
     }
   }, [])
 
   useEffect(() => {
     let cancelled = false
     let first = true
-    const tick = () => {
+    const tick = async () => {
       if (cancelled) return
       // The first load always runs, even in a background tab, so the page never
       // sits on its loading shell; only the repeat polling waits for visibility.
-      if (first || document.visibilityState === 'visible') load()
+      let ok = true
+      if (first || document.visibilityState === 'visible') ok = await load()
       first = false
-      timer.current = window.setTimeout(tick, POLL_MS)
+      if (cancelled) return
+      const wait = ok ? POLL_MS : RETRY_MS[Math.min(failures.current - 1, RETRY_MS.length - 1)]
+      timer.current = window.setTimeout(tick, wait)
     }
     tick()
     const onVisible = () => {

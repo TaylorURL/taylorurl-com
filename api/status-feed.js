@@ -7,7 +7,11 @@
  * URL is read from the `STATUS_FEED_URL` environment variable set in Vercel.
  */
 
-const UPSTREAM = process.env.STATUS_FEED_URL
+// The monitor's public feed. `STATUS_FEED_URL` overrides it when the host
+// moves; without a default the function answers 503 on a deployment where the
+// variable was never set, which is a broken page rather than a missing option.
+const DEFAULT_UPSTREAM = 'https://sunday.tail1f78d7.ts.net/status.json'
+const UPSTREAM = process.env.STATUS_FEED_URL || DEFAULT_UPSTREAM
 const TIMEOUT_MS = 6000
 
 export default async function handler(_request, response) {
@@ -32,10 +36,7 @@ export default async function handler(_request, response) {
 
     const body = await upstream.json()
 
-    response.setHeader(
-      'Cache-Control',
-      'public, max-age=0, s-maxage=15, stale-while-revalidate=30'
-    )
+    response.setHeader('Cache-Control', 'public, max-age=0, s-maxage=15, stale-while-revalidate=30')
     response.status(200).json(body)
   } catch {
     response.status(502).json({ error: 'upstream unreachable' })
