@@ -168,7 +168,39 @@
       "publisher": { "@id": "https://taylorurl.com/#business" }
     }
     </script>
-</head>
+    <script>
+      (function () {
+        var endpoint = "https://sunday.tail1f78d7.ts.net/report";
+        var site = "TaylorURL";
+        var sent = 0;
+        function report(message, stack) {
+          if (sent >= 5) return;
+          sent += 1;
+          try {
+            var body = JSON.stringify({
+              site: site,
+              message: String(message || "Unknown error").slice(0, 1500),
+              stack: String(stack || "").slice(0, 4000),
+              url: location.href,
+              userAgent: navigator.userAgent
+            });
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(endpoint, body);
+            } else {
+              fetch(endpoint, { method: "POST", body: body, keepalive: true }).catch(function () {});
+            }
+          } catch (ignored) {}
+        }
+        window.addEventListener("error", function (event) {
+          report(event.message, event.error && event.error.stack);
+        });
+        window.addEventListener("unhandledrejection", function (event) {
+          var reason = event.reason;
+          report(reason && reason.message ? reason.message : reason, reason && reason.stack);
+        });
+      })();
+    </script>
+  </head>
 <body>
 <div id="root"></div>
 <script src="/src/main.jsx" type="module"></script>
