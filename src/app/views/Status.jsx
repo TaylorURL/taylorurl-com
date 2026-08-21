@@ -85,10 +85,11 @@ function useNow(intervalMs) {
   return now
 }
 
-function dayTone(uptime) {
-  // A day before this site came under watch has no figure; drawing it in the
-  // healthy colour would claim uptime nobody measured.
-  if (uptime === null || uptime === undefined) return 'bg-[color:var(--paper-hair)]'
+function dayTone(day) {
+  // A day before this site came under watch carries a figure nobody measured;
+  // drawing it in the healthy colour would claim uptime that was never seen.
+  if (day.measured === false) return 'bg-[color:var(--paper-hair)]'
+  const uptime = day.uptime
   if (uptime >= 99.9) return 'bg-accent'
   if (uptime >= 95) return 'bg-amber-500'
   return 'bg-red-500'
@@ -140,14 +141,14 @@ function UptimeStrip({ days }) {
         <span
           key={day.date}
           title={
-            day.uptime === null
+            day.measured === false
               ? `${formatDay(day.date)}: not watched yet`
-              : `${formatDay(day.date)}: ${day.uptime.toFixed(2)}%`
+              : `${formatDay(day.date)}: ${(day.uptime ?? 100).toFixed(2)}%`
           }
-          className={`inline-block w-[5px] flex-1 rounded-[1px] ${dayTone(day.uptime)}`}
+          className={`inline-block w-[5px] flex-1 rounded-[1px] ${dayTone(day)}`}
           style={{
-            height: day.uptime === null ? '20%' : `${Math.max(25, day.uptime)}%`,
-            opacity: day.uptime === null ? 0.6 : day.uptime >= 99.9 ? 0.85 : 1,
+            height: day.measured === false ? '20%' : `${Math.max(25, day.uptime ?? 100)}%`,
+            opacity: day.measured === false ? 0.6 : (day.uptime ?? 100) >= 99.9 ? 0.85 : 1,
           }}
         />
       ))}
