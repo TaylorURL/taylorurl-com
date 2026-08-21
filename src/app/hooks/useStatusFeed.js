@@ -31,9 +31,13 @@ export function useStatusFeed() {
 
   useEffect(() => {
     let cancelled = false
+    let first = true
     const tick = () => {
       if (cancelled) return
-      if (document.visibilityState === 'visible') load()
+      // The first load always runs, even in a background tab, so the page never
+      // sits on its loading shell; only the repeat polling waits for visibility.
+      if (first || document.visibilityState === 'visible') load()
+      first = false
       timer.current = window.setTimeout(tick, POLL_MS)
     }
     tick()
