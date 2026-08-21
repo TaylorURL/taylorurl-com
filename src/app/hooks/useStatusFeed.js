@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-export const STATUS_FEED_URL = 'https://sunday.tail1f78d7.ts.net/status.json'
+const STATUS_FEED_PATH = '/api/status-feed'
 const POLL_MS = 30_000
 
 /**
- * Live status feed for the status page. Polls the monitor's public feed while
- * the tab is visible and keeps the last good payload through a failed fetch,
- * so a blip in the feed never blanks a page that was already showing data.
- * Runs only in the browser: the prerender renders the loading shell.
+ * Live status feed for the status page. Polls the server-side proxy while the
+ * tab is visible and keeps the last good payload through a failed fetch, so a
+ * blip in the feed never blanks a page that was already showing data. Runs
+ * only in the browser: the prerender renders the loading shell.
  */
 export function useStatusFeed() {
   const [data, setData] = useState(null)
@@ -17,7 +17,7 @@ export function useStatusFeed() {
 
   const load = useCallback(async () => {
     try {
-      const response = await fetch(`${STATUS_FEED_URL}?t=${Date.now()}`, { cache: 'no-store' })
+      const response = await fetch(`${STATUS_FEED_PATH}?t=${Date.now()}`, { cache: 'no-store' })
       if (!response.ok) throw new Error(`feed answered ${response.status}`)
       const payload = await response.json()
       if (!Array.isArray(payload.sites)) throw new Error('feed shape')
