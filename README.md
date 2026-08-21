@@ -13,7 +13,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-5.2.74-2f6bff?style=for-the-badge" alt="Version 5.2.74" />
+  <img src="https://img.shields.io/badge/version-5.2.75-2f6bff?style=for-the-badge" alt="Version 5.2.75" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -73,6 +73,7 @@ No environment configuration is required to run the site locally — the newslet
 | :--- | :--- |
 | `npm run dev` | Start the Vite dev server. |
 | `npm run build` | Production build, then static prerender of every route. |
+| `npm run capture:portfolio` | Regenerate the portfolio preview images in `public/portfolio/`. |
 | `npm run lint` | Lint with ESLint. |
 | `npm run lint:fix` | Lint and auto-fix. |
 | `npm run format` | Format `src/**` with Prettier. |
@@ -102,6 +103,7 @@ taylorurl-com/
 ├── api/                       Vercel serverless functions (Trustpilot rating fetch)
 ├── onboarding/                Standalone HTML client-onboarding guides
 ├── public/                    Static assets — logo, portfolio shots, robots.txt
+├── scripts/                   Maintenance scripts (portfolio preview capture)
 ├── supabase/
 │   └── config.toml            Per-function runtime config for analytics + error-reporting edge functions
 ├── vite/                      Build plugins (prerender, sitemap) + shared route table
