@@ -86,9 +86,19 @@ function useNow(intervalMs) {
 }
 
 function dayTone(uptime) {
+  // A day before this site came under watch has no figure; drawing it in the
+  // healthy colour would claim uptime nobody measured.
+  if (uptime === null || uptime === undefined) return 'bg-[color:var(--paper-hair)]'
   if (uptime >= 99.9) return 'bg-accent'
   if (uptime >= 95) return 'bg-amber-500'
   return 'bg-red-500'
+}
+
+function measuredLabel(measuredSince, windowDays) {
+  if (!measuredSince) return `${windowDays}-day history`
+  const started = new Date(measuredSince)
+  const days = (Date.now() - started) / 86400000
+  return days >= windowDays ? `${windowDays}-day history` : `watched since ${formatDay(started)}`
 }
 
 function Panel({ title, aside, children, className = '' }) {
@@ -129,9 +139,16 @@ function UptimeStrip({ days }) {
       {days.map(day => (
         <span
           key={day.date}
-          title={`${formatDay(day.date)}: ${day.uptime.toFixed(2)}%`}
+          title={
+            day.uptime === null
+              ? `${formatDay(day.date)}: not watched yet`
+              : `${formatDay(day.date)}: ${day.uptime.toFixed(2)}%`
+          }
           className={`inline-block w-[5px] flex-1 rounded-[1px] ${dayTone(day.uptime)}`}
-          style={{ height: `${Math.max(25, day.uptime)}%`, opacity: day.uptime >= 99.9 ? 0.85 : 1 }}
+          style={{
+            height: day.uptime === null ? '20%' : `${Math.max(25, day.uptime)}%`,
+            opacity: day.uptime === null ? 0.6 : day.uptime >= 99.9 ? 0.85 : 1,
+          }}
         />
       ))}
     </div>
@@ -379,15 +396,15 @@ export default function Status() {
               tone={!feedDown && openIncidents.length ? 'text-amber-600' : 'text-ink-paper'}
             />
             <Tile
-              label="30-Day Uptime"
+              label="Uptime"
               value={averageUptime === null ? '–' : `${averageUptime.toFixed(2)}%`}
-              caption="average across all sites"
+              caption={`all sites · ${measuredLabel(data?.measured_since, windowDays)}`}
               loading={loading}
             />
             <Tile
-              label="Outages · 30 Days"
+              label="Outages"
               value={data ? String(data.outages_30d ?? 0) : '–'}
-              caption="sites that stopped answering"
+              caption={`stopped answering · ${measuredLabel(data?.measured_since, windowDays)}`}
               loading={loading}
               tone={data?.outages_30d ? 'text-red-500' : 'text-ink-paper'}
             />
@@ -395,7 +412,7 @@ export default function Status() {
 
           <Panel
             title="Sites"
-            aside={`${sites.length || '–'} monitored · 30-day history`}
+            aside={`${sites.length || '–'} monitored · ${measuredLabel(data?.measured_since, windowDays)}`}
             className="mt-4"
           >
             <div className="overflow-x-auto">
@@ -609,8 +626,9 @@ export default function Status() {
           </Panel>
 
           <p className={`${MONO_LABEL} text-paper-faint mt-6`}>
-            Checks run from outside the network every minute. Issue descriptions are written for
-            visitors, not engineers.
+            Checks run from outside the network every minute, and a site is listed once with every
+            domain it answers on. Each bar is a day: grey means the day fell before that site came
+            under watch. Issue descriptions are written for visitors, not engineers.
           </p>
         </div>
       </div>
