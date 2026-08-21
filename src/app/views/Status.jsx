@@ -1,19 +1,12 @@
-import { useMemo } from 'react'
-import { motion } from 'framer-motion'
-import {
-  AlertCircle,
-  AlertTriangle,
-  ArrowUpRight,
-  Mail,
-  Server,
-  ShieldCheck,
-  Wrench,
-} from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { AlertCircle, AlertTriangle, ArrowUpRight, Check, Radio, WifiOff } from 'lucide-react'
 import PageHero from '@components/PageHero'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount } from '@constants/animations'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { useScrollParallax } from '@hooks/useScrollParallax'
+import { useStatusFeed } from '@hooks/useStatusFeed'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import CountUp from '@reactbits/CountUp/CountUp'
 import DecryptedText from '@reactbits/DecryptedText/DecryptedText'
@@ -22,133 +15,111 @@ import { AccentGradient } from '@reactbits/kit'
 
 const EYEBROW_DECRYPT = { animateOn: 'view', sequential: true, speed: 40, maxIterations: 12 }
 
-const SERVICES = [
-  {
-    name: 'Main website hosting',
-    description: 'Where your website lives online',
-    group: 'Hosting',
-  },
-  {
-    name: 'Backup hosting',
-    description: 'A safety net that kicks in if anything goes sideways',
-    group: 'Hosting',
-  },
-  {
-    name: 'Fast global delivery',
-    description: 'Your site loads quickly from anywhere in the world',
-    group: 'Hosting',
-  },
-  {
-    name: 'Web address service',
-    description: 'Makes sure typing your address takes people to your site',
-    group: 'Hosting',
-  },
-  {
-    name: 'Padlock and encryption',
-    description: 'The padlock in the browser bar, kept up to date',
-    group: 'Security',
-  },
-  {
-    name: 'Attack protection',
-    description: 'Blocks bots and traffic floods before they reach your site',
-    group: 'Security',
-  },
-  {
-    name: 'Spam and hack shield',
-    description: 'Filters out junk traffic and common attacks',
-    group: 'Security',
-  },
-  {
-    name: 'Daily backups',
-    description: 'A fresh copy of your site, every day',
-    group: 'Maintenance',
-  },
-  {
-    name: 'Always-on watch',
-    description: 'I get a ping the second anything goes wrong',
-    group: 'Maintenance',
-  },
-  {
-    name: 'Speed checks',
-    description: 'Page load times tracked so the site stays quick',
-    group: 'Maintenance',
-  },
-  {
-    name: 'Email delivery',
-    description: 'Contact form messages reach your inbox',
-    group: 'Services',
-  },
-  {
-    name: 'Contact forms',
-    description: 'Form submissions handled and spam filtered',
-    group: 'Services',
-  },
-]
+const SITE_STATE = {
+  operational: { label: 'Up', dot: 'bg-accent', text: 'text-accent' },
+  degraded: { label: 'Issue', dot: 'bg-amber-500', text: 'text-amber-600', Icon: AlertTriangle },
+  outage: { label: 'Down', dot: 'bg-red-500', text: 'text-red-500', Icon: AlertCircle },
+}
 
-const GROUPS = [
-  {
-    key: 'Hosting',
-    icon: Server,
-    blurb: 'Where the site lives and how visitors get to it.',
-  },
-  {
-    key: 'Security',
-    icon: ShieldCheck,
-    blurb: 'The layers between your site and the rest of the internet.',
-  },
-  {
-    key: 'Maintenance',
-    icon: Wrench,
-    blurb: 'Backups, monitoring, and quiet care in the background.',
-  },
-  {
-    key: 'Services',
-    icon: Mail,
-    blurb: 'Forms, messages, and getting them into your inbox.',
-  },
-]
-
-const HISTORY_DAYS = 90
-
-const STATUS = {
+const OVERALL = {
   operational: {
-    label: 'Up',
+    eyebrow: '// All sites up',
+    title: 'All clear.',
+    body: 'Every site I look after is answering right now.',
     dot: 'bg-accent',
-    text: 'text-accent',
+    ping: 'bg-accent/60',
   },
   degraded: {
-    label: 'Slow',
+    eyebrow: '// Something needs attention',
+    title: 'Working on it.',
+    body: 'Every site is reachable, but at least one has an issue being worked. Details below.',
     dot: 'bg-amber-500',
-    text: 'text-amber-600',
-    Icon: AlertTriangle,
+    ping: 'bg-amber-500/60',
   },
-  down: {
-    label: 'Down',
+  outage: {
+    eyebrow: '// Outage in progress',
+    title: 'Something is down.',
+    body: 'At least one site is not answering. I already know, and the details are below.',
     dot: 'bg-red-500',
-    text: 'text-red-500',
-    Icon: AlertCircle,
+    ping: 'bg-red-500/60',
+  },
+  unknown: {
+    eyebrow: '// Checking',
+    title: 'Taking a look.',
+    body: 'Pulling the latest checks now.',
+    dot: 'bg-paper-soft',
+    ping: 'bg-paper-soft/40',
   },
 }
 
-const SERVICE_STATE = Object.fromEntries(SERVICES.map(service => [service.name, 'operational']))
+const INCIDENT_STATE = {
+  investigating: { label: 'Investigating', tone: 'text-amber-600', bar: 'bg-amber-500' },
+  identified: { label: 'Fix In Progress', tone: 'text-amber-600', bar: 'bg-amber-500' },
+  resolved: { label: 'Resolved', tone: 'text-accent', bar: 'bg-accent' },
+}
 
-function formatTime(date) {
+function formatClock(date) {
+  if (!date) return ''
   const hour24 = date.getHours()
   const hour = hour24 % 12 || 12
   const minute = date.getMinutes().toString().padStart(2, '0')
-  const ampm = hour24 >= 12 ? 'PM' : 'AM'
-  return `${hour}:${minute} ${ampm}`
+  return `${hour}:${minute} ${hour24 >= 12 ? 'PM' : 'AM'}`
 }
 
-function formatShortDate(date) {
+function formatDay(value) {
+  const date = value instanceof Date ? value : new Date(value)
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
-function LiveBand({ checkedAt, windowStart }) {
-  // Scroll-driven uptime column — drifts up against the static status copy as
-  // the band scrolls past, so the big "100.00%" feels like it's catching the
-  // user's eye instead of sitting flat with the rest of the card.
+function formatWhen(value) {
+  const date = new Date(value)
+  return `${formatDay(date)}, ${formatClock(date)}`
+}
+
+function relative(from, now) {
+  if (!from) return ''
+  const seconds = Math.max(0, Math.round((now - from) / 1000))
+  if (seconds < 10) return 'just now'
+  if (seconds < 60) return `${seconds}s ago`
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${minutes} min ago`
+  const hours = Math.round(minutes / 60)
+  if (hours < 48) return `${hours}h ago`
+  return `${Math.round(hours / 24)}d ago`
+}
+
+function useNow(intervalMs) {
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), intervalMs)
+    return () => window.clearInterval(id)
+  }, [intervalMs])
+  return now
+}
+
+function Eyebrow({ children, className = '' }) {
+  return (
+    <p
+      className={`mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent ${className}`}
+    >
+      <span className="h-px w-8 bg-accent" />
+      <DecryptedText text={children} {...EYEBROW_DECRYPT} />
+    </p>
+  )
+}
+
+function LiveBand({ data, error, fetchedAt, now }) {
+  // The uptime column drifts up against the static copy as the band scrolls
+  // past, so the big number feels like it's catching the eye rather than
+  // sitting flat with the rest of the card.
   const { ref, transform } = useScrollParallax({ range: [40, -40] })
+  const overall = data ? OVERALL[data.overall] || OVERALL.unknown : OVERALL.unknown
+  const averageUptime = useMemo(() => {
+    if (!data?.sites?.length) return null
+    const total = data.sites.reduce((sum, site) => sum + (site.uptime_30d ?? 100), 0)
+    return total / data.sites.length
+  }, [data])
+  const feedStale = error && data
 
   return (
     <motion.div
@@ -159,22 +130,48 @@ function LiveBand({ checkedAt, windowStart }) {
       <div className="flex flex-col gap-6 bg-paper p-8 sm:p-10">
         <div className="flex items-start gap-4">
           <span aria-hidden="true" className="relative mt-2 flex h-2.5 w-2.5 flex-shrink-0">
-            <span className="bg-accent/60 absolute inline-flex h-full w-full animate-ping rounded-full" />
-            <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent" />
+            <span
+              className={`absolute inline-flex h-full w-full animate-ping rounded-full ${overall.ping}`}
+            />
+            <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${overall.dot}`} />
           </span>
           <div>
             <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-              <DecryptedText text="// All sites up" {...EYEBROW_DECRYPT} />
+              <DecryptedText key={overall.eyebrow} text={overall.eyebrow} {...EYEBROW_DECRYPT} />
             </p>
             <p className="mt-3 text-[clamp(1.6rem,3vw,2.2rem)] font-semibold leading-[1.04] tracking-tightest text-ink-paper">
-              All clear.
+              {overall.title}
             </p>
             <p className="mt-3 max-w-md text-[15px] leading-relaxed text-paper-soft">
-              Every site I look after is up and running as of{' '}
-              <span className="font-mono text-[14px] font-semibold text-ink-paper">
-                {checkedAt}
-              </span>{' '}
-              today. Checked around the clock — I get a ping the second anything goes wrong.
+              {overall.body}{' '}
+              {fetchedAt && (
+                <>
+                  Last check{' '}
+                  <span className="font-mono text-[14px] font-semibold text-ink-paper">
+                    {formatClock(fetchedAt)}
+                  </span>
+                  , refreshed every minute around the clock.
+                </>
+              )}
+            </p>
+            <p
+              className={`mt-4 inline-flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.18em] ${
+                feedStale ? 'text-amber-600' : 'text-paper-faint'
+              }`}
+              aria-live="polite"
+            >
+              {feedStale ? (
+                <WifiOff className="h-3 w-3" strokeWidth={1.75} />
+              ) : (
+                <Radio className="h-3 w-3" strokeWidth={1.75} />
+              )}
+              {feedStale
+                ? `Feed unreachable, showing data from ${relative(fetchedAt, now)}`
+                : fetchedAt
+                  ? `Live · updated ${relative(fetchedAt, now)}`
+                  : error
+                    ? 'Feed unreachable, retrying'
+                    : 'Connecting'}
             </p>
           </div>
         </div>
@@ -185,35 +182,44 @@ function LiveBand({ checkedAt, windowStart }) {
         className="flex flex-col justify-center gap-3 bg-paper p-8 will-change-transform sm:p-10"
       >
         <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
-          <DecryptedText text="// Uptime · 90 days" {...EYEBROW_DECRYPT} />
+          <DecryptedText text="// Uptime · 30 days" {...EYEBROW_DECRYPT} />
         </p>
         <p className="font-mono text-[clamp(2.4rem,5vw,3.4rem)] font-semibold leading-none text-ink-paper">
-          <CountUp to={100} duration={2.2} />.00<span className="text-paper-faint">%</span>
+          {averageUptime === null ? (
+            <span className="inline-block h-[0.9em] w-[4.5ch] animate-pulse rounded-sm bg-paper-soft/15" />
+          ) : (
+            <>
+              <CountUp to={Math.floor(averageUptime)} duration={1.6} />.
+              {Math.round((averageUptime % 1) * 100)
+                .toString()
+                .padStart(2, '0')}
+              <span className="text-paper-faint">%</span>
+            </>
+          )}
         </p>
         <p className="text-paper-faint font-mono text-[10px] uppercase tracking-[0.22em]">
-          {windowStart} → today
+          across every site I watch
         </p>
       </motion.div>
     </motion.div>
   )
 }
 
-function ServiceRow({ service }) {
-  const state = SERVICE_STATE[service.name]
-  const cfg = STATUS[state]
+function SiteRow({ site }) {
+  const cfg = SITE_STATE[site.status] || SITE_STATE.operational
   return (
     <div className="flex items-center gap-4 bg-paper px-5 py-4 sm:gap-5 sm:px-6">
-      <span
-        aria-hidden="true"
-        className={`inline-flex h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
-      />
+      <span aria-hidden="true" className={`inline-flex h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-[14px] font-medium text-ink-paper">{service.name}</p>
-        <p className="truncate text-[12px] text-paper-soft">{service.description}</p>
+        <p className="truncate text-[14px] font-medium text-ink-paper">{site.name}</p>
+        <p className="truncate font-mono text-[11px] text-paper-soft">{site.domain}</p>
       </div>
+      <span className="text-paper-faint hidden font-mono text-[10px] uppercase tracking-[0.18em] sm:inline">
+        {site.uptime_30d?.toFixed(2)}% · 30d
+      </span>
       <span
         className={`flex-shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] ${cfg.text}`}
-        aria-label={`${service.name} is ${cfg.label.toLowerCase()}`}
+        aria-label={`${site.name} is ${cfg.label.toLowerCase()}`}
       >
         {cfg.label}
       </span>
@@ -221,93 +227,189 @@ function ServiceRow({ service }) {
   )
 }
 
-function GroupSection({ group, services, index }) {
-  const Icon = group.icon
+function SkeletonRows({ count }) {
   return (
-    <motion.section
-      {...fadeInUp}
-      transition={{ delay: 0.05 + index * 0.05 }}
-      aria-label={`${group.key} components`}
-    >
-      <div className="border-hair-paper mb-4 flex items-baseline gap-4 border-b pb-3">
-        <span className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
-          {String(index + 1).padStart(2, '0')}
-        </span>
-        <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
-        <h3 className="text-[18px] font-semibold tracking-tight text-ink-paper sm:text-[20px]">
-          {group.key}
-        </h3>
-        <span className="text-paper-faint ml-auto font-mono text-[10px] uppercase tracking-[0.22em]">
-          {String(services.length).padStart(2, '0')} comp
-        </span>
-      </div>
-      <p className="mb-4 max-w-2xl text-[14px] leading-relaxed text-paper-soft">{group.blurb}</p>
-      <SpotlightCard
-        className="border-hair-paper border"
-        spotlightColor="rgba(47,107,255,0.12)"
-      >
-        <div className="divide-hair-paper divide-y">
-          {services.map(service => (
-            <ServiceRow key={service.name} service={service} />
-          ))}
+    <div className="divide-hair-paper divide-y" aria-hidden="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="flex items-center gap-4 bg-paper px-5 py-4 sm:gap-5 sm:px-6">
+          <span className="inline-flex h-2 w-2 flex-shrink-0 animate-pulse rounded-full bg-paper-soft/20" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <span className="block h-3 w-40 animate-pulse rounded-sm bg-paper-soft/15" />
+            <span className="block h-2.5 w-28 animate-pulse rounded-sm bg-paper-soft/10" />
+          </div>
+          <span className="h-2.5 w-8 animate-pulse rounded-sm bg-paper-soft/15" />
         </div>
-      </SpotlightCard>
-    </motion.section>
+      ))}
+    </div>
+  )
+}
+
+function IncidentCard({ incident, now }) {
+  const cfg = INCIDENT_STATE[incident.status] || INCIDENT_STATE.investigating
+  return (
+    <motion.article
+      layout
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -6 }}
+      transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+      className="border-hair-paper relative overflow-hidden border bg-paper"
+    >
+      <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-[3px] ${cfg.bar}`} />
+      <div className="p-6 pl-7 sm:p-7 sm:pl-8">
+        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+          <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-paper-soft">
+            {incident.site}
+          </p>
+          <p className={`font-mono text-[10px] uppercase tracking-[0.18em] ${cfg.tone}`}>
+            {cfg.label}
+          </p>
+          <p className="text-paper-faint ml-auto font-mono text-[10px] uppercase tracking-[0.18em]">
+            {incident.status === 'resolved' && incident.resolved_at
+              ? `Resolved ${relative(new Date(incident.resolved_at), now)}`
+              : `Opened ${relative(new Date(incident.opened_at), now)}`}
+          </p>
+        </div>
+        <h3 className="mt-3 text-[18px] font-semibold tracking-tight text-ink-paper sm:text-[20px]">
+          {incident.title}
+        </h3>
+        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-paper-soft">
+          {incident.summary}
+        </p>
+        {incident.updates?.length > 1 && (
+          <ol className="border-hair-paper mt-5 space-y-3 border-t pt-4">
+            {incident.updates.map((update, i) => (
+              <li key={`${update.at}-${i}`} className="flex gap-4 text-[13px]">
+                <span className="text-paper-faint w-[7.5rem] flex-shrink-0 font-mono text-[10px] uppercase leading-5 tracking-[0.12em]">
+                  {formatWhen(update.at)}
+                </span>
+                <span className="leading-5 text-paper-soft">{update.text}</span>
+              </li>
+            ))}
+          </ol>
+        )}
+      </div>
+    </motion.article>
+  )
+}
+
+function SectionHeading({ number, eyebrow, title, children }) {
+  return (
+    <motion.div {...fadeInUp} className="mb-10">
+      <Eyebrow>{`// ${number} — ${eyebrow}`}</Eyebrow>
+      <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
+        {title}
+      </h2>
+      {children && (
+        <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-paper-soft">{children}</p>
+      )}
+    </motion.div>
   )
 }
 
 export default function Status() {
-  const { checkedAt, windowStart } = useMemo(() => {
-    const now = new Date()
-    const start = new Date(now)
-    start.setDate(start.getDate() - (HISTORY_DAYS - 1))
-    return {
-      checkedAt: formatTime(now),
-      windowStart: formatShortDate(start),
-    }
-  }, [])
+  const { data, error, fetchedAt, loading } = useStatusFeed()
+  const now = useNow(10_000)
+
+  const openIncidents = useMemo(
+    () => (data?.incidents || []).filter(incident => incident.status !== 'resolved'),
+    [data]
+  )
+  const resolvedIncidents = useMemo(
+    () => (data?.incidents || []).filter(incident => incident.status === 'resolved').slice(0, 12),
+    [data]
+  )
+  const windowStart = useMemo(() => {
+    const start = new Date()
+    start.setDate(start.getDate() - ((data?.window_days || 30) - 1))
+    return formatDay(start)
+  }, [data])
+  const outageCount = data?.outages_30d ?? 0
 
   return (
     <div>
       <Seo
         title="System Status"
-        description="Live status of the hosting, security, and care behind every TaylorURL client website."
+        description="Live status of every site TaylorURL hosts and maintains, with plain-English notes on anything being worked."
         path="/status"
       />
       <PageHero
         eyebrow="// 01 — Status"
-        title="A live look at every system."
-        description="Twelve things I watch around the clock. Green means up, amber means slow, red means down — so a glance tells you the whole story."
+        title="A live look at every site."
+        description="Each site I host and maintain is checked every minute, around the clock. Green means up, amber means an issue is being worked, red means down. When something goes wrong, it shows here in plain English."
       />
 
       <section className="relative overflow-hidden bg-paper py-20 sm:py-28">
         <div className="grid-blueprint-paper-fine absolute inset-0 opacity-40" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
-          <LiveBand checkedAt={checkedAt} windowStart={windowStart} />
+          <LiveBand data={data} error={error} fetchedAt={fetchedAt} now={now} />
 
-          <motion.div {...fadeInUp} transition={{ delay: 0.1 }} className="mb-12 mt-20">
-            <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
-              <span className="h-px w-8 bg-accent" />
-              <DecryptedText text="// 02 — What I watch" {...EYEBROW_DECRYPT} />
-            </p>
-            <h2 className="text-[clamp(1.8rem,3.4vw,2.6rem)] font-semibold leading-[1.05] tracking-tightest text-ink-paper">
-              What I&apos;m watching.
-            </h2>
-            <p className="mt-4 max-w-xl text-[15px] leading-relaxed text-paper-soft">
-              Four groups, twelve checks. Each row shows its own state — and the band up top changes
-              color the moment any one of them does.
-            </p>
-          </motion.div>
+          <div className="mt-20">
+            <SectionHeading number="02" eyebrow="Every site I watch" title="Site by site.">
+              Each row is a real site, checked from outside every minute. The uptime figure covers
+              the last 30 days.
+            </SectionHeading>
+            <SpotlightCard className="border-hair-paper border" spotlightColor="rgba(47,107,255,0.12)">
+              {loading ? (
+                <SkeletonRows count={8} />
+              ) : data?.sites?.length ? (
+                <div className="divide-hair-paper divide-y">
+                  {data.sites.map(site => (
+                    <SiteRow key={site.id} site={site} />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-paper px-6 py-10 text-center">
+                  <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-paper-soft">
+                    The status feed is not answering
+                  </p>
+                  <p className="mt-3 text-[14px] text-paper-soft">
+                    This page keeps trying on its own. If it stays blank, email me and I will check
+                    by hand.
+                  </p>
+                </div>
+              )}
+            </SpotlightCard>
+          </div>
 
-          <div className="space-y-14 sm:space-y-16">
-            {GROUPS.map((group, i) => (
-              <GroupSection
-                key={group.key}
-                group={group}
-                services={SERVICES.filter(service => service.group === group.key)}
-                index={i}
-              />
-            ))}
+          <div className="mt-20">
+            <SectionHeading number="03" eyebrow="What's being worked" title="Open right now.">
+              Anything a site reports gets looked at within minutes. Each card says what a visitor
+              might have noticed and what is happening about it.
+            </SectionHeading>
+            {loading ? (
+              <div className="border-hair-paper border">
+                <SkeletonRows count={2} />
+              </div>
+            ) : (
+              <AnimatePresence mode="popLayout" initial={false}>
+                {openIncidents.length ? (
+                  <div className="grid gap-4">
+                    {openIncidents.map(incident => (
+                      <IncidentCard key={incident.id} incident={incident} now={now} />
+                    ))}
+                  </div>
+                ) : (
+                  <motion.div
+                    key="empty"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="border-hair-paper flex items-center gap-4 border bg-paper px-6 py-7"
+                  >
+                    <span className="inline-flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                      <Check className="h-4 w-4" strokeWidth={2} />
+                    </span>
+                    <div>
+                      <p className="text-[15px] font-medium text-ink-paper">Nothing open.</p>
+                      <p className="mt-1 text-[13px] text-paper-soft">
+                        If a site runs into trouble, it appears here within a minute.
+                      </p>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            )}
           </div>
         </div>
       </section>
@@ -315,29 +417,42 @@ export default function Status() {
       <section className="border-hair relative overflow-hidden border-t bg-bg py-20 text-ink sm:py-28">
         <div className="grid-blueprint absolute inset-0 opacity-50" aria-hidden="true" />
         <div className="relative mx-auto w-full max-w-[1080px] px-6 sm:px-10 lg:px-16">
-          <motion.div
-            {...fadeInUp}
-            className="grid items-start gap-8 sm:grid-cols-[200px_1fr] sm:gap-14"
-          >
+          <motion.div {...fadeInUp} className="grid items-start gap-8 sm:grid-cols-[200px_1fr] sm:gap-14">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">
-                Last 90 days
-              </p>
+              <p className="font-mono text-[10px] uppercase tracking-[0.22em] text-accent">Last 30 days</p>
               <p className="mt-4 font-mono text-[clamp(2.6rem,4.6vw,3.6rem)] font-semibold tabular-nums leading-none text-ink">
-                0
+                {data ? outageCount : '–'}
               </p>
               <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
-                outages reported
+                {outageCount === 1 ? 'outage' : 'outages'} since {windowStart}
               </p>
             </div>
             <div>
               <h3 className="text-[clamp(1.6rem,3vw,2.2rem)] font-semibold tracking-tightest text-ink">
-                Clean stretch since {windowStart}.
+                {resolvedIncidents.length ? 'Fixed recently.' : `Clean stretch since ${windowStart}.`}
               </h3>
               <p className="mt-5 text-[15px] leading-relaxed text-ink-soft">
-                No outages and no slowdowns worth reporting. If something does break, this is where
-                you’ll see it first — and you’ll hear from me before it ever shows up here.
+                {resolvedIncidents.length
+                  ? 'Problems that were found, fixed, and checked again on the live site. Most never reach a visitor.'
+                  : 'Nothing has needed fixing in this window. When something does, it is listed here once it is checked and closed.'}
               </p>
+              {resolvedIncidents.length > 0 && (
+                <ol className="border-hair mt-8 divide-y divide-[color:var(--hair)] border-t">
+                  {resolvedIncidents.map(incident => (
+                    <li key={incident.id} className="flex flex-wrap items-baseline gap-x-5 gap-y-1 py-4">
+                      <span className="w-[5.5rem] flex-shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-faint">
+                        {formatDay(incident.resolved_at || incident.opened_at)}
+                      </span>
+                      <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
+                        {incident.site}
+                      </span>
+                      <span className="min-w-0 flex-1 text-[14px] text-ink-soft">
+                        {incident.summary}
+                      </span>
+                    </li>
+                  ))}
+                </ol>
+              )}
             </div>
           </motion.div>
         </div>
@@ -349,10 +464,7 @@ export default function Status() {
           className="bg-accent/12 pointer-events-none absolute right-0 top-0 h-72 w-72 -translate-y-1/3 translate-x-1/4 rounded-full blur-3xl"
           aria-hidden="true"
         />
-        <motion.div
-          {...fadeInUp}
-          className="relative mx-auto w-full max-w-[920px] px-6 text-center sm:px-10"
-        >
+        <motion.div {...fadeInUp} className="relative mx-auto w-full max-w-[920px] px-6 text-center sm:px-10">
           <p className="mb-6 inline-flex items-center gap-3 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
             <span className="h-px w-8 bg-accent" />
             <DecryptedText text="// Spot something off?" {...EYEBROW_DECRYPT} />
@@ -362,8 +474,8 @@ export default function Status() {
             Tell me — I&apos;ll <AccentGradient>look into it</AccentGradient>.
           </h2>
           <p className="mx-auto mt-6 max-w-xl text-[16px] leading-relaxed text-ink-soft">
-            If something on your site is acting up, send a quick message. I&apos;ll dig in and get
-            back to you.
+            If something on your site is acting up and it is not listed above, send a quick message.
+            I will dig in and get back to you.
           </p>
           <div className="mt-10 flex justify-center">
             <Magnet padding={70} magnetStrength={4}>
@@ -371,7 +483,7 @@ export default function Status() {
                 href={`mailto:${SUPPORT_EMAIL}`}
                 className="group inline-flex items-center gap-2.5 rounded-sm bg-accent px-7 py-4 font-mono text-[12px] font-semibold uppercase tracking-[0.18em] text-white transition duration-200 ease-out hover:bg-[color:var(--accent-hi)] active:scale-[0.98]"
               >
-                Get in touch
+                Get in Touch
                 <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
               </a>
             </Magnet>
