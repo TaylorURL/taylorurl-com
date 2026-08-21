@@ -428,7 +428,16 @@ export default function Status() {
                             </span>
                           </td>
                           <td className="px-4 py-2.5 font-mono text-[12px] text-paper-soft">
-                            {site.domain}
+                            {(site.domains?.length ? site.domains : [site.domain]).map(
+                              (domain, index) => (
+                                <span
+                                  key={domain}
+                                  className={index ? 'text-paper-faint block' : 'block'}
+                                >
+                                  {domain}
+                                </span>
+                              )
+                            )}
                           </td>
                           <td className="px-4 py-2.5">
                             <UptimeStrip days={site.days} />
