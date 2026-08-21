@@ -15,9 +15,10 @@
  * has run), the card swaps to a server-rendered screenshot from thum.io so the
  * row still shows the real site.
  *
- * Order is intentionally mixed across categories (SaaS → recreation → game →
- * industrial → personal brand → property → community) so the showcase reads
- * as a varied portfolio instead of a grouped list.
+ * Order is intentionally mixed across categories (SaaS → recreation →
+ * fintech → game → print → industrial → personal brand → dev studio →
+ * property → industrial services → community) so the showcase reads as a
+ * varied portfolio instead of a grouped list.
  *
  * Fields:
  * - `name`         Display name used as the row heading and preview alt text.
@@ -46,12 +47,28 @@ export const PORTFOLIO_PROJECTS = [
       'A modern site for a Baytown go-kart track. Hours, pricing, group bookings, and directions — laid out to turn people searching for fun nearby into walk-ins through the gate.',
   },
   {
+    name: 'Root & Rise',
+    url: 'https://rootriseholdings.com',
+    displayUrl: 'rootriseholdings.com',
+    tagline: 'Trading signals · Fintech platform',
+    description:
+      'A Smart Money Concepts signal-intelligence platform for gold, indices, and FX. Scripts read market structure around the clock and flag high-conviction setups — the trader always holds the trigger.',
+  },
+  {
     name: 'DomeBreak',
     url: 'https://domebreak.com',
     displayUrl: 'domebreak.com',
     tagline: 'Strategy game · Real-time web app',
     description:
       'A real-time missile defense and offense game played across a live world map. Built for fast, tactical rounds where every player can see the fight unfold globally as it happens.',
+  },
+  {
+    name: 'Impressiva Printing',
+    url: 'https://impressivaprinting.com',
+    displayUrl: 'impressivaprinting.com',
+    tagline: 'Custom print studio · Order portal',
+    description:
+      'A sharp storefront for a custom print studio — business cards to building-size banners. Customers request quotes, upload artwork, and track their orders in one place.',
   },
   {
     name: 'Dickinson Bayou Fleeting',
@@ -70,12 +87,28 @@ export const PORTFOLIO_PROJECTS = [
       'A clean brand site for a personal trainer. Services, pricing, and a clear booking path so first-time visitors actually end up on the schedule.',
   },
   {
+    name: 'Knight Plugins',
+    url: 'https://knightplugins.com',
+    displayUrl: 'knightplugins.com',
+    tagline: 'Game dev studio · Service site',
+    description:
+      'The home of a custom Minecraft plugin studio. Spigot, Paper, and Bukkit plugins built to spec, ready-made plugins on SpigotMC, and support from the original developer after launch.',
+  },
+  {
     name: 'Hollingshead Harbor',
     url: 'https://hollingsheadharbor.com',
     displayUrl: 'hollingsheadharbor.com',
     tagline: 'Property & community · Marketing site',
     description:
       'The official site for Hollingshead Harbor. A clear front door for customers — learn about the company, apply, and get in touch — all in one place.',
+  },
+  {
+    name: 'Compound Scale Services',
+    url: 'https://ccscaleservices.com',
+    displayUrl: 'ccscaleservices.com',
+    tagline: 'Industrial services · Brand site',
+    description:
+      'A brand site for a family-owned scale company in Huffman, Texas. Calibration, repair, and parts for industrial weighing equipment, laid out so customers can find their service and request a quote fast.',
   },
   {
     name: 'SETX Football',
