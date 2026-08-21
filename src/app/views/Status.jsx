@@ -161,67 +161,125 @@ function StatusChip({ status }) {
   )
 }
 
-function ActivityChart({ incidents, windowDays }) {
-  const { bars, max } = useMemo(() => {
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const buckets = Array.from({ length: windowDays }, (_, i) => {
-      const date = new Date(today)
-      date.setDate(today.getDate() - (windowDays - 1 - i))
-      return { date, opened: 0, resolved: 0 }
-    })
-    const firstDay = buckets[0].date.getTime()
+function median(values) {
+  if (!values.length) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const middle = Math.floor(sorted.length / 2)
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
+}
+
+function humanizeDuration(ms) {
+  const minutes = Math.round(ms / 60000)
+  if (minutes < 60) return `${Math.max(1, minutes)}m`
+  const hours = minutes / 60
+  if (hours < 24) return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)}h`
+  return `${Math.round(hours / 24)}d`
+}
+
+/**
+ * The 30-day breakdown beside the open-issue table. A bar per day reads as an
+ * empty box here — most days carry no issues at all, and the column is a third
+ * of the width — so the same window is shown as totals plus a ranked bar per
+ * site, which stays legible whether one site reported or nine did.
+ */
+function Breakdown({ incidents, windowDays }) {
+  const { rows, opened, fixed, stillOpen, typicalFix } = useMemo(() => {
+    const counts = new Map()
+    let openedCount = 0
+    let fixedCount = 0
+    let openCount = 0
+    const fixDurations = []
     for (const incident of incidents) {
-      const opened = new Date(incident.opened_at)
-      opened.setHours(0, 0, 0, 0)
-      const index = Math.round((opened.getTime() - firstDay) / 86400000)
-      if (index >= 0 && index < windowDays) buckets[index].opened += 1
-      if (incident.resolved_at) {
-        const resolved = new Date(incident.resolved_at)
-        resolved.setHours(0, 0, 0, 0)
-        const ri = Math.round((resolved.getTime() - firstDay) / 86400000)
-        if (ri >= 0 && ri < windowDays) buckets[ri].resolved += 1
+      openedCount += 1
+      const entry = counts.get(incident.site) || { site: incident.site, total: 0, open: 0 }
+      entry.total += 1
+      if (incident.status === 'resolved') {
+        fixedCount += 1
+        if (incident.resolved_at) {
+          fixDurations.push(new Date(incident.resolved_at) - new Date(incident.opened_at))
+        }
+      } else {
+        entry.open += 1
+        openCount += 1
       }
+      counts.set(incident.site, entry)
     }
-    const peak = Math.max(1, ...buckets.map(b => b.opened))
-    return { bars: buckets, max: peak }
-  }, [incidents, windowDays])
+    const ranked = [...counts.values()].sort(
+      (a, b) => b.total - a.total || a.site.localeCompare(b.site)
+    )
+    return {
+      rows: ranked,
+      opened: openedCount,
+      fixed: fixedCount,
+      stillOpen: openCount,
+      typicalFix: median(fixDurations),
+    }
+  }, [incidents])
+
+  const peak = Math.max(1, ...rows.map(row => row.total))
 
   return (
-    <div className="flex flex-1 flex-col px-4 pb-4 pt-3">
-      <div
-        className="flex h-32 items-end gap-[3px]"
-        role="img"
-        aria-label="Incidents opened per day over the last 30 days"
-      >
-        {bars.map(bar => (
-          <div
-            key={bar.date.toISOString()}
-            className="group relative flex h-full flex-1 flex-col justify-end"
-          >
-            <span
-              className="bg-accent/80 block w-full rounded-[1px] transition-[height] duration-300 ease-out-soft"
-              style={{ height: `${(bar.opened / max) * 100}%`, minHeight: bar.opened ? 3 : 1 }}
-            />
-            {bar.resolved > 0 && (
-              <span
-                className="absolute inset-x-0 bottom-0 block rounded-[1px] bg-accent"
-                style={{
-                  height: `${(Math.min(bar.resolved, bar.opened || bar.resolved) / max) * 100}%`,
-                  minHeight: 2,
-                }}
-              />
-            )}
-            <span className="pointer-events-none absolute -top-6 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-sm bg-ink-paper px-1.5 py-0.5 font-mono text-[9px] text-paper group-hover:block">
-              {formatDay(bar.date)} · {bar.opened} opened
-            </span>
+    <div className="flex flex-1 flex-col">
+      <dl className="border-hair-paper grid grid-cols-3 divide-x divide-[color:var(--paper-hair)] border-b">
+        {[
+          { label: 'Reported', value: opened },
+          { label: 'Fixed', value: fixed },
+          { label: 'Typical Fix', value: typicalFix === null ? '–' : humanizeDuration(typicalFix) },
+        ].map(stat => (
+          <div key={stat.label} className="px-4 py-3">
+            <dt className={`${MONO_LABEL} text-paper-faint`}>{stat.label}</dt>
+            <dd className="mt-1.5 font-mono text-[18px] font-semibold tabular-nums leading-none">
+              {stat.value}
+            </dd>
           </div>
         ))}
-      </div>
-      <div className={`${MONO_LABEL} text-paper-faint mt-2 flex justify-between`}>
-        <span>{formatDay(bars[0].date)}</span>
-        <span>today</span>
-      </div>
+      </dl>
+
+      {rows.length ? (
+        <ol className="flex-1 divide-y divide-[color:var(--paper-hair)]">
+          {rows.map(row => (
+            <li key={row.site} className="px-4 py-3">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="truncate text-[13px] font-medium">{row.site}</span>
+                <span className="font-mono text-[12px] tabular-nums text-paper-soft">
+                  {row.total}
+                </span>
+              </div>
+              <div
+                className="mt-2 flex h-1.5 overflow-hidden rounded-[1px] bg-[color:var(--paper-hair)]"
+                role="img"
+                aria-label={`${row.site}: ${row.total} reported, ${row.open} still open`}
+              >
+                <span
+                  className="block h-full bg-accent transition-[width] duration-500 ease-out-soft"
+                  style={{ width: `${((row.total - row.open) / peak) * 100}%` }}
+                />
+                <span
+                  className="block h-full bg-amber-500 transition-[width] duration-500 ease-out-soft"
+                  style={{ width: `${(row.open / peak) * 100}%` }}
+                />
+              </div>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="flex-1 px-4 py-8 text-center text-[13px] text-paper-soft">
+          No issues reported in the last {windowDays} days.
+        </p>
+      )}
+
+      <p
+        className={`${MONO_LABEL} border-hair-paper text-paper-faint flex items-center gap-4 border-t px-4 py-2.5`}
+      >
+        <span className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="inline-block h-2 w-2 rounded-[1px] bg-accent" />
+          Fixed
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span aria-hidden="true" className="inline-block h-2 w-2 rounded-[1px] bg-amber-500" />
+          Open ({stillOpen})
+        </span>
+      </p>
     </div>
   )
 }
@@ -401,8 +459,11 @@ export default function Status() {
             </div>
           </Panel>
 
-          <div className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
-            <Panel title="Open Issues" aside={loading || feedDown ? '' : `${openIncidents.length} open`}>
+          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+            <Panel
+              title="Open Issues"
+              aside={loading || feedDown ? '' : `${openIncidents.length} open`}
+            >
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] border-collapse text-[13px]">
                   <thead>
@@ -469,15 +530,15 @@ export default function Status() {
               </div>
             </Panel>
 
-            <Panel title="Activity" aside="issues opened per day">
+            <Panel title="Last 30 Days" aside="by site">
               {loading ? (
-                <div className="bg-paper-soft/5 h-40 animate-pulse" />
+                <div className="bg-paper-soft/5 h-64 animate-pulse" />
               ) : feedDown ? (
                 <p className="flex flex-1 items-center justify-center px-4 py-8 text-center text-[13px] text-paper-soft">
                   Waiting on the status feed to come back.
                 </p>
               ) : (
-                <ActivityChart incidents={incidents} windowDays={windowDays} />
+                <Breakdown incidents={incidents} windowDays={windowDays} />
               )}
             </Panel>
           </div>
