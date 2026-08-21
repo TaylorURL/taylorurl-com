@@ -173,6 +173,51 @@
         var endpoint = "https://sunday.tail1f78d7.ts.net/report";
         var site = "TaylorURL";
         var sent = 0;
+        // Fields worth naming in a report, read by name rather than enumerated.
+        // A DOM event, a DOMException and most host objects keep their data on
+        // the prototype, where JSON.stringify cannot see it.
+        var detailFields = ["name", "type", "message", "code", "status", "filename", "lineno", "colno"];
+        function detailOf(value) {
+          var parts = [];
+          for (var i = 0; i < detailFields.length; i += 1) {
+            var key = detailFields[i];
+            var field;
+            try { field = value[key]; } catch (ignored) { continue; }
+            if (field === null || field === undefined || field === "") continue;
+            if (typeof field === "object" || typeof field === "function") continue;
+            parts.push(key + ": " + String(field));
+          }
+          var target = value.target;
+          if (target && target.tagName) {
+            parts.push("target: " + String(target.tagName).toLowerCase() + " " + String(target.src || target.href || ""));
+          }
+          return parts.join(", ");
+        }
+        // Turns any thrown or logged value into text a person can act on. The
+        // type name is always kept, so the worst case is a report naming what
+        // arrived rather than one that says nothing at all.
+        function describe(value) {
+          if (value === null) return "null";
+          if (value === undefined) return "undefined";
+          if (typeof value === "function") return "function " + (value.name || "anonymous");
+          if (typeof value !== "object") return String(value);
+          if (value.stack) return String(value.stack);
+          // A rejection or error event wraps the failure one level down.
+          if (value.reason && value.reason !== value) return describe(value.reason);
+          if (value.error && value.error !== value) return describe(value.error);
+          var label = "Object";
+          try {
+            label = (value.constructor && value.constructor.name) || Object.prototype.toString.call(value).slice(8, -1);
+          } catch (ignored) {}
+          var detail = detailOf(value);
+          if (!detail) {
+            try {
+              var json = JSON.stringify(value);
+              if (json && json !== "{}" && json !== "[]") detail = json;
+            } catch (ignored) {}
+          }
+          return detail ? label + " (" + detail + ")" : label;
+        }
         function report(kind, message, stack) {
           if (sent >= 10) return;
           sent += 1;
@@ -197,25 +242,18 @@
           if (event.target && event.target !== window && event.target.tagName) {
             report("resource", "Failed to load " + event.target.tagName.toLowerCase() + ": " + (event.target.src || event.target.href || ""));
           } else {
-            report("uncaught", event.message, event.error && event.error.stack);
+            report("uncaught", event.message || describe(event.error), event.error && event.error.stack);
           }
         }, true);
         window.addEventListener("unhandledrejection", function (event) {
           var reason = event.reason;
-          report("rejection", reason && reason.message ? reason.message : reason, reason && reason.stack);
+          report("rejection", describe(reason), reason && reason.stack);
         });
         var consoleError = console.error;
         console.error = function () {
           var parts = [];
           for (var i = 0; i < arguments.length; i += 1) {
-            var piece = arguments[i];
-            if (piece && piece.stack) {
-              parts.push(piece.stack);
-            } else if (typeof piece === "object") {
-              try { parts.push(JSON.stringify(piece)); } catch (ignored) { parts.push(String(piece)); }
-            } else {
-              parts.push(String(piece));
-            }
+            parts.push(describe(arguments[i]));
           }
           report("console", parts.join(" "));
           return consoleError.apply(console, arguments);
