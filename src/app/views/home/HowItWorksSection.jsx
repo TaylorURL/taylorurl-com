@@ -27,7 +27,7 @@ export default function HowItWorksSection() {
             <h2 className="text-[clamp(2.2rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-tightest text-ink-paper">
               How it works
               <br />
-              <AccentGradient>in three steps.</AccentGradient>
+              <AccentGradient on="paper">in three steps.</AccentGradient>
             </h2>
           </div>
           <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">

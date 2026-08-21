@@ -58,6 +58,19 @@ export default function PageHero({ title, description, eyebrow }) {
         style={{ transform: contentTransform, opacity }}
         className="relative mx-auto w-full max-w-[1280px] px-6 will-change-transform sm:px-10 lg:px-16"
       >
+        {/* Sheet title block — the same drafting annotation the homepage map
+            carries, so every page reads as a sheet from one drawing set. */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.35 }}
+          aria-hidden="true"
+          className="pointer-events-none absolute right-6 top-0 hidden text-right font-mono text-[10px] uppercase leading-[1.9] tracking-[0.22em] text-ink-faint sm:right-10 md:block lg:right-16"
+        >
+          <p>29.7355° N · 94.9774° W</p>
+          <p>TaylorURL LLC · Baytown, TX</p>
+        </motion.div>
+
         <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -81,7 +94,13 @@ export default function PageHero({ title, description, eyebrow }) {
           className="max-w-3xl text-[clamp(2.4rem,6.4vw,5rem)] font-semibold leading-[0.98] tracking-tightest text-ink"
         >
           {typeof title === 'string' ? (
-            <BlurText text={title} delay={90} animateBy="words" direction="top" stepDuration={0.4} />
+            <BlurText
+              text={title}
+              delay={90}
+              animateBy="words"
+              direction="top"
+              stepDuration={0.4}
+            />
           ) : (
             title
           )}

@@ -58,7 +58,12 @@ export default function NotFound() {
         className="pointer-events-none absolute inset-0 opacity-50 [mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
         aria-hidden="true"
       >
-        <LazyAurora colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']} amplitude={1.2} blend={0.6} speed={0.7} />
+        <LazyAurora
+          colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']}
+          amplitude={1.2}
+          blend={0.6}
+          speed={0.7}
+        />
       </div>
       <motion.div
         style={{ transform: gridTransform }}
@@ -141,10 +146,20 @@ export default function NotFound() {
           style={{ transform: panelTransform }}
           className="relative w-full max-w-[320px] justify-self-center will-change-transform lg:justify-self-end"
         >
-          <div className="border-hair border p-5">
+          <div className="border-hair relative border p-5">
+            <span
+              aria-hidden="true"
+              className="corner-ticks pointer-events-none absolute inset-0 text-ink-faint"
+            />
             <div className="mb-4 flex items-baseline justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               <span>
-                <DecryptedText text="// Bug catcher" animateOn="view" sequential speed={38} maxIterations={12} />
+                <DecryptedText
+                  text="// Bug catcher"
+                  animateOn="view"
+                  sequential
+                  speed={38}
+                  maxIterations={12}
+                />
               </span>
               <span className="text-accent">
                 Caught ·{' '}

@@ -97,6 +97,10 @@ export default function DataSection() {
             transition={{ delay: 0.08 }}
             className="relative bg-bg p-6 sm:p-8"
           >
+            <span
+              aria-hidden="true"
+              className="corner-ticks pointer-events-none absolute inset-0 text-ink-faint"
+            />
             <div className="mb-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em] text-ink-faint">
               <span>12-mo revenue · indexed to 100</span>
               <div className="flex gap-5">

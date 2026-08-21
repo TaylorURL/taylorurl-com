@@ -41,7 +41,12 @@ export default function CtaBanner({
           className="pointer-events-none absolute inset-x-0 top-0 h-[340px] opacity-40 [mask-image:linear-gradient(to_bottom,black,transparent)]"
           aria-hidden="true"
         >
-          <LazyAurora colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']} amplitude={1} blend={0.6} speed={0.6} />
+          <LazyAurora
+            colorStops={['#1a4ed8', '#4f86ff', '#2f6bff']}
+            amplitude={1}
+            blend={0.6}
+            speed={0.6}
+          />
         </div>
       )}
       <div
@@ -76,7 +81,7 @@ export default function CtaBanner({
               {accentText && (
                 <>
                   {' '}
-                  <AccentGradient>{accentText}</AccentGradient>
+                  <AccentGradient on={isDark ? 'dark' : 'paper'}>{accentText}</AccentGradient>
                 </>
               )}
             </h2>

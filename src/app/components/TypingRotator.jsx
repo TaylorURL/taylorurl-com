@@ -34,7 +34,9 @@ export default function TypingRotator() {
       <span className="sr-only">{WORDS.join(', ')}</span>
       <span aria-hidden="true" className="relative inline-grid">
         <span className="invisible col-start-1 row-start-1 whitespace-nowrap">{LONGEST_WORD}</span>
-        <AnimatePresence mode="wait">
+        {/* Crossfade in one grid cell — mode="wait" left the arrow with no word
+            for a beat between every rotation. */}
+        <AnimatePresence initial={false}>
           <motion.span
             key={WORDS[index]}
             initial={{ opacity: 0, y: 14 }}

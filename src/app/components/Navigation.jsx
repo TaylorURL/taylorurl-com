@@ -126,7 +126,14 @@ export default function Navigation() {
                           : linkBaseLight
                     }`}
                   >
-                    <span className="mr-1.5 text-accent">{active ? '●' : ''}</span>
+                    {/* Dot always occupies its slot so items keep one width and
+                        the centered row doesn't reshuffle when the route changes. */}
+                    <span
+                      aria-hidden="true"
+                      className={`mr-1.5 text-accent transition-opacity duration-200 ${active ? 'opacity-100' : 'opacity-0'}`}
+                    >
+                      ●
+                    </span>
                     {link.label}
                   </Link>
                 </li>
