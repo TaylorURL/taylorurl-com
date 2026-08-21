@@ -625,12 +625,6 @@ export default function Status() {
               </table>
             </div>
           </Panel>
-
-          <p className={`${MONO_LABEL} text-paper-faint mt-6`}>
-            Checks run from outside the network every minute, and a site is listed once with every
-            domain it answers on. Each bar is a day: grey means the day fell before that site came
-            under watch. Issue descriptions are written for visitors, not engineers.
-          </p>
         </div>
       </div>
     </div>
