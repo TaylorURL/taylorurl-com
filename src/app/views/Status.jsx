@@ -244,6 +244,7 @@ export default function Status() {
     : null
   const windowDays = data?.window_days || 30
   const feedStale = error && data
+  const feedDown = error && !data
 
   return (
     <div className="bg-paper text-ink-paper">
@@ -307,17 +308,17 @@ export default function Status() {
           >
             <Tile
               label="Sites Up"
-              value={`${upCount}/${sites.length}`}
+              value={feedDown ? '–' : `${upCount}/${sites.length}`}
               caption="answering right now"
               loading={loading}
-              tone={upCount === sites.length ? 'text-ink-paper' : 'text-amber-600'}
+              tone={feedDown || upCount === sites.length ? 'text-ink-paper' : 'text-amber-600'}
             />
             <Tile
               label="Open Issues"
-              value={String(openIncidents.length)}
+              value={feedDown ? '–' : String(openIncidents.length)}
               caption={openIncidents.length === 1 ? 'being worked' : 'being worked'}
               loading={loading}
-              tone={openIncidents.length ? 'text-amber-600' : 'text-ink-paper'}
+              tone={!feedDown && openIncidents.length ? 'text-amber-600' : 'text-ink-paper'}
             />
             <Tile
               label="30-Day Uptime"
@@ -401,7 +402,7 @@ export default function Status() {
           </Panel>
 
           <div className="mt-4 grid gap-4 lg:grid-cols-[2fr_1fr]">
-            <Panel title="Open Issues" aside={loading ? '' : `${openIncidents.length} open`}>
+            <Panel title="Open Issues" aside={loading || feedDown ? '' : `${openIncidents.length} open`}>
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[640px] border-collapse text-[13px]">
                   <thead>
@@ -415,6 +416,15 @@ export default function Status() {
                   <tbody>
                     {loading ? (
                       <SkeletonRows cols={4} rows={3} />
+                    ) : feedDown ? (
+                      <tr className="border-hair-paper border-t">
+                        <td
+                          colSpan={4}
+                          className="px-4 py-8 text-center text-[13px] text-paper-soft"
+                        >
+                          Waiting on the status feed to come back.
+                        </td>
+                      </tr>
                     ) : openIncidents.length ? (
                       openIncidents.map(incident => (
                         <tr key={incident.id} className="border-hair-paper border-t align-top">
@@ -462,6 +472,10 @@ export default function Status() {
             <Panel title="Activity" aside="issues opened per day">
               {loading ? (
                 <div className="bg-paper-soft/5 h-40 animate-pulse" />
+              ) : feedDown ? (
+                <p className="flex flex-1 items-center justify-center px-4 py-8 text-center text-[13px] text-paper-soft">
+                  Waiting on the status feed to come back.
+                </p>
               ) : (
                 <ActivityChart incidents={incidents} windowDays={windowDays} />
               )}
@@ -470,7 +484,7 @@ export default function Status() {
 
           <Panel
             title="Recently Fixed"
-            aside={loading ? '' : `last ${windowDays} days`}
+            aside={loading || feedDown ? '' : `last ${windowDays} days`}
             className="mt-4"
           >
             <div className="overflow-x-auto">
@@ -486,6 +500,12 @@ export default function Status() {
                 <tbody>
                   {loading ? (
                     <SkeletonRows cols={4} rows={4} />
+                  ) : feedDown ? (
+                    <tr className="border-hair-paper border-t">
+                      <td colSpan={4} className="px-4 py-8 text-center text-[13px] text-paper-soft">
+                        Waiting on the status feed to come back.
+                      </td>
+                    </tr>
                   ) : resolvedIncidents.length ? (
                     resolvedIncidents.map(incident => (
                       <tr key={incident.id} className="border-hair-paper border-t align-top">
