@@ -320,7 +320,9 @@ export default function Status() {
     ? openIncidents
     : openIncidents.slice(0, OPEN_ISSUES_SHOWN)
   const hiddenOpenCount = openIncidents.length - visibleOpenIncidents.length
-  const upCount = sites.filter(s => s.status === 'operational').length
+  // A site with an open issue is still answering; only one that stopped
+  // responding is missing from this count.
+  const upCount = sites.filter(s => s.status !== 'outage').length
   const averageUptime = sites.length
     ? sites.reduce((sum, s) => sum + (s.uptime_30d ?? 100), 0) / sites.length
     : null
@@ -393,7 +395,7 @@ export default function Status() {
               value={feedDown ? '–' : `${upCount}/${sites.length}`}
               caption="answering right now"
               loading={loading}
-              tone={feedDown || upCount === sites.length ? 'text-ink-paper' : 'text-amber-600'}
+              tone={feedDown || upCount === sites.length ? 'text-ink-paper' : 'text-red-500'}
             />
             <Tile
               label="Open Issues"
