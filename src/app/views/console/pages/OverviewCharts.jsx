@@ -10,7 +10,7 @@ import {
 } from 'recharts'
 import { compactCount, fullCount } from '../../analytics/lib/format'
 import { TooltipCard } from '../../analytics/ChartTooltip'
-import { AXIS, CHART_HEIGHT, CHART_INSET, frame, GRID } from '../../analytics/chartKit'
+import { ANIMATE, AXIS, CHART_HEIGHT, CHART_INSET, frame, GRID } from '../../analytics/chartKit'
 
 /**
  * The one chart the landing section draws that no other section needs: the
@@ -65,7 +65,7 @@ export function WeekdayChart({ days, fill }) {
               ) : null
             }
           />
-          <Bar dataKey="pageviews" radius={[1, 1, 0, 0]} isAnimationActive={false}>
+          <Bar dataKey="pageviews" radius={[1, 1, 0, 0]} isAnimationActive={ANIMATE}>
             {days.map(day => (
               <Cell
                 key={day.name}

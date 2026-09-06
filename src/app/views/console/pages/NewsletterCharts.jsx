@@ -1,7 +1,16 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fullCount, percent } from '../../analytics/lib/format'
 import { TooltipCard } from '../../analytics/ChartTooltip'
-import { AXIS, CHART_HEIGHT, CHART_INSET, fitName, frame, GRID } from '../../analytics/chartKit'
+import {
+  ANIMATE,
+  AXIS,
+  BAR_SIZE,
+  CHART_HEIGHT,
+  CHART_INSET,
+  fitName,
+  frame,
+  GRID,
+} from '../../analytics/chartKit'
 
 /**
  * The one chart the newsletter draws for itself: what each issue did once it
@@ -94,7 +103,8 @@ export function IssueReachChart({ rows, series, fill, height = CHART_HEIGHT.traf
               name={one.label}
               fill={one.color}
               radius={[0, 1, 1, 0]}
-              barSize={8}
+              barSize={BAR_SIZE}
+              isAnimationActive={ANIMATE}
             />
           ))}
         </BarChart>

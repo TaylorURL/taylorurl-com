@@ -1,7 +1,7 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { fullCount } from '../../analytics/lib/format'
 import { TooltipCard } from '../../analytics/ChartTooltip'
-import { CHART_HEIGHT, frame } from '../../analytics/chartKit'
+import { ANIMATE, CHART_HEIGHT, frame } from '../../analytics/chartKit'
 
 /**
  * The chart the Subscribers section draws for itself.
@@ -46,7 +46,7 @@ export function StatusDonut({ rows, total, fill, height = CHART_HEIGHT.traffic }
             paddingAngle={1.5}
             stroke="var(--paper)"
             strokeWidth={1.5}
-            isAnimationActive={false}
+            isAnimationActive={ANIMATE}
           >
             {drawn.map(row => (
               <Cell key={row.name} fill={row.color} />

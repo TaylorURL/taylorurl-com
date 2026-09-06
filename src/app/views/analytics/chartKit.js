@@ -28,6 +28,27 @@ export const AXIS = {
 
 export const GRID = 'var(--paper-hairline)'
 
+/**
+ * Whether a chart animates its series in. It does not.
+ *
+ * Every section of the console re-reads its figures - on a timer, on a scope
+ * change, or after an edit made in the card beside the chart - and a chart
+ * that grows from nothing on each read is a chart that is never still long
+ * enough to be read. Half of them already said so with a literal of their own,
+ * which left the other half sliding on every poll for no reason anybody had
+ * decided. This is that decision, held once.
+ */
+export const ANIMATE = false
+
+/**
+ * The thickness of a ranked bar.
+ *
+ * A row on Sources, a row on Sites and a row on the newsletter are the same
+ * kind of row - one name, one length - and three weights across three tabs
+ * read as three different charts rather than as one console.
+ */
+export const BAR_SIZE = 11
+
 // Ordered so the first categories - the ones a breakdown is usually about -
 // are the accent, and the tail stays legible without competing with it. The
 // second series is the accent's own hover step, which is a slice nobody can

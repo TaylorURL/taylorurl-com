@@ -1,6 +1,15 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { TooltipCard } from '../../analytics/ChartTooltip'
-import { AXIS, CHART_HEIGHT, CHART_INSET, fitName, frame, GRID } from '../../analytics/chartKit'
+import {
+  ANIMATE,
+  AXIS,
+  BAR_SIZE,
+  CHART_HEIGHT,
+  CHART_INSET,
+  fitName,
+  frame,
+  GRID,
+} from '../../analytics/chartKit'
 
 /**
  * The chart the Sites section draws: one figure across every site, ranked.
@@ -79,8 +88,8 @@ export function SiteBars({
             dataKey={dataKey}
             fill="var(--accent)"
             radius={[0, 1, 1, 0]}
-            barSize={11}
-            isAnimationActive={false}
+            barSize={BAR_SIZE}
+            isAnimationActive={ANIMATE}
           />
         </BarChart>
       </ResponsiveContainer>
