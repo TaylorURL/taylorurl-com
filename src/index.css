@@ -885,9 +885,17 @@
        So both steps take the darker cut that clears 4.5, and the ramp keeps
        the shape the dark one has: 9.96, 6.90, 5.70, 4.63 on the card. Ghost
        stays where it is - three borders and the breadcrumb's separator, none
-       of which is text somebody reads. */
+       of which is text somebody reads.
+
+       The faint step is cut against the rail rather than the card, because the
+       rail is the lower of the two grounds it sits on and the card was only
+       ever the right one to measure while the two were the same white. Once the
+       rail dropped a step to let the open section lift off it, the same ink was
+       4.63 on a card and 4.36 on the rail - and the group headings, the locked
+       rows and the width control are all on the rail. 4.56 there, 4.86 on the
+       card. */
     --paper-ink-mute: #5d677a;
-    --paper-ink-faint: #6c7587;
+    --paper-ink-faint: #697281;
     --paper-ink-ghost: #a3acba;
     --paper-hairline: rgba(60, 66, 87, 0.08);
     --paper-hairline-strong: rgba(60, 66, 87, 0.16);
@@ -972,8 +980,18 @@
     --console-bar-h: 3.5rem;
     --console-gap: 1rem;
     --console-pad: 1rem;
-    --console-rail-bg: #ffffff;
-    --console-bar-bg: #ffffff;
+    /* The chrome sits a step under the surfaces carried on it: rail and bar on
+       one ground, cards and the open section lifted off it.
+
+       That step is what makes the open section a raised card rather than a
+       tinted row. A white row on a white rail is not raised, it is outlined,
+       and the ring ends up doing work the ground should be doing. The dark
+       setting has had the step all along, which is why the open row read there
+       and not here - and why the bar is in this rule too, since a white bar
+       above a recessed rail put a seam down the console's own corner that dark
+       never had. */
+    --console-rail-bg: var(--paper);
+    --console-bar-bg: var(--paper);
     --console-card-bg: #ffffff;
     /* The lift under a panel that floats over the page rather than sitting in
        it. Deeper on the dark setting, where a shadow has less ground to darken

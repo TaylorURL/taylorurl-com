@@ -129,20 +129,24 @@ function measuredLabel(measuredSince, windowDays) {
 }
 
 /**
- * The span the strip actually covers: the longest run of measured days any site
- * has, never the nominal window.
+ * The span the strip covers: the whole window, however much of it is measured.
  *
- * A window of thirty against a week of watching draws twenty-three empty slots
- * on every row and squeezes the real figures into the last fifth of the column.
- * Trimming to the longest real run keeps every row on the same dates, so a site
- * that came under watch later still reads as later rather than as a gap.
+ * It used to trim to the longest real run, because a window of thirty against
+ * a fortnight of watching drew sixteen empty slots on every row and squeezed
+ * the real figures into the last half of a column a quarter of the row wide.
+ * That was true of the column and is not true of the strip, which now has the
+ * whole row: thirty marks across it leave the measured ones plenty, and the
+ * pale ones are a reading rather than padding - "this is a month, and we have
+ * been watching for a fortnight of it" is the honest answer, and trimming was
+ * quietly giving a different one by relabelling a fortnight as the window.
+ *
+ * It also kept the mark width moving. The strip fills the row, so the fewer
+ * days it draws the wider each one gets, and a board watched for a week drew a
+ * row of slabs while the same board a month later drew a strip. Holding the
+ * count at the window holds the drawing still.
  */
-function measuredSpan(sites, windowDays) {
-  const longest = sites.reduce(
-    (most, site) => Math.max(most, (site.days || []).filter(d => d.measured !== false).length),
-    0
-  )
-  return Math.min(windowDays, Math.max(1, longest))
+function windowSpan(windowDays) {
+  return Math.max(1, windowDays)
 }
 
 /**
@@ -165,12 +169,31 @@ function measuredSpan(sites, windowDays) {
  * it is the widest thing on the board, which is right, because it is the only
  * part of a row that says anything about a day that is not today.
  *
- * A day is therefore a share of the width rather than a fixed measure, and the
- * gap is what stays constant. Thirty days draw thirty wide marks and ninety
- * draw ninety narrow ones, which is the same object at two windows in the way
- * that matters: one mark per day, edge to edge, however many days there are.
+ * A day is a share of the width rather than a fixed measure, so the strip
+ * fills the row at any window. What holds the drawing together across windows
+ * is not the mark's width but its proportion to the air beside it: a mark a
+ * little over twice the gap, which is what separates a row of marks from both
+ * a solid bar and a row of tiles. A fixed gap cannot do that - two pixels
+ * against a mark of twenty is a bar, and against a mark of five is a dotted
+ * line - so the gap is derived from the count instead and the ratio is what
+ * stays put.
  */
-const PILL_GAP = 2
+// A mark against the air after it. Measured off the reference this was built
+// from, where a five-unit mark sits on a seven-and-a-third pitch.
+const MARK_TO_GAP = 2.14
+
+/**
+ * The gap, as a percentage of the strip, that leaves `count` marks sitting at
+ * `MARK_TO_GAP` times their own spacing.
+ *
+ * From count*mark + (count-1)*gap = width, with mark = ratio*gap. A percentage
+ * rather than a pixel figure because the row's width is not known here and
+ * changes with the window anyway; flex resolves it against the strip's own box.
+ */
+function gapPercent(count) {
+  if (count < 2) return 0
+  return 100 / (count * MARK_TO_GAP + count - 1)
+}
 
 function UptimeStrip({ days, span, className = '' }) {
   if (!days?.length) return null
@@ -178,7 +201,7 @@ function UptimeStrip({ days, span, className = '' }) {
   return (
     <div
       className={`flex h-4 items-stretch ${className}`}
-      style={{ gap: `${PILL_GAP}px` }}
+      style={{ gap: `${gapPercent(shown.length)}%` }}
       aria-hidden="true"
     >
       {shown.map(day => (
@@ -400,9 +423,7 @@ export function StatusBoard({ feed, scope }) {
     ? sites.reduce((sum, s) => sum + (s.uptime_30d ?? 100), 0) / sites.length
     : null
   const windowDays = data?.window_days || 30
-  // Before any row has landed there is no run to measure, and the column head
-  // names the window rather than a span of one day.
-  const span = sites.length ? measuredSpan(sites, windowDays) : windowDays
+  const span = windowSpan(windowDays)
   const feedDown = error && !data
   const state = watched ? SITE_STATE[watched.status] || SITE_STATE.operational : null
   // A site the console tracks and the monitor does not is not a site that is
