@@ -40,15 +40,29 @@ const ENDPOINT = '/api/start-lead'
  * every screen the visitor reaches and again as the tab closes, and a
  * conversion counted once per screen would put five leads against one person.
  *
+ * The payment page reports through here too. It asks three questions rather
+ * than five screens' worth, and a build sold across a table is still a lead
+ * until the card goes through, so the address and the two answers beside it are
+ * written down the same way and land in the same list. What tells the two
+ * apart afterwards is the path each report carries, which is read off the
+ * document rather than passed in.
+ *
+ * What it does not do is count. The conversion belongs to the step the ads
+ * point at, and the payment page is an address handed to somebody a
+ * conversation already sold - so a lead reported from it would be a lead the
+ * property counts and no campaign produced, which is the figure the spending
+ * decisions are made on.
+ *
  * @param {{email: string, trade?: string|null, step?: number,
- *   brief?: Array<{label: string, value: string}>|null}} lead
+ *   brief?: Array<{label: string, value: string}>|null,
+ *   counted?: boolean}} lead
  * @returns {void}
  */
-export function recordStart({ email, trade = null, step = 0, brief = null }) {
+export function recordStart({ email, trade = null, step = 0, brief = null, counted = true }) {
   if (typeof fetch !== 'function') return
 
   const campaign = campaignHeld()
-  if (claimLead('start', email)) {
+  if (counted && claimLead('start', email)) {
     recordLead('start', { held: campaign, person: { email: email.trim() } })
   }
 

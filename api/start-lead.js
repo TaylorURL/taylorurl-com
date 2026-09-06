@@ -1,12 +1,19 @@
 /**
- * Records the address a visitor leaves on the first step of the configurator,
- * and puts a new one in front of a person.
+ * Records the address a visitor leaves on the way to a build, and puts a new
+ * one in front of a person.
  *
  * The step is a gate: a trade and a working address open the four screens
  * behind them. Everything the visitor picks after that was held in their own
  * browser and nowhere else, so the site's warmest visitor - somebody who chose
  * a trade, liked four designs, read the price and then closed the tab - was
  * the one it could say least about. This is the endpoint that changes that.
+ *
+ * The payment page reports here too. It asks three questions rather than five
+ * screens' worth and is handed to somebody who has already agreed to the build,
+ * but a person who types a name, an address and a number and then meets a card
+ * they do not use is a lead by every reading that matters - and until this took
+ * both, that person left no trace at all. What tells the two pages apart in the
+ * row afterwards is the path each report carries.
  *
  * It is posted at as the address is answered, again as the visitor moves
  * through the steps, and again when what they picked changes, so it is written
@@ -28,6 +35,7 @@ import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
 import { recordLead, usableEmail } from '../lib/leads/record.js'
+import { STEP_COUNT, fromPaymentPage } from '../lib/leads/paths.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
@@ -59,12 +67,20 @@ function readBody(request) {
  *
  * Written as the step's own number rather than as its name, because the names
  * are the page's and would have to be kept level with it from here.
+ *
+ * The payment page has no steps to count. It reports at the screen it stands in
+ * for, so the number would read as the last question of a configurator its
+ * visitor never opened, and the inbox line is the one place that difference
+ * decides what somebody does next: a lead off the configurator is a stranger to
+ * follow up, and a lead off the payment page is a build already agreed to that
+ * did not go through.
  */
 const STEP_NAMES = ['Business type', 'The work', 'The look', 'What it costs', 'Start the build']
 
-function reached(step) {
+function reached(step, path) {
+  if (fromPaymentPage(path)) return 'The payment page'
   const name = STEP_NAMES[step]
-  return name ? `Step ${step + 1} of ${STEP_NAMES.length}, ${name}` : `Step ${step + 1}`
+  return name ? `Step ${step + 1} of ${STEP_COUNT}, ${name}` : `Step ${step + 1}`
 }
 
 /** Where the visit came from, in the words the inbox reads. */
@@ -83,18 +99,20 @@ function arrival(campaign) {
  * message: a lead worth having is one somebody can reply to from the inbox in
  * the minute they read about it.
  */
-async function announce({ email, trade, step, campaign }) {
+async function announce({ email, trade, step, path, campaign }) {
   if (!RESEND_API_KEY) return
+
+  const paying = fromPaymentPage(path)
 
   try {
     await sendNotice(
       notice({
-        label: 'Configurator',
+        label: paying ? 'Payment page' : 'Configurator',
         subject: `${email} started a build${trade ? ` — ${trade}` : ''}`,
         rows: [
           ['Address', email],
           ['Trade', trade || 'Not chosen yet'],
-          ['Reached', reached(step)],
+          ['Reached', reached(step, path)],
           ['Came from', arrival(campaign)],
         ],
         replyTo: email,
@@ -139,7 +157,7 @@ export default async function handler(request, response) {
     wired.db
   )
 
-  if (lead?.fresh) await announce({ email, trade, step, campaign })
+  if (lead?.fresh) await announce({ email, trade, step, path: body.path, campaign })
 
   response.setHeader('Cache-Control', 'private, no-store')
   return response.status(200).json({ ok: true })
