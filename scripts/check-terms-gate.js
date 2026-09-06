@@ -47,6 +47,13 @@ const PAY = 'src/app/views/start/PaySection.jsx'
 const START = 'src/app/views/Start.jsx'
 const SENDER = 'src/app/data/startCheckout.js'
 
+// The short checkout. It is a second form in front of the same endpoint, so
+// every question this file asks of the configurator has to be asked of it too:
+// a page that takes a card without collecting the agreement is exactly the hole
+// the endpoint's refusal is there to close, and it would close it by failing a
+// buyer at the last step rather than by never letting the page ship.
+const DIRECT = 'src/app/views/Payment.jsx'
+
 /**
  * One request through the real endpoint, with Stripe replaced.
  *
@@ -189,6 +196,27 @@ check('nothing ticks the box on the buyer behalf', () => {
   const remembered = start.slice(written, start.indexOf('})', written))
   same(remembered.includes('agreed'), false, 'the agreement is not written to the store')
   same(read('src/app/views/start/lib/memory.js').includes('agreed'), false, 'nor read back from it')
+})
+
+check('the short checkout asks for the agreement too', () => {
+  const direct = read(DIRECT)
+  same(direct.includes('type="checkbox"'), true, 'the form holds an agreement control')
+  same(direct.includes('checked={agreed}'), true, 'the control shows what has been agreed')
+  same(
+    direct.includes('const [agreed, setAgreed] = useState(false)'),
+    true,
+    'the agreement starts unticked'
+  )
+  same(direct.includes('termsAccepted: agreed'), true, 'the agreement travels with the payment')
+  same(direct.includes('if (!agreed)'), true, 'the submit refuses an unagreed checkout')
+})
+
+check('the short checkout opens the terms in a tab of their own', () => {
+  const direct = read(DIRECT)
+  const link = direct.slice(direct.indexOf('to="/terms"'), direct.indexOf('Terms of Service'))
+  same(link.length > 0, true, 'the agreement links to the terms')
+  same(link.includes('target="_blank"'), true, 'the terms open in a new tab')
+  same(link.includes('noopener'), true, 'the new tab cannot reach back at the page that opened it')
 })
 
 const failures = []
