@@ -112,8 +112,9 @@ function formatWhen(value) {
 }
 
 function dayTone(day) {
-  // A day before this site came under watch carries a figure nobody measured;
-  // drawing it in the healthy colour would claim uptime that was never seen.
+  // A day before this site came under watch is grey. It is the one tone in the
+  // strip that is not a reading: three colours for what the monitor saw, and a
+  // fourth for the days it was not there for.
   if (day.measured === false) return 'bg-[color:var(--paper-hairline)]'
   const uptime = day.uptime
   if (uptime >= 99.9) return 'bg-[color:var(--good-fill)]'
@@ -129,21 +130,13 @@ function measuredLabel(measuredSince, windowDays) {
 }
 
 /**
- * The span the strip covers: the whole window, however much of it is measured.
+ * The window the counts and the percentage are taken over, from the feed.
  *
- * It used to trim to the longest real run, because a window of thirty against
- * a fortnight of watching drew sixteen empty slots on every row and squeezed
- * the real figures into the last half of a column a quarter of the row wide.
- * That was true of the column and is not true of the strip, which now has the
- * whole row: thirty marks across it leave the measured ones plenty, and the
- * pale ones are a reading rather than padding - "this is a month, and we have
- * been watching for a fortnight of it" is the honest answer, and trimming was
- * quietly giving a different one by relabelling a fortnight as the window.
- *
- * It also kept the mark width moving. The strip fills the row, so the fewer
- * days it draws the wider each one gets, and a board watched for a week drew a
- * row of slabs while the same board a month later drew a strip. Holding the
- * count at the window holds the drawing still.
+ * This is the figure the captions quote - issues raised in the last so many
+ * days, uptime across them. The strip draws a longer run and sets its own
+ * span; the two were one number once, and separating them is what let the
+ * strip grow without the captions claiming a month of measurement that is not
+ * there.
  */
 function windowSpan(windowDays) {
   return Math.max(1, windowDays)
@@ -169,50 +162,69 @@ function windowSpan(windowDays) {
  * it is the widest thing on the board, which is right, because it is the only
  * part of a row that says anything about a day that is not today.
  *
- * A day is a share of the width rather than a fixed measure, so the strip
- * fills the row at any window. What holds the drawing together across windows
- * is not the mark's width but its proportion to the air beside it: a mark a
- * little over twice the gap, which is what separates a row of marks from both
- * a solid bar and a row of tiles. A fixed gap cannot do that - two pixels
- * against a mark of twenty is a bar, and against a mark of five is a dotted
- * line - so the gap is derived from the count instead and the ratio is what
- * stays put.
+ * The mark is a fixed measure: five wide against sixteen tall, on a two-pixel
+ * gap. Those are the proportions being read. A mark standing three times
+ * taller than it is wide reads as one day in a run of days; the same mark let
+ * out to fill the row reads as a tile in a grid, which is a chart of something
+ * else. Holding the ratio of mark to gap and letting both grow does not save
+ * it - a strip of thirty across a wide card comes out sixteen by sixteen, and
+ * a square is a square whatever the air beside it measures.
+ *
+ * The strip is as wide as its days make it rather than as wide as the row, and
+ * it hangs from the right so that what survives a card too narrow to hold it
+ * is the recent end. Today is the day a reader is looking for; the far edge of
+ * the history is the part that can afford to go.
  */
-// A mark against the air after it. Measured off the reference this was built
-// from, where a five-unit mark sits on a seven-and-a-third pitch.
-const MARK_TO_GAP = 2.14
 
 /**
- * The gap, as a percentage of the strip, that leaves `count` marks sitting at
- * `MARK_TO_GAP` times their own spacing.
+ * How many days the strip draws, which is not the window the figures cover.
  *
- * From count*mark + (count-1)*gap = width, with mark = ratio*gap. A percentage
- * rather than a pixel figure because the row's width is not known here and
- * changes with the window anyway; flex resolves it against the strip's own box.
+ * The feed reports a month because a month is what the uptime percentage is
+ * computed over. The strip is a different question - it is the shape of a run
+ * of days, and a run needs enough of them to read as one. Thirty marks at the
+ * measure they are drawn at come to a third of the row and sit there looking
+ * clipped; ninety fill it, which is what a history is supposed to look like.
  */
-function gapPercent(count) {
-  if (count < 2) return 0
-  return 100 / (count * MARK_TO_GAP + count - 1)
+const STRIP_DAYS = 90
+
+/**
+ * The strip's days: the feed's, padded at the front to `STRIP_DAYS`.
+ *
+ * The monitor has not been running for a quarter and the feed only carries its
+ * own window, so the days before it are synthesised here rather than invented
+ * upstream - the padding is a drawing decision and belongs with the drawing.
+ * They are marked unmeasured, which is what they are; what that tone looks like
+ * is `dayTone`'s business.
+ *
+ * A site watched for longer than the strip draws is cut from the front, so
+ * every row on the board is the same run of dates however much history sits
+ * behind it. Without that a site with a year of readings draws a strip three
+ * times its neighbour's and out through the side of the card, and the rows
+ * stop being comparable - which is the whole point of stacking them.
+ */
+function stripDays(days) {
+  if (!days?.length) return days
+  if (days.length >= STRIP_DAYS) return days.slice(-STRIP_DAYS)
+  const first = new Date(`${days[0].date}T00:00:00Z`)
+  const pad = []
+  for (let back = STRIP_DAYS - days.length; back > 0; back -= 1) {
+    const day = new Date(first)
+    day.setUTCDate(day.getUTCDate() - back)
+    pad.push({ date: day.toISOString().slice(0, 10), uptime: null, measured: false })
+  }
+  return pad.concat(days)
 }
 
-function UptimeStrip({ days, span, className = '' }) {
+function UptimeStrip({ days, className = '' }) {
   if (!days?.length) return null
-  const shown = span ? days.slice(-span) : days
+  const shown = stripDays(days)
   return (
-    <div
-      className={`flex h-4 items-stretch ${className}`}
-      style={{ gap: `${gapPercent(shown.length)}%` }}
-      aria-hidden="true"
-    >
+    <div className={`flex h-4 items-stretch justify-end gap-[2px] overflow-hidden ${className}`} aria-hidden="true">
       {shown.map(day => (
         <span
           key={day.date}
-          title={
-            day.measured === false
-              ? `${formatDay(day.date)}: not watched yet`
-              : `${formatDay(day.date)}: ${(day.uptime ?? 100).toFixed(2)}%`
-          }
-          className={`inline-block min-w-0 flex-1 rounded-[1px] ${dayTone(day)}`}
+          title={`${formatDay(day.date)}: ${(day.uptime ?? 100).toFixed(2)}%`}
+          className={`inline-block w-[5px] flex-none rounded-[2px] ${dayTone(day)}`}
         />
       ))}
     </div>
@@ -583,7 +595,7 @@ export function StatusBoard({ feed, scope }) {
                           anything that cannot see it. */}
                       <span className="sr-only">{`${site.name} is ${cfg.label.toLowerCase()}`}</span>
                     </div>
-                    <UptimeStrip days={site.days} span={span} className="mt-2.5" />
+                    <UptimeStrip days={site.days} className="mt-2.5" />
                   </li>
                 )
               })

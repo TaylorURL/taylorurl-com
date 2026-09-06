@@ -456,17 +456,19 @@
   }
 }
 
-/* The open section is a surface rather than a colour: the row takes the card's
-   own ground and the edge that goes with it, so it reads as lifted off the
-   rail instead of tinted on top of it. A wash has to be dark enough to survive
-   the hover ground landing over it, which is what pushes it toward the
-   accent - and an accent spent on saying "you are here" is an accent that no
-   longer means "this is the thing to press". The ink goes to full strength
-   instead, which is the only mark of the open row that costs nothing else. */
+/* The open section is set into the rail: one step darker than the ground it
+   sits on, and nothing else - no edge, no shadow, no white. Lifting it onto
+   the card's own surface was the other way to do it, and it made the row read
+   as floating in front of the rail, which is a claim about depth nothing else
+   in the rail makes. Recessing says the row is the part of the rail you are
+   standing in, which is what being on a page is. The step is small enough to
+   survive the hover ground landing over it without reaching for the accent -
+   and an accent spent on saying "you are here" is an accent that no longer
+   means "this is the thing to press". The ink goes to full strength alongside
+   it, which is the other half of the mark and costs nothing. */
 .console-nav-item[aria-current='page'],
 .console-nav-item[aria-current='page']:hover {
-  background-color: var(--console-card-bg);
-  box-shadow: var(--console-raise-shadow);
+  background-color: var(--console-rail-active);
   color: var(--paper-ink);
 }
 

@@ -913,6 +913,14 @@
       0 0 0 1px rgba(60, 66, 87, 0.06), 0 1px 3px rgba(60, 66, 87, 0.08),
       0 2px 6px rgba(60, 66, 87, 0.04);
     --console-row-hover: rgba(60, 66, 87, 0.05);
+    /* The open row in the rail, set into the ground rather than lifted off
+       it: one step darker than the rail and nothing else - no border, no
+       shadow, no white. A raised card says the row is in front of the rail,
+       which is a claim about depth the rail does not make anywhere else;
+       recessing it says the row is the part of the rail you are standing
+       in, which is what being on a page actually is. The step is the same
+       fifteen levels the reference this was taken from moves by. */
+    --console-rail-active: rgba(60, 66, 87, 0.08);
     --console-raise-shadow: 0 0 0 1px rgba(60, 66, 87, 0.08), 0 1px 2px rgb(60 66 87 / 12%);
     --bg: #eceef1;
     --ink: var(--paper-ink);
@@ -1079,6 +1087,7 @@
     --console-float-shadow: 0 12px 32px -12px rgb(0 0 0 / 62%);
     --console-card-shadow: 0 0 0 1px rgba(244, 245, 247, 0.07);
     --console-row-hover: rgba(244, 245, 247, 0.06);
+    --console-rail-active: rgba(244, 245, 247, 0.09);
     /* A raised chip separates itself by catching light on a pale ground and by
        its own edge on a dark one, where a shadow has nothing left to darken. */
     --console-raise-shadow: 0 0 0 1px rgba(244, 245, 247, 0.12), 0 1px 2px rgb(0 0 0 / 40%);
