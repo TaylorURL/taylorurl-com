@@ -805,10 +805,18 @@ function Verdict({ prospect }) {
   )
 }
 
-/** One labelled fact in a profile. */
+/**
+ * One labelled fact in a profile.
+ *
+ * The column is named rather than left implicit, because an implicit track is
+ * sized to the longest thing in it and a value with no length of its own - a
+ * URL, an address - widens the cell past the column it was given and prints
+ * over the fact beside it. Named, the track floors at nothing and the value
+ * inside it is the thing that gives way.
+ */
 function Fact({ label, children }) {
   return (
-    <div className="grid min-w-0 gap-1">
+    <div className="grid min-w-0 grid-cols-1 gap-1">
       <span className={`${MONO_LABEL} text-paper-faint`}>{label}</span>
       <span className="break-words text-[13px] text-ink-paper">{children ?? '—'}</span>
     </div>
