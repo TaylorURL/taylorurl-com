@@ -2148,7 +2148,7 @@ function BouncePanel({ bounces, loading, error, area }) {
         ) : error ? (
           <p className="px-5 py-10 text-center text-[13px] text-paper-soft">{error}</p>
         ) : days.some(row => row.sent) ? (
-          <BounceChart days={days} fill />
+          <BounceChart days={days} limit={BOUNCE_LIMIT} fill />
         ) : (
           <p className="px-5 py-10 text-center text-[13px] text-paper-soft">
             Nothing has been sent in the last {fullCount(bounces?.window_days)} days, so there is no
