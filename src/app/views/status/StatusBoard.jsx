@@ -146,11 +146,41 @@ function measuredSpan(sites, windowDays) {
   return Math.min(windowDays, Math.max(1, longest))
 }
 
+// One day's mark and the air after it. The pill is what gets drawn; the pitch
+// is what the column is measured in, and the last day carries no gap after it.
+const PILL_W = 5
+const PILL_GAP = 2
+
+// What a strip of `span` days needs, plus the cell's own gutter either side.
+// The header reads this so the column is the width of its drawing rather than
+// a share of the table, which is the one thing a fixed layout cannot work out
+// for itself.
+const STRIP_W = span => `${span * (PILL_W + PILL_GAP) - PILL_GAP + 24}px`
+
+/**
+ * A day per pill, at one height, told apart by colour alone.
+ *
+ * The pills used to be drawn to the day's uptime, which made the strip a bar
+ * chart of a figure that is 100 on almost every day it is read: the column
+ * came out flat with the occasional notch, and the notch was as likely to be
+ * 99.4% as an outage. Worse, a height is a claim of precision - it invites the
+ * reader to compare two days that the monitor only ever sorted into up,
+ * degraded and down.
+ *
+ * So the height goes and the colour carries the whole reading. Three tones
+ * against a fourth for the days before the site came under watch, which is not
+ * a measurement and must not be drawn in the healthy colour.
+ *
+ * The pill is 5px on a 7px pitch, so a day is a mark with air either side
+ * rather than a segment of a bar. That measure is fixed rather than flexed:
+ * stretched to fill a column, thirty days and ninety days draw two different
+ * objects, and the strip stops being the same reading at two windows.
+ */
 function UptimeStrip({ days, span }) {
   if (!days?.length) return null
   const shown = span ? days.slice(-span) : days
   return (
-    <div className="flex h-4 items-end gap-px" aria-hidden="true">
+    <div className="flex h-4 items-stretch" style={{ gap: `${PILL_GAP}px` }} aria-hidden="true">
       {shown.map(day => (
         <span
           key={day.date}
@@ -159,11 +189,8 @@ function UptimeStrip({ days, span }) {
               ? `${formatDay(day.date)}: not watched yet`
               : `${formatDay(day.date)}: ${(day.uptime ?? 100).toFixed(2)}%`
           }
-          className={`inline-block w-[5px] flex-1 rounded ${dayTone(day)}`}
-          style={{
-            height: day.measured === false ? '20%' : `${Math.max(25, day.uptime ?? 100)}%`,
-            opacity: day.measured === false ? 0.6 : (day.uptime ?? 100) >= 99.9 ? 0.85 : 1,
-          }}
+          className={`inline-block flex-shrink-0 rounded-[1px] ${dayTone(day)}`}
+          style={{ width: `${PILL_W}px` }}
         />
       ))}
     </div>
@@ -462,10 +489,20 @@ export function StatusBoard({ feed, scope }) {
           <table className="console-table min-w-[40rem] text-[13px] lg:min-w-0">
             <thead>
               <tr>
-                <th className={`${TH_TIGHT} w-[52%]`}>Site</th>
-                <th className={`${TH_TIGHT} w-[20%]`}>Last {span} Days</th>
-                <th className={`${TH_TIGHT} w-[15%] text-right`}>Uptime</th>
-                <th className={`${TH_TIGHT} w-[13%] text-right`}>Status</th>
+                {/* The strip is a fixed measure now rather than a share of the
+                    table, so its column is the width of the pills it holds and
+                    the name takes whatever is left. A percentage here hands the
+                    strip a column wider than its own drawing and pads the
+                    difference, which reads as the strip having stopped early.
+                    The table lays out fixed, so a column that is not given a
+                    width is not sized to its content - the two figures carry
+                    their own measure and only Site is left to absorb. */}
+                <th className={TH_TIGHT}>Site</th>
+                <th className={`${TH_TIGHT} whitespace-nowrap`} style={{ width: STRIP_W(span) }}>
+                  Last {span} Days
+                </th>
+                <th className={`${TH_TIGHT} w-[5.75rem] whitespace-nowrap text-right`}>Uptime</th>
+                <th className={`${TH_TIGHT} w-24 whitespace-nowrap text-right`}>Status</th>
               </tr>
             </thead>
             <tbody ref={siteBody}>

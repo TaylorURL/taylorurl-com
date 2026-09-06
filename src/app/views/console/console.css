@@ -415,14 +415,22 @@
   color: var(--paper-ink-faint);
 }
 
+/* The label sits at the medium weight and a touch of negative tracking at
+   every state, open or not. A row that gains weight when it opens is a row
+   that changes width when it opens, and the two either side of it move to make
+   room - so the state is carried by the row's ground instead, and the column
+   holds still. The right side is tighter than the left because the lock and
+   the chevron that sit there are already inset within their own box. */
 .console-nav-item {
-  @apply relative mx-2 flex min-h-[36px] cursor-pointer items-center gap-2.5 px-2.5 text-[14px] transition-colors duration-150 ease-out-soft;
+  @apply relative mx-2 flex min-h-[36px] cursor-pointer items-center gap-2 text-[14px] font-medium tracking-[-0.02em] transition-colors duration-150 ease-out-soft;
+  padding-inline: 0.625rem 0.5rem;
   border-radius: var(--console-radius-sm);
   color: var(--paper-ink-soft);
 }
 
 .console-nav-item[data-collapsed='true'] {
-  @apply justify-center px-0;
+  @apply justify-center;
+  padding-inline: 0;
 }
 
 .console-nav-mark {
@@ -435,24 +443,36 @@
   color: var(--paper-ink-faint);
 }
 
-.console-nav-item:hover {
-  background-color: var(--console-row-hover);
+/* Hover answers to a pointer that can actually leave the row. A finger cannot,
+   so on a touch screen the last row tapped keeps the hover ground until
+   something else is tapped, and the menu reads as having two open sections. */
+@media (hover: hover) {
+  .console-nav-item:hover {
+    background-color: var(--console-row-hover);
+  }
+
+  .console-nav-item:hover .console-nav-mark {
+    color: var(--paper-ink-soft);
+  }
 }
 
-.console-nav-item:hover .console-nav-mark {
-  color: var(--paper-ink-soft);
+/* The open section is a surface rather than a colour: the row takes the card's
+   own ground and the edge that goes with it, so it reads as lifted off the
+   rail instead of tinted on top of it. A wash has to be dark enough to survive
+   the hover ground landing over it, which is what pushes it toward the
+   accent - and an accent spent on saying "you are here" is an accent that no
+   longer means "this is the thing to press". The ink goes to full strength
+   instead, which is the only mark of the open row that costs nothing else. */
+.console-nav-item[aria-current='page'],
+.console-nav-item[aria-current='page']:hover {
+  background-color: var(--console-card-bg);
+  box-shadow: var(--console-raise-shadow);
+  color: var(--paper-ink);
 }
 
-/* The open section is marked by an accent wash rather than a solid fill, so
-   the row is still legible when the pointer's own ground lands on top of it. */
-.console-nav-item[aria-current='page'] {
-  background-color: var(--wash-accent);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.console-nav-item[aria-current='page'] .console-nav-mark {
-  color: var(--accent);
+.console-nav-item[aria-current='page'] .console-nav-mark,
+.console-nav-item[aria-current='page']:hover .console-nav-mark {
+  color: var(--paper-ink);
 }
 
 .console-nav-item:active {
