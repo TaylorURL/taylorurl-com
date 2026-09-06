@@ -45,9 +45,17 @@ export function recalledRows(key, rows, height) {
   return { rows, height, lastHeight: height }
 }
 
-/** Records what a rendered `tbody` turned out to be, for the next load. */
+/**
+ * Records what a rendered block of rows turned out to be, for the next load.
+ *
+ * A `tbody` counts its own rows and a list does not, so the count comes from
+ * `rows` where the element has it and from its children otherwise. Reading
+ * `rows` alone is silent on anything that is not a table: the write never
+ * happens, and the placeholder is stuck on the caller's first-visit guess for
+ * every visit after it.
+ */
 export function rememberRows(key, body) {
-  const count = body?.rows?.length
+  const count = body?.rows?.length ?? body?.children?.length
   if (!count) return
   try {
     // Snapped to the half pixel the browser paints a row at. The raw mean lands

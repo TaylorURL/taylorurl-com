@@ -415,14 +415,22 @@
   color: var(--paper-ink-faint);
 }
 
+/* The label sits at the medium weight and a touch of negative tracking at
+   every state, open or not. A row that gains weight when it opens is a row
+   that changes width when it opens, and the two either side of it move to make
+   room - so the state is carried by the row's ground instead, and the column
+   holds still. The right side is tighter than the left because the lock and
+   the chevron that sit there are already inset within their own box. */
 .console-nav-item {
-  @apply relative mx-2 flex min-h-[36px] cursor-pointer items-center gap-2.5 px-2.5 text-[14px] transition-colors duration-150 ease-out-soft;
+  @apply relative mx-2 flex min-h-[36px] cursor-pointer items-center gap-2 text-[14px] font-medium tracking-[-0.02em] transition-colors duration-150 ease-out-soft;
+  padding-inline: 0.625rem 0.5rem;
   border-radius: var(--console-radius-sm);
   color: var(--paper-ink-soft);
 }
 
 .console-nav-item[data-collapsed='true'] {
-  @apply justify-center px-0;
+  @apply justify-center;
+  padding-inline: 0;
 }
 
 .console-nav-mark {
@@ -435,24 +443,38 @@
   color: var(--paper-ink-faint);
 }
 
-.console-nav-item:hover {
-  background-color: var(--console-row-hover);
+/* Hover answers to a pointer that can actually leave the row. A finger cannot,
+   so on a touch screen the last row tapped keeps the hover ground until
+   something else is tapped, and the menu reads as having two open sections. */
+@media (hover: hover) {
+  .console-nav-item:hover {
+    background-color: var(--console-row-hover);
+  }
+
+  .console-nav-item:hover .console-nav-mark {
+    color: var(--paper-ink-soft);
+  }
 }
 
-.console-nav-item:hover .console-nav-mark {
-  color: var(--paper-ink-soft);
+/* The open section is set into the rail: one step darker than the ground it
+   sits on, and nothing else - no edge, no shadow, no white. Lifting it onto
+   the card's own surface was the other way to do it, and it made the row read
+   as floating in front of the rail, which is a claim about depth nothing else
+   in the rail makes. Recessing says the row is the part of the rail you are
+   standing in, which is what being on a page is. The step is small enough to
+   survive the hover ground landing over it without reaching for the accent -
+   and an accent spent on saying "you are here" is an accent that no longer
+   means "this is the thing to press". The ink goes to full strength alongside
+   it, which is the other half of the mark and costs nothing. */
+.console-nav-item[aria-current='page'],
+.console-nav-item[aria-current='page']:hover {
+  background-color: var(--console-rail-active);
+  color: var(--paper-ink);
 }
 
-/* The open section is marked by an accent wash rather than a solid fill, so
-   the row is still legible when the pointer's own ground lands on top of it. */
-.console-nav-item[aria-current='page'] {
-  background-color: var(--wash-accent);
-  color: var(--accent);
-  font-weight: 600;
-}
-
-.console-nav-item[aria-current='page'] .console-nav-mark {
-  color: var(--accent);
+.console-nav-item[aria-current='page'] .console-nav-mark,
+.console-nav-item[aria-current='page']:hover .console-nav-mark {
+  color: var(--paper-ink);
 }
 
 .console-nav-item:active {
