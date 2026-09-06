@@ -71,7 +71,9 @@ export const ROW_HEIGHT = {
   // whole table rather than the height of its shortest row. Taking the shorter
   // one left the placeholder well under the table it stood in for, and
   // everything below moved down as the feed landed.
-  statusSite: '61px',
+  // Two lines now rather than one: the identity line and the strip's band
+  // under it, measured off the entry itself.
+  statusSite: '73px',
   statusIssue: '100px',
   statusFixed: '125px',
 }
