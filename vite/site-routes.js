@@ -444,6 +444,12 @@ const STUDIO_PRERENDER_ROUTES = [
   // noindex, and not pages to rank.
   '/login',
   '/signup',
+  // The short checkout, handed to a buyer rather than found. Built for the
+  // reason the screens above are built - nothing rewrites an unknown path to
+  // the shell, so a URL typed off a phone has to answer on a direct load - and
+  // kept out of the sitemap because a page nobody is meant to arrive at from a
+  // search result has no business being offered to one.
+  '/payment',
   // The two pages a newsletter link opens. Built for the same reason as the
   // rest and kept out of the sitemap for the same one: a link arrives from an
   // inbox, so the URL has to answer on a direct load, and neither is a page to
