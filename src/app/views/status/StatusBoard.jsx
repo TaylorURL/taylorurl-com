@@ -219,7 +219,10 @@ function UptimeStrip({ days, className = '' }) {
   if (!days?.length) return null
   const shown = stripDays(days)
   return (
-    <div className={`flex h-4 items-stretch justify-end gap-[2px] overflow-hidden ${className}`} aria-hidden="true">
+    <div
+      className={`flex h-4 items-stretch justify-end gap-[2px] overflow-hidden ${className}`}
+      aria-hidden="true"
+    >
       {shown.map(day => (
         <span
           key={day.date}
