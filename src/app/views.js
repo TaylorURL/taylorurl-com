@@ -33,6 +33,7 @@ const loaders = {
     : {
         Live: () => import('@views/Live'),
         Start: () => import('@views/Start'),
+        Payment: () => import('@views/Payment'),
       }),
   Privacy: () => import('@views/Privacy'),
   Terms: () => import('@views/Terms'),

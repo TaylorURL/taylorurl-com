@@ -69,6 +69,10 @@ const ALL_ROUTES = [
   // in around the trade a visitor picks and finishes on the three ways to
   // start.
   { key: 'Start', path: 'start' },
+  // The same sale with the argument taken out, for a build agreed in person.
+  // Noindex, in no menu, and reached by being handed the address; the
+  // configurator above is the way in for everybody who was not.
+  { key: 'Payment', path: 'payment' },
   { key: 'Privacy', path: 'privacy' },
   { key: 'Terms', path: 'terms' },
   { key: 'License', path: 'license' },
