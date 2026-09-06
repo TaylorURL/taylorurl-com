@@ -63,7 +63,6 @@ const REMEMBERED = {
 
 // The placeholder rows carry the cells' own measure, so a table waits at the
 // width it lands at rather than at the console's wider gutter.
-const SITE_CELLS = Array.from({ length: 4 }, () => CELL_TIGHT)
 const ISSUE_CELLS = [CELL_TIGHT]
 const FIXED_CELLS = Array.from({ length: 2 }, () => CELL_TIGHT)
 
@@ -146,41 +145,42 @@ function measuredSpan(sites, windowDays) {
   return Math.min(windowDays, Math.max(1, longest))
 }
 
-// One day's mark and the air after it. The pill is what gets drawn; the pitch
-// is what the column is measured in, and the last day carries no gap after it.
-const PILL_W = 5
-const PILL_GAP = 2
-
-// What a strip of `span` days needs, plus the cell's own gutter either side.
-// The header reads this so the column is the width of its drawing rather than
-// a share of the table, which is the one thing a fixed layout cannot work out
-// for itself.
-const STRIP_W = span => `${span * (PILL_W + PILL_GAP) - PILL_GAP + 24}px`
-
 /**
- * A day per pill, at one height, told apart by colour alone.
+ * A day per pill, at one height, told apart by colour alone, across the whole
+ * width of the row.
  *
  * The pills used to be drawn to the day's uptime, which made the strip a bar
  * chart of a figure that is 100 on almost every day it is read: the column
  * came out flat with the occasional notch, and the notch was as likely to be
  * 99.4% as an outage. Worse, a height is a claim of precision - it invites the
  * reader to compare two days that the monitor only ever sorted into up,
- * degraded and down.
+ * degraded and down. So the height goes and the colour carries the whole
+ * reading: three tones against a fourth for the days before the site came
+ * under watch, which is not a measurement and must not be drawn in the healthy
+ * colour.
  *
- * So the height goes and the colour carries the whole reading. Three tones
- * against a fourth for the days before the site came under watch, which is not
- * a measurement and must not be drawn in the healthy colour.
+ * The strip takes the row rather than a column inside it. Given a column it is
+ * a hundred and fifty pixels of detail sat beside a name with room to spare on
+ * both sides, and a month of history has to be read at a squint; given the row
+ * it is the widest thing on the board, which is right, because it is the only
+ * part of a row that says anything about a day that is not today.
  *
- * The pill is 5px on a 7px pitch, so a day is a mark with air either side
- * rather than a segment of a bar. That measure is fixed rather than flexed:
- * stretched to fill a column, thirty days and ninety days draw two different
- * objects, and the strip stops being the same reading at two windows.
+ * A day is therefore a share of the width rather than a fixed measure, and the
+ * gap is what stays constant. Thirty days draw thirty wide marks and ninety
+ * draw ninety narrow ones, which is the same object at two windows in the way
+ * that matters: one mark per day, edge to edge, however many days there are.
  */
-function UptimeStrip({ days, span }) {
+const PILL_GAP = 2
+
+function UptimeStrip({ days, span, className = '' }) {
   if (!days?.length) return null
   const shown = span ? days.slice(-span) : days
   return (
-    <div className="flex h-4 items-stretch" style={{ gap: `${PILL_GAP}px` }} aria-hidden="true">
+    <div
+      className={`flex h-4 items-stretch ${className}`}
+      style={{ gap: `${PILL_GAP}px` }}
+      aria-hidden="true"
+    >
       {shown.map(day => (
         <span
           key={day.date}
@@ -189,12 +189,33 @@ function UptimeStrip({ days, span }) {
               ? `${formatDay(day.date)}: not watched yet`
               : `${formatDay(day.date)}: ${(day.uptime ?? 100).toFixed(2)}%`
           }
-          className={`inline-block flex-shrink-0 rounded-[1px] ${dayTone(day)}`}
-          style={{ width: `${PILL_W}px` }}
+          className={`inline-block min-w-0 flex-1 rounded-[1px] ${dayTone(day)}`}
         />
       ))}
     </div>
   )
+}
+
+/**
+ * The placeholder for one site, in the shape of the entry it stands in for: the
+ * identity line, then the strip's own band under it.
+ *
+ * The list has no column heads to hold the block's width while it waits, so the
+ * placeholder is the only thing keeping the card from opening at nothing and
+ * growing as the feed lands.
+ */
+function SkeletonSites({ rows, height, lastHeight }) {
+  return Array.from({ length: rows }).map((_, row) => (
+    <li
+      key={row}
+      className="border-hair-paper border-t px-5 py-3"
+      style={{ height: row === rows - 1 ? lastHeight : height }}
+      aria-hidden="true"
+    >
+      <span className="block h-5 w-full max-w-[11rem] animate-pulse rounded-[var(--r-tiny)] bg-paper-soft/15" />
+      <span className="mt-2.5 block h-4 w-full animate-pulse rounded-[var(--r-tiny)] bg-paper-soft/15" />
+    </li>
+  ))
 }
 
 /**
@@ -480,104 +501,77 @@ export function StatusBoard({ feed, scope }) {
         aside={`${sites.length || '—'} monitored · ${measuredLabel(data?.measured_since, windowDays)}`}
         loading={loading}
       >
-        {/* The table keeps a measure of its own below the desk width and moves
-            sideways inside the card there; from the desk width up it is held
-            to its column and the columns share the width, since the bars are
-            the board's reading and a strip of them scrolled out of view is a
-            board that says nothing. */}
-        <PanelBody className="overflow-x-auto">
-          <table className="console-table min-w-[40rem] text-[13px] lg:min-w-0">
-            <thead>
-              <tr>
-                {/* The strip is a fixed measure now rather than a share of the
-                    table, so its column is the width of the pills it holds and
-                    the name takes whatever is left. A percentage here hands the
-                    strip a column wider than its own drawing and pads the
-                    difference, which reads as the strip having stopped early.
-                    The table lays out fixed, so a column that is not given a
-                    width is not sized to its content - the two figures carry
-                    their own measure and only Site is left to absorb. */}
-                <th className={TH_TIGHT}>Site</th>
-                <th className={`${TH_TIGHT} whitespace-nowrap`} style={{ width: STRIP_W(span) }}>
-                  Last {span} Days
-                </th>
-                <th className={`${TH_TIGHT} w-[5.75rem] whitespace-nowrap text-right`}>Uptime</th>
-                <th className={`${TH_TIGHT} w-24 whitespace-nowrap text-right`}>Status</th>
-              </tr>
-            </thead>
-            <tbody ref={siteBody}>
-              {loading ? (
-                <SkeletonRows
-                  cols={SITE_CELLS}
-                  rows={siteSkeleton.rows}
-                  height={siteSkeleton.height}
-                  lastHeight={siteSkeleton.lastHeight}
-                />
-              ) : sites.length ? (
-                sites.map(site => {
-                  const cfg = SITE_STATE[site.status] || SITE_STATE.operational
-                  const hosts = (site.domains?.length ? site.domains : [site.domain]).map(
-                    displayDomain
-                  )
-                  return (
-                    <tr key={site.id} className="border-hair-paper animate-fade-in-up border-t">
-                      {/* The name over the host it answers on, in one cell.
-                          Beside the strip and the two figures there is no
-                          column wide enough for a hostname of its own, and a
-                          name cut to "Dickinson B..." is a row that cannot be
-                          found. A site on more than one host names them on the
-                          one line, the first in the soft ink and the rest in
-                          the faint, with the whole list in the cell's title. */}
-                      <td className={CELL_TIGHT}>
-                        <span className="flex items-center gap-2.5">
-                          <span
-                            aria-hidden="true"
-                            className={`inline-block h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
-                          />
-                          {/* The board names a site the way its owner does -
-                              "Baytown Go Karts" rather than a hostname - so the
-                              mark is looked up on the first domain it answers
-                              on, which is what the icon set is keyed by. */}
-                          <SiteIcon host={apexOf(site)} name={site.name} />
-                          <span className="min-w-0 leading-snug">
-                            <span className="block truncate font-medium">{site.name}</span>
-                            <span
-                              className="block truncate font-mono text-[12px] text-paper-soft"
-                              title={hosts.join(', ')}
-                            >
-                              {hosts.map((host, index) => (
-                                <span key={host} className={index ? 'text-paper-faint' : undefined}>
-                                  {index ? ' · ' : ''}
-                                  {host}
-                                </span>
-                              ))}
-                            </span>
-                          </span>
-                        </span>
-                      </td>
-                      <td className={CELL_TIGHT}>
-                        <UptimeStrip days={site.days} span={span} />
-                      </td>
-                      <td className={`${CELL_TIGHT} text-right font-mono tabular-nums`}>
-                        {site.uptime_30d?.toFixed(2)}%
-                      </td>
-                      <td className={`${CELL_TIGHT} text-right`}>
-                        <Badge tone={cfg.tone}>
-                          <span aria-label={`${site.name} is ${cfg.label.toLowerCase()}`}>
-                            {cfg.label}
-                          </span>
-                        </Badge>
-                      </td>
-                    </tr>
-                  )
-                })
-              ) : (
-                <EmptyRow cols={4}>
-                  The status feed is not answering. This page keeps retrying on its own.
-                </EmptyRow>
-              )}
-            </tbody>
-          </table>
+        {/* A list of entries rather than a table of cells.
+
+            Four column heads over a site, a strip, a figure and a badge is a
+            grid promising that the four are read against each other down the
+            column, and only one of them is: nobody scans a column of "Up". The
+            strip is the reading, and in a table it can only ever have a
+            quarter of the width, so a month of history was drawn at a squint
+            beside three-quarters of a row spent on a name with room to spare.
+
+            So the row is two lines. The first names the site and closes with
+            what it has been up for, all of it one size and one weight with the
+            hierarchy carried by ink alone; the second is the strip, edge to
+            edge. The heads go with the columns - what they named is either on
+            the line already or in the card's own aside - and so does the badge,
+            since the dot opening the line and the colour of the strip under it
+            both say the same word it did. */}
+        <PanelBody>
+          <ul ref={siteBody}>
+            {loading ? (
+              <SkeletonSites
+                rows={siteSkeleton.rows}
+                height={siteSkeleton.height}
+                lastHeight={siteSkeleton.lastHeight}
+              />
+            ) : sites.length ? (
+              sites.map(site => {
+                const cfg = SITE_STATE[site.status] || SITE_STATE.operational
+                const hosts = (site.domains?.length ? site.domains : [site.domain]).map(
+                  displayDomain
+                )
+                return (
+                  <li
+                    key={site.id}
+                    className="border-hair-paper animate-fade-in-up border-t px-5 py-3"
+                  >
+                    <div className="flex items-center gap-2.5 text-[14px] tracking-[-0.005em]">
+                      <span
+                        aria-hidden="true"
+                        className={`inline-block h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
+                      />
+                      {/* The board names a site the way its owner does -
+                          "Baytown Go Karts" rather than a hostname - so the
+                          mark is looked up on the first domain it answers on,
+                          which is what the icon set is keyed by. */}
+                      <SiteIcon host={apexOf(site)} name={site.name} />
+                      <span className="truncate text-ink-paper">{site.name}</span>
+                      {/* The host earns its place on the line rather than a
+                          second one under the name: it is what tells two sites
+                          of a similar name apart, and it is read once. A site
+                          on more than one host names them all, with the list in
+                          the title where the line runs out of room. */}
+                      <span className="text-paper-faint truncate" title={hosts.join(', ')}>
+                        {hosts.join(' · ')}
+                      </span>
+                      <span className="text-paper-faint ml-auto flex-shrink-0 whitespace-nowrap">
+                        {site.uptime_30d?.toFixed(2)}% uptime
+                      </span>
+                      {/* The dot is a colour, and a colour is not a word to
+                          anything that cannot see it. */}
+                      <span className="sr-only">{`${site.name} is ${cfg.label.toLowerCase()}`}</span>
+                    </div>
+                    <UptimeStrip days={site.days} span={span} className="mt-2.5" />
+                  </li>
+                )
+              })
+            ) : (
+              <li className="border-hair-paper border-t px-5 py-10 text-center text-[13px] text-paper-soft">
+                The status feed is not answering. This page keeps retrying on its own.
+              </li>
+            )}
+          </ul>
         </PanelBody>
       </Panel>
 
