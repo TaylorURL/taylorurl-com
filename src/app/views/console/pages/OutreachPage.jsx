@@ -20,6 +20,8 @@ import {
 } from '../../../../../lib/outreach/limits.js'
 import { ZONE } from '@lib/time/zone.js'
 import { SEGMENTS, segmentOf } from '@lib/outreach/segments.js'
+import { isYoung, youthOf } from '@lib/outreach/youth.js'
+import { ASKED_SOURCE } from '@lib/outreach/rank.js'
 import {
   Area,
   Badge,
@@ -254,6 +256,50 @@ const SEGMENT = {
 }
 
 /**
+ * The three readings a listing's review count can come to, keyed the way
+ * lib/outreach/youth.js keys them.
+ *
+ * Reviews are the one thing on a Google listing that only accumulates with time
+ * and trade, so a business carrying almost none has either opened recently or
+ * has never been visible enough to collect any. Those are the same sale and the
+ * console does not try to separate them; what it does keep separate is a count
+ * of nothing from no count at all, because a third of the table has never been
+ * asked for the field and reading that silence as a zero would mark every row
+ * the pipeline knows least about as the freshest lead on the page.
+ *
+ * Only 'young' earns a badge. The other two are the ordinary case and the
+ * unknown case, and a column of chips that fires on every row says nothing.
+ */
+const YOUTH = {
+  young: {
+    label: 'Young',
+    caption: 'under ten reviews, so it has either opened recently or never been visible',
+  },
+  established: {
+    label: 'Established',
+    caption: 'reviews enough that it has been trading and being found for a while',
+  },
+  unread: {
+    label: 'Unread',
+    caption: 'no review count on the row, so nothing here says how long it has traded',
+  },
+}
+
+/**
+ * A business that ran the speed check on its own site, which is the strongest
+ * thing a row can say about itself.
+ *
+ * Every other reading on the page is the studio looking at a business. This one
+ * is the business looking at itself and not liking what it found, at the moment
+ * it was thinking about it, which is why it sits in front of every measured
+ * site in the queue however well or badly that site scored.
+ */
+const ASKED = {
+  label: 'Asked',
+  caption: 'ran the speed check on its own site, so it found the problem itself',
+}
+
+/**
  * Where a prospect came from, in the console's words. The sweep files under
  * 'places' and the form under 'console'; a source the console has no word for
  * is shown as the row says it.
@@ -261,6 +307,7 @@ const SEGMENT = {
 const SOURCE = {
   places: 'Google Places',
   console: 'By Hand',
+  [ASKED_SOURCE]: 'Speed Check',
 }
 
 /**
@@ -486,6 +533,27 @@ function SegmentChip({ prospect }) {
 }
 
 /**
+ * Why a row is sent before the measured sites, where it is, and nothing where
+ * it is not.
+ *
+ * The two readings are read in the order the send queue ranks them, and the
+ * first one true is the whole of the answer: a business that asked is not then
+ * also weighed on how young its listing looks, because the strongest thing true
+ * about a row is its position. A row with neither reading gets no chip at all
+ * rather than a word for being ordinary, which is what keeps the badge worth
+ * looking for in a column fifty rows long.
+ *
+ * Plain, like the segment beside it. The opportunity mark on the same row
+ * already carries the one colour the row earns, and a second coloured badge
+ * would read as a second verdict on the same question.
+ */
+function AxisChip({ prospect }) {
+  if (prospect?.source === ASKED_SOURCE) return <Chip tone="plain">{ASKED.label}</Chip>
+  if (isYoung(prospect)) return <Chip tone="plain">{YOUTH.young.label}</Chip>
+  return null
+}
+
+/**
  * A band and the figure behind it, together.
  *
  * A chip is what marks a business worth an hour, so only the two bands that are
@@ -610,6 +678,38 @@ function StageRow({ name, count, peak, picked, loading, onPick }) {
           />
         </span>
       </button>
+    </li>
+  )
+}
+
+/**
+ * One figure about the businesses waiting on a first letter that the stage
+ * counts above cannot give.
+ *
+ * A stage says where a business has got to. Neither of these does: they say how
+ * much of what is waiting would be sent before the measured sites, and how much
+ * of it reads as newly trading, both worked out from the row rather than stored
+ * on it. So they sit under the stages instead of among them, and they read
+ * rather than press, since there is no stage for them to narrow the table to.
+ *
+ * A figure that has not arrived waits as a placeholder rather than as a zero,
+ * the same way the stages above do. A zero here would say the queue is holding
+ * no strong leads at all, and that is the one reading off this panel somebody
+ * would act on, by turning the sourcing up.
+ */
+function QueueFigure({ label, count, loading }) {
+  return (
+    <li className="flex items-baseline justify-between gap-3 px-5 py-1.5">
+      <span className={`${MONO_LABEL} text-paper-faint min-w-0 truncate`}>{label}</span>
+      {loading ? (
+        <SkeletonBar className="w-8 shrink-0" />
+      ) : (
+        <span
+          className={`shrink-0 font-mono text-[12px] tabular-nums ${count ? 'text-paper-soft' : 'text-paper-faint'}`}
+        >
+          {fullCount(count)}
+        </span>
+      )}
     </li>
   )
 }
@@ -1706,6 +1806,7 @@ function ProspectRow({ row, onOpenProspect }) {
             <OpportunityMark lead={lead} />
           </span>
           <SegmentChip prospect={row} />
+          <AxisChip prospect={row} />
           <span className={`${MONO_LABEL} text-paper-faint sm:hidden`}>
             {row.contacted_at ? day(row.contacted_at) : 'not written to yet'}
           </span>
@@ -1715,7 +1816,10 @@ function ProspectRow({ row, onOpenProspect }) {
         <OpportunityMark lead={lead} />
       </td>
       <td className={`${CELL} ${FROM_XL}`}>
-        <SegmentChip prospect={row} />
+        <span className="flex flex-wrap items-center gap-1.5">
+          <SegmentChip prospect={row} />
+          <AxisChip prospect={row} />
+        </span>
       </td>
       <td className={`${CELL} ${FROM_SM} whitespace-nowrap text-paper-soft`}>
         {day(row.contacted_at)}
@@ -2345,6 +2449,13 @@ function ProfileSheet({
   }
   const lead = opportunityOf(record)
   const segment = SEGMENT[segmentOf(record)]
+  // What the listing says about how long the business has been trading, read
+  // in full here rather than as the badge alone: 'established' and 'unread' get
+  // no chip in a table because they are the ordinary and the unknown case, but
+  // on one business's own record the difference between a listing with reviews
+  // and a listing nobody has read is worth a sentence.
+  const listing = YOUTH[youthOf(record)]
+  const asked = record.source === ASKED_SOURCE
   const messages = record.messages || []
   return (
     <>
@@ -2376,9 +2487,20 @@ function ProfileSheet({
           )}
         </Fact>
         <Fact label="Kind">
-          <SegmentChip prospect={record} />
+          <span className="flex flex-wrap items-center gap-1.5">
+            <SegmentChip prospect={record} />
+            <AxisChip prospect={record} />
+          </span>
           <span className="text-paper-faint mt-1.5 block text-[12px] leading-relaxed">
             {segment.caption}
+          </span>
+          {asked && (
+            <span className="text-paper-faint block text-[12px] leading-relaxed">
+              {ASKED.caption}
+            </span>
+          )}
+          <span className="text-paper-faint block text-[12px] leading-relaxed">
+            {listing.caption}
           </span>
         </Fact>
         <p className="text-paper-faint text-[12px] leading-relaxed sm:col-span-2">{SCALE}</p>
@@ -3002,6 +3124,14 @@ export default function OutreachPage() {
                     onPick={pickStage}
                   />
                 ))}
+              </ul>
+              {/* The two readings the send queue puts in front of every
+                  measured site, counted over the businesses still owed a first
+                  letter. They are taken from the same sample as the stages
+                  above, so the note under them covers these as well. */}
+              <ul className="border-hair-paper border-t py-1 sm:grid sm:grid-cols-2">
+                <QueueFigure label="Ahead of Score" count={data?.ahead_leads} loading={loading} />
+                <QueueFigure label="Young Listings" count={data?.young_leads} loading={loading} />
               </ul>
               {sampled && (
                 <p className="border-hair-paper text-paper-faint border-t px-5 py-3 text-[12px] leading-relaxed">
