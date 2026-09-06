@@ -40,7 +40,7 @@
     },
     {
       "path": "/api/start-followup",
-      "schedule": "10 15 * * *"
+      "schedule": "*/15 * * * *"
     }
   ],
   "redirects": [

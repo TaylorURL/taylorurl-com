@@ -5,6 +5,7 @@ import { fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/useSession'
 import { useLeadsFeed } from '@hooks/useLeadsFeed'
 import { formatInstant } from '@lib/time/zone.js'
+import { fromPaymentPage } from '@lib/leads/paths.js'
 import {
   Area,
   Badge,
@@ -35,10 +36,19 @@ import { CELL_TIGHT, MONO_LABEL, QUIET, TH_TIGHT } from '../lib/tokens'
  * had to forget one of those. What the badge shows is the furthest thing that
  * happened.
  *
- * The brief under a row is what they had picked when they stopped, recorded as
- * they picked it rather than only when they paid. A step number says how far
- * somebody got and nothing about what they wanted, and the whole use of a lead
- * who left is being able to write to them about the thing they were after.
+ * The brief under a row is everything they told the site, recorded as they
+ * typed it rather than only when they paid: the answers they picked off the
+ * screens, and the business name, phone number and website they typed into the
+ * payment form. A step number says how far somebody got and nothing about what
+ * they wanted or how to reach them, and the whole use of a lead who left is
+ * being able to write back about the thing they were after.
+ *
+ * The short checkout at `/payment` is here as well as the configurator. It asks
+ * three questions and is handed to somebody who has already agreed to the
+ * build, so the ones who stop on it are the most expensive leads the site can
+ * lose - and until they were recorded they were the only visitors who left no
+ * row at all. They are told apart by the page rather than by the step, because
+ * a person on that page is at the payment whichever route brought them there.
  *
  * Nothing on this page writes to anybody. There is no control here that sends
  * a message, because a hundred addresses beside a button is a mistake waiting
@@ -71,9 +81,10 @@ function when(value) {
 }
 
 /** How far somebody reached, written as the screen they were on. */
-function reached(step) {
-  const name = STEPS[step]
-  return name ? `${step + 1}. ${name}` : `Step ${(step ?? 0) + 1}`
+function reached(lead) {
+  if (fromPaymentPage(lead.path)) return 'Payment page'
+  const name = STEPS[lead.step]
+  return name ? `${lead.step + 1}. ${name}` : `Step ${(lead.step ?? 0) + 1}`
 }
 
 /**
@@ -103,9 +114,9 @@ function briefRows(lead) {
 }
 
 /**
- * One lead, and what they had picked when they stopped.
+ * One lead, and everything they told the site before they stopped.
  *
- * The brief is a second row rather than a cell, because it is nine short
+ * The brief is a second row rather than a cell, because it is a dozen short
  * answers and a table column wide enough to hold them is a table nothing else
  * fits in. It opens on the address, which is the thing somebody is already
  * pointing at when they decide they want to know more about a lead.
@@ -146,7 +157,7 @@ function LeadRow({ lead }) {
         <td className={`${CELL_TIGHT} ${HIDE_SM}`}>
           <span className="block truncate text-[13px] text-paper-soft">{lead.trade || '—'}</span>
         </td>
-        <td className={`${CELL_TIGHT} tabular-nums`}>{reached(lead.step)}</td>
+        <td className={`${CELL_TIGHT} tabular-nums`}>{reached(lead)}</td>
         <td className={CELL_TIGHT}>
           <Badge tone={state.tone}>{state.label}</Badge>
         </td>
@@ -226,7 +237,7 @@ function Leads({ leads, loading, area, capped }) {
       <PanelFoot>
         {capped
           ? 'The newest leads, up to the number one read carries. The figures above are counted over every row rather than over these.'
-          : 'An address is recorded as the first step is answered, so somebody who left on the second screen is here as surely as somebody who paid. Open an address to read what they had picked when they stopped.'}
+          : 'An address is recorded as it is typed, on the first step of the configurator and on the payment page alike, so somebody who left on the second screen is here as surely as somebody who paid. Open an address to read what they had answered when they stopped.'}
       </PanelFoot>
     </Panel>
   )
@@ -259,7 +270,7 @@ export default function LeadsPage() {
           <StatCard
             label="Leads"
             value={loading ? '' : String(totals.all ?? 0)}
-            caption="addresses left on the first step"
+            caption="addresses left on the way to a card"
             loading={loading}
           />
           <StatCard
@@ -272,7 +283,7 @@ export default function LeadsPage() {
           <StatCard
             label="Reached Checkout"
             value={loading ? '' : String(totals.checkout ?? 0)}
-            caption="opened the payment page"
+            caption="reached Stripe's own page"
             loading={loading}
           />
           <StatCard
@@ -285,7 +296,7 @@ export default function LeadsPage() {
           <StatCard
             label="Followed Up"
             value={loading ? '' : String(totals.followed ?? 0)}
-            caption="written to a day after they left"
+            caption="written to an hour after they left"
             loading={loading}
           />
         </m.div>
