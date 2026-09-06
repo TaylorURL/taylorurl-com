@@ -12,9 +12,11 @@ name: Portfolio captures
 
 on:
   schedule:
-    # Early Monday, so a week of client changes is picked up before anyone is
-    # looking at the site.
-    - cron: '17 9 * * 1'
+    # Every night, so a day of client changes is picked up before anyone is
+    # looking at the site. GitHub reads this field as UTC and has no notion of
+    # a timezone, so the hour is written for 1am Central on daylight time and
+    # lands at midnight Central through the winter.
+    - cron: '0 6 * * *'
   workflow_dispatch:
 
 concurrency:
@@ -87,5 +89,5 @@ jobs:
           git push -u origin "$branch"
           gh pr create --base develop --head "$branch" \
             --title "Refresh the portfolio previews that moved" \
-            --body "${moved} committed preview(s) no longer matched the live site, and were recaptured on the weekly run."
+            --body "${moved} committed preview(s) no longer matched the live site, and were recaptured on the nightly run."
           gh pr merge "$branch" --auto --squash --delete-branch
