@@ -170,10 +170,15 @@ function windowSpan(windowDays) {
  * it - a strip of thirty across a wide card comes out sixteen by sixteen, and
  * a square is a square whatever the air beside it measures.
  *
- * The strip is as wide as its days make it rather than as wide as the row, and
- * it hangs from the right so that what survives a card too narrow to hold it
- * is the recent end. Today is the day a reader is looking for; the far edge of
- * the history is the part that can afford to go.
+ * The strip is as wide as its days make it rather than as wide as the row, so
+ * it opens at the left edge under the name it belongs to. Sized to the row it
+ * was a box with the marks packed into the far corner of it, which reads as a
+ * figure aligned to the right of the line rather than as a run of days.
+ *
+ * What the packing is for is the case where the days do not fit: capped at the
+ * row's width the strip keeps its right edge, so what survives a card too
+ * narrow to hold it is the recent end. Today is the day a reader is looking
+ * for; the far edge of the history is the part that can afford to go.
  */
 
 /**
@@ -220,7 +225,7 @@ function UptimeStrip({ days, className = '' }) {
   const shown = stripDays(days)
   return (
     <div
-      className={`flex h-4 items-stretch justify-end gap-[2px] overflow-hidden ${className}`}
+      className={`flex h-4 w-fit max-w-full items-stretch justify-end gap-[2px] overflow-hidden ${className}`}
       aria-hidden="true"
     >
       {shown.map(day => (
