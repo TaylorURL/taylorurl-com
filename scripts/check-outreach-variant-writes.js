@@ -51,39 +51,72 @@ const ok = (condition, what) => {
 // ── The database stand-in ────────────────────────────────────────────────
 
 /**
+ * Which of the reads behind a sample a query is, read off the query itself.
+ *
+ * The queue is two passes over the businesses - the one carrying the rows that
+ * beat a score, which is the one carrying the `or`, and the scored one, which is
+ * the one ordered by the score - and where nothing in it fits, the whole file is
+ * read newest first. Each is answered by what it asked for rather than by how
+ * many reads came before it, so a queue that reads the table one more time still
+ * hands every fixture to the read it was written for. A query answering to none
+ * of them is one the plan has no fixture for, and it says so rather than being
+ * handed another read's rows.
+ */
+const prospectRead = state => {
+  if (state.where.some(clause => clause.how === 'or')) return 'priority'
+  if (state.order.some(by => by.column === 'audit_score')) return 'scored'
+  if (state.order.some(by => by.column === 'created_at')) return 'filed'
+  throw new Error('a read of the businesses the plan does not know')
+}
+
+/**
  * A client that answers every query from a plan, and records what was asked.
  *
  * The same stand-in the other outreach checks drive their routes against. The
  * storage bucket answers that nothing is on file, so a preview renders with no
  * capture and fetches none.
+ *
+ * A plan is keyed by operation and table - `select:outreach_variants` - and a
+ * read of the businesses may be keyed one step further, by which of the reads
+ * behind a sample it answers: `select:outreach_prospects:filed` is the whole
+ * file's own fixture, and `prospectRead` above says how each read is recognised.
+ * An entry under the plain key answers any read the named keys leave over. An
+ * array under either is served an element per call, the last standing for the
+ * rest.
  */
 function stubDb(plan) {
   const asked = []
   const writes = []
   const pending = new Map()
 
-  const answerFor = key => {
-    const planned = plan[key]
+  const answerFor = (key, role) => {
+    const named = role === null ? null : `${key}:${role}`
+    const at = named !== null && plan[named] !== undefined ? named : key
+    const planned = plan[at]
     if (planned === undefined) return { data: [], error: null, count: 0 }
     if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
+    const call = pending.get(at) ?? 0
+    pending.set(at, call + 1)
+    return planned[Math.min(call, planned.length - 1)]
   }
 
   const from = table => {
-    const state = { table, op: 'select', payload: null, options: null }
+    const state = { table, op: 'select', payload: null, options: null, where: [], order: [] }
     const chain = new Proxy(
       {},
       {
         get(_, prop) {
           if (prop === 'then') {
             const key = `${state.op}:${state.table}`
+            const role =
+              state.op === 'select' && state.table === 'outreach_prospects'
+                ? prospectRead(state)
+                : null
             asked.push(key)
             if (state.op !== 'select') {
               writes.push({ key, payload: state.payload, options: state.options })
             }
-            const answer = answerFor(key)
+            const answer = answerFor(key, role)
             return (resolve, reject) => Promise.resolve(answer).then(resolve, reject)
           }
           return (...args) => {
@@ -91,6 +124,10 @@ function stubDb(plan) {
               state.op = prop
               state.payload = args[0] ?? null
               state.options = args[1] ?? null
+            }
+            if (prop === 'order') state.order.push({ column: args[0], options: args[1] ?? null })
+            if (['eq', 'is', 'in', 'neq', 'lte', 'gte', 'not', 'or'].includes(prop)) {
+              state.where.push({ how: prop, column: args[0], value: args[1] })
             }
             return chain
           }
@@ -607,16 +644,16 @@ check(
 
 check('with nothing waiting, a business on file that reads as the segment is used', async () => {
   const { db, asked } = stubDb({
-    'select:outreach_prospects': [
-      { data: [], error: null },
-      { data: [SOCIAL, SCORED], error: null },
-    ],
+    'select:outreach_prospects': { data: [], error: null },
+    'select:outreach_prospects:filed': { data: [SOCIAL, SCORED], error: null },
   })
   const answer = await preview(db, { variant: 'no-site-listing' })
   same(answer.status, 200, 'the status')
   same(answer.body.prospect.id, 'p1', 'the business rendered for')
   same(answer.body.prospect.queued, false, 'whether it is waiting in the queue')
-  same(asked.filter(call => call === 'select:outreach_prospects').length, 2, 'reads of the table')
+  // The queue's two passes, and then the file, which is the read a queue with
+  // nothing waiting in it falls through to.
+  same(asked.filter(call => call === 'select:outreach_prospects').length, 3, 'reads of the table')
 })
 
 check('a segment nobody on file is in has nothing to render against', async () => {

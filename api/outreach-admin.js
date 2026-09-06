@@ -107,6 +107,8 @@ import {
   wouldEmptySegment,
 } from '../lib/outreach/variants.js'
 import { segmentOf } from '../lib/outreach/segments.js'
+import { isYoung } from '../lib/outreach/youth.js'
+import { ranksAhead } from '../lib/outreach/rank.js'
 import { storedShot } from '../lib/outreach/shot.js'
 import { compose, deliverProof, sender } from './outreach/send.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
@@ -186,6 +188,18 @@ const STAGES = [
 ]
 const JOBS = ['source', 'enrich', 'audit', 'send', 'watch', 'ramp']
 
+// The stages a business stands at while it is still owed a first letter, which
+// is the same four the send queue's own read takes.
+//
+// That read asks for an address as well, and this cannot: the summary carries
+// no email column, and adding one would put every address on file through a
+// count that only ever needed a stage. So the two figures below are the shape
+// of the table waiting to be written to rather than the length of the queue
+// itself, and they read high by however many of those rows the enricher has
+// not found an address for yet. Said here rather than left to be worked out
+// from a figure that looks exact.
+const WAITING_STAGES = new Set(['enriched', 'audited', 'queued', 'unreachable'])
+
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const EMAIL_MAX = 254
 
@@ -193,8 +207,18 @@ const EMAIL_MAX = 254
 // what its missing audit score means, so site_kind rides on the table row as
 // well as the profile. The website travels with it, because a row written
 // before that column existed is read by the host it listed instead.
+//
+// source, rating_count and business_status travel for the same reason one step
+// on. What puts a business in front of the send queue is no longer its score
+// alone: a business that ran the speed check on its own site asked for the
+// reading itself, and a listing carrying almost no reviews is one that has not
+// been trading long or has never been seen. Both of those are read off the row
+// rather than stored as a verdict on it, so a table handed the score and
+// nothing else can only draw every row as an ordinary one, and the strongest
+// leads on the page would be the ones it drew flattest.
 const PROSPECT_ROW =
-  'id, name, town, trade, stage, audit_score, website, site_kind, contacted_at, replied_at'
+  'id, name, town, trade, stage, audit_score, website, site_kind, contacted_at, replied_at, ' +
+  'source, rating_count, business_status'
 // The letter the business holds rides on the profile, since the profile is
 // where what has been sent to one business is read. Without it that panel
 // reports every business as having been given no letter, however many it has
@@ -477,7 +501,10 @@ async function board(db, query) {
         () =>
           db
             .from('outreach_prospects')
-            .select('stage, town, trade, audit_score, website, site_kind'),
+            .select(
+              'stage, town, trade, audit_score, website, site_kind, source, rating_count, ' +
+                'business_status'
+            ),
         { max: SUMMARY_LIMIT }
       ),
       countOf(db.from('outreach_prospects').select('id', { count: 'exact', head: true })),
@@ -522,9 +549,23 @@ async function board(db, query) {
   // alone because a strong lead already queued or contacted is work that has
   // been done rather than work waiting to be done.
   let strong = 0
+  // How much of the waiting table would be sent ahead of every measured site,
+  // and how much of it reads as a business that has not been trading long.
+  //
+  // Both are counted off the row rather than stored on it, the same way the
+  // strong figure above is, and both are counted over the businesses still owed
+  // a first letter for the same reason: a lead already written to is work that
+  // has been done. The ahead figure is `ranksAhead` rather than a second list
+  // of the reasons a row jumps the queue, so the console cannot end up
+  // reporting a promotion the sender does not make, or missing one it does.
+  let ahead = 0
+  let young = 0
   for (const row of summary.rows) {
     if (row.stage in counts) counts[row.stage] += 1
     if (row.stage === 'audited' && opportunityBand(row) === 'strong') strong += 1
+    if (!WAITING_STAGES.has(row.stage)) continue
+    if (ranksAhead(row)) ahead += 1
+    if (isYoung(row)) young += 1
   }
   const towns = [...new Set(summary.rows.map(row => row.town).filter(Boolean))].sort()
   const trades = [...new Set(summary.rows.map(row => row.trade).filter(Boolean))].sort()
@@ -540,6 +581,8 @@ async function board(db, query) {
       summarised: summary.rows.length,
       counts,
       strong_leads: strong,
+      ahead_leads: ahead,
+      young_leads: young,
       towns,
       trades,
       contacted_today: today,
