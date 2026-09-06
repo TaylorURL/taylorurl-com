@@ -1,0 +1,305 @@
+{
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "crons": [
+    {
+      "path": "/api/outreach/source",
+      "schedule": "0 */2 * * *"
+    },
+    {
+      "path": "/api/outreach/enrich",
+      "schedule": "*/10 * * * *"
+    },
+    {
+      "path": "/api/outreach/audit",
+      "schedule": "10,40 * * * *"
+    },
+    {
+      "path": "/api/outreach/ramp",
+      "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/outreach/send",
+      "schedule": "*/10 13-23 * * *"
+    },
+    {
+      "path": "/api/outreach/watch",
+      "schedule": "30 * * * *"
+    },
+    {
+      "path": "/api/social-queue",
+      "schedule": "20 15 * * *"
+    },
+    {
+      "path": "/api/social-watch",
+      "schedule": "40 17 * * *"
+    },
+    {
+      "path": "/api/newsletter-due",
+      "schedule": "0 14 1 * *"
+    },
+    {
+      "path": "/api/start-followup",
+      "schedule": "10 15 * * *"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/portfolio/domebreak",
+      "destination": "/portfolio",
+      "permanent": true
+    },
+    {
+      "source": "/portfolio/knight-plugins",
+      "destination": "/portfolio",
+      "permanent": true
+    },
+    {
+      "source": "/portfolio/root-and-rise",
+      "destination": "/portfolio",
+      "permanent": true
+    },
+    {
+      "source": "/status",
+      "destination": "/console/status",
+      "permanent": true
+    },
+    {
+      "source": "/status/analytics",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/traffic",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/places",
+      "destination": "/console/visitors",
+      "permanent": true
+    },
+    {
+      "source": "/console/tech",
+      "destination": "/console/visitors",
+      "permanent": true
+    },
+    {
+      "source": "/blog/what-happens-when-your-website-goes-down",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/why-we-dont-use-wordpress-and-you-shouldnt-either",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/ssl-certificates-what-they-are-and-why-you-need-one",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/what-is-web-hosting-and-why-does-it-matter",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/how-we-build-websites-our-tech-stack-explained",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/website-maintenance-what-it-is-and-why-you-cant-skip-it",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/the-truth-about-website-templates",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/blog/series/the-build-log",
+      "destination": "/blog",
+      "permanent": true
+    },
+    {
+      "source": "/areas/katy",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/sugar-land",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/pearland",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/friendswood",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/webster",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/league-city",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/humble",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/spring",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/areas/the-woodlands",
+      "destination": "/areas",
+      "permanent": true
+    },
+    {
+      "source": "/onboarding",
+      "destination": "/console/project",
+      "permanent": true
+    },
+    {
+      "source": "/onboarding/intake-questionnaire",
+      "destination": "/console/project",
+      "permanent": true
+    },
+    {
+      "source": "/onboarding/process-and-timeline",
+      "destination": "/console/project",
+      "permanent": true
+    },
+    {
+      "source": "/onboarding/client-portal",
+      "destination": "/console/project",
+      "permanent": true
+    },
+    {
+      "source": "/onboarding/communication-and-support",
+      "destination": "/console/project",
+      "permanent": true
+    },
+    {
+      "source": "/tools/sunday",
+      "destination": "/tools",
+      "permanent": true
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(webp|png|jpg|jpeg|avif|svg|ico)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=2592000"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/fonts/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/images/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/feed.xml",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/rss+xml; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    }
+  ]
+}

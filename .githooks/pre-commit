@@ -1,0 +1,42 @@
+#!/bin/sh
+#
+# Refuses a commit being written under an AI identity.
+#
+# An agent session configures git as `Claude <noreply@anthropic.com>` and every
+# commit it writes carries that as both author and committer. This repository
+# forbids it, and the only gate that saw it was `check`, which runs on a pull
+# request and therefore never on a push straight to a branch. Two such commits
+# reached `develop` twenty minutes apart before anything said so, and neither
+# could be taken back out without a force-push the branch does not allow.
+#
+# So it is refused here, before the commit exists, where the fix is still one
+# line of config rather than a rewrite of shared history.
+#
+# `.claude/hooks/session-start.sh` sets the identity at the start of an agent
+# session, which is what makes this a backstop rather than a wall people walk
+# into. It stays because that hook cannot run everywhere: a merge commit skips
+# pre-commit entirely, and a session started before the hook landed has no
+# identity set at all.
+set -eu
+
+. "$(dirname "$0")/attribution.sh"
+
+if printf '%s %s' "$(git var GIT_AUTHOR_IDENT)" "$(git var GIT_COMMITTER_IDENT)" |
+  grep -qiE "$AI_IDENTITY"; then
+  cat >&2 <<MESSAGE
+Refusing the commit: git is configured under an AI identity.
+
+  user.name   $(git config user.name || echo '(unset)')
+  user.email  $(git config user.email || echo '(unset)')
+
+Every commit in this repository is authored by the person responsible for it,
+and .github/workflows/ci.yml refuses anything else — a commit written now is a
+commit that cannot be merged and, on a protected branch, cannot be removed.
+
+Set the identity for this clone, then commit again:
+
+  git config user.name  "Your Name"
+  git config user.email "you@example.com"
+MESSAGE
+  exit 1
+fi

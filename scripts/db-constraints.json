@@ -1,0 +1,387 @@
+{
+  "note": "Taken from the live schema. Refresh with: npm run refresh:db-constraints",
+  "schema": "public",
+  "columns": {
+    "enquiry_attribution": {
+      "form": {
+        "constraint": "enquiry_attribution_form_check",
+        "allows": ["contact", "start", "tools"],
+        "definition": "CHECK ((form = ANY (ARRAY['contact'::text, 'start'::text, 'tools'::text])))"
+      }
+    },
+    "gd_matches": {
+      "status": {
+        "constraint": "gd_matches_status_check",
+        "allows": ["lobby", "build", "combat", "done"],
+        "definition": "CHECK ((status = ANY (ARRAY['lobby'::text, 'build'::text, 'combat'::text, 'done'::text])))"
+      }
+    },
+    "gd_placements": {
+      "kind": {
+        "constraint": "gd_placements_kind_check",
+        "allows": ["silo", "interceptor", "radar", "dome"],
+        "definition": "CHECK ((kind = ANY (ARRAY['silo'::text, 'interceptor'::text, 'radar'::text, 'dome'::text])))"
+      }
+    },
+    "newsletter_issues": {
+      "status": {
+        "constraint": "newsletter_issues_status_check",
+        "allows": ["draft", "scheduled", "sent"],
+        "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'scheduled'::text, 'sent'::text])))"
+      }
+    },
+    "outreach_domains": {
+      "verdict": {
+        "constraint": "outreach_domains_verdict_check",
+        "allows": ["deliverable", "undeliverable", "unknown"],
+        "definition": "CHECK ((verdict = ANY (ARRAY['deliverable'::text, 'undeliverable'::text, 'unknown'::text])))"
+      }
+    },
+    "outreach_messages": {
+      "direction": {
+        "constraint": "outreach_messages_direction_check",
+        "allows": ["outbound", "inbound"],
+        "definition": "CHECK ((direction = ANY (ARRAY['outbound'::text, 'inbound'::text])))"
+      },
+      "intent": {
+        "constraint": "outreach_messages_intent_check",
+        "allows": ["opt_out", "auto_reply"],
+        "definition": "CHECK (((intent IS NULL) OR (intent = ANY (ARRAY['opt_out'::text, 'auto_reply'::text]))))"
+      },
+      "status": {
+        "constraint": "outreach_messages_status_check",
+        "allows": ["drafted", "sent", "failed", "bounced", "received"],
+        "definition": "CHECK ((status = ANY (ARRAY['drafted'::text, 'sent'::text, 'failed'::text, 'bounced'::text, 'received'::text])))"
+      }
+    },
+    "outreach_prospects": {
+      "email_verdict": {
+        "constraint": "outreach_prospects_email_verdict_check",
+        "allows": ["deliverable", "undeliverable", "unknown"],
+        "definition": "CHECK ((email_verdict = ANY (ARRAY['deliverable'::text, 'undeliverable'::text, 'unknown'::text])))"
+      },
+      "site_kind": {
+        "constraint": "outreach_prospects_site_kind_check",
+        "allows": ["own", "social", "none"],
+        "definition": "CHECK ((site_kind = ANY (ARRAY['own'::text, 'social'::text, 'none'::text])))"
+      },
+      "stage": {
+        "constraint": "outreach_prospects_stage_check",
+        "allows": [
+          "found",
+          "enriched",
+          "audited",
+          "queued",
+          "contacted",
+          "replied",
+          "unsubscribed",
+          "bounced",
+          "unreachable",
+          "undeliverable",
+          "skipped"
+        ],
+        "definition": "CHECK ((stage = ANY (ARRAY['found'::text, 'enriched'::text, 'audited'::text, 'queued'::text, 'contacted'::text, 'replied'::text, 'unsubscribed'::text, 'bounced'::text, 'unreachable'::text, 'undeliverable'::text, 'skipped'::text])))"
+      }
+    },
+    "outreach_runs": {
+      "job": {
+        "constraint": "outreach_runs_job_check",
+        "allows": ["source", "enrich", "audit", "send", "watch", "ramp"],
+        "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'enrich'::text, 'audit'::text, 'send'::text, 'watch'::text, 'ramp'::text])))"
+      }
+    },
+    "outreach_variants": {
+      "status": {
+        "constraint": "outreach_variants_status_check",
+        "allows": ["live", "paused", "draft"],
+        "definition": "CHECK ((status = ANY (ARRAY['live'::text, 'paused'::text, 'draft'::text])))"
+      }
+    },
+    "profiles": {
+      "role": {
+        "constraint": "profiles_role_check",
+        "allows": ["client", "staff", "admin"],
+        "definition": "CHECK ((role = ANY (ARRAY['client'::text, 'staff'::text, 'admin'::text])))"
+      }
+    },
+    "project_tasks": {
+      "kind": {
+        "constraint": "project_tasks_kind_check",
+        "allows": ["tick", "text", "files"],
+        "definition": "CHECK ((kind = ANY (ARRAY['tick'::text, 'text'::text, 'files'::text])))"
+      },
+      "owner": {
+        "constraint": "project_tasks_owner_check",
+        "allows": ["client", "studio"],
+        "definition": "CHECK ((owner = ANY (ARRAY['client'::text, 'studio'::text])))"
+      },
+      "stage": {
+        "constraint": "project_tasks_stage_check",
+        "allows": ["received", "getting_started", "design", "build", "checks", "live"],
+        "definition": "CHECK ((stage = ANY (ARRAY['received'::text, 'getting_started'::text, 'design'::text, 'build'::text, 'checks'::text, 'live'::text])))"
+      }
+    },
+    "project_updates": {
+      "stage": {
+        "constraint": "project_updates_stage_check",
+        "allows": ["received", "getting_started", "design", "build", "checks", "live"],
+        "definition": "CHECK ((stage = ANY (ARRAY['received'::text, 'getting_started'::text, 'design'::text, 'build'::text, 'checks'::text, 'live'::text])))"
+      }
+    },
+    "projects": {
+      "stage": {
+        "constraint": "projects_stage_check",
+        "allows": ["received", "getting_started", "design", "build", "checks", "live"],
+        "definition": "CHECK ((stage = ANY (ARRAY['received'::text, 'getting_started'::text, 'design'::text, 'build'::text, 'checks'::text, 'live'::text])))"
+      },
+      "status": {
+        "constraint": "projects_status_check",
+        "allows": ["active", "complete", "cancelled"],
+        "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'complete'::text, 'cancelled'::text])))"
+      }
+    },
+    "site_members": {
+      "role": {
+        "constraint": "site_members_role_check",
+        "allows": ["viewer", "editor"],
+        "definition": "CHECK ((role = ANY (ARRAY['viewer'::text, 'editor'::text])))"
+      },
+      "source": {
+        "constraint": "site_members_source_check",
+        "allows": ["domain", "admin", "roster"],
+        "definition": "CHECK ((source = ANY (ARRAY['domain'::text, 'admin'::text, 'roster'::text])))"
+      }
+    },
+    "site_speed_attempt": {
+      "strategy": {
+        "constraint": "site_speed_attempt_strategy_check",
+        "allows": ["mobile", "desktop"],
+        "definition": "CHECK ((strategy = ANY (ARRAY['mobile'::text, 'desktop'::text])))"
+      }
+    },
+    "site_speed": {
+      "strategy": {
+        "constraint": "site_speed_strategy_check",
+        "allows": ["mobile", "desktop"],
+        "definition": "CHECK ((strategy = ANY (ARRAY['mobile'::text, 'desktop'::text])))"
+      }
+    },
+    "speed_checks": {
+      "band": {
+        "constraint": "speed_checks_band_check",
+        "allows": ["poor", "fair", "good", "plain"],
+        "definition": "CHECK ((band = ANY (ARRAY['poor'::text, 'fair'::text, 'good'::text, 'plain'::text])))"
+      },
+      "status": {
+        "constraint": "speed_checks_status_check",
+        "allows": ["running", "done", "failed"],
+        "definition": "CHECK ((status = ANY (ARRAY['running'::text, 'done'::text, 'failed'::text])))"
+      }
+    },
+    "subscribers": {
+      "status": {
+        "constraint": "subscribers_status_check",
+        "allows": ["pending", "subscribed", "unsubscribed", "bounced", "complained"],
+        "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'subscribed'::text, 'unsubscribed'::text, 'bounced'::text, 'complained'::text])))"
+      }
+    },
+    "sunday_ambient_tasks": {
+      "status": {
+        "constraint": "sunday_ambient_tasks_status_check",
+        "allows": ["staging", "proposed", "queued", "running", "done", "failed", "dismissed"],
+        "definition": "CHECK ((status = ANY (ARRAY['staging'::text, 'proposed'::text, 'queued'::text, 'running'::text, 'done'::text, 'failed'::text, 'dismissed'::text])))"
+      }
+    },
+    "sunday_code_logs": {
+      "stream": {
+        "constraint": "sunday_code_logs_stream_check",
+        "allows": ["stdout", "stderr", "meta"],
+        "definition": "CHECK ((stream = ANY (ARRAY['stdout'::text, 'stderr'::text, 'meta'::text])))"
+      }
+    },
+    "sunday_code_queue": {
+      "status": {
+        "constraint": "sunday_code_queue_status_check",
+        "allows": ["pending", "running", "completed", "failed", "cancelled", "cancel_requested"],
+        "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'running'::text, 'completed'::text, 'failed'::text, 'cancelled'::text, 'cancel_requested'::text])))"
+      }
+    },
+    "sunday_conversations": {
+      "initiator": {
+        "constraint": "sunday_conversations_initiator_check",
+        "allows": ["user", "sunday", "system"],
+        "definition": "CHECK ((initiator = ANY (ARRAY['user'::text, 'sunday'::text, 'system'::text])))"
+      },
+      "mode": {
+        "constraint": "sunday_conversations_mode_check",
+        "allows": ["chat", "speak", "voice"],
+        "definition": "CHECK ((mode = ANY (ARRAY['chat'::text, 'speak'::text, 'voice'::text])))"
+      }
+    },
+    "sunday_devices": {
+      "device_type": {
+        "constraint": "sunday_devices_device_type_check",
+        "allows": ["desktop", "mobile", "tablet"],
+        "definition": "CHECK ((device_type = ANY (ARRAY['desktop'::text, 'mobile'::text, 'tablet'::text])))"
+      }
+    },
+    "sunday_files": {
+      "source": {
+        "constraint": "sunday_files_source_check",
+        "allows": ["generated", "uploaded", "deluxfit-upload", "daily-summary"],
+        "definition": "CHECK ((source = ANY (ARRAY['generated'::text, 'uploaded'::text, 'deluxfit-upload'::text, 'daily-summary'::text])))"
+      }
+    },
+    "sunday_interface_conversations": {
+      "status": {
+        "constraint": "sunday_interface_conversations_status_check",
+        "allows": ["active", "deleted"],
+        "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'deleted'::text])))"
+      }
+    },
+    "sunday_interface_files": {
+      "status": {
+        "constraint": "sunday_interface_files_status_check",
+        "allows": ["pending", "building", "ready", "error"],
+        "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'building'::text, 'ready'::text, 'error'::text])))"
+      }
+    },
+    "sunday_interface_jobs": {
+      "status": {
+        "constraint": "sunday_interface_jobs_status_check",
+        "allows": ["pending", "running", "done", "error", "cancelled"],
+        "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'running'::text, 'done'::text, 'error'::text, 'cancelled'::text])))"
+      }
+    },
+    "sunday_interface_messages": {
+      "role": {
+        "constraint": "sunday_interface_messages_role_check",
+        "allows": ["user", "assistant"],
+        "definition": "CHECK ((role = ANY (ARRAY['user'::text, 'assistant'::text])))"
+      }
+    },
+    "sunday_memories": {
+      "kind": {
+        "constraint": "sunday_memories_kind_check",
+        "allows": ["person", "project", "decision", "preference", "fact"],
+        "definition": "CHECK ((kind = ANY (ARRAY['person'::text, 'project'::text, 'decision'::text, 'preference'::text, 'fact'::text])))"
+      }
+    },
+    "sunday_messages": {
+      "role": {
+        "constraint": "sunday_messages_role_check",
+        "allows": ["user", "assistant", "tool"],
+        "definition": "CHECK ((role = ANY (ARRAY['user'::text, 'assistant'::text, 'tool'::text])))"
+      },
+      "status": {
+        "constraint": "sunday_messages_status_check",
+        "allows": ["pending", "streaming", "complete", "error"],
+        "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'streaming'::text, 'complete'::text, 'error'::text])))"
+      }
+    },
+    "sunday_projects": {
+      "status": {
+        "constraint": "sunday_projects_status_check",
+        "allows": ["active", "paused", "archived"],
+        "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'paused'::text, 'archived'::text])))"
+      }
+    },
+    "sunday_reminders": {
+      "status": {
+        "constraint": "sunday_reminders_status_check",
+        "allows": ["pending", "fired", "cancelled"],
+        "definition": "CHECK ((status = ANY (ARRAY['pending'::text, 'fired'::text, 'cancelled'::text])))"
+      }
+    },
+    "sunday_scheduled_task_runs": {
+      "status": {
+        "constraint": "sunday_scheduled_task_runs_status_check",
+        "allows": ["queued", "running", "success", "error"],
+        "definition": "CHECK ((status = ANY (ARRAY['queued'::text, 'running'::text, 'success'::text, 'error'::text])))"
+      },
+      "trigger": {
+        "constraint": "sunday_scheduled_task_runs_trigger_check",
+        "allows": ["schedule", "manual"],
+        "definition": "CHECK ((trigger = ANY (ARRAY['schedule'::text, 'manual'::text])))"
+      }
+    },
+    "sunday_scheduled_tasks": {
+      "last_status": {
+        "constraint": "sunday_scheduled_tasks_last_status_check",
+        "allows": ["success", "error"],
+        "definition": "CHECK (((last_status IS NULL) OR (last_status = ANY (ARRAY['success'::text, 'error'::text]))))"
+      },
+      "schedule_kind": {
+        "constraint": "sunday_scheduled_tasks_schedule_kind_check",
+        "allows": ["interval", "cron"],
+        "definition": "CHECK ((schedule_kind = ANY (ARRAY['interval'::text, 'cron'::text])))"
+      }
+    },
+    "sunday_tasks": {
+      "priority": {
+        "constraint": "sunday_tasks_priority_check",
+        "allows": ["low", "normal", "high", "urgent"],
+        "definition": "CHECK ((priority = ANY (ARRAY['low'::text, 'normal'::text, 'high'::text, 'urgent'::text])))"
+      },
+      "status": {
+        "constraint": "sunday_tasks_status_check",
+        "allows": ["open", "in_progress", "snoozed", "done", "cancelled"],
+        "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'in_progress'::text, 'snoozed'::text, 'done'::text, 'cancelled'::text])))"
+      }
+    },
+    "suppression": {
+      "reason": {
+        "constraint": "suppression_reason_check",
+        "allows": ["unsubscribed", "bounced", "complained", "manual"],
+        "definition": "CHECK ((reason = ANY (ARRAY['unsubscribed'::text, 'bounced'::text, 'complained'::text, 'manual'::text])))"
+      }
+    }
+  },
+  "unread": [
+    {
+      "table": "outreach_settings",
+      "constraint": "outreach_settings_daily_cap_check",
+      "definition": "CHECK (((daily_cap >= 0) AND (daily_cap <= 150)))"
+    },
+    {
+      "table": "outreach_settings",
+      "constraint": "outreach_settings_id_check",
+      "definition": "CHECK ((id = 1))"
+    },
+    {
+      "table": "outreach_settings",
+      "constraint": "outreach_settings_ramp_floor_check",
+      "definition": "CHECK (((ramp_floor >= 0) AND (ramp_floor <= 40)))"
+    },
+    {
+      "table": "outreach_variants",
+      "constraint": "outreach_variants_weight_check",
+      "definition": "CHECK (((weight >= 0) AND (weight <= 100)))"
+    },
+    {
+      "table": "subscribers",
+      "constraint": "subscribers_outreach_stamp_check",
+      "definition": "CHECK (((source <> 'outreach'::text) OR (status <> 'subscribed'::text) OR (consent_at IS NOT NULL)))"
+    },
+    {
+      "table": "sunday_memories",
+      "constraint": "sunday_memories_confidence_check",
+      "definition": "CHECK (((confidence >= (0)::numeric) AND (confidence <= (1)::numeric)))"
+    },
+    {
+      "table": "sunday_scheduled_tasks",
+      "constraint": "sunday_scheduled_tasks_interval_minutes_check",
+      "definition": "CHECK (((interval_minutes IS NULL) OR (interval_minutes >= 1)))"
+    },
+    {
+      "table": "sunday_tasks",
+      "constraint": "sunday_tasks_fire_hour_range",
+      "definition": "CHECK (((fire_hour >= 0) AND (fire_hour <= 23)))"
+    },
+    {
+      "table": "sunday_tasks",
+      "constraint": "sunday_tasks_fire_minute_range",
+      "definition": "CHECK (((fire_minute >= 0) AND (fire_minute <= 59)))"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": "src",
+    "paths": {
+      "@components/*": ["app/components/*"],
+      "@reactbits/*": ["app/components/reactbits/*"],
+      "@hooks/*": ["app/hooks/*"],
+      "@views/*": ["app/views/*"],
+      "@constants/*": ["app/constants/*"],
+      "@data/*": ["app/data/*"],
+      "@utils/*": ["app/utils/*"],
+      "@app/*": ["app/*"],
+      "@lib/*": ["../lib/*"]
+    }
+  },
+  "include": ["src"]
+}

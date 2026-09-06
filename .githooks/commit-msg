@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# Takes the attribution trailers out of a commit message.
+#
+# An agent harness appends `Co-Authored-By:` and `Claude-Session:` to every
+# message it writes, and the author of the commit is usually not the one who
+# put them there — they arrive after the message was composed. Refusing the
+# commit for them would be refusing somebody for something they did not do, so
+# they are removed instead, and the removal is reported rather than silent.
+#
+# Only whole lines that are attribution are dropped. Prose that happens to
+# mention a vendor is left alone: the patterns are anchored on the trailer or
+# the phrase, never on the bare name.
+set -eu
+
+. "$(dirname "$0")/attribution.sh"
+
+message="$1"
+stripped="$message.stripped"
+
+# The robot mark travels on its own line in the footer the harness writes, and
+# `check` refuses it by itself, so it is dropped with the rest.
+grep -viE "^[[:space:]]*(.*($AI_MESSAGE).*|.*\xF0\x9F\xA4\x96.*)$" "$message" > "$stripped" || true
+
+# A footer taken out leaves the blank line that stood above it, and a message
+# ending in blank lines is a message git will not accept.
+awk 'BEGIN { blanks = 0 }
+  /^[[:space:]]*$/ { blanks++; next }
+  { while (blanks > 0) { print ""; blanks-- } print }
+' "$stripped" > "$stripped.trimmed"
+
+if ! cmp -s "$message" "$stripped.trimmed"; then
+  echo "commit-msg: took the AI attribution out of the message; the rest is unchanged." >&2
+  cat "$stripped.trimmed" > "$message"
+fi
+
+rm -f "$stripped" "$stripped.trimmed"
+
+# A message that was nothing but attribution is now empty, and an empty message
+# is a commit nobody can read later.
+if ! grep -qE '^[[:space:]]*[^#[:space:]]' "$message"; then
+  echo "commit-msg: the message was attribution and nothing else. Write one and commit again." >&2
+  exit 1
+fi

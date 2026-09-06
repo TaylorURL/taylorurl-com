@@ -1,0 +1,23 @@
+{
+  "name": "%SITE_BRAND%",
+  "short_name": "%SITE_SHORT_NAME%",
+  "description": "%SITE_INSTALL_DESCRIPTION%",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f6f6f5",
+  "theme_color": "#f6f6f5",
+  "icons": [
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/TaylorURL-Logo.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

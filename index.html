@@ -1,0 +1,698 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link href="/favicon-32.png" rel="icon" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <!-- The blog's feed, written at build time from the same route list as the
+         sitemap. Site-wide rather than per-route: the prerender reuses this head
+         on every page it writes, so a reader can subscribe from wherever they
+         happen to have landed. -->
+    <!--site:blog-->
+    <link rel="alternate" type="application/rss+xml" title="%SITE_FEED_TITLE%" href="/feed.xml" />
+    <!--/site:blog-->
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <!-- The browser's own chrome, standing on the ground the page paints under
+         it. A meta tag cannot read a custom property, so the two values are
+         held here by hand: #f6f6f5 is --paper on the light setting and #0b0c0f
+         is --paper on the dark one, both in src/index.css, and a change to
+         either token is a change to the line beside it here. -->
+    <meta
+      name="theme-color"
+      data-setting="light"
+      media="(prefers-color-scheme: light)"
+      content="#f6f6f5"
+    />
+    <meta
+      name="theme-color"
+      data-setting="dark"
+      media="(prefers-color-scheme: dark)"
+      content="#0b0c0f"
+    />
+    <!-- The reader's light or dark setting, stamped on <html> before the first
+         paint so the page never shows one palette and then the other. It reads
+         the same key useTheme writes and falls back to the system preference,
+         which is what "system" and a first visit both resolve to. Inline and
+         synchronous, because a deferred script runs after the paint it exists
+         to get ahead of.
+
+         The pair above answers the system preference, which is the wrong
+         question to put to a reader who picked a setting rather than following
+         one. On any choice but "system" the meta that disagrees is dropped and
+         the survivor loses its query, so the chrome tracks the setting the
+         document actually carries; on "system" both stay, and the browser
+         follows the preference as useTheme's own listener does. -->
+    <script>
+      ;(function () {
+        var stored = null
+        try {
+          stored = window.localStorage.getItem('taylorurl_theme')
+        } catch (ignored) {}
+        var choice = stored === 'light' || stored === 'dark' ? stored : null
+        if (!choice && stored === 'system') {
+          try {
+            choice = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          } catch (ignored) {}
+        }
+        if (!choice) {
+          choice = 'light'
+        }
+        document.documentElement.setAttribute('data-theme', choice)
+        if (stored === 'system') return
+        var chrome = document.querySelectorAll('meta[name="theme-color"]')
+        for (var i = chrome.length - 1; i >= 0; i -= 1) {
+          if (chrome[i].getAttribute('data-setting') === choice) {
+            chrome[i].removeAttribute('media')
+          } else {
+            chrome[i].parentNode.removeChild(chrome[i])
+          }
+        }
+      })()
+    </script>
+    <!-- Every page opens at the top, including one that is reloaded. The
+         browser's own habit is to put a reader back where they were, which is
+         right for a document and wrong for these pages: they are read from
+         their heading down, and the site already returns to the top on every
+         navigation, so a reload was the one way to arrive halfway into a page.
+         Fragment links are untouched - this governs history restoration, not
+         an anchor in the URL. Inline and synchronous, because the restoration
+         happens before a module script has run. -->
+    <script>
+      if ('scrollRestoration' in history) history.scrollRestoration = 'manual'
+    </script>
+    <!--site:adTracking-->
+    <!-- Google Analytics, property "TaylorURL Home", the Google Ads account, and
+         the Meta Pixel. The property and the ad account are two destinations on
+         one tag, which is why there is a second `config` line and no second
+         script: the loader below drains the queue, sees both, and fetches each
+         destination's configuration itself. They are told different things -
+         the property reads the event name and the campaign parameters, the ad
+         account reads the action and the value - and `conversion.js` is where
+         that split is made.
+
+         The queues and the `gtag` and `fbq` stubs are defined here, synchronously,
+         so a hit recorded anywhere on the page is held whether or not its tag
+         has arrived. Each tag is a fresh origin worth a connection of its own
+         and nothing on the page waits on what either does, so both are fetched
+         once the page has loaded, or at the visitor's first touch if that comes
+         sooner; everything queued in the meantime is sent the moment they land.
+         No page_view is sent to Google from the router: the data stream counts
+         browser history changes, which is what every navigation on a
+         client-side router produces, so a manual call would count each one a
+         second time. The pixel counts only the page it was loaded on, so the
+         layout reports every page after the first to it. -->
+    <script>
+      window.dataLayer = window.dataLayer || []
+      function gtag() {
+        window.dataLayer.push(arguments)
+      }
+      gtag('js', new Date())
+      gtag('config', '%SITE_GA_ID%')
+      gtag('config', '%SITE_ADS_ID%')
+      ;(function () {
+        var fbq = (window.fbq = function () {
+          if (fbq.callMethod) fbq.callMethod.apply(fbq, arguments)
+          else fbq.queue.push(arguments)
+        })
+        window._fbq = fbq
+        fbq.push = fbq
+        fbq.loaded = true
+        fbq.version = '2.0'
+        fbq.queue = []
+        fbq('init', '%SITE_META_PIXEL_ID%')
+        fbq('track', 'PageView')
+      })()
+      ;(function () {
+        var tags = [
+          'https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
+          'https://connect.facebook.net/en_US/fbevents.js',
+        ]
+        var nudges = ['pointerdown', 'keydown', 'touchstart', 'scroll']
+        var SETTLE_MS = 10000
+        var fetched = false
+        function fetchTags() {
+          if (fetched) return
+          fetched = true
+          for (var i = 0; i < nudges.length; i += 1) removeEventListener(nudges[i], fetchTags, true)
+          for (var j = 0; j < tags.length; j += 1) {
+            var tag = document.createElement('script')
+            tag.async = true
+            tag.src = tags[j]
+            document.head.appendChild(tag)
+          }
+        }
+        // A visitor's first touch fetches them - and a scroll counts, so anybody
+        // reading rather than glancing has already tripped it. Otherwise they
+        // wait until the page has been up long enough that nothing they do can
+        // land on the first screen's account. Fetched on `load` they arrived
+        // inside the window a rating is taken from, and most of what they carry
+        // goes unread on any single visit.
+        //
+        // The wait is ten seconds rather than three because that window is
+        // taken on hardware several times slower than a desk machine, and it
+        // stays open for longer there than the tags used to wait. Google's tag
+        // alone costs the better part of two hundred milliseconds of blocking
+        // time on that hardware, so at three seconds it landed inside the
+        // reading on some runs and outside it on others, and the same bytes
+        // came back fourteen points apart on two readings of the same page.
+        //
+        // A visitor who arrived on an ad is the exception, and waiting on them
+        // costs the thing the ad was bought for. A click identifier exists only
+        // on the address they opened, and the router replaces that address on
+        // the first navigation. Fetched ten seconds later the tag reads whatever
+        // page they moved to, finds no identifier, and writes no click cookie -
+        // so the conversion they make, that visit or three days later, is
+        // recorded against nobody. Nothing announces it: an account whose clicks
+        // are landing and whose conversions are going unattributed reads exactly
+        // like an account whose ads are not working.
+        //
+        // The wait is what keeps the tag out of the window a performance rating
+        // is taken from, and a rating run never arrives on one of these
+        // addresses, so this costs that reading nothing at all.
+        if (/[?&](gclid|gbraid|wbraid)=/.test(location.search)) {
+          fetchTags()
+        } else {
+          addEventListener('load', function () {
+            setTimeout(fetchTags, SETTLE_MS)
+          })
+        }
+        for (var i = 0; i < nudges.length; i += 1) {
+          addEventListener(nudges[i], fetchTags, { capture: true, once: true, passive: true })
+        }
+      })()
+    </script>
+    <!--/site:adTracking-->
+    <!--site:localSeo-->
+    <meta name="geo.region" content="US-TX" />
+    <meta name="geo.placename" content="Baytown, Texas" />
+    <!--/site:localSeo-->
+    <!-- The analytics script calls this origin on every page load, so the
+         connection is opened alongside the first paint instead of after it. The
+         error reporter below was the second caller until its collector moved;
+         the host it posts to now is deliberately not preconnected, because a
+         page that throws nothing never opens that connection at all. -->
+    <link rel="preconnect" href="https://gujgtjqqurildqurpffh.supabase.co" crossorigin="" />
+    <!-- Both faces are named by the stylesheet, which means that without these
+         the browser cannot ask for either one until the sheet has arrived and
+         been read: the document fetches the sheet, the sheet fetches the font,
+         and the text on screen is a fallback until the third leg of that chain
+         lands. Named here, they are asked for in the same breath as the sheet
+         and the chain is two legs instead of three. Both are wanted on the
+         first screen - the headline and its paragraph in the one, the labels
+         inside the hero's card in the other. -->
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/geist-variable.woff2"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/geist-mono-variable.woff2"
+      crossorigin="anonymous"
+    />
+    <!--
+      Per-route SEO (title, description, canonical, Open Graph, Twitter cards) is
+      owned by the Seo component (react-helmet-async) and baked into each route's
+      HTML at build time by the prerender step. Duplicating those tags here would
+      double them up in the prerendered output, so this file carries only
+      site-wide hints.
+    -->
+    <!--site:localSeo-->
+    <!--
+      The site-wide business node. The work is carried out from Baytown and
+      reaches the towns around it, with nowhere a visitor can be met, so the
+      address stops at the locality and the area it covers is carried by
+      `areaServed` - the circle for the reach, the cities for the markets the
+      service pages name. A street line here would name a place that answers
+      to nobody. The number is a service-area business's one reachable point, so
+      it is stated in full, and it is the same line the footer prints and every
+      directory listing is matched against.
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": ["LocalBusiness", "ProfessionalService"],
+        "@id": "%SITE_ORIGIN%/#business",
+        "name": "TaylorURL LLC",
+        "legalName": "TaylorURL LLC",
+        "alternateName": ["TaylorURL", "TaylorURL Web Design"],
+        "description": "Custom websites for small businesses in Baytown, Houston and the surrounding Texas area: shops, restaurants, trades, contractors and independent pros. Built and looked after by one person who works with you directly.",
+        "url": "https://www.taylorurl.com",
+        "priceRange": "$$",
+        "logo": "https://www.taylorurl.com/images/TaylorURL-Logo.png",
+        "image": "https://www.taylorurl.com/og.png",
+        "telephone": "+12818628687",
+        "email": "trenton@taylorurl.com",
+        "founder": {
+          "@type": "Person",
+          "@id": "%SITE_ORIGIN%/#trenton",
+          "name": "Trenton Taylor",
+          "jobTitle": "Software Engineer",
+          "url": "https://www.taylorurl.com/about"
+        },
+        "owner": { "@id": "%SITE_ORIGIN%/#trenton" },
+        "employee": { "@id": "%SITE_ORIGIN%/#trenton" },
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Baytown",
+          "addressRegion": "TX",
+          "addressCountry": "US"
+        },
+        "areaServed": [
+          {
+            "@type": "GeoCircle",
+            "name": "Baytown and the greater Houston area",
+            "geoMidpoint": {
+              "@type": "GeoCoordinates",
+              "latitude": 29.7355,
+              "longitude": -94.9774
+            },
+            "geoRadius": 80000
+          },
+          {
+            "@type": "City",
+            "name": "Baytown",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Highlands",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Mont Belvieu",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Channelview",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Crosby",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "La Porte",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Deer Park",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Pasadena",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "East Houston",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          },
+          {
+            "@type": "City",
+            "name": "Houston",
+            "containedInPlace": { "@type": "State", "name": "Texas" }
+          }
+        ],
+        "openingHoursSpecification": {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+          "opens": "09:00",
+          "closes": "17:00"
+        },
+        "sameAs": [
+          "https://www.bbb.org/us/tx/houston/profile/web-design/taylorurl-web-development-0915-90077696",
+          "https://www.facebook.com/profile.php?id=61591005089902",
+          "https://www.instagram.com/taylorwebdev/",
+          "https://www.trustpilot.com/review/taylorurl.com",
+          "https://www.google.com/maps?cid=13475155197855684665"
+        ],
+        "serviceType": [
+          "Small business websites",
+          "Online booking and customer tools",
+          "Website redesigns",
+          "Website hosting and ongoing care",
+          "Local search visibility"
+        ],
+        "knowsAbout": [
+          "Small business websites",
+          "Custom websites for local shops, restaurants, and trades",
+          "Online booking and customer tools",
+          "Website redesigns",
+          "Getting found on Google",
+          "Website hosting and ongoing care"
+        ]
+      }
+    </script>
+    <!--/site:localSeo-->
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "%SITE_BRAND%",
+        "url": "%SITE_ORIGIN%"
+        <!--site:localSeo-->,
+        "publisher": { "@id": "%SITE_ORIGIN%/#business" }
+        <!--/site:localSeo-->
+      }
+    </script>
+    <script>
+      ;(function () {
+        // The collector the rest of the fleet already reports to. This page
+        // posted to a Supabase Edge Function instead, and that function is gone:
+        // the route answers 404 to OPTIONS and POST alike, while another
+        // function on the same project answers 200, so what was removed was the
+        // function rather than the project, the key or the gateway. Every error
+        // this site threw was discarded at the edge for as long as that URL
+        // stood, which is why the ticket queue has never once carried a fault
+        // against this site while the client sites file against theirs daily.
+        // Nothing announces that. An empty queue reads exactly like a clean
+        // night, so the next quiet stretch should be checked against this
+        // endpoint before it is believed.
+        var endpoint = 'https://sunday.tail1f78d7.ts.net/report'
+        var site = '%SITE_ERROR_LABEL%'
+        var sent = 0
+        // Nothing the page can intercept reaches the visitor's console. Each
+        // error is reported first and swallowed second, so the report is made
+        // whether or not the suppression holds. What survives is written by the
+        // browser's own network layer, which no page script can reach.
+        var loud = false
+        var held = []
+        try {
+          if (location.search.indexOf('console=on') > -1)
+            localStorage.setItem('reporter-console', '1')
+          if (location.search.indexOf('console=off') > -1)
+            localStorage.removeItem('reporter-console')
+          loud = localStorage.getItem('reporter-console') === '1'
+        } catch (ignored) {}
+        // Fields worth naming in a report, read by name rather than enumerated.
+        // A DOM event, a DOMException and most host objects keep their data on
+        // the prototype, where JSON.stringify cannot see it.
+        var detailFields = [
+          'name',
+          'type',
+          'message',
+          'code',
+          'status',
+          'filename',
+          'lineno',
+          'colno',
+        ]
+        function detailOf(value) {
+          var parts = []
+          for (var i = 0; i < detailFields.length; i += 1) {
+            var key = detailFields[i]
+            var field
+            try {
+              field = value[key]
+            } catch (ignored) {
+              continue
+            }
+            if (field === null || field === undefined || field === '') continue
+            if (typeof field === 'object' || typeof field === 'function') continue
+            parts.push(key + ': ' + String(field))
+          }
+          var target = value.target
+          if (target && target.tagName) {
+            parts.push(
+              'target: ' +
+                String(target.tagName).toLowerCase() +
+                ' ' +
+                String(target.src || target.href || '')
+            )
+          }
+          return parts.join(', ')
+        }
+        // Turns any thrown or logged value into text a person can act on. The
+        // type name is always kept, so the worst case is a report naming what
+        // arrived rather than one that says nothing at all.
+        function describe(value) {
+          if (value === null) return 'null'
+          if (value === undefined) return 'undefined'
+          if (typeof value === 'function') return 'function ' + (value.name || 'anonymous')
+          if (typeof value !== 'object') return String(value)
+          if (value.stack) return String(value.stack)
+          // A rejection or error event wraps the failure one level down.
+          if (value.reason && value.reason !== value) return describe(value.reason)
+          if (value.error && value.error !== value) return describe(value.error)
+          var label = 'Object'
+          try {
+            label =
+              (value.constructor && value.constructor.name) ||
+              Object.prototype.toString.call(value).slice(8, -1)
+          } catch (ignored) {}
+          var detail = detailOf(value)
+          if (!detail) {
+            try {
+              var json = JSON.stringify(value)
+              if (json && json !== '{}' && json !== '[]') detail = json
+            } catch (ignored) {}
+          }
+          return detail ? label + ' (' + detail + ')' : label
+        }
+        // An extension injects its scripts into the page, so a rejection thrown
+        // inside one arrives at this handler with nothing of the site in its
+        // stack. A stack naming only extension scripts describes the visitor's
+        // browser; one carrying a single site frame is the site's.
+        function extensionOnly(stack) {
+          var schemes = String(stack || '').match(/[a-z][a-z0-9+.-]*:\/\//gi)
+          if (!schemes) return false
+          for (var i = 0; i < schemes.length; i += 1) {
+            var scheme = schemes[i].slice(0, -3).toLowerCase()
+            if (scheme.slice(-9) !== 'extension') return false
+          }
+          return true
+        }
+        // A request the page makes writes its own failure to the console when it
+        // fails, and a collector that cannot be reached would then be the loudest
+        // thing on the page. The same request issued inside a worker writes
+        // nothing, so reports travel that way while the page is alive.
+        var unloading = false
+        var worker = null
+        var workerFailed = false
+        function transport() {
+          if (worker || workerFailed) return worker
+          try {
+            var source =
+              "self.onmessage=function(e){fetch(e.data.endpoint,{method:'POST',body:e.data.body}).then(function(){},function(){})}"
+            worker = new Worker(
+              URL.createObjectURL(new Blob([source], { type: 'text/javascript' }))
+            )
+          } catch (ignored) {
+            workerFailed = true
+          }
+          return worker
+        }
+        function send(body) {
+          // On the way out the worker dies with the page, and the console goes
+          // with it, so the beacon's survival is worth more than its silence.
+          if (!unloading) {
+            var channel = transport()
+            if (channel) {
+              channel.postMessage({ endpoint: endpoint, body: body })
+              return
+            }
+          }
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(endpoint, body)
+          } else {
+            fetch(endpoint, { method: 'POST', body: body, keepalive: true }).catch(function () {})
+          }
+        }
+        addEventListener('pagehide', function () {
+          unloading = true
+        })
+        // Everything swallowed stays readable on the page itself, so a live
+        // console with the flag off still answers what happened.
+        function hold(kind, message, stack) {
+          if (held.length < 50)
+            held.push({ kind: kind, message: String(message), stack: String(stack || '') })
+        }
+        window.__reporter = {
+          held: held,
+          replay: function () {
+            return held.slice()
+          },
+        }
+        function report(kind, message, stack) {
+          hold(kind, message, stack)
+          if (sent >= 10) return // a page stuck in an error loop stops at ten
+          if (extensionOnly(stack)) return
+          sent += 1
+          try {
+            send(
+              JSON.stringify({
+                site: site,
+                kind: kind,
+                message: String(message || 'Unknown error').slice(0, 1500),
+                stack: String(stack || '').slice(0, 4000),
+                url: location.href,
+                userAgent: navigator.userAgent,
+              })
+            )
+          } catch (ignored) {}
+        }
+        function flatten(args, from) {
+          var parts = []
+          for (var i = from; i < args.length; i += 1) {
+            parts.push(describe(args[i]))
+          }
+          return parts.join(' ')
+        }
+        // Capture phase, because element load failures fire error events that do not bubble.
+        window.addEventListener(
+          'error',
+          function (event) {
+            try {
+              if (event.target && event.target !== window && event.target.tagName) {
+                // An element carrying data-probe is one the page is asking
+                // about rather than depending on. The console looks a client
+                // site's favicon up at the three conventional paths and draws a
+                // lettered tile when none of them answers, so a 404 there is the
+                // fallback doing its job - the visitor sees the tile that was
+                // always going to be drawn, and there is no defect to fix. It is
+                // still held for the live console, because a probe that starts
+                // missing where it used to answer is worth being able to see.
+                var address = event.target.src || event.target.href || ''
+                if (event.target.hasAttribute('data-probe')) {
+                  hold('probe', 'No answer at ' + address, '')
+                } else {
+                  report(
+                    'resource',
+                    'Failed to load ' + event.target.tagName.toLowerCase() + ': ' + address
+                  )
+                }
+              } else {
+                report(
+                  'uncaught',
+                  event.message || describe(event.error),
+                  event.error && event.error.stack
+                )
+              }
+            } finally {
+              if (!loud) event.preventDefault()
+            }
+          },
+          true
+        )
+        window.addEventListener('unhandledrejection', function (event) {
+          try {
+            var reason = event.reason
+            report('rejection', describe(reason), reason && reason.stack)
+          } finally {
+            if (!loud) event.preventDefault()
+          }
+        })
+        // A library writing to these is addressing whoever maintains the site
+        // rather than whoever is reading the page, so the message travels to the
+        // collector instead of to the visitor's console.
+        ;['error', 'warn', 'trace'].forEach(function (level) {
+          var original = console[level]
+          console[level] = function () {
+            report('console', flatten(arguments, 0))
+            if (loud) original.apply(console, arguments)
+          }
+        })
+        var originalAssert = console.assert
+        console.assert = function (condition) {
+          if (condition) return
+          report('console', 'Assertion failed: ' + flatten(arguments, 1))
+          if (loud) originalAssert.apply(console, arguments)
+        }
+        if (window.fetch) {
+          var originalFetch = window.fetch
+          window.fetch = function (input) {
+            var target = typeof input === 'string' ? input : (input && input.url) || ''
+            // Reports about the reporter's own request would loop, so the endpoint passes through unwrapped.
+            if (target.indexOf(endpoint) === 0) return originalFetch.apply(window, arguments)
+            return originalFetch.apply(window, arguments).then(
+              function (response) {
+                if (response.status >= 500)
+                  report('http', 'HTTP ' + response.status + ' from ' + target.split('?')[0])
+                return response
+              },
+              function (error) {
+                // A cancelled request is the page doing its job, not failing
+                // at it. Every fetch here is issued under an AbortController
+                // that the component aborts as it unmounts, so a reader who
+                // navigates or closes the tab while a request is in flight
+                // cancels it by definition. The browsers word it differently -
+                // Safari says the fetch is aborted, Chrome says the user
+                // aborted a request - and the name is the part that is the
+                // same, so the name is what is read. Still held for the live
+                // console, because a cancellation nobody asked for is worth
+                // being able to see.
+                if (error && error.name === 'AbortError') {
+                  hold('aborted', 'Cancelled ' + target.split('?')[0], '')
+                  throw error
+                }
+                report(
+                  'network',
+                  (error && error.message ? error.message : String(error)) +
+                    ' fetching ' +
+                    target.split('?')[0]
+                )
+                throw error
+              }
+            )
+          }
+        }
+      })()
+    </script>
+    <!--site:analytics-->
+    <!-- Traffic analytics. The site key is public by design: it says which
+         site a hit belongs to, and the collector accepts it only from this
+         site's own origins. Deferred, so nothing on the page waits for it.
+
+         data-ignore names the pages that are not visits. The console is the
+         studio's own workspace and it is open all day: it stood for well over a
+         third of everything the site recorded, so the traffic figures a
+         decision gets made on were mostly the person making the decision. The
+         tracker files nothing for those paths - no view, no dwell, no beat - so
+         a session spent in there is invisible whether it opened on the console
+         or walked in from a public page.
+
+         The status board is the exception the "!" marks, and it stays counted.
+         It is open to anyone, it reports on no account, and the home page sends
+         readers to it by name, so somebody arriving there is a reader like any
+         other. -->
+    <script
+      src="https://gujgtjqqurildqurpffh.supabase.co/functions/v1/analytics-tracker"
+      data-site="%SITE_ANALYTICS_SITE_KEY%"
+      data-ignore="/console,/login,!/console/status"
+      defer
+      crossorigin="anonymous"
+    ></script>
+    <!--/site:analytics-->
+  </head>
+  <body>
+    <div id="root"></div>
+    <!--site:adTracking-->
+    <!-- The pixel's fallback for a browser with scripts off. It sits after the
+         root because the prerender carries only what follows the root into the
+         pages it writes; anything before it is left in the template. -->
+    <noscript>
+      <img
+        height="1"
+        width="1"
+        style="display: none"
+        alt=""
+        src="https://www.facebook.com/tr?id=%SITE_META_PIXEL_ID%&amp;ev=PageView&amp;noscript=1"
+      />
+    </noscript>
+    <!--/site:adTracking-->
+    <script src="/src/main.jsx" type="module"></script>
+  </body>
+</html>

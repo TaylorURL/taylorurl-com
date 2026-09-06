@@ -1,0 +1,16 @@
+{
+  "excluded": [
+    {
+      "domain": "taylorurl.com",
+      "reason": "This site. The portfolio is a page on it rather than a row in it."
+    },
+    {
+      "domain": "charliets.com",
+      "reason": "The domain now serves an Owner.com restaurant template, so the live site is no longer the build in TaylorURL/charliets-com."
+    },
+    {
+      "domain": "fadedbarbershop.com",
+      "reason": "An unrelated Squarespace shop in Morgan Hill, California. The Liberty, Texas shop this portfolio carries is at faded-barbershop.com, which is the domain TaylorURL/fadedbarbershop-com serves."
+    }
+  ]
+}

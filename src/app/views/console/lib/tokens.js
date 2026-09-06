@@ -1,0 +1,99 @@
+/**
+ * The class strings the console's furniture and its sections share.
+ *
+ * They live apart from the components that use them so a section can import a
+ * label style without pulling in a component, and so the shared UI file exports
+ * components only.
+ */
+
+// The small label a section puts above a figure or beside a control.
+//
+// Sentence case at reading size rather than tracked capitals. A dashboard sets
+// dozens of these on one screen, and capitals at 10px are decoded before they
+// are read: a reader scanning for one figure pays that cost on every label
+// they pass. The mono face stays where a fixed advance is doing work, which is
+// figures and keys rather than words.
+export const MONO_LABEL = 'text-[12px] font-medium'
+// Column labels never wrap. A wrapped one is hard to read at 10px, and its
+// height depends on how wide the data underneath happens to make the column -
+// which is how a table head ends up one line while it loads and two once the
+// figures arrive.
+// Sticking the head is handled in the base layer, which is where the offset
+// under the fixed bar and the head's own ground are set.
+export const TH = `${MONO_LABEL} text-paper-faint whitespace-nowrap px-5 py-2.5 text-left`
+export const CELL = 'px-5 py-3 text-[14px]'
+
+// The same two, for a table that has to fit the column it was given rather
+// than scroll inside it.
+//
+// The card's gutter between every pair of columns is what makes a wide table
+// wide: ten columns at that measure spend four hundred pixels on padding
+// before a figure is drawn, and the table goes past the page. The gutter is
+// kept where it is read as one - at the table's two outside edges, by
+// `.console-table` - and the measure between the columns is this.
+export const TH_TIGHT = `${MONO_LABEL} text-paper-faint whitespace-nowrap px-3 py-2.5 text-left`
+export const CELL_TIGHT = 'px-3 py-3 text-[14px]'
+
+// Every chart reserves its box before recharts measures the container, so a
+// panel does not grow under the reader when the series arrives. The heights sit
+// beside the other measures so a chart and the placeholder standing in for it
+// read the same number.
+export const CHART_HEIGHT = {
+  traffic: 220,
+  hour: 140,
+  donut: 124,
+  spark: 26,
+  // A sparkline given a whole card rather than a fifth of a table row. At the
+  // row's own height a full-width series flattens into a rule.
+  trend: 108,
+}
+
+// Row heights, measured from the rows these placeholders stand in for. The
+// height is set rather than padded to, because what each row is actually as
+// tall as is its own tallest cell, and a placeholder cannot contain those.
+//
+// Only the first visit reads these: after one, the placeholder is the size of
+// the table the reader last saw. They are still worth measuring again whenever
+// a row gains a cell, since a figure left behind by its own table leaves the
+// first paint short and everything under it moves down as the feed lands - the
+// one thing the placeholder exists to prevent.
+export const ROW_HEIGHT = {
+  sites: '46px',
+  pages: '55px',
+  plain: '40.5px',
+  // First-visit fallbacks for the status board, measured at 1280px: after that
+  // its placeholder is the size of the rows the reader last saw. The open-issue
+  // table is nearly always empty, so its figure is that one sentence row.
+  //
+  // The site row is one line on tight cells; the fixed row is two, the site
+  // name with the time it was resolved beneath, and averages more because a
+  // summary wraps in its column. Each figure is the measured mean over the
+  // whole table rather than the height of its shortest row. Taking the shorter
+  // one left the placeholder well under the table it stood in for, and
+  // everything below moved down as the feed landed.
+  statusSite: '61px',
+  statusIssue: '100px',
+  statusFixed: '125px',
+}
+
+// The console's controls, held once. Nothing about a select or a button
+// changes because of which section it sits in, so the sections import these
+// rather than spelling them out.
+//
+// One height covers all of them, fields included: a row of controls at two
+// heights reads as one of them being in a different state. Forty-four, because
+// the console is opened on a phone as often as the marketing pages are and a
+// control a thumb cannot land on is a control that is not there.
+export const CONTROL_H = 'min-h-[44px]'
+
+export const SELECT = `${MONO_LABEL} ${CONTROL_H} border-hair-paper-strong cursor-pointer appearance-none rounded-[var(--console-radius-sm)] border bg-[color:var(--paper-field)] px-2.5 py-1 text-ink-paper transition-colors duration-150 ease-out-soft hover:border-[color:var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`
+
+// Hover deepens the ground rather than fading it, which is the one hover
+// vocabulary the rest of the console uses.
+export const BUTTON = `${MONO_LABEL} ${CONTROL_H} inline-flex cursor-pointer touch-manipulation items-center justify-center gap-1.5 rounded-[var(--console-radius-sm)] bg-[color:var(--accent-fill)] px-3.5 text-[color:var(--on-accent)] transition-[background-color,transform] duration-150 ease-out-soft hover:bg-[color:var(--accent-fill-hi)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`
+
+export const QUIET = `${MONO_LABEL} ${CONTROL_H} text-paper-faint border-hair-paper inline-flex cursor-pointer touch-manipulation items-center gap-1.5 rounded-[var(--console-radius-sm)] border px-2.5 transition-[color,border-color,transform] duration-150 ease-out-soft hover:border-[color:var(--accent)] hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`
+
+// A field carries a focus border as well as the shared outline, since where
+// the caret is is the one thing a form most needs to say.
+export const FIELD = `${CONTROL_H} border-hair-paper-strong w-full rounded-[var(--console-radius-sm)] border bg-[color:var(--paper-field)] px-2.5 py-1.5 text-[13px] text-ink-paper transition-colors duration-150 ease-out-soft placeholder:text-paper-faint focus:border-[color:var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`

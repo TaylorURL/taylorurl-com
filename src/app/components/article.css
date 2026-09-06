@@ -1,0 +1,159 @@
+/*
+ * The article frame's stylesheet, beside the components it dresses.
+ *
+ * It sits here rather than in the site sheet because an article is a surface of
+ * its own: a column with its controls standing beside it, carrying two things
+ * no other page has - a list that says which section is being read, and a gauge
+ * that says how much is left. Both are furniture rather than content. They take
+ * the hairline and the accent the rest of the page uses and add no colour of
+ * their own, and a rule for them in the shared sheet is a rule every page
+ * carries and one page uses.
+ */
+
+/* The body. Emphasis is the only markup the articles carry inside a paragraph,
+   and it is the marking the frame reads to find the line worth pulling out, so
+   it is set in the column's full ink against the softer grey the running text
+   takes. The weight is the one the rest of the site emphasises at; the
+   browser's own bolder step lands two grades above it and reads as shouting in
+   a column of prose. */
+.article-copy strong {
+  font-weight: 600;
+  color: var(--paper-ink);
+}
+
+/* The contents rail. The list hangs off one hairline and the entry being read
+   replaces its own segment of that line with the accent, which is why the
+   border is on every entry rather than on the list: a marker drawn separately
+   would have to be positioned against a line it cannot measure. */
+.article-contents {
+  border-left: 1px solid var(--paper-hairline);
+}
+
+.article-jump {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-left: -1px;
+  border-left: 1px solid transparent;
+  /* Under the rail's breakpoint this list is folded into the deck above the
+     text, where it is the only navigation the article has and every entry is
+     reached by thumb, so a single-line row clears the site's minimum target.
+     The height is taken in leading rather than in a floor, so the row is filled
+     by the entry rather than by dead space under a short one. */
+  padding: 0.85rem 0 0.85rem 0.875rem;
+  color: var(--paper-ink-mute);
+  transition: color 200ms var(--ease-out-soft);
+}
+
+.article-jump:hover {
+  color: var(--paper-ink);
+}
+
+.article-jump[data-active='true'] {
+  border-left-color: var(--accent);
+  color: var(--accent);
+}
+
+@media (min-width: 1024px) {
+  /* Beside the text the list is read as much as it is clicked, and eight rows
+     at a thumb's height would carry the pinned pair past the fold. */
+  .article-jump {
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+}
+
+/* The gauge. It is scaled rather than resized: a width animated on every
+   scroll frame relays the panel it sits in, a transform does not. */
+.article-gauge {
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--r-tiny);
+  background: var(--wash-paper-strong);
+}
+
+.article-gauge > span {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left center;
+  transition: transform 120ms linear;
+}
+
+/* The line pulled out of the body. It is set against the accent rather than
+   inside a box, because a boxed quote inside a column of text reads as an
+   interruption and a ruled one reads as an aside. */
+.article-quote {
+  border-left: 2px solid var(--accent);
+  color: var(--paper-ink);
+  letter-spacing: -0.012em;
+  text-wrap: balance;
+}
+
+/* The strip of figures under a headline. The row holds four cells and folds
+   to two on a phone, so the dividers are placed by position rather than by
+   "every one but the first": at two columns the rule between the pair is the
+   one on the even cell, and the rule under the first row belongs to the two
+   cells above it. */
+.article-figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--paper-hairline);
+  border-bottom: 1px solid var(--paper-hairline);
+}
+
+.article-figures > div {
+  padding: 0.875rem 0;
+}
+
+.article-figures > div:nth-child(-n + 2) {
+  border-bottom: 1px solid var(--paper-hairline);
+}
+
+.article-figures > div:nth-child(odd) {
+  padding-right: 1.25rem;
+}
+
+.article-figures > div:nth-child(even) {
+  border-left: 1px solid var(--paper-hairline);
+  padding-left: 1.25rem;
+}
+
+@media (min-width: 640px) {
+  .article-figures {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .article-figures > div:nth-child(-n + 2) {
+    border-bottom: 0;
+  }
+
+  .article-figures > div:nth-child(odd) {
+    padding-right: 0;
+  }
+
+  .article-figures > div + div {
+    border-left: 1px solid var(--paper-hairline);
+    padding-left: 1.5rem;
+  }
+}
+
+/* The contents deck opens and closes, so the rule under its head belongs to
+   the open state: closed, it is a single row and a line across the bottom of
+   it would draw the lid of an empty box. The marker is the chevron rather
+   than the browser's triangle, which is drawn differently in every engine. */
+.article-deck > summary::-webkit-details-marker {
+  display: none;
+}
+
+.article-deck[open] > summary {
+  border-bottom: 1px solid var(--paper-hairline);
+}
+
+.article-deck-mark {
+  transition: transform 200ms var(--ease-out-soft);
+}
+
+.article-deck[open] .article-deck-mark {
+  transform: rotate(180deg);
+}

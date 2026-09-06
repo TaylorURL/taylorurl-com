@@ -1,0 +1,3040 @@
+/* nav: n11-mega-menu */
+/* footer: ft1-mast-headed */
+
+/*
+ * The navigation is one full-width surface with two states. At the top of the
+ * page it is transparent and its ink adapts to the section behind it; once
+ * content scrolls beneath it, it takes the page's own ground, the blur, and
+ * the bottom hairline. The group panels open inside that same surface, so the bar
+ * and its directory are one box in either state, and moving between triggers
+ * travels the open panel rather than replaying its entrance.
+ *
+ * The footer anchors on the wordmark, the positioning line and the direct
+ * contact details, with narrow columns beside it and the licence and location
+ * below the rule.
+ */
+
+/* Geist ships as one variable file per family, served from this origin so the
+   first paint does not wait on a third-party stylesheet and then a font file. */
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/geist-mono-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* The faces that stand in while Geist arrives, sized to occupy the same space
+   it will. `font-display: swap` shows text immediately, which is the right
+   trade; the cost is that every line it drew reflows the moment the real face
+   lands, unless the stand-in already sets lines at the same width and height.
+   So each one takes a locally installed face and overrides its metrics with
+   Geist's own: ascent 1005 and descent -295 against an em of 1000, read off
+   the woff2 files beside this stylesheet.
+
+   size-adjust reconciles the average character width, which is what decides
+   where a line breaks: Geist averages 58.1% of the em and Arial 55.6%, so the
+   stand-in is scaled by 58.1/55.6. The ascent and descent overrides are stated
+   against that scaled em, which is why they are Geist's figures divided by the
+   same ratio. Geist Mono and Courier New both average 60.0%, so the mono pair
+   needs no scaling and takes Geist Mono's metrics unchanged. */
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+  size-adjust: 104.48%;
+  ascent-override: 96.19%;
+  descent-override: 28.24%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono Fallback';
+  src: local('Courier New'), local('Liberation Mono');
+  size-adjust: 100%;
+  ascent-override: 100.5%;
+  descent-override: 29.5%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /*
+   * THE FIELD — the ground a page stands on, at its light values. The dark
+   * setting below restates the same roles on a near-black canvas, and a
+   * document that carries no setting yet reads on the light ones.
+   */
+  --paper: #f6f6f5;
+  --paper-ink: #0a0a0a;
+  --paper-ink-soft: rgba(10, 10, 10, 0.72);
+  --paper-ink-mute: rgba(10, 10, 10, 0.62);
+  --paper-ink-faint: rgba(10, 10, 10, 0.57);
+  /* The one step below AA, at 2.32:1. It belongs to decoration — the watermark
+     numerals, the town names set across the foot of the page — and never to a
+     word that carries meaning. */
+  --paper-ink-ghost: rgba(10, 10, 10, 0.35);
+  --paper-hairline: rgba(10, 10, 10, 0.1);
+  --paper-hairline-strong: rgba(10, 10, 10, 0.14);
+  /* Input ground. A field on a paper panel needs to sit on its own surface, or
+     the border is the only thing saying it can be typed in. */
+  --paper-field: #ffffff;
+  --wash-paper: rgb(10 10 10 / 0.05);
+  --wash-paper-strong: rgb(10 10 10 / 0.1);
+  /* The blueprint rule, at the two weights the field takes. */
+  --rule-paper: rgba(10, 10, 10, 0.05);
+  --rule-paper-fine: rgba(10, 10, 10, 0.03);
+
+  /*
+   * THE GROUND ROLES — what --bg, --ink, the hairlines, the surfaces, the
+   * washes and the rules mean at this point in the tree.
+   *
+   * At the document they are the field, so anything that declares no ground of
+   * its own stands on the one the setting chose. A section carrying data-ground
+   * restates the whole set for its own subtree, which is what lets a dark slab
+   * hold light ink inside a light page.
+   */
+  --bg: var(--paper);
+  --ink: var(--paper-ink);
+  --ink-soft: var(--paper-ink-soft);
+  --ink-mute: var(--paper-ink-mute);
+  --ink-faint: var(--paper-ink-faint);
+  --ink-ghost: var(--paper-ink-ghost);
+  --hairline: var(--paper-hairline);
+  --hairline-strong: var(--paper-hairline-strong);
+  /* A raised card and a sunk well, one step either side of the field. */
+  --surface-1: #ffffff;
+  --surface-2: #ecece9;
+  --wash-ink: var(--wash-paper);
+  --wash-ink-strong: var(--wash-paper-strong);
+  --rule-ink: var(--rule-paper);
+  --rule-ink-fine: var(--rule-paper-fine);
+  /* Two lifts, which is every raised thing on the site. A shadow over a light
+     ground carries far less black than one over a dark ground, or it reads as
+     dirt. */
+  --lift: 0 30px 70px -30px rgba(10, 10, 10, 0.22);
+  --rule-under: inset 0 -1px 0 var(--paper-hairline);
+  /* Four radii and no more. A corner is a scale reading: the eye judges how
+     large a thing is partly by how far its corner turns, so a card and the
+     button inside it cannot share one value without the button looking
+     swollen. Feature cards take the largest, panels and tiles the card step,
+     every control and chip the middle one, and a bar, a dot or a swatch the
+     smallest. Anything wanting a fifth is either a pill, which is
+     `rounded-full`, or a thing that has not settled what it is. */
+  --r-feature: 12px;
+  --r-card: 8px;
+  --r-control: 6px;
+  --r-tiny: 4px;
+  /* A raised surface, in the three weights the page uses: the ring alone for
+     something that needs an edge and nothing more, the ring over two soft
+     drops for a card, and a deeper pair for that card under the pointer. The
+     ring is first in every one of them, so the edge stays exactly one pixel
+     however far the shadow beneath it spreads. */
+  --edge: 0 0 0 1px var(--paper-hairline);
+  --raise:
+    0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(10 10 10 / 4%),
+    0 8px 24px -12px rgb(10 10 10 / 10%);
+  --raise-hi:
+    0 0 0 1px var(--paper-hairline-strong), 0 2px 4px rgb(10 10 10 / 5%),
+    0 14px 32px -14px rgb(10 10 10 / 16%);
+  /* What a key carries under it: tighter than a card's raise, because a button
+     sits on the page rather than floating above it. The soft one is the single
+     contact shadow a ringed key takes. Both are restated wherever --raise is,
+     so the ink follows the ground the key stands on rather than staying cut for
+     paper. */
+  --key-lift: 0 1px 1px rgb(10 10 10 / 8%), 0 2px 5px -1px rgb(10 10 10 / 14%);
+  --key-lift-soft: 0 1px 2px rgb(10 10 10 / 5%);
+  /* The bar's ground once content has scrolled beneath it, at an alpha the blur
+     behind it can read through. */
+  --nav-surface: rgba(246, 246, 245, 0.85);
+  /* The hand-rolled chart's furniture: its grid, the muted series, and the line
+     that follows the pointer. */
+  --chart-grid: rgba(10, 10, 10, 0.15);
+  --chart-baseline: rgba(10, 10, 10, 0.5);
+  --chart-cursor: rgba(47, 107, 255, 0.4);
+  /* The moving highlight a shiny label sweeps, and the ground and edge a glare
+     sits on. All three follow the ground rather than the brand. */
+  --shine-base: var(--ink-mute);
+  --shine-sweep: rgba(10, 10, 10, 0.92);
+  --glare-ground: #f6f6f5;
+  --glare-edge: rgba(10, 10, 10, 0.2);
+  /* The light a card carries under the pointer. */
+  --spotlight: rgba(47, 107, 255, 0.16);
+  --spotlight-soft: rgba(47, 107, 255, 0.1);
+
+  /* The accent has one hue and a step per ground. --accent-bright is the step
+     the dark grounds take, --accent-lo the step the light ones take; both clear
+     AA against their own ground for the 12-13px labels most of the accent text
+     on this site is set in. Every ground scope hands --accent whichever one
+     applies, so a label never has to name its own step. */
+  --accent-bright: #3d76ff;
+  --accent-hi-bright: #4f86ff;
+  --accent-lo: #1a4ed8;
+  /* The hover step on paper: darker still, so hover deepens rather than fades. */
+  --accent-deep: #123a9e;
+  --accent: var(--accent-lo);
+  --accent-hi: var(--accent-deep);
+  /* The accent as a word inside a headline, which wants the loudest step the
+     ground will carry rather than the quietest one that clears AA. On a light
+     ground that is the same step body text takes; on a dark one it is a step
+     above it. */
+  --accent-loud: var(--accent-lo);
+  /* The accent as a filled surface, which is one blue on either ground: it
+     leaves white ink at 5.02:1, clear of AA for the body-size labels the
+     buttons are set in. */
+  --accent-fill: #2b64f0;
+  /* The same blue one step down, which is what a filled button darkens to
+     under the pointer. Hover on a solid accent has to deepen rather than
+     lighten: lightening reads as the button fading out from under the
+     finger. */
+  --accent-fill-hi: #2054d8;
+  /* The lightest accent step, for a sweep over the brand blue. */
+  --accent-pale: #9dbcff;
+  /* The ink that sits on the accent, which is the one colour that does not
+     follow the ground: a filled accent is the same blue everywhere. */
+  --on-accent: #ffffff;
+  /* The three widths a column of content is ever held to, named once so a
+     change is one edit rather than a search. The page is the full grid, the
+     column is that grid drawn in one piece for a page with no side matter, and
+     reading is a single column of prose at a comfortable measure. */
+  --width-page: 1280px;
+  --width-column: 1080px;
+  --width-reading: 820px;
+  /* The ink on a tile that stays white whatever the setting is, which is what a
+     third-party logo drawn for a light ground needs behind it. */
+  --on-white: #0a0a0a;
+  /* Trustpilot's own two greens, which the reviews section is set in so the
+     proof reads as coming from the platform rather than from this site. The
+     bright one is what their star tile is filled with and is used for nothing
+     else: at 2.3 against paper it is a shape, not a colour to set type in.
+     Type and filled buttons take the dark one, which clears AA on either
+     ground and carries white ink. */
+  --tp-star: #00b67a;
+  --tp-ink: #005128;
+  --google-blue: #4285f4;
+  --yelp-red: #d32323;
+  --fb-blue: #0866ff;
+  --li-blue: #0a66c2;
+  /* Instagram publishes its mark as a gradient rather than as one colour,
+     and the magenta at the middle of it is the step the network uses
+     wherever a single ink is all there is. It is drawn as a shape and never
+     carries type, which is what the 4.0 against paper is allowed to be. */
+  --ig-magenta: #e4405f;
+  --tp-fill: #005128;
+  /* BBB's torch blue, and the gold Google fills a review star with. The blue
+     clears AA as type on paper and carries white ink on a filled button, so it
+     serves the mark, the seal's caption and the panel alike. The gold never
+     carries type: at 1.8 against white it is a shape and nothing else. */
+  --bbb-blue: #015a75;
+  --bbb-fill: #015a75;
+  --google-gold: color-mix(in srgb, #fbbc04 var(--brand-shape-hold), var(--paper));
+
+  /* How much of a borrowed brand colour survives where it is drawn as a shape
+     rather than as type: a filled rating star, a rating tile, the bar along the
+     top of a review card. Every one of these steps was cut against white, where
+     a saturated brand colour is quiet - the gold above lands at 1.7 there, which
+     is why the note beside it calls it a shape and nothing else. The same hex on
+     a near-black ground is 11.5, within reach of the 17.9 the body copy itself is
+     set at, and a row of stars that loud is read before the quote under it. A
+     rating is the citation, not the point.
+
+     It is one step every shape mixes through rather than a second hex per colour,
+     so each ground pulls its borrowed colours back by the same amount and a
+     network added to the registry later arrives already held. Type is left alone:
+     a colour that has to be read is cut for contrast instead, per colour, and
+     those steps are the ones restated on each ground below. */
+  --brand-shape-hold: 100%;
+
+  /* The two grounds a Trustpilot rating tile is filled with. The filled one is
+     their green held at the step above; the empty one is a ghost of the page
+     rather than the fixed #dcdce6 they publish, because an empty tile carries no
+     part of the rating and a near-white square on a dark page is this site's
+     noise rather than Trustpilot's shape. On paper it lands within a hair of the
+     grey it replaces. */
+  --tp-tile: color-mix(in srgb, var(--tp-star) var(--brand-shape-hold), var(--paper));
+  --tp-tile-empty: color-mix(in srgb, var(--paper-ink) 14%, var(--paper));
+  /* A flat single-ink wordmark is drawn by flattening the file to black and
+     then inverting it as far as the ground asks, so the same PNG reads as the
+     ground's ink rather than as one colour that only works on one of them. */
+  --mark-invert: 0;
+
+  /* Status carries the same shape the accent does: the step that reads on the
+     dark ground, the fill a dot or a bar takes, and the darker step paper needs
+     before small text clears AA. A control names the state it is in rather than
+     a colour, so every ground moves together. */
+  --danger: #f87171;
+  --danger-fill: #ef4444;
+  --danger-edge: rgba(239, 68, 68, 0.6);
+  --danger-on-paper: #cf1f1f;
+  --danger-ink-on-wash: #b91c1c;
+  --danger-hairline: #fca5a5;
+  --danger-wash: #fef2f2;
+  --warn: #fbbf24;
+  --warn-fill: #f59e0b;
+  --warn-edge: rgba(245, 158, 11, 0.4);
+  --warn-wash: rgba(245, 158, 11, 0.1);
+  /* The third state, and the reason it is not the accent: the accent marks
+     what a reader should look at, and a figure being healthy is the one thing
+     that never needs looking at. Green says settled where blue says here. */
+  --good: #34d399;
+  --good-fill: #10b981;
+  --good-edge: rgba(16, 185, 129, 0.4);
+  --good-wash: rgba(16, 185, 129, 0.1);
+  /* The two above are cut for ink on the dark ground and land near 2:1 on a
+     white card, where a status drawn in either is decoration rather than a
+     reading. These are the same two hues taken down to where body text clears
+     4.5:1 on the sheet, alongside the danger step that already had one. A
+     three-band figure needs all three or it reads as one colour and two
+     guesses. */
+  --warn-on-paper: #8a5300;
+  --good-on-paper: #0f7350;
+  /* Chart series, in the order a breakdown assigns them. The first two are the
+     brand accent so the largest slice always reads as ours; the rest are far
+     enough apart in hue to stay separable at legend-swatch size. */
+  --series-1: var(--accent);
+  --series-2: var(--accent-hi);
+  --series-3: #8b5cf6;
+  --series-4: #f59e0b;
+  --series-5: #10b981;
+  --series-6: #ec4899;
+  --series-7: #64748b;
+  /* The easing the whole site moves on, as tokens rather than as a curve
+     retyped at each call site. Matches the Tailwind `ease-out-soft` pair. */
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.77, 0, 0.175, 1);
+  /* The bar's own motion family, a step slower than the controls in a section:
+     the bar is a surface the width of the page, and a surface that size moving
+     at a control's speed reads as a flinch rather than as a change of state.
+     Every nav transition names one of these, so reduced motion can still the
+     whole bar at the token. */
+  --nav-duration: 240ms;
+  --nav-duration-slow: 300ms;
+  --nav-easing: cubic-bezier(0.16, 1, 0.3, 1);
+  /* The washes a surface takes when the pointer is over it. Named here so a
+     hover tint is one decision rather than a literal at every call site. */
+  --wash-accent-strong: rgba(47, 107, 255, 0.16);
+  --wash-accent: rgb(47 107 255 / 0.1);
+  /* THE ARTEFACT PLANE
+     A tint tells the reader a picture has been placed on a card. A plane tells
+     them the card is a window cut into something larger, and the picture was
+     already there.
+
+     What separates the two is chroma, not weight. A field carrying the accent
+     at full strength is a slab: it takes the eye before the artefact standing
+     on it does, it drags every light screenshot down, and it puts a second
+     heavy blue next to the one the buttons already use. The field is therefore
+     pale in value and clear in hue - enough colour that it is plainly not the
+     card, light enough that the object on it is the brightest thing in the
+     frame.
+
+     It is mixed into the ground rather than named, so the same recipe gives a
+     pale field on paper and a deep one under the dark setting without either
+     being written out twice. */
+  --plane-ground: #ffffff;
+  --plane:
+    radial-gradient(
+      124% 128% at 12% 0%,
+      color-mix(in srgb, var(--accent) 13%, var(--plane-ground)) 0%,
+      transparent 62%
+    ),
+    linear-gradient(
+      158deg,
+      color-mix(in srgb, var(--accent) 7%, var(--plane-ground)) 0%,
+      color-mix(in srgb, var(--accent) 22%, var(--plane-ground)) 100%
+    );
+  /* The field is light, so its ink is the page's own rather than a fixed white. */
+  --plane-ink: var(--paper-ink);
+  --plane-ink-soft: var(--paper-ink-soft);
+  --plane-hairline: var(--paper-hairline-strong);
+  /* What an artefact standing on the plane casts. Heavier than a card's lift,
+     because the thing above it is a real object at a real height rather than a
+     panel a few pixels off the page. The near shadow is the contact, the far
+     one the height. */
+  --float:
+    0 1px 2px rgba(16, 30, 66, 0.1), 0 10px 24px -8px rgba(16, 30, 66, 0.16),
+    0 28px 56px -24px rgba(16, 30, 66, 0.2);
+  /* The nearer object of a layered pair, which sits closer to the eye and so
+     throws a tighter, darker contact shadow than the sheet behind it. */
+  --float-near:
+    0 2px 4px rgba(16, 30, 66, 0.14), 0 14px 28px -8px rgba(16, 30, 66, 0.2),
+    0 34px 64px -28px rgba(16, 30, 66, 0.24);
+  /* Opaque ink for a mask, where alpha is the mask's own business. */
+  --mask-ink: #000;
+  /* The dim behind a layer, the ink it is cut from, and how far the page
+     under it is thrown out of focus. A dim is the absence of the page rather
+     than a shade of it, so both are black under either setting; the ink is
+     opaque so a slash modifier can set its own alpha through the Tailwind
+     colour, which a value that already carries one cannot.
+
+     One dim and one blur, however many layers the site opens. A panel that
+     dims lighter than the dialog beside it says the page behind it is less
+     gone, which is not a distinction anything on the site is drawing. */
+  --scrim: rgba(0, 0, 0, 0.55);
+  --scrim-ink: #000000;
+  --scrim-blur: 2px;
+  /* What a duration becomes when the reader has asked for less motion: short
+     enough to be instant, long enough that transition events still fire. */
+  --motion-off: 0.01ms;
+  /* Device geometry for the portfolio mockups: a phone's shell, its screen, its
+     bezel, and a browser window. These are the shapes of the objects drawn, not
+     the site's own corners, which are the four radii above, and not the spacing
+     scale. */
+  --device-shell: 2.25rem;
+  --device-screen: 1.85rem;
+  --device-bezel: 6px;
+  --device-window: 14px;
+  /* The shell of the phone the captures are shown in. It is the colour of the
+     object rather than a role, so it holds under either setting the way the
+     device it draws does. */
+  --device-body: #101114;
+  /* The layer scale. Every stacking decision on the site names one of these
+     rather than reaching for a number, so what sits over what is readable in
+     one place instead of being reconstructed from the values that shipped. */
+  --z-raised: 10;
+  --z-sticky: 20;
+  /* The scrim behind an open navigation panel sits here: over the page, under
+     the bar, so the bar and its panel stay lit while everything else dims. */
+  --z-float: 40;
+  --z-nav: 50;
+  --z-scrim: 60;
+  --z-drawer: 61;
+  --z-toast: 100;
+  --z-modal: 200;
+  --z-skip: 300;
+
+  --control-h: 2.75rem;
+  /* The field-scale control height. An input and the button in the same row
+     both state it, so the pair lines up without depending on a stretch that an
+     inline-block wrapper between them would swallow. */
+  --field-h: 3.25rem;
+  /* The fixed bar's height, so anything that sticks or scrolls to a target
+     lands under the bar rather than behind it. */
+  --nav-height: 4.25rem;
+  /* The floor under the hero's stage. The four presentations do not compose to
+     the same height on a narrow screen, and a stage that takes the height of
+     whichever one is showing moves the page under the reader every time one
+     arrives. The floor is the opener's composed height — its top padding, its
+     column of type, the gap, the plate, and the rule beneath — so the stage
+     holds still and the opener is still the thing that sets what it holds.
+
+     It takes a second value on the narrowest screens, where the opener's
+     headline and paragraph both take an extra line and its column of type
+     stands 28px taller. */
+  --hero-floor: 975px;
+}
+
+@media (min-width: 375px) {
+  :root {
+    --hero-floor: 947px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --nav-height: 4.75rem;
+  }
+}
+
+/*
+ * THE DARK SETTING — the field goes to a near-black canvas and every role that
+ * hangs off it follows: ink at four weights, hairlines, surfaces, washes,
+ * rules, the lift, the bar's ground, the chart's furniture, the glare and the
+ * accent step.
+ *
+ * The light setting is what :root already carries, so it needs no block of its
+ * own; stamping data-theme="light" simply leaves the document on it.
+ *
+ * The selector is anchored to :root rather than to any element carrying the
+ * attribute, so the setting belongs to the document alone. A nested scope that
+ * names a theme of its own - the console's, above all - keeps its own ground
+ * instead of being overwritten by the document's.
+ */
+:root[data-theme='dark'] {
+  /* The plane mixes into the ground the setting stands on, so the same
+     recipe reads as a pale field on paper and a deep one here. */
+  --plane-ground: #0b0c0f;
+  /* The dark green that carries type on paper disappears into a near-black
+     ground, so on this setting the bright star green takes the type and the
+     dark one stays behind white ink on a filled button. */
+  --tp-ink: #00b67a;
+  --yelp-red: #ff3b3b;
+  --bbb-blue: #4eb4d8;
+  /* The ground is what changed, so the shapes drawn on it are pulled back toward
+     it: the gold star settles at 6.0 and the Trustpilot tile at 4.1, both still
+     unmistakably the colour the network uses and neither of them louder than the
+     review it belongs to. */
+  --brand-shape-hold: 70%;
+  --paper: #0b0c0f;
+  --paper-ink: #f4f5f7;
+  --paper-ink-soft: rgba(244, 245, 247, 0.72);
+  --paper-ink-mute: rgba(244, 245, 247, 0.55);
+  --paper-ink-faint: rgba(244, 245, 247, 0.47);
+  --paper-ink-ghost: rgba(244, 245, 247, 0.35);
+  --paper-hairline: rgba(244, 245, 247, 0.1);
+  --paper-hairline-strong: rgba(244, 245, 247, 0.14);
+  --paper-field: #121419;
+  --wash-paper: rgb(244 245 247 / 0.05);
+  --wash-paper-strong: rgb(244 245 247 / 0.1);
+  --rule-paper: rgba(244, 245, 247, 0.05);
+  --rule-paper-fine: rgba(244, 245, 247, 0.03);
+  --surface-1: #14161b;
+  --surface-2: #1c1f26;
+  --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
+  /* The same recipe over a near-black canvas. A drop shadow works by darkening
+     the ground it falls on, so the alphas that read on paper do nothing here
+     and the ring carries most of the separation. */
+  --raise:
+    0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px -12px rgb(0 0 0 / 60%);
+  --raise-hi:
+    0 0 0 1px var(--paper-hairline-strong), 0 2px 4px rgb(0 0 0 / 45%),
+    0 14px 32px -14px rgb(0 0 0 / 70%);
+  --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
+  --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
+  --nav-surface: rgba(11, 12, 15, 0.85);
+  --chart-grid: rgba(244, 245, 247, 0.15);
+  --chart-baseline: rgba(244, 245, 247, 0.4);
+  --shine-sweep: rgba(255, 255, 255, 0.95);
+  --glare-ground: #0b0c0f;
+  --glare-edge: rgba(244, 245, 247, 0.2);
+  --spotlight: rgba(47, 107, 255, 0.2);
+  --spotlight-soft: rgba(47, 107, 255, 0.12);
+  --accent: var(--accent-bright);
+  --accent-hi: var(--accent-hi-bright);
+  --accent-loud: var(--accent-hi-bright);
+  --mark-invert: 1;
+  /* The field is near-black here, so the danger steps cut for a light panel
+     take the dark ground's weight instead. */
+  --danger-on-paper: var(--danger);
+  --warn-on-paper: var(--warn);
+  --good-on-paper: var(--good);
+  --danger-ink-on-wash: var(--danger);
+  --danger-hairline: var(--danger-edge);
+  --danger-wash: rgba(239, 68, 68, 0.12);
+}
+
+/*
+ * THE GROUNDS — what a section declares when it stands on something other than
+ * the ground the setting chose.
+ *
+ *   data-ground="dark"   the deep slab, under the dark setting
+ *   data-ground="paper"  a light sheet, under either setting
+ *   data-ground="band"   the contrasting band, which now contrasts under
+ *                        neither setting
+ *
+ * The light setting has no slabs in it. A reader who asks a site for light is
+ * asking for a light page, and a black masthead over it, a black band every
+ * second section and a black closing call at the foot are the page refusing
+ * three times on one scroll. So under light every ground stands down and the
+ * whole page is the field the setting chose; the contrast that a slab was
+ * carrying is drawn instead by the objects set into the field, which is the
+ * lit plane, the card and its lift.
+ *
+ * Under the dark setting the slab is still worth having, because there it is
+ * not a reversal: the page is already near-black, and the slab is one step
+ * deeper than the field, which is what lets a masthead sit under a page
+ * without a rule between them. A band stands down there as it always did, or a
+ * page keeping its contrast every second section reads as stripes.
+ *
+ * The foot of the page is on neither. It holds the control that changes the
+ * setting, and a surface that keeps its own palette against that control is a
+ * press with nothing to show for it, so it stands on the ground the setting
+ * chose like the field around it.
+ *
+ * Every role below is restated for the subtree, and every role has a paper
+ * spelling at the document, so a section that no longer matches here is not
+ * left undressed: `bg-bg`, `text-ink` and the hairlines resolve to the field's
+ * own values and the section reads as part of the page.
+ */
+:root[data-theme='dark'] [data-ground='dark'] {
+  --bg: #000000;
+  --ink: #ffffff;
+  --ink-soft: rgba(255, 255, 255, 0.72);
+  --ink-mute: rgba(255, 255, 255, 0.55);
+  --ink-faint: rgba(255, 255, 255, 0.46);
+  --ink-ghost: rgba(255, 255, 255, 0.32);
+  --hairline: rgba(255, 255, 255, 0.1);
+  --hairline-strong: rgba(255, 255, 255, 0.18);
+  --surface-1: #0a0a0a;
+  --surface-2: #131313;
+  --wash-ink: rgb(255 255 255 / 0.05);
+  --wash-ink-strong: rgb(255 255 255 / 0.1);
+  --rule-ink: rgba(255, 255, 255, 0.06);
+  --rule-ink-fine: rgba(255, 255, 255, 0.04);
+  --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.55);
+  /* A slab carries the page's light paper roles unchanged, because the cards
+     set into one are light cards. What it does restate is the lift, which has
+     to be drawn against the slab's own hairline rather than paper's, and given
+     enough black to register on a ground that is already black. */
+  --edge: 0 0 0 1px var(--hairline);
+  --raise:
+    0 0 0 1px var(--hairline), 0 1px 2px rgb(0 0 0 / 40%), 0 10px 28px -14px rgb(0 0 0 / 55%);
+  --raise-hi:
+    0 0 0 1px var(--hairline-strong), 0 2px 4px rgb(0 0 0 / 45%), 0 16px 36px -16px rgb(0 0 0 / 65%);
+  --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
+  --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
+  --nav-surface: rgba(0, 0, 0, 0.85);
+  --chart-grid: rgba(255, 255, 255, 0.15);
+  --chart-baseline: rgba(255, 255, 255, 0.4);
+  --shine-sweep: #ffffff;
+  --glare-ground: #000000;
+  --glare-edge: #333333;
+  --spotlight: rgba(47, 107, 255, 0.2);
+  --spotlight-soft: rgba(47, 107, 255, 0.12);
+  --accent: var(--accent-bright);
+  --accent-hi: var(--accent-hi-bright);
+  --accent-loud: var(--accent-hi-bright);
+  --mark-invert: 1;
+  /* The two borrowed brand colours cut for a light sheet disappear into a slab:
+     the dark Trustpilot green reads as black on black, and Yelp's red lands
+     near 3:1. A slab takes the same steps the dark setting takes. */
+  --tp-ink: var(--tp-star);
+  --yelp-red: #ff3b3b;
+  --bbb-blue: #4eb4d8;
+}
+
+/*
+ * A sheet is a light page drawn inside the site: the browser previews, which
+ * stand for finished websites and read as one under either setting. Both
+ * palettes are pinned here rather than inherited, so the dark setting moves the
+ * page around them and leaves the pages they show alone.
+ */
+[data-ground='paper'] {
+  --paper: #ffffff;
+  --paper-ink: #0a0a0a;
+  --paper-ink-soft: rgba(10, 10, 10, 0.72);
+  --paper-ink-mute: rgba(10, 10, 10, 0.62);
+  --paper-ink-faint: rgba(10, 10, 10, 0.57);
+  --paper-ink-ghost: rgba(10, 10, 10, 0.35);
+  --paper-hairline: rgba(10, 10, 10, 0.1);
+  --paper-hairline-strong: rgba(10, 10, 10, 0.14);
+  --paper-field: #ffffff;
+  --wash-paper: rgb(10 10 10 / 0.05);
+  --wash-paper-strong: rgb(10 10 10 / 0.1);
+  --rule-paper: rgba(10, 10, 10, 0.05);
+  --rule-paper-fine: rgba(10, 10, 10, 0.03);
+  --bg: var(--paper);
+  --ink: var(--paper-ink);
+  --ink-soft: var(--paper-ink-soft);
+  --ink-mute: var(--paper-ink-mute);
+  --ink-faint: var(--paper-ink-faint);
+  --ink-ghost: var(--paper-ink-ghost);
+  --hairline: var(--paper-hairline);
+  --hairline-strong: var(--paper-hairline-strong);
+  --surface-1: #ffffff;
+  --surface-2: #f1f1ef;
+  --wash-ink: var(--wash-paper);
+  --wash-ink-strong: var(--wash-paper-strong);
+  --rule-ink: var(--rule-paper);
+  --rule-ink-fine: var(--rule-paper-fine);
+  --lift: 0 30px 70px -30px rgba(10, 10, 10, 0.28);
+  /* A shadow works by darkening what it falls on, so the black the dark
+     setting pours into these would sit on a white sheet as dirt. The sheet
+     restates every shadow that carries ink of its own, and the plane's ground
+     with them: a plane is mixed into the ground it stands on, and the setting's
+     near-black would take a window inside a white sheet down with it. */
+  --edge: 0 0 0 1px var(--paper-hairline);
+  --raise:
+    0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(10 10 10 / 4%),
+    0 8px 24px -12px rgb(10 10 10 / 10%);
+  --raise-hi:
+    0 0 0 1px var(--paper-hairline-strong), 0 2px 4px rgb(10 10 10 / 5%),
+    0 14px 32px -14px rgb(10 10 10 / 16%);
+  --key-lift: 0 1px 1px rgb(10 10 10 / 8%), 0 2px 5px -1px rgb(10 10 10 / 14%);
+  --key-lift-soft: 0 1px 2px rgb(10 10 10 / 5%);
+  --plane-ground: #ffffff;
+  /* The borrowed brand colours follow the sheet rather than the setting: the
+     bright star green is a shape on white, and Yelp's dark red is the step
+     that carries type on it. */
+  --tp-ink: #005128;
+  --yelp-red: #d32323;
+  --bbb-blue: #015a75;
+  /* A sheet is white whatever the setting is, and white is the ground these
+     colours were cut for, so nothing is held back on one. Without this a sheet
+     opened under the dark setting would inherit its step and mix toward its own
+     white, which is the one direction these colours cannot afford to go. */
+  --brand-shape-hold: 100%;
+  --chart-grid: rgba(10, 10, 10, 0.15);
+  --chart-baseline: rgba(10, 10, 10, 0.5);
+  --shine-sweep: rgba(10, 10, 10, 0.92);
+  --glare-ground: #ffffff;
+  --glare-edge: rgba(10, 10, 10, 0.2);
+  --spotlight: rgba(47, 107, 255, 0.16);
+  --spotlight-soft: rgba(47, 107, 255, 0.1);
+  --accent: var(--accent-lo);
+  --accent-hi: var(--accent-deep);
+  --accent-loud: var(--accent-lo);
+  --mark-invert: 0;
+  --danger-on-paper: #cf1f1f;
+  --danger-ink-on-wash: #b91c1c;
+  --danger-hairline: #fca5a5;
+  --danger-wash: #fef2f2;
+  --warn-on-paper: #8a5300;
+  --good-on-paper: #0f7350;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    /* An in-page target would otherwise come to rest behind the fixed bar. */
+    scroll-padding-top: var(--nav-height);
+    /* clip, not hidden: hidden makes the root a scroll container, which severs
+       every sticky and fixed descendant on the page. */
+    overflow-x: clip;
+    background-color: var(--bg);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply m-0 min-h-dvh bg-paper font-sans text-ink-paper antialiased;
+    overflow-x: clip;
+    /* The ground and its ink cross-fade when the setting changes, so the page
+       arrives at the other palette rather than cutting to it. The blanket
+       reduced-motion rule at the foot of this sheet stills it. */
+    transition:
+      background-color 200ms var(--ease-out-soft),
+      color 200ms var(--ease-out-soft);
+    font-feature-settings:
+      'ss01' on,
+      'ss02' on,
+      'cv11' on;
+  }
+
+  ::selection {
+    background-color: var(--accent-fill);
+    color: var(--on-accent);
+  }
+
+  /* The affordances every control shares, stated once. Safari paints its own
+     grey block over a tapped control, which lands on top of the press state the
+     control defines for itself. */
+  button,
+  a,
+  [role='button'],
+  summary {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  button:disabled,
+  [role='button'][aria-disabled='true'] {
+    cursor: not-allowed;
+  }
+
+  /* A double-tap on a control selects its label rather than pressing it twice. */
+  button,
+  [role='button'],
+  th {
+    user-select: none;
+  }
+
+  /* Press feedback. Every control on the site is flat, so the press is carried
+     by the surface dropping under the finger rather than by a shadow. */
+  button:not(:disabled):active,
+  a:active,
+  [role='button']:not([aria-disabled='true']):active {
+    opacity: 0.7;
+  }
+
+  /* A field needs its own ground, or the border is the only thing telling a
+     reader it can be typed in. A field that wants a different surface sets one
+     with a utility class, which lands in a later layer and wins. */
+  input:not([type='checkbox']):not([type='radio']):not([type='range']),
+  textarea,
+  select {
+    background-color: var(--paper-field);
+  }
+
+  /* Autofill repaints a field in the browser's own yellow and drops the theme.
+     The inset shadow is the only way to put the field's ground back, and it
+     carries !important so it holds in every state the browser paints rather
+     than needing one selector per pseudo-class. */
+  input:-webkit-autofill,
+  textarea:-webkit-autofill,
+  select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 100px var(--paper-field) inset !important;
+    -webkit-text-fill-color: var(--paper-ink) !important;
+    caret-color: var(--paper-ink);
+  }
+
+  /* Named rather than left bare, so the ring belongs to the things a keyboard
+     actually lands on rather than to every element on the page. */
+  a:focus-visible,
+  button:focus-visible,
+  [role='button']:focus-visible,
+  summary:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    /* The ring stands off the element rather than tracing it, so it takes the
+       smallest corner on the scale rather than the one the element happens to
+       turn. */
+    border-radius: var(--r-tiny);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display tracking-[-0.025em];
+    font-feature-settings:
+      'ss01' on,
+      'ss02' on;
+    /* A single unbroken word — a long path, a domain — would otherwise push a
+       heading past its container instead of wrapping. */
+    overflow-wrap: anywhere;
+    /* Spread the last line across the measure rather than leaving one word
+       stranded under a full-width headline. */
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* The head stays put while the body scrolls, so the columns keep their labels
+     past the first screen, and carries its own ground so rows do not read
+     through it.
+
+     It pins to the top of the box that scrolls it, which is the table's own
+     container rather than the page: these tables sit in an overflow-x wrapper,
+     and a wrapper that scrolls on one axis is a scroll container on both, so an
+     offset meant for the page bar lands the head partway down the table and on
+     top of the first rows.
+
+     The rule beneath it comes from --rule-under rather than a border, because
+     these tables collapse their borders and a collapsed border belongs to the
+     table grid: it scrolls away with the row that owns it and leaves the pinned
+     head sitting on the body with nothing between them. */
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-raised);
+    background-color: var(--paper);
+    box-shadow: var(--rule-under);
+  }
+
+  /* A scroll that reaches the end of a panel would otherwise carry on into the
+     page behind it. */
+  [data-scroll-region],
+  [role='dialog'],
+  dialog {
+    overscroll-behavior: contain;
+  }
+}
+
+@layer components {
+  /*
+   * CONSOLE SCOPE — the signed-in console, the status board and the auth
+   * screens. Three grounds one step apart: the page behind everything, the
+   * chrome holding still over it, and the cards carrying the work.
+   *
+   * The console reads on its own grounds rather than the site's. A marketing
+   * page is read once and has to hold attention; a dashboard is read several
+   * times a day by somebody who came for one figure, so what carries it is
+   * separation rather than contrast. On the light ground the page takes a
+   * tint, the cards sit on it in white with a lift rather than a rule, and the
+   * ink is a blue-grey rather than black - at 10.4:1 it clears AA twice over
+   * while taking the glare off a screen somebody has open all day. The accent
+   * stays the studio's blue: what is borrowed here is an arrangement, never
+   * another company's colour.
+   *
+   * The scope still follows the document's setting, so the light setting gives
+   * a light dashboard and the dark one the near-black canvas, and it restates
+   * the paper roles on both, so every Panel, Tile and table cell built from
+   * bg-paper / text-paper-soft / border-hair-paper translates through variable
+   * inheritance without a per-file swap.
+   *
+   * The status hues and the chart series take a darker step on the light
+   * ground: the steps cut for a near-black canvas sit between 1.5:1 and 2.4:1
+   * on white, which is below the 3:1 a chart segment or a state dot owes and
+   * far below the 4.5:1 a run label owes.
+   */
+  [data-theme='console'] {
+    --paper: #f6f8fb;
+    --paper-ink: #3c4257;
+    --paper-ink-soft: #545a69;
+    /* The two quiet steps are cut against the card rather than picked to look
+       quiet, which is the mistake the first light palette made.
+
+       The dark palette was measured - its own note records the faint step at
+       4.49 on the rail behind it - and the status hues and the chart series
+       were measured on this ground too. The greys were not, and they are the
+       ones that carry the reading: faint is baked into the table head, the
+       quiet button and every field's placeholder, and it landed at 3.15 on a
+       white card against 4.65 for the same step on the dark one. The same
+       column heading was legible in one setting and not in the other.
+
+       So both steps take the darker cut that clears 4.5, and the ramp keeps
+       the shape the dark one has: 9.96, 6.90, 5.70, 4.63 on the card. Ghost
+       stays where it is - three borders and the breadcrumb's separator, none
+       of which is text somebody reads. */
+    --paper-ink-mute: #5d677a;
+    --paper-ink-faint: #6c7587;
+    --paper-ink-ghost: #a3acba;
+    --paper-hairline: rgba(60, 66, 87, 0.08);
+    --paper-hairline-strong: rgba(60, 66, 87, 0.16);
+    --paper-field: #ffffff;
+    --wash-paper: rgba(60, 66, 87, 0.04);
+    --wash-paper-strong: rgba(60, 66, 87, 0.08);
+    --rule-paper: rgba(60, 66, 87, 0.05);
+    --rule-paper-fine: rgba(60, 66, 87, 0.03);
+    /* A card is separated by a lift rather than a line. One hairline shadow
+       and one soft one under it, which is what reads as a raised surface
+       without drawing a box around everything. */
+    --console-radius: var(--r-card);
+    --console-radius-sm: var(--r-control);
+    --console-card-shadow:
+      0 0 0 1px rgba(60, 66, 87, 0.06), 0 1px 3px rgba(60, 66, 87, 0.08),
+      0 2px 6px rgba(60, 66, 87, 0.04);
+    --console-row-hover: rgba(60, 66, 87, 0.05);
+    --console-raise-shadow: 0 0 0 1px rgba(60, 66, 87, 0.08), 0 1px 2px rgb(60 66 87 / 12%);
+    --bg: #eceef1;
+    --ink: var(--paper-ink);
+    --ink-soft: var(--paper-ink-soft);
+    --ink-mute: var(--paper-ink-mute);
+    --ink-faint: var(--paper-ink-faint);
+    --ink-ghost: var(--paper-ink-ghost);
+    --hairline: var(--paper-hairline);
+    --hairline-strong: var(--paper-hairline-strong);
+    --surface-1: #ffffff;
+    --surface-2: #f3f4f6;
+    --wash-ink: var(--wash-paper);
+    --wash-ink-strong: var(--wash-paper-strong);
+    --rule-ink: var(--rule-paper);
+    --rule-ink-fine: var(--rule-paper-fine);
+    --lift: 0 18px 44px -26px rgba(10, 10, 10, 0.28);
+    --accent: var(--accent-lo);
+    --accent-hi: var(--accent-deep);
+    --accent-loud: var(--accent-lo);
+    --mark-invert: 0;
+    --chart-grid: rgba(10, 10, 10, 0.12);
+    --chart-baseline: rgba(10, 10, 10, 0.5);
+    --shine-base: var(--ink-mute);
+    --shine-sweep: rgba(10, 10, 10, 0.92);
+    --glare-ground: #ffffff;
+    --glare-edge: rgba(10, 10, 10, 0.2);
+    --spotlight: rgba(47, 107, 255, 0.16);
+    --spotlight-soft: rgba(47, 107, 255, 0.1);
+    --danger: #cf1f1f;
+    --danger-fill: #dc2626;
+    --danger-edge: rgba(207, 31, 31, 0.5);
+    --danger-on-paper: #cf1f1f;
+    --warn-on-paper: var(--warn);
+    --good-on-paper: var(--good);
+    --danger-ink-on-wash: #b91c1c;
+    --danger-hairline: #f0a3a3;
+    --danger-wash: #fef2f2;
+    --warn: #8a5300;
+    --warn-fill: #b45309;
+    --warn-edge: rgba(138, 83, 0, 0.4);
+    --warn-wash: rgba(180, 83, 9, 0.1);
+    --good: #0f7350;
+    --good-fill: #047857;
+    --good-edge: rgba(15, 115, 80, 0.4);
+    --good-wash: rgba(4, 120, 87, 0.1);
+    --series-3: #7c3aed;
+    --series-4: #b45309;
+    --series-5: #047857;
+    --series-6: #be185d;
+    --series-7: #475569;
+    /* The dashboard's own measures. The rail width, the bar height, the gap
+       between cards and the page inset are named here rather than repeated
+       across the layer, so the whole frame retunes from four values and a card
+       can never sit at a different rhythm from the one beside it.
+
+       There is one inset, not two. The bar and the work under it are the same
+       column, so a bar set at one figure and the cards beneath it at another
+       leaves every heading a quarter-inch out from the card it heads - which
+       reads as a page that has slipped rather than as two considered measures.
+
+       The inset is deliberately small. A dashboard is tables, and a table reads
+       better with the width than with a margin either side of it; anything
+       wider than a hairline of air is a rail holding nothing. */
+    --console-rail-w: 15rem;
+    --console-bar-h: 3.5rem;
+    --console-gap: 1rem;
+    --console-pad: 1rem;
+    --console-rail-bg: #ffffff;
+    --console-bar-bg: #ffffff;
+    --console-card-bg: #ffffff;
+    /* The lift under a panel that floats over the page rather than sitting in
+       it. Deeper on the dark setting, where a shadow has less ground to darken
+       and the edge does more of the separating. */
+    --console-float-shadow: 0 12px 32px -12px rgb(10 10 10 / 28%);
+    /* The half of the console the stylesheet cannot reach.
+
+       A checkbox's box, a select's dropped list, the spinners on a number, the
+       calendar a datetime-local opens, the unfilled half of a range track and
+       every scrollbar in here are drawn by the browser, not by these rules. A
+       variable never reaches them: they take their colour from the scheme the
+       element declares, and an element that declares none is drawn light. That
+       is why a console in the dark palette was handing back white tick boxes
+       and a white scrollbar down its own working column - the palette had
+       moved and the browser's own furniture had not been told.
+
+       It is declared here beside the palette rather than on the document,
+       because this scope is what decides the console is dark; the portals the
+       search, the shortcut sheet and the modals open carry the same attribute,
+       so the furniture inside them follows without a second rule. */
+    color-scheme: light;
+    background-color: var(--bg);
+    color: var(--ink);
+  }
+
+  :root[data-theme='dark'] [data-theme='console'] {
+    --paper: #08090c;
+    --paper-ink: #f4f5f7;
+    --paper-ink-soft: rgba(244, 245, 247, 0.72);
+    --paper-ink-mute: rgba(244, 245, 247, 0.55);
+    /* The rail and the bar sit a step behind the cards, so the quietest text
+       step is cut against the rail rather than the card: 0.47 clears AA on
+       #08090c and lands at 4.49 on the rail behind it. */
+    --paper-ink-faint: rgba(244, 245, 247, 0.48);
+    --paper-ink-ghost: rgba(244, 245, 247, 0.32);
+    --paper-hairline: rgba(255, 255, 255, 0.07);
+    --paper-hairline-strong: rgba(255, 255, 255, 0.14);
+    --paper-field: #0c0e13;
+    --wash-paper: rgb(255 255 255 / 0.05);
+    --wash-paper-strong: rgb(255 255 255 / 0.1);
+    --rule-paper: rgba(255, 255, 255, 0.05);
+    --rule-paper-fine: rgba(255, 255, 255, 0.03);
+    --bg: #04050a;
+    --surface-1: #0a0c12;
+    --surface-2: #10131b;
+    --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
+    --accent: var(--accent-bright);
+    --accent-hi: var(--accent-hi-bright);
+    --accent-loud: var(--accent-hi-bright);
+    --mark-invert: 1;
+    --chart-grid: rgba(244, 245, 247, 0.15);
+    --chart-baseline: rgba(244, 245, 247, 0.4);
+    --shine-sweep: rgba(255, 255, 255, 0.95);
+    --glare-ground: #08090c;
+    --glare-edge: rgba(244, 245, 247, 0.2);
+    --spotlight: rgba(47, 107, 255, 0.2);
+    --spotlight-soft: rgba(47, 107, 255, 0.12);
+    --danger: #f87171;
+    --danger-fill: #ef4444;
+    --danger-edge: rgba(239, 68, 68, 0.6);
+    /* The card ground is near-black in here, so the danger steps cut for a
+       light panel take the dark ground's weight instead. */
+    --danger-on-paper: var(--danger);
+    --warn-on-paper: var(--warn);
+    --good-on-paper: var(--good);
+    --danger-ink-on-wash: var(--danger);
+    --danger-hairline: var(--danger-edge);
+    --danger-wash: rgba(239, 68, 68, 0.12);
+    --warn: #fbbf24;
+    --warn-fill: #f59e0b;
+    --warn-edge: rgba(245, 158, 11, 0.4);
+    --warn-wash: rgba(245, 158, 11, 0.1);
+    --good: #34d399;
+    --good-fill: #10b981;
+    --good-edge: rgba(16, 185, 129, 0.4);
+    --good-wash: rgba(16, 185, 129, 0.1);
+    --series-3: #8b5cf6;
+    --series-4: #f59e0b;
+    --series-5: #10b981;
+    --series-6: #ec4899;
+    --series-7: #64748b;
+    --console-rail-bg: #0b0d12;
+    --console-bar-bg: #0b0d12;
+    --console-card-bg: #12151c;
+    --console-float-shadow: 0 12px 32px -12px rgb(0 0 0 / 62%);
+    --console-card-shadow: 0 0 0 1px rgba(244, 245, 247, 0.07);
+    --console-row-hover: rgba(244, 245, 247, 0.06);
+    /* A raised chip separates itself by catching light on a pale ground and by
+       its own edge on a dark one, where a shadow has nothing left to darken. */
+    --console-raise-shadow: 0 0 0 1px rgba(244, 245, 247, 0.12), 0 1px 2px rgb(0 0 0 / 40%);
+    color-scheme: dark;
+  }
+
+  /*
+   * NAV SHELL — the one surface the bar and its panel share, always the full
+   * width of the viewport like every section under it. data-surfaced carries
+   * the ground: on once content has scrolled beneath the bar and whenever a
+   * panel is open, off while the bar sits transparent at the top of the page.
+   * A surfaced bar stands on the page's own ground; a transparent one stands on
+   * whatever the section behind it put there, and names it with data-ground
+   * when that is a slab.
+   */
+  .nav-shell {
+    width: 100%;
+    border-bottom: 1px solid transparent;
+    background-color: transparent;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    transition:
+      border-color var(--nav-duration) var(--nav-easing),
+      background-color var(--nav-duration) var(--nav-easing),
+      box-shadow var(--nav-duration) var(--nav-easing),
+      backdrop-filter var(--nav-duration) var(--nav-easing);
+  }
+
+  .nav-shell[data-surfaced='true'] {
+    background-color: var(--nav-surface);
+    border-color: var(--hairline);
+    backdrop-filter: blur(18px) saturate(1.4);
+    -webkit-backdrop-filter: blur(18px) saturate(1.4);
+    box-shadow: var(--lift);
+  }
+
+  .nav-row {
+    height: var(--nav-height);
+  }
+
+  /* The bar's insets are the page's insets, breakpoint for breakpoint, so the
+     bar and the content beneath it widen at the same width rather than at two:
+     a bar that steps at 1280 over a page that steps at 1024 leaves the wordmark
+     sitting inside its own content for every laptop width in between.
+
+     The row is not held to the page column, though the surface and the content
+     under it both are. What the row carries - the wordmark, six groups, the
+     search, the number, the account and the action - measures a little over
+     1300px laid out, and the page column offers 1152 inside its insets, so
+     holding the row to it does not align the bar: it overruns the column and
+     lands the action further out than leaving the row alone would. The column
+     is what the row would take if it ever carried less. */
+  .nav-pad {
+    padding-inline: 1.5rem;
+  }
+
+  @media (min-width: 640px) {
+    .nav-pad {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .nav-pad {
+      padding-inline: 4rem;
+    }
+  }
+
+  .nav-panel-pad {
+    padding-block: 2rem 2.25rem;
+  }
+
+  /* The wordmark's crop box; the logo inside is sized in percentages of it. */
+  .nav-mark {
+    height: 2.25rem;
+    width: 150px;
+  }
+
+  /* The same wordmark at the foot of the page, through a window of its own.
+     The file is a 384-unit square carrying 328x98 of lettering centred in it,
+     so a surface that draws the whole square draws two bands of nothing each
+     about a third taller than the lettering itself - which is what the foot of
+     the page was doing, at 144px of box for 37px of name. Both windows crop to
+     the lettering; this one is the wider of the two because a signature is
+     read rather than pressed. */
+  .footer-mark {
+    height: 2.75rem;
+    width: 7.5rem;
+  }
+
+  /* The triggers' ink. The active group's trigger holds full ink, so the bar
+     says where the reader is before anything opens. */
+  .nav-link {
+    @apply h-[var(--control-h)];
+    color: var(--ink-soft);
+  }
+
+  .nav-link:hover,
+  .nav-link[data-active='true'] {
+    color: var(--ink);
+  }
+
+  /* The directory a group opens. It lives inside the shell, so it has no
+     surface of its own - only ink, which is always the dark set because the
+     shell is surfaced whenever a panel is open.
+
+     The columns run in one track and the group's own page holds a rail beside
+     them, so a group of two columns and a group of four are the same furniture
+     at two widths. The column count is set per group on the element, which is
+     what lets the twenty-two trades read as four headed lists rather than one
+     run. */
+  .nav-panel-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  .nav-panel-layout[data-feature='true'] {
+    grid-template-columns: minmax(0, 1fr) 16rem;
+  }
+
+  /* Equal tracks by default, since most groups carry columns of the same
+     weight. A group whose columns do not weigh the same declares its own
+     template: a column of bare names holds a third of the words the column
+     beside it does, and an equal track leaves it stranded in white space. */
+  .nav-panel-columns {
+    display: grid;
+    grid-template-columns: var(
+      --nav-panel-template,
+      repeat(var(--nav-panel-columns, 2), minmax(0, 1fr))
+    );
+    gap: 2rem;
+  }
+
+  .nav-panel-head {
+    border-color: var(--hairline);
+    color: var(--ink-faint);
+  }
+
+  .nav-panel-item {
+    @apply flex min-h-[44px] items-start gap-3 rounded-[var(--r-control)] px-3 py-2.5 transition-colors duration-[var(--nav-duration)] ease-out-soft;
+    color: var(--ink);
+  }
+
+  /* A row carrying only a name needs the height of the name and no more, so a
+     column of them reads as a list rather than as a column of cards. */
+  .nav-panel-item[data-compact='true'] {
+    @apply min-h-[2rem] items-center py-1;
+  }
+
+  .nav-panel-item:hover,
+  .nav-panel-item:focus-visible {
+    background-color: var(--wash-ink);
+  }
+
+  /* The page already open, taken as a filled row. A fill is what the panel
+     already uses for the thing it is pointing at, in the card beside these
+     columns and in the chips elsewhere, so the reader is placed by area rather
+     than by having to tell two colours apart. */
+  .nav-panel-item[aria-current='page'] {
+    background-color: var(--wash-accent);
+    color: var(--accent);
+  }
+
+  .nav-panel-item[aria-current='page']:hover,
+  .nav-panel-item[aria-current='page']:focus-visible {
+    background-color: var(--wash-accent-strong);
+  }
+
+  .nav-panel-summary {
+    color: var(--ink-soft);
+  }
+
+  /* The mark sits a step back from the label it belongs to and comes forward
+     with the row, so a column of them reads as a margin rule rather than as
+     eleven things competing with the words. */
+  .nav-panel-mark {
+    color: var(--ink-mute);
+    @apply transition-colors duration-[var(--nav-duration)] ease-out-soft;
+  }
+
+  .nav-panel-item:hover .nav-panel-mark,
+  .nav-panel-item:focus-visible .nav-panel-mark,
+  .nav-panel-item[aria-current='page'] .nav-panel-mark {
+    color: var(--accent);
+  }
+
+  /* The captures under a feature label, held to the top of the page they
+     show. At this size a whole page is a grey smudge, whereas its first
+     screen still reads as a website, which is the only thing three thumbnails
+     this small have to say.
+
+     The ratio is declared rather than left to the file, because the panel
+     animates to a height it measures: a shot that arrives without one would
+     size the rail after the panel had already settled. */
+  .nav-panel-shot {
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    object-position: top center;
+    border-radius: var(--r-control);
+    box-shadow: 0 0 0 1px var(--hairline);
+  }
+
+  /* A network mark answers in its own colour rather than the brand accent,
+     since the accent on somebody else's logo reads as this site claiming it.
+     At rest it is the muted ink every row shares, which is what keeps a column
+     of four one column rather than a row of badges.
+
+     Each mark names its own colour and the row asks for whichever it is
+     holding, so a network added to the panel arrives with its colour rather
+     than with a fifth copy of this rule. */
+  [data-mark='trustpilot'] {
+    --mark-brand: var(--tp-star);
+  }
+
+  [data-mark='google'] {
+    --mark-brand: var(--google-blue);
+  }
+
+  [data-mark='yelp'] {
+    --mark-brand: var(--yelp-red);
+  }
+
+  [data-mark='bbb'] {
+    --mark-brand: var(--bbb-blue);
+  }
+
+  [data-mark='facebook'] {
+    --mark-brand: var(--fb-blue);
+  }
+
+  [data-mark='linkedin'] {
+    --mark-brand: var(--li-blue);
+  }
+
+  [data-mark='instagram'] {
+    --mark-brand: var(--ig-magenta);
+  }
+
+  /* X's mark is drawn in one ink and the ink is the ground's opposite, so it
+     has no brand colour to answer in. Naming the page's own ink is what keeps
+     it from being the one row in the column that does not light up. */
+  [data-mark='x'] {
+    --mark-brand: var(--ink);
+  }
+
+  .nav-panel-item:hover [data-mark],
+  .nav-panel-item:focus-visible [data-mark] {
+    color: var(--mark-brand);
+  }
+
+  .nav-panel-feature .nav-panel-mark {
+    color: var(--accent);
+  }
+
+  .nav-panel-feature[data-tone='trustpilot'] .nav-panel-mark {
+    color: var(--tp-star);
+  }
+
+  /* The group's own index, promoted out of the columns onto a tinted card in
+     the rail so the panel has one thing to go to when none of the rows is the
+     answer. */
+  .nav-panel-feature {
+    background-color: var(--wash-accent);
+    box-shadow: 0 0 0 1px var(--hairline);
+    @apply transition-colors duration-[var(--nav-duration)] ease-out-soft;
+    color: var(--accent);
+  }
+
+  .nav-panel-feature:hover,
+  .nav-panel-feature:focus-visible {
+    background-color: var(--wash-accent-strong);
+  }
+
+  /* The panel that goes to Trustpilot is set in Trustpilot's own green rather
+     than the brand accent, for the same reason the reviews section is: a
+     rating drawn in this site's colour reads as a rating this site awarded
+     itself. Its mark keeps the greens it is issued with and takes no colour
+     from here. */
+  .nav-panel-feature[data-tone='trustpilot'] {
+    background-color: color-mix(in srgb, var(--tp-star) 10%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--tp-star) 34%, transparent);
+    color: var(--tp-ink);
+  }
+
+  .nav-panel-feature[data-tone='trustpilot']:hover,
+  .nav-panel-feature[data-tone='trustpilot']:focus-visible {
+    background-color: color-mix(in srgb, var(--tp-star) 18%, transparent);
+  }
+
+  /* The accreditation panel, in BBB's own torch blue for the reason the
+     Trustpilot one is in Trustpilot's green: an accreditation drawn in this
+     site's colour reads as one this site issued itself. */
+  .nav-panel-feature[data-tone='bbb'] .nav-panel-mark {
+    color: var(--bbb-blue);
+  }
+
+  .nav-panel-feature[data-tone='bbb'] {
+    background-color: color-mix(in srgb, var(--bbb-blue) 10%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--bbb-blue) 34%, transparent);
+    color: var(--bbb-blue);
+  }
+
+  .nav-panel-feature[data-tone='bbb']:hover,
+  .nav-panel-feature[data-tone='bbb']:focus-visible {
+    background-color: color-mix(in srgb, var(--bbb-blue) 18%, transparent);
+  }
+
+  /* The other places the same business is reviewed, as a row of marks along
+     the foot of the feature card. Each holds its own colour rather than the
+     card's, which is the whole of what the row says: the proof is spread
+     across several listings and none of them is this site. */
+  .nav-panel-sources [data-mark] {
+    color: var(--mark-brand);
+    opacity: 0.85;
+  }
+
+  .nav-panel-feature:hover .nav-panel-sources [data-mark],
+  .nav-panel-feature:focus-visible .nav-panel-sources [data-mark] {
+    opacity: 1;
+  }
+
+  /* The account pair as it reads inside the drawer, where each has the width
+     of the panel rather than a slot in a row. */
+  .drawer-account-button {
+    @apply flex min-h-[48px] cursor-pointer items-center justify-center rounded-[var(--r-control)] px-4 text-[15px] font-semibold transition-colors duration-[var(--nav-duration)] ease-out-soft;
+    box-shadow: 0 0 0 1px var(--hairline-strong);
+    color: var(--ink-soft);
+  }
+
+  .drawer-account-button:hover {
+    background-color: var(--wash-ink);
+    color: var(--ink);
+  }
+
+  /* The bar's icon toggle, which sits over both canvases. */
+  .nav-toggle {
+    @apply flex h-11 w-11 shrink-0 cursor-pointer items-center justify-center rounded-[var(--r-control)] transition-colors duration-[var(--nav-duration)] ease-out-soft;
+    color: var(--ink);
+  }
+
+  .nav-toggle:hover {
+    background-color: var(--wash-ink-strong);
+  }
+
+  /* A destination in the drawer. The open one is marked by aria-current. */
+  .drawer-link {
+    @apply flex items-center justify-between border-b py-4 transition-colors duration-[var(--nav-duration)] ease-out-soft;
+    border-color: var(--hairline);
+    color: var(--ink-soft);
+  }
+
+  .drawer-link:hover {
+    color: var(--ink);
+  }
+
+  .drawer-link[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  .drawer-link[aria-current='page']:hover {
+    color: var(--accent-hi);
+  }
+
+  /* A button wearing a field's clothes. It cannot be a field: what it opens is
+     a dialog carrying its own input, and two inputs for one search means a
+     reader can type into the one that does nothing. Dressed as a field it says
+     what it opens without a line of instruction beside it. */
+  .nav-search-open {
+    @apply inline-flex h-[var(--control-h)] cursor-pointer items-center gap-2 rounded-[var(--r-control)] px-2.5 text-[14px] font-medium transition-colors duration-[var(--nav-duration)] ease-out-soft;
+    color: var(--ink-mute);
+    box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  }
+
+  .nav-search-open:hover {
+    background-color: var(--wash-ink);
+    color: var(--ink);
+  }
+
+  /* The chip printing the shortcut. It inherits the bar's family rather than
+     the browser's monospace default for kbd, which sets a glyph two sizes off
+     everything beside it. The width is held wide enough for the longest label
+     it can carry, because the platform is only known after mounting and a chip
+     that grows from a glyph to a word on the first frame drags the whole right
+     of the bar along with it. */
+  .nav-search-kbd {
+    @apply hidden rounded-[var(--r-tiny)] text-[11px] font-medium leading-none xl:inline-block;
+    min-width: 3.1rem;
+    padding: 0.25rem 0.3rem;
+    font-family: inherit;
+    color: var(--ink-faint);
+    text-align: center;
+    box-shadow: 0 0 0 1px var(--hairline-strong);
+  }
+
+  /*
+   * NAV CLUSTER - the quiet end of the bar.
+   *
+   * Search, the number and the account share one hairline ring divided into
+   * segments rather than standing as three controls with three outlines and
+   * three gaps between them. Ringed together they read as one piece of
+   * furniture, which leaves the filled action beside them as the only thing in
+   * the bar asking to be pressed.
+   *
+   * Every segment is at least the control height square, so the ones that show
+   * a mark alone are still a target a thumb could hit if the bar were ever set
+   * this way on a small screen.
+   */
+  .nav-cluster {
+    display: inline-flex;
+    align-items: center;
+    height: var(--control-h);
+    border-radius: var(--r-control);
+    box-shadow: inset 0 0 0 1px var(--hairline-strong);
+  }
+
+  .nav-cluster-item {
+    @apply relative inline-flex h-full cursor-pointer items-center justify-center gap-2 px-3 text-[14px] font-medium leading-none;
+    min-width: var(--control-h);
+    color: var(--ink-mute);
+    transition:
+      background-color var(--nav-duration) var(--ease-out-soft),
+      color var(--nav-duration) var(--ease-out-soft);
+  }
+
+  .nav-cluster-item:hover,
+  .nav-cluster-item[aria-expanded='true'] {
+    background-color: var(--wash-ink);
+    color: var(--ink);
+  }
+
+  .nav-cluster-item:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
+  /* The two ends carry the ring's own radius, so a hovered segment is cut by
+     the same arc the ring draws instead of squaring off inside it. */
+  .nav-cluster > :first-child,
+  .nav-cluster > :first-child .nav-cluster-item {
+    border-start-start-radius: var(--r-control);
+    border-end-start-radius: var(--r-control);
+  }
+
+  .nav-cluster > :last-child,
+  .nav-cluster > :last-child .nav-cluster-item {
+    border-start-end-radius: var(--r-control);
+    border-end-end-radius: var(--r-control);
+  }
+
+  /* The divider is drawn by the segment on its right, so the ring keeps one
+     line between each pair and none against its own edges. */
+  .nav-cluster > * + *::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.5rem;
+    inset-inline-start: 0;
+    width: 1px;
+    background-color: var(--hairline);
+  }
+
+  .nav-account {
+    position: relative;
+    display: inline-flex;
+    height: 100%;
+  }
+
+  /* The menu behind the account mark. It hangs off the ring rather than the
+     shell, so it lands under its own segment at every width the bar takes, and
+     it carries a solid ground because it stands over a page of type.
+     It meets the ring's underside with no gap and squares off the two corners
+     against it, so it reads as the bar carrying on rather than as a card that
+     happens to be nearby. */
+  .nav-account-menu {
+    position: absolute;
+    inset-inline-end: 0;
+    top: 100%;
+    z-index: var(--z-float);
+    min-width: 11rem;
+    padding: 0.25rem;
+    border-radius: 0 0 var(--r-card) var(--r-card);
+    background-color: var(--surface-1);
+    box-shadow:
+      0 0 0 1px var(--hairline-strong),
+      var(--raise);
+  }
+
+  .nav-account-name {
+    @apply px-3 pb-1 pt-2;
+    color: var(--ink-faint);
+  }
+
+  .nav-account-row {
+    @apply flex min-h-[44px] w-full cursor-pointer items-center rounded-[var(--r-tiny)] px-3 text-left text-[14px] font-medium;
+    color: var(--ink-soft);
+    transition:
+      background-color var(--nav-duration) var(--ease-out-soft),
+      color var(--nav-duration) var(--ease-out-soft);
+  }
+
+  .nav-account-row:hover {
+    background-color: var(--wash-ink);
+    color: var(--ink);
+  }
+
+  .nav-account-row[aria-current='page'] {
+    color: var(--accent);
+  }
+
+  /* THE DIM — what goes behind a layer, wherever a layer opens. One ground and
+     one blur: the panel, the drawer and the search are all the same act of
+     putting the page out of reach, and three weights of dim would say they are
+     three different distances away. It carries no position or stacking of its
+     own, so the layer that opens still decides where its dim sits and what it
+     sits under. */
+  .scrim {
+    background-color: var(--scrim);
+    backdrop-filter: blur(var(--scrim-blur));
+    -webkit-backdrop-filter: blur(var(--scrim-blur));
+  }
+
+  /* The search itself. It takes the paper roles rather than the ground ones:
+     it is a sheet floating over the page, and a sheet that restated whichever
+     slab happens to be behind it would go dark halfway down a page and light
+     again at the next section. */
+  .site-search {
+    @apply scrim fixed inset-0 flex items-start justify-center px-4 pb-8 pt-[10dvh];
+    z-index: var(--z-modal);
+  }
+
+  .site-search-card {
+    @apply flex max-h-full w-full max-w-[620px] flex-col overflow-hidden;
+    border-radius: var(--r-feature);
+    background-color: var(--paper);
+    box-shadow:
+      0 0 0 1px var(--paper-hairline-strong),
+      var(--float);
+  }
+
+  .site-search-field {
+    @apply flex shrink-0 items-center gap-3 border-b px-4;
+    height: var(--field-h);
+    border-color: var(--paper-hairline);
+    background-color: var(--paper-field);
+  }
+
+  .site-search-glyph {
+    color: var(--paper-ink-faint);
+  }
+
+  /* Sixteen pixels, which is the floor below which a phone zooms the page to
+     meet the field and leaves it zoomed after the dialog has gone. */
+  .site-search-input {
+    @apply h-full min-w-0 flex-1 bg-transparent text-[16px] outline-none;
+    color: var(--paper-ink);
+  }
+
+  /* The base ring is named by element, which outranks a plain class and paints
+     over the field's own outline-none. It has to be turned off by a selector
+     that carries the state, or the dialog opens with a detached box floating
+     around the one thing in it a keystroke can reach and holds it there for as
+     long as the search is up. The card's edge is what says where typing goes,
+     the same way the console's search reads. */
+  .site-search-input:focus-visible {
+    outline: none;
+  }
+
+  .site-search-input::placeholder {
+    color: var(--paper-ink-faint);
+  }
+
+  /* The browser's own clear button lands on top of the shortcut chip beside
+     it, and the field is emptied by the key that is already bound to closing. */
+  .site-search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .site-search-dismiss {
+    @apply hidden shrink-0 cursor-pointer rounded-[var(--r-tiny)] text-[11px] font-medium leading-none transition-colors duration-200 ease-out-soft sm:inline-block;
+    padding: 0.25rem 0.3rem;
+    font-family: inherit;
+    color: var(--paper-ink-faint);
+    box-shadow: 0 0 0 1px var(--paper-hairline-strong);
+  }
+
+  .site-search-dismiss:hover {
+    color: var(--paper-ink);
+  }
+
+  .site-search-list {
+    @apply flex min-h-0 flex-col overflow-y-auto overscroll-contain p-2;
+  }
+
+  /* One highlight, moved by whichever of the pointer and the arrow keys touched
+     it last. A row lit under the pointer while a different row stays lit for
+     the Enter key gives the reader two answers to what a press will open. */
+  .site-search-row {
+    @apply flex min-h-[52px] items-center gap-3 rounded-[var(--r-control)] px-3 py-2 transition-colors duration-150 ease-out-soft;
+    color: var(--paper-ink);
+  }
+
+  .site-search-row[data-active='true'] {
+    background-color: var(--wash-accent);
+    color: var(--accent);
+  }
+
+  .site-search-mark {
+    color: var(--paper-ink-mute);
+  }
+
+  .site-search-row[data-active='true'] .site-search-mark {
+    color: var(--accent);
+  }
+
+  /* A row with no drawing still lines its text up with the rows that have one,
+     so a list of mixed kinds reads as one column rather than two. */
+  .site-search-mark-gap {
+    width: 1.25rem;
+  }
+
+  .site-search-label {
+    @apply text-[15px] font-semibold leading-snug;
+    letter-spacing: -0.005em;
+  }
+
+  /* The matched span. A mark element arrives with a yellow highlighter on it,
+     which is a second colour the page never uses; the accent carries the same
+     information and is already the site's word for "this one". */
+  .site-search-hit {
+    background-color: transparent;
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .site-search-note {
+    @apply text-[12px] leading-snug;
+    color: var(--paper-ink-mute);
+  }
+
+  .site-search-row[data-active='true'] .site-search-note {
+    color: var(--accent);
+    opacity: 0.8;
+  }
+
+  .site-search-tail {
+    @apply opacity-0 transition-opacity duration-150 ease-out-soft;
+    color: var(--accent);
+  }
+
+  .site-search-row[data-active='true'] .site-search-tail {
+    @apply opacity-100;
+  }
+
+  .site-search-empty {
+    @apply px-5 py-10 text-center text-[14px] leading-relaxed;
+    color: var(--paper-ink-mute);
+  }
+
+  /* A filter chip. The chosen one is marked by aria-pressed. Its edge is a
+     ring rather than a border, so the chosen state can drop the edge and take
+     a fill without the row of chips beside it shifting by a pixel. */
+  .chip {
+    @apply inline-flex min-h-[44px] cursor-pointer items-center gap-2 rounded-[var(--r-control)] px-3.5 py-2.5 text-[14px] font-medium transition-colors duration-200 ease-out-soft active:scale-[0.98];
+    box-shadow: 0 0 0 1px var(--hairline-strong);
+    color: var(--ink-soft);
+  }
+
+  .chip:hover {
+    background-color: var(--wash-ink);
+    color: var(--ink);
+  }
+
+  .chip[aria-pressed='true'] {
+    background-color: var(--accent-fill);
+    box-shadow: none;
+    color: var(--on-accent);
+  }
+
+  .chip[aria-pressed='true']:hover {
+    background-color: var(--accent-fill-hi);
+  }
+
+  .device-window {
+    border-radius: var(--device-window);
+  }
+
+  .device-shell {
+    border-radius: var(--device-shell);
+  }
+
+  .device-screen {
+    border-radius: var(--device-screen);
+  }
+
+  /* The page rail, and the two narrower columns cut from it. Each names the
+     width it is held to rather than restating a number, so the measure of the
+     site is one edit and a section cannot quietly hold a different one. */
+  .container-rail {
+    @apply mx-auto w-full max-w-[var(--width-page)] px-6 sm:px-10 lg:px-16;
+  }
+
+  .container-rail-tight {
+    @apply mx-auto w-full max-w-[var(--width-column)] px-6 sm:px-10 lg:px-16;
+  }
+
+  .container-rail-prose {
+    @apply mx-auto w-full max-w-[var(--width-reading)] px-6 sm:px-10;
+  }
+
+  .hair-x {
+    @apply border-t border-[color:var(--hairline)];
+  }
+
+  .hair-x-paper {
+    @apply border-t border-[color:var(--paper-hairline)];
+  }
+
+  /* The standing label under its other name. One rule rather than two bodies
+     carrying one meaning, which drift the moment either is tuned. */
+  .eyebrow {
+    @apply section-label;
+  }
+
+  .eyebrow-accent {
+    @apply eyebrow text-accent;
+  }
+}
+
+@layer utilities {
+  .text-accent {
+    color: var(--accent);
+  }
+
+  .text-accent-hi {
+    color: var(--accent-hi);
+  }
+
+  .bg-accent {
+    background-color: var(--accent);
+  }
+
+  .border-accent {
+    border-color: var(--accent);
+  }
+
+  .text-ink {
+    color: var(--ink);
+  }
+
+  .text-ink-soft {
+    color: var(--ink-soft);
+  }
+
+  .text-ink-mute {
+    color: var(--ink-mute);
+  }
+
+  .text-ink-faint {
+    color: var(--ink-faint);
+  }
+
+  .text-ink-ghost {
+    color: var(--ink-ghost);
+  }
+
+  .text-ink-paper {
+    color: var(--paper-ink);
+  }
+
+  .text-paper-soft {
+    color: var(--paper-ink-soft);
+  }
+
+  .text-paper-mute {
+    color: var(--paper-ink-mute);
+  }
+
+  .text-paper-faint {
+    color: var(--paper-ink-faint);
+  }
+
+  .text-paper-ghost {
+    color: var(--paper-ink-ghost);
+  }
+
+  .bg-bg {
+    background-color: var(--bg);
+  }
+
+  .bg-paper {
+    background-color: var(--paper);
+  }
+
+  .bg-surface-1 {
+    background-color: var(--surface-1);
+  }
+
+  .bg-surface-2 {
+    background-color: var(--surface-2);
+  }
+
+  .border-hair {
+    border-color: var(--hairline);
+  }
+
+  .border-hair-strong {
+    border-color: var(--hairline-strong);
+  }
+
+  .border-hair-paper {
+    border-color: var(--paper-hairline);
+  }
+
+  .border-hair-paper-strong {
+    border-color: var(--paper-hairline-strong);
+  }
+
+  .bg-hair {
+    background-color: var(--hairline);
+  }
+
+  .bg-hair-paper {
+    background-color: var(--paper-hairline);
+  }
+
+  .divide-hair > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--hairline);
+  }
+
+  .divide-hair-paper > :not([hidden]) ~ :not([hidden]) {
+    border-color: var(--paper-hairline);
+  }
+
+  .via-hair-strong {
+    --tw-gradient-to: rgb(255 255 255 / 0);
+    --tw-gradient-stops: var(--tw-gradient-from), var(--hairline-strong), var(--tw-gradient-to);
+  }
+
+  .ring-accent {
+    --tw-ring-color: var(--accent);
+  }
+
+  /* The spotlight's position arrives as --spot-x / --spot-y, written to the card
+     by the pointer; showing it is left to hover and focus so no frame of the
+     pointer's travel has to reach React. */
+  .spotlight-card {
+    --spot-x: 50%;
+    --spot-y: 50%;
+  }
+
+  .spotlight-card-glow {
+    background: radial-gradient(
+      circle at var(--spot-x) var(--spot-y),
+      var(--spotlight-color, var(--spotlight)),
+      transparent 80%
+    );
+    @apply transition-opacity duration-300 ease-in-out-soft;
+    opacity: var(--spot-opacity, 0);
+  }
+
+  /* THE DRAFTING GROUND
+   *
+   * One element, one paint, and everything a section's backdrop is made of
+   * stacked on it as background layers. A section names what it is holding and
+   * the motif follows from that; the recipe below spends the four properties
+   * the motif sets. It is the only shape that survives the build, because the
+   * stylesheet is made by reading the source for class names and a name
+   * assembled at runtime is a name it never sees. A motif is a literal class;
+   * only its values move.
+   *
+   * Layer order, topmost first. The order is the whole design:
+   *
+   *   1  the datum      vertical rules at the page's own module
+   *   2  the head fade  the section's ground, poured back over the drawing
+   *   3  the foot fade  the same, at the other edge
+   *   4  the motif      one or two layers, whatever the section asked to be
+   *   5                 drawn on
+   *
+   * A section cannot know where it sits in the document, so no two sections
+   * agree about where a horizontal rule falls, and that disagreement is what
+   * makes today's borders read as cuts. It is not fixed here; it is put out of
+   * sight. The fades are listed above the motif and erase it before either
+   * edge, so there is no drawn line near a border for the phase to disagree
+   * on. The datum is listed above the fades and is not erased. It carries, and
+   * because it is drawn at the page's module rather than the section's it is
+   * at the same columns on both sides of every seam - so what a reader sees at
+   * a boundary is the drawing running out and rebuilding while the sheet's own
+   * rules walk straight through it.
+   *
+   * The fade is the ground's own colour rather than a mask. A mask on a band
+   * two thousand pixels tall costs an offscreen buffer that size and a
+   * composite pass on top of it; painting the ground back over the drawing
+   * costs one more fill of a layer that is already being filled. It stays
+   * exact under the opacity the call site carries, because an element's own
+   * layers composite among themselves before that opacity is applied - so an
+   * opaque fade erases outright, and what it erases to is the colour the
+   * section is painted anyway.
+   *
+   * THE INVARIANT: five layers, always. This rule contributes three and the
+   * motif contributes two, padding with `none` where it needs only one. A
+   * motif that contributes a different count cycles the size, repeat and
+   * position lists and a layer inherits its neighbour's geometry.
+   *
+   * Every value the recipe spends is defaulted here rather than on the ground
+   * classes, because one undefined custom property inside a `background-size`
+   * list invalidates the whole list at computed-value time - the layers fall
+   * to `auto`, the drawing disappears, and nothing anywhere reports it. */
+  .draft {
+    pointer-events: none;
+
+    /* The page's module, and the section's own subdivision of it. A page sets
+       the module once above its bands and every band under it inherits, so the
+       rules that cross one seam are the rules that cross every other. Paper
+       draws at half of it and a slab at the whole, which is the 48 and the 96
+       these two grounds have always drawn - held now as one number and a
+       multiplier, so a page that alternates the grounds alternates the pitches
+       without saying so. */
+    --draft-step: 1;
+    --draft-mod: calc(var(--sig-tile, 96px) * var(--draft-step));
+
+    /* How far the ground reaches back over the drawing at each edge. The
+       minimum is what makes it safe on a short band: a closing call three
+       hundred pixels deep would otherwise be nothing but fade, so the depth
+       gives way to a share of the height rather than holding a number the
+       section has no room for. */
+    --draft-fade: min(var(--sig-tile, 96px), 15%);
+    --draft-head: var(--draft-fade);
+    --draft-foot: var(--draft-fade);
+
+    /* The three weights every ground carries, named by how firmly they draw
+       rather than by which token they came from, so a motif picks a weight and
+       the ground decides what that weight is. The gain trims a motif that lays
+       down more ink per square than the field does; it only ever reduces,
+       because a colour mixed past its own strength is not a colour and an
+       invalid mix takes the whole drawing with it. */
+    --draft-fine: var(--rule-ink-fine);
+    --draft-mid: var(--rule-ink);
+    --draft-firm: var(--hairline);
+    --draft-mark: var(--hairline-strong);
+    --draft-ground: var(--bg);
+    --draft-gain: 1;
+    --draft-w: var(--draft-fine);
+    --draft-ink: color-mix(
+      in srgb,
+      var(--draft-w) min(100%, calc(var(--draft-gain) * 100%)),
+      transparent
+    );
+
+    /* The datum is drawn at the firm weight on every ground and every motif,
+       and it is the one thing on the page that does not vary between sections.
+       That is deliberate: it is the sheet, and a sheet that changed at every
+       band would not be one. */
+    --draft-datum: var(--draft-firm);
+
+    /* The motif's two slots. The default is the crossed grid the site drew
+       before there was a choice to make, at the fine weight, so a section that
+       names no motif is unchanged. */
+    --draft-a: linear-gradient(90deg, var(--draft-ink) 1px, transparent 1px);
+    --draft-b: linear-gradient(var(--draft-ink) 1px, transparent 1px);
+    --draft-a-size: var(--draft-mod) var(--draft-mod);
+    --draft-b-size: var(--draft-mod) var(--draft-mod);
+
+    background-image:
+      linear-gradient(90deg, var(--draft-datum) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--draft-ground), transparent),
+      linear-gradient(to top, var(--draft-ground), transparent), var(--draft-a), var(--draft-b);
+    background-size:
+      var(--sig-tile, 96px) 100%,
+      100% var(--draft-head),
+      100% var(--draft-foot),
+      var(--draft-a-size),
+      var(--draft-b-size);
+    background-repeat: repeat, no-repeat, no-repeat, repeat, repeat;
+    background-position:
+      0 0,
+      left top,
+      left bottom,
+      0 0,
+      0 0;
+  }
+
+  /* Which of the page's two grounds the field is drawn on, and the colour the
+     fade returns to. It has to be the colour the section is actually painted
+     or a seam reads as a smudge rather than as a drawing that ran out, and the
+     two cannot be collapsed into one token: a slab restates the background it
+     paints but deliberately leaves the page's paper roles alone, because the
+     cards set into a slab are light cards. So each class names the colour its
+     own ground's background class spends, and the two come from one object in
+     `@constants/grounds` and cannot come apart. */
+  .draft-on-paper {
+    --draft-step: 0.5;
+    --draft-ground: var(--paper);
+    --draft-fine: var(--rule-paper-fine);
+    --draft-mid: var(--rule-paper);
+    --draft-firm: var(--paper-hairline);
+    --draft-mark: var(--paper-hairline-strong);
+  }
+
+  .draft-on-slab {
+    --draft-step: 1;
+    --draft-ground: var(--bg);
+    --draft-fine: var(--rule-ink-fine);
+    --draft-mid: var(--rule-ink);
+    --draft-firm: var(--hairline);
+    --draft-mark: var(--hairline-strong);
+  }
+
+  /* THE MOTIFS
+   *
+   * Each is a mark a drafter would make and each says what kind of surface it
+   * is on, so a section is drawn on the one that describes what it holds
+   * rather than on whichever had not been used yet. What separates them is
+   * which axes are drawn, not how densely: at the weights this page can carry
+   * a change of spacing is a difference of a fraction of one level of grey and
+   * a change of direction is not, so the vocabulary turns the drawing rather
+   * than thickening it.
+   *
+   * Every one of them is a step above the fine weight the field drew before.
+   * That is a deliberate change and it is the point: the ruling the site
+   * carried was faint enough that no arrangement of it would have read as
+   * variation, and the gain on each motif is the knob to pull if review finds
+   * the result loud. */
+
+  /* The plan. Both axes, the field at its full statement. */
+  .draft-plan {
+    --draft-w: var(--draft-mid);
+  }
+
+  /* The ledger. Courses alone, for a band whose content is itself a sequence
+     of rows and wants the field running with it rather than across it. */
+  .draft-ledger {
+    --draft-w: var(--draft-mid);
+    --draft-a: none;
+    --draft-a-size: auto;
+  }
+
+  /* The column rule. Parallel things set out side by side, which is what a
+     schedule on a drawing looks like. It is drawn at half the page's module on
+     both grounds rather than at the section's own, so it always falls between
+     the datum's rules and never on top of them - a subdivision of the sheet
+     rather than a heavier copy of it. */
+  .draft-column {
+    --draft-w: var(--draft-mid);
+    --draft-a: linear-gradient(90deg, var(--draft-ink) 1px, transparent 1px);
+    --draft-a-size: calc(var(--sig-tile, 96px) / 2) 100%;
+    --draft-b: none;
+    --draft-b-size: auto;
+  }
+
+  /* The stations. The field with both axes taken out and only the crossings
+     kept: the points a drawing is set out from before any line is drawn. The
+     circle sits on the tile's own corner so the four tiles meeting at a
+     crossing assemble one disc between them, which is the only way to put a
+     bounded mark on a grid without a second layer to bound it.
+
+     It spends the mark weight rather than a rule weight, because a disc four
+     pixels across and a rule running the width of the page are not the same
+     amount of ink at the same alpha - at the rule's weight the stations
+     disappear and the band is left drawing what a resting band draws, which
+     is two motifs collapsed into one. */
+  .draft-node {
+    --draft-w: var(--draft-mark);
+    --draft-a: radial-gradient(circle at 0 0, var(--draft-ink) 0 4px, transparent 4.5px);
+    --draft-a-size: var(--draft-mod) var(--draft-mod);
+    --draft-b: none;
+    --draft-b-size: auto;
+  }
+
+  /* The section hatch. Forty-five degrees, which on a drawing means the thing
+     shown is solid and the cut passes through it - so it is what an exclusion
+     looks like, and it is drawn nowhere the page is not saying stop.
+
+     An angled gradient has no tile of its own, so `repeating-linear-gradient`
+     at an angle is evaluated per pixel across the whole band and never cached.
+     This is the same drawing with a tile. A stripe family survives a shift
+     only when that shift projects onto the gradient's own axis as a whole
+     number of stripe periods; on a square tile at forty-five degrees a shift
+     of one tile projects to exactly one period in both axes, so the family
+     closes on itself and one gradient carrying two lines draws the lot. Change
+     either the angle or the tile's proportion and it stops closing, and the
+     lines break into dashes at every tile edge. */
+  .draft-hatch {
+    --draft-w: var(--draft-mid);
+    --draft-gain: 0.85;
+    --draft-a: linear-gradient(
+      45deg,
+      var(--draft-ink) 0 1px,
+      transparent 1px 50%,
+      var(--draft-ink) 50% calc(50% + 1px),
+      transparent calc(50% + 1px) 100%
+    );
+    --draft-a-size: var(--draft-mod) var(--draft-mod);
+    --draft-b: none;
+    --draft-b-size: auto;
+  }
+
+  /* The axonometric. Two rakes against the datum's verticals: how a part is
+     drawn when the drawing is about how it goes together rather than what it
+     measures.
+
+     The angle is the one whose tangent is two, on a tile twice as tall as it
+     is wide - the only proportion in whole pixels where a rake closes on
+     itself in both axes at once. It rakes a little over twenty-six degrees off
+     the horizontal, which is what reads as isometric, and unlike the thirty
+     degrees a drawing board would use it needs no irrational tile to do it.
+     The verticals of the triad are the datum's own, which is why this motif
+     draws two layers rather than three. */
+  .draft-iso {
+    --draft-w: var(--draft-fine);
+    --draft-gain: 0.9;
+    --draft-a: linear-gradient(
+      63.435deg,
+      var(--draft-ink) 0 1px,
+      transparent 1px 50%,
+      var(--draft-ink) 50% calc(50% + 1px),
+      transparent calc(50% + 1px) 100%
+    );
+    --draft-b: linear-gradient(
+      116.565deg,
+      var(--draft-ink) 0 1px,
+      transparent 1px 50%,
+      var(--draft-ink) 50% calc(50% + 1px),
+      transparent calc(50% + 1px) 100%
+    );
+    --draft-a-size: var(--draft-mod) calc(var(--draft-mod) * 2);
+    --draft-b-size: var(--draft-mod) calc(var(--draft-mod) * 2);
+  }
+
+  /* The rest. The sheet's own rules and nothing between them, for a band that
+     would otherwise be the third in a row carrying a drawing, and for a
+     surface somebody is reading words on. A layer sized to nothing is not
+     painted at all, so the quietest band on the page is also the cheapest. */
+  .draft-quiet {
+    --draft-a: none;
+    --draft-b: none;
+    --draft-a-size: 0 0;
+    --draft-b-size: 0 0;
+  }
+
+  /* A closing call and a hero hold their foot alone. The top edge of a closing
+     band already carries an accent rule and the aurora behind it, and the
+     aurora is drawn under the field rather than over it, so a head fade would
+     pour the ground over the brightest part of it. A hero's top edge is the
+     top of the document and has nothing above it to be handed from. */
+  .draft-foot-only {
+    --draft-head: 0px;
+  }
+
+  /* A hero's field drifts up to eighty pixels under a parallax, and the fade
+     travels with it - so the foot has to have finished well before the drift
+     can expose the section's own edge. It is the depth of the deepest drift on
+     the site twice over. */
+  .draft-foot-deep {
+    --draft-foot: 200px;
+  }
+
+  /* A card is bounded on four sides by its own edge and stands on a ground it
+     is not part of, so there is no seam to soften and a fade would only eat
+     the drawing. */
+  .draft-flush {
+    --draft-head: 0px;
+    --draft-foot: 0px;
+  }
+
+  .accent-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-position: 0 100%;
+    background-repeat: no-repeat;
+    background-size: 100% 1px;
+  }
+
+  .marquee-fade-x {
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      var(--mask-ink) 8%,
+      var(--mask-ink) 92%,
+      transparent
+    );
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      var(--mask-ink) 8%,
+      var(--mask-ink) 92%,
+      transparent
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* The bar's whole motion family stills at the token, so the surface swap,
+     the panel, and the travel between triggers all settle instantly together. */
+  :root {
+    --nav-duration: 0s;
+    --nav-duration-slow: 0s;
+  }
+
+  /* A loading placeholder still has to read as "waiting" once its pulse is
+     stopped, so it holds a steady tint rather than going invisible at whatever
+     point in the cycle the animation was cut. It is stated before the blanket
+     rule below so the placeholder's own answer is the first thing read. */
+  .animate-pulse,
+  .skeleton {
+    animation: none !important;
+    opacity: 0.65;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--motion-off) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--motion-off) !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@layer components {
+  /*
+   * THE CLICK — one ring, opening from the point of the press, on a layer of
+   * its own so an ancestor with hidden overflow cannot clip it and nothing can
+   * be clicked through it. `useClickEffect` owns the listener.
+   */
+  .click-layer {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: var(--z-toast);
+  }
+
+  .click-ripple {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    /* Centred on the click point by the ring's own size rather than by half of
+       it written out, so the geometry cannot drift from the width above. */
+    translate: -50% -50%;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent);
+    opacity: 0.9;
+    animation: click-ripple 420ms var(--ease-out-soft) forwards;
+  }
+
+  @keyframes click-ripple {
+    to {
+      transform: scale(4.5);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .click-ripple {
+      display: none;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * THE PAGE ARRIVING - a page comes up in the order it reads, one section
+   * following the last, rather than the whole of it landing at once. It is a
+   * stylesheet animation rather than a scripted one: it is known before it runs,
+   * and the compositor keeps it smooth while the browser is still busy with the
+   * page it belongs to.
+   *
+   * Only the sections near the top are staggered. Further down the delay would
+   * be spent where nobody is looking, and those sections carry their own reveal
+   * as they are scrolled to.
+   *
+   * The step is a grandchild rather than a child because a view returns its
+   * page as one element and its sections inside that. Animating the element
+   * itself would bring the page up as a single block, which is the thing this
+   * exists to stop.
+   */
+  .page-arrive > * > * {
+    animation: page-arrive 420ms var(--ease-out-soft) both;
+  }
+
+  .page-arrive > * > *:nth-child(2) {
+    animation-delay: 60ms;
+  }
+
+  .page-arrive > * > *:nth-child(3) {
+    animation-delay: 120ms;
+  }
+
+  .page-arrive > * > *:nth-child(4) {
+    animation-delay: 180ms;
+  }
+
+  .page-arrive > * > *:nth-child(n + 5) {
+    animation-delay: 220ms;
+  }
+
+  /* The movement is the only thing the arrival owns, for the same reason the
+     bar below drops rather than fades: the first page of a visit is prerendered
+     and on screen before any of this is read, and a section that starts from
+     nothing is a section the browser has painted and then taken back. It is
+     also a section the browser stops measuring the page by, because an element
+     first painted at nothing is never reconsidered as the largest paint - which
+     leaves the page's own headline out of the reckoning and hands the reading to
+     whatever small thing happens to arrive late. */
+  @keyframes page-arrive {
+    from {
+      transform: translate3d(0, 14px, 0);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  /* Movement is what reduced motion asks to be spared, and a section held back
+     from a page is worse than one that simply is there, so it is simply there. */
+  @media (prefers-reduced-motion: reduce) {
+    .page-arrive > * > * {
+      animation: none;
+    }
+  }
+
+  /*
+   * THE BAR ARRIVING - the fixed chrome drops the last sixteen pixels into
+   * place as the page comes up.
+   *
+   * The settled state is the rule and the drop is the keyframe, so the bar is
+   * on screen from the first frame the document is painted and the movement is
+   * the only thing the animation owns. Written the other way round - hidden in
+   * the rule, revealed by script - the bar is missing from the page until the
+   * script that reveals it has been fetched, parsed and run, which on a phone
+   * is most of a second after there is a page to look at.
+   */
+  .nav-arrive {
+    animation: nav-arrive var(--nav-duration-slow) var(--nav-easing) both;
+  }
+
+  @keyframes nav-arrive {
+    from {
+      opacity: 0;
+      transform: translateY(-16px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .nav-arrive {
+      animation: none;
+    }
+  }
+}
+
+@layer components {
+  /*
+   * THE LIFTED CARD
+   * -------------------------------------------------------------------------
+   * A card the page raises rather than boxes. A border draws a cell, and four
+   * cells of different heights read as a broken table; a lift draws an object,
+   * and four objects of different heights read as four objects.
+   *
+   * The separation is one hairline ring and two soft shadows. The ring is
+   * carried in the shadow rather than in a border so it costs no layout: a
+   * card can gain and lose its edge on hover without the content inside it
+   * moving by a pixel, and a picture run to the card's own edge is not held
+   * off it by a line.
+   *
+   * `.card-lift` is the feature card, at the largest radius the page uses.
+   * `.panel` is the same construction one step down, for the tiles, quote
+   * blocks and side panels that make up most of a section.
+   */
+  .card-lift {
+    border-radius: var(--r-feature);
+    box-shadow: var(--raise);
+    transition: box-shadow 200ms var(--ease-out-soft);
+  }
+
+  .card-lift:hover {
+    box-shadow: var(--raise-hi);
+  }
+
+  /* A review card in the colours of the platform the words were left on.
+     Every one of these quotes is somewhere else, under somebody else's name and
+     somebody else's rating form, and a row of identically styled cards flattens
+     that into a list this site typed out. So the card carries one custom
+     property - the platform's own ink, set on it by the component - and the
+     edge, the ring, the wash and the spotlight are all mixed from it.
+
+     The wash is four percent because the card is a page of body copy first. Any
+     more and the tint starts arguing with the quote for attention, which is the
+     wrong way round: the platform is the citation, not the point. */
+  .review-card {
+    background-color: color-mix(in srgb, var(--review-ink) 4%, var(--paper));
+  }
+
+  /* The bar along the top edge, which is the part that reads at a glance and
+     from across the room. It sits inside the card's own rounding because the
+     card clips its overflow.
+
+     It is held at the shape step for the reason the stars are: three saturated
+     bars in three hues across one row are three unrelated widgets on a dark
+     ground, where the same three on paper are a row of cards from three places. */
+  .review-card::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 2px;
+    background-color: color-mix(in srgb, var(--review-ink) var(--brand-shape-hold), var(--paper));
+  }
+
+  /* Both raises are restated rather than inherited from `.card-lift`, because a
+     ring and a lift are one box-shadow and the second declaration would drop
+     whichever was written first. */
+  .review-card.card-lift {
+    box-shadow:
+      var(--raise),
+      inset 0 0 0 1px color-mix(in srgb, var(--review-ink) 20%, transparent);
+  }
+
+  .review-card.card-lift:hover {
+    box-shadow:
+      var(--raise-hi),
+      inset 0 0 0 1px color-mix(in srgb, var(--review-ink) 34%, transparent);
+  }
+
+  /* The rail the reviews stand on. It scrolls, and the scrollbar is taken off
+     it because the dots underneath already say where in the row you are and a
+     bar under a row of cards reads as a stray rule. Keyboard and touch reach it
+     the same either way. */
+  .review-rail {
+    scrollbar-width: none;
+    scroll-padding-left: 0;
+  }
+
+  .review-rail::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* The rail sits on paper, so its controls take the paper palette rather than
+     the page ink, which on the dark setting is the wrong end of the scale. */
+  .review-rail-step {
+    @apply flex h-9 w-9 cursor-pointer items-center justify-center rounded-[var(--r-control)] transition-colors duration-200 ease-out-soft;
+    box-shadow: 0 0 0 1px var(--paper-hairline-strong);
+    color: var(--paper-ink-soft);
+  }
+
+  .review-rail-step:hover:not(:disabled) {
+    background-color: var(--wash-paper);
+    color: var(--ink-paper);
+  }
+
+  .review-rail-step:disabled {
+    cursor: default;
+    opacity: 0.35;
+  }
+
+  /* A dot is four pixels of drawing, so the press is opened to the forty-four a
+     thumb needs without the drawing growing to meet it. */
+  .review-rail-dot {
+    @apply relative h-1.5 w-1.5 cursor-pointer rounded-full transition-colors duration-200 ease-out-soft;
+    background-color: var(--paper-ink-ghost);
+  }
+
+  .review-rail-dot::before {
+    content: '';
+    position: absolute;
+    inset: -19px -7px;
+  }
+
+  .review-rail-dot:hover {
+    background-color: var(--paper-ink-mute);
+  }
+
+  .review-rail-dot[data-on] {
+    @apply w-5;
+    background-color: var(--accent);
+  }
+
+  .panel {
+    border-radius: var(--r-card);
+    box-shadow: var(--raise);
+    transition: box-shadow 200ms var(--ease-out-soft);
+  }
+
+  .panel:hover {
+    box-shadow: var(--raise-hi);
+  }
+
+  /* A panel that is a container rather than an object: it holds its edge and
+     never answers the pointer, because nothing about it is clickable. */
+  .panel-static {
+    border-radius: var(--r-card);
+    box-shadow: var(--raise);
+  }
+
+  /* The edge on its own, for a surface that sits flat on the page and only
+     needs to be told apart from it - a table, a code block, a well. */
+  .edge {
+    border-radius: var(--r-card);
+    box-shadow: var(--edge);
+  }
+
+  /*
+   * The tinted ground an artefact stands on, mixed from the accent rather than
+   * named as a colour of its own, so the one blue on the page is the one blue
+   * in here. It runs to the card's edges, which is what keeps it part of the
+   * card rather than a panel dropped inside one.
+   *
+   * The bottom corners are turned only when the band is the last thing in the
+   * card. A card can stack a foot and then a plane, and a band that rounds
+   * wherever it sits cuts two notches out of the middle of that card - showing
+   * the card's own ground through them, which is invisible on white and plain
+   * on black. Whichever band ends the card turns the corner; the ones above it
+   * meet the next square.
+   */
+  .card-foot {
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in srgb, var(--accent) 5%, transparent),
+        color-mix(in srgb, var(--accent) 9%, transparent)
+      ),
+      var(--paper-field);
+    border-top: 1px solid var(--paper-hairline);
+  }
+
+  .card-foot:last-child {
+    border-radius: 0 0 var(--r-feature) var(--r-feature);
+  }
+
+  /* The same foot under a panel, which turns a shallower corner. */
+  .panel-foot {
+    @apply card-foot;
+  }
+
+  .panel-foot:last-child {
+    border-radius: 0 0 var(--r-card) var(--r-card);
+  }
+
+  /* A capture inside the foot sits on the page's own ground with a hairline,
+     so a screenshot of a white site does not dissolve into the wash behind it. */
+  .card-shot {
+    border-radius: var(--r-card) var(--r-card) 0 0;
+    border: 1px solid var(--paper-hairline-strong);
+    border-bottom: 0;
+    background-color: var(--paper-field);
+  }
+
+  /*
+   * THE PLANE, AND WHAT STANDS ON IT
+   * -------------------------------------------------------------------------
+   * The foot above is a wash: it tells the reader the card has a picture in
+   * it. The plane is the other reading of the same space - a lit surface the
+   * card is a window onto, with the artefact standing on it and running out of
+   * frame rather than sitting inside a margin.
+   *
+   * Which one a card takes is a decision about what it is showing. A line of
+   * text or a pair of figures takes the foot, because there is no object to
+   * stand anything on. A capture of a real website takes the plane, because
+   * there is.
+   *
+   * `overflow: hidden` is the whole device. The artefact is laid out wider
+   * than the plane and the plane cuts it, so the card reads as a view of
+   * something that continues past it. A picture that fits inside its padding
+   * can only ever read as a slide.
+   */
+  .card-plane {
+    position: relative;
+    overflow: hidden;
+    background: var(--plane);
+    border-top: 1px solid var(--plane-hairline);
+  }
+
+  .card-plane:last-child {
+    border-radius: 0 0 var(--r-feature) var(--r-feature);
+  }
+
+  .panel-plane {
+    position: relative;
+    overflow: hidden;
+    background: var(--plane);
+    border-radius: var(--r-card);
+  }
+
+  /* An object standing on the plane: a real sheet at a real height, edged in
+     its own light rather than in the page's hairline, which would disappear
+     against saturated colour. */
+  .plane-shot {
+    border-radius: var(--r-card);
+    box-shadow:
+      0 0 0 1px var(--plane-hairline),
+      var(--float);
+    background-color: var(--paper-field);
+  }
+
+  /* The nearer sheet of a layered pair. Same construction, one step closer. */
+  .plane-shot-near {
+    border-radius: var(--r-card);
+    box-shadow:
+      0 0 0 1px var(--plane-hairline),
+      var(--float-near);
+    background-color: var(--paper-field);
+  }
+
+  /* A panel inset into the plane, for a card whose artefact is a figure rather
+     than a picture: the numbers sit on their own paper with the plane showing
+     round them, which is what keeps them readable on saturated colour without
+     the plane having to lighten. */
+  .plane-inset {
+    @apply plane-shot;
+  }
+}
+
+@layer components {
+  /*
+   * THE BUTTON SET
+   * -------------------------------------------------------------------------
+   * Three buttons and one geometry. Every one of them is the same height, the
+   * same radius and the same label; what separates them is how loud the ground
+   * under the label is, which is the only thing a reader has to rank.
+   *
+   * The label is set in the page's own sans at the size body copy is set in,
+   * because a button is read at a glance and a tracked capital is the slowest
+   * way to set four words. Weight carries the emphasis instead.
+   *
+   * Press is a scale rather than a colour, so it answers on a touch screen
+   * where there is no hover to answer with. It belongs to the base, so a
+   * button cannot be built here without it.
+   */
+  .btn {
+    @apply inline-flex min-h-[44px] cursor-pointer touch-manipulation items-center justify-center gap-2 whitespace-nowrap px-6 text-[15px] font-semibold leading-none;
+    border-radius: var(--r-control);
+    transition:
+      background-color 180ms var(--ease-out-soft),
+      box-shadow 180ms var(--ease-out-soft),
+      color 180ms var(--ease-out-soft),
+      transform 120ms var(--ease-out-soft);
+  }
+
+  .btn:active {
+    transform: scale(0.98);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* The one loud thing on a section. The shadow is the button's own, tighter
+     than a card's, so it reads as a key sitting on the page rather than a
+     panel floating above it. */
+  .btn-primary {
+    background-color: var(--accent-fill);
+    color: var(--on-accent);
+    box-shadow: var(--key-lift);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--accent-fill-hi);
+  }
+
+  .btn-primary:focus-visible {
+    outline-color: var(--accent-fill);
+  }
+
+  /* The quieter half of a pair. It takes the ground's own raised surface and a
+     ring, so it is a white key on a page and a near-black one on a slab
+     without either being restated at the call site. */
+  .btn-secondary {
+    background-color: var(--surface-1);
+    color: var(--ink);
+    box-shadow:
+      0 0 0 1px var(--hairline-strong),
+      var(--key-lift-soft);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--surface-2);
+  }
+
+  /* The secondary as it reads on a light panel set inside a dark page. The
+     paper roles are named outright rather than inherited, because a slab hands
+     down its own ground and a white section standing on one would otherwise
+     get a near-black key. */
+  .btn-secondary-paper {
+    background-color: var(--paper-field);
+    color: var(--paper-ink);
+    box-shadow:
+      0 0 0 1px var(--paper-hairline-strong),
+      0 1px 2px rgb(10 10 10 / 5%);
+  }
+
+  .btn-secondary-paper:hover {
+    background-color: var(--wash-paper);
+  }
+
+  /* An action with no ground at all, for a third choice that should not read
+     as a third button. */
+  .btn-quiet {
+    color: var(--ink-soft);
+  }
+
+  .btn-quiet:hover {
+    background-color: var(--wash-ink);
+    color: var(--ink);
+  }
+
+  .btn:disabled,
+  .btn[aria-disabled='true'] {
+    @apply cursor-not-allowed opacity-60;
+  }
+
+  .btn:disabled:active,
+  .btn[aria-disabled='true']:active {
+    transform: none;
+  }
+
+  /*
+   * A small standing label: the studio name over a masthead, the word above a
+   * section heading, the caption on a figure. It is set in the page's own sans
+   * at a weight rather than in tracked capitals, because a tracked monospace
+   * capital reads as an annotation on a drawing rather than as type on a page.
+   */
+  .section-label {
+    @apply text-[13px] font-semibold leading-none;
+    letter-spacing: -0.005em;
+  }
+
+  .section-label-sm {
+    @apply text-[12px] font-medium leading-none;
+    letter-spacing: 0;
+  }
+
+  /*
+   * THE DISPLAY SCALE — the six sizes a heading is allowed to be.
+   *
+   * A page states its hierarchy through size, and a scale is what makes that
+   * statement mean the same thing twice. Without one, each page picks the
+   * number that looked right on the day: the front door ended up setting a
+   * section heading larger than its own page headline, and a second-level
+   * heading took eight different sizes across four families.
+   *
+   * Each step is a clamp rather than a set of breakpoints, so a heading is a
+   * continuous function of the viewport and never jumps at a width. The floor
+   * is what a phone shows, the ceiling what a wide desktop shows, and the
+   * middle term is set so that every step reaches its ceiling at about 1320px,
+   * which is the width at which the page rail is full. That is what makes the
+   * scale one system rather than six: the whole page stops growing at the same
+   * moment, so the relationship between a headline and the heading under it is
+   * the same relationship at every width. Adjacent steps are far enough apart
+   * to read as a hierarchy and close enough to never read as a mistake.
+   *
+   * Type that is a drawing rather than a heading — the watermark numeral on a
+   * page that was not found, the set wordmark across the foot — carries its
+   * own size where it is drawn, because it is sized against the shape it
+   * makes rather than against the words around it.
+   */
+  .display-1 {
+    font-size: clamp(2.4rem, 6.05vw, 5rem);
+  }
+
+  .display-2 {
+    font-size: clamp(2.2rem, 5.1vw, 4.2rem);
+  }
+
+  .display-3 {
+    font-size: clamp(2rem, 3.9vw, 3.2rem);
+  }
+
+  .display-4 {
+    font-size: clamp(1.8rem, 3.15vw, 2.6rem);
+  }
+
+  .display-5 {
+    font-size: clamp(1.5rem, 2.4vw, 2rem);
+  }
+
+  .display-6 {
+    font-size: clamp(1.3rem, 1.95vw, 1.6rem);
+  }
+
+  /*
+   * Type set as a drawing rather than as a heading. Both of these are shapes
+   * made of letters: the towns set across the foot of the page in the ghost
+   * ink, and the numeral on a page that was not found. Neither is read as a
+   * line of type, so neither is sized against the words around it, and each
+   * takes the size the shape it makes wants rather than a step of the scale.
+   * The numeral has a page to itself and runs past the top of the scale; the
+   * set is a strip inside a footer and is sized to the two lines that strip
+   * has room for. They are named here so the difference between a drawing and
+   * an invented heading size is one anybody can see.
+   */
+  .watermark-set {
+    font-size: clamp(1.75rem, 4.2vw, 3.25rem);
+  }
+
+  .watermark-numeral {
+    font-size: clamp(5rem, 16vw, 12rem);
+  }
+
+  /*
+   * THE SECTION RHYTHM — the vertical space a section stands in.
+   *
+   * Three families ran three systems: the front door on 144, the service and
+   * trade pages on a uniform 112, and the articles on a mix of nothing, 64,
+   * 80 and 128 down a single page. A reader does not read those numbers, but
+   * they feel a page that changes its mind halfway down.
+   *
+   * A page takes one of these and holds it. The hero above and the closing
+   * call below are the two that may differ, because each is bounded by an
+   * edge of the page rather than by another section.
+   */
+  .section-y {
+    @apply py-20 sm:py-28;
+  }
+
+  .section-y-lg {
+    @apply py-24 sm:py-36;
+  }
+
+  .section-y-sm {
+    @apply py-14 sm:py-20;
+  }
+
+  /* A short standing fact set on the accent's own wash - a tag, a state, a
+     count. It rides on the filter chip's geometry and changes only its
+     colouring, so the two never disagree about what a chip is. */
+  .chip-static {
+    @apply chip min-h-0 cursor-default py-1 text-[12px] active:scale-100;
+  }
+
+  .chip-accent {
+    background-color: color-mix(in srgb, var(--accent) 8%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 22%, transparent);
+    color: var(--accent);
+  }
+
+  /*
+   * THE FIELD
+   * -------------------------------------------------------------------------
+   * A field carries its ring in a shadow for the same reason a card does: the
+   * ring thickens to four pixels without the text inside it shifting.
+   *
+   * Every state is a change of ring, so the ring and the halo around it are
+   * held in two properties and the states set those rather than restating the
+   * shadow. That is what lets the states stack: an invalid field that is also
+   * focused keeps the danger ring and takes the halo, instead of one rule
+   * winning outright and throwing the other state's colour away.
+   *
+   * The order below is the order the states outrank each other. Hover is the
+   * quietest. Focus lights the ring and adds the halo. Invalid overrules both
+   * on the ring, because where a field is is the reader's own doing and what is
+   * wrong with it is not. Disabled overrules everything: a control that cannot
+   * be typed in has nothing to say about the pointer or the value.
+   */
+  .field {
+    @apply w-full px-3.5 text-[15px];
+    --field-ring: var(--paper-hairline-strong);
+    --field-halo: transparent;
+    border-radius: var(--r-control);
+    background-color: var(--paper-field);
+    box-shadow:
+      0 0 0 1px var(--field-ring),
+      0 0 0 4px var(--field-halo);
+    color: var(--paper-ink);
+    transition: box-shadow 160ms var(--ease-out-soft);
+  }
+
+  .field::placeholder {
+    color: var(--paper-ink-faint);
+  }
+
+  /* The same step the choice tile darkens its edge to, so a field and a tile in
+     one form answer the pointer with one gesture. */
+  .field:hover {
+    --field-ring: var(--paper-ink-ghost);
+  }
+
+  .field:focus {
+    outline: none;
+    --field-ring: var(--accent);
+    --field-halo: color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  /* The danger step cut for a light panel, because a field stands on its own
+     white ground whatever the section behind it is. */
+  .field[aria-invalid='true'] {
+    --field-ring: var(--danger-on-paper);
+  }
+
+  .field[aria-invalid='true']:focus {
+    --field-halo: color-mix(in srgb, var(--danger-on-paper) 16%, transparent);
+  }
+
+  .field:disabled,
+  .field[aria-disabled='true'] {
+    @apply cursor-not-allowed opacity-60;
+    --field-ring: var(--paper-hairline-strong);
+    --field-halo: transparent;
+  }
+
+  /*
+   * THE CHOICE TILE
+   * -------------------------------------------------------------------------
+   * A radio the reader presses as a tile. The input keeps the state, the focus
+   * and the keyboard contract, and the tile is painted off it through a
+   * sibling selector, so nothing about how a radio group behaves is rebuilt.
+   *
+   * Selected takes the same ring a focused field takes, because both say the
+   * same thing: this is the one the accent is pointing at.
+   */
+  .choice-tile {
+    @apply flex min-h-[44px] touch-manipulation items-center justify-center px-4 py-3 text-[14px] font-semibold;
+    border-radius: var(--r-control);
+    background-color: var(--paper-field);
+    box-shadow: 0 0 0 1px var(--paper-hairline-strong);
+    color: var(--paper-ink-soft);
+    transition:
+      box-shadow 160ms var(--ease-out-soft),
+      color 160ms var(--ease-out-soft),
+      transform 120ms var(--ease-out-soft);
+  }
+
+  .choice-tile:hover {
+    box-shadow: 0 0 0 1px var(--paper-ink-ghost);
+  }
+
+  input:checked + .choice-tile {
+    color: var(--accent);
+    box-shadow:
+      0 0 0 1px var(--accent),
+      0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+  }
+
+  input:focus-visible + .choice-tile {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  input:active + .choice-tile {
+    transform: scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    input:active + .choice-tile {
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .btn:active {
+      transform: none;
+    }
+  }
+}
+
+/* The rule under the hero's control fills across the turn it is drawing. It
+   runs as an animation rather than a value pushed in from script every frame,
+   so the main thread can go idle while a presentation holds. */
+@keyframes hero-dwell {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.hero-dwell {
+  animation-name: hero-dwell;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-dwell {
+    animation: none;
+    transform: scaleX(1);
+  }
+}
