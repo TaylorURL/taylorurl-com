@@ -16,7 +16,17 @@ import {
 import { bucketLabel, bucketTitle, compactCount, fullCount, hourLabel } from './lib/format'
 import { TooltipCard } from './ChartTooltip'
 // Each chart reserves its box before recharts measures the container.
-import { AXIS, CHART_HEIGHT, CHART_INSET, fitName, frame, GRID, seriesColor } from './chartKit'
+import {
+  ANIMATE,
+  AXIS,
+  BAR_SIZE,
+  CHART_HEIGHT,
+  CHART_INSET,
+  fitName,
+  frame,
+  GRID,
+  seriesColor,
+} from './chartKit'
 
 /**
  * Charts for the analytics console.
@@ -87,6 +97,7 @@ export function TrafficChart({ series, grain, fill }) {
             fill="url(#analytics-views)"
             dot={false}
             activeDot={{ r: 3 }}
+            isAnimationActive={ANIMATE}
           />
           <Line
             type="monotone"
@@ -97,6 +108,7 @@ export function TrafficChart({ series, grain, fill }) {
             strokeDasharray="3 3"
             dot={false}
             activeDot={{ r: 3 }}
+            isAnimationActive={ANIMATE}
           />
         </ComposedChart>
       </ResponsiveContainer>
@@ -142,7 +154,7 @@ export function HourChart({ hours, fill }) {
               ) : null
             }
           />
-          <Bar dataKey="pageviews" radius={[1, 1, 0, 0]}>
+          <Bar dataKey="pageviews" radius={[1, 1, 0, 0]} isAnimationActive={ANIMATE}>
             {hours.map(hour => (
               <Cell
                 key={hour.hour}
@@ -176,6 +188,7 @@ export function BreakdownDonut({ rows, total }) {
               paddingAngle={1.5}
               stroke="var(--paper)"
               strokeWidth={1.5}
+              isAnimationActive={ANIMATE}
             >
               {rows.map((row, index) => (
                 <Cell key={row.name} fill={seriesColor(index)} />
@@ -230,7 +243,7 @@ const RANK_NAME_WIDTH = 104
 const rankTick = fitName(RANK_NAME_WIDTH)
 
 /** Where sessions came from, ranked. Vertical bars keep long names readable. */
-export function RankedBars({ rows, height = 200, fill }) {
+export function RankedBars({ rows, height = CHART_HEIGHT.traffic, fill }) {
   if (!rows.length) return null
   return (
     <div {...frame(fill, height)}>
@@ -270,7 +283,13 @@ export function RankedBars({ rows, height = 200, fill }) {
               ) : null
             }
           />
-          <Bar dataKey="sessions" fill="var(--accent)" radius={[0, 1, 1, 0]} barSize={11} />
+          <Bar
+            dataKey="sessions"
+            fill="var(--accent)"
+            radius={[0, 1, 1, 0]}
+            barSize={BAR_SIZE}
+            isAnimationActive={ANIMATE}
+          />
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -317,7 +336,7 @@ export function LiveHistory({ series, height = CHART_HEIGHT.hour, fill }) {
             strokeWidth={1.75}
             fill="var(--accent)"
             fillOpacity={0.12}
-            isAnimationActive={false}
+            isAnimationActive={ANIMATE}
             dot={false}
             activeDot={{ r: 3 }}
           />
@@ -352,7 +371,7 @@ export function Sparkline({ series, height = CHART_HEIGHT.spark, fill }) {
             fill="var(--accent)"
             fillOpacity={0.12}
             dot={false}
-            isAnimationActive={false}
+            isAnimationActive={ANIMATE}
           />
         </ComposedChart>
       </ResponsiveContainer>
