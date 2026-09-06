@@ -55,11 +55,13 @@ const stillOpen = open => (open.length ? `Still to answer: ${open.join(', ')}.` 
  * recorded.
  *
  * This is what a report is checked against, and it is deliberately wider than
- * what sets one off: the notes box is in the mark and not in the print, so a
- * sentence typed there never triggers a report of its own and is still sent by
- * the one that follows it or by the tab closing.
+ * what sets one off: the notes box and the three fields on the payment screen
+ * are in the mark and not in the print, so a sentence typed in either never
+ * triggers a report of its own and is still sent by the one that follows it or
+ * by the tab closing.
  */
-const markOf = held => `${held.email.trim().toLowerCase()}|${held.step}|${held.print}|${held.notes}`
+const markOf = held =>
+  [held.email.trim().toLowerCase(), held.step, held.print, held.notes, held.typed].join('|')
 
 /**
  * The steps the send-me-this panel stands under.
@@ -115,9 +117,11 @@ function designSummary(designs) {
  * the steps behind it come from state that starts empty. What has been picked
  * is written down as it is picked and read back on the next mount, so a reload
  * or a mistaken back gesture costs the place in the flow rather than the whole
- * configuration. Nothing typed into the payment form is written down; the
- * address the form opens with was answered four steps earlier and is held as
- * the answer it is.
+ * configuration. The payment screen's own fields are not among what is recalled
+ * on the next visit - the address it opens with was answered four steps earlier
+ * and is held as the answer it is - but they are reported against the lead as
+ * they are typed, because the buyer who fills in a business name and then does
+ * not press the button is the one worth being able to write back to.
  *
  * The payment carries the configuration. Every answer travels to Stripe as the
  * brief, so nothing chosen with a control has to be typed again, and the build
@@ -194,11 +198,32 @@ export default function Start() {
     { label: 'Business Email', value: providerName || 'Not chosen' },
   ]
 
+  // The three fields on the payment screen, as rows a lead carries.
+  //
+  // They go on the lead and not to Stripe, which is what separates them from
+  // the summary above. The business name and the current website already travel
+  // with the payment as fields of their own, so putting them in the brief as
+  // well would say the same thing twice on the project that comes out; what
+  // they are missing is a copy on the lead, for the buyer who types them and
+  // then does not press the button.
+  //
+  // The address is only worth a row where it is a second address. The form
+  // follows the one answered on the first step until somebody edits it, and a
+  // row repeating the address the lead is already filed under says nothing.
+  const payAnswers = [
+    { label: 'Business Name', value: buy.businessName.trim() },
+    { label: 'Current Website', value: buy.website.trim() },
+    {
+      label: 'Payment Email',
+      value: buy.email.trim().toLowerCase() === email.trim().toLowerCase() ? '' : buy.email.trim(),
+    },
+  ].filter(row => row.value)
+
   // What sets a report off, as one line. Everything a control sets is in it and
-  // the notes box is not: a sentence typed a word at a time would otherwise be
-  // a report per pause. The mark the report is checked against is wider, so
-  // what is typed there is still carried by the next report and by the tab
-  // closing.
+  // nothing typed into a field is: a sentence written a word at a time would
+  // otherwise be a report per pause. The mark the report is checked against is
+  // wider, so the notes and the payment screen's three answers are still
+  // carried by the next report and by the tab closing.
   const briefPrint = [
     tradeId,
     designs.join(','),
@@ -222,10 +247,12 @@ export default function Start() {
     trade: trade?.name || null,
     step,
     // The same rows the payment and the enquiry carry, so a lead that stops
-    // halfway is read in the words a finished one is read in.
-    brief: summary,
+    // halfway is read in the words a finished one is read in, and the payment
+    // screen's own answers after them, which nothing else keeps.
+    brief: [...summary, ...payAnswers],
     print: briefPrint,
     notes: look.notes,
+    typed: payAnswers.map(row => `${row.label}=${row.value}`).join('~'),
   }
 
   // The address goes up once it is an address, a moment after the typing

@@ -1,22 +1,30 @@
 /**
- * The one message a lead who did not finish ever gets, sent a day after they
+ * The one message a lead who did not finish ever gets, sent an hour after they
  * left.
  *
- * The configurator records an address on its first step, so the studio knows
- * about everyone who saw the second screen. Most of them do not finish. This
- * is what asks the ones who did not what stopped them, and puts half the
- * up-front fee on the table in case the answer was the price.
+ * The configurator records an address on its first step and the payment page
+ * records one as it is typed, so the studio knows about everyone who got as far
+ * as a card and did not use it. Most of them do not finish. This is what asks
+ * the ones who did not what stopped them, and puts half the up-front fee on the
+ * table in case the answer was the price.
+ *
+ * An hour, because the window this is aimed at is the same afternoon. Somebody
+ * who filled a form in and got pulled away is still at the desk they filled it
+ * in at, and a message that arrives the next morning reaches a person who has
+ * stopped thinking about it. The wait is not zero for the opposite reason: a
+ * discount that lands while somebody is still deciding is a discount handed to
+ * a buyer who was going to pay full price.
  *
  * Five rules hold it to being marketing rather than a complaint:
  *
  *   One message. `followed_up_at` is stamped before the next run reads the
  *   row, so nobody is chased twice however often this runs.
  *
- *   A window, not a backlog. Only leads first seen between a day and four days
- *   ago are eligible, and one older than that is passed over for good. Without
- *   that, the day the switch is first turned on is the day every lead the site
- *   ever recorded gets a message at once, which is a spam report rather than a
- *   campaign.
+ *   A window, not a backlog. Only leads first seen between an hour and four
+ *   days ago are eligible, and one older than that is passed over for good.
+ *   Without that, the day the switch is first turned on is the day every lead
+ *   the site ever recorded gets a message at once, which is a spam report
+ *   rather than a campaign.
  *
  *   The suppression list first. The same list the newsletter and the outreach
  *   pipeline answer to, so somebody who has said no once is never asked again
@@ -45,6 +53,7 @@ import { tableMissing } from '../lib/db/rows.js'
 import { sendNotice } from '../lib/mail/notice.js'
 import { formatInstant } from '../lib/time/zone.js'
 import { LEADS, deliverable, suppressed } from '../lib/leads/record.js'
+import { PAYMENT_PATH, START_PATH, fromPaymentPage } from '../lib/leads/paths.js'
 import { followUpMessage } from '../lib/leads/message.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
@@ -68,15 +77,27 @@ const LIVE = process.env.START_FOLLOWUP_LIVE === '1'
 const HOUR_MS = 60 * 60 * 1000
 
 // How long a lead is left alone before it is worth asking, and how long after
-// that it stops being worth asking. A day is enough that somebody who is still
-// thinking about it has not been interrupted; four days is where a message
-// about something they did last week starts reading as surveillance.
-const WAIT_HOURS = 24
+// that it stops being worth asking. An hour is long enough that somebody who
+// walked away from the desk for a minute is not interrupted mid-decision, and
+// short enough that the message reaches them in the sitting they abandoned;
+// four days is where a message about something they did last week starts
+// reading as surveillance.
+//
+// The far end is deliberately much wider than the near one. It is not a second
+// opinion about when to write - it is the backstop that catches a lead the runs
+// missed, and the guard that stops the first live run mailing every lead the
+// site has ever recorded.
+const WAIT_HOURS = 1
 const STALE_HOURS = 96
 
 // What one run sends. The window means a normal day holds a handful, so this is
 // a ceiling against a surprise rather than a rate: a hundred messages leaving a
 // warmed domain in one minute is the kind of burst that gets a domain looked at.
+//
+// It bounds a run and not a day, and the runs are quarter-hourly, because an
+// hour's wait is only an hour if something is looking that often. So the figure
+// that matters on the worst day is this one against the far end of the window:
+// a backlog is four days of leads at most, and it drains four runs an hour.
 const PER_RUN = 25
 
 // How long a code lives. Long enough to be acted on over a weekend, short
@@ -178,7 +199,7 @@ async function cutCode(email) {
  *
  * More rows are asked for than a run will send, so a test address cannot take
  * the place of somebody real. Without that, the ceiling is spent on rows that
- * are then dropped and a lead waits another day for no reason.
+ * are then dropped and a lead waits for the next run for no reason.
  *
  * @returns {Promise<{leads: object[], skipped: number}>} Who to write to, and
  *   how many were passed over as undeliverable - reported by the run so the
@@ -188,7 +209,7 @@ async function due(db) {
   const now = Date.now()
   const { data, error } = await db
     .from(LEADS)
-    .select('id, email, trade, step, unsub_token, created_at')
+    .select('id, email, trade, step, path, unsub_token, created_at')
     .lt('created_at', new Date(now - WAIT_HOURS * HOUR_MS).toISOString())
     .gt('created_at', new Date(now - STALE_HOURS * HOUR_MS).toISOString())
     .is('bought_at', null)
@@ -205,6 +226,11 @@ async function due(db) {
   const found = data || []
   const reachable = found.filter(lead => deliverable(lead.email))
   return { leads: reachable.slice(0, PER_RUN), skipped: found.length - reachable.length }
+}
+
+/** The page a lead picks it back up on, which is the page they left. */
+function resumeAt(path) {
+  return fromPaymentPage(path) ? PAYMENT_PATH : START_PATH
 }
 
 /**
@@ -248,7 +274,11 @@ async function chase(db, lead) {
     step: lead.step || 0,
     code: cut.code,
     expires: writtenDate(cut.expires),
-    startUrl: `${SITE_URL}/start?utm_source=followup&utm_medium=email&utm_campaign=start-followup`,
+    // Back to the page they were actually on. Somebody handed the short
+    // checkout never opened the configurator, and a link sending them to it
+    // answers a discount on a build they already agreed to with five screens
+    // of questions - which is the one thing that page exists to avoid.
+    startUrl: `${SITE_URL}${resumeAt(lead.path)}?utm_source=followup&utm_medium=email&utm_campaign=start-followup`,
     unsubscribeUrl: unsubscribe,
   })
 

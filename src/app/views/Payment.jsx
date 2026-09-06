@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import BbbSeal from '@components/BbbSeal'
@@ -8,6 +8,8 @@ import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/pricing'
 import { checkoutErrorMessage, openCheckout } from '@data/startCheckout'
+import { recordStart } from '@data/startLead'
+import { PAY_STEP } from '@lib/leads/paths.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 
 /**
@@ -38,6 +40,19 @@ import { hasMinLength, isValidEmail } from '@utils/validation'
  * brief is the one difference that check is written to allow. A pair of new
  * metadata keys would have to be added to both endpoints and then excused
  * there, to carry two strings the brief already carries to the same place.
+ *
+ * What is typed is written down before the button is pressed, and that is the
+ * difference between a lead and nothing. A person handed this address types
+ * three answers and then meets a card, and the ones who stop there used to
+ * leave no trace at all: the configurator has recorded its visitors since its
+ * first screen, and the page written for somebody who had already said yes
+ * recorded only the ones who went through with it. The same endpoint takes both
+ * now, so a name and a number typed here survive the tab closing.
+ *
+ * It is recorded and not counted. The property and the ad accounts hear about
+ * the configurator's first step because that is the step the ads point at; a
+ * lead reported from an address handed over in a conversation is a conversion
+ * no campaign produced, and it would be spent against as though one had.
  *
  * The page is noindex and in no menu, and it is deliberately absent from
  * `robots.txt`. The console's five paths are named there because they are a
@@ -80,6 +95,35 @@ const RULES = {
 
 const EMPTY = { name: '', email: '', phone: '' }
 
+// How long the typing has to stop before what is in the form is written down.
+// Longer than the configurator's, which waits on one address answered once;
+// this is three fields filled in a single pass, and a shorter wait records the
+// same person three times on the way down the form.
+const SETTLE_MS = 1200
+
+/**
+ * What the buyer has typed, in the rows a brief carries.
+ *
+ * One list for both places it travels. These rows are recorded against the
+ * lead as they are typed and ride to Stripe with the payment, and the whole
+ * point of the second is that it says what the first said - two copies of the
+ * list is how a build opens under answers the lead never gave.
+ *
+ * A half-filled form drops the fields it has not reached rather than storing
+ * empty ones, so a brief recorded on the way down the page grows as the answers
+ * arrive instead of holding a row that says nothing.
+ */
+function briefOf({ name, phone }) {
+  return [
+    { label: 'Full Name', value: name.trim() },
+    { label: 'Phone', value: phone.trim() },
+  ].filter(row => row.value)
+}
+
+/** Everything a report would say, as one line, so one can be told from the next. */
+const markOf = ({ name, email, phone }) =>
+  `${email.trim().toLowerCase()}|${name.trim()}|${phone.trim()}`
+
 /**
  * Three fields, the price, and Stripe.
  *
@@ -98,6 +142,48 @@ export default function Payment() {
   const [status, setStatus] = useState('idle')
 
   const sending = status === 'submitting'
+
+  // What the last report said, so the same three answers are not sent twice,
+  // and what a report would say right now, held where the listener below can
+  // read it without being rebuilt on every keystroke.
+  const reported = useRef('')
+  const standing = useRef(values)
+  standing.current = values
+
+  // The address is what gates the report, because it is the row's identity and
+  // there is nothing to record without one. It goes up a moment after the
+  // typing settles rather than on every keystroke, and again each time one of
+  // the answers beside it changes, so a form filled in and abandoned is a lead
+  // carrying the name and the number it was abandoned with.
+  useEffect(() => {
+    if (!isValidEmail(values.email)) return undefined
+    const mark = markOf(values)
+    if (reported.current === mark) return undefined
+
+    const timer = setTimeout(() => {
+      reported.current = mark
+      recordStart({ email: values.email, step: PAY_STEP, brief: briefOf(values), counted: false })
+    }, SETTLE_MS)
+    return () => clearTimeout(timer)
+  }, [values])
+
+  // The one report that cannot wait for the settle. Somebody who fills the form
+  // in and closes the tab in the same second is the lead this exists for, and
+  // their report is still sitting in a timer when the document goes. It fires
+  // on the way to Stripe too, which is what puts the answers on the row for a
+  // buyer who reaches the card and does not use it.
+  useEffect(() => {
+    const flush = () => {
+      const held = standing.current
+      if (!isValidEmail(held.email)) return
+      const mark = markOf(held)
+      if (reported.current === mark) return
+      reported.current = mark
+      recordStart({ email: held.email, step: PAY_STEP, brief: briefOf(held), counted: false })
+    }
+    window.addEventListener('pagehide', flush)
+    return () => window.removeEventListener('pagehide', flush)
+  }, [])
 
   const change = field => event => {
     const { value } = event.target
@@ -126,13 +212,9 @@ export default function Payment() {
     try {
       const url = await openCheckout({
         email: values.email,
-        // The two answers the studio needs to open the build, in the rows the
-        // brief is read in. A build sold this way has no configurator behind
-        // it, so these are the whole of what travels with the payment.
-        brief: [
-          { label: 'Full Name', value: values.name.trim() },
-          { label: 'Phone', value: values.phone.trim() },
-        ],
+        // The same rows the lead already carries. A build sold this way has no
+        // configurator behind it, so these are the whole of what travels.
+        brief: briefOf(values),
         termsAccepted: agreed,
       })
       // Replaced rather than pushed: the back button on Stripe's page should
