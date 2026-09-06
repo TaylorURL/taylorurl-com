@@ -44,6 +44,7 @@ globalThis.fetch = () => {
 
 const nodemailer = (await import('nodemailer')).default
 const { checkAddress, forgetDomains } = await import('../lib/outreach/address.js')
+const { FOLLOW_UP_COLUMNS } = await import('../lib/outreach/queue.js')
 const { dueAfter, work: sendWork } = await import('../api/outreach/send.js')
 
 const cases = []
@@ -265,37 +266,74 @@ check('the next letter is owed a set number of days on', () => {
 
 // ── The database stand-in ────────────────────────────────────────────────
 
+/** The two columns `followUpColumns` probes with, which is how that read is known. */
+const PROBE_COLUMNS = 'step, next_due_at'
+
+/**
+ * Which of the run's reads of the businesses a query is, read off the query
+ * itself.
+ *
+ * The probe asks for the chain's two columns and nothing else; the follow-up
+ * read asks for the chain's columns beside the candidate's; the priority pass
+ * carries the `or` that picks up the rows ranking ahead of every score; and the
+ * scored pass is the one ordered by the score. Each is answered by what it
+ * asked for rather than by how many reads came before it, so a run that reads
+ * the table one more time still hands every fixture to the read it was written
+ * for. A query answering to none of them is one the plan has no fixture for,
+ * and it says so rather than being handed another read's rows.
+ */
+const prospectRead = state => {
+  if (state.columns === PROBE_COLUMNS) return 'columns'
+  if (state.columns === FOLLOW_UP_COLUMNS) return 'due'
+  if (state.where.some(clause => clause.how === 'or')) return 'priority'
+  if (state.order.some(by => by.column === 'audit_score')) return 'scored'
+  throw new Error(`a read of the businesses the plan does not know: ${state.columns}`)
+}
+
 /**
  * A client that answers every query from a plan, and records what was asked.
  * The same stand-in the assignment check drives the job against, with the
  * `or` filter kept as well, since that is how the cap leaves follow-ups out.
+ *
+ * A plan is keyed by operation and table - `select:outreach_messages` - and a
+ * read of the businesses may be keyed one step further, by which of the run's
+ * reads it answers: `select:outreach_prospects:due` is the follow-up read's own
+ * fixture, and `prospectRead` above says how each read is recognised. An entry
+ * under the plain key answers any read the named keys leave over. An array
+ * under either is served an element per call, the last standing for the rest.
  */
 function stubDb(plan) {
   const asked = []
   const writes = []
   const pending = new Map()
 
-  const answerFor = key => {
-    const planned = plan[key]
+  const answerFor = (key, role) => {
+    const named = role === null ? null : `${key}:${role}`
+    const at = named !== null && plan[named] !== undefined ? named : key
+    const planned = plan[at]
     if (planned === undefined) return { data: [], error: null, count: 0 }
     if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
+    const call = pending.get(at) ?? 0
+    pending.set(at, call + 1)
+    return planned[Math.min(call, planned.length - 1)]
   }
 
   const from = table => {
-    const state = { table, op: 'select', payload: null, where: [] }
+    const state = { table, op: 'select', payload: null, where: [], order: [], columns: null }
     const chain = new Proxy(
       {},
       {
         get(_, prop) {
           if (prop === 'then') {
             const key = `${state.op}:${state.table}`
-            asked.push({ key, where: state.where })
+            const role =
+              state.op === 'select' && state.table === 'outreach_prospects'
+                ? prospectRead(state)
+                : null
+            asked.push({ key, role, where: state.where })
             if (state.op !== 'select')
               writes.push({ key, payload: state.payload, where: state.where })
-            let answer = answerFor(key)
+            let answer = answerFor(key, role)
             // A row read back from an insert carries what was written, the
             // way the database's own answer does.
             if (state.op === 'insert' && answer?.data && state.payload) {
@@ -319,6 +357,8 @@ function stubDb(plan) {
               state.op = prop
               state.payload = args[0] ?? null
             }
+            if (prop === 'select') state.columns = args[0] ?? null
+            if (prop === 'order') state.order.push({ column: args[0], options: args[1] ?? null })
             if (['eq', 'is', 'in', 'neq', 'lte', 'gte', 'not', 'or'].includes(prop)) {
               state.where.push({ how: prop, column: args[0], value: args[1] })
             }
@@ -348,25 +388,27 @@ const drafted = {
 }
 
 /**
- * The reads a run makes, in the order it makes them. The prospects table is
- * asked three times: whether the chain's columns exist, who is owed a first
- * letter, and who is owed a follow-up.
+ * The reads a run makes, each answer named for the read it belongs to. The
+ * businesses are asked whether the chain's columns exist, asked twice for the
+ * queue a first letter is drawn from - the rows that beat a score, then the
+ * scored rows themselves - and asked who is owed a follow-up. `queue` stands on
+ * the scored pass, which is where a measured business comes back.
  */
 const plan = ({
   due = [],
+  queue = [],
   ready = true,
   first = [FIRST_MESSAGE],
   variants = [],
   suppressed = [],
 } = {}) => ({
   'select:outreach_variants': { data: variants, error: null },
-  'select:outreach_prospects': [
-    ready
-      ? { data: [], error: null }
-      : { data: null, error: { code: '42703', message: 'column "step" does not exist' } },
-    { data: [], error: null },
-    { data: due, error: null },
-  ],
+  'select:outreach_prospects:columns': ready
+    ? { data: [], error: null }
+    : { data: null, error: { code: '42703', message: 'column "step" does not exist' } },
+  'select:outreach_prospects:priority': { data: [], error: null },
+  'select:outreach_prospects:scored': { data: queue, error: null },
+  'select:outreach_prospects:due': { data: due, error: null },
   // Two reads land here where the queue is empty: the day's count, then the
   // first letter a follow-up threads under. A case that gives the run a
   // candidate adds the two the queue makes and overrides this.
@@ -466,7 +508,8 @@ check(
       capRead.where.some(clause => clause.how === 'or' && /step/.test(String(clause.column))),
       'the cap counted follow-ups'
     )
-    const dueRead = asked.filter(call => call.key === 'select:outreach_prospects')[2]
+    const dueRead = asked.find(call => call.role === 'due')
+    ok(dueRead, 'the businesses owed a follow-up were never read')
     ok(
       dueRead.where.some(
         clause => clause.how === 'eq' && clause.column === 'stage' && clause.value === 'contacted'
@@ -584,10 +627,16 @@ check('without the chain’s columns, first letters go and the chain is not read
   )
 
   same(answer.followed, 0, 'follow-ups sent')
+  // The probe and the queue's two passes, and no fourth read: the chain is
+  // what the run leaves unread when the columns behind it are not there.
   same(
     asked.filter(call => call.key === 'select:outreach_prospects').length,
-    2,
+    3,
     'reads of the businesses'
+  )
+  ok(
+    !asked.some(call => call.role === 'due'),
+    'the chain was read over columns the database does not have'
   )
   const capRead = asked.find(call => call.key === 'select:outreach_messages')
   ok(
@@ -609,12 +658,7 @@ check('a first letter puts the business on the chain once the columns exist', as
     next_due_at: null,
   }
   const { db, writes } = stubDb({
-    ...plan(),
-    'select:outreach_prospects': [
-      { data: [], error: null },
-      { data: [fresh], error: null },
-      { data: [], error: null },
-    ],
+    ...plan({ queue: [fresh] }),
     'insert:outreach_messages': {
       data: { ...drafted.data, id: 'm9' },
       error: null,
@@ -701,12 +745,7 @@ check('a draft written before the letters existed is drafted again under one', a
     sent_at: null,
   }
   const { db, writes } = stubDb({
-    ...plan(),
-    'select:outreach_prospects': [
-      { data: [], error: null },
-      { data: [fresh], error: null },
-      { data: [], error: null },
-    ],
+    ...plan({ queue: [fresh] }),
     'select:outreach_messages': [
       { count: 0, error: null },
       { data: [], error: null },
@@ -757,12 +796,7 @@ check('a draft written under a letter goes as it was written', async () => {
     sent_at: null,
   }
   const { db, writes } = stubDb({
-    ...plan(),
-    'select:outreach_prospects': [
-      { data: [], error: null },
-      { data: [fresh], error: null },
-      { data: [], error: null },
-    ],
+    ...plan({ queue: [fresh] }),
     'select:outreach_messages': [
       { count: 0, error: null },
       { data: [], error: null },
@@ -806,12 +840,7 @@ check('a draft written under a retired family is written again before it goes', 
     sent_at: null,
   }
   const { db, writes } = stubDb({
-    ...plan(),
-    'select:outreach_prospects': [
-      { data: [], error: null },
-      { data: [fresh], error: null },
-      { data: [], error: null },
-    ],
+    ...plan({ queue: [fresh] }),
     'select:outreach_messages': [
       { count: 0, error: null },
       { data: [], error: null },

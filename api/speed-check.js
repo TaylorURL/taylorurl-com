@@ -22,9 +22,14 @@
  * stages and nothing else - the last line is the whole answer either way.
  *
  * What it writes: one row in `public.speed_checks`, opened before the work
- * starts so a run that dies still leaves the record of who asked. It writes no
- * other table. An address given to get one answer is not a subscription, and
- * `public.subscribers` is where a subscription lives.
+ * starts so a run that dies still leaves the record of who asked, and, once a
+ * reading comes back, one row in `public.outreach_prospects` through
+ * `lib/outreach/bridge.js`. An address given to get one answer is still not a
+ * subscription: `public.subscribers` is where a subscription lives and nothing
+ * here goes near it. The prospect is a lead, and it answers to every rule the
+ * leads beside it answer to - the same suppression list, the same address
+ * checks, the same held domains, the same unsubscribe token on the row - which
+ * is what makes it a lead rather than a mailing list.
  *
  * What it sends: one notice to the studio inbox, once the reading is stored and
  * on the page. The page tells the sender their address is kept so a reply can
@@ -42,6 +47,7 @@ import { measure, reading } from '../lib/outreach/pagespeed.js'
 import { bandOf } from '../lib/outreach/bands.js'
 import { ensureShot } from '../lib/outreach/shot.js'
 import { suppressed } from '../lib/outreach/queue.js'
+import { bridge } from '../lib/outreach/bridge.js'
 import { loadHeldDomains } from '../lib/outreach/exclusions.js'
 import { sendNotice, notice } from '../lib/mail/notice.js'
 import {
@@ -238,6 +244,38 @@ async function announce(check) {
   }
 }
 
+/**
+ * Files a finished check as a lead.
+ *
+ * Somebody who typed their own site into a form and waited most of a minute for
+ * a number has named a problem about their own business at the moment they
+ * cared enough to go looking. It is the one lead in this pipeline the business
+ * named itself, and `lib/outreach/bridge.js` carries it into
+ * `outreach_prospects` under the same suppression list, the same address rules
+ * and the same held domains every other row in that table answers to.
+ *
+ * Only a reading that came back is worth carrying: a check that failed knows an
+ * address and nothing about the site behind it, and the bridge refuses one
+ * anyway rather than trusting a caller to.
+ *
+ * The visitor's reading is the priority and it is already on their screen by
+ * the time this runs, so nothing here is allowed to reach them. The bridge
+ * answers with a refusal rather than raising, and the wrap is here for the fault
+ * it cannot answer for - a client that is gone, a module that would not load -
+ * because a prospect the studio did not get is a cost to the studio and a
+ * reading turned into an error is a cost to the person who asked for it.
+ *
+ * @param {object} db The service-role client the rest of the request used.
+ * @param {object} check The row as it stands once the reading is written.
+ */
+async function enlist(db, check) {
+  try {
+    await bridge(db, check)
+  } catch (cause) {
+    console.error('speed-check: filing: %s', cause?.message)
+  }
+}
+
 export default async function handler(request, response) {
   if (!servedHereOr404(request, response)) return
   if (request.method !== 'POST') {
@@ -385,16 +423,18 @@ export default async function handler(request, response) {
     const { error: closeError } = await db.from('speed_checks').update(settled).eq('id', row.id)
     if (closeError) throw new Error(closeError.message)
 
-    say(response, {
-      result: readingFor({ ...opened, ...settled, created_at: row.created_at }),
-    })
+    const check = { ...opened, ...settled, id: row.id, created_at: row.created_at }
+    say(response, { result: readingFor(check) })
 
     // Before the stream closes, not after. The reading is already written to
     // it, so the sender has their answer either way and the wait costs them
     // nothing they can see - but the platform is free to stop the invocation
     // the moment the response ends, and work left on the far side of that is
-    // work that sometimes happens.
-    await announce({ ...opened, ...settled })
+    // work that sometimes happens. The lead goes first of the two, because it
+    // is a write on a client already in hand and the notice is a call to
+    // somebody else's server.
+    await enlist(db, check)
+    await announce(check)
     response.end()
   } catch (cause) {
     console.error('speed-check: %s: %s', host, cause.message)

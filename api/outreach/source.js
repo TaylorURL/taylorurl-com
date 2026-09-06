@@ -31,11 +31,25 @@
  * been enriched, audited or written to is further along than a map result
  * knows and a search result must not walk it back.
  *
+ * The review count is written twice over, and the two are not the same column.
+ * `rating_count` is refreshed by every sweep like the name and the phone
+ * number beside it. `rating_count_first` is written once, for a place id that
+ * was not on file when the search came back, and never again: it is the
+ * reading the business was filed at, so a later sweep rewriting it would leave
+ * the two columns saying the same thing and the run of reviews between them
+ * gone. What the pair together says is how many reviews a business has gained
+ * since the sweep first filed it, which is the only honest way to tell a
+ * business that opened recently from one nobody has got round to reviewing.
+ * The column is not in every database this code runs against, so a run asks
+ * once whether it is there and files without it where it is not, rather than
+ * refusing to sweep the map over a figure nothing downstream requires.
+ *
  * What stops it: sourcing_enabled being false, an empty town or trade list, a
  * missing API key, or every search in the slice failing. One or two failing
  * searches do not, since a single refused query says nothing about the rest.
  */
 
+import { columnMissing } from '../../lib/db/rows.js'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 
@@ -127,9 +141,12 @@ export const SOURCE = 'places'
  * The rating, its count and the trading status are read here rather than off
  * the business's own site, which is the point of them: they say how big a
  * business is and whether it is still open before anything has been fetched,
- * enriched or audited on its behalf. A business with no reviews carries no
- * rating and no count at all, so null in either column is 'nobody has reviewed
- * them' rather than 'nobody has asked'.
+ * enriched or audited on its behalf. Google omits the review fields entirely
+ * for a listing nobody has reviewed, so a null count on a row built here is a
+ * listing with no reviews rather than a count of zero. The table also holds
+ * rows filed before the mask carried these fields, where the same null means
+ * nobody asked, and nothing on the row tells the two apart - which is why
+ * `lib/outreach/youth.js` reads a null count as unread and never as young.
  *
  * Exported for the check that reads the row without a map to ask.
  */
@@ -150,6 +167,38 @@ export function prospect(place, town, trade) {
     town,
     trade,
   }
+}
+
+/**
+ * Whether the write-once first-count column is in the database.
+ *
+ * It is not in every database this code runs against, and a sweep that stopped
+ * over that would stop the pipeline finding anybody at all for the sake of one
+ * figure. So the run asks once, files the count where the column is there and
+ * leaves it out where it is not. Any other refusal is a real one and is thrown.
+ */
+async function firstCount(db) {
+  const { error } = await db.from('outreach_prospects').select('rating_count_first').limit(1)
+  if (!error) return true
+  if (columnMissing(error)) return false
+  throw new Error(error.message)
+}
+
+/**
+ * Files a batch of prospects, upserted on place_id, and does nothing at all
+ * where there is nothing to file.
+ *
+ * Every row in one call carries the same keys, so the conflict clause rewrites
+ * the same columns for all of them and leaves stage and email alone: absent
+ * from the payload means the default on the way in and untouched on the way
+ * over. It is also why the rows a run is filing for the first time travel in a
+ * call of their own - they carry a column that must not be rewritten on
+ * anybody already on file, and one payload cannot both carry it and not.
+ */
+async function save(db, rows) {
+  if (!rows.length) return
+  const { error } = await db.from('outreach_prospects').upsert(rows, { onConflict: 'place_id' })
+  if (error) throw new Error(error.message)
 }
 
 /** Which of these place ids are already on file. */
@@ -176,6 +225,7 @@ async function work({ db, settings, counts }) {
   const slice = []
   for (let step = 0; step < width; step += 1) slice.push(pairs[(offset + step) % pairs.length])
 
+  const firsts = await firstCount(db)
   const failures = []
   for (const { town, trade } of slice) {
     let places
@@ -195,14 +245,20 @@ async function work({ db, settings, counts }) {
       rows.map(row => row.place_id)
     )
 
-    // Every row carries the same keys, so the conflict clause rewrites the
-    // same columns for all of them and leaves stage and email alone: absent
-    // from the payload means the default on the way in and untouched on the
-    // way over.
-    const { error } = await db.from('outreach_prospects').upsert(rows, { onConflict: 'place_id' })
-    if (error) throw new Error(error.message)
+    // The count a business is filed at is stamped on the rows this search is
+    // the first to see, and on nobody else, which is the whole of what makes
+    // it write-once. Where the column is absent, or where the search returned
+    // nothing new, every row travels in the one refreshing call instead.
+    const filing = rows.filter(row => !already.has(row.place_id))
+    const stamped = firsts
+      ? filing.map(row => ({ ...row, rating_count_first: row.rating_count }))
+      : []
+    const rest = stamped.length ? rows.filter(row => already.has(row.place_id)) : rows
 
-    counts.changed += rows.filter(row => !already.has(row.place_id)).length
+    await save(db, rest)
+    await save(db, stamped)
+
+    counts.changed += filing.length
   }
 
   if (failures.length === slice.length) throw new Error(failures[0])
