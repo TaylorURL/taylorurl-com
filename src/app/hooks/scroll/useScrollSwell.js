@@ -1,15 +1,33 @@
 import { useEffect, useRef } from 'react'
-import { useMotionValue, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import { useMotionValue, useReducedMotion } from 'framer-motion'
 
 /**
  * The queue that swells one block at a time as the page goes past.
  *
  * A block grows a little above the size it was laid out at, peaks once, and
  * comes back down, and the next block in reading order does not start until the
- * one before it has finished. That is the whole behaviour: at any scroll
- * position at most one thing on the page is above its own size, so the eye is
- * handed from block to block rather than watching a row of them breathe
- * together.
+ * one before it has finished. That is the whole behaviour: at any moment at
+ * most one thing on the page is above its own size, so the eye is handed from
+ * block to block rather than watching a row of them breathe together.
+ *
+ * Reaching a block's own line on the way down is the cue, and cueing is the
+ * only thing scroll does here. The swell that follows runs on a clock of its
+ * own, so a flick does not blow it through in two frames, inching down does not
+ * leave it stalled half grown, and turning round does not run it backwards. The
+ * obvious implementation makes size a function of scroll position, and a size
+ * that is a function of scroll position is a readout of the wheel rather than
+ * something the block does.
+ *
+ * Coming back down the page is the only way to see one again. A block that has
+ * swelled is spent until the reader is back above its own line, so scrolling to
+ * the top does not replay every swell on the page in reverse on the way.
+ *
+ * A block's line is its own arrival and nothing else. Two cards side by side
+ * arrive together, so they are cued together and relay through one after the
+ * other while the reader sits still - the queue holds them apart in time, which
+ * is where the collision actually is, rather than in scroll distance, which
+ * would charge the reader another half a window of scrolling for the second
+ * card in a row it can already see.
  *
  * The queue is shared by every block that joins it rather than held per band,
  * because two bands meeting at a section edge are as able to collide as two
@@ -25,24 +43,45 @@ import { useMotionValue, useReducedMotion, useScroll, useTransform } from 'frame
 const PEAK = 1.035
 
 /**
- * How far apart two peaks are, as a share of the window height. It is the
- * length of one swell as well as the gap between two, because a swell that ran
- * longer than the gap would still be growing when its neighbour started.
+ * How long one swell runs, from the cue to back at rest.
  *
- * What sets it is the widest row on the page rather than how a single swell
- * feels. Three columns of one row are on the screen together for about a window
- * of scrolling, and their three turns have to fit inside that: at half a window
- * apiece the third column peaked with two thirds of itself already above the top
- * edge, which is a swell nobody is looking at.
+ * Longer than the ceiling the site's transitions answer to, and deliberately
+ * so. That ceiling is on motion a reader is waiting behind - a reveal, a page
+ * change, a panel opening - where every extra frame is a frame of not being
+ * able to read the thing yet. Nothing waits on a swell. It runs under content
+ * that is already on the screen and already legible, so the reason to keep it
+ * short does not apply here, and held to the ceiling it read as a flinch
+ * rather than as something growing.
  */
-const STRIDE = 0.32
+const SPAN = 1000
 
-/** The shortest a swell may run, for a window too short for the share to mean anything. */
-const MIN_STRIDE = 200
+/**
+ * How far down the window a block's middle has to come to count as arrived, as
+ * a share of the window height.
+ *
+ * Two thirds down is far enough in to be what the reader is looking at and
+ * early enough that the swell has run by the time the block reaches the middle.
+ * Being a share rather than a distance is what keeps a short window from
+ * cueing everything at once.
+ */
+const ARRIVAL = 0.66
+
+/**
+ * How far back above its own line a spent block has to be before it will swell
+ * again.
+ *
+ * Without it a hand resting on the trackpad at the line drifts across, back and
+ * across again, and fires the block every time.
+ */
+const REARM = 32
 
 const queue = new Set()
+const waiting = []
+let ordered = []
 let watcher = null
 let pending = 0
+let cueing = 0
+let playing = null
 
 const byDocument = (a, b) => {
   const where = a.el.compareDocumentPosition(b.el)
@@ -52,68 +91,24 @@ const byDocument = (a, b) => {
 }
 
 /**
- * The scroll position each block would peak at if nothing else were in the way,
- * spaced out so no two are closer together than one swell.
+ * Read every block's place on the page and tell it where its line is.
  *
- * Shifting each wanted position back by that block's own place in the queue
- * turns the spacing rule into a much simpler one: the queue is far enough apart
- * exactly when the shifted series never falls. So the job is to make a series
- * non-decreasing while moving it as little as possible, and pooling adjacent
- * violators does that - a place that falls below the one before it is pooled
- * with it and both take the average, and the pooled block is then checked
- * against the block before that.
- *
- * Two cards in one row want the same position, and pooling settles them either
- * side of it rather than pushing the second one late. A queue that only ever
- * pushed forward would hand a row's second card to the row below it, and by the
- * fourth card the peak would be arriving after the card had left the screen.
- *
- * @param {number[]} wanted Where each block would peak, in document order.
- * @param {number} stride The least distance allowed between two peaks.
- * @returns {number[]} Where each block actually peaks.
- */
-function spaced(wanted, stride) {
-  const blocks = []
-  wanted.forEach((want, i) => {
-    let sum = want - i * stride
-    let count = 1
-    while (blocks.length) {
-      const previous = blocks[blocks.length - 1]
-      if (previous.sum / previous.count <= sum / count) break
-      blocks.pop()
-      sum += previous.sum
-      count += previous.count
-    }
-    blocks.push({ sum, count })
-  })
-
-  const at = []
-  for (const block of blocks) {
-    for (let k = 0; k < block.count; k += 1) at.push(block.sum / block.count)
-  }
-  return at.map((base, i) => base + i * stride)
-}
-
-/**
- * Read every block's place on the page and hand each one its turn.
- *
- * A block wants to peak when its own middle is at the middle of the window,
- * which is the moment a reader is looking at it. Everything after that is the
- * queue keeping two of those moments from being the same moment.
+ * Nothing here looks at where any other block is. A block is cued by its own
+ * arrival, and two blocks that arrive at the same moment are handed to the
+ * queue in document order to be relayed through.
  */
 function measure() {
-  if (!queue.size) return
-  const members = [...queue].sort(byDocument)
+  if (!queue.size) {
+    ordered = []
+    return
+  }
+  ordered = [...queue].sort(byDocument)
   const view = window.innerHeight
-  const stride = Math.max(MIN_STRIDE, Math.round(view * STRIDE))
 
-  const wanted = members.map(member => {
+  for (const member of ordered) {
     const box = member.el.getBoundingClientRect()
-    return box.top + window.scrollY + box.height / 2 - view / 2
-  })
-
-  const at = spaced(wanted, stride)
-  members.forEach((member, i) => member.settle(at[i], stride))
+    member.settle(box.top + window.scrollY + box.height / 2 - view * ARRIVAL)
+  }
 }
 
 function schedule() {
@@ -122,6 +117,46 @@ function schedule() {
     pending = 0
     measure()
   })
+}
+
+function onScroll() {
+  if (cueing) return
+  cueing = requestAnimationFrame(() => {
+    cueing = 0
+    const y = window.scrollY
+    for (const member of ordered) member.cue(y)
+  })
+}
+
+/**
+ * Hand the queue on to whoever is next.
+ *
+ * A block that has left the screen while it waited has missed its turn rather
+ * than earned a late one. The swell is for the reader looking at the block, and
+ * a reader who flicked through the band is not looking at any of them - so a
+ * flick swells the one that was on screen and drops the rest, instead of
+ * playing a backlog to an empty stretch of page.
+ */
+function next() {
+  playing = null
+  while (waiting.length) {
+    const member = waiting.shift()
+    if (queue.has(member) && member.onScreen()) {
+      playing = member
+      member.run(next)
+      return
+    }
+  }
+}
+
+function play(member) {
+  if (!queue.has(member)) return
+  if (playing) {
+    if (!waiting.includes(member)) waiting.push(member)
+    return
+  }
+  playing = member
+  member.run(next)
 }
 
 /**
@@ -142,14 +177,26 @@ function join(member) {
     }
     watcher.observe(member.el)
   }
-  if (first) window.addEventListener('resize', schedule)
+  if (first) {
+    window.addEventListener('resize', schedule)
+    window.addEventListener('scroll', onScroll, { passive: true })
+  }
   schedule()
 
   return () => {
     queue.delete(member)
+    ordered = ordered.filter(other => other !== member)
     watcher?.unobserve(member.el)
+
+    const held = waiting.indexOf(member)
+    if (held >= 0) waiting.splice(held, 1)
+    // A block that unmounts mid-swell never reaches the end of its own run, so
+    // the queue is handed on here or it stops forever on a block that is gone.
+    if (playing === member) next()
+
     if (!queue.size) {
       window.removeEventListener('resize', schedule)
+      window.removeEventListener('scroll', onScroll)
       watcher?.disconnect()
       watcher = null
     }
@@ -160,19 +207,24 @@ function join(member) {
 /**
  * One block's place in the queue.
  *
- * The curve is a raised cosine over the block's turn: the size leaves 1 and
- * comes back to 1 with no corner at either end, and it is flat 1 everywhere
- * outside. Flat outside is what makes the queue hold - a curve with a tail
- * would have a block still fractionally large while the next one was already
- * growing, which is the overlap the queue exists to prevent.
+ * The curve is a raised cosine over the swell's own span: the size leaves 1 and
+ * comes back to 1 with no corner at either end. Flat at both ends is what makes
+ * the queue hold - a curve with a tail would have a block still fractionally
+ * large while the next one was already growing, which is the overlap the queue
+ * exists to prevent.
  *
- * Nothing is sprung. A spring lags the scroll, and a lagged swell would run on
- * past the end of its own turn and into its neighbour's.
+ * Nothing is sprung. A spring carries momentum out of the end of the swell, and
+ * a block still settling is a block still bigger than the one that has just
+ * been handed the reader's eye.
+ *
+ * A block the reader is already past is not armed, which is read fresh on every
+ * measurement. Otherwise a page opened part way down, or a picture landing and
+ * moving the band, would cue a swell for something off the top of the screen.
  *
  * Honors `prefers-reduced-motion` by not joining the queue at all, which leaves
  * the block at the size it was laid out at and puts no transform on it.
  * `<MotionConfig reducedMotion="user">` does not reach a style written from a
- * scroll position, so this reads the preference itself.
+ * frame loop, so this reads the preference itself.
  *
  * @param {object} [options]
  * @param {number} [options.peak] How much bigger the block gets at its peak.
@@ -187,29 +239,68 @@ function join(member) {
 export function useScrollSwell({ peak = PEAK, origin = 'center' } = {}) {
   const ref = useRef(null)
   const reduced = useReducedMotion()
-  const turn = useRef(null)
-  const version = useMotionValue(0)
-  const { scrollY } = useScroll()
+  const scale = useMotionValue(1)
 
   useEffect(() => {
     const el = ref.current
     if (reduced || !el) return undefined
-    return join({
-      el,
-      settle(at, stride) {
-        turn.current = { at, half: stride / 2 }
-        version.set(version.get() + 1)
-      },
-    })
-  }, [reduced, version])
 
-  const scale = useTransform([scrollY, version], ([y]) => {
-    const its = turn.current
-    if (!its || its.half <= 0) return 1
-    const away = Math.abs(y - its.at)
-    if (away >= its.half) return 1
-    return 1 + (peak - 1) * (0.5 + 0.5 * Math.cos((away / its.half) * Math.PI))
-  })
+    let line = null
+    let armed = false
+    let frame = 0
+
+    const member = {
+      el,
+
+      settle(at) {
+        line = at
+        armed = window.scrollY < line
+      },
+
+      cue(y) {
+        if (line === null) return
+        if (!armed) {
+          if (y < line - REARM) armed = true
+          return
+        }
+        if (y < line) return
+        armed = false
+        if (member.onScreen()) play(member)
+      },
+
+      onScreen() {
+        const box = el.getBoundingClientRect()
+        return box.bottom > 0 && box.top < window.innerHeight
+      },
+
+      run(finished) {
+        const started = performance.now()
+        const step = now => {
+          const through = Math.min(1, (now - started) / SPAN)
+          scale.set(1 + (peak - 1) * (0.5 - 0.5 * Math.cos(2 * Math.PI * through)))
+          if (through < 1) {
+            frame = requestAnimationFrame(step)
+            return
+          }
+          frame = 0
+          finished()
+        }
+        frame = requestAnimationFrame(step)
+      },
+
+      stop() {
+        if (frame) cancelAnimationFrame(frame)
+        frame = 0
+        scale.set(1)
+      },
+    }
+
+    const leave = join(member)
+    return () => {
+      member.stop()
+      leave()
+    }
+  }, [reduced, peak, scale])
 
   return { ref, style: reduced ? undefined : { scale, transformOrigin: origin } }
 }
