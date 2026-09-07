@@ -2,7 +2,7 @@ import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { staggerChild } from '@constants/animations'
-import { useScrollFocus } from '@hooks/scroll/useScrollFocus'
+import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 
 /**
  * The card the home page's second section is laid out in, and the two surfaces
@@ -31,22 +31,21 @@ import { useScrollFocus } from '@hooks/scroll/useScrollFocus'
  * The card is two elements rather than one because it answers to two different
  * clocks. The outer one is the grid cell and the arrival - where the card sits
  * in the row, and the one-time reveal as the band comes up - and the inner one
- * is the surface, which is sized and lit by where the card is on the screen for
- * as long as the reader is on the page. Both write opacity, and a card that put
- * them on the same element would have the arrival and the pass fighting over
- * it.
+ * is the surface, which swells when the card's turn comes round for as long as
+ * the reader is on the page. Both write a transform, and a card that put them on
+ * the same element would have the arrival and the swell fighting over it.
  */
 export function Card({ title, blurb, to, cta, children, index, wide }) {
-  const { ref, transform, opacity } = useScrollFocus()
+  const { ref, style } = useScrollSwell()
 
   return (
     <m.article
-      ref={ref}
       {...staggerChild(index, 0.06)}
       className={`flex flex-col ${wide ? 'md:col-span-2' : ''}`}
     >
       <m.div
-        style={{ transform, opacity }}
+        ref={ref}
+        style={style}
         className="card-lift group/card relative flex flex-1 flex-col overflow-hidden bg-paper"
       >
         <div className="flex flex-col gap-3 p-8 pr-16 sm:p-10 sm:pr-20">
