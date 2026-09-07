@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, Check, Minus, Search } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
+import CheckStage from '@components/conversion/CheckStage'
 import StepFlow from '../start/steps/StepFlow'
 import ToolEnquiry from './ToolEnquiry'
 import { enquiryLines, reportFor } from '@app/tools/lib/findings'
@@ -116,7 +117,35 @@ export default function GooglePresenceCheck({ tool }) {
       description: tool.lede,
       answered: status === 'done',
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+        <CheckStage
+          running={running}
+          panel={
+            running ? (
+              <CheckProgress
+                address={address.trim()}
+                elapsed={elapsed}
+                stages={STAGE_LABELS}
+                at={stageAt(elapsed)}
+                note="Google loads the page on its own hardware, which takes most of a minute. Leave this open."
+                ground={GROUND}
+              />
+            ) : (
+              <div className={`p-8 ${GROUND.shell}`}>
+                <p className="section-label-sm text-accent">What Gets Checked</p>
+                <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
+                  <li>How long the page takes to become usable on a phone.</li>
+                  <li>Whether your business details are in a form Google reads.</li>
+                  <li>What your link looks like when somebody shares it.</li>
+                  <li>Whether the address answers one way rather than two.</li>
+                </ul>
+                <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
+                  Rankings, review counts and what competitors are doing cannot be measured for
+                  free, so they are not in this report.
+                </p>
+              </div>
+            )
+          }
+        >
           <form onSubmit={run} className="space-y-6">
             <div>
               <label htmlFor="check-site" className={LABEL}>
@@ -157,32 +186,7 @@ export default function GooglePresenceCheck({ tool }) {
               )}
             </div>
           </form>
-
-          {running ? (
-            <CheckProgress
-              address={address.trim()}
-              elapsed={elapsed}
-              stages={STAGE_LABELS}
-              at={stageAt(elapsed)}
-              note="Google loads the page on its own hardware, which takes most of a minute. Leave this open."
-              ground={GROUND}
-            />
-          ) : (
-            <div className={`p-8 ${GROUND.shell}`}>
-              <p className="section-label-sm text-accent">What Gets Checked</p>
-              <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                <li>How long the page takes to become usable on a phone.</li>
-                <li>Whether your business details are in a form Google reads.</li>
-                <li>What your link looks like when somebody shares it.</li>
-                <li>Whether the address answers one way rather than two.</li>
-              </ul>
-              <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
-                Rankings, review counts and what competitors are doing cannot be measured for free,
-                so they are not in this report.
-              </p>
-            </div>
-          )}
-        </div>
+        </CheckStage>
       ),
     },
     {

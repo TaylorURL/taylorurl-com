@@ -3039,6 +3039,114 @@
       transform: none;
     }
   }
+
+  /*
+   * THE CHECK CLEARING THE PAGE
+   * -------------------------------------------------------------------------
+   * A reading takes most of a minute, and for that minute the form is spent:
+   * every field in it is already disabled, and the only thing on the page
+   * worth looking at is the panel counting the wait out. So the form goes, and
+   * the panel takes the room it leaves.
+   *
+   * The two are one flex row and the form's own width is what closes, so the
+   * panel beside it widens by exactly what the form gives up, at the moment it
+   * gives it up, and nothing is torn out of the document and put back.
+   *
+   * A width rather than a grid track, and that is not a preference. Written as
+   * `1.1fr 1fr` easing to `0fr 1fr` this read correctly in Chrome and did
+   * nothing at all in Safari, which does not interpolate `fr`: the tracks
+   * jumped to their end values on the first frame and the whole move was a
+   * snap with a fade over it. A length is animatable everywhere, so the
+   * column is stated as the width the track would have resolved to.
+   *
+   * The order is what keeps it from reading as a reflow. The form fades on its
+   * own first and the width only starts closing once it is out of sight, so
+   * the squeeze that would otherwise show a field wrapping itself into a
+   * column an inch wide happens behind something nobody can see. Coming back
+   * it runs the other way round: the space opens, then the form arrives into a
+   * width that is already its own.
+   *
+   * Below the breakpoint the two are stacked rather than side by side, so it
+   * is the height that closes instead of the width - a max-height travelling
+   * from the form's own measured height, which `CheckStage` keeps in
+   * `--check-form-height` because `auto` is not a number anything can ease
+   * towards.
+   */
+  .check-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
+    transition: gap 480ms var(--ease-in-out-soft);
+  }
+
+  /* The gap waits on the fade going out, and leads it coming back. */
+  .check-stage[data-running='true'] {
+    gap: 0;
+    transition-delay: 160ms;
+  }
+
+  /* A flex item refuses to shrink past the widest thing inside it unless it is
+     told it may, so a column eased to zero needs this to arrive. */
+  .check-stage > .check-stage-form {
+    min-width: 0;
+    transition:
+      opacity 200ms var(--ease-out-soft) 460ms,
+      max-height 480ms var(--ease-in-out-soft),
+      width 480ms var(--ease-in-out-soft);
+  }
+
+  .check-stage[data-running='true'] > .check-stage-form {
+    opacity: 0;
+    overflow: hidden;
+    pointer-events: none;
+    /* opacity, max-height, width - in the order stated above. */
+    transition-delay: 0s, 160ms, 160ms;
+  }
+
+  .check-stage > .check-stage-panel {
+    min-width: 0;
+    flex: 1 1 0;
+  }
+
+  @media (max-width: 1023.98px) {
+    .check-stage > .check-stage-form {
+      max-height: var(--check-form-height, none);
+    }
+
+    .check-stage[data-running='true'] > .check-stage-form {
+      max-height: 0;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .check-stage {
+      flex-direction: row;
+      gap: 4rem;
+    }
+
+    /* What `1.1fr 1fr` over a 4rem gap resolves to, written as the length it
+       resolves to. */
+    .check-stage > .check-stage-form {
+      width: calc((100% - 4rem) * 1.1 / 2.1);
+      flex: none;
+    }
+
+    .check-stage[data-running='true'] > .check-stage-form {
+      width: 0;
+    }
+  }
+
+  /* The blanket rule stills the durations and leaves the delays, which on a
+     sequence written as one would hold the form off the page after it had
+     stopped moving. */
+  @media (prefers-reduced-motion: reduce) {
+    .check-stage,
+    .check-stage > .check-stage-form,
+    .check-stage[data-running='true'],
+    .check-stage[data-running='true'] > .check-stage-form {
+      transition-delay: 0s;
+    }
+  }
 }
 
 /* The rule under the hero's control fills across the turn it is drawing. It
