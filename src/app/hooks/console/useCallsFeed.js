@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 import { answerFor, NOTHING_HELD } from './feedState'
 
 const CALLS_PATH = '/api/calls-admin'
+
+/** What a reader is told when the read behind the section does not land. */
+const NO_READ = 'The call list could not be read. Try again in a moment.'
+
+/** And when a call does not get written down. */
+const NO_RECORD = 'That call could not be recorded. Try it again.'
 
 /**
  * The businesses to ring, and the record of what each call came to.
@@ -22,6 +30,15 @@ const CALLS_PATH = '/api/calls-admin'
  * and moves three of the five figures above it, so patching would mean
  * recomputing a ranking the page does not hold.
  *
+ * The two failures go to different places. A read that does not land leaves
+ * the section with nothing to draw, so it is held in `error` and stands where
+ * the rows would have been; a notice that faded after eight seconds would
+ * leave an empty list explaining itself to nobody. A call that does not get
+ * written down leaves the list as it was and the answers still in the form, so
+ * it is a notice in the bottom-right corner of the screen rather than a banner
+ * over rows that are still right. `error` belongs to the read alone for that
+ * reason.
+ *
  * @param {{token: string|null, enabled: boolean,
  *   filters: {view: string, state: string, pull: string, min_score: string,
  *     town: string, trade: string, sort: string, search: string,
@@ -34,6 +51,7 @@ export function useCallsFeed({ token, enabled, filters }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -63,16 +81,13 @@ export function useCallsFeed({ token, enabled, filters }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setFailed({
-          key: query,
-          value: payload.error || `The call list answered ${response.status}.`,
-        })
+        setFailed({ key: query, value: faultFromResponse(response, payload, NO_READ) })
         return
       }
       setHeld({ key: query, value: payload })
       setFailed(NOTHING_HELD)
-    } catch {
-      if (alive.current) setFailed({ key: query, value: 'The call list did not answer.' })
+    } catch (cause) {
+      if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_READ) })
     }
   }, [token, enabled, query])
 
@@ -84,7 +99,6 @@ export function useCallsFeed({ token, enabled, filters }) {
     async call => {
       if (!token) return null
       setSaving(true)
-      setFailed(NOTHING_HELD)
       try {
         const response = await fetch(CALLS_PATH, {
           method: 'POST',
@@ -93,23 +107,19 @@ export function useCallsFeed({ token, enabled, filters }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) {
-            setFailed({ key: query, value: payload.error || 'That call was not recorded.' })
-          }
+          if (alive.current) toast(faultFromResponse(response, payload, NO_RECORD), 'error')
           return null
         }
         await load()
         return payload
-      } catch {
-        if (alive.current) {
-          setFailed({ key: query, value: 'That call did not reach the server.' })
-        }
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_RECORD), 'error')
         return null
       } finally {
         if (alive.current) setSaving(false)
       }
     },
-    [token, load, query]
+    [token, load, toast]
   )
 
   // Filed under the filter that asked for it: a new town, trade or page is a

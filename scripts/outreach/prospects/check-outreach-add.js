@@ -546,8 +546,21 @@ check('a refused insert is answered rather than reported as filed', async () => 
 
   const answer = await addProspect(db, TYPED)
 
+  // The substance of this case is the status: a refusal must not come back
+  // looking like a filing. What the body says is a separate question, and the
+  // answer changed — the driver's own words used to be forwarded verbatim, and
+  // this body is drawn on a console screen, so it now carries a sentence and
+  // the reason goes to the log instead. Asserting the driver text here was
+  // pinning the leak in place rather than the behaviour the name describes.
   same(answer.status, 500, 'the status')
-  same(answer.body.error, 'insert refused', 'the reason given')
+  ok(
+    !answer.body.error.includes('insert refused'),
+    `the driver is not quoted: ${answer.body.error}`
+  )
+  ok(
+    /^[A-Z].*[.?]$/.test(answer.body.error),
+    `the reason reads as a sentence: ${answer.body.error}`
+  )
 })
 
 check('a table that is not there names itself', async () => {

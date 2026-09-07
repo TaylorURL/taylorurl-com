@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
 import { answerFor, NOTHING_HELD } from './feedState'
 
 const ANALYTICS_PATH = '/api/analytics'
+
+/** What a reader is told when a read does not land. */
+const NO_FIGURES = 'The traffic figures could not be read. Try again in a moment.'
+
+/** And when the account is signed in but has not been given the figures. */
+const REFUSED = 'This account cannot read the traffic figures.'
+
 // A failed read is usually a redeploy or a blip a couple of seconds wide.
 // Waiting a full interval to find that out leaves the console showing an error
 // it no longer has, so a failure retries soon and backs off if it persists.
@@ -29,7 +37,7 @@ const RETRY_MS = [3_000, 6_000, 15_000]
  * @param {object} [options.params] - extra query parameters for the view
  * @param {number} options.intervalMs - how often to re-read while visible
  * @param {boolean} [options.enabled] - false holds the poll without clearing data
- * @returns {{data: object|null, error: Error|null, fetchedAt: Date|null,
+ * @returns {{data: object|null, error: string|null, fetchedAt: Date|null,
  *   loading: boolean, refresh: () => Promise<boolean>, rejected: boolean}}
  */
 export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = true }) {
@@ -67,10 +75,17 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
       })
       if (response.status === 401 || response.status === 403) {
         setRejected(true)
-        setFailed({ key: query, value: new Error('This account cannot read the traffic figures.') })
+        setFailed({ key: query, value: REFUSED })
         return false
       }
-      if (!response.ok) throw new Error(`analytics answered ${response.status}`)
+      if (!response.ok) {
+        // Thrown rather than returned so the one catch below files it, and
+        // written out here because this is the only point the response and its
+        // body are both in hand. What a poll catches after that is whatever
+        // the browser said, which goes through the same door again.
+        const payload = await response.json().catch(() => ({}))
+        throw new Error(faultFromResponse(response, payload, NO_FIGURES))
+      }
       const payload = await response.json()
       failures.current = 0
       setRejected(false)
@@ -80,7 +95,7 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
       return true
     } catch (cause) {
       failures.current += 1
-      setFailed({ key: query, value: cause })
+      setFailed({ key: query, value: faultMessage(cause, NO_FIGURES) })
       return false
     }
   }, [token, query])

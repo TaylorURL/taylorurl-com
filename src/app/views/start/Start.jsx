@@ -3,7 +3,8 @@ import Seo from '@components/Seo'
 import { useToast } from '@hooks/chrome/useToast'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { isValidEmail } from '@utils/validation'
-import { openCheckout, checkoutErrorMessage } from '@data/checkout/startCheckout'
+import { faultMessage } from '@utils/faults'
+import { openCheckout } from '@data/checkout/startCheckout'
 import { recordStart } from '@data/leads/startLead'
 import { PRICE_OFFERS } from '@data/checkout/pricing'
 import { EMAIL_PROVIDERS, toolsForTrade, tradeById } from '@data/towns-and-trades/trades'
@@ -24,6 +25,16 @@ import PaySection from './steps/PaySection'
 import SaveSection from './steps/SaveSection'
 
 const EMPTY_BUY = { businessName: '', email: '', website: '' }
+
+// What a checkout that never opened says.
+//
+// The reassurance is the half that matters, and it is the half a general
+// sentence cannot carry. The control that failed is the one that takes a card,
+// on the last screen of five, and a buyer who is not told the money stayed
+// where it was assumes it did not: they either pay twice or walk away from a
+// build they had decided to buy. Naming the charge is what makes pressing the
+// button again an obvious thing to do rather than a risk.
+const NOT_OPENED = 'Checkout did not open. Nothing has been charged, so try it again.'
 
 // How long the typing has to stop before the address counts as answered. Long
 // enough that a name typed a character at a time is one answer rather than
@@ -411,9 +422,14 @@ export default function Start() {
         termsAccepted: agreed,
       })
       window.location.assign(page)
-    } catch (error) {
+    } catch (cause) {
+      // Whatever refused the checkout was answering a program, and what it said
+      // has no business on a screen somebody is reading with a card in their
+      // hand. The two faults above are this screen's own and each sits under
+      // the field it is about; this one is about none of them, so it is a
+      // notice, and it says the same thing however the request went wrong.
       setBuyStatus('idle')
-      toast(checkoutErrorMessage(error), 'error')
+      toast(faultMessage(cause, NOT_OPENED), 'error')
     }
   }
 

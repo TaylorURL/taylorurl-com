@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import Seo from '@components/Seo'
+import { useToast } from '@hooks/chrome/useToast'
 import { supabase } from '@data/supabase/supabaseClient'
+import { faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'
 import AuthShell, { Field } from './AuthShell'
 
@@ -16,8 +18,11 @@ const SENT_NOTE =
 export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [busy, setBusy] = useState(false)
+  // The shape of the address, which is the only thing on this page that is
+  // about the box it is written under.
   const [error, setError] = useState(null)
   const [sent, setSent] = useState(false)
+  const toast = useToast()
 
   const submit = async () => {
     const address = email.trim()
@@ -27,11 +32,21 @@ export default function ForgotPassword() {
     }
     setBusy(true)
     setError(null)
-    await supabase.auth.resetPasswordForEmail(address, {
+    const { error: cause } = await supabase.auth.resetPasswordForEmail(address, {
       redirectTo: `${window.location.origin}/reset-password`,
     })
-    setSent(true)
     setBusy(false)
+    // Whether the address has an account is not something this can fail on -
+    // the service answers a registered address and an unregistered one the same
+    // way, which is what keeps the note below true for both and keeps the form
+    // from being a way to test addresses. So what is left to fail is the
+    // sending, and the note going up anyway sends somebody to wait at an inbox
+    // nothing is on its way to.
+    if (cause) {
+      toast(faultMessage(cause, 'That link could not be sent. Try again in a moment.'), 'error')
+      return
+    }
+    setSent(true)
   }
 
   return (

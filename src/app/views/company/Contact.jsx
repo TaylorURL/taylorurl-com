@@ -21,8 +21,9 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
+import { faultMessage } from '@utils/faults'
 import { CONTACT } from '@data/pages/contact'
-import { submitEnquiry, enquiryErrorMessage } from '@data/leads/sendEnquiry'
+import { submitEnquiry } from '@data/leads/sendEnquiry'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import Magnet from '@reactbits/Magnet/Magnet'
 import { AccentGradient } from '@reactbits/kit'
@@ -34,6 +35,14 @@ import { PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
 const PlaceIcon = CONTACT.place.icon
 
 const REQUIRED_FIELDS = ['name', 'email', 'phone', 'message']
+
+// What a message that did not leave says.
+//
+// This is the longest form on the site and the box is often a paragraph the
+// writer has spent a minute on, so what they need told first is that it is
+// still in front of them: a send that failed clears nothing, and the fear that
+// it did is what makes somebody close the tab rather than press again.
+const NOT_SENT = 'That message did not send. Nothing you typed was lost, so try it again.'
 
 // What a carried brief may be worth, so a crafted history entry cannot fill
 // the box with a page of someone else's text.
@@ -180,9 +189,13 @@ export default function Contact() {
         phone: '',
         message: '',
       })
-    } catch (error) {
+    } catch (cause) {
+      // A send that failed is a notice rather than a line in the form. The four
+      // faults this form raises itself are each about one field and each sit
+      // under it; this one is about none of them, and what the endpoint said
+      // about it was written for the program that called it.
       setStatus('idle')
-      toast(enquiryErrorMessage(error), 'error')
+      toast(faultMessage(cause, NOT_SENT), 'error')
     }
   }
 

@@ -127,12 +127,23 @@ async function measure(url, strategy, timeoutMs = PSI_TIMEOUT_MS) {
     throw error
   }
   if (!response.ok) {
+    // What Google says here is a Lighthouse error body — a status, a code and
+    // a stack of its own — and this message is rendered under the address
+    // field of a page written for somebody who owns a business, not a build.
+    // Reading it, they learn that the site is broken and that they broke it,
+    // both of which are wrong. So the body is read by the log and never by
+    // them, and the two things they can act on are what is left: whether the
+    // address itself is the problem, and whether waiting will fix it.
     const said = await response.text().catch(() => '')
     const detail = API_KEY ? said.replaceAll(API_KEY, '[redacted]') : said
+    console.error(
+      `site-audit: PageSpeed answered ${response.status} for ${url}`,
+      detail.slice(0, 500)
+    )
     const error = new Error(
       response.status === 400
         ? 'Google could not load that address. Check it opens in a browser.'
-        : `The measurement service answered ${response.status}. ${detail.slice(0, 120)}`.trim()
+        : 'Google could not finish reading that site just now. Try again in a few minutes.'
     )
     error.status = response.status === 400 ? 400 : 502
     throw error

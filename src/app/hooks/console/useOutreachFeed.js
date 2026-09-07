@@ -1,8 +1,20 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 import { answerFor, NOTHING_HELD } from './feedState'
 
 const OUTREACH_PATH = '/api/outreach-admin'
 const JOB_PATH = '/api/outreach'
+
+/** What a reader is told when one of the four reads does not land. */
+const NO_BOARD = 'The outreach board could not be read. Try again in a moment.'
+const NO_PROSPECT = 'That prospect could not be opened. Try again in a moment.'
+const NO_QUEUE = 'The mail queue could not be read. Try again in a moment.'
+const NO_PREVIEW = 'That message could not be laid out. Try again in a moment.'
+
+/** And when a change does not take, or a job does not get going. */
+const NO_CHANGE = 'That change could not be saved. Try it again.'
+const NO_RUN = 'That job could not be run. Try it again.'
 
 // How often the board is re-read while a job is in flight. A job opens its run
 // row before it starts work, so a read taken during one carries the open row
@@ -50,6 +62,12 @@ const RUN_POLL_MS = 4000
  * why it could not be, and it is held by whoever asked rather than here: the
  * board does not move when a message is looked at.
  *
+ * All four reads keep their failures where they were asked for, because a
+ * panel with nothing in it has to say why and a notice that faded after eight
+ * seconds would leave it saying nothing. A change and a job are the other way
+ * round: both leave the board on screen standing, so they are notices, which
+ * also stops a job's refusal being wiped by the re-read that follows it.
+ *
  * @param {{token: string|null, enabled: boolean, openId: string|null,
  *   filters: {stage: string, town: string, trade: string, band: string,
  *     sort: string, search: string, page: number}}} options
@@ -70,6 +88,7 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   const [mailError, setMailError] = useState(null)
   const [acting, setActing] = useState(null)
   const [running, setRunning] = useState([])
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -99,16 +118,13 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setFailed({
-          key: query,
-          value: payload.error || `The outreach endpoint answered ${response.status}.`,
-        })
+        setFailed({ key: query, value: faultFromResponse(response, payload, NO_BOARD) })
         return
       }
       setHeld({ key: query, value: payload })
       setFailed(NOTHING_HELD)
-    } catch {
-      if (alive.current) setFailed({ key: query, value: 'The outreach endpoint did not answer.' })
+    } catch (cause) {
+      if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_BOARD) })
     }
   }, [token, enabled, query])
 
@@ -126,13 +142,13 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setProfileError(payload.error || `The outreach endpoint answered ${response.status}.`)
+        setProfileError(faultFromResponse(response, payload, NO_PROSPECT))
         return
       }
       setProfile(payload)
       setProfileError(null)
-    } catch {
-      if (alive.current) setProfileError('The outreach endpoint did not answer.')
+    } catch (cause) {
+      if (alive.current) setProfileError(faultMessage(cause, NO_PROSPECT))
     }
   }, [token, enabled, openId])
 
@@ -154,13 +170,13 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setMailError(payload.error || `The outreach endpoint answered ${response.status}.`)
+        setMailError(faultFromResponse(response, payload, NO_QUEUE))
         return
       }
       setMail(payload)
       setMailError(null)
-    } catch {
-      if (alive.current) setMailError('The outreach endpoint did not answer.')
+    } catch (cause) {
+      if (alive.current) setMailError(faultMessage(cause, NO_QUEUE))
     }
   }, [token, enabled])
 
@@ -172,7 +188,6 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
     async (body, key) => {
       if (!token) return null
       setActing(key)
-      setFailed(NOTHING_HELD)
       try {
         const response = await fetch(OUTREACH_PATH, {
           method: 'POST',
@@ -181,30 +196,25 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) {
-            setFailed({ key: query, value: payload.error || 'That change did not go through.' })
-          }
+          if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return null
         }
         await Promise.all([load(), loadProfile(), loadMail()])
         return payload
-      } catch {
-        if (alive.current) {
-          setFailed({ key: query, value: 'That change did not reach the server.' })
-        }
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_CHANGE), 'error')
         return null
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, loadProfile, loadMail, query]
+    [token, load, loadProfile, loadMail, toast]
   )
 
   const run = useCallback(
     async job => {
       if (!token) return null
       setRunning(current => (current.includes(job) ? current : [...current, job]))
-      setFailed(NOTHING_HELD)
       try {
         const response = await fetch(`${JOB_PATH}/${job}`, {
           method: 'POST',
@@ -212,18 +222,18 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok && alive.current) {
-          setFailed({ key: query, value: payload.error || `The ${job} job did not run.` })
+          toast(faultFromResponse(response, payload, NO_RUN), 'error')
         }
         return response.ok ? payload : null
-      } catch {
-        if (alive.current) setFailed({ key: query, value: `The ${job} job did not answer.` })
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_RUN), 'error')
         return null
       } finally {
         if (alive.current) setRunning(current => current.filter(name => name !== job))
         await Promise.all([load(), loadMail()])
       }
     },
-    [token, load, loadMail, query]
+    [token, load, loadMail, toast]
   )
 
   const preview = useCallback(
@@ -235,12 +245,10 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
           { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } }
         )
         const payload = await response.json().catch(() => ({}))
-        if (!response.ok) {
-          return { error: payload.error || `The outreach endpoint answered ${response.status}.` }
-        }
+        if (!response.ok) return { error: faultFromResponse(response, payload, NO_PREVIEW) }
         return payload
-      } catch {
-        return { error: 'The outreach endpoint did not answer.' }
+      } catch (cause) {
+        return { error: faultMessage(cause, NO_PREVIEW) }
       }
     },
     [token]

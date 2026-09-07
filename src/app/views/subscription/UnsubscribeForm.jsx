@@ -1,7 +1,14 @@
 import { useId, useState } from 'react'
 import { AlertCircle } from 'lucide-react'
-import { subscriptionErrorMessage, unsubscribeAddress } from '@data/newsletter/subscription'
+import { unsubscribeAddress } from '@data/newsletter/subscription'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'
+
+// What a request that did not settle says. The address is still on the list and
+// the box still holds it, so the only thing left to do is press the button
+// again, and the sentence says so rather than leaving it to be guessed.
+const NOT_TAKEN_OFF = 'That address could not be taken off the list. Try it again in a moment.'
 
 /**
  * The way off the list for a reader whose link is not in front of them.
@@ -21,6 +28,7 @@ import { isValidEmail } from '@utils/validation'
  * @param {() => void} props.onDone - Called once the address is off.
  */
 export default function UnsubscribeForm({ onDone }) {
+  const toast = useToast()
   const fieldId = useId()
   const faultId = `${fieldId}-fault`
   const [email, setEmail] = useState('')
@@ -43,9 +51,15 @@ export default function UnsubscribeForm({ onDone }) {
     try {
       await unsubscribeAddress(trimmed)
       onDone()
-    } catch (error) {
+    } catch (cause) {
+      // The line under the field is for the one thing this form judges, and
+      // that is the address. A request that did not settle is about the address
+      // being sent rather than the address being wrong, and a sentence about a
+      // dropped connection sitting where "Enter a valid email address." sits,
+      // with the field marked invalid beside it, sends the reader off to
+      // correct something that is already right.
       setStatus('idle')
-      setFault(subscriptionErrorMessage(error))
+      toast(faultMessage(cause, NOT_TAKEN_OFF), 'error')
     }
   }
 

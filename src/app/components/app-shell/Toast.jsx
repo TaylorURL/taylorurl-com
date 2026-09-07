@@ -7,6 +7,13 @@ import { ToastContext } from '@hooks/chrome/useToast'
 
 const DEFAULT_TOAST_DURATION = 4000
 
+// A failure is a sentence rather than a confirmation — what went wrong and
+// what to do about it — and it arrives while the reader is looking at the
+// control they just used rather than at this corner. Four seconds is enough to
+// register "Saved" and not enough to read, decide and act, so a notice that
+// asks something of the reader is given the time to be read twice.
+const FAULT_TOAST_DURATION = 8000
+
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
   const nextIdRef = useRef(0)
@@ -22,12 +29,13 @@ export function ToastProvider({ children }) {
   }, [])
 
   const addToast = useCallback(
-    (message, type = 'success', duration = DEFAULT_TOAST_DURATION) => {
+    (message, type = 'success', duration) => {
       const id = (nextIdRef.current += 1)
+      const held = duration ?? (type === 'error' ? FAULT_TOAST_DURATION : DEFAULT_TOAST_DURATION)
       setToasts(prev => [...prev, { id, message, type }])
       timersRef.current.set(
         id,
-        setTimeout(() => removeToast(id), duration)
+        setTimeout(() => removeToast(id), held)
       )
     },
     [removeToast]
@@ -44,13 +52,20 @@ export function ToastProvider({ children }) {
   return (
     <ToastContext.Provider value={addToast}>
       {children}
-      {/* The bottom-right corner belongs to the assistant's launcher, and on a
-          phone a full-width notice runs straight across it. So a handheld
-          stacks the notices one rail up, clear of the launcher and on the
-          page's own gutter; a pointer-sized screen has the middle of the
-          bottom edge to itself. */}
+      {/* The notices stand in the bottom-right corner, which is where the eye
+          goes for something the page is telling you rather than asking of you,
+          and which is out of the way of the form the reader is still working
+          in — a notice across the middle of the bottom edge sits over the
+          submit button on a short page.
+
+          The corner is shared with the assistant's launcher, so the rail
+          starts one launcher-height up on every screen rather than only on a
+          phone: the launcher is 3.5rem tall on a 1.5rem offset, and 6rem
+          clears it with room to spare. A handheld keeps the page's own gutter
+          on both sides, because a 22rem card on a 20rem screen is a card with
+          its words broken in half. */}
       <div
-        className="fixed bottom-24 left-6 right-6 z-[var(--z-toast)] flex flex-col items-center gap-2 sm:bottom-6 sm:left-1/2 sm:right-auto sm:-translate-x-1/2"
+        className="fixed bottom-24 left-6 right-6 z-[var(--z-toast)] flex flex-col items-stretch gap-2 sm:left-auto sm:right-6 sm:w-[22rem]"
         role="region"
         aria-label="Notifications"
         aria-live="polite"
@@ -62,24 +77,32 @@ export function ToastProvider({ children }) {
               <m.div
                 key={toast.id}
                 role={isError ? 'alert' : 'status'}
+                // It comes up out of the corner it lives in and goes back down
+                // the same way. Leaving upward reads as the notice escaping
+                // past the reader rather than being finished with.
                 initial={{ opacity: 0, transform: 'translateY(18px)' }}
                 animate={{ opacity: 1, transform: 'translateY(0px)' }}
-                exit={{ opacity: 0, transform: 'translateY(-12px)' }}
+                exit={{ opacity: 0, transform: 'translateY(12px)' }}
                 transition={{ duration: 0.2, ease: EASE }}
                 {...GROUNDS.dark.attrs}
-                className={`flex items-center gap-3 rounded-[var(--r-card)] border bg-bg px-5 py-3 text-ink shadow-[var(--lift)] ${
+                className={`flex items-start gap-3 rounded-[var(--r-card)] border bg-bg px-5 py-3.5 text-ink shadow-[var(--lift)] ${
                   isError ? 'border-[color:var(--danger-edge)]' : 'border-hair-strong'
                 }`}
               >
                 {isError ? (
                   <AlertCircle
-                    className="h-4 w-4 flex-shrink-0 text-[color:var(--danger)]"
+                    className="mt-px h-4 w-4 flex-shrink-0 text-[color:var(--danger)]"
                     strokeWidth={2}
                   />
                 ) : (
-                  <Check className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={2} />
+                  <Check className="mt-px h-4 w-4 flex-shrink-0 text-accent" strokeWidth={2} />
                 )}
-                <span className="text-[14px] font-medium tracking-tight">{toast.message}</span>
+                {/* A failure is a sentence and wraps to two or three lines, so
+                    the row is aligned to its top and the text takes the width
+                    left over rather than pushing the dismiss out of the card. */}
+                <span className="min-w-0 flex-1 text-[14px] font-medium leading-snug tracking-tight">
+                  {toast.message}
+                </span>
                 <button
                   className="-mr-1 ml-1 flex h-8 w-8 shrink-0 cursor-pointer touch-manipulation items-center justify-center rounded-[var(--r-tiny)] text-ink-faint transition-colors duration-150 ease-out-soft hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                   type="button"

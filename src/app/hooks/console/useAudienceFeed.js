@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 import { answerFor, NOTHING_HELD } from './feedState'
 
 const AUDIENCE_PATH = '/api/audience-admin'
+
+/** What a reader is told when the read behind the table does not land. */
+const NO_READ = 'The mailing list could not be read. Try again in a moment.'
+
+/** And when one of the three changes does not take. */
+const NO_CHANGE = 'That change could not be saved. Try it again.'
 
 /**
  * The mailing list, and the three changes that can be made to it.
@@ -19,6 +27,14 @@ const AUDIENCE_PATH = '/api/audience-admin'
  * `acting` is the key of the row or the form a change is in flight for, so one
  * control shows its own progress without the table going quiet.
  *
+ * The two failures go to different places. A read that does not land leaves
+ * nothing to draw, so it is held in `error` and stands where the rows would
+ * have been until a read gets through; a notice that faded after eight seconds
+ * would leave an empty table explaining itself to nobody. A change that does
+ * not take leaves every row on screen exactly as it was, so it is a notice
+ * instead, beside the control that was pressed. `error` belongs to the read
+ * alone for that reason.
+ *
  * @param {{token: string|null, enabled: boolean,
  *   filters: {status: string, segment: string, search: string, page: number}}} options
  * @returns {{data: object|null, error: string|null, loading: boolean,
@@ -29,6 +45,7 @@ export function useAudienceFeed({ token, enabled, filters }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [acting, setActing] = useState(null)
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -58,16 +75,13 @@ export function useAudienceFeed({ token, enabled, filters }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setFailed({
-          key: query,
-          value: payload.error || `The audience endpoint answered ${response.status}.`,
-        })
+        setFailed({ key: query, value: faultFromResponse(response, payload, NO_READ) })
         return
       }
       setHeld({ key: query, value: payload })
       setFailed(NOTHING_HELD)
-    } catch {
-      if (alive.current) setFailed({ key: query, value: 'The audience endpoint did not answer.' })
+    } catch (cause) {
+      if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_READ) })
     }
   }, [token, enabled, query])
 
@@ -79,7 +93,6 @@ export function useAudienceFeed({ token, enabled, filters }) {
     async (body, key) => {
       if (!token) return null
       setActing(key)
-      setFailed(NOTHING_HELD)
       try {
         const response = await fetch(AUDIENCE_PATH, {
           method: 'POST',
@@ -88,23 +101,19 @@ export function useAudienceFeed({ token, enabled, filters }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) {
-            setFailed({ key: query, value: payload.error || 'That change did not go through.' })
-          }
+          if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return null
         }
         await load()
         return payload
-      } catch {
-        if (alive.current) {
-          setFailed({ key: query, value: 'That change did not reach the server.' })
-        }
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_CHANGE), 'error')
         return null
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, query]
+    [token, load, toast]
   )
 
   // Filed under the filter that asked for it: a new status, segment, search or

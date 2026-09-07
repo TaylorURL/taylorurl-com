@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
 
 const PAYMENTS_PATH = '/api/payments-admin'
+
+/** What a reader is told when the one read behind the section does not land. */
+const NO_READ = 'The payments could not be read. Try again in a moment.'
 
 /**
  * Every client's billing, as Stripe holds it right now.
@@ -46,13 +50,13 @@ export function usePaymentsFeed({ token, enabled }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setError(payload.error || `The payments endpoint answered ${response.status}.`)
+        setError(faultFromResponse(response, payload, NO_READ))
         return
       }
       setData(payload)
       setError(null)
-    } catch {
-      if (alive.current) setError('The payments endpoint did not answer.')
+    } catch (cause) {
+      if (alive.current) setError(faultMessage(cause, NO_READ))
     } finally {
       if (alive.current) setReading(false)
     }

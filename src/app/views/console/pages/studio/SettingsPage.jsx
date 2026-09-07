@@ -6,6 +6,7 @@ import { useSession } from '@hooks/session/useSession'
 import { useMfa } from '@hooks/session/useMfa'
 import { useToast } from '@hooks/chrome/useToast'
 import ThemePicker from '@components/navigation/ThemePicker'
+import { faultFromResponse, faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'
 import {
   Area,
@@ -211,7 +212,14 @@ export default function SettingsPage() {
     }
     setBusy(true)
     const { error } = await supabase.auth.updateUser({ data: { full_name: trimmed } })
-    if (error) toast(error.message, 'error')
+    // The rules above are this page's own and are already written for a reader.
+    // What comes back from the account service is not: it answers a short
+    // password by counting characters and a taken address by calling it
+    // registered, both addressed to whoever is reading a log. So the refusal is
+    // read before it is shown, and the fallback names the change that did not
+    // happen, because four panels on this page all fail with a toast and the
+    // sentence has to say which of them it came from.
+    if (error) toast(faultMessage(error, 'Your name was not saved. Try again shortly.'), 'error')
     else {
       // The profile row is what the console's own reads join against, so the
       // two carry the same name rather than one of them carrying the old one.
@@ -233,7 +241,8 @@ export default function SettingsPage() {
     }
     setBusy(true)
     const { error } = await supabase.auth.updateUser({ email: address })
-    if (error) toast(error.message, 'error')
+    if (error)
+      toast(faultMessage(error, 'The email address was not changed. Try again shortly.'), 'error')
     else toast(`A confirmation link is on its way to ${address}.`)
     setBusy(false)
   }, [email, nextEmail, toast])
@@ -249,7 +258,8 @@ export default function SettingsPage() {
     }
     setBusy(true)
     const { error } = await supabase.auth.updateUser({ password })
-    if (error) toast(error.message, 'error')
+    if (error)
+      toast(faultMessage(error, 'Your password was not changed. Try again shortly.'), 'error')
     else {
       setPassword('')
       setConfirmPassword('')
@@ -288,7 +298,10 @@ export default function SettingsPage() {
       })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
-        toast(payload.error || 'The account was not deleted. Try again shortly.', 'error')
+        toast(
+          faultFromResponse(response, payload, 'The account was not deleted. Try again shortly.'),
+          'error'
+        )
         setBusy(false)
         return
       }

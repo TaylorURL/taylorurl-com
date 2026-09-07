@@ -1,9 +1,10 @@
 import { useId, useState } from 'react'
 import { AlertCircle, Check } from 'lucide-react'
-import { submitEmailSignup, signupErrorMessage } from '@data/newsletter/collectEmail'
+import { submitEmailSignup } from '@data/newsletter/collectEmail'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { GROUNDS } from '@constants/grounds'
 import { isValidEmail } from '@utils/validation'
+import { faultMessage } from '@utils/faults'
 
 const EYEBROW = 'The Newsletter'
 
@@ -75,12 +76,16 @@ export default function NewsletterSignup({ source, compact = false }) {
     } catch (error) {
       setStatus('idle')
       // An address that unsubscribed, bounced or reported a message is held off
-      // every list, and a signup form is not the way back on. Saying so without
-      // naming the way through leaves the reader at a wall.
+      // every list, and a signup form is not the way back on. The refusal says
+      // that with a status and no words of its own, so both sentences are
+      // written here: what is true of the address, and the one way through.
+      // Saying the first without the second leaves the reader at a wall.
+      if (error?.status === OPTED_OUT) {
+        setFault(`That address is being held off the list. Email ${SUPPORT_EMAIL} to come back on.`)
+        return
+      }
       setFault(
-        error?.status === OPTED_OUT
-          ? `${signupErrorMessage(error)} Email ${SUPPORT_EMAIL} to come back on.`
-          : signupErrorMessage(error)
+        faultMessage(error, 'That address could not be added to the list. Try again shortly.')
       )
     }
   }

@@ -5,6 +5,7 @@ import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, SUPPORT_EMAIL } from '@constants/navigation'
 import { assistantUp, dropThread, sendTurn, threadHeld } from '@app/data/liveChat'
 import { EASE } from '@constants/animations'
+import { faultMessage } from '@utils/faults'
 
 /**
  * The assistant, as a panel in the corner of every page and as a sheet on a
@@ -531,7 +532,14 @@ export default function LiveChat({ startOpen = false }) {
         // of a failed send a visitor should not have to pay for.
         setTurns(held => held.filter(turn => turn.id !== mine))
         setDraft(asked)
-        setFault(cause.message)
+        // The sentence stands in the thread rather than in the corner. A phone
+        // holds the whole conversation over the page on a layer above the one
+        // the corner is drawn on, so a send that failed there would fail
+        // silently; here it sits where the turn would have gone, beside the
+        // words waiting to go again. Whatever it says is written for the
+        // visitor first: a stranger who came here to ask a question is the last
+        // person on the site who should be handed a connection's own words.
+        setFault(faultMessage(cause, 'That message did not reach the assistant. Send it again.'))
       } finally {
         setSending(false)
       }

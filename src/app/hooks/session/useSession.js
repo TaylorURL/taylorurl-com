@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { supabase } from '@data/supabase/supabaseClient'
+import { faultMessage } from '@utils/faults'
 import { NO_ANSWER, sessionGate } from '@hooks/session/sessionGate'
 import { AUTH_EVENT } from '@hooks/session/useSessionGlimpse'
 import {
@@ -90,8 +91,9 @@ export function useSessionState() {
     setError(null)
     const { error: cause } = await supabase.auth.signInWithPassword({ email, password })
     // Supabase answers a wrong address and a wrong password identically, which
-    // is the point; the message is passed through as it comes.
-    if (cause) setError(cause.message)
+    // is the point, and the sentence written for that cause keeps the property:
+    // it says the pair does not match, never which half of it.
+    if (cause) setError(faultMessage(cause, 'That sign-in could not be completed. Try again.'))
     setBusy(false)
     return !cause
   }, [])
@@ -117,7 +119,7 @@ export function useSessionState() {
       // account from its first moment rather than collected again afterwards.
       options: { data: { full_name: fullName } },
     })
-    if (cause) setError(cause.message)
+    if (cause) setError(faultMessage(cause, 'That account could not be created. Try again.'))
     setBusy(false)
     return { ok: !cause, confirming: !cause && !data?.session }
   }, [])
@@ -132,7 +134,8 @@ export function useSessionState() {
   /** End every session the account holds, on every device, including this one. */
   const signOutEverywhere = useCallback(async () => {
     const { error: cause } = await supabase.auth.signOut({ scope: 'global' })
-    if (cause) return cause.message
+    if (cause)
+      return faultMessage(cause, 'The other sessions could not be ended. Try again in a moment.')
     forgetRecovery()
     setSession(null)
     setMfa({ pending: false, factorId: null, forUser: null })
@@ -146,7 +149,7 @@ export function useSessionState() {
       setError(null)
       const cause = await verifyCode(mfa.factorId, code)
       if (cause) {
-        setError(cause)
+        setError(faultMessage(cause, 'That code was not accepted. Try the current six digits.'))
         setBusy(false)
         return false
       }

@@ -157,7 +157,7 @@ function ClaimControl({ project, busy, onClaim, inline = false }) {
  * It is filled in once a build, and the list it adds to is the thing read on
  * every visit.
  */
-function BuildChecklist({ tasks, busy, loading, error, onSave, onRemove, area }) {
+function BuildChecklist({ tasks, busy, loading, onSave, onRemove, area }) {
   const [draft, setDraft] = useState({ label: '', detail: '', stage: STAGES[0].id, kind: 'tick' })
   const [asking, setAsking] = useState(false)
 
@@ -302,14 +302,6 @@ function BuildChecklist({ tasks, busy, loading, error, onSave, onRemove, area })
               ))}
             </select>
           </label>
-          {/* The panel covers the page, and with it the notice at the top of
-              the page that every other refusal is read from, so a refusal is
-              said where the typing is. */}
-          {error ? (
-            <p className={`${MONO_LABEL} text-[color:var(--warn)]`} role="status">
-              {error}
-            </p>
-          ) : null}
           <button
             type="submit"
             className={`${BUTTON} justify-self-start`}
@@ -851,7 +843,6 @@ export default function BuildsPage() {
                 tasks={tasks}
                 busy={acting}
                 loading={updatesLoading}
-                error={error}
                 onSave={(task, key) =>
                   act({ action: 'task', project_id: build.project_id, ...task }, key)
                 }
@@ -938,14 +929,6 @@ export default function BuildsPage() {
                   ))}
                 </select>
               </label>
-              {/* The panel covers the page, and with it the notice at the top
-                  of the page that every other refusal is read from, so a
-                  refusal is said where the typing is. */}
-              {error ? (
-                <p className={`${MONO_LABEL} text-[color:var(--warn)]`} role="status">
-                  {error}
-                </p>
-              ) : null}
               <button
                 type="submit"
                 disabled={acting === 'update'}

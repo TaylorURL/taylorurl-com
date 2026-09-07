@@ -22,6 +22,8 @@
  * never left the browser is the one that cannot have been damaged on the way.
  */
 
+import { faultFromResponse, faultMessage } from '../../utils/faults.js'
+
 const ENDPOINT = '/api/onboarding-assist'
 
 /**
@@ -50,10 +52,10 @@ export const ASSIST_MAX_CHARS = 6000
  *
  * Every answer from `api/onboarding-assist.js` carries the sentence it wants
  * shown, so these stand behind that rather than beside it: they are what a
- * person reads when the answer never arrived, or arrived from a deployment
- * older than the sentence. The endpoint holds the same words and cannot be
- * imported from here, being server code, so the two are kept level by hand and
- * each names the other.
+ * person reads when the answer never arrived, arrived from a deployment older
+ * than the sentence, or arrived in words nobody wrote for a reader. The
+ * endpoint holds the same words and cannot be imported from here, being server
+ * code, so the two are kept level by hand and each names the other.
  */
 const OFFLINE = 'The writing help is not answering right now. Everything else here still works.'
 
@@ -209,12 +211,25 @@ export async function assist({ token, action, field, trade, text }) {
     // gone: a ceiling, an expired session and an account with no build are all
     // reasons a working assistant says no, and hiding the buttons over any of
     // them would tell somebody the machine is down when it is not.
+    //
+    // What the refusal says goes through the one door on every branch. The
+    // endpoint writes for readers, but the things in front of it do not, and a
+    // client answering a brief about their own business is the last person who
+    // should be handed a gateway's words for it.
+    //
+    // The first two branches read the body without the status behind it. Each
+    // already has a sentence about this tool in particular, and those say what
+    // the general ones cannot: that the rest of the brief is unaffected, and
+    // that the wait is the machine being busy rather than the person being
+    // quick. The last branch does read the status, because a session that ran
+    // out and an account with nothing to write about are both described better
+    // by what the refusal was than by the help not answering.
     if (response.status >= 500) {
       remember(false)
-      return answer(held, { offline: true, note: payload.error || OFFLINE })
+      return answer(held, { offline: true, note: faultMessage(payload, OFFLINE) })
     }
-    if (response.status === 429) return answer(held, { note: payload.error || BUSY })
-    return answer(held, { note: payload.error || OFFLINE })
+    if (response.status === 429) return answer(held, { note: faultMessage(payload, BUSY) })
+    return answer(held, { note: faultFromResponse(response, payload, OFFLINE) })
   }
 
   if (payload.offline) {

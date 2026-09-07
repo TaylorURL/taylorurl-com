@@ -409,8 +409,17 @@
   --z-nav: 50;
   --z-scrim: 60;
   --z-drawer: 61;
-  --z-toast: 100;
   --z-modal: 200;
+  /* Over the modal layer, which is the whole point of it. A notice reports on
+     something the reader just did, and the writes that fail are raised from
+     inside the things at --z-modal: the console's side panels, its shortcut
+     sheet, the search. Under them, the one card that says why a save did not
+     happen is drawn behind a full-screen scrim and the reader is told nothing
+     at all — the failure is silent in the only case where they are certainly
+     watching for an answer.
+     Above it sits nothing but the skip link, which has to stay reachable by
+     the first key of a fresh page whatever else is on screen. */
+  --z-toast: 250;
   --z-skip: 300;
 
   --control-h: 2.75rem;

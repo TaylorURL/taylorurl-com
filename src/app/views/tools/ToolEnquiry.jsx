@@ -2,13 +2,20 @@ import { useState } from 'react'
 import { ArrowUpRight, Check } from 'lucide-react'
 import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultMessage } from '@utils/faults'
 import { hasMinLength, isValidEmail } from '@utils/validation'
-import { submitEnquiry, enquiryErrorMessage } from '@data/leads/sendEnquiry'
+import { submitEnquiry } from '@data/leads/sendEnquiry'
 import { GROUND } from './lib/ground'
 
 const LABEL = 'section-label-sm mb-2 block text-paper-faint'
 const FAULT = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
 const EMPTY = { name: '', email: '', contactMethod: 'either', phone: '', message: '' }
+
+// What a message that did not leave says. It names the message rather than what
+// carried it, and it says the thing worth knowing: the words are still in the
+// box, so trying again costs nothing but the press.
+const NOT_SENT = 'That message did not send. Try it again in a moment.'
 
 // What a tool's form asks, in the words the notice reports back.
 const ASKED = QUESTIONS.tools
@@ -30,9 +37,9 @@ const ASKED = QUESTIONS.tools
  * @param {string} [props.placeholder] - The prompt in the message field.
  */
 export default function ToolEnquiry({ summary, projectType, idPrefix, placeholder }) {
+  const toast = useToast()
   const [fields, setFields] = useState(EMPTY)
   const [errors, setErrors] = useState({})
-  const [fault, setFault] = useState(null)
   const [status, setStatus] = useState('idle')
 
   const change = event => {
@@ -74,7 +81,6 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
     }
 
     setErrors({})
-    setFault(null)
     setStatus('submitting')
     try {
       await submitEnquiry({
@@ -92,9 +98,13 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
       })
       setStatus('sent')
       setFields(EMPTY)
-    } catch (error) {
+    } catch (cause) {
+      // A send that failed is a notice rather than a line in the form. The
+      // three faults this form raises itself are each about one field and each
+      // sit under it; a line in the same tone at the foot of the form, about
+      // none of them, reads as a fourth field having gone wrong.
       setStatus('idle')
-      setFault(enquiryErrorMessage(error))
+      toast(faultMessage(cause, NOT_SENT), 'error')
     }
   }
 
@@ -230,11 +240,6 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
             Free, and usually answered within the hour
           </p>
         </div>
-        {fault && (
-          <p className={FAULT} role="alert">
-            {fault}
-          </p>
-        )}
       </div>
     </form>
   )

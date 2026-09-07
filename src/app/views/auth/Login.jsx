@@ -1,14 +1,13 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import ConsoleShell from '@components/account/ConsoleShell'
 import Seo from '@components/Seo'
 import Waiting from '@components/app-shell/Waiting'
 import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
+import { useToast } from '@hooks/chrome/useToast'
 import { useSession } from '@hooks/session/useSession'
 import AuthShell, { Field } from './AuthShell'
 import { nextScreen } from './lib/screen'
-
-const STATUS_ID = 'login-status'
 
 export default function Login() {
   const {
@@ -27,12 +26,27 @@ export default function Login() {
   const [password, setPassword] = useState('')
   const [code, setCode] = useState('')
   const [recovery, setRecovery] = useState(false)
+  const toast = useToast()
   const location = useLocation()
   const [query] = useSearchParams()
   // Whether a form has been on screen yet, which is what decides between
   // holding the one already there and drawing a placeholder in place of one
   // that never was.
   const drawn = useRef(false)
+
+  // A refused sign-in is not about one field. Supabase answers a wrong address
+  // and a wrong password with one message on purpose, and a code the
+  // authenticator app disagrees with is about that app rather than about the
+  // box the six digits were typed into - so none of the three belong under an
+  // input. They are read off the session as they arrive rather than at each of
+  // the three calls that can raise one, because a call site added later is a
+  // call site that forgets. Clearing it is what stops the same refusal being
+  // announced a second time when the screen changes underneath it.
+  useEffect(() => {
+    if (!error) return
+    toast(error, 'error')
+    clearError()
+  }, [error, toast, clearError])
 
   // Where the visitor was headed before being asked to sign in, so arriving at
   // a page and being sent back to it is one step rather than a fresh search.
@@ -112,8 +126,6 @@ export default function Login() {
           }
           formName="two-factor"
           autoComplete="off"
-          statusId={STATUS_ID}
-          error={error}
           busy={working}
           submitLabel="Verify"
           busyLabel="Checking"
@@ -134,8 +146,6 @@ export default function Login() {
             onChange={setCode}
             autoComplete="one-time-code"
             autoFocus
-            invalid={Boolean(error)}
-            describedBy={STATUS_ID}
           />
           <p className="auth-aside">
             <button
@@ -171,8 +181,6 @@ export default function Login() {
         title="Log In"
         blurb="Sign in to see the traffic figures for your site."
         formName="sign-in"
-        statusId={STATUS_ID}
-        error={error}
         busy={working}
         submitLabel="Log In"
         busyLabel="Signing In"
@@ -187,8 +195,6 @@ export default function Login() {
           onChange={setEmail}
           autoComplete="username"
           autoFocus
-          invalid={Boolean(error)}
-          describedBy={STATUS_ID}
         />
         <div>
           <Field
@@ -198,8 +204,6 @@ export default function Login() {
             value={password}
             onChange={setPassword}
             autoComplete="current-password"
-            invalid={Boolean(error)}
-            describedBy={STATUS_ID}
           />
           <p className="auth-aside">
             <Link to="/forgot-password" className="auth-alt-link">

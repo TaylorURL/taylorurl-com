@@ -108,12 +108,28 @@ const NOTE_MAX = 2000
 /** How far ahead a callback may be set, which is a year and a refusal past it. */
 const CALLBACK_MAX_DAYS = 365
 
-/** What a driver said, turned into an answer the console can print. */
-function refusal(error) {
+/** What is said when the call list itself will not come back. */
+const LIST_UNREAD = 'The call list could not be read. Try again in a moment.'
+
+/** What is said when a call will not go on the record. */
+const NOT_RECORDED = 'That call could not be saved. Try again in a moment.'
+
+/**
+ * What a driver said, turned into an answer the console can print.
+ *
+ * A missing table is the one fault worth naming outright, because the repair
+ * is a migration and nobody is going to guess that from a general sentence.
+ * Everything else Postgres says names columns and constraints, so its words go
+ * to the log, where they are what we need to find the cause, and `said` is
+ * what comes back: whichever of reading the list and recording a call did not
+ * happen.
+ */
+function refusal(error, said) {
   if (tableMissing(error)) {
     return { status: 503, body: { error: 'The call list tables are not in this database yet.' } }
   }
-  return { status: 500, body: { error: error.message || 'The call list could not be read.' } }
+  console.error('calls-admin: %s', error?.message || error)
+  return { status: 500, body: { error: said } }
 }
 
 /** A page number, one-based, or the first page. */
@@ -468,7 +484,7 @@ async function record(db, body, account) {
     .select('id, name, phone, site_kind, stage, business_status')
     .eq('id', prospectId)
     .maybeSingle()
-  if (found.error) return refusal(found.error)
+  if (found.error) return refusal(found.error, NOT_RECORDED)
   if (!found.data) return { status: 404, body: { error: 'That business is no longer on file.' } }
   if (!isCallable(found.data)) {
     return { status: 409, body: { error: 'That business is not on the call list.' } }
@@ -485,7 +501,7 @@ async function record(db, body, account) {
     })
     .select('id')
     .maybeSingle()
-  if (written.error) return refusal(written.error)
+  if (written.error) return refusal(written.error, NOT_RECORDED)
 
   return { status: 200, body: { ok: true, call: written.data?.id ?? null } }
 }
@@ -518,7 +534,7 @@ export default async function handler(request, response) {
           ? await list(wired.db, request.query ?? {})
           : await record(wired.db, request.body ?? {}, account)
     } catch (cause) {
-      answer = refusal(cause)
+      answer = refusal(cause, request.method === 'POST' ? NOT_RECORDED : LIST_UNREAD)
     }
     return response.status(answer.status).json(answer.body)
   } catch (cause) {

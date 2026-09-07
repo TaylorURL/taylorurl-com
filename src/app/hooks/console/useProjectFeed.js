@@ -1,6 +1,24 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 
 const PROJECTS_PATH = '/api/projects'
+
+/** What a client is told when the read behind their whole tracker fails. */
+const NO_READ = 'Your project could not be read. Try again in a moment.'
+
+/**
+ * And when one of the things they can do to it does not happen. Each names the
+ * one it belongs to, because a client looking at a checklist, a written answer
+ * and a picker has four things on screen that could have been the one that
+ * failed, and the general sentence leaves them to guess which.
+ */
+const NO_TICK = 'That item could not be ticked off. Try it again.'
+const NO_ANSWER = 'That answer could not be saved. Try it again.'
+const NO_REMOVE = 'That file could not be removed. Try it again.'
+const NO_SEND = 'That file could not be sent. Try attaching it again.'
+const NO_UPLOAD = 'That file could not be uploaded. Try attaching it again.'
+const NO_ATTACH = 'That file could not be attached. Try it again.'
 
 /**
  * The largest file a client may hand over.
@@ -27,6 +45,13 @@ const FILE_LIMIT_BYTES = 25 * 1024 * 1024
  * and what is written underneath it, and a local edit would have to guess at
  * all three.
  *
+ * A read that does not land is held in `error` and takes the place of the
+ * tracker, because there is nothing else to draw and a notice that faded after
+ * eight seconds would leave a client staring at an empty panel. A change that
+ * does not take leaves the tracker exactly as it was, so it is a notice in the
+ * bottom-right corner of the screen rather than a banner over a tracker that
+ * is still right.
+ *
  * `acting` is the id of the item a change is in flight for, so one checkbox
  * can show its own progress without the panel going quiet.
  *
@@ -44,6 +69,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
   const [phone, setPhone] = useState(null)
   const [error, setError] = useState(null)
   const [acting, setActing] = useState(null)
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -65,14 +91,14 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
       if (!response.ok) {
         // A signed-in account with no project is not an error and never
         // reaches here; this is the endpoint itself failing to answer.
-        setError(payload.error || `Your project could not be read (${response.status}).`)
+        setError(faultFromResponse(response, payload, NO_READ))
         return
       }
       setProjects(Array.isArray(payload.projects) ? payload.projects : [])
       setPhone(payload.phone || null)
       setError(null)
-    } catch {
-      if (alive.current) setError('Your project could not be read.')
+    } catch (cause) {
+      if (alive.current) setError(faultMessage(cause, NO_READ))
     }
   }, [token, enabled])
 
@@ -86,8 +112,17 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
     return () => clearInterval(timer)
   }, [load, token, enabled, intervalMs])
 
+  /**
+   * One change, and what the client is told when it does not happen.
+   *
+   * `fallback` is the sentence for a failure the far end had no words of its
+   * own for, and passing none says nothing at all. That silence is for the
+   * changes nobody asked for: marking a project seen is the page recording
+   * that it drew, and a notice about it would be the tracker interrupting
+   * somebody to report a thing they never started.
+   */
   const act = useCallback(
-    async (body, key) => {
+    async (body, key, fallback) => {
       if (!token) return false
       setActing(key)
       try {
@@ -98,33 +133,36 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) setError(payload.error || 'That did not save.')
+          if (alive.current && fallback)
+            toast(faultFromResponse(response, payload, fallback), 'error')
           return false
         }
         await load()
-        if (alive.current) setError(null)
         return true
-      } catch {
-        if (alive.current) setError('That did not save.')
+      } catch (cause) {
+        if (alive.current && fallback) toast(faultMessage(cause, fallback), 'error')
         return false
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, load]
+    [token, load, toast]
   )
 
   const tick = useCallback(
-    (taskId, done) => act({ action: 'tick', task_id: taskId, done }, taskId),
+    (taskId, done) => act({ action: 'tick', task_id: taskId, done }, taskId, NO_TICK),
     [act]
   )
 
   const answer = useCallback(
-    (taskId, text) => act({ action: 'answer', task_id: taskId, answer: text }, taskId),
+    (taskId, text) => act({ action: 'answer', task_id: taskId, answer: text }, taskId, NO_ANSWER),
     [act]
   )
 
-  const remove = useCallback(fileId => act({ action: 'detach', file_id: fileId }, fileId), [act])
+  const remove = useCallback(
+    fileId => act({ action: 'detach', file_id: fileId }, fileId, NO_REMOVE),
+    [act]
+  )
 
   /**
    * Hand a file over, in the three steps a private bucket needs.
@@ -140,7 +178,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
     async (taskId, file) => {
       if (!token || !file) return false
       if (file.size > FILE_LIMIT_BYTES) {
-        if (alive.current) setError('That file is too big to send. 25MB is the limit.')
+        if (alive.current) toast('That file is too big to send. Choose one under 25MB.', 'error')
         return false
       }
       setActing(taskId)
@@ -152,7 +190,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
         })
         const place = await signed.json().catch(() => ({}))
         if (!signed.ok) {
-          if (alive.current) setError(place.error || 'That file could not be sent.')
+          if (alive.current) toast(faultFromResponse(signed, place, NO_SEND), 'error')
           return false
         }
 
@@ -161,8 +199,12 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
           headers: { 'Content-Type': file.type },
           body: file,
         })
+        // The bucket answers a refused upload with its own XML rather than
+        // anything a reader could use, so the status is the whole of what is
+        // known here - and a status on its own is a case the door already
+        // answers, which is why nothing is read off this response.
         if (!put.ok) {
-          if (alive.current) setError('That file did not upload.')
+          if (alive.current) toast(faultFromResponse(put, null, NO_UPLOAD), 'error')
           return false
         }
 
@@ -178,23 +220,24 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
         })
         const kept = await recorded.json().catch(() => ({}))
         if (!recorded.ok) {
-          if (alive.current) setError(kept.error || 'That file did not attach.')
+          if (alive.current) toast(faultFromResponse(recorded, kept, NO_ATTACH), 'error')
           return false
         }
 
         await load()
-        if (alive.current) setError(null)
         return true
-      } catch {
-        if (alive.current) setError('That file did not reach the server.')
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_ATTACH), 'error')
         return false
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, load]
+    [token, load, toast]
   )
 
+  // No sentence, because nobody asked for this one: it is the tracker
+  // recording that the client has now seen what is on it.
   const markSeen = useCallback(
     projectId => act({ action: 'seen', project_id: projectId }, projectId),
     [act]
