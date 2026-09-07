@@ -6,7 +6,7 @@ import { useSession } from '@hooks/session/useSession'
 import { useOutreachFeed } from '@hooks/console/useOutreachFeed'
 import {
   auditScore,
-  isSocialOnly,
+  hasNoSiteOfItsOwn,
   opportunityBand,
   OPPORTUNITY_BANDS,
 } from '@utils/outreachOpportunity'
@@ -216,10 +216,27 @@ const OPPORTUNITY = {
   },
 }
 
-/** A business with no site of its own is the strongest lead there is, and unscorable. */
+/**
+ * A business with no site of its own is the strongest lead there is, and
+ * unscorable, keyed by which shape of it the row turned out to be.
+ *
+ * The row is in hand wherever this is read, so the sentence can say the true
+ * thing rather than the one that covers both: a profile on somebody else's
+ * platform is something a reader can be pointed at, and nothing at all is not,
+ * and a caption that said profile to a business with none would be wrong in
+ * front of the person deciding whether to write to it. A row carrying no kind
+ * reached here through the platform host it listed, which is the first of the
+ * two.
+ */
 const NO_SITE = {
-  reading: 'no site',
-  caption: "no site of its own, only a profile on someone else's platform",
+  social: {
+    reading: 'no site',
+    caption: "no site of its own, only a profile on someone else's platform",
+  },
+  none: {
+    reading: 'no site',
+    caption: 'no site of its own and no page on a platform either',
+  },
 }
 
 /**
@@ -235,7 +252,7 @@ const NO_SITE = {
 const SEGMENT = {
   'no-site': {
     label: 'No Site',
-    caption: "no site of its own, only a profile on someone else's platform",
+    caption: 'no site of its own to send a searcher to',
   },
   'slow-site': {
     label: 'Slow Site',
@@ -251,7 +268,7 @@ const SEGMENT = {
   },
   unmeasured: {
     label: 'Unmeasured',
-    caption: 'nothing has been measured yet, or there was no site to measure',
+    caption: 'nothing has been measured for this business yet',
   },
 }
 
@@ -333,7 +350,9 @@ const SCALE =
  */
 function opportunityOf(prospect) {
   const band = OPPORTUNITY[opportunityBand(prospect)]
-  if (isSocialOnly(prospect)) return { ...band, ...NO_SITE }
+  if (hasNoSiteOfItsOwn(prospect)) {
+    return { ...band, ...(NO_SITE[prospect.site_kind] ?? NO_SITE.social) }
+  }
   const score = auditScore(prospect)
   return { ...band, reading: score === null ? null : `${score} / 100` }
 }

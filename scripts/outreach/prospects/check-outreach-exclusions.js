@@ -7,13 +7,16 @@
  * row rule the enricher and its sweep share, against the site and the address
  * both. A business too large to buy is caught off its name, off its host, and
  * off the signs its own pages carry, while the ordinary shops those signals
- * could be mistaken for are not. And an address is read for who it reaches,
- * so a person's name is taken first and the shop's open inbox where the site
- * prints no name, never a department's, and the queue shows none of what the
- * sender would refuse.
+ * could be mistaken for are not. And an address is read for who it reaches, so
+ * a person's name is taken first, the shop's open inbox where the site prints
+ * no name, and the desk it does print where it prints neither - off the contact
+ * and about pages the site links to itself, with the guessed paths filling in
+ * behind them, and at the domain the listing named wherever a redirect ends
+ * somewhere else - and the queue shows none of what the sender would refuse.
  *
- * Nothing here fetches a page or reaches the database. Every page is a string
- * and every row is a literal.
+ * Nothing here reaches the network or the database. Every page is a string and
+ * every row is a literal, and the one crawl exercised is handed the pages it
+ * asks for rather than fetching them.
  */
 
 import {
@@ -29,7 +32,7 @@ import {
 } from '../../../lib/outreach/prospects/exclusions.js'
 import { PORTFOLIO_PROJECTS } from '../../../src/app/data/portfolio.js'
 import { mailboxKind, shapeOf } from '../../../lib/outreach/prospects/address.js'
-import { contactIn } from '../../../api/outreach/enrich.js'
+import { contactFor, contactIn, linkedPages } from '../../../api/outreach/enrich.js'
 import { queueFor } from '../../../lib/outreach/sending/queue.js'
 import { HELD_FIXTURE, installFixtureHeldDomains } from '../held-domains-fixture.js'
 
@@ -244,8 +247,6 @@ check('a name that says the company is too large is caught', () => {
     'Channel Logistics LLC',
     'Acme Holdings',
     'Bayport Terminal',
-    'Texas Gulf Manufacturing',
-    'Coastal Industries',
   ]) {
     ok(oversizedReason(name, 'example.com')?.startsWith('too large:'), `${name} was not caught`)
   }
@@ -264,6 +265,13 @@ check('an ordinary shop is not read as too large', () => {
     ['Brooks Concrete Inc', 'brooksconcreteinc.com'],
     ['Texas Energy Electric', 'texasenergyelectric.com'],
     ['A&G Welding Specialty LLC', 'agweldingllc.com'],
+    // What a shop on the ship channel writes about its own work: the trade it
+    // is in, the word on the sign since its grandfather's day, and what it
+    // filed as with the state. None of the three counts anybody in the
+    // building, and each is read off the host as well as the name.
+    ['Texas Gulf Manufacturing', 'texasgulfmanufacturing.com'],
+    ['Coastal Industries', 'coastalindustries.com'],
+    ['Ellis Welding Corporation', 'elliswelding.com'],
   ]) {
     same(oversizedReason(name, host), null, `${name} was caught`)
   }
@@ -321,11 +329,60 @@ check('an enterprise content system is read off the markup', () => {
 })
 
 check('one hint settles nothing and two together do', () => {
-  same(corporateSignsIn(`${SHOP}<a href="/careers">Careers</a>`).length, 0, 'careers alone')
+  same(corporateSignsIn(`${SHOP}<a href="/team">Leadership Team</a>`).length, 0, 'one hint alone')
   const two = corporateSignsIn(
-    `${SHOP}<a href="/careers">Careers</a><a href="/locations">Our Locations</a>`
+    `${SHOP}<a href="/team">Leadership Team</a><a href="/locations">Our Locations</a>`
   )
   same(two.length, 2, 'two hints')
+})
+
+check('the words a shop writes about itself are not signs', () => {
+  const html = `${SHOP}<a href="/careers">Careers</a>
+<p>Our headquarters on Decker Drive has run three shifts since 1994.</p>
+<a href="/portal">Employee Portal</a>`
+  same(corporateSignsIn(html).length, 0, 'signs')
+})
+
+check('a timeclock labelled twice is one thing bought once', () => {
+  // The widget prints Employee Portal over the heading and Employee Login on
+  // the button. Read as two hints it reaches the number it takes on its own,
+  // and a twenty-person shop is skipped for size on one page element.
+  const html = `${SHOP}<h2>Employee Portal</h2><p>Staff use the Employee Login button below.</p>`
+  same(corporateSignsIn(html).length, 0, 'signs')
+})
+
+check('what a large employer prints and a shop does not is still read', () => {
+  // What the name list gave up when 'manufacturing', 'industries' and
+  // 'corporation' came out of it. A plant with three hundred people writes an
+  // equal opportunity line, says what the benefits come to, and lists more
+  // than one facility; none of the three settles anything alone.
+  const plant = `${SHOP}<h2>Employee Portal</h2>
+<p>We are an equal opportunity employer.</p>`
+  ok(corporateSignsIn(plant).length >= 2, 'a plant that prints both was read as a shop')
+  for (const alone of [
+    '<p>We are an equal opportunity employer.</p>',
+    '<a href="/benefits">Employee Benefits</a>',
+    '<a href="/plants">Our Facilities</a>',
+  ]) {
+    same(corporateSignsIn(`${SHOP}${alone}`).length, 0, alone)
+  }
+})
+
+check('the signs that settle it alone still do', () => {
+  for (const carried of [
+    '<a href="/investors">Investor Relations</a>',
+    '<p>NYSE: ACM</p>',
+    '<a href="/intranet">Intranet</a>',
+    '<a href="https://acme.taleo.net/careersection/">Careers</a>',
+  ]) {
+    ok(corporateSignsIn(`${SHOP}${carried}`).length, carried)
+  }
+})
+
+check('a page naming its subsidiaries beside a leadership team is read as one', () => {
+  const html = `${SHOP}<a href="/team">Leadership Team</a>
+<p>Acme and its subsidiaries operate across the Gulf Coast.</p>`
+  ok(corporateSignsIn(html).length >= 2, 'signs')
 })
 
 check("a shop's page carries no sign at all", () => {
@@ -442,6 +499,248 @@ check('the page only settles ties inside one kind', () => {
   const desk = contactIn(page('sales@shop.com'), 'shop.com', 2)?.score ?? 0
   const name = contactIn(page('jane@shop.com'), 'shop.com', 1)?.score ?? 0
   ok(name > desk, 'a desk on a better page beat a name on a worse one')
+})
+
+// -- which pages a home page names ------------------------------------------
+
+const links = (...hrefs) =>
+  `<html><body>${hrefs.map(href => `<a href="${href}">go</a>`).join(' ')}</body></html>`
+
+const HOME = 'https://shop.com/'
+
+check('a home page names its own contact and about pages', () => {
+  // The names no guessed list holds. A machine shop filing its contact page as
+  // /contact.html is the case the whole of this exists for.
+  const found = linkedPages(links('/contact.html', '/about-us', '/services'), HOME)
+  same(found.length, 2, 'pages followed')
+  same(found[0].url, 'https://shop.com/contact.html', 'the contact page was not first')
+  same(found[0].rank, 2, 'the contact page is worth a contact page')
+  same(found[1].url, 'https://shop.com/about-us', 'the about page')
+  same(found[1].rank, 1, 'the about page is worth a page anywhere else')
+})
+
+check('nothing that leaves the site is followed', () => {
+  // A mailto and a tel are not pages, and a supplier's contact page is the
+  // supplier's. Serving at www and linking to the bare name is one site.
+  same(linkedPages(links('mailto:sales@shop.com'), HOME).length, 0, 'a mailto')
+  same(linkedPages(links('tel:+12815550134'), HOME).length, 0, 'a phone number')
+  same(linkedPages(links('https://supplier.com/contact'), HOME).length, 0, "somebody else's")
+  same(linkedPages(links('https://www.shop.com/contact'), HOME).length, 1, 'its own www')
+})
+
+check('the careers and locations pages are left alone', () => {
+  // Neither prints an address, and a locations page is a page whose subject is
+  // the words that settle the corporate rule once a second hint joins them.
+  // Reading one would hand that hint to a shop with two yards.
+  same(linkedPages(links('/careers', '/locations', '/our-locations'), HOME).length, 0, 'followed')
+})
+
+check('a site naming more pages than the budget holds is cut to the budget', () => {
+  const found = linkedPages(
+    links('/contact', '/contact-us', '/get-in-touch', '/about', '/who-we-are'),
+    HOME
+  )
+  same(found.length, 3, 'pages followed')
+  ok(
+    found.every(entry => entry.rank === 2),
+    'an about page was read before a contact page the site also named'
+  )
+})
+
+// -- what a whole site gives up ---------------------------------------------
+
+/**
+ * A site as a map of path to HTML, answering the way a server does.
+ *
+ * `landed` is where a request is answered from when that is not where it was
+ * sent, which is how a redirect is written down without a redirect to follow:
+ * the www a site serves under, and the parked page or the profile a lapsed
+ * domain ends at. Anything the map does not hold is a 404, which is what a
+ * guessed path costs on a site that does not have it.
+ */
+const site = (pages, landed = null) => {
+  const asked = []
+  const get = async url => {
+    asked.push(url)
+    const at = new URL(url)
+    const html = pages[at.pathname]
+    if (html === undefined)
+      return { ok: false, url, headers: { get: () => '' }, text: async () => '' }
+    return {
+      ok: true,
+      url: landed ? new URL(at.pathname, landed).toString() : url,
+      headers: { get: () => 'text/html; charset=utf-8' },
+      text: async () => html,
+    }
+  }
+  return { asked, get }
+}
+
+const HOME_LINKING =
+  '<html><body><a href="/contact.html">Contact</a><a href="/about-us">About</a></body></html>'
+
+check('a machine shop that prints one desk gives it up', async () => {
+  // The whole of the defect this reads for. The site names its contact page
+  // under a name no list of guesses holds, prints sales@ on it and nothing
+  // anywhere else, and that is the address the business answers.
+  const { asked, get } = site({
+    '/': HOME_LINKING,
+    '/contact.html': page('sales@machineshop.example'),
+    '/about-us': '<html><body><p>Three bays since 1994.</p></body></html>',
+  })
+  const found = await contactFor(new URL('https://machineshop.example/'), get)
+  ok(found.answered, 'the site did not answer')
+  same(found.best?.email, 'sales@machineshop.example', 'the address taken')
+  same(found.best?.source, 'https://machineshop.example/contact.html', 'the page it was printed on')
+  same(asked.length, 3, 'pages read')
+})
+
+check('a site linking an about page and no contact page still has the guesses tried', async () => {
+  // The shape the follow list is filled in for. The navigation names one page
+  // this can read, the contact button is drawn by script, and the address is
+  // on the page nothing linked to. A follow list that read the linked pages
+  // instead of the guessed ones would stop at the about page and file the row
+  // as publishing nothing.
+  const { asked, get } = site({
+    '/': '<html><body><a href="/about">About Us</a><button onclick="go()">Contact</button></body></html>',
+    '/about': '<html><body><p>Two bays and a boom truck.</p></body></html>',
+    '/contact': page('info@shop.com'),
+  })
+  const found = await contactFor(new URL('https://shop.com/'), get)
+  same(found.best?.email, 'info@shop.com', 'the address taken')
+  ok(asked.includes('https://shop.com/contact'), 'the contact guess was not tried')
+  ok(asked.includes('https://shop.com/about'), 'the page the site named was not read')
+  same(asked.length, 4, 'pages read')
+})
+
+check(
+  'a plugin that ships its stylesheets under a contact path is not a contact page',
+  async () => {
+    // The commonest small business stack there is. Three of the contact form
+    // plugin's stylesheets sit under /wp-content/plugins/contact-form-7/, and
+    // read as links they fill the follow budget with CSS and push the site's own
+    // contact page out of it.
+    const head = [
+      '<link rel="stylesheet" href="/wp-content/plugins/contact-form-7/includes/css/styles.css">',
+      '<link rel="stylesheet" href="/wp-content/plugins/contact-form-7-extension/style.css">',
+      '<link rel="preload" as="style" href="/wp-content/plugins/contact-form-7-conditional/css/main.css">',
+    ].join('')
+    const { asked, get } = site({
+      '/': `<html><head>${head}</head><body><a href="/contact-us/">Contact</a><a href="/about-us/">About</a></body></html>`,
+      '/contact-us/': page('info@shop.com'),
+      '/about-us/': '<html><body><p>Since 1994.</p></body></html>',
+    })
+    const found = await contactFor(new URL('https://shop.com/'), get)
+    same(found.best?.email, 'info@shop.com', 'the address taken')
+    ok(
+      !asked.some(url => url.includes('/wp-content/')),
+      `a stylesheet was fetched as a page: ${asked.join(', ')}`
+    )
+  }
+)
+
+check('a site that links nothing still has the guessed paths tried', async () => {
+  // Navigation drawn by script leaves no link to read, which is every site the
+  // old list of paths already worked for.
+  const { asked, get } = site({
+    '/': '<html><body><div id="nav"></div></body></html>',
+    '/contact-us': page('info@shop.com'),
+  })
+  const found = await contactFor(new URL('https://shop.com/'), get)
+  same(found.best?.email, 'info@shop.com', 'the address taken')
+  same(asked.length, 4, 'pages read')
+  ok(asked.includes('https://shop.com/contact'), 'the first guess was not tried')
+  ok(asked.includes('https://shop.com/about'), 'the last guess was not tried')
+})
+
+check('a site that answers nothing at its root is still asked for its contact page', async () => {
+  // There is no home page to read the links off, which is not the same finding
+  // as a business with no address: a server can serve the root as an error, as
+  // a file or as a redirect nothing follows, and still print an address on the
+  // page underneath it.
+  const { get } = site({ '/contact': page('info@shop.com') })
+  const found = await contactFor(new URL('https://shop.com/'), get)
+  ok(found.answered, 'a site that answered a page read as never answering')
+  same(found.best?.email, 'info@shop.com', 'the address taken')
+})
+
+check('a site that serves at www is the one site the listing named', async () => {
+  // The redirect the crawl does follow all the way. The page is recorded at
+  // the address it was served from, and the address it prints is the
+  // business's own because the bare host is the same host.
+  const { get } = site({ '/': page('jane@shop.com') }, 'https://www.shop.com/')
+  const found = await contactFor(new URL('https://shop.com/'), get)
+  same(found.best?.email, 'jane@shop.com', 'the address taken')
+  same(found.best?.source, 'https://www.shop.com/', 'the page recorded is not the one served')
+})
+
+check('a domain that redirects off its own name gives up nothing', async () => {
+  // A redirect can end anywhere: a lapsed domain parked for sale, a profile on
+  // a platform, whoever bought the business. Every one of them prints an
+  // address, none of them is read by anybody at the business, and the row
+  // would still carry the old domain for the letter to open on.
+  for (const landed of ['https://www.facebook.com/', 'https://buy-this-domain.example/']) {
+    const { get } = site({ '/': page('support@example.com') }, landed)
+    const found = await contactFor(new URL('https://oldshop.example/'), get)
+    ok(found.answered, `the page did not answer: ${landed}`)
+    same(found.best, null, `an address at ${landed} was read as the business's`)
+  }
+})
+
+check('a site the listing named is not crawled through somebody else', async () => {
+  // The half of it a domain test alone does not reach. The listed domain has
+  // lapsed onto a profile, and the profile links its own contact and about
+  // pages, so a crawl following them reads three pages of somebody else's site
+  // on every run and finds the platform's own support desk on all of them.
+  const { asked, get } = site(
+    {
+      '/': '<html><body><a href="/contact">Contact</a><a href="/about-us">About</a></body></html>',
+      '/contact': page('support@example.com'),
+      '/about-us': page('support@example.com'),
+    },
+    'https://www.facebook.com/'
+  )
+  const found = await contactFor(new URL('https://oldshop.example/'), get)
+  same(found.best, null, "the platform's own address was read as the business's")
+  same(asked.length, 1, `pages read off somebody else's site: ${asked.join(', ')}`)
+})
+
+check('a name on the contact page is the end of the crawl', async () => {
+  // The most a site can give, so the pages left are not worth the wait. A name
+  // on the home page is not: a contact page the site has not been read yet can
+  // still print a better one, which is the whole reason the page settles ties.
+  const { asked, get } = site({
+    '/': `${HOME_LINKING}<a href="mailto:jane@shop.com">jane@shop.com</a>`,
+    '/contact.html': page('tom@shop.com'),
+    '/about-us': page('owner@shop.com'),
+  })
+  const found = await contactFor(new URL('https://shop.com/'), get)
+  same(found.best?.email, 'tom@shop.com', 'the address taken')
+  same(found.best?.score, 200, 'a person on the contact page')
+  same(asked.length, 2, 'pages read')
+})
+
+check('a site that never answers is told apart from one that prints nothing', async () => {
+  const { get } = site({})
+  const dead = await contactFor(new URL('https://shop.com/'), get)
+  same(dead.answered, false, 'a site nothing answered for read as answering')
+  same(dead.best, null, 'an address off a site that never answered')
+
+  const quiet = site({ '/': '<html><body><p>Call us.</p></body></html>' })
+  const read = await contactFor(new URL('https://shop.com/'), quiet.get)
+  same(read.answered, true, 'a site that answered read as silent')
+  same(read.best, null, 'an address off a site that prints none')
+})
+
+check('a sign carried by a page the site linked still stops the row', async () => {
+  // The corporate rule reads every page the crawl reads, so following a site's
+  // own links feeds it evidence the guessed paths never reached.
+  const { get } = site({
+    '/': HOME_LINKING,
+    '/about-us': '<html><body><a href="/x">Leadership Team</a><p>Our locations</p></body></html>',
+  })
+  const found = await contactFor(new URL('https://shop.com/'), get)
+  ok(found.signs.length >= 2, 'the signs on a linked page were not read')
 })
 
 // -- the queue, which is what the console shows as about to go out ----------

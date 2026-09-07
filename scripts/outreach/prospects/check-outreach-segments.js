@@ -13,7 +13,7 @@
  *   npm run check:outreach-segments
  */
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
-import { isSocialOnly, opportunityBand } from '../../../src/app/utils/outreachOpportunity.js'
+import { hasNoSiteOfItsOwn, opportunityBand } from '../../../src/app/utils/outreachOpportunity.js'
 
 const cases = []
 const check = (name, run) => cases.push([name, run])
@@ -81,8 +81,25 @@ check('a site nothing has measured is unmeasured', () => {
   same(segmentOf(row({ audit_score: 'no reading' })), 'unmeasured', 'text')
 })
 
-check('a listing with no website at all is unmeasured', () => {
-  same(segmentOf(row({ website: null, site_kind: 'none' })), 'unmeasured', 'the segment')
+check('a listing with no website at all is no-site rather than unmeasured', () => {
+  // The enricher looked for a site under every name this business would have
+  // registered one under and found none, which is the strongest thing the
+  // table can say about a lead. Reading it as unmeasured files the whole pitch
+  // as a row nobody has got round to yet.
+  same(segmentOf(row({ website: null, site_kind: 'none' })), 'no-site', 'nothing listed')
+  same(
+    segmentOf(row({ website: null, site_kind: 'none', audit_score: 88 })),
+    'no-site',
+    'a figure left on the row from a site it used to have'
+  )
+})
+
+check('a row nobody has read yet is not filed as a business with no site', () => {
+  // The kind is the job's verdict, and an empty column is the absence of one.
+  // Reading it as a finding would put every listing waiting on its first read
+  // at the front of the queue as the strongest lead on the table.
+  same(segmentOf(row({ website: null, site_kind: null })), 'unmeasured', 'no kind, no site')
+  same(segmentOf(row({ website: null, site_kind: undefined })), 'unmeasured', 'an absent kind')
 })
 
 check('a row nothing is known about is unmeasured rather than an error', () => {
@@ -141,7 +158,7 @@ check('site_kind answers ahead of the host where both are present', () => {
 /** The segment the two readings say a row is in, worked out the long way. */
 const BY_BAND = { strong: 'slow-site', fair: 'fair-site', weak: 'sound-site', none: 'unmeasured' }
 const expected = prospect =>
-  isSocialOnly(prospect) ? 'no-site' : BY_BAND[opportunityBand(prospect)]
+  hasNoSiteOfItsOwn(prospect) ? 'no-site' : BY_BAND[opportunityBand(prospect)]
 
 check('every shape of row reads as exactly one of the five, and as the two readings agree', () => {
   const kinds = [undefined, null, 'own', 'social', 'none']
