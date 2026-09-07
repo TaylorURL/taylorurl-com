@@ -1,6 +1,7 @@
 /**
- * The call list: every business the email pipeline cannot reach, in the order
- * to ring them, and the record of what each call came to.
+ * The call list: every business the email pipeline cannot reach, what each is
+ * worth ringing, when it comes back round after a call, and the record of what
+ * every call came to.
  *
  * The sender ends at an email address and about a fifth of the map sweep has
  * none to end at - the listing names no website, or names a Facebook page or a
@@ -11,12 +12,18 @@
  * holds. This is the section that dials them.
  *
  * The whole callable set is read on every request rather than a page of it,
- * and that is deliberate. The ordering is not a column: a business's place on
- * the list is its review count measured against the middle count for its own
+ * and that is deliberate. The ordering is not a column: a business's place is
+ * a score built from its review count against the middle count for its own
  * trade, and a middle taken over one page is a different number on every page.
- * The set is about fifteen hundred rows of eleven short columns, which is one
- * round trip and a few hundred kilobytes at the database; what travels back to
- * the console is one page of it.
+ * The set is about fifteen hundred rows of short columns, which is one round
+ * trip; what travels back to the console is one page of it.
+ *
+ * Both reads are totally ordered - `.order('id')` under the prospects read and
+ * under the calls read - because `readAll` pages with `.range()` and this set
+ * is already two pages deep. An unordered query paged that way can hand back
+ * the same row twice and skip another, and on the calls read that is not a
+ * cosmetic fault: a dropped newest call silently changes the run, the wait,
+ * the place and the score of the business it belonged to.
  *
  * Two verbs. GET answers the list. POST records one call, and it is the only
  * write in here: an outcome, a note in whoever's own words, and a time to ring
@@ -29,22 +36,41 @@ import { servedHereOr404 } from '../lib/http/guard.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { readAll, tableMissing } from '../lib/db/rows.js'
 import { field, uuid } from '../lib/db/fields.js'
+import { sharesTrade } from '../lib/outreach/message.js'
+import { PORTFOLIO_PROJECTS } from '../src/app/data/portfolio.js'
 import {
-  callRank,
+  byCallOrder,
+  callPlace,
   isCallable,
+  matchesControls,
   medianOf,
   outcomeEnds,
-  outcomeNeedsCallback,
   OUTCOME_IDS,
+  placeCalls,
+  promiseOf,
   pullBand,
+  pullOf,
+  readyAt,
+  scoreOf,
   TRADE_FLOOR,
+  triesRun,
 } from '../lib/outreach/prospects/calls.js'
 
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
 
-/** Rows one page of the list carries. */
-const PAGE_ROWS = 50
+/** Rows one page carries, and the sizes a caller may ask for. */
+const TAKE_DEFAULT = 50
+const TAKES = Object.freeze([25, 50, 100])
+
+/** The score floors the console offers, which the endpoint holds it to. */
+const SCORE_FLOORS = Object.freeze([40, 55, 70])
+
+/** The orders the list can be read in. */
+const SORTS = Object.freeze(['best', 'waited', 'reviews', 'newest'])
+
+/** The views, which decide which bucket of the set is answered for. */
+const VIEWS = Object.freeze(['list', 'calling', 'resting', 'finished'])
 
 /**
  * The callable set's ceiling.
@@ -102,12 +128,32 @@ function term(value) {
   return trimmed && trimmed !== 'all' ? trimmed : null
 }
 
+/** One of a list, or the first of it. */
+function oneOf(value, allowed, fallback) {
+  const held = term(value)
+  return held && allowed.includes(held) ? held : fallback
+}
+
+/** A page size the endpoint offers, or the default. */
+function takeOf(value) {
+  const take = Number.parseInt(String(value ?? ''), 10)
+  return TAKES.includes(take) ? take : TAKE_DEFAULT
+}
+
+/** A score floor the console offers, or null. */
+function floorOf(value) {
+  const floor = Number.parseInt(String(value ?? ''), 10)
+  return SCORE_FLOORS.includes(floor) ? floor : null
+}
+
 /**
  * Every call on file, newest first, filed under the business it was placed to.
  *
  * Read whole rather than joined, because the join would be one query per page
  * of prospects and the table holds one row per call placed by one person - it
- * is small now and it is small in five years.
+ * is small now and it is small in five years. Ordered on the id as well as the
+ * instant, because `called_at` is not unique and a working session produces
+ * bursts of calls inside the same second.
  */
 async function callsByProspect(db) {
   const { rows } = await readAll(
@@ -115,7 +161,8 @@ async function callsByProspect(db) {
       db
         .from(CALLS)
         .select('id, prospect_id, outcome, note, callback_at, called_at')
-        .order('called_at', { ascending: false }),
+        .order('called_at', { ascending: false })
+        .order('id', { ascending: false }),
     { max: SET_MAX * 4 }
   )
   const byProspect = new Map()
@@ -149,68 +196,137 @@ function mediansByTrade(callable) {
 }
 
 /**
- * One business as the list draws it: the row, what its trade says about it,
- * and every call placed to it.
+ * The trades and towns the studio holds work in, as two sets built once per
+ * request rather than a portfolio scan per row.
  *
- * `callback_at` is lifted off the newest call that named one, so the sort and
- * the badge read one field rather than each walking the history.
+ * The trade claim is the strongest opener a one-person studio has and it is
+ * the one claim on a call a person can check in a second, so it is asked
+ * exactly the way the letter pipeline asks it - through `sharesTrade`, which
+ * exists because calling a pest control company's line of work a go-kart track
+ * is how that claim gets broken.
  */
-function drawn(row, medians, calls) {
-  const history = calls.get(row.id) ?? []
-  const last = history[0] ?? null
-  const promised = history.find(call => call.callback_at) ?? null
-  return {
-    ...row,
-    pull: pullBand(row, medians.get(row.trade) ?? null),
-    trade_median: medians.get(row.trade) ?? null,
-    calls: history,
-    last_call: last,
-    callback_at: promised?.callback_at ?? null,
+function proofIndex(trades) {
+  const inTrade = new Set()
+  for (const trade of trades) {
+    if (PORTFOLIO_PROJECTS.some(project => sharesTrade(project, trade))) inTrade.add(trade)
   }
+  const inTown = new Set(
+    PORTFOLIO_PROJECTS.map(project => String(project.town ?? '').toLowerCase()).filter(Boolean)
+  )
+  return { inTrade, inTown }
+}
+
+/** Whether there is work of ours to name on this call, and of which kind. */
+function proofOf(row, { inTrade, inTown }) {
+  if (row.trade && inTrade.has(row.trade)) return 'trade'
+  if (row.town && inTown.has(String(row.town).toLowerCase())) return 'town'
+  return null
 }
 
 /**
- * The businesses still worth ringing, in the order to ring them.
- *
- * A business whose last call ended it - booked, not interested, a wrong number
- * - is off the list. Those are counted rather than simply vanishing, and the
- * ones that ended in work are counted apart from the ones that ended in a no:
- * a strip reporting them as one figure would put the section's only good news
- * in with its refusals.
+ * One business as the list draws it: the row, what its trade says about it,
+ * what it scores and why, where it sits, when it comes back, and every call
+ * placed to it.
  */
-function working(rows, now) {
-  const open = []
-  let booked = 0
-  let closed = 0
-  for (const row of rows) {
-    if (!row.last_call || !outcomeEnds(row.last_call.outcome)) {
-      open.push(row)
-      continue
-    }
-    if (row.last_call.outcome === 'booked') booked += 1
-    else closed += 1
+function drawn(row, { medians, calls, proof, now }) {
+  const history = calls.get(row.id) ?? []
+  const carried = { ...row, calls: history }
+  const median = medians.get(row.trade) ?? null
+  const promise = promiseOf(carried, now)
+  const ready = readyAt(carried, now)
+  const { score, raw, terms } = scoreOf(row, { median, proof: proofOf(row, proof), calls: history })
+
+  return {
+    ...row,
+    pull: pullBand(row, median),
+    pull_ratio: pullOf(row, median),
+    trade_median: median,
+    proof: proofOf(row, proof),
+    calls: history,
+    last_call: history[0] ?? null,
+    tries: triesRun(carried),
+    callback_at: promise ? promise.toISOString() : null,
+    ready_at: ready ? ready.toISOString() : null,
+    place: callPlace(carried, now),
+    score,
+    raw_score: raw,
+    terms,
   }
-  open.sort((one, two) => callRank(one, now) - callRank(two, now))
-  return { open, booked, closed }
 }
 
-/** The list narrowed to what the console asked for. */
-function narrow(rows, { town, trade, pull, search }, now) {
-  const needle = search ? search.toLowerCase() : null
-  return rows.filter(row => {
-    if (town && row.town !== town) return false
-    if (trade && row.trade !== trade) return false
-    if (pull === 'due') {
-      if (!row.callback_at || new Date(row.callback_at) > now) return false
-    } else if (pull === 'fresh') {
-      if (row.last_call) return false
-    } else if (pull && row.pull !== pull) return false
-    if (needle) {
-      const hay = `${row.name ?? ''} ${row.town ?? ''} ${row.phone ?? ''}`.toLowerCase()
-      if (!hay.includes(needle)) return false
-    }
-    return true
-  })
+/** The set split into the three things a caller can be looking at. */
+function placed(rows) {
+  const call = []
+  const resting = []
+  const finished = []
+  for (const row of rows) {
+    if (placeCalls(row.place)) call.push(row)
+    else if (row.place === 'resting' || row.place === 'promised') resting.push(row)
+    else finished.push(row)
+  }
+  return { call, resting, finished }
+}
+
+/** Every place counted, over whichever set is handed in. */
+function countPlaces(rows) {
+  const counted = { call: 0, due: 0, fresh: 0, ready: 0, resting: 0, booked: 0, closed: 0 }
+  for (const row of rows) {
+    if (placeCalls(row.place)) counted.call += 1
+    if (row.place === 'due') counted.due += 1
+    else if (row.place === 'fresh') counted.fresh += 1
+    else if (row.place === 'ready') counted.ready += 1
+    else if (row.place === 'resting' || row.place === 'promised') counted.resting += 1
+    else if (row.place === 'booked') counted.booked += 1
+    else if (row.place === 'closed') counted.closed += 1
+  }
+  return counted
+}
+
+/**
+ * The list narrowed to what the console asked for.
+ *
+ * The rule itself lives beside the score and the places rather than here,
+ * because the exemption it carries - a business due back survives every
+ * control but the search - is a statement about the list rather than about
+ * this endpoint, and it is the one part of the narrowing worth proving.
+ */
+function narrow(rows, controls) {
+  return rows.filter(row => matchesControls(row, controls))
+}
+
+/** The four orders the list can be read in. */
+function sorted(rows, sort, now) {
+  const ordered = [...rows]
+  if (sort === 'waited') {
+    return ordered.sort((one, two) => {
+      const a = one.ready_at ? Date.parse(one.ready_at) : Infinity
+      const b = two.ready_at ? Date.parse(two.ready_at) : Infinity
+      return a - b
+    })
+  }
+  if (sort === 'reviews') {
+    return ordered.sort((one, two) => (two.rating_count ?? -1) - (one.rating_count ?? -1))
+  }
+  if (sort === 'newest') {
+    return ordered.sort((one, two) =>
+      String(two.created_at ?? '').localeCompare(String(one.created_at ?? ''))
+    )
+  }
+  return ordered.sort(byCallOrder(now))
+}
+
+/**
+ * The Finished view's own order: the last call first, whichever way the list
+ * is sorted.
+ *
+ * It ignores the sort parameter deliberately. None of the four orders answers
+ * the question this view is opened with, which is what happened most recently
+ * - `newest` is when the listing was filed, which has nothing to do with it.
+ */
+function byLastCall(rows) {
+  return [...rows].sort((one, two) =>
+    String(two.last_call?.called_at ?? '').localeCompare(String(one.last_call?.called_at ?? ''))
+  )
 }
 
 /** The whole list, filtered, counted and paged. */
@@ -224,7 +340,8 @@ async function list(db, query) {
           .from(PROSPECTS)
           .select(COLUMNS)
           .in('site_kind', ['none', 'social'])
-          .not('phone', 'is', null),
+          .not('phone', 'is', null)
+          .order('id'),
       { max: SET_MAX }
     ),
     callsByProspect(db),
@@ -232,37 +349,66 @@ async function list(db, query) {
 
   const callable = rows.filter(isCallable)
   const medians = mediansByTrade(callable)
-  const drawnRows = callable.map(row => drawn(row, medians, calls))
-  const { open, booked, closed } = working(drawnRows, now)
+  const proof = proofIndex(new Set(callable.map(row => row.trade).filter(Boolean)))
+  const drawnRows = callable.map(row => drawn(row, { medians, calls, proof, now }))
 
-  const due = open.filter(row => row.callback_at && new Date(row.callback_at) <= now).length
-  const fresh = open.filter(row => !row.last_call).length
+  const buckets = placed(drawnRows)
+  // The strip, the dropdowns and the soonest return all answer for the whole
+  // list rather than for the question just asked, so they stay steady while a
+  // caller narrows. The empty state reads the filtered figures instead, since
+  // it is answering that question and nothing else.
+  const totals = countPlaces(drawnRows)
 
-  const filtered = narrow(
-    open,
-    {
-      town: term(query.town),
-      trade: term(query.trade),
-      pull: term(query.pull),
-      search: term(query.search),
-    },
-    now
-  )
+  const view = oneOf(query.view, VIEWS, 'list')
+  const sort = oneOf(query.sort, SORTS, 'best')
+  const take = takeOf(query.take)
+
+  const pool =
+    view === 'resting' ? buckets.resting : view === 'finished' ? buckets.finished : buckets.call
+
+  const filtered = narrow(pool, {
+    state: term(query.state),
+    pull: term(query.pull),
+    minScore: floorOf(query.min_score),
+    town: term(query.town),
+    trade: term(query.trade),
+    search: term(query.search),
+  })
+
+  const ordered =
+    view === 'finished'
+      ? byLastCall(filtered)
+      : sorted(filtered, view === 'resting' ? 'waited' : sort, now)
 
   const page = pageOf(query.page)
-  const pages = Math.max(1, Math.ceil(filtered.length / PAGE_ROWS))
-  const from = (Math.min(page, pages) - 1) * PAGE_ROWS
+  const pages = Math.max(1, Math.ceil(ordered.length / take))
+  const held = Math.min(page, pages)
+  const from = (held - 1) * take
+
+  const backs = buckets.resting
+    .map(row => row.ready_at)
+    .filter(Boolean)
+    .sort()
 
   return {
     status: 200,
     body: {
-      rows: filtered.slice(from, from + PAGE_ROWS),
-      page: Math.min(page, pages),
+      rows: ordered.slice(from, from + take),
+      page: held,
       pages,
-      matched: filtered.length,
-      totals: { open: open.length, due, fresh, worked: open.length - fresh, booked, closed },
-      towns: [...new Set(open.map(row => row.town).filter(Boolean))].sort(),
-      trades: [...new Set(open.map(row => row.trade).filter(Boolean))].sort(),
+      matched: ordered.length,
+      take,
+      sort: view === 'finished' ? 'ended' : view === 'resting' ? 'waited' : sort,
+      view,
+      bands: {
+        due: filtered.filter(row => row.place === 'due').length,
+        call: filtered.filter(row => row.place !== 'due').length,
+      },
+      totals,
+      matched_totals: countPlaces(filtered),
+      next_back: backs[0] ?? null,
+      towns: [...new Set(buckets.call.map(row => row.town).filter(Boolean))].sort(),
+      trades: [...new Set(buckets.call.map(row => row.trade).filter(Boolean))].sort(),
       complete,
       cap: SET_MAX,
     },
@@ -301,8 +447,17 @@ async function record(db, body, account) {
 
   const callback = callbackAt(body.callback_at)
   if (callback.error) return { status: 400, body: { error: callback.error } }
-  if (outcomeNeedsCallback(outcome) && !callback.at) {
+  if (outcome === 'callback' && !callback.at) {
     return { status: 400, body: { error: 'A call back needs the time to ring them back at.' } }
+  }
+  // A business that is off the list does not come back to one, so an ending
+  // outcome may not carry a time. Without this a mis-keyed Booked with a
+  // callback still on the form would file a promise nothing will ever read.
+  if (outcomeEnds(outcome) && callback.at) {
+    return {
+      status: 400,
+      body: { error: 'That outcome takes the business off the list, so it cannot name a time.' },
+    }
   }
 
   // The row has to be one this list would actually have offered. Without this

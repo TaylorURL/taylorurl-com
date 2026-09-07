@@ -23,7 +23,9 @@ const CALLS_PATH = '/api/calls-admin'
  * recomputing a ranking the page does not hold.
  *
  * @param {{token: string|null, enabled: boolean,
- *   filters: {town: string, trade: string, pull: string, search: string, page: number}}} options
+ *   filters: {view: string, state: string, pull: string, min_score: string,
+ *     town: string, trade: string, sort: string, search: string,
+ *     take: number, page: number}}} options
  * @returns {{data: object|null, retained: object|null, error: string|null,
  *   loading: boolean, saving: boolean, refresh: () => Promise<void>,
  *   record: (call: object) => Promise<object|null>}}
