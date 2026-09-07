@@ -437,6 +437,7 @@ const STUDIO_PRERENDER_ROUTES = [
   '/console/settings',
   '/console/builds',
   '/console/leads',
+  '/console/calls',
   '/console/payments',
   '/console/admin',
   // Sign-in, sign-up, and the two halves of a password reset, prerendered for

@@ -2,6 +2,7 @@ import {
   MarkAccess,
   MarkAt,
   MarkCanvass,
+  MarkDial,
   MarkDials,
   MarkFunnel,
   MarkGauge,
@@ -331,6 +332,23 @@ export const SECTIONS = [
     description: 'Everyone who started a build, and how far each of them got.',
     title: 'Leads - Console',
     meta: 'Every address left on the first step of the configurator: the trade beside it, the screen they reached, where they arrived from, and whether they went on to enquire, open a checkout or pay.',
+  },
+  {
+    id: 'calls',
+    mark: MarkDial,
+    group: 'Studio',
+    path: 'calls',
+    label: 'Call List',
+    admin: true,
+    // A business to ring is not a site with a window over it, and the list is
+    // the same list whichever site is in scope, so the traffic strip, the date
+    // picker and the site chooser all measure something else.
+    account: true,
+    scope: false,
+    figures: false,
+    description: 'The businesses with no site of their own, and a number to ring them on.',
+    title: 'Call List - Console',
+    meta: 'Every business the cold email engine found and cannot write to, because it has no website of its own for an address to be printed on: the number to ring, how much trade its listing proves against others in the same trade, and the record of every call placed to it.',
   },
   {
     id: 'payments',
