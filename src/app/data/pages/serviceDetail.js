@@ -34,8 +34,7 @@ const DETAIL = {
   'new-website': {
     mark: MarkFrame,
     eyebrow: 'New Builds',
-    description:
-      'A custom website for a Baytown or Houston business: designed, written, built, and launched by one person. From $1,000 up front and $99 a month to run.',
+    description: `A custom website for a Baytown or Houston business: designed, written, built, and launched by one person. From ${BUILD_PRICE} up front and ${MONTHLY_PRICE} a month to run.`,
     lede: 'Design, writing, build, domain, and launch all happen here, whether you have never had a site or you have a page somebody set up years ago and walked away from.',
     covers: [
       {
@@ -188,8 +187,7 @@ const DETAIL = {
   care: {
     mark: MarkGuard,
     eyebrow: 'After Launch',
-    description:
-      'Hosting, backups, security, changes any time, and realtime error monitoring. The $99 a month is what keeps the site online. No per-change fee.',
+    description: `Hosting, backups, security, changes any time, and realtime error monitoring. The ${MONTHLY_PRICE} a month is what keeps the site online. No per-change fee.`,
     lede: `What the ${MONTHLY_PRICE} a month pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.`,
     covers: [
       {
