@@ -296,7 +296,7 @@ const STUDIO_NAV_GROUPS = [
           {
             to: '/pricing',
             label: 'Pricing',
-            summary: 'A site from $1,000 up front, and $99 a month to keep it running.',
+            summary: 'A site from $1,000 up front, and $250 a month to keep it running.',
             mark: MarkTag,
           },
         ],

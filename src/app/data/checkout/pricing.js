@@ -13,7 +13,7 @@
  * is a conversation rather than a contradiction of the page.
  */
 export const BUILD_PRICE = '$1,000'
-export const MONTHLY_PRICE = '$99'
+export const MONTHLY_PRICE = '$250'
 
 /**
  * The same two figures in cents, which is the only unit a card reader accepts.
@@ -25,7 +25,7 @@ export const MONTHLY_PRICE = '$99'
  * without the suite refusing.
  */
 export const BUILD_PRICE_CENTS = 100000
-export const MONTHLY_PRICE_CENTS = 9900
+export const MONTHLY_PRICE_CENTS = 25000
 
 /** The word that marks both figures as a floor wherever they are shown. */
 export const PRICE_PREFIX = 'From'
