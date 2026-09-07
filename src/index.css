@@ -2523,6 +2523,20 @@
     display: none;
   }
 
+  /* The work deck scrolls the same way the review rail does, and clips the same
+     way every scroller must: `overflow-y: visible` is not available to a box
+     that scrolls across, so the room a turned frame needs above and below it -
+     the near edge standing proud under the perspective, and the lift falling
+     away underneath - is padding rather than overflow. */
+  .work-deck {
+    scrollbar-width: none;
+    scroll-padding-left: 0;
+  }
+
+  .work-deck::-webkit-scrollbar {
+    display: none;
+  }
+
   /* The rail sits on paper, so its controls take the paper palette rather than
      the page ink, which on the dark setting is the wrong end of the scale. */
   .review-rail-step {

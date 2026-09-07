@@ -33,7 +33,7 @@ const STUDIO_ABOUT = {
     eyebrow: 'About Me',
     title: 'One person builds your site and keeps it running.',
     description:
-      "I'm Trenton Taylor. TaylorURL LLC is one person: I take the first call, and I am still the one you message when something needs to change. I work with shops and trades around Baytown and the Houston area.",
+      "I'm Trenton Taylor. I answer the phone, I build the site, and when your hours change you text me. Most of my clients are shops and trades around Baytown and the Houston area.",
   },
 
   story: {
