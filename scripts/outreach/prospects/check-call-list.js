@@ -36,21 +36,41 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import {
+  ATTEMPT_HOURS,
   BUSY_FLOOR,
   CALL_OUTCOMES,
+  OUTCOME_FLOOR_HOURS,
   OUTCOME_IDS,
+  PLACES,
+  PROMISE_KEEPS_DAYS,
   PULLS,
   QUIET_CEILING,
+  SCORE_PEAK,
+  SCORE_WEIGHTS,
   TRADE_FLOOR,
+  TRACKS,
+  byCallOrder,
+  callPlace,
   callRank,
+  countAtBand,
   dialHref,
   isCallable,
+  matchesControls,
   medianOf,
   outcomeEnds,
   outcomeNeedsCallback,
+  placeCalls,
+  presenceOf,
+  promiseOf,
   pullBand,
   pullOf,
+  readyAt,
+  scoreOf,
+  tellingTerms,
+  triesRun,
   uncallableReason,
+  waitAfter,
+  whyListed,
 } from '../../../lib/outreach/prospects/calls.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..')
@@ -82,8 +102,15 @@ const row = over => ({
   ...over,
 })
 
-/** A row as the endpoint hands it to the sort: the listing plus its history. */
-const listed = over => ({ ...row(), pull: 'steady', calls: [], callback_at: null, ...over })
+/** A row as the endpoint hands it to the sort: the listing plus its reading. */
+const listed = over => ({
+  ...row(),
+  pull: 'steady',
+  score: 40,
+  calls: [],
+  callback_at: null,
+  ...over,
+})
 
 /** A call as the table holds one. */
 const call = over => ({
@@ -188,13 +215,30 @@ check('a count is read against its own trade rather than against every trade', (
 })
 
 check('the three readings are cut where they say they are', () => {
-  same(pullBand(row({ rating_count: BUSY_FLOOR * 40 }), 40), 'busy', 'exactly at the busy floor')
+  // Cut on the smoothed ratio, so the count that reaches a boundary is not the
+  // boundary times the middle. Asserting the unsmoothed product instead is how
+  // a check passes while the prior it was written for has quietly been
+  // dropped, which would put the raw count back in charge of the page.
   same(
-    pullBand(row({ rating_count: QUIET_CEILING * 40 }), 40),
+    pullBand(row({ rating_count: countAtBand(BUSY_FLOOR, 40) }), 40),
+    'busy',
+    'exactly at the busy floor'
+  )
+  same(
+    pullBand(row({ rating_count: countAtBand(QUIET_CEILING, 40) }), 40),
     'quiet',
     'exactly at the quiet ceiling'
   )
   same(pullBand(row({ rating_count: 40 }), 40), 'steady', 'exactly the middle of its trade')
+})
+
+check('a handful of reviews in a busy trade is not read as exceptional', () => {
+  // The prior is the whole of this. Unsmoothed, a flooring contractor with two
+  // reviews in a trade whose middle is one reads twice its trade and lands
+  // among the genuinely busy; smoothed it reads a shade under the middle. The
+  // noise this removes is the reason the page can be ranked at all.
+  same(pullBand(row({ rating_count: 2 }), 1), 'steady', 'two reviews against a middle of one')
+  same(pullBand(row({ rating_count: 40 }), 4), 'busy', 'forty reviews against a middle of four')
 })
 
 check('a trade with no middle to take reads unread rather than being ranked', () => {
@@ -214,39 +258,365 @@ check('every reading a listing can come to is one of the four named', () => {
   same([...reached].sort().join(','), [...PULLS].sort().join(','), 'the readings reached')
 })
 
-// ── The order to work it in ─────────────────────────────────────────────
+// ── When it comes back round ────────────────────────────────────────────
 
 const now = new Date('2026-09-06T16:00:00.000Z')
 
-check('a callback that has come due leads everything', () => {
-  const due = listed({ callback_at: '2026-09-06T15:00:00.000Z', calls: [call()] })
-  const fresh = listed({ pull: 'busy' })
-  ok(callRank(due, now) < callRank(fresh, now), 'a due callback did not lead')
+/** An instant so many hours either side of the moment the checks read. */
+const off = hours => new Date(now.getTime() + hours * 3_600_000).toISOString()
+
+check('a call takes the business out of the working list, not merely lower', () => {
+  // The change the section could not work without. A business rung this
+  // morning used to still be on the first page this afternoon, and a list that
+  // offers back what was just worked is a list nobody can work down.
+  const rung = listed({ calls: [call({ called_at: off(-1) })] })
+  same(callPlace(rung, now), 'resting', 'a business rung an hour ago')
+  ok(!placeCalls(callPlace(rung, now)), 'a business rung an hour ago was still offered')
 })
 
-check('a callback still to come waits behind the cold work', () => {
-  const later = listed({ callback_at: '2026-09-08T15:00:00.000Z', calls: [call()] })
-  const fresh = listed({ pull: 'unread' })
-  ok(callRank(fresh, now) < callRank(later, now), 'a callback not yet due jumped the queue')
+check('the wait is the outcome, and it lengthens as a number goes unanswered', () => {
+  const cold = listed()
+  same(waitAfter(cold, 'no_answer'), ATTEMPT_HOURS[0], 'the first unanswered ring')
+  same(waitAfter(cold, 'voicemail'), OUTCOME_FLOOR_HOURS.voicemail, 'a voicemail left')
+  same(waitAfter(cold, 'gatekeeper'), OUTCOME_FLOOR_HOURS.gatekeeper, 'a receptionist answering')
+  same(waitAfter(cold, 'spoke'), OUTCOME_FLOOR_HOURS.spoke, 'the owner heard it')
+
+  const twice = listed({ calls: [call(), call({ id: 'c2' })] })
+  same(waitAfter(twice, 'no_answer'), ATTEMPT_HOURS[2], 'the third unanswered ring')
 })
 
-check('a number nobody has tried comes before one tried this morning', () => {
-  const fresh = listed({ pull: 'unread' })
-  const tried = listed({ calls: [call({ called_at: '2026-09-06T14:00:00.000Z' })] })
-  ok(callRank(fresh, now) < callRank(tried, now), 'a number rung today was offered again first')
+check('the ladder counts the run of unanswered rings, not the calls on file', () => {
+  // A business somebody has legitimately spoken to five times must not land on
+  // the thirty-day rung.
+  const talked = listed({
+    calls: [call({ outcome: 'spoke' }), call({ id: 'c2' }), call({ id: 'c3' })],
+  })
+  same(triesRun(talked), 0, 'the run after reaching somebody')
+  same(waitAfter(talked, 'no_answer'), ATTEMPT_HOURS[0], 'the first ring after a conversation')
 })
 
-check('among untried numbers the busiest of its trade leads', () => {
-  const ranks = PULLS.map(pull => callRank(listed({ pull }), now))
-  for (let index = 1; index < ranks.length; index += 1) {
-    ok(ranks[index - 1] < ranks[index], `${PULLS[index - 1]} did not lead ${PULLS[index]}`)
+check('an ending outcome buys no wait at all, because there is nothing to wait for', () => {
+  for (const outcome of ['booked', 'not_interested', 'wrong_number']) {
+    same(waitAfter(listed(), outcome), null, `the wait after ${outcome}`)
+  }
+  same(waitAfter(listed(), 'callback'), null, 'the wait after a call back')
+})
+
+check('a time somebody named beats the rest the ladder would have set', () => {
+  // The correction a critic found: with a floor on `callback`, a caller told at
+  // ten in the morning to ring back at four would find the business resting
+  // until tomorrow, which is the list overruling the only person on it who
+  // knows anything.
+  const promised = listed({
+    calls: [call({ outcome: 'callback', called_at: off(-2), callback_at: off(4) })],
+  })
+  same(readyAt(promised, now).toISOString(), off(4), 'when a promised business comes back')
+  same(callPlace(promised, now), 'promised', 'where a promised business sits')
+})
+
+check('a promise the caller has passed puts the business at the head of the list', () => {
+  const due = listed({
+    calls: [call({ outcome: 'callback', called_at: off(-48), callback_at: off(-2) })],
+  })
+  same(callPlace(due, now), 'due', 'where a passed promise sits')
+  ok(placeCalls('due'), 'a business due back was not offered')
+})
+
+check('a stale promise stops deciding rather than leading the list forever', () => {
+  // The defect this replaced. The endpoint used to lift the newest call that
+  // NAMED a time rather than the newest call, so a business promised Friday
+  // and then rung Wednesday returned to rank nought every Friday and nothing
+  // could clear it.
+  const chased = listed({
+    calls: [
+      call({ id: 'c2', outcome: 'no_answer', called_at: off(-1) }),
+      call({ outcome: 'callback', called_at: off(-72), callback_at: off(-24) }),
+    ],
+  })
+  same(callPlace(chased, now), 'resting', 'a business chased after its promise passed')
+  same(readyAt(chased, now).toISOString(), off(23), 'the rest the last ring actually bought')
+})
+
+check('a promise nobody kept for a fortnight is spent', () => {
+  const held = listed({ callback_at: off(-24 * (PROMISE_KEEPS_DAYS - 1)) })
+  ok(promiseOf(held, now), 'a promise inside the fortnight was dropped')
+  const spent = listed({ callback_at: off(-24 * (PROMISE_KEEPS_DAYS + 1)) })
+  same(promiseOf(spent, now), null, 'a promise well past the fortnight still led')
+})
+
+check('an ended business never comes back round, whatever else is on it', () => {
+  const booked = listed({
+    calls: [call({ outcome: 'booked', called_at: off(-1) })],
+    callback_at: off(4),
+  })
+  same(callPlace(booked, now), 'booked', 'where a booked business sits')
+  same(readyAt(booked, now), null, 'when a booked business comes back')
+  same(callPlace(listed({ calls: [call({ outcome: 'not_interested' })] }), now), 'closed', 'a no')
+})
+
+check('exactly three places are work to do now', () => {
+  const offered = PLACES.filter(place => place.calls).map(place => place.id)
+  same(offered.sort().join(','), 'due,fresh,ready', 'the places the list offers')
+})
+
+// ── What it is worth calling ────────────────────────────────────────────
+
+check('the score is built from the terms it shows, and shows every term', () => {
+  // The decomposition is the return value rather than something the page works
+  // out again, so a row's chips and its scorecard cannot drift apart from the
+  // number they explain.
+  const { score, raw, terms } = scoreOf(row({ rating_count: 200 }), { median: 40 })
+  same(
+    terms.reduce((sum, term) => sum + term.points, 0),
+    raw,
+    'the terms against the raw total'
+  )
+  same(score, Math.min(SCORE_PEAK, Math.max(0, raw)), 'the score against the raw total')
+  same(new Set(terms.map(term => term.id)).size, terms.length, 'two terms sharing an id')
+  for (const term of terms) {
+    ok(term.label && term.chip, `${term.id} is missing a label or a chip`)
   }
 })
 
-check('among tried numbers the oldest attempt comes back round first', () => {
-  const old = listed({ calls: [call({ called_at: '2026-08-01T15:00:00.000Z' })] })
-  const recent = listed({ calls: [call({ called_at: '2026-09-05T15:00:00.000Z' })] })
-  ok(callRank(old, now) < callRank(recent, now), 'the most recent attempt was offered first')
+check('how the trade reads is the largest thing the score turns on', () => {
+  // The failure to catch is the one where the trade reading is quietly demoted
+  // under something easier to compute. Everything else about a business is
+  // circumstance; how it reads against its own trade is the finding.
+  const busy = SCORE_WEIGHTS.trade.busy
+  const rest = [
+    ...Object.values(SCORE_WEIGHTS.proof),
+    ...Object.values(SCORE_WEIGHTS.presence),
+    SCORE_WEIGHTS.reached.points,
+    Math.abs(SCORE_WEIGHTS.reputation.under),
+    Math.abs(SCORE_WEIGHTS.attempts.floor),
+  ]
+  for (const weight of rest) {
+    ok(busy > weight, `a weight of ${weight} met or beat how the trade reads`)
+  }
+  for (const band of PULLS) {
+    ok(SCORE_WEIGHTS.trade[band] > 0, `${band} scores nothing, so its trade decides nothing`)
+  }
+})
+
+check('a busy listing outscores a middling one in the same trade', () => {
+  const busy = scoreOf(row({ rating_count: 200 }), { median: 40 }).score
+  const steady = scoreOf(row({ rating_count: 40 }), { median: 40 }).score
+  const quiet = scoreOf(row({ rating_count: 4 }), { median: 40 }).score
+  ok(busy > steady, 'a busy listing did not outscore a middling one')
+  ok(steady > quiet, 'a middling listing did not outscore an unfindable one')
+  ok(quiet > 0, 'an unfindable listing scored nothing, which is not what it is worth')
+})
+
+check('an unrated listing is not read as a badly rated one', () => {
+  // A null rating compared against the floor would fire the subtraction on the
+  // third of the table Google never answered for - a reputation problem
+  // invented out of an absent field.
+  const unread = scoreOf(row({ rating: null, rating_count: 200 }), { median: 40 })
+  const reputation = unread.terms.find(term => term.id === 'reputation')
+  same(reputation.points, 0, 'what an unrated listing was docked')
+  same(reputation.reading, 'unread', 'how an unrated listing reads')
+
+  const poor = scoreOf(row({ rating: 3.1, rating_count: 200 }), { median: 40 })
+  same(
+    poor.terms.find(term => term.id === 'reputation').points,
+    SCORE_WEIGHTS.reputation.under,
+    'what a poorly rated listing was docked'
+  )
+})
+
+check('a good rating earns nothing, because a third of the table is five stars', () => {
+  const five = scoreOf(row({ rating: 5, rating_count: 6 }), { median: 40 })
+  same(five.terms.find(term => term.id === 'reputation').points, 0, 'what five stars earned')
+})
+
+check('rings nobody picked up subtract, and only the ones that reached nobody', () => {
+  const cold = scoreOf(row(), { median: 40, calls: [call(), call({ id: 'c2' })] })
+  same(
+    cold.terms.find(term => term.id === 'attempts').points,
+    SCORE_WEIGHTS.attempts.each * 2,
+    'two unanswered rings'
+  )
+  const floored = scoreOf(row(), {
+    median: 40,
+    calls: Array.from({ length: 9 }, (_, at) => call({ id: `c${at}` })),
+  })
+  same(
+    floored.terms.find(term => term.id === 'attempts').points,
+    SCORE_WEIGHTS.attempts.floor,
+    'nine unanswered rings against the floor'
+  )
+  const held = scoreOf(row(), { median: 40, calls: [call({ outcome: 'gatekeeper' })] })
+  same(
+    held.terms.find(term => term.id === 'attempts').points,
+    0,
+    'a receptionist answering counted as a failed ring'
+  )
+})
+
+check('a business somebody has heard scores above one nobody has reached', () => {
+  const warm = scoreOf(row(), { median: 40, calls: [call({ outcome: 'spoke' })] })
+  same(
+    warm.terms.find(term => term.id === 'reached').points,
+    SCORE_WEIGHTS.reached.points,
+    'a business the owner heard'
+  )
+  const refused = scoreOf(row(), {
+    median: 40,
+    calls: [call({ outcome: 'not_interested' }), call({ id: 'c2', outcome: 'spoke' })],
+  })
+  same(refused.terms.find(term => term.id === 'reached').points, 0, 'a business that said no')
+})
+
+check('what it has instead of a site is read from the listing, not guessed', () => {
+  same(presenceOf(row()), 'none', 'a listing naming no website')
+  same(
+    presenceOf(row({ site_kind: 'social', website: 'https://www.booksy.com/en-us/1' })),
+    'booking',
+    'a booking platform'
+  )
+  same(
+    presenceOf(row({ site_kind: 'social', website: 'https://www.facebook.com/mikes' })),
+    'social',
+    'a page it does not own'
+  )
+  same(
+    presenceOf(row({ site_kind: 'social', website: 'https://www.yelp.com/biz/mikes' })),
+    'portal',
+    'a directory somebody else listed it in'
+  )
+  ok(
+    SCORE_WEIGHTS.presence.booking > SCORE_WEIGHTS.presence.social,
+    'a business already paying for software did not outrank a Facebook page'
+  )
+  ok(
+    SCORE_WEIGHTS.presence.none > SCORE_WEIGHTS.presence.portal,
+    'a directory listing outranked a business with nothing at all'
+  )
+})
+
+check('a row says why it is on the list, whatever it has instead of a site', () => {
+  for (const website of [
+    null,
+    'https://www.facebook.com/mikes',
+    'https://www.booksy.com/en-us/1',
+    'https://www.yelp.com/biz/mikes',
+  ]) {
+    const kind = website ? 'social' : 'none'
+    const sentence = whyListed(row({ website, site_kind: kind }))
+    ok(sentence && sentence.endsWith('.'), `no sentence for ${website ?? 'no website'}`)
+  }
+})
+
+check('a row shows its two best reasons and every penalty', () => {
+  const { terms } = scoreOf(row({ rating: 2.9, rating_count: 200 }), {
+    median: 40,
+    calls: [call(), call({ id: 'c2' })],
+  })
+  const telling = tellingTerms(terms)
+  const negatives = terms.filter(term => term.points < 0)
+  for (const term of negatives) {
+    ok(
+      telling.some(one => one.id === term.id),
+      `${term.id} subtracted points and was not shown`
+    )
+  }
+  same(telling.filter(term => term.points > 0).length, 2, 'the positives shown')
+})
+
+// ── The order to work it in ─────────────────────────────────────────────
+
+check('a callback that has come due leads everything', () => {
+  const due = listed({
+    score: 10,
+    calls: [call({ outcome: 'callback', called_at: off(-48), callback_at: off(-1) })],
+  })
+  const best = listed({ score: SCORE_PEAK })
+  ok(callRank(due, now) < callRank(best, now), 'a due callback did not lead the best score')
+})
+
+check('the best score leads everything there is to call', () => {
+  const best = listed({ score: 88 })
+  const worse = listed({ score: 41 })
+  ok(callRank(best, now) < callRank(worse, now), 'a lower score was offered first')
+})
+
+check('a number nobody has tried has no standing of its own', () => {
+  // The never-called wall is gone deliberately. It held a busy welding shop
+  // rung once on Tuesday below an unread notary nobody had tried, and it
+  // stranded every ready row a thousand places down where paging would not
+  // reach it for months. The attempts term carries that difference now.
+  const fresh = listed({ score: 30 })
+  const ready = listed({ score: 70, calls: [call({ called_at: off(-72) })] })
+  same(callPlace(ready, now), 'ready', 'a business whose gap has run out')
+  ok(callRank(ready, now) < callRank(fresh, now), 'a fresh low score outranked a ready high one')
+})
+
+check('a business waiting out a gap is behind everything there is to call', () => {
+  const resting = listed({ score: SCORE_PEAK, calls: [call({ called_at: off(-1) })] })
+  const worst = listed({ score: 0 })
+  ok(callRank(worst, now) < callRank(resting, now), 'a resting business jumped the working list')
+})
+
+check('among the resting, the one back soonest comes first', () => {
+  const soon = listed({ calls: [call({ called_at: off(-20) })], ready_at: off(4) })
+  const later = listed({ calls: [call({ called_at: off(-2) })], ready_at: off(22) })
+  ok(callRank(soon, now) < callRank(later, now), 'the business back latest was offered first')
+})
+
+check('a business off the list sorts behind everything still on it', () => {
+  const booked = listed({ score: SCORE_PEAK, calls: [call({ outcome: 'booked' })] })
+  const resting = listed({ score: 0, calls: [call({ called_at: off(-1) })] })
+  ok(callRank(resting, now) < callRank(booked, now), 'a finished business was offered again')
+})
+
+check('two businesses level on rank are separated to the last', () => {
+  // Without a total order a page boundary can show one business twice and
+  // another not at all, which reads as the list losing rows.
+  const order = byCallOrder(now)
+  const one = listed({ id: 'a', rating_count: 90, created_at: '2026-01-01T00:00:00.000Z' })
+  const two = listed({ id: 'b', rating_count: 40, created_at: '2026-01-01T00:00:00.000Z' })
+  ok(order(one, two) < 0, 'the busier listing did not break the tie')
+
+  const older = listed({ id: 'a', rating_count: 40, created_at: '2025-01-01T00:00:00.000Z' })
+  ok(order(older, two) < 0, 'the listing that has waited longest did not break the tie')
+
+  const same0 = listed({ id: 'a', rating_count: 40, created_at: '2026-01-01T00:00:00.000Z' })
+  const same1 = listed({ id: 'b', rating_count: 40, created_at: '2026-01-01T00:00:00.000Z' })
+  ok(order(same0, same1) !== 0, 'two identical listings ordered the same, so the sort is partial')
+})
+
+// ── What the controls do and do not hide ────────────────────────────────
+
+check('a business due back survives every control but the search', () => {
+  // A promise is the one appointment on the page. A score floor or a town
+  // filter quietly hiding one would make the two most useful things on the
+  // page cancel each other out.
+  const due = listed({ place: 'due', score: 5, pull: 'unread', town: 'Baytown' })
+  ok(
+    matchesControls(due, {
+      state: 'fresh',
+      pull: 'busy',
+      minScore: 70,
+      town: 'Channelview',
+      trade: 'welder',
+    }),
+    'a business due back was hidden by a filter'
+  )
+  ok(!matchesControls(due, { search: 'nothing like this' }), 'a search did not reach a due row')
+})
+
+check('every other control narrows what it says it narrows', () => {
+  const ready = listed({ place: 'ready', score: 50, pull: 'steady', town: 'Channelview' })
+  ok(matchesControls(ready, {}), 'an unnarrowed list dropped a row')
+  ok(!matchesControls(ready, { minScore: 70 }), 'a score floor let a lower score through')
+  ok(matchesControls(ready, { minScore: 40 }), 'a score floor hid a row above it')
+  ok(!matchesControls(ready, { pull: 'busy' }), 'a trade reading let another reading through')
+  ok(!matchesControls(ready, { town: 'Baytown' }), 'a town filter let another town through')
+  ok(!matchesControls(ready, { trade: 'welder' }), 'a trade filter let another trade through')
+  ok(!matchesControls(ready, { state: 'fresh' }), 'the never-called filter let a rung row through')
+  ok(matchesControls(ready, { state: 'rung' }), 'the rung-and-ready filter hid a ready row')
+  ok(matchesControls(ready, { search: 'channelview' }), 'a search missed the town it names')
+  ok(matchesControls(ready, { search: '862-9968' }), 'a search missed the number it names')
 })
 
 // ── What a call comes to ────────────────────────────────────────────────
@@ -269,6 +639,27 @@ check('every outcome carries a label and a tone, and none repeats an id', () => 
   for (const outcome of CALL_OUTCOMES) {
     ok(outcome.label && outcome.tone, `${outcome.id} is missing a label or a tone`)
   }
+})
+
+check('every outcome sits in a track, and every track has something in it', () => {
+  // The tracks are what turn eight buttons into four decisions on screen, so
+  // an outcome added later without one would simply not be offered.
+  const tracks = new Set(TRACKS.map(track => track.id))
+  for (const outcome of CALL_OUTCOMES) {
+    ok(tracks.has(outcome.track), `${outcome.id} is in no track`)
+  }
+  for (const track of TRACKS) {
+    ok(
+      CALL_OUTCOMES.some(outcome => outcome.track === track.id),
+      `${track.id} holds no outcome`
+    )
+  }
+})
+
+check('every outcome carries the key it is recorded on, and no key repeats', () => {
+  const keys = CALL_OUTCOMES.map(outcome => outcome.key)
+  same(new Set(keys).size, keys.length, 'two outcomes sharing a key')
+  for (const key of keys) ok(/^[1-9]$/.test(key), `${key} is not a number key`)
 })
 
 check('the outcomes that end a business are the ones that should', () => {
