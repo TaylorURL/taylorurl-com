@@ -8,10 +8,11 @@ const SHOW_THRESHOLD = 320
 
 const SECTIONS = [
   { id: 'hero', label: 'Index', num: '00' },
-  { id: 'capabilities', label: 'Work', num: '01' },
-  { id: 'testimonials', label: 'Voices', num: '02' },
-  { id: 'how', label: 'Process', num: '03' },
-  { id: 'cta', label: 'Contact', num: '04' },
+  { id: 'who', label: 'Built', num: '01' },
+  { id: 'capabilities', label: 'Work', num: '02' },
+  { id: 'testimonials', label: 'Voices', num: '03' },
+  { id: 'how', label: 'Process', num: '04' },
+  { id: 'cta', label: 'Contact', num: '05' },
 ]
 
 // Where down the window the marker reads the page from. A third of the way in
