@@ -22,10 +22,12 @@ export default function TestimonialsSection() {
   const writeTo = reviewSourcesWith('writes')[0]
   const holdsTheQuotes = QUOTED_SOURCES[0]
 
-  // The three things a reader takes in here, in the order they are met.
+  // The heading swells and nothing else in this band does. The quotes below it
+  // are other people's words standing as evidence, and a testimonial that grows
+  // as the page goes by is the site performing over the testimony rather than
+  // presenting it. The buttons under them are targets, and a target that
+  // changes size while a pointer is travelling to it is a worse target.
   const heading = useScrollSwell()
-  const rail = useScrollSwell()
-  const actions = useScrollSwell()
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
@@ -102,15 +104,9 @@ export default function TestimonialsSection() {
           </m.div>
         </m.div>
 
-        <m.div ref={rail.ref} style={rail.style}>
-          <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
-        </m.div>
+        <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
 
-        <m.div
-          ref={actions.ref}
-          style={actions.style}
-          className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
-        >
+        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           {writeTo && (
             <a
               href={writeTo.writes}
@@ -135,7 +131,7 @@ export default function TestimonialsSection() {
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </a>
           )}
-        </m.div>
+        </div>
       </div>
     </section>
   )
