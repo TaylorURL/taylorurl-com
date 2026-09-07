@@ -535,6 +535,13 @@ export const COMPANY_PHONE_HREF = SITE.phoneHref
 // the same two lines.
 export const COMPANY_LOCATION = SITE.location
 
+// Where the company is written to, which the line above does not answer. The
+// area claim and the mail box are two facts and the site says both: the towns
+// the work reaches, and the Houston address the business is registered at.
+// Null on a site that claims no address, and the foot of the page prints
+// nothing rather than a blank line.
+export const COMPANY_MAILING_ADDRESS = SITE.mailingAddress
+
 // How an inquiry says it wants to be answered. The form asks because the sender
 // knows better than the page does: a number on the screen says a call is
 // possible, not that it is wanted, and a reply that guesses gets it wrong about

@@ -8,6 +8,7 @@ import { TRUSTPILOT_PROFILE_URL } from '@data/reputation/trustpilot'
 import { BBB_PROFILE_URL } from '@data/reputation/bbb'
 import {
   COMPANY_LOCATION,
+  COMPANY_MAILING_ADDRESS,
   COMPANY_PHONE,
   COMPANY_PHONE_HREF,
   FACEBOOK_URL,
@@ -347,6 +348,24 @@ export default function Footer() {
             ) : null}
           </div>
         </div>
+
+        {/*
+          The mail box, on the last line of the page.
+
+          It sits under the legal bar rather than inside it because it answers a
+          different question from everything on that row. The copyright names
+          who the site belongs to and the town names where the work comes from;
+          this is the address the company is written to, and a reader looking
+          for it is looking for the bottom of the page.
+
+          `address` rather than a paragraph, and not italic, because the element
+          is what the line is: the contact address for the document above it.
+        */}
+        {COMPANY_MAILING_ADDRESS ? (
+          <address className="mt-6 text-[13px] not-italic leading-relaxed text-ink-faint">
+            {COMPANY_MAILING_ADDRESS}
+          </address>
+        ) : null}
       </m.div>
     </footer>
   )

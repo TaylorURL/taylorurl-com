@@ -16,9 +16,13 @@
  *
  * A business whose only web presence is a profile on someone else's platform
  * carries no score and never will, because there is no site of its own to
- * measure. It has no site at all, which makes it the strongest lead on the
- * list, so it ranks ahead of every scored business rather than falling in with
- * the rows nothing has been measured on yet.
+ * measure, and neither does one with no presence anywhere. Both have no site
+ * at all, which makes them the strongest leads on the list, so they rank ahead
+ * of every scored business rather than falling in with the rows nothing has
+ * been measured on yet. The two are one fact told twice over, and the
+ * difference between them - a profile somewhere or nothing anywhere - is a
+ * difference in what the message opens on rather than in how strong the lead
+ * is.
  */
 import { hostOf, platformOf } from '../../../lib/outreach/prospects/platforms.js'
 
@@ -36,14 +40,23 @@ const UNMEASURED_RANK = 1000
 /**
  * Whether a business has no site of its own for a score to be taken of.
  *
- * `site_kind` is the enrichment job's own reading of the website a listing
- * named, so it is what answers wherever it is set. A row written before that
- * column existed carries nothing, and for those the listed host is read the
- * way the pipeline reads it, through the platform list both sides share rather
- * than a second copy of it kept here.
+ * `site_kind` is the enrichment job's own verdict on the website a listing
+ * named, so it is what answers wherever it is set. It comes to 'none' and to
+ * 'social' for the same reason - the job looked and found no site belonging to
+ * the business - and both answer yes here, because a profile on somebody
+ * else's platform and no page anywhere are two shapes of having nothing of
+ * your own to measure.
+ *
+ * A row written before the column existed carries nothing, and for those the
+ * listed host is read the way the pipeline reads it, through the platform list
+ * both sides share rather than a second copy of it kept here. What that
+ * fallback deliberately does not do is answer yes to a row holding neither a
+ * kind nor a website: that is a row nobody has read yet rather than a business
+ * with nothing, and reading an empty column as a finding would promote every
+ * unenriched listing on the table to the front of the queue.
  */
-export function isSocialOnly(prospect) {
-  if (prospect?.site_kind) return prospect.site_kind === 'social'
+export function hasNoSiteOfItsOwn(prospect) {
+  if (prospect?.site_kind) return prospect.site_kind === 'social' || prospect.site_kind === 'none'
   return Boolean(platformOf(hostOf(prospect?.website)))
 }
 
@@ -58,7 +71,7 @@ export function auditScore(prospect) {
 
 /** Which band a prospect sits in: `strong`, `fair`, `weak`, or `none`. */
 export function opportunityBand(prospect) {
-  if (isSocialOnly(prospect)) return 'strong'
+  if (hasNoSiteOfItsOwn(prospect)) return 'strong'
   const score = auditScore(prospect)
   if (score === null) return 'none'
   if (score >= WEAK_FLOOR) return 'weak'
@@ -75,7 +88,7 @@ export function opportunityBand(prospect) {
  * than scattered through the scored rows at a score they were never given.
  */
 export function opportunityRank(prospect) {
-  if (isSocialOnly(prospect)) return 0
+  if (hasNoSiteOfItsOwn(prospect)) return 0
   const score = auditScore(prospect)
   return score === null ? UNMEASURED_RANK : score + 1
 }

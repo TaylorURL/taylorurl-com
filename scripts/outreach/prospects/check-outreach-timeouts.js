@@ -9,7 +9,7 @@
  * behaviours that depend on it: a candidate that gives up leaves the search
  * running, and a capture stops asking once the budget it was lent is spent.
  */
-import { findSite } from '../../../lib/outreach/prospects/site-search.js'
+import { USER_AGENT, findSite } from '../../../lib/outreach/prospects/site-search.js'
 import { ensureShot } from '../../../lib/outreach/audit/shot.js'
 
 const cases = []
@@ -72,6 +72,22 @@ check('findSite gives every candidate a signal', async () => {
   for (const init of inits) {
     ok(init?.signal instanceof AbortSignal, 'a candidate was fetched with no signal')
     same(init.redirect, 'follow', 'redirect handling')
+  }
+})
+
+check('findSite says who it is on every candidate', async () => {
+  // A host that turns away a client with no name answers the same nothing a
+  // host that does not exist answers, and the search cannot tell the two
+  // apart. Every wall it meets anonymous is read as a business with no site,
+  // which is the one reading it exists to keep honest.
+  const inits = []
+  await findSite(PROSPECT, async (url, init) => {
+    inits.push(init)
+    throw new Error('did not answer')
+  })
+  for (const init of inits) {
+    same(init?.headers?.['User-Agent'], USER_AGENT, 'the client a candidate was asked as')
+    ok(init?.headers?.Accept?.includes('text/html'), 'a candidate asked for no particular page')
   }
 })
 
