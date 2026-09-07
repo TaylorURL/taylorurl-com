@@ -2,6 +2,7 @@ import { m } from 'framer-motion'
 import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { fadeInUp } from '@constants/animations'
+import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import {
   PORTFOLIO_AVERAGES,
   PORTFOLIO_PROJECTS,
@@ -178,20 +179,26 @@ function ProcessTimeline() {
 export default function CapabilitiesSection() {
   const shown = projectFor(SHOWN)
   const measured = projectFor(MEASURED)
+  // Set narrower than the rail, so it grows off its own left edge rather than
+  // out of the line the card grid below it is set to.
+  const heading = useScrollSwell({ origin: 'left' })
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
       <div className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.iso}`} aria-hidden="true" />
       <div className="container-rail relative">
-        <m.h2
-          {...fadeInUp}
-          className="display-3 max-w-[20ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]"
-        >
-          Every site on this page is live.{' '}
-          <span className="text-paper-soft">
-            Built for a business nearby, and I still look after every one of them.
-          </span>
-        </m.h2>
+        <m.div {...fadeInUp}>
+          <m.h2
+            ref={heading.ref}
+            style={heading.style}
+            className="display-3 max-w-[20ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]"
+          >
+            Every site on this page is live.{' '}
+            <span className="text-paper-soft">
+              Built for a business nearby, and I still look after every one of them.
+            </span>
+          </m.h2>
+        </m.div>
 
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {shown ? (

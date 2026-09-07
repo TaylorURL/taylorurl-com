@@ -6,6 +6,7 @@ import ReviewCarousel from '@components/reviews/ReviewCarousel'
 import ReviewStandingRail from '@components/reviews/ReviewStandingRail'
 import { reviewSourceFill, reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
 import { fadeInUp } from '@constants/animations'
+import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import { BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import { CLIENT_REVIEW_LIST, QUOTED_SOURCES, reviewSourcesWith } from '@data/reputation/reviews'
 import { AccentGradient } from '@reactbits/kit'
@@ -21,6 +22,11 @@ export default function TestimonialsSection() {
   const writeTo = reviewSourcesWith('writes')[0]
   const holdsTheQuotes = QUOTED_SOURCES[0]
 
+  // The three things a reader takes in here, in the order they are met.
+  const heading = useScrollSwell()
+  const rail = useScrollSwell()
+  const actions = useScrollSwell()
+
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
       <div
@@ -28,73 +34,83 @@ export default function TestimonialsSection() {
         aria-hidden="true"
       />
       <div className="container-rail relative flex flex-col gap-12 md:gap-16">
-        <m.div
-          {...fadeInUp}
-          className="border-hair-paper grid items-end gap-10 border-b pb-16 lg:grid-cols-[1.4fr_1fr]"
-        >
-          <div>
-            <p className="section-label mb-5 text-accent">Reviews</p>
-            <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
-              Owners who <br />
-              <AccentGradient>hired me.</AccentGradient>
-            </h2>
-          </div>
-          {/* The ratings rail inside is a scroller of fixed-width badges, and a
+        <m.div {...fadeInUp}>
+          <m.div
+            ref={heading.ref}
+            style={heading.style}
+            className="border-hair-paper grid items-end gap-10 border-b pb-16 lg:grid-cols-[1.4fr_1fr]"
+          >
+            <div>
+              <p className="section-label mb-5 text-accent">Reviews</p>
+              <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
+                Owners who <br />
+                <AccentGradient>hired me.</AccentGradient>
+              </h2>
+            </div>
+            {/* The ratings rail inside is a scroller of fixed-width badges, and a
               scroller's own content is as wide as everything on it. Left to size
               itself this column would be asked for the width of all five badges
               laid end to end and would take it out of the headline beside it. */}
-          <div className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
-            <div className="flex items-start gap-4 lg:flex-row-reverse">
-              <img
-                src="/images/trenton-taylor.webp"
-                srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
-                alt=""
-                width="72"
-                height="72"
-                loading="lazy"
-                decoding="async"
-                className="border-hair-paper-strong h-[72px] w-[72px] shrink-0 rounded-md border object-cover"
-              />
-              <div className="max-w-[46ch] lg:text-right">
-                <p className="text-[14px] font-semibold text-ink-paper">
-                  Trenton Taylor <span className="text-paper-faint font-normal">· {BIO_TITLE}</span>
-                </p>
-                <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
+            <div className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
+              <div className="flex items-start gap-4 lg:flex-row-reverse">
+                <img
+                  src="/images/trenton-taylor.webp"
+                  srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
+                  alt=""
+                  width="72"
+                  height="72"
+                  loading="lazy"
+                  decoding="async"
+                  className="border-hair-paper-strong h-[72px] w-[72px] shrink-0 rounded-md border object-cover"
+                />
+                <div className="max-w-[46ch] lg:text-right">
+                  <p className="text-[14px] font-semibold text-ink-paper">
+                    Trenton Taylor{' '}
+                    <span className="text-paper-faint font-normal">· {BIO_TITLE}</span>
+                  </p>
+                  <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
+                </div>
               </div>
-            </div>
-            <ReviewStandingRail />
+              <ReviewStandingRail />
 
-            {/*
+              {/*
               Every listing the same business is reviewed on, each in its own
               colour. The colours are the point rather than decoration: a row set
               in one house ink reads as a list this site wrote, and the only
               thing worth saying here is that these are other people's pages and
               a reader can go and look at any of them.
             */}
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 lg:justify-end">
-              {readable.map(source => {
-                const Mark = reviewSourceMark(source.key)
-                return (
-                  <a
-                    key={source.key}
-                    href={source.reads}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{ '--review-ink': reviewSourceInk(source.key) }}
-                    className="group -my-3 flex min-h-[44px] items-center gap-2 py-3 text-[13px] font-medium text-paper-soft transition-colors hover:text-[color:var(--review-ink)]"
-                  >
-                    {Mark && <Mark className="h-4 w-4" style={{ color: 'var(--mark-brand)' }} />}
-                    {source.label}
-                  </a>
-                )
-              })}
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-1 lg:justify-end">
+                {readable.map(source => {
+                  const Mark = reviewSourceMark(source.key)
+                  return (
+                    <a
+                      key={source.key}
+                      href={source.reads}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ '--review-ink': reviewSourceInk(source.key) }}
+                      className="group -my-3 flex min-h-[44px] items-center gap-2 py-3 text-[13px] font-medium text-paper-soft transition-colors hover:text-[color:var(--review-ink)]"
+                    >
+                      {Mark && <Mark className="h-4 w-4" style={{ color: 'var(--mark-brand)' }} />}
+                      {source.label}
+                    </a>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          </m.div>
         </m.div>
 
-        <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
+        <m.div ref={rail.ref} style={rail.style}>
+          <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
+        </m.div>
 
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+        <m.div
+          ref={actions.ref}
+          style={actions.style}
+          className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4"
+        >
           {writeTo && (
             <a
               href={writeTo.writes}
@@ -119,7 +135,7 @@ export default function TestimonialsSection() {
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </a>
           )}
-        </div>
+        </m.div>
       </div>
     </section>
   )
