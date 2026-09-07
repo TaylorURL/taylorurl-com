@@ -88,6 +88,7 @@ const loaders = {
         ConsoleSettings: () => import('@views/console/pages/studio/SettingsPage'),
         ConsoleBuilds: () => import('@views/console/pages/studio/BuildsPage'),
         ConsoleLeads: () => import('@views/console/pages/studio/LeadsPage'),
+        ConsoleCalls: () => import('@views/console/pages/studio/CallsPage'),
         ConsolePayments: () => import('@views/console/pages/studio/PaymentsPage'),
         ConsoleAdmin: () => import('@views/console/pages/studio/AdminPage'),
         ConsoleStatus: () => import('@views/console/pages/health/StatusPage'),

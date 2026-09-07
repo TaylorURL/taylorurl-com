@@ -415,3 +415,14 @@ export function MarkTender(props) {
     </svg>
   )
 }
+
+/** The call list: a handset off its rest, and the line it is placed down. */
+export function MarkDial(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <rect x="3" y="3.5" width="5" height="5" />
+      <rect x="16" y="15.5" width="5" height="5" />
+      <path d="M8 8.5l8 7" />
+    </svg>
+  )
+}

@@ -149,6 +149,7 @@ const ALL_ROUTES = [
       { key: 'ConsoleSettings', path: 'settings' },
       { key: 'ConsoleBuilds', path: 'builds' },
       { key: 'ConsoleLeads', path: 'leads' },
+      { key: 'ConsoleCalls', path: 'calls' },
       { key: 'ConsolePayments', path: 'payments' },
       { key: 'ConsoleAdmin', path: 'admin' },
       { key: 'ConsoleStatus', path: 'status' },
