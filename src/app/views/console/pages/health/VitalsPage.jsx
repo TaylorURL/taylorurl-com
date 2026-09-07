@@ -21,7 +21,8 @@ import {
 import { CELL_TIGHT, CHART_HEIGHT, MONO_LABEL, QUIET, ROW_HEIGHT, TH_TIGHT } from '../../lib/tokens'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import { SiteIcon } from '../../SiteIcon'
-import { DeviceKey, ScoreBars } from './VitalsCharts'
+import { DeviceKey, ScoreBars, VitalBars } from './VitalsCharts'
+import { VITALS, vitalFor } from '../../lib/vitals'
 
 /**
  * What a page costs the person opening it, measured by Google's PageSpeed
@@ -34,12 +35,25 @@ import { DeviceKey, ScoreBars } from './VitalsCharts'
  *
  * The table leads and the chart stands beside it. Across the account the
  * table is a row per site carrying the four scores of one device, with the
- * other device a switch away, and the chart is every site's performance on
- * both devices, ranked - which is where a slow site is seen before its row is
- * found. With one site in scope the table is the whole reading, the four
- * scores and then what they were built from, with the two devices as its
- * columns, and the chart is the same four scores drawn so the distance
- * between the phone and the desktop is a shape rather than a subtraction.
+ * other device a switch away, and the chart is one of the three vitals across
+ * every site, slowest first - which is where a slow site is seen before its
+ * row is found.
+ *
+ * The chart shows a timing rather than the performance score because the
+ * score is already the table's first column, and a chart repeating a column
+ * it stands beside says nothing twice. It is also the shape the numbers are
+ * in: every site that is being looked after scores in the nineties, so
+ * fifteen scores are fifteen marks in one tenth of the card, while the
+ * timings under them run from half a second to four and spread across the
+ * whole of it. The score says whether a page is fine; the timing says which
+ * second of the load to go and look at.
+ *
+ * With one site in scope the table is the whole reading, the four scores and
+ * then what they were built from, with the two devices as its columns, and
+ * the chart is the same four scores drawn so the distance between the phone
+ * and the desktop is a shape rather than a subtraction. There the timings are
+ * in the table already, in full and for both devices, so the chart is free to
+ * carry the scores.
  *
  * The bands are Lighthouse's own: 90 and over is good, 50 to 89 needs work,
  * under 50 is poor. A score is drawn in its band rather than described in a
@@ -140,6 +154,11 @@ function since(stamp) {
   return `${Math.round(hours / 24)}d ago`
 }
 
+/** The worse of a row's two readings, which is where the chart places it. */
+function worst(row) {
+  return Math.max(row.mobile ?? -1, row.desktop ?? -1)
+}
+
 /** The newer of a site's two readings, which is when it was last measured. */
 function latestOf(readings) {
   const stamps = STRATEGIES.map(strategy => readings?.[strategy.key]?.fetched_at).filter(Boolean)
@@ -178,6 +197,32 @@ function DeviceSwitch({ device, onPick }) {
         >
           <strategy.Icon className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
           {strategy.label}
+        </button>
+      ))}
+    </span>
+  )
+}
+
+/**
+ * The three vitals, as a switch between them.
+ *
+ * Abbreviated, because the card is a third of the page at the desk and three
+ * full names do not fit under it. The one that is open has its whole name
+ * spelled out in the head of the card above, which is where a reader who does
+ * not know the initials will look.
+ */
+function VitalSwitch({ vital, onPick }) {
+  return (
+    <span className="console-segmented" role="group" aria-label="Vital">
+      {VITALS.map(entry => (
+        <button
+          key={entry.key}
+          type="button"
+          onClick={() => onPick(entry.key)}
+          aria-pressed={vital === entry.key}
+          title={entry.name}
+        >
+          {entry.label}
         </button>
       ))}
     </span>
@@ -428,23 +473,31 @@ export default function VitalsPage() {
   // account-wide table first and replaced it with the reading a moment later.
   const site = siteId ? sites.find(row => row.site_id === siteId) : null
   const [device, setDevice] = useState('mobile')
+  const [vitalKey, setVitalKey] = useState(VITALS[0].key)
+  const vital = vitalFor(vitalKey)
   // The shape of the table the reader last saw, which is also how many bars
   // the chart beside it is about to draw.
   const remembered = recalledRows(ROWS_KEY, 5, ROW_HEIGHT.plain)
 
-  // Ranked by the phone, which is the harsher of the two and the one Google
-  // ranks a page by. A site measured on neither device has no bar to draw.
+  // Worst first - the top of the card being the part a reader sees without
+  // scrolling, and the slow site being the reason to open it. A row is placed
+  // by its worse device rather than by the phone: the phone is the harsher of
+  // the two on paint, but blocking time is routinely worse on the desktop,
+  // and a list headed "worst first" that buries the worst reading on the page
+  // is worse than one that is not ordered at all.
+  //
+  // A site measured on neither device has no marks to draw.
   const ranked = useMemo(
     () =>
       sites
         .map(row => ({
           name: displayDomain(row.name),
-          mobile: row.readings?.mobile?.performance ?? null,
-          desktop: row.readings?.desktop?.performance ?? null,
+          mobile: row.readings?.mobile?.[vital.key] ?? null,
+          desktop: row.readings?.desktop?.[vital.key] ?? null,
         }))
         .filter(row => row.mobile !== null || row.desktop !== null)
-        .sort((a, b) => (b.mobile ?? -1) - (a.mobile ?? -1)),
-    [sites]
+        .sort((a, b) => worst(b) - worst(a)),
+    [sites, vital]
   )
   const categories = useMemo(() => {
     const readings = site?.readings
@@ -461,8 +514,8 @@ export default function VitalsPage() {
   const chart = siteId
     ? { title: 'Scores', aside: 'out of 100', rows: categories, empty: 'Not measured yet.' }
     : {
-        title: 'Performance',
-        aside: 'out of 100, best first',
+        title: 'Core Web Vitals',
+        aside: `${vital.name}, worst first`,
         rows: ranked,
         empty: 'Nothing has been measured yet.',
       }
@@ -519,17 +572,19 @@ export default function VitalsPage() {
         <PanelFill minHeight={floor}>
           {loading ? (
             <SkeletonBox height="100%" />
-          ) : chart.rows.length ? (
-            <ScoreBars rows={chart.rows} fill />
-          ) : (
+          ) : !chart.rows.length ? (
             <p className="flex items-center justify-center px-5 text-center text-[13px] text-paper-soft">
               {chart.empty}
             </p>
+          ) : siteId ? (
+            <ScoreBars rows={chart.rows} fill />
+          ) : (
+            <VitalBars rows={chart.rows} vital={vital.key} fill />
           )}
         </PanelFill>
         <PanelFoot>
           <DeviceKey />
-          {siteId && <BandKey />}
+          {siteId ? <BandKey /> : <VitalSwitch vital={vital.key} onPick={setVitalKey} />}
         </PanelFoot>
       </Panel>
     </ConsolePage>
