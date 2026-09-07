@@ -6,6 +6,7 @@ import { GROUNDS } from '@constants/grounds'
 import { fadeInUp } from '@constants/animations'
 import { ABOUT } from '@data/pages/about'
 import { CLIENT_PROJECTS } from '@data/portfolio'
+import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import WorkDeck from './WorkDeck'
 
 /**
@@ -30,10 +31,19 @@ import WorkDeck from './WorkDeck'
  * The depth is in `WorkDeck`, and it is a rotation rather than a decoration:
  * the frames stand on a rail that turns them as it carries them past, so the
  * one being read faces the reader square and its neighbours are edging away.
- * Nothing here moves on a timer except the rail, and the rail holds still while
- * a pointer is over it.
+ * The rail advances itself, and holds still while a pointer is over it.
  */
 export default function OnePersonSection() {
+  // The claim swells as its turn comes round; the deck under it does not. The
+  // frames on that rail are already turning as they travel, and a band that
+  // scaled them at the same time would be two motions arguing over one row.
+  //
+  // It grows off its own left edge because the deck is set to that same edge
+  // and stays where it is. Grown from the middle the headline steps twenty
+  // pixels out of the line the frames underneath it are still holding, which
+  // reads as the margin slipping rather than as the words coming forward.
+  const heading = useScrollSwell({ origin: 'left' })
+
   return (
     <section className="section-y-lg border-hair-paper relative isolate overflow-x-clip border-t bg-paper">
       <div
@@ -45,7 +55,11 @@ export default function OnePersonSection() {
         {/* The claim on the left and the qualification on the right, so the
             headline keeps a measure it can be set at and the paragraph is not
             one line of eighty characters underneath it. */}
-        <div className="xl:grid xl:grid-cols-[1.15fr_0.85fr] xl:items-end xl:gap-16">
+        <m.div
+          ref={heading.ref}
+          style={heading.style}
+          className="xl:grid xl:grid-cols-[1.15fr_0.85fr] xl:items-end xl:gap-16"
+        >
           <div>
             <p className="section-label mb-5 flex items-center gap-3 text-accent">
               <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />
@@ -68,7 +82,7 @@ export default function OnePersonSection() {
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </div>
-        </div>
+        </m.div>
 
         <div className="mt-12 lg:mt-16">
           <WorkDeck projects={CLIENT_PROJECTS} />
