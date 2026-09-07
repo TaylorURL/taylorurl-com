@@ -23,7 +23,7 @@ export const ABOUT_PAGE = {
     eyebrow: 'About Me',
     title: 'One person scopes the work, builds it, and hands it over.',
     description:
-      'I’m Trenton Taylor. TaylorURL LLC is one person: I take the first call, and I am still the one you message while the work runs. I build software to order, repair conversion tracking, and run outbound email.',
+      'I’m Trenton Taylor. I take the first call, and I’m the one you message while the work runs. I build software to order, repair conversion tracking, and run outbound email.',
   },
 
   story: {

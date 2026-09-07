@@ -1,6 +1,7 @@
 import Seo from '@components/Seo'
 import HeroSection from './HeroSection'
 import HeroLines from './heroes/HeroLines'
+import OnePersonSection from './OnePersonSection'
 import CapabilitiesSection from './CapabilitiesSection'
 import ServiceLinesSection from './ServiceLinesSection'
 import TestimonialsSection from './TestimonialsSection'
@@ -16,14 +17,22 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  * registry already carries a title and a description per site, so `/` takes its
  * own without this view knowing which one it is.
  *
- * Three of the five bands differ, and one does not run at all.
+ * Three of the six bands differ, and two do not run at all.
  *
- * The hero and the second band change component rather than copy. The studio's
- * hero rotates four presentations of one offer and its second band is a wall of
+ * The hero and the third band change component rather than copy. The studio's
+ * hero rotates four presentations of one offer and its third band is a wall of
  * artefacts - a client's site, a measured score, the board that watches them -
  * and the second site has one offer in three lines and none of those artefacts.
  * Rewording either would have left the shape of a page arguing for something
  * else.
+ *
+ * The second band does not run on the second site, for the reason the reviews
+ * do not. Its claim is that one person builds the site, and what it offers as
+ * proof is the studio's own client work, read off `@data/portfolio`. The other
+ * record sells work to order under a different name and has no portfolio of its
+ * own, so the band there would be a row of somebody else's clients: proof it has
+ * not earned, which is the same trade the second site's about page refuses when
+ * it writes its figures out rather than reading the studio's.
  *
  * The reviews do not run on the second site at all. `CLIENT_REVIEW_LIST` is the
  * studio's clients writing about the studio, and `SITE.reviews` is already
@@ -41,6 +50,11 @@ export default function Home() {
     <div>
       <Seo path="/" />
       <div id="hero">{IS_SECOND_SITE ? <HeroLines /> : <HeroSection />}</div>
+      {IS_SECOND_SITE ? null : (
+        <div id="who">
+          <OnePersonSection />
+        </div>
+      )}
       <div id="capabilities">
         {IS_SECOND_SITE ? <ServiceLinesSection /> : <CapabilitiesSection />}
       </div>
