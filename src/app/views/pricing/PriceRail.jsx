@@ -2,7 +2,7 @@ import { m } from 'framer-motion'
 import { ArrowDown } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
-import { INCLUDED_COUNT } from '@data/pricing'
+import { INCLUDED_COUNT } from '@data/checkout/pricing'
 
 const PAPER = GROUNDS.paper
 

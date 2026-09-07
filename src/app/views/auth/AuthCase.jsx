@@ -1,5 +1,5 @@
-import { useStatusFeed } from '@hooks/useStatusFeed'
-import { MarkCurve, MarkGauge, MarkInflow, MarkNow, MarkPulse } from '@components/marks'
+import { useStatusFeed } from '@hooks/console/useStatusFeed'
+import { MarkCurve, MarkGauge, MarkInflow, MarkNow, MarkPulse } from '@components/marks/marks'
 
 /**
  * The panel beside the sign-in form: what the console holds, and the two

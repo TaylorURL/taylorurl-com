@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import Mesh from '@components/Mesh'
+import Mesh from '@components/mesh/Mesh'
 import { GROUNDS } from '@constants/grounds'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 

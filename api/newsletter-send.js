@@ -28,7 +28,7 @@ import { createClient } from '@supabase/supabase-js'
 import { SENT, contentRefusal, sendRefusal } from '../lib/mail/issues.js'
 import { audienceOf, selectRecipients } from '../lib/mail/audience.js'
 import { readAll } from '../lib/db/rows.js'
-import { renderIssueEmail, unsubscribeUrl } from '../src/app/utils/emailTemplate.js'
+import { renderIssueEmail, unsubscribeUrl } from '../lib/mail/emailTemplate.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gujgtjqqurildqurpffh.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''

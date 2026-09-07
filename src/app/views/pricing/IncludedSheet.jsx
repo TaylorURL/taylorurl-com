@@ -1,6 +1,6 @@
 import { Check } from 'lucide-react'
 import { GROUNDS } from '@constants/grounds'
-import { INCLUDED_COUNT, INCLUDED_GROUPS } from '@data/pricing'
+import { INCLUDED_COUNT, INCLUDED_GROUPS } from '@data/checkout/pricing'
 
 const PAPER = GROUNDS.paper
 

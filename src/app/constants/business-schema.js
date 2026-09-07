@@ -16,8 +16,8 @@
  * the same reason, as the one on `lib/site/sites.js`.
  */
 
-import { CLIENT_REVIEW_LIST, reviewSource } from '../data/reviews.js'
-import { TRUSTPILOT_STANDING } from '../data/trustpilot-standing.js'
+import { CLIENT_REVIEW_LIST, reviewSource } from '../data/reputation/reviews.js'
+import { TRUSTPILOT_STANDING } from '../data/reputation/trustpilot-standing.js'
 
 /**
  * The Trustpilot standing, in the shape the business node publishes it.

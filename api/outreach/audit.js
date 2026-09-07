@@ -58,7 +58,7 @@
 
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { mapWithLimit, runJob } from '../../lib/outreach/runtime.js'
-import { measure, reading } from '../../lib/outreach/pagespeed.js'
+import { measure, reading } from '../../lib/outreach/audit/pagespeed.js'
 
 const API_KEY = process.env.GOOGLE_PAGESPEED_API_KEY || ''
 

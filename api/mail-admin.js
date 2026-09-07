@@ -42,7 +42,7 @@ import { uuid } from '../lib/db/fields.js'
 
 import { FAMILIES, renderFamily } from '../lib/mail/catalogue.js'
 import { inertHtml, inertText } from '../lib/mail/preview.js'
-import { shotUrl } from '../lib/outreach/shot.js'
+import { shotUrl } from '../lib/outreach/audit/shot.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY
 const RESEND_ENDPOINT = 'https://api.resend.com/emails'
@@ -54,7 +54,7 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 const FROM = process.env.NEWSLETTER_FROM || 'TaylorURL <notes@taylorurl.com>'
 
 // The subject a copy arrives under, so a cold message in the studio's own
-// inbox cannot be mistaken for one a prospect received. `scripts/preview-emails.mjs`
+// inbox cannot be mistaken for one a prospect received. `scripts/mail/preview-emails.mjs`
 // has marked its copies this way since before there was a console.
 const SUBJECT_PREFIX = '[Preview] '
 
@@ -194,7 +194,7 @@ async function newsletterMessage(db, id) {
   if (found.error) return { status: 500, body: { error: found.error.message } }
   if (!found.data) return { status: 404, body: { error: 'That send is no longer here.' } }
 
-  const { renderIssueEmail } = await import('../src/app/utils/emailTemplate.js')
+  const { renderIssueEmail } = await import('../lib/mail/emailTemplate.js')
   const issue = await db
     .from('newsletter_issues')
     .select('id, slug, title, preheader, body')

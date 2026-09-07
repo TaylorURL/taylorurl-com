@@ -27,7 +27,7 @@ import { servedHereOr404 } from '../lib/http/guard.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { target } from '../lib/http/target.js'
 
-// Held on the endpoint as well so `scripts/check-site-audit.js` can hold the
+// Held on the endpoint as well so `scripts/free-tools/check-site-audit.js` can hold the
 // address guard to the list it must refuse without a network between the two.
 export { target }
 

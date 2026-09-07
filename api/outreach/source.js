@@ -146,7 +146,7 @@ export const SOURCE = 'places'
  * listing with no reviews rather than a count of zero. The table also holds
  * rows filed before the mask carried these fields, where the same null means
  * nobody asked, and nothing on the row tells the two apart - which is why
- * `lib/outreach/youth.js` reads a null count as unread and never as young.
+ * `lib/outreach/prospects/youth.js` reads a null count as unread and never as young.
  *
  * Exported for the check that reads the row without a map to ask.
  */

@@ -5,7 +5,7 @@
  * changes are required.
  *
  * Previews are WebP captures committed under `public/portfolio/`, one desktop
- * and one phone shot per site, produced by `scripts/capture-portfolio.js`.
+ * and one phone shot per site, produced by `scripts/portfolio/capture-portfolio.js`.
  * Static images keep the page smooth to scroll — a live embed of one of these
  * sites costs 0.3–1 MB of JavaScript per frame, twice per row, booting during
  * the scroll it would be judged by. Re-run the capture script when a client
@@ -33,7 +33,7 @@
  * - `displayUrl`   Hostname shown in the browser-chrome bar; also names the
  *                  capture files.
  * - `tagline`      Short category / stack chip surfaced above the heading.
- * - `trades`       Trade slugs from `@data/trades` this site is proof for. The
+ * - `trades`       Trade slugs from `@data/towns-and-trades/trades` this site is proof for. The
  *                  configurator on /start joins on them, so naming a slug here
  *                  is the whole of what makes a client the worked example for
  *                  that trade. Slugs with no control in the grid yet — welding,
@@ -307,7 +307,7 @@ function meanScore(projects, strategy) {
  * a literal in all three: re-measuring one site left three sentences quoting an
  * average no set of numbers on the site added up to, with nothing failing. It
  * is derived here so a new entry or a new measurement moves every sentence that
- * quotes it, and `scripts/check-portfolio-scores.js` fails a page that goes
+ * quotes it, and `scripts/portfolio/check-portfolio-scores.js` fails a page that goes
  * back to spelling one out.
  *
  * Both calls annotated, for the reason the note above `CLIENT_PROJECTS` gives.
@@ -322,7 +322,7 @@ export const PORTFOLIO_AVERAGES = {
 /**
  * The client sites that stand as proof for a trade.
  *
- * @param {string | null} trade Trade slug from `@data/trades`.
+ * @param {string | null} trade Trade slug from `@data/towns-and-trades/trades`.
  * @returns {Array<object>} Matching entries in portfolio order; empty for a
  *   trade no client works in yet.
  */
@@ -342,7 +342,7 @@ export const LOCAL_PORTFOLIO = /*#__PURE__*/ PORTFOLIO_PROJECTS.filter(project =
 
 /**
  * Public path of a project's committed preview image. Shared by the Portfolio
- * view (as the img src) and `scripts/capture-portfolio.js` (as the output
+ * view (as the img src) and `scripts/portfolio/capture-portfolio.js` (as the output
  * path), so the two can never disagree about where a capture lives.
  *
  * @param {{ displayUrl: string }} project Entry from `PORTFOLIO_PROJECTS`.
@@ -387,7 +387,7 @@ const SCREENSHOT_SERVICE_PREFIX = {
 /**
  * Server-rendered screenshot of a project's live site from thum.io. The
  * Portfolio view uses it as the fallback when a committed capture is missing;
- * `scripts/capture-portfolio.js` uses it as the source the committed captures
+ * `scripts/portfolio/capture-portfolio.js` uses it as the source the committed captures
  * are downloaded from.
  *
  * @param {{ url: string }} project Entry from `PORTFOLIO_PROJECTS`.

@@ -1,6 +1,6 @@
 import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
-import SessionScope from './app/components/SessionScope'
+import SessionScope from './app/components/account/SessionScope'
 import Providers from './app/Providers'
 import App from './app/App'
 import { matchViewKeys } from './app/constants/routes'
@@ -13,11 +13,23 @@ const nameOf = filePath => filePath.match(/\/([^/]+)\.jsx$/)[1]
 // Route views are keyed by file name; the console's sections live a directory
 // down and are keyed the way routes.jsx names them - OverviewPage becomes
 // ConsoleOverview - so the two lists cannot drift apart by a rename.
+//
+// A route view sits in the folder for the section of the site it serves, beside
+// the parts that build it, and the catch-all sits above them all because it
+// belongs to no section. Vite's single `*` does not cross a `/`, so both depths
+// have to be named: matching one of them alone would leave the views it missed
+// rendering as nothing, and - quieter, and worse - would cost their pages the
+// stylesheet links `viewSourcesFor` puts in the served head.
+//
+// Matching a section's parts alongside its route views is deliberate and
+// harmless: a key is only ever read by the name a route asks for, and no two
+// .jsx files anywhere under views/ share a basename, so a part cannot shadow
+// the view a route wanted.
 const viewEntries = [
-  ...Object.entries(import.meta.glob('./app/views/*.jsx', { eager: true })).map(
-    ([filePath, module]) => [nameOf(filePath), filePath, module.default]
-  ),
-  ...Object.entries(import.meta.glob('./app/views/console/pages/*.jsx', { eager: true })).map(
+  ...Object.entries(
+    import.meta.glob(['./app/views/*.jsx', './app/views/*/*.jsx'], { eager: true })
+  ).map(([filePath, module]) => [nameOf(filePath), filePath, module.default]),
+  ...Object.entries(import.meta.glob('./app/views/console/pages/*/*.jsx', { eager: true })).map(
     ([filePath, module]) => [
       `Console${nameOf(filePath).replace(/Page$/, '')}`,
       filePath,

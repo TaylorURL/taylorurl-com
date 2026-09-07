@@ -4,9 +4,9 @@
  *   POST { site, email }   the mobile PageSpeed reading of that address
  *
  * The same report, the same three bands and the same sentence about what a
- * score means that the outreach pipeline works from: `lib/outreach/pagespeed.js`
- * runs it, `lib/outreach/bands.js` says what it means, and
- * `lib/outreach/shot.js` takes the picture. A figure shown here and a figure
+ * score means that the outreach pipeline works from: `lib/outreach/audit/pagespeed.js`
+ * runs it, `lib/outreach/audit/bands.js` says what it means, and
+ * `lib/outreach/audit/shot.js` takes the picture. A figure shown here and a figure
  * quoted in a message are the same figure, because nothing here composes one.
  *
  * The address is a stranger's, so `lib/http/target.js` refuses anything that is
@@ -24,7 +24,7 @@
  * What it writes: one row in `public.speed_checks`, opened before the work
  * starts so a run that dies still leaves the record of who asked, and, once a
  * reading comes back, one row in `public.outreach_prospects` through
- * `lib/outreach/bridge.js`. An address given to get one answer is still not a
+ * `lib/outreach/prospects/bridge.js`. An address given to get one answer is still not a
  * subscription: `public.subscribers` is where a subscription lives and nothing
  * here goes near it. The prospect is a lead, and it answers to every rule the
  * leads beside it answer to - the same suppression list, the same address
@@ -43,12 +43,12 @@ import { countOf } from '../lib/db/rows.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { target } from '../lib/http/target.js'
 import { connect } from '../lib/db/clients.js'
-import { measure, reading } from '../lib/outreach/pagespeed.js'
-import { bandOf } from '../lib/outreach/bands.js'
-import { ensureShot } from '../lib/outreach/shot.js'
-import { suppressed } from '../lib/outreach/queue.js'
-import { bridge } from '../lib/outreach/bridge.js'
-import { loadHeldDomains } from '../lib/outreach/exclusions.js'
+import { measure, reading } from '../lib/outreach/audit/pagespeed.js'
+import { bandOf } from '../lib/outreach/audit/bands.js'
+import { ensureShot } from '../lib/outreach/audit/shot.js'
+import { suppressed } from '../lib/outreach/sending/queue.js'
+import { bridge } from '../lib/outreach/prospects/bridge.js'
+import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
 import { sendNotice, notice } from '../lib/mail/notice.js'
 import {
   DAY_MS,
@@ -250,7 +250,7 @@ async function announce(check) {
  * Somebody who typed their own site into a form and waited most of a minute for
  * a number has named a problem about their own business at the moment they
  * cared enough to go looking. It is the one lead in this pipeline the business
- * named itself, and `lib/outreach/bridge.js` carries it into
+ * named itself, and `lib/outreach/prospects/bridge.js` carries it into
  * `outreach_prospects` under the same suppression list, the same address rules
  * and the same held domains every other row in that table answers to.
  *

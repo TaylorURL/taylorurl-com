@@ -8,8 +8,8 @@ import {
   formatMeasuredDate,
   portfolioPreviewSrc,
 } from '@data/portfolio'
-import { PROCESS_TIMELINE } from '@data/home'
-import { useTheme } from '@hooks/useTheme'
+import { PROCESS_TIMELINE } from '@data/pages/home'
+import { useTheme } from '@hooks/theme/useTheme'
 import { Card, Foot, Plane } from './CapabilityCard'
 
 /**

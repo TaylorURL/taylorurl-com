@@ -1,4 +1,4 @@
-import { MarkPanel, MarkSquare, MarkSteps } from '@components/marks'
+import { MarkPanel, MarkSquare, MarkSteps } from '@components/marks/marks'
 
 /**
  * The panel beside the form for somebody who has just paid.

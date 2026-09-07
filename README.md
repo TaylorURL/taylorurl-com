@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.36.190-2f6bff?style=for-the-badge" alt="Version 2026.36.190" />
+  <img src="https://img.shields.io/badge/version-2026.36.191-2f6bff?style=for-the-badge" alt="Version 2026.36.191" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -73,23 +73,23 @@ npm run build         # production build, then static prerender of every route
 
 No environment configuration is required to run the site locally. The forms and the console's sign-in reach the backend with a publishable key, which row-level security scopes to what an anonymous reader may already see.
 
-`lib/` is part of the browser build, not only the serverless runtime. The console's outreach section reads a prospect the same way the pipeline writes one, so `src/app/utils/outreachOpportunity.js` imports `lib/outreach/platforms.js` and the build fails there if that directory is missing. Anything that carves the tree up — a partial checkout, a deploy that ships only `src/`, a branch holding the console without the pipeline — has to carry `lib/` with it.
+`lib/` is part of the browser build, not only the serverless runtime. The console's outreach section reads a prospect the same way the pipeline writes one, so `src/app/utils/outreachOpportunity.js` imports `lib/outreach/prospects/platforms.js` and the build fails there if that directory is missing. Anything that carves the tree up — a partial checkout, a deploy that ships only `src/`, a branch holding the console without the pipeline — has to carry `lib/` with it.
 
 ### Scripts
 
-| Script                           | Does                                                                                                       |
-| :------------------------------- | :--------------------------------------------------------------------------------------------------------- |
-| `npm run dev`                    | Start the Vite dev server.                                                                                 |
-| `npm run build`                  | Production build, then static prerender of every route.                                                    |
-| `npm run capture:portfolio`      | Regenerate the portfolio preview images in `public/portfolio/`.                                            |
-| `npm run audit:portfolio`        | Read every live site the portfolio names and report where the recorded copy no longer matches it.          |
-| `npm run capture:review-logos`   | Regenerate the reviewer logos in `public/images/reviews/` from each client's own site.                     |
-| `npm test`                       | Run the check suite.                                                                                       |
-| `npm run refresh:db-constraints` | Take the schema's CHECK constraints again into `scripts/db-constraints.json`. Run it with every migration. |
-| `npm run lint`                   | Lint with ESLint.                                                                                          |
-| `npm run lint:fix`               | Lint and auto-fix.                                                                                         |
-| `npm run format`                 | Format the repo with Prettier.                                                                             |
-| `npm run format:check`           | Check formatting without writing.                                                                          |
+| Script                           | Does                                                                                                          |
+| :------------------------------- | :------------------------------------------------------------------------------------------------------------ |
+| `npm run dev`                    | Start the Vite dev server.                                                                                    |
+| `npm run build`                  | Production build, then static prerender of every route.                                                       |
+| `npm run capture:portfolio`      | Regenerate the portfolio preview images in `public/portfolio/`.                                               |
+| `npm run audit:portfolio`        | Read every live site the portfolio names and report where the recorded copy no longer matches it.             |
+| `npm run capture:review-logos`   | Regenerate the reviewer logos in `public/images/reviews/` from each client's own site.                        |
+| `npm test`                       | Run the check suite.                                                                                          |
+| `npm run refresh:db-constraints` | Take the schema's CHECK constraints again into `scripts/db/db-constraints.json`. Run it with every migration. |
+| `npm run lint`                   | Lint with ESLint.                                                                                             |
+| `npm run lint:fix`               | Lint and auto-fix.                                                                                            |
+| `npm run format`                 | Format the repo with Prettier.                                                                                |
+| `npm run format:check`           | Check formatting without writing.                                                                             |
 
 ## Architecture
 
@@ -140,7 +140,7 @@ data-ignore="/console,/login,!/console/status"
 
 A path is ignored when it sits under an entry, unless it sits under one marked `!`, which counts it — the status board is open to anyone and the home page sends readers to it by name. A site that declares nothing ignores nothing.
 
-The tag only governs what is collected from the deploy forward, and a 30-day window reaches back well before it. So the console reads the same rule a second time over the rows it draws: `src/app/views/analytics/lib/counted.js` takes those paths out of the pages table and the two rankings beside it, and `scripts/check-traffic-ignore.js` holds the two declarations to the same string. It applies to this site's rows and no others — one tracker serves every site under care, and `rootriseholdings.com/login` is a client's own sign-in page rather than a workspace. What it does not touch is the window's totals, which arrive already added up, so a pageview count taken before the deploy still carries the console inside it. The rows the collector sends are the fifty most read, and dropping some of them leaves fewer rather than reaching for the next few; both heal as the window rolls past 5 September 2026.
+The tag only governs what is collected from the deploy forward, and a 30-day window reaches back well before it. So the console reads the same rule a second time over the rows it draws: `src/app/views/analytics/lib/counted.js` takes those paths out of the pages table and the two rankings beside it, and `scripts/console/check-traffic-ignore.js` holds the two declarations to the same string. It applies to this site's rows and no others — one tracker serves every site under care, and `rootriseholdings.com/login` is a client's own sign-in page rather than a workspace. What it does not touch is the window's totals, which arrive already added up, so a pageview count taken before the deploy still carries the console inside it. The rows the collector sends are the fifty most read, and dropping some of them leaves fewer rather than reaching for the next few; both heal as the window rolls past 5 September 2026.
 
 ## Blog
 
@@ -232,40 +232,71 @@ taylorurl-com/
 │   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, and the shapes a value takes before it reaches a column
 │   ├── http/                  Request guards, the timed fetch, the scheduler check, and the console's edge proxy
 │   ├── live-chat/             How much of the assistant one connection gets, and what a typed message is read for before a turn is spent
-│   ├── mail/                  The mailing list's audience, issues, catalogue, bodies and identity, and the brand a message sent for a client project is drawn in
-│   ├── outreach/              The pipeline's rules, limits, message and address checks
+│   ├── mail/                  The mailing list's audience, issues, catalogue, bodies, template and identity, and the brand a message sent for a client project is drawn in
+│   ├── outreach/              The message a prospect is given, and the door every outreach job stands behind
+│   │   ├── prospects/         Whether a business can be written to at all - the address, the exclusions, the host, the youth reading
+│   │   ├── audit/             The measurement of their site: the PageSpeed run, what a score means, the capture
+│   │   ├── sending/           The run itself - the queue and its ranking, the window, the caps and the ramp, the bounces and the replies
 │   │   └── openers/           The letters the sender can open with, one file each, listed by the registry beside them
 │   ├── social/                The social queue, its watch and the announcement
 │   ├── speed-check/           How a public speed reading is worded
 │   └── time/                  The zone every time in this project is read in
 ├── public/                    Static assets — logo, the two share cards, portfolio shots, robots.txt, the Geist woff2 files
-├── scripts/                   The check suite `npm test` runs, plus the capture, audit and regeneration tools
+├── scripts/                   Every check `npm test` runs, plus the capture, audit and regeneration tools, filed under the subject each one is about
+│   ├── outreach/              The cold pipeline, in the three stages a prospect passes through: prospects/, messages/, sending/
+│   ├── mail/                  The messages the studio sends under its own name, and the notifications door
+│   ├── social/                The post queue, its watch, and what an article writes for itself
+│   ├── leads/                 The visitor who becomes an enquiry, and what is recorded about them
+│   ├── checkout/              Reaching Stripe and being charged
+│   ├── onboarding/            The brief a payment turns into a build
+│   ├── auth/                  Getting an account, and getting back into it
+│   ├── console/               The signed-in sections, their skeletons, palettes and icons
+│   ├── site/                  Which deployment serves what, and that every link on it goes somewhere
+│   ├── content/               The published writing and the documents that list it
+│   ├── db/                    The values a column will take, paged reads, and the constraints they are checked against
+│   ├── reviews/               The rating networks, and the marks they are drawn with
+│   ├── portfolio/             The two halves of the portfolio, and the shots behind them
+│   ├── free-tools/            The QR encoder, the logo cutout, the site audit and the presence check's pacing
+│   ├── design/                The drafting ground the pages are set on, and the two faces that set them
+│   ├── home/                  The shots the home page stands on
+│   └── repo/                  What the tree as a whole is held to — no customer data, no AI attribution, one time zone
 ├── vite/                      Build plugins (prerender, sitemap, feed, llms.txt, review schema, head order, inline script, site head, site static) + shared route table
 ├── .github/workflows/         CI (the required `check` context), the attribution gate, and the portfolio captures
 ├── src/
 │   ├── app/
-│   │   ├── components/        Layout, Navigation, mockups, Seo
+│   │   ├── components/        Grouped by the part of the page each one serves
+│   │   │   ├── chrome/        The fixed furniture Layout mounts around every page
+│   │   │   ├── navigation/    The bar, its panel, the search and the palette control
+│   │   │   ├── page-bands/    The hero, the ruled band, and the frame a standing document is set in
+│   │   │   ├── mesh/          The ruled mesh and its three fillings
+│   │   │   ├── article/       The reading frame: body, controls, rail and the share row
+│   │   │   ├── reviews/       Cards, stars, standings and the seals
+│   │   │   ├── marks/         The drawing vocabulary and the three registries that key into it
+│   │   │   ├── conversion/    The things whose job is to move a reader to the next step
+│   │   │   ├── mockups/       The browser and phone frames a capture is shown in
+│   │   │   ├── account/       The ground the console and the auth screens sit on
+│   │   │   ├── app-shell/     The three modules mounted around the route tree
 │   │   │   └── reactbits/     WebGL + motion effects (Aurora, Particles, ShinyText…)
-│   │   ├── views/             Route views (Home, Services, Portfolio, Blog, Console…)
+│   │   ├── views/             One folder per section of the site: the route views it publishes, above the parts that build them
+│   │   │   ├── home/ company/ services/ pricing/ start/     The sales path, from the front page to the card (the configurator's own steps under start/steps/)
+│   │   │   ├── portfolio/ industries/ areas/ blog/ tools/   The pages that argue for it
+│   │   │   ├── notes/ subscription/                          The newsletter and its two confirmations
+│   │   │   ├── auth/ legal/                                  Signing in, and the three standing documents
+│   │   │   ├── console/       Console.jsx, its shell/, its intake/, and pages/ filed under the sidebar's own headings
 │   │   │   ├── analytics/     Charts, and the number formatting under lib/
-│   │   │   ├── console/       Console shell: sidebar, pages, and the section catalogue, tokens and shortcuts under lib/
 │   │   │   ├── status/        The uptime board, the console's public section
-│   │   │   ├── home/          The home page's sections, its chart, and the four hero presentations
-│   │   │   ├── start/         The configurator's steps, and the ground and look questions under lib/
-│   │   │   ├── tools/         The public tools: the Google presence check, logo cleaner and QR generator
-│   │   │   ├── services/      The blocks a service page is built from
-│   │   │   ├── notes/         The newsletter archive's artwork, body renderer, and date formats
-│   │   │   ├── subscription/  The frame the confirm and unsubscribe pages report into
-│   │   │   └── auth/          Shared shell and field for Log In, Sign Up, and the password reset pages
-│   │   ├── hooks/             session, two-factor, theme, analytics feed, toast, blog filters, scroll
+│   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
+│   │   ├── hooks/             console/ (the fifteen feeds and their shared state), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
 │   │   ├── constants/         navigation, seo, animations, grounds, mesh, routes
-│   │   ├── data/              blog articles, portfolio, trades and tools, pricing, reviews, newsletter issues
+│   │   ├── data/              pages/ and taylorwebsite/ (the copy each site publishes), towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, newsletter/, console/, supabase/
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, and how a site reading is worded
-│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, domain formatting, retrying lazy imports, the newsletter's email template, how a prospect's audit score reads
+│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, domain formatting, retrying lazy imports, how a prospect's audit score reads
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   └── main.jsx               Browser entry
 └── vercel.json                Security headers + caching
 ```
+
+`api/` and `public/` are the two trees whose shape is not a matter of taste: Vercel turns `api/<path>.js` into `/api/<path>`, and everything under `public/` is served at its own path. A file moved in either one changes a URL that is already published — in `vercel.json`'s ten cron entries, in a Stripe or Resend webhook configured outside this repository, or in the unsubscribe link of mail that has already been sent. They stay flat for that reason rather than by neglect.
 
 Vite writes a content hash into every filename under `/assets`, so one of those files cannot change without changing its name. `vercel.json` serves them `immutable` for a year on that basis; the documents themselves stay on `must-revalidate`, so a deploy is live on the next request.
 

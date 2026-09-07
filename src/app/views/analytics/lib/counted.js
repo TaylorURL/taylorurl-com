@@ -24,7 +24,7 @@ import { SITE } from '../../../../../lib/site/current.js'
  * them leaves thirty-five rather than reaching for the next fifteen. That is
  * the window healing as it rolls rather than a list to go and refill.
  *
- * `scripts/check-traffic-ignore.js` holds this and the tag together. They are
+ * `scripts/console/check-traffic-ignore.js` holds this and the tag together. They are
  * one rule written twice, and a rule that only half moved would leave the
  * console hiding pages the tracker is still counting, or counting pages it has
  * stopped filing.

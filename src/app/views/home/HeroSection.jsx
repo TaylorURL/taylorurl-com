@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { Pause, Play } from 'lucide-react'
-import { announceGroundChange } from '@hooks/useOnDarkBackground'
+import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
 import { HERO_OPENER_ID, HERO_VARIANTS } from './heroes'
 
 // Long enough to read a headline and take in the figure beside it before the

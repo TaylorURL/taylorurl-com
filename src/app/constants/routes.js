@@ -79,7 +79,7 @@ const ALL_ROUTES = [
   { key: 'Process', path: 'process' },
   { key: 'Portfolio', path: 'portfolio' },
   // The two landing families, and the destinations the navigation's panels
-  // point at. Both are built entirely from `@data/trades`, `@data/portfolio`
+  // point at. Both are built entirely from `@data/towns-and-trades/trades`, `@data/portfolio`
   // and the town list, so which detail routes exist is decided by the data
   // rather than restated here (see vite/site-routes.js).
   { key: 'Industries', path: 'industries' },

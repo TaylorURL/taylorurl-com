@@ -19,7 +19,7 @@
  * with an extra edge: this endpoint can be told a different figure, so the
  * default it falls back to has to be the one figure the pages print, read from
  * the same module they read. A link opened with no override charges what
- * `/start` charges, and `scripts/check-payment-link.js` fails the suite if the
+ * `/start` charges, and `scripts/checkout/check-payment-link.js` fails the suite if the
  * two ever send different bodies.
  *
  * An override may only go up. `pricing.js` calls both figures a floor, and a
@@ -48,7 +48,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
-import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/pricing.js'
+import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 
 const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'

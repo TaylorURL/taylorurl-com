@@ -1,7 +1,7 @@
 import { Suspense } from 'react'
-import { DeferredWaiting } from '@components/Waiting'
-import ErrorBoundary from '@components/ErrorBoundary'
-import { useClickEffect } from '@hooks/useClickEffect'
+import { DeferredWaiting } from '@components/app-shell/Waiting'
+import ErrorBoundary from '@components/app-shell/ErrorBoundary'
+import { useClickEffect } from '@hooks/chrome/useClickEffect'
 import AppRoutes from './routes'
 
 /**

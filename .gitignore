@@ -54,9 +54,9 @@ id_ed25519
 # Windows folder metadata
 desktop.ini
 
-# The status board capture tool, compiled from scripts/status-board-shot.swift
+# The status board capture tool, compiled from scripts/home/status-board-shot.swift
 # on first use.
-scripts/.status-board-shot
+scripts/home/.status-board-shot
 brand/social/out/
 
 # Written by Python the first time a card generator imports the drawing library
