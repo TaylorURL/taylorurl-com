@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
 import { answerFor, NOTHING_HELD } from './feedState'
 
 /**
@@ -45,13 +46,26 @@ const PREVIEW_KEY = 'taylorurl_console_preview_brief'
  */
 const FIRST_STEP = 'welcome'
 
-/** What a client is told when a change did not reach the record. */
+/**
+ * What a client is told when a change did not reach the record.
+ *
+ * These two are the whole of what a failed write says here, and nothing the
+ * far end sends is allowed to stand in their place. Both of them know the one
+ * thing that actually settles the question a client is asking - the words are
+ * still in the box, still going up on the next change - and no endpoint can
+ * know that, so however well it words its refusal it is answering a smaller
+ * question. The write paths below hold these rather than reading anything out
+ * of the response.
+ */
 const NOT_SAVED =
   'That answer was not saved. Nothing you typed is lost, and it goes up again on the next change.'
 
 /** And when the brief itself did not go over. */
 const NOT_SENT =
   'The answers were not sent. Everything you typed is still saved, so try again in a moment.'
+
+/** A read is the other way round, and this is where one that failed lands. */
+const NOT_READ = 'Your brief could not be read.'
 
 /** The browser's own store, where there is one. */
 function store() {
@@ -239,7 +253,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) setFailed({ key: source, value: payload.error || NOT_SAVED })
+          if (alive.current) setFailed({ key: source, value: NOT_SAVED })
           return false
         }
         if (latest.current === outgoing) unsent.current = false
@@ -306,10 +320,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
         // A build nobody has answered anything on is not an error and never
         // reaches here; the endpoint opens the row on the first read. This is
         // the endpoint itself failing to answer.
-        setFailed({
-          key: source,
-          value: payload.error || `Your brief could not be read (${response.status}).`,
-        })
+        setFailed({ key: source, value: faultFromResponse(response, payload, NOT_READ) })
         return
       }
       const row = recordFrom(payload.brief)
@@ -327,8 +338,8 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
           : row
       )
       setFailed(NOTHING_HELD)
-    } catch {
-      if (alive.current) setFailed({ key: source, value: 'Your brief could not be read.' })
+    } catch (cause) {
+      if (alive.current) setFailed({ key: source, value: faultMessage(cause, NOT_READ) })
     }
   }, [preview, token, projectId, enabled, source, put])
 
@@ -414,7 +425,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       })
       const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
-        if (alive.current) setFailed({ key: source, value: payload.error || NOT_SENT })
+        if (alive.current) setFailed({ key: source, value: NOT_SENT })
         return false
       }
       if (alive.current) {

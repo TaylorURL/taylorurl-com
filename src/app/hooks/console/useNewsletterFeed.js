@@ -1,10 +1,22 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 
 const NEWSLETTER_PATH = '/api/newsletter-admin'
 const SEND_PATH = '/api/newsletter-send'
 // What came back to each sent issue is counted where the list lives, over the
 // send rows, and answers from the audience endpoint rather than this one.
 const RESULTS_PATH = '/api/audience-admin'
+
+/** What a reader is told when each of the four reads does not land. */
+const NO_LIST = 'The issues could not be read. Try again in a moment.'
+const NO_RESULTS = 'The results could not be read. Try again in a moment.'
+const NO_ISSUE = 'That issue could not be opened. Try again in a moment.'
+const NO_PREVIEW = 'The preview could not be built. Try again in a moment.'
+
+/** And when one of the two writes does not take. */
+const NO_CHANGE = 'That change could not be saved. Try it again.'
+const NO_SEND = 'The issue could not be sent. Try sending it again.'
 
 /**
  * The issues, the one being written, the message it will go out as, and what
@@ -25,6 +37,12 @@ const RESULTS_PATH = '/api/audience-admin'
  * moves all of it; patching a row in place would leave the figures above the
  * table describing the list before the change.
  *
+ * A read that does not land is held in `error` and drawn where the issues
+ * would have been, because a notice that fades would leave a blank composer
+ * with nothing to explain it. A save or a send that does not take leaves the
+ * issue on screen untouched, so it is a notice in the bottom-right corner of
+ * the screen rather than a banner over an issue that is still right.
+ *
  * `acting` is the key of the control a change is in flight for, so one button
  * shows its own progress while the rest of the page stays live.
  *
@@ -36,6 +54,7 @@ export function useNewsletterFeed({ token, enabled }) {
   const [results, setResults] = useState(null)
   const [resultsError, setResultsError] = useState(null)
   const [acting, setActing] = useState(null)
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -47,11 +66,20 @@ export function useNewsletterFeed({ token, enabled }) {
 
   /**
    * One request, with the session on it and the answer already unwrapped.
-   * `who` names the endpoint in a failure, since two of them answer here.
+   *
+   * `fallback` is what a reader is told when neither the far end nor the door
+   * has anything better, and every caller passes its own, because which of the
+   * six things on this page did not happen is the only part of the sentence
+   * worth reading. The failure comes back as `fault` rather than `error` for
+   * the same reason it is written here at all: what leaves this function is
+   * always a sentence for a person, never the raw thing that was caught.
    */
   const ask = useCallback(
-    async (path, init, who = 'The newsletter endpoint') => {
-      if (!token) return { ok: false, error: 'Sign in again.' }
+    async (path, init, fallback) => {
+      // Nothing on this page can be read without a session, and a lost one is
+      // the same sentence wherever it is met, so it is taken from the door
+      // rather than written again here.
+      if (!token) return { ok: false, fault: faultMessage(401) }
       try {
         const response = await fetch(path, {
           cache: 'no-store',
@@ -62,15 +90,11 @@ export function useNewsletterFeed({ token, enabled }) {
           },
         })
         const payload = await response.json().catch(() => ({}))
-        if (!response.ok) {
-          return {
-            ok: false,
-            error: payload.error || `${who} answered ${response.status}.`,
-          }
-        }
+        if (!response.ok)
+          return { ok: false, fault: faultFromResponse(response, payload, fallback) }
         return { ok: true, payload }
-      } catch {
-        return { ok: false, error: `${who} did not answer.` }
+      } catch (cause) {
+        return { ok: false, fault: faultMessage(cause, fallback) }
       }
     },
     [token]
@@ -78,10 +102,10 @@ export function useNewsletterFeed({ token, enabled }) {
 
   const load = useCallback(async () => {
     if (!token || !enabled) return
-    const answer = await ask(`${NEWSLETTER_PATH}?view=list&t=${Date.now()}`)
+    const answer = await ask(`${NEWSLETTER_PATH}?view=list&t=${Date.now()}`, undefined, NO_LIST)
     if (!alive.current) return
     if (!answer.ok) {
-      setError(answer.error)
+      setError(answer.fault)
       return
     }
     setData(answer.payload)
@@ -101,14 +125,10 @@ export function useNewsletterFeed({ token, enabled }) {
    */
   const loadResults = useCallback(async () => {
     if (!token || !enabled) return
-    const answer = await ask(
-      `${RESULTS_PATH}?view=issues&t=${Date.now()}`,
-      undefined,
-      'The audience endpoint'
-    )
+    const answer = await ask(`${RESULTS_PATH}?view=issues&t=${Date.now()}`, undefined, NO_RESULTS)
     if (!alive.current) return
     if (!answer.ok) {
-      setResultsError(answer.error)
+      setResultsError(answer.fault)
       return
     }
     setResults(answer.payload)
@@ -122,9 +142,13 @@ export function useNewsletterFeed({ token, enabled }) {
   /** One issue, whole, for the composer to hold and edit. */
   const open = useCallback(
     async id => {
-      const answer = await ask(`${NEWSLETTER_PATH}?view=issue&id=${encodeURIComponent(id)}`)
+      const answer = await ask(
+        `${NEWSLETTER_PATH}?view=issue&id=${encodeURIComponent(id)}`,
+        undefined,
+        NO_ISSUE
+      )
       if (!answer.ok) {
-        if (alive.current) setError(answer.error)
+        if (alive.current) setError(answer.fault)
         return null
       }
       return answer.payload.issue
@@ -135,9 +159,13 @@ export function useNewsletterFeed({ token, enabled }) {
   /** The message as it will be sent, composed by the server. */
   const compose = useCallback(
     async id => {
-      const answer = await ask(`${NEWSLETTER_PATH}?view=preview&id=${encodeURIComponent(id)}`)
+      const answer = await ask(
+        `${NEWSLETTER_PATH}?view=preview&id=${encodeURIComponent(id)}`,
+        undefined,
+        NO_PREVIEW
+      )
       if (!answer.ok) {
-        if (alive.current) setError(answer.error)
+        if (alive.current) setError(answer.fault)
         return null
       }
       return answer.payload
@@ -148,18 +176,23 @@ export function useNewsletterFeed({ token, enabled }) {
   const act = useCallback(
     async (body, key) => {
       setActing(key)
-      setError(null)
-      const answer = await ask(NEWSLETTER_PATH, { method: 'POST', body: JSON.stringify(body) })
+      const answer = await ask(
+        NEWSLETTER_PATH,
+        { method: 'POST', body: JSON.stringify(body) },
+        NO_CHANGE
+      )
       if (!answer.ok) {
-        if (alive.current) setError(answer.error)
-        if (alive.current) setActing(null)
+        if (alive.current) {
+          toast(answer.fault, 'error')
+          setActing(null)
+        }
         return null
       }
       await load()
       if (alive.current) setActing(null)
       return answer.payload
     },
-    [ask, load]
+    [ask, load, toast]
   )
 
   /**
@@ -172,11 +205,14 @@ export function useNewsletterFeed({ token, enabled }) {
   const send = useCallback(
     async issueId => {
       setActing('send')
-      setError(null)
-      const answer = await ask(SEND_PATH, { method: 'POST', body: JSON.stringify({ issueId }) })
+      const answer = await ask(
+        SEND_PATH,
+        { method: 'POST', body: JSON.stringify({ issueId }) },
+        NO_SEND
+      )
       if (!answer.ok) {
         if (alive.current) {
-          setError(answer.error)
+          toast(answer.fault, 'error')
           setActing(null)
         }
         return null
@@ -186,7 +222,7 @@ export function useNewsletterFeed({ token, enabled }) {
       if (alive.current) setActing(null)
       return answer.payload
     },
-    [ask, load, loadResults]
+    [ask, load, loadResults, toast]
   )
 
   return {

@@ -44,7 +44,9 @@ export default async function handler(request, response) {
   }
 
   if (!SERVICE_KEY) {
-    response.status(503).json({ error: 'Account deletion is not configured on this deployment.' })
+    response.status(503).json({
+      error: 'Your account cannot be closed from here. Get in touch and we will close it for you.',
+    })
     return
   }
 
@@ -72,7 +74,16 @@ export default async function handler(request, response) {
       },
     })
     if (!removed.ok) {
-      response.status(502).json({ error: `The account service answered ${removed.status}.` })
+      // What the auth API says here is written for whoever holds the service
+      // key, and the person reading this asked to close their account and is
+      // now being told a number. The status and the body go to the log, where
+      // they are what we need to find out why; what they get told is that the
+      // account is still theirs and nothing has happened to it.
+      const said = await removed.text().catch(() => '')
+      console.error(`account-delete: the auth API answered ${removed.status}`, said.slice(0, 500))
+      response.status(502).json({
+        error: 'Your account has not been closed and nothing on it has changed. Try again shortly.',
+      })
       return
     }
 

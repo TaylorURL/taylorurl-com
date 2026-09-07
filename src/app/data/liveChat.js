@@ -18,6 +18,8 @@
  * as a connection that failed.
  */
 
+import { faultFromResponse } from '../utils/faults.js'
+
 const ENDPOINT = '/api/live-chat'
 const THREAD_KEY = 'taylorurl_live_thread'
 
@@ -70,9 +72,12 @@ export async function assistantUp({ signal } = {}) {
 /**
  * Sends one turn.
  *
- * A refusal carries a sentence written for a person, so it is thrown as the
- * message rather than as a status, and the widget shows it the way it shows
- * anything else the assistant says.
+ * A refusal is thrown as a sentence rather than as a status, and the widget
+ * shows it the way it shows anything else the assistant says. Only some of
+ * those sentences are the endpoint's - a rate limiter or a gateway in front of
+ * it answers in its own words and lands in the same field - so what comes back
+ * goes through the one door before it is set beside the assistant's own turns,
+ * where anything unwritten reads as the assistant saying it.
  *
  * @param {{ message: string, path?: string, signal?: AbortSignal }} turn
  * @returns {Promise<{ reply: string, session: string|null, offline: boolean }>}
@@ -88,7 +93,9 @@ export async function sendTurn({ message, path, signal }) {
   const payload = await response.json().catch(() => ({}))
 
   if (!response.ok) {
-    throw new Error(payload.error || 'The assistant did not answer. Try again in a moment.')
+    throw new Error(
+      faultFromResponse(response, payload, 'The assistant did not answer. Try again in a moment.')
+    )
   }
 
   if (payload.session) holdThread(payload.session)

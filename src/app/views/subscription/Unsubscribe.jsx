@@ -1,9 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Seo from '@components/Seo'
-import { subscriptionErrorMessage, unsubscribeToken } from '@data/newsletter/subscription'
+import { unsubscribeToken } from '@data/newsletter/subscription'
+import { faultMessage } from '@utils/faults'
 import SubscriptionShell from './SubscriptionShell'
 import UnsubscribeForm from './UnsubscribeForm'
+
+// What a request that did not settle says, in front of the way off that stands
+// on this page whatever happened. It says the address is still on the list,
+// because that is the fact the reader came for and the one they will act on.
+const NOT_TAKEN_OFF = 'That address could not be taken off the list just now.'
 
 const COPY = {
   working: {
@@ -81,13 +87,26 @@ export default function Unsubscribe() {
 
     unsubscribeToken(token)
       .then(({ already }) => setState(already ? 'already' : 'done'))
-      .catch(error => {
-        setFailure(subscriptionErrorMessage(error))
+      .catch(cause => {
+        setFailure(faultMessage(cause, NOT_TAKEN_OFF))
         setState('failed')
       })
   }, [settled, token])
 
   const copy = COPY[state]
+
+  // Why the reason is added to the standing line rather than put in place of
+  // it. A reader who followed an unsubscribe link has already decided; the one
+  // thing they must never be handed is a reason with no way past it, because an
+  // address left on a list by a page that only explained itself is a person who
+  // asked to leave and did not. So the sentence about the request is said
+  // first, and the way off follows it in the same breath.
+  //
+  // It stays on the page for the same reason it is not a notice in the corner.
+  // This is the whole of what the page has to say, nothing here is a form to
+  // press again, and a reader who looks up half a minute later still has to be
+  // able to read what happened and what to do about it.
+  const body = state === 'failed' && failure ? `${failure} ${copy.body}` : copy.body
 
   return (
     <>
@@ -97,12 +116,7 @@ export default function Unsubscribe() {
         path="/unsubscribe"
         noIndex
       />
-      <SubscriptionShell
-        draft="hatch"
-        eyebrow={copy.eyebrow}
-        heading={copy.heading}
-        body={failure && state === 'failed' ? failure : copy.body}
-      >
+      <SubscriptionShell draft="hatch" eyebrow={copy.eyebrow} heading={copy.heading} body={body}>
         {state === 'missing' && <UnsubscribeForm onDone={() => setState('done')} />}
       </SubscriptionShell>
     </>

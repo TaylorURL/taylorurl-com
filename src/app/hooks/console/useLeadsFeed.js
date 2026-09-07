@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
 
 const LEADS_PATH = '/api/leads-admin'
+
+/** What a reader is told when the one read behind the section does not land. */
+const NO_READ = 'The leads could not be read. Try again in a moment.'
 
 /**
  * Everyone who started a build, as the record holds them right now.
@@ -48,13 +52,13 @@ export function useLeadsFeed({ token, enabled }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setError(payload.error || `The leads endpoint answered ${response.status}.`)
+        setError(faultFromResponse(response, payload, NO_READ))
         return
       }
       setData(payload)
       setError(null)
-    } catch {
-      if (alive.current) setError('The leads endpoint did not answer.')
+    } catch (cause) {
+      if (alive.current) setError(faultMessage(cause, NO_READ))
     } finally {
       if (alive.current) setReading(false)
     }

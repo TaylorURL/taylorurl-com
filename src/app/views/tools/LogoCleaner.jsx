@@ -12,9 +12,23 @@ import {
   trim,
 } from '@app/tools/lib/cutout'
 import { zipBlob } from '@app/tools/lib/zip'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultMessage } from '@utils/faults'
 import { GROUND, SHEET } from './lib/ground'
 
 const LABEL = 'section-label-sm mb-2 block text-paper-faint'
+
+// What a file that would not open says. It is what `readImage` refuses with and
+// what anything else thrown on the way in falls back to, because from the
+// reader's side those are one event: the logo they chose did not appear.
+const NOT_AN_IMAGE =
+  'That file could not be opened as an image. Try a PNG, JPG or WebP export of the logo.'
+
+// What a download that did not build says. The work happens on this machine, so
+// the two things worth suggesting are the two that are actually theirs to
+// change: press it again, or hand it something smaller.
+const NOT_BUILT =
+  'The logo files could not be built. Try the download again, or a smaller export of the logo.'
 
 // A choice drawn as a mesh cell. The ring is inset because the cell sits inside
 // the mesh's clipping shell, where a ring drawn outside the border is cut off on
@@ -118,11 +132,7 @@ function readImage(file) {
     }
     image.onerror = () => {
       URL.revokeObjectURL(url)
-      reject(
-        new Error(
-          'That file could not be opened as an image. Try a PNG, JPG or WebP export of the logo.'
-        )
-      )
+      reject(new Error(NOT_AN_IMAGE))
     }
     image.src = url
   })
@@ -165,6 +175,7 @@ const hex = ([r, g, b]) => `#${[r, g, b].map(c => c.toString(16).padStart(2, '0'
  * asking for more trust than it needs.
  */
 export default function LogoCleaner({ tool }) {
+  const toast = useToast()
   const [image, setImage] = useState(null)
   const [fault, setFault] = useState(null)
   const [busy, setBusy] = useState(false)
@@ -200,6 +211,9 @@ export default function LogoCleaner({ tool }) {
 
   const kept = preview ? coverage(preview) : 0
 
+  // The file that would not open is named under the drop zone rather than in
+  // the corner, because it is a fault in what was chosen and it has to still be
+  // there while the reader goes and finds a different export.
   const take = useCallback(async file => {
     if (!file) return
     setFault(null)
@@ -207,8 +221,8 @@ export default function LogoCleaner({ tool }) {
       const loaded = await readImage(file)
       setImage(loaded)
       setSettings(held => ({ ...held, background: null }))
-    } catch (error) {
-      setFault(error.message)
+    } catch (cause) {
+      setFault(faultMessage(cause, NOT_AN_IMAGE))
     }
   }, [])
 
@@ -253,6 +267,13 @@ export default function LogoCleaner({ tool }) {
       link.click()
       link.remove()
       URL.revokeObjectURL(href)
+    } catch (cause) {
+      // Nothing was uploaded, so a download that fails fails here: a canvas the
+      // browser would not read back, or artwork large enough that building five
+      // versions of it at full size runs the tab out of memory. The button goes
+      // back to reading Download and leaves nothing on the page to say why, so
+      // the corner is where this is said.
+      toast(faultMessage(cause, NOT_BUILT), 'error')
     } finally {
       setBusy(false)
     }

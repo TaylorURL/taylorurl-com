@@ -8,6 +8,8 @@ import ConsoleShell from '@components/account/ConsoleShell'
 import PageTransition from '@components/chrome/PageTransition'
 import Waiting from '@components/app-shell/Waiting'
 import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultMessage } from '@utils/faults'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { useAnalyticsFeed } from '@hooks/console/useAnalytics'
 import { useProjectFeed } from '@hooks/console/useProjectFeed'
@@ -37,6 +39,12 @@ import { withCountedPages } from '../analytics/lib/counted'
 const LIVE_POLL_MS = 10_000
 const SITE_POLL_MS = 30_000
 const OVERVIEW_POLL_MS = 60_000
+
+// What somebody is told when the console could not put their session back and
+// signs them out from under a screen they were reading. The sign-in form is
+// where they land either way; without a word beside it, the console reads as
+// having thrown them out for nothing.
+const SESSION_GONE = 'Your session ended. Sign in to pick up where you were.'
 
 // The head description a console URL falls back to when it matches no listed
 // section, which is only reachable while a route is being added.
@@ -79,6 +87,7 @@ function storedScope() {
 
 export default function ConsoleFrame() {
   const { session, checking, mfaPending, signOut, email } = useSession()
+  const toast = useToast()
   // A session already in storage comes back in a few milliseconds, which is
   // shorter than the line saying so takes to read. This decides whether it is
   // worth drawing at all, and keeps it on screen long enough to be read once it
@@ -384,19 +393,36 @@ export default function ConsoleFrame() {
     // back to the same read, so the reader signs in and is thrown out again
     // with nothing on screen to say why. Only a refresh that itself fails
     // proves the session is gone, and that is the one case worth ending.
+    //
+    // A recovery that works is silent, which is the point of it: the reader was
+    // never told the read was refused and has nothing to be told now. A
+    // recovery that does not is the opposite - the console empties, the
+    // sign-in form takes its place, and without a sentence the reader is left
+    // to guess whether they did it. The notice outlives the route change,
+    // because it is thrown from above the router.
     if (!refused || !session || recovering.current) return
     recovering.current = true
+    // Signing out is itself a request and can be refused, which puts the same
+    // failure through here twice. The reader is told once.
+    let spoken = false
+    const ended = cause => {
+      if (!spoken) {
+        spoken = true
+        toast(faultMessage(cause, SESSION_GONE), 'error')
+      }
+      return signOut()
+    }
     supabase.auth
       .refreshSession()
       .then(({ data, error }) => {
-        if (error || !data?.session) return signOut()
+        if (error || !data?.session) return ended(error)
         return refresh()
       })
-      .catch(() => signOut())
+      .catch(ended)
       .finally(() => {
         recovering.current = false
       })
-  }, [refused, session, signOut, refresh])
+  }, [refused, session, signOut, refresh, toast])
 
   const cycleTheme = () => setChoice(THEMES[(THEMES.indexOf(choice) + 1) % THEMES.length])
 

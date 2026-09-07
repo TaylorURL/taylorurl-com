@@ -189,10 +189,16 @@ export async function standing({ fetchImpl = fetch, now = Date.now() } = {}) {
     }
   }
 
+  // Which of the four ways it failed is already on its way to the log and the
+  // collector, and it is the one thing that must not travel in the body: a
+  // status Trustpilot answered, or the keys a payload turned out to carry, is
+  // a description of somebody else's service rendered on a page about this
+  // one. The body says the rating is not there and leaves the profile link
+  // beside it, which is where a reader goes next either way.
   return {
     status: 503,
     cache: CACHE_DEGRADED,
-    body: { ...links, source: 'none', error: `${result.failure}: ${result.detail}` },
+    body: { ...links, source: 'none', error: 'The Trustpilot rating could not be read just now.' },
     failure,
   }
 }

@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 
 const BUILDS_PATH = '/api/projects-admin'
+
+/** What a reader is told when one of the two reads does not land. */
+const NO_LIST = 'The builds could not be read. Try again in a moment.'
+const NO_BUILD = 'That build could not be opened. Try again in a moment.'
+
+/** And when a change, or one of the three steps a capture goes up in, does not. */
+const NO_CHANGE = 'That change could not be saved. Try it again.'
+const NO_SEND = 'That picture could not be sent. Try attaching it again.'
+const NO_UPLOAD = 'That picture could not be uploaded. Try attaching it again.'
+const NO_ATTACH = 'That picture could not be attached. Try it again.'
 
 /**
  * Every build in progress, and every change that can be made to one.
@@ -15,6 +27,11 @@ const BUILDS_PATH = '/api/projects-admin'
  * stage can close a build outright, and writing an update against a stage
  * moves what the next one defaults to, so a local edit would have to guess at
  * both.
+ *
+ * A read that does not land is held in `error`, because the section has
+ * nothing to draw without it and a notice that fades would leave an empty
+ * table with no account of itself. A change or an attachment that does not
+ * take leaves everything on screen standing, so it is a notice instead.
  *
  * `acting` is the key of the row a change is in flight for, so one control can
  * show its own progress without the table going quiet.
@@ -35,6 +52,7 @@ export function useBuildsFeed({ token, enabled }) {
   const [open, setOpen] = useState(null)
   const [error, setError] = useState(null)
   const [acting, setActing] = useState(null)
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -44,15 +62,24 @@ export function useBuildsFeed({ token, enabled }) {
     }
   }, [])
 
+  /**
+   * One read, with a refusal thrown rather than returned.
+   *
+   * The sentence is chosen here because this is where the response and its
+   * body are both in hand, and `fallback` is passed in because only the caller
+   * knows whether it was reading the table of builds or one build's updates.
+   * A request that never landed at all throws before any of that and reaches
+   * the caller as whatever the browser said, which is why both callers put
+   * what they catch through the same door again.
+   */
   const ask = useCallback(
-    async query => {
+    async (query, fallback) => {
       const response = await fetch(`${BUILDS_PATH}${query}`, {
         cache: 'no-store',
         headers: { Authorization: `Bearer ${token}` },
       })
       const payload = await response.json().catch(() => ({}))
-      if (!response.ok)
-        throw new Error(payload.error || `The builds endpoint answered ${response.status}.`)
+      if (!response.ok) throw new Error(faultFromResponse(response, payload, fallback))
       return payload
     },
     [token]
@@ -61,12 +88,12 @@ export function useBuildsFeed({ token, enabled }) {
   const load = useCallback(async () => {
     if (!token || !enabled) return
     try {
-      const payload = await ask(`?t=${Date.now()}`)
+      const payload = await ask(`?t=${Date.now()}`, NO_LIST)
       if (!alive.current) return
       setProjects(Array.isArray(payload.projects) ? payload.projects : [])
       setError(null)
-    } catch (fault) {
-      if (alive.current) setError(fault.message)
+    } catch (cause) {
+      if (alive.current) setError(faultMessage(cause, NO_LIST))
     }
   }, [ask, token, enabled])
 
@@ -78,7 +105,7 @@ export function useBuildsFeed({ token, enabled }) {
     async projectId => {
       if (!token || !projectId) return
       try {
-        const payload = await ask(`?project=${projectId}&t=${Date.now()}`)
+        const payload = await ask(`?project=${projectId}&t=${Date.now()}`, NO_BUILD)
         if (!alive.current) return
         setUpdates(Array.isArray(payload.updates) ? payload.updates : [])
         // Both arrive with the updates. A build opened before the configurator
@@ -86,8 +113,12 @@ export function useBuildsFeed({ token, enabled }) {
         // draw rather than a state worth reporting.
         setBrief(payload.brief || null)
         setTasks(Array.isArray(payload.tasks) ? payload.tasks : [])
-      } catch (fault) {
-        if (alive.current) setError(fault.message)
+        // `error` is the one place both reads report to, so a build that opens
+        // clears it rather than leaving an earlier failure standing over a
+        // record that arrived.
+        setError(null)
+      } catch (cause) {
+        if (alive.current) setError(faultMessage(cause, NO_BUILD))
       }
     },
     [ask, token]
@@ -115,7 +146,6 @@ export function useBuildsFeed({ token, enabled }) {
     async (body, key) => {
       if (!token) return null
       setActing(key)
-      setError(null)
       try {
         const response = await fetch(BUILDS_PATH, {
           method: 'POST',
@@ -124,20 +154,20 @@ export function useBuildsFeed({ token, enabled }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) setError(payload.error || 'That change did not go through.')
+          if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return null
         }
         await load()
         if (open) await readUpdates(open)
         return payload
-      } catch {
-        if (alive.current) setError('That change did not reach the server.')
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_CHANGE), 'error')
         return null
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, open, readUpdates]
+    [token, load, open, readUpdates, toast]
   )
 
   /**
@@ -151,7 +181,6 @@ export function useBuildsFeed({ token, enabled }) {
     async (updateId, file, caption, key) => {
       if (!token || !file) return false
       setActing(key)
-      setError(null)
       try {
         const signed = await fetch(BUILDS_PATH, {
           method: 'POST',
@@ -164,7 +193,7 @@ export function useBuildsFeed({ token, enabled }) {
         })
         const place = await signed.json().catch(() => ({}))
         if (!signed.ok) {
-          if (alive.current) setError(place.error || 'That file could not be sent.')
+          if (alive.current) toast(faultFromResponse(signed, place, NO_SEND), 'error')
           return false
         }
 
@@ -173,8 +202,12 @@ export function useBuildsFeed({ token, enabled }) {
           headers: { 'Content-Type': file.type },
           body: file,
         })
+        // The bucket answers a refused upload with its own XML rather than
+        // anything a reader could use, so the status is the whole of what is
+        // known here - and a status on its own is a case the door already
+        // answers, which is why nothing is read off this response.
         if (!put.ok) {
-          if (alive.current) setError('That file did not upload.')
+          if (alive.current) toast(faultFromResponse(put, null, NO_UPLOAD), 'error')
           return false
         }
 
@@ -193,20 +226,20 @@ export function useBuildsFeed({ token, enabled }) {
         })
         const kept = await recorded.json().catch(() => ({}))
         if (!recorded.ok) {
-          if (alive.current) setError(kept.error || 'That picture did not attach.')
+          if (alive.current) toast(faultFromResponse(recorded, kept, NO_ATTACH), 'error')
           return false
         }
 
         if (open) await readUpdates(open)
         return true
-      } catch {
-        if (alive.current) setError('That picture did not reach the server.')
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_ATTACH), 'error')
         return false
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, open, readUpdates]
+    [token, open, readUpdates, toast]
   )
 
   return {

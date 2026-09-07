@@ -49,7 +49,7 @@
 import { createHash } from 'node:crypto'
 import { connect } from '../lib/db/clients.js'
 import { countOf, tableMissing } from '../lib/db/rows.js'
-import { bearerOr401, methodsOr405, servedHereOr404 } from '../lib/http/guard.js'
+import { methodsOr405, servedHereOr404 } from '../lib/http/guard.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { isScheduler } from '../lib/http/scheduler.js'
 import { sendNotice } from '../lib/mail/notice.js'
@@ -103,7 +103,16 @@ const STALE_CLAIM_MS = 45 * 1000
 // One sentence for a missing header, an unrecognised secret and a slug that
 // does not belong to it. Three different sentences would let anybody with an
 // HTTP client discover which project slugs exist.
-const UNAUTHORIZED = 'not authorized'
+//
+// It is written here rather than taken from `bearerOr401`, which every other
+// door uses. That helper answers a browser holding a session that has gone,
+// and its sentence says to sign in again — true there, meaningless here, where
+// the caller is somebody else's server posting with a project secret and has
+// no session to renew. More to the point, a fourth wording is a fourth
+// wording: the moment one of these four paths answers differently from the
+// other three, the door tells a stranger which of its guesses was the near
+// miss, and that is the whole thing this constant exists to prevent.
+const UNAUTHORIZED = 'That secret does not open this door.'
 
 // Why a notification with a full recipient list still reached nobody. It is
 // both the `reason` the caller reads and the `error` the ledger keeps, so the
@@ -504,8 +513,11 @@ export default async function handler(request, response) {
     return
   }
 
-  const authorization = bearerOr401(request, response)
-  if (!authorization) return
+  const authorization = request.headers.authorization || ''
+  if (!authorization.startsWith('Bearer ')) {
+    response.status(401).json({ error: UNAUTHORIZED })
+    return
+  }
 
   const clients = connect()
   if (!clients || !RESEND_API_KEY) {

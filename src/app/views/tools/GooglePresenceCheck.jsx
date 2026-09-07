@@ -8,9 +8,16 @@ import ToolEnquiry from './ToolEnquiry'
 import { enquiryLines, reportFor } from '@app/tools/lib/findings'
 import { NAV_GROUPS } from '@constants/navigation'
 import { STAGES, TICK_MS, stageAt } from '@app/tools/lib/progress'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultFromResponse, faultMessage } from '@utils/faults'
 import { GROUND } from './lib/ground'
 
 const LABEL = 'section-label-sm mb-2 block text-paper-faint'
+
+// What a reading that did not land says when nothing better came back with it.
+// It names the address rather than whatever failed behind it, because the
+// address is the half of this the reader can do something about.
+const NOT_READ = 'That address could not be read. Check the spelling and run it again.'
 
 const STAGE_LABELS = STAGES.map(stage => stage.label)
 
@@ -63,6 +70,7 @@ const serviceName = path => SERVICE_NAMES[path] || 'What This Covers'
  * it costs the whole reading its standing.
  */
 export default function GooglePresenceCheck({ tool }) {
+  const toast = useToast()
   const [address, setAddress] = useState('')
   const [status, setStatus] = useState('idle')
   const [elapsed, setElapsed] = useState(0)
@@ -83,6 +91,18 @@ export default function GooglePresenceCheck({ tool }) {
     return () => clearInterval(tick)
   }, [running])
 
+  // A failure here ends a wait of most of a minute, so it is said in two places
+  // rather than one. The notice is what reaches somebody still watching the
+  // button; the line under the form is what is left for somebody who looked
+  // away during the wait and came back to a page that has quietly put itself
+  // back the way it was before they pressed anything. Only the notice announces
+  // itself, so the two do not read the same sentence out twice.
+  const failed = said => {
+    setFault(said)
+    toast(said, 'error')
+    setStatus('idle')
+  }
+
   const run = async event => {
     event.preventDefault()
     if (running || !address.trim()) return
@@ -96,15 +116,14 @@ export default function GooglePresenceCheck({ tool }) {
     try {
       const response = await fetch(`/api/site-audit?site=${encodeURIComponent(address.trim())}`)
       const body = await response.json().catch(() => null)
-      if (!response.ok)
-        throw new Error(
-          body?.error || 'That address could not be read. Check the spelling and run it again.'
-        )
+      if (!response.ok) {
+        failed(faultFromResponse(response, body, NOT_READ))
+        return
+      }
       setReading(body)
       setStatus('done')
-    } catch (error) {
-      setFault(error.message)
-      setStatus('idle')
+    } catch (cause) {
+      failed(faultMessage(cause, NOT_READ))
     }
   }
 
@@ -161,8 +180,6 @@ export default function GooglePresenceCheck({ tool }) {
                   value={address}
                   onChange={event => setAddress(event.target.value)}
                   disabled={running}
-                  aria-invalid={fault ? true : undefined}
-                  aria-describedby={fault ? 'check-site-error' : undefined}
                   className="field flex-1 py-3.5"
                   placeholder="yourbusiness.com"
                 />
@@ -175,16 +192,16 @@ export default function GooglePresenceCheck({ tool }) {
                   {running ? 'Checking…' : 'Run the Check'}
                 </button>
               </div>
-              {fault && (
-                <p
-                  id="check-site-error"
-                  className="mt-3 text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
-                  role="alert"
-                >
-                  {fault}
-                </p>
-              )}
             </div>
+            {/* The address itself is not marked wrong by any of this. What
+                stands here is a run that did not finish, which is as often the
+                measurement as the address, and telling a screen reader the
+                field is invalid would name the wrong one. */}
+            {fault && (
+              <p className="text-[14px] leading-snug text-[color:var(--danger-on-paper)]">
+                {fault}
+              </p>
+            )}
           </form>
         </CheckStage>
       ),
