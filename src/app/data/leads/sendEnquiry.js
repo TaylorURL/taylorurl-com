@@ -1,3 +1,4 @@
+import { faultFromResponse, faultMessage } from '../../utils/faults.js'
 import { campaignHeld } from './campaign.js'
 import { claimLead, recordLead } from './conversion.js'
 
@@ -41,8 +42,9 @@ function referrerNow() {
 
 /**
  * Posts an inquiry to `api/contact.js`, which validates it again and delivers
- * it. Resolves on success; on any non-2xx response throws an Error carrying
- * the server's message (or a generic fallback) for the caller to surface.
+ * it. Resolves on success; on any non-2xx response throws an Error carrying a
+ * sentence written for the person who typed the message, for the caller to
+ * surface.
  *
  * The conversion is reported from here rather than from each form, because
  * this is the one place that knows the endpoint accepted the inquiry. A form
@@ -89,7 +91,12 @@ export async function submitEnquiry({
 
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    throw new Error(payload?.error || FALLBACK_ERROR)
+    // The endpoint writes its refusals for readers, but a refusal that never
+    // reached it does not: a rate limiter, a gateway, a deploy mid-flight all
+    // answer in their own words and land in the same field. Reading the body
+    // here means every form that catches this has a sentence rather than a
+    // guess about which of those it was.
+    throw new Error(faultFromResponse(response, payload, FALLBACK_ERROR))
   }
 
   // The configurator already reported this address when it was answered on the
@@ -105,9 +112,14 @@ export async function submitEnquiry({
 }
 
 /**
- * Turns a caught inquiry error into a user-safe message: the server's own text
- * when it's short enough to trust, otherwise a generic fallback.
+ * What to show when an inquiry did not send.
+ *
+ * Every form on the site posts through one function and catches one thrown
+ * thing, so the one door in `utils/faults` answers for all of them. The
+ * fallback names the message rather than whatever failed carrying it, because
+ * somebody who has just written three paragraphs wants to know whether they
+ * were sent.
  */
 export function enquiryErrorMessage(error) {
-  return error?.message?.length && error.message.length < 200 ? error.message : FALLBACK_ERROR
+  return faultMessage(error, FALLBACK_ERROR)
 }

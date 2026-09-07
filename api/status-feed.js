@@ -103,7 +103,10 @@ async function readFeed() {
 export default async function handler(request, response) {
   if (!servedHereOr404(request, response)) return
   if (!UPSTREAM) {
-    response.status(503).json({ error: 'status feed not configured' })
+    response.status(503).json({
+      error:
+        'The status feed is not available. Get in touch if you need to know whether a site is up.',
+    })
     return
   }
 
@@ -126,10 +129,14 @@ export default async function handler(request, response) {
     }
   }
 
-  // The reason travels with the answer. A status page that says only that the
-  // feed is unreachable leaves the difference between a slow relay, a dead
-  // host and a bad payload to be guessed at, and all three read identically.
+  // The reason travels as far as the log and no further. A slow relay, a dead
+  // host and a bad payload need telling apart, and none of them is a
+  // difference to somebody looking at a board of green and red dots: what
+  // reaches them is that the board is not current and that it will keep
+  // trying, which is the whole of what they can do about it.
   const reason = describe(last)
   console.error('status-feed: %s reading %s', reason, UPSTREAM, last)
-  response.status(502).json({ error: reason })
+  response
+    .status(502)
+    .json({ error: 'The status feed could not be read just now. It refreshes on its own.' })
 }

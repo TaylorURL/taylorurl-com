@@ -1,8 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Seo from '@components/Seo'
-import { confirmSubscription, subscriptionErrorMessage } from '@data/newsletter/subscription'
+import { confirmSubscription } from '@data/newsletter/subscription'
+import { faultMessage } from '@utils/faults'
 import SubscriptionShell from './SubscriptionShell'
+
+// What a request that did not settle says, in front of the way on that stands
+// on this page whatever happened. It names the address rather than the link,
+// because a reader who has clicked the link twice needs to know which of the
+// two is still outstanding.
+const NOT_CONFIRMED = 'That address could not be confirmed just now.'
 
 const COPY = {
   working: {
@@ -27,6 +34,7 @@ const COPY = {
   failed: {
     eyebrow: 'Link Refused',
     heading: 'This link didn’t work.',
+    body: 'Open the link in the newest email, or reply to that email and I will confirm the address.',
   },
 }
 
@@ -57,13 +65,21 @@ export default function ConfirmSubscription() {
 
     confirmSubscription(token)
       .then(({ already }) => setState(already ? 'already' : 'done'))
-      .catch(error => {
-        setFailure(subscriptionErrorMessage(error))
+      .catch(cause => {
+        setFailure(faultMessage(cause, NOT_CONFIRMED))
         setState('failed')
       })
   }, [token])
 
   const copy = COPY[state]
+
+  // The reason is added to the standing line rather than put in place of it.
+  // What went wrong is worth a sentence, but on its own it leaves a reader
+  // holding a dead link and no second route, and the page has nothing else on
+  // it to press. It stays here rather than in a notice in the corner for the
+  // same reason: this is the whole of what the page has to say, and it has to
+  // still be there when the reader looks back at it.
+  const body = state === 'failed' && failure ? `${failure} ${copy.body}` : copy.body
 
   return (
     <>
@@ -73,11 +89,7 @@ export default function ConfirmSubscription() {
         path="/subscribe/confirm"
         noIndex
       />
-      <SubscriptionShell
-        eyebrow={copy.eyebrow}
-        heading={copy.heading}
-        body={state === 'failed' ? failure : copy.body}
-      />
+      <SubscriptionShell eyebrow={copy.eyebrow} heading={copy.heading} body={body} />
     </>
   )
 }

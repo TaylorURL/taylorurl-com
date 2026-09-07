@@ -126,7 +126,7 @@ async function list(db, query) {
     readAll(() => db.from('subscribers').select('status, segment'), { max: SUMMARY_LIMIT }),
     countOf(db.from('subscribers').select('id', { count: 'exact', head: true })),
   ])
-  if (people.error) return { status: 500, body: { error: people.error.message } }
+  if (people.error) return { status: 500, body: { error: faulted(people.error, LIST_UNREAD) } }
 
   const counts = Object.fromEntries(STATUSES.map(name => [name, 0]))
   for (const row of summary.rows) {
@@ -232,6 +232,25 @@ async function issues(db) {
   }
 }
 
+/**
+ * A driver fault, with the driver's own words kept out of the answer.
+ *
+ * Postgres names tables, columns and constraints in a message, and a person
+ * looking at a mailing list cannot act on any of them. Its words go to the
+ * log, where they are what we need to find the cause; the console gets the
+ * sentence for whichever thing did not happen.
+ */
+function faulted(error, said) {
+  console.error('audience-admin: %s', error?.message || error)
+  return said
+}
+
+/** What is said when the list itself will not come back. */
+const LIST_UNREAD = 'The audience could not be read. Try again in a moment.'
+
+/** What is said when taking somebody off the list does not go through. */
+const REMOVE_FAILED = 'That person could not be removed. Try again in a moment.'
+
 /** The addresses out of this set that are suppressed, looked up a batch at a time. */
 async function suppressed(db, emails) {
   const held = new Set()
@@ -276,7 +295,8 @@ async function add(db, body) {
     if (insert.error.code === '23505') {
       return { status: 409, body: { error: `${email} is already on the list.` } }
     }
-    return { status: 500, body: { error: insert.error.message } }
+    const said = faulted(insert.error, 'That person could not be added. Try again in a moment.')
+    return { status: 500, body: { error: said } }
   }
   return { status: 200, body: { ok: true, added: 1 } }
 }
@@ -287,7 +307,7 @@ async function remove(db, body) {
   if (!id) return { status: 400, body: { error: 'Pick the person to remove.' } }
 
   const found = await db.from('subscribers').select('email').eq('id', id).maybeSingle()
-  if (found.error) return { status: 500, body: { error: found.error.message } }
+  if (found.error) return { status: 500, body: { error: faulted(found.error, REMOVE_FAILED) } }
   if (!found.data) return { status: 404, body: { error: 'That person is no longer on the list.' } }
 
   // Suppression is written first. A failure between the two steps leaves an
@@ -299,7 +319,9 @@ async function remove(db, body) {
       { email: found.data.email, reason: 'manual', note: field(body.note, 500) },
       { onConflict: 'email', ignoreDuplicates: true }
     )
-  if (suppress.error) return { status: 500, body: { error: suppress.error.message } }
+  if (suppress.error) {
+    return { status: 500, body: { error: faulted(suppress.error, REMOVE_FAILED) } }
+  }
 
   // Outreach holds the same address separately, and a removal that stops at
   // the mailing list leaves it queued there as a prospect nobody has written
@@ -312,7 +334,7 @@ async function remove(db, body) {
   if (prospect.error) console.error('audience remove outreach stage:', prospect.error.message)
 
   const deleted = await db.from('subscribers').delete().eq('id', id)
-  if (deleted.error) return { status: 500, body: { error: deleted.error.message } }
+  if (deleted.error) return { status: 500, body: { error: faulted(deleted.error, REMOVE_FAILED) } }
   return { status: 200, body: { ok: true, removed: found.data.email } }
 }
 
@@ -378,7 +400,13 @@ async function bulkImport(db, body) {
     .from('subscribers')
     .upsert(payload, { onConflict: 'email', ignoreDuplicates: true })
     .select('email')
-  if (inserted.error) return { status: 500, body: { error: inserted.error.message } }
+  if (inserted.error) {
+    const said = faulted(
+      inserted.error,
+      'Those addresses could not be imported. Try again in a moment.'
+    )
+    return { status: 500, body: { error: said } }
+  }
 
   return {
     status: 200,

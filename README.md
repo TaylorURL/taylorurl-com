@@ -278,7 +278,7 @@ taylorurl-com/
 │   ├── onboarding/            The brief a payment turns into a build
 │   ├── auth/                  Getting an account, and getting back into it
 │   ├── console/               The signed-in sections, their skeletons, palettes and icons, and the pages the traffic figures leave out
-│   ├── site/                  Which deployment serves what, and that every link on it goes somewhere
+│   ├── site/                  Which deployment serves what, that every link on it goes somewhere, and that nothing written for a machine reaches a reader
 │   ├── content/               The published writing and the documents that list it
 │   ├── db/                    The values a column will take, paged reads, and the constraints they are checked against
 │   ├── reviews/               The rating networks, and the marks they are drawn with
@@ -320,7 +320,7 @@ taylorurl-com/
 │   │   ├── constants/         navigation, seo, business-schema, drafting, animations, grounds, mesh, routes
 │   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, newsletter/, console/, supabase/, liveChat.js
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, how a site reading is worded, and the pacing of a wait nothing reports on
-│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, and how a prospect's audit score reads
+│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, and how a prospect's audit score reads
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   ├── index.css              The token block and the font faces
 │   └── main.jsx               Browser entry

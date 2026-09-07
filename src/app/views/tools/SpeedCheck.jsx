@@ -10,6 +10,7 @@ import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { breadcrumbSchema } from '@constants/seo'
 import { TICK_MS } from '@app/tools/lib/progress'
+import { useToast } from '@hooks/chrome/useToast'
 import { STAGES, runSpeedCheck, speedCheckErrorMessage, stageIndex } from '@data/leads/speedCheck'
 import { isValidEmail } from '@utils/validation'
 
@@ -205,6 +206,7 @@ function Reading({ reading }) {
 }
 
 export default function SpeedCheck() {
+  const toast = useToast()
   const [values, setValues] = useState({ site: '', email: '' })
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
@@ -270,8 +272,15 @@ export default function SpeedCheck() {
       const answered = await runSpeedCheck(values, { onStage: setStage })
       setReading(answered)
       setStatus('done')
-    } catch (error) {
-      setFault(speedCheckErrorMessage(error))
+    } catch (cause) {
+      // Said in two places, because the wait is most of a minute and the page
+      // returns to exactly what it looked like before the button was pressed.
+      // The notice reaches whoever is still watching it happen; the line under
+      // the button is what is left for whoever looked away and came back. Only
+      // the notice announces itself, so the two are not read out twice.
+      const said = speedCheckErrorMessage(cause)
+      setFault(said)
+      toast(said, 'error')
       setStatus('idle')
     }
   }
@@ -397,10 +406,7 @@ export default function SpeedCheck() {
               </button>
 
               {fault && (
-                <p
-                  className="text-[14px] leading-snug text-[color:var(--danger-on-paper)]"
-                  role="alert"
-                >
+                <p className="text-[14px] leading-snug text-[color:var(--danger-on-paper)]">
                   {fault}
                 </p>
               )}

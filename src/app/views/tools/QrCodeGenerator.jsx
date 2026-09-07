@@ -4,9 +4,19 @@ import Mesh from '@components/mesh/Mesh'
 import StepFlow from '../start/steps/StepFlow'
 import { LEVELS, encodeQr, maximumBytes } from '@app/tools/lib/qr'
 import { qrPngBlob, qrSvg, qrSvgBlob } from '@app/tools/lib/qrRender'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultMessage } from '@utils/faults'
 import { GROUND } from './lib/ground'
 
 const LABEL = 'section-label-sm mb-2 block text-paper-faint'
+
+// What a code that could not be drawn says, for the causes that are not about
+// what was typed. The reader has one thing they can do about any of them.
+const NOT_DRAWN = 'That could not be turned into a code. Change what it points at and try again.'
+
+// What a file that would not save says. Both formats are written here in the
+// browser, so the press is the whole of what there is to try again.
+const NOT_SAVED = 'That file could not be saved. Try the download again.'
 
 // A choice drawn as a mesh cell. The ring is inset because the cell sits inside
 // the mesh's clipping shell, where a ring drawn outside the border is cut off on
@@ -147,6 +157,7 @@ function filenameFor(kind, payload) {
  * code that appears only at the end is one they find out about after printing.
  */
 export default function QrCodeGenerator({ tool }) {
+  const toast = useToast()
   const [kindId, setKindId] = useState('link')
   const [values, setValues] = useState(EMPTY_VALUES)
   const [presetId, setPresetId] = useState('classic')
@@ -163,8 +174,18 @@ export default function QrCodeGenerator({ tool }) {
     if (!payload) return null
     try {
       return { grid: encodeQr(payload, { level: levelId }) }
-    } catch (error) {
-      return { error: error.message }
+    } catch (cause) {
+      // The encoder refuses exactly one thing, and it refuses it in a sentence
+      // about what was typed: the payload is longer than any code holds. That
+      // sentence opens with the count, which is how it has to read, so it is
+      // kept as written rather than sent through the door, which reads a number
+      // in that position as machine output and would replace the most useful
+      // part of it. Anything else thrown in here is not about the field, and is
+      // answered in the page's words rather than the encoder's. Neither goes to
+      // a notice: this runs on every keystroke, and a notice per keystroke is a
+      // page nobody can type on.
+      const said = cause instanceof RangeError ? cause.message : faultMessage(cause, NOT_DRAWN)
+      return { error: said }
     }
   }, [payload, levelId])
 
@@ -184,14 +205,21 @@ export default function QrCodeGenerator({ tool }) {
     if (!grid) return
     const options = { dark: preset.dark, light: preset.light }
     const stem = filenameFor(kind, payload)
-    if (format === 'svg') {
-      download(qrSvgBlob(grid, { ...options, scale: 8 }), `${stem}.svg`)
-      return
-    }
-    setSaving(true)
     try {
+      if (format === 'svg') {
+        download(qrSvgBlob(grid, { ...options, scale: 8 }), `${stem}.svg`)
+        return
+      }
+      setSaving(true)
       const blob = await qrPngBlob(grid, { ...options, width: size.pixels })
-      if (blob) download(blob, `${stem}.png`)
+      // A browser that will not write the canvas out hands back nothing rather
+      // than throwing, so the press that produced no file is caught here too.
+      // Either way the button goes back to naming the format and the page shows
+      // nothing at all, which is why this one is said in the corner.
+      if (!blob) throw new Error(NOT_SAVED)
+      download(blob, `${stem}.png`)
+    } catch (cause) {
+      toast(faultMessage(cause, NOT_SAVED), 'error')
     } finally {
       setSaving(false)
     }

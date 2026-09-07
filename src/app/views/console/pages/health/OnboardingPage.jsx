@@ -21,6 +21,8 @@ import OnboardingFields from '../../intake/OnboardingFields'
 import OnboardingFlow from '../../intake/OnboardingFlow'
 import { useOnboardingFeed } from '@hooks/console/useOnboardingFeed'
 import { useSession } from '@hooks/session/useSession'
+import { useToast } from '@hooks/chrome/useToast'
+import { faultMessage } from '@utils/faults'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 
 /**
@@ -61,6 +63,9 @@ import { SUPPORT_EMAIL } from '@constants/navigation'
 
 /** The card fills the room the section was given, and the step moves inside it. */
 const ROWS = 'minmax(0,1fr)'
+
+/** What the handover says when it did not happen and nothing named a reason. */
+const NOT_HANDED_OVER = 'Your brief did not go over. Everything you typed is saved, so try again.'
 
 /**
  * What the form reads from before the record lands.
@@ -375,6 +380,7 @@ function StepFields({ step, answers, onChange, disabled, assist, files, trade })
 export default function OnboardingPage() {
   const { projectFeed, preview } = useConsole()
   const { session } = useSession()
+  const toast = useToast()
   const token = session?.access_token ?? null
   const project = useMemo(() => currentProject(projectFeed.projects), [projectFeed.projects])
 
@@ -555,10 +561,18 @@ export default function OnboardingPage() {
       // writer does before it hands anything over, so the answers the studio
       // reads are the ones that were on screen when the control was pressed.
       await submit()
+    } catch (cause) {
+      // A handover the record refused comes back as a sentence in the foot,
+      // and that is where it belongs. Nothing gets this far but a throw the
+      // writer did not expect, and without this the control simply goes back
+      // to reading Send It Over with the brief still on this side and not one
+      // word anywhere on the screen about why - which is the worst thing a
+      // form can do to somebody who has just finished filling it in.
+      toast(faultMessage(cause, NOT_HANDED_OVER), 'error')
     } finally {
       setSubmitting(false)
     }
-  }, [submit, submitting])
+  }, [submit, submitting, toast])
 
   const assist = useMemo(() => ({ trade, token }), [trade, token])
 

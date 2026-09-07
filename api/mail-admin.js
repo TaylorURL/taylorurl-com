@@ -68,6 +68,22 @@ const PAGE_SIZE = 25
 // implying it read everything.
 const MERGE_DEPTH = 500
 
+/**
+ * A driver fault, with the driver's own words kept out of the answer.
+ *
+ * Postgres names tables, columns and constraints in a message, and the mail
+ * provider answers a refusal with a body of its own. Both go to the log, where
+ * they are what we need to find the cause; the console gets the sentence for
+ * whichever thing did not happen.
+ */
+function faulted(error, said) {
+  console.error('mail-admin: %s', error?.message || error)
+  return said
+}
+
+/** What is said when the record of what has gone out will not come back. */
+const SENT_UNREAD = 'The sent mail could not be read. Try again in a moment.'
+
 /** An id as the console carries it: which system, and which row inside it. */
 function readId(value) {
   const raw = typeof value === 'string' ? value : ''
@@ -95,7 +111,7 @@ async function sent(db, { system, search }) {
       .limit(MERGE_DEPTH)
     if (search) query = query.or(`subject.ilike.%${search}%,to_address.ilike.%${search}%`)
     const found = await query
-    if (found.error) return { error: found.error.message }
+    if (found.error) return { error: faulted(found.error, SENT_UNREAD) }
     for (const row of found.data || []) {
       rows.push({
         id: `outreach:${row.id}`,
@@ -119,7 +135,7 @@ async function sent(db, { system, search }) {
       .order('sent_at', { ascending: false, nullsFirst: false })
       .limit(MERGE_DEPTH)
     const found = await query
-    if (found.error) return { error: found.error.message }
+    if (found.error) return { error: faulted(found.error, SENT_UNREAD) }
     for (const row of found.data || []) {
       const to = row.subscribers?.email ?? null
       const subject = row.newsletter_issues?.title ?? 'Newsletter issue'
@@ -153,7 +169,10 @@ async function outreachMessage(db, id) {
     )
     .eq('id', id)
     .maybeSingle()
-  if (found.error) return { status: 500, body: { error: found.error.message } }
+  if (found.error) {
+    const said = faulted(found.error, 'That message could not be opened. Try again in a moment.')
+    return { status: 500, body: { error: said } }
+  }
   if (!found.data) return { status: 404, body: { error: 'That message is no longer here.' } }
 
   const row = found.data
@@ -191,7 +210,10 @@ async function newsletterMessage(db, id) {
     .select('id, sent_at, failed_at, open_count, issue_id, subscribers(email, source, unsub_token)')
     .eq('id', id)
     .maybeSingle()
-  if (found.error) return { status: 500, body: { error: found.error.message } }
+  if (found.error) {
+    const said = faulted(found.error, 'That send could not be opened. Try again in a moment.')
+    return { status: 500, body: { error: said } }
+  }
   if (!found.data) return { status: 404, body: { error: 'That send is no longer here.' } }
 
   const { renderIssueEmail } = await import('../lib/mail/emailTemplate.js')
@@ -200,7 +222,10 @@ async function newsletterMessage(db, id) {
     .select('id, slug, title, preheader, body')
     .eq('id', found.data.issue_id)
     .maybeSingle()
-  if (issue.error) return { status: 500, body: { error: issue.error.message } }
+  if (issue.error) {
+    const said = faulted(issue.error, 'That send could not be opened. Try again in a moment.')
+    return { status: 500, body: { error: said } }
+  }
   if (!issue.data) return { status: 404, body: { error: 'The issue behind that send is gone.' } }
 
   // The recipient's own row decides which of the issue's two letters they were
@@ -292,8 +317,15 @@ async function deliver(to, drawn) {
     }),
   })
   if (!upstream.ok) {
+    // The provider's refusal names the address it would not take and the rule
+    // it broke, which is worth having in the log and is not what the console
+    // draws: the copy either arrived or it did not.
     const detail = await upstream.text().catch(() => '')
-    return { status: 502, body: { error: `The mail provider refused it. ${detail}`.trim() } }
+    console.error(`mail-admin: the mail provider answered ${upstream.status}`, detail.slice(0, 500))
+    return {
+      status: 502,
+      body: { error: 'That copy could not be sent. Try again in a moment.' },
+    }
   }
   const answer = await upstream.json().catch(() => ({}))
   return { status: 200, body: { sent_to: to, provider_id: answer.id ?? null } }

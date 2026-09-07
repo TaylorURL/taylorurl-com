@@ -439,8 +439,20 @@ check('nothing outside the status and the weight is ever written', async () => {
 check('a refused write is answered rather than reported as saved', async () => {
   const { db } = stubDb({ 'upsert:outreach_variants': refused('upsert refused') })
   const answer = await setVariant(db, { id: 'one', status: 'paused' }, PAIR)
+  // The status is the substance: a refusal must not come back looking like a
+  // save. The body is a separate question, and this one is drawn on a console
+  // screen, so the driver's own words go to the log and a sentence comes back.
+  // A proof is the one write that answers differently, because its whole
+  // purpose is to report what the mail server said.
   same(answer.status, 500, 'the status')
-  same(answer.body.error, 'upsert refused', 'the reason given')
+  ok(
+    !answer.body.error.includes('upsert refused'),
+    `the driver is not quoted: ${answer.body.error}`
+  )
+  ok(
+    /^[A-Z].*[.?]$/.test(answer.body.error),
+    `the reason reads as a sentence: ${answer.body.error}`
+  )
 })
 
 check('a database without the table names the migration', async () => {

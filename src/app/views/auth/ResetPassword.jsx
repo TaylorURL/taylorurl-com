@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Seo from '@components/Seo'
+import { useToast } from '@hooks/chrome/useToast'
 import { supabase } from '@data/supabase/supabaseClient'
+import { faultMessage } from '@utils/faults'
 import AuthShell, { Field } from './AuthShell'
 
 const STATUS_ID = 'reset-status'
@@ -50,8 +52,11 @@ export default function ResetPassword() {
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [busy, setBusy] = useState(false)
+  // The two rules this form checks for itself, which are the only things here
+  // about the boxes they are written under.
   const [error, setError] = useState(null)
   const navigate = useNavigate()
+  const toast = useToast()
 
   useEffect(() => {
     let cancelled = false
@@ -85,9 +90,16 @@ export default function ResetPassword() {
     setBusy(true)
     setError(null)
     const { error: cause } = await supabase.auth.updateUser({ password })
-    if (cause) setError(cause.message)
-    else setStage('done')
     setBusy(false)
+    // A refusal from here is about the link or the account rather than about
+    // either box - the link may have been spent between the page opening and
+    // the button being pressed - so it goes to the corner instead of under a
+    // field that has nothing wrong with what is in it.
+    if (cause) {
+      toast(faultMessage(cause, 'That password could not be saved. Try again.'), 'error')
+      return
+    }
+    setStage('done')
   }
 
   const head = (
@@ -106,8 +118,6 @@ export default function ResetPassword() {
         <AuthShell
           title="Set a New Password"
           blurb="Checking the link."
-          statusId={STATUS_ID}
-          error={null}
           busy
           submitLabel="Set Password"
           busyLabel="Checking"
@@ -128,8 +138,6 @@ export default function ResetPassword() {
         <AuthShell
           title="Set a New Password"
           blurb="This link has expired or has already been used."
-          statusId={STATUS_ID}
-          error={null}
           busy={false}
           submitLabel="Request a New Link"
           busyLabel="Opening"

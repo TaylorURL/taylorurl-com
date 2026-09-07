@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { m } from 'framer-motion'
 import { X } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
+import { faultMessage } from '@utils/faults'
 import { MONO_LABEL, ROW_HEIGHT } from './lib/tokens'
 
 /**
@@ -423,6 +424,29 @@ export function PanelFoot({ children, className = '' }) {
   return <div className={`console-card-foot ${className}`}>{children}</div>
 }
 
+/** What a notice falls back to when the failure behind it was not written for a reader. */
+const NOT_READ = 'That did not load. Try again in a moment.'
+
+/**
+ * A notice as a reader should get it.
+ *
+ * The two notices below draw whatever the section hands them, and what a
+ * section hands them is whatever its feed put in `error` - a Postgres refusal,
+ * a status line, a body some upstream service chose. These are the last thing
+ * between that and the screen and every console page renders through them, so
+ * the reading is done once here rather than in each of a dozen sections. A
+ * sentence a section wrote itself carries none of the marks of machine text
+ * and comes back out of the door unchanged, which is the point: only the
+ * unread text is replaced.
+ *
+ * Only a string goes through. A section that builds its notice out of a figure
+ * and some prose hands over an array of nodes, and that is a sentence the page
+ * composed on purpose rather than a value it caught.
+ */
+function readable(children) {
+  return typeof children === 'string' ? faultMessage(children, NOT_READ) : children
+}
+
 /**
  * What a section says when a read failed with nothing behind it, when it
  * succeeded with nothing in it, or when there is no site in scope to ask about.
@@ -431,7 +455,7 @@ export function PanelFoot({ children, className = '' }) {
 export function SectionNotice({ children, area }) {
   return (
     <Panel title="Nothing to Show" area={area}>
-      <p className="px-5 py-10 text-center text-[13px] text-paper-soft">{children}</p>
+      <p className="px-5 py-10 text-center text-[13px] text-paper-soft">{readable(children)}</p>
     </Panel>
   )
 }
@@ -524,7 +548,7 @@ export function ConsoleError({ children, area }) {
       role="status"
       style={area ? { '--area': area } : undefined}
     >
-      {children}
+      {readable(children)}
     </p>
   )
 }

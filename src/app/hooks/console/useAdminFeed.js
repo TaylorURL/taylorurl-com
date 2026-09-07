@@ -1,6 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { faultFromResponse, faultMessage } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 
 const ADMIN_PATH = '/api/console-admin'
+
+/** What a reader is told when the read behind the whole section does not land. */
+const NO_READ = 'The accounts and sites could not be read. Try again in a moment.'
+
+/** And when one of the four changes does not take. */
+const NO_CHANGE = 'That change could not be saved. Try it again.'
 
 /**
  * The admin console's accounts and sites, and the four changes that can be
@@ -11,6 +19,14 @@ const ADMIN_PATH = '/api/console-admin'
  * open it. Each change re-reads rather than patching what is on screen, since
  * a grant moves rows on both sides of that document and a local edit would
  * have to guess at the other half.
+ *
+ * The two failures go to different places on purpose. A read that does not
+ * land leaves the page with nothing to draw, so it is held in `error` and the
+ * section says so where the table would have been - a notice that faded after
+ * eight seconds would leave a blank panel explaining itself to nobody. A
+ * change that does not take leaves the table exactly as it was, so it is a
+ * notice in the bottom-right corner of the screen rather than a banner over
+ * rows that are still right.
  *
  * `acting` is the key of the row a change is in flight for, so one button can
  * show its own progress without the whole table going quiet.
@@ -24,6 +40,7 @@ export function useAdminFeed({ token, enabled }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [acting, setActing] = useState(null)
+  const toast = useToast()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -43,13 +60,13 @@ export function useAdminFeed({ token, enabled }) {
       const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
-        setError(payload.error || `The admin endpoint answered ${response.status}.`)
+        setError(faultFromResponse(response, payload, NO_READ))
         return
       }
       setData(payload)
       setError(null)
-    } catch {
-      if (alive.current) setError('The admin endpoint did not answer.')
+    } catch (cause) {
+      if (alive.current) setError(faultMessage(cause, NO_READ))
     }
   }, [token, enabled])
 
@@ -61,7 +78,6 @@ export function useAdminFeed({ token, enabled }) {
     async (body, key) => {
       if (!token) return false
       setActing(key)
-      setError(null)
       try {
         const response = await fetch(ADMIN_PATH, {
           method: 'POST',
@@ -70,19 +86,19 @@ export function useAdminFeed({ token, enabled }) {
         })
         const payload = await response.json().catch(() => ({}))
         if (!response.ok) {
-          if (alive.current) setError(payload.error || 'That change did not go through.')
+          if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return false
         }
         await load()
         return true
-      } catch {
-        if (alive.current) setError('That change did not reach the server.')
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_CHANGE), 'error')
         return false
       } finally {
         if (alive.current) setActing(null)
       }
     },
-    [token, load]
+    [token, load, toast]
   )
 
   return { data, error, loading: !data && !error, acting, refresh: load, act }

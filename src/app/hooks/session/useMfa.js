@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '@data/supabase/supabaseClient'
+import { faultMessage } from '@utils/faults'
 
 /**
  * Two-factor authentication over a time-based code, and the recovery codes
@@ -205,7 +206,8 @@ export function useMfa({ userId }) {
       return
     }
     const { data, error: cause } = await supabase.auth.mfa.listFactors()
-    if (cause) setError(cause.message)
+    if (cause)
+      setError(faultMessage(cause, 'The two-factor settings could not be read. Reload the page.'))
     setFactors(data?.totp ?? [])
     setLoading(false)
   }, [userId])
@@ -229,7 +231,13 @@ export function useMfa({ userId }) {
       factorType: 'totp',
       friendlyName: FACTOR_NAME,
     })
-    if (cause) setError(cause.message)
+    if (cause)
+      setError(
+        faultMessage(
+          cause,
+          'Two-factor authentication could not be started. Try again in a moment.'
+        )
+      )
     else {
       setEnrolment({
         factorId: data.id,
@@ -248,13 +256,16 @@ export function useMfa({ userId }) {
       setError(null)
       const cause = await verifyCode(enrolment.factorId, code)
       if (cause) {
-        setError(cause)
+        setError(faultMessage(cause, 'That code was not accepted. Try the current six digits.'))
         setBusy(false)
         return false
       }
       const fresh = drawCodes()
       const stored = await storeCodes(userId, fresh)
-      if (stored) setError(stored.message)
+      if (stored)
+        setError(
+          faultMessage(stored, 'The recovery codes could not be saved. Try switching it on again.')
+        )
       else setCodes(fresh)
       setEnrolment(null)
       await refresh()
@@ -276,7 +287,9 @@ export function useMfa({ userId }) {
       setError(null)
       const { error: cause } = await supabase.auth.mfa.unenroll({ factorId })
       if (cause) {
-        setError(cause.message)
+        setError(
+          faultMessage(cause, 'Two-factor authentication could not be switched off. Try again.')
+        )
         setBusy(false)
         return false
       }
@@ -297,7 +310,8 @@ export function useMfa({ userId }) {
     setError(null)
     const fresh = drawCodes()
     const stored = await storeCodes(userId, fresh)
-    if (stored) setError(stored.message)
+    if (stored)
+      setError(faultMessage(stored, 'A new set of recovery codes could not be made. Try again.'))
     else setCodes(fresh)
     setBusy(false)
     return !stored

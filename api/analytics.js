@@ -65,7 +65,12 @@ export default async function handler(request, response) {
     }
 
     if (!upstream.ok) {
-      response.status(502).json({ error: `collector returned ${upstream.status}` })
+      // The status names the far end and means nothing to somebody looking at
+      // a page of visitor figures, so it is logged rather than drawn.
+      console.error('analytics: the collector answered %s for view %s', upstream.status, view)
+      response
+        .status(502)
+        .json({ error: 'The traffic figures could not be read just now. Try again shortly.' })
       return
     }
 
@@ -74,8 +79,11 @@ export default async function handler(request, response) {
     // who did not authorise.
     response.setHeader('Cache-Control', 'private, no-store')
     response.status(200).json(await upstream.json())
-  } catch {
-    response.status(502).json({ error: 'collector unreachable' })
+  } catch (cause) {
+    console.error('analytics: the collector did not answer for view %s', view, cause)
+    response
+      .status(502)
+      .json({ error: 'The traffic figures could not be read just now. Try again shortly.' })
   } finally {
     clearTimeout(timer)
   }

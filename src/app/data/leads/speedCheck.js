@@ -1,3 +1,5 @@
+import { faultFromResponse, faultMessage } from '@utils/faults'
+
 const ENDPOINT = '/api/speed-check'
 
 const FALLBACK_ERROR = 'The check could not be completed. Try again in a few minutes.'
@@ -46,10 +48,13 @@ export async function runSpeedCheck({ site, email }, { onStage, signal } = {}) {
   })
 
   // A refusal is answered before the stream opens and carries JSON, so it is
-  // read whole rather than line by line.
+  // read whole rather than line by line. What that JSON holds is written by
+  // whatever refused - the endpoint's own sentence on a good day, an upstream
+  // service's error body on a bad one - so it is read before it is thrown
+  // rather than by the page that catches it.
   if (!response.ok) {
     const payload = await response.json().catch(() => null)
-    throw new Error(payload?.error || FALLBACK_ERROR)
+    throw new Error(faultFromResponse(response, payload, FALLBACK_ERROR))
   }
 
   let last = null
@@ -85,12 +90,22 @@ export async function runSpeedCheck({ site, email }, { onStage, signal } = {}) {
   for (const line of held.split('\n')) take(line)
 
   if (!last) throw new Error(FALLBACK_ERROR)
-  if (last.fault) throw new Error(last.fault)
+  // The last line of a run that got as far as opening the stream carries the
+  // reason instead of the reading, and it comes from the same place the refusal
+  // above does, so it is read the same way.
+  if (last.fault) throw new Error(faultMessage(last.fault, FALLBACK_ERROR))
   return last.result
 }
 
-/** What to show when a check did not come back. */
+/**
+ * What to show when a check did not come back.
+ *
+ * The reading takes most of a minute and can fail at any point in it: before
+ * the request lands, in the endpoint, or in Google's own service. All of those
+ * arrive here as one thrown thing, and none of them is written for the person
+ * who asked for the reading, so the one door in `utils/faults` answers for all
+ * of them. The fallback names the check rather than whatever failed inside it.
+ */
 export function speedCheckErrorMessage(error) {
-  const said = error?.message
-  return typeof said === 'string' && said.length && said.length < 200 ? said : FALLBACK_ERROR
+  return faultMessage(error, FALLBACK_ERROR)
 }

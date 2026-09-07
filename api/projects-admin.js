@@ -89,6 +89,29 @@ const SHOT_TYPES = {
 }
 
 /**
+ * A fault from the database or from storage, with its own words kept out of it.
+ *
+ * What comes back names tables, buckets and constraints. This console answers
+ * an admin rather than a client, and an admin still cannot act on a
+ * constraint name: the driver's words go to the log, where they are what we
+ * need to find the cause, and the answer carries the sentence for whichever
+ * thing did not happen.
+ */
+function faulted(error, said) {
+  console.error('projects-admin: %s', error?.message || error)
+  return { error: said }
+}
+
+/**
+ * What is said when a build's updates will not come back.
+ *
+ * The updates and the pictures on them are two reads standing behind one
+ * panel, so one sentence covers both: a panel that half drew is the same
+ * outcome to look at as one that did not draw at all.
+ */
+const UPDATES_UNREAD = 'The updates on that build could not be read. Try again in a moment.'
+
+/**
  * The columns an update is read back on, which is all of them but the author.
  *
  * Who wrote an update is not something the person writing it needs told, and
@@ -111,7 +134,7 @@ async function updatesFor(db, projectId) {
     .eq('project_id', projectId)
     .order('created_at', { ascending: false })
     .limit(UPDATE_LIMIT)
-  if (written.error) return { error: written.error.message }
+  if (written.error) return faulted(written.error, UPDATES_UNREAD)
 
   const updates = written.data ?? []
   if (!updates.length) return { updates: [] }
@@ -124,7 +147,7 @@ async function updatesFor(db, projectId) {
       updates.map(update => update.id)
     )
     .order('sort', { ascending: true })
-  if (attached.error) return { error: attached.error.message }
+  if (attached.error) return faulted(attached.error, UPDATES_UNREAD)
 
   const media = attached.data ?? []
   const signed = new Map()
@@ -228,7 +251,7 @@ async function signUpload(db, projectId, contentType) {
 
   const path = `${projectId}/${crypto.randomUUID()}.${extension}`
   const { data, error } = await db.storage.from(SHOTS_BUCKET).createSignedUploadUrl(path)
-  if (error) return { error: error.message }
+  if (error) return faulted(error, 'That file could not be attached. Try again in a moment.')
   return { url: data.signedUrl, path }
 }
 
@@ -256,7 +279,11 @@ export default async function handler(request, response) {
     }
 
     const { data, error } = await wired.db.rpc('admin_projects')
-    if (error) return response.status(500).json({ error: error.message })
+    if (error) {
+      return response
+        .status(500)
+        .json(faulted(error, 'The builds could not be read. Try again in a moment.'))
+    }
     return response.status(200).json({ projects: data ?? [] })
   }
 
@@ -277,7 +304,9 @@ export default async function handler(request, response) {
 
   // The four writes answer the same way, so they are read off one table rather
   // than written out as four near-identical blocks: the difference between them
-  // is the function and its arguments, and nothing else.
+  // is the function and its arguments, the sentence a failed call gets, and
+  // nothing else. The sentence sits here rather than at the call because only
+  // this table knows which of the writes was asked for.
   const writes = {
     stage: () => {
       const project = uuid(body.project_id)
@@ -285,6 +314,7 @@ export default async function handler(request, response) {
       if (typeof body.stage !== 'string' || !body.stage) return { fault: 'Which stage?' }
       return {
         name: 'admin_project_stage',
+        failed: 'That stage could not be set. Try again in a moment.',
         args: { p_actor: account.userId, p_project: project, p_stage: body.stage },
       }
     },
@@ -295,6 +325,7 @@ export default async function handler(request, response) {
       if (!title) return { fault: 'An update needs a title.' }
       return {
         name: 'admin_project_update',
+        failed: 'That update could not be saved. Try again in a moment.',
         args: {
           p_actor: account.userId,
           p_project: project,
@@ -312,6 +343,7 @@ export default async function handler(request, response) {
       if (!path) return { fault: 'Which file?' }
       return {
         name: 'admin_project_media',
+        failed: 'That file could not be attached. Try again in a moment.',
         args: {
           p_update: update,
           p_path: path,
@@ -326,6 +358,7 @@ export default async function handler(request, response) {
       if (!project) return { fault: 'Which build?' }
       return {
         name: 'admin_project_site',
+        failed: 'That site could not be linked to the build. Try again in a moment.',
         args: { p_actor: account.userId, p_project: project, p_site: uuid(body.site_id) },
       }
     },
@@ -338,6 +371,7 @@ export default async function handler(request, response) {
       const kind = TASK_KINDS.includes(body.kind) ? body.kind : 'tick'
       return {
         name: 'admin_project_task',
+        failed: 'That item could not be saved. Try again in a moment.',
         args: {
           p_actor: account.userId,
           p_project: project,
@@ -358,6 +392,7 @@ export default async function handler(request, response) {
       if (!task) return { fault: 'Which item?' }
       return {
         name: 'admin_project_task_remove',
+        failed: 'That item could not be removed. Try again in a moment.',
         args: { p_actor: account.userId, p_task: task },
       }
     },
@@ -368,6 +403,7 @@ export default async function handler(request, response) {
       if (!email) return { fault: 'Which address?' }
       return {
         name: 'admin_project_claim',
+        failed: 'That build could not be handed to that address. Try again in a moment.',
         args: { p_actor: account.userId, p_project: project, p_email: email },
       }
     },
@@ -380,7 +416,7 @@ export default async function handler(request, response) {
   if (call.fault) return response.status(400).json({ error: call.fault })
 
   const { data, error } = await wired.db.rpc(call.name, call.args)
-  if (error) return response.status(500).json({ error: error.message })
+  if (error) return response.status(500).json(faulted(error, call.failed))
   // The function's own refusal is the answer a person needs to read, and it
   // arrives as a value rather than as an error: waiting on a client is not the
   // database going wrong.

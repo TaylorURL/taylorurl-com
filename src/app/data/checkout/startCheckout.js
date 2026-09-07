@@ -1,3 +1,4 @@
+import { faultFromResponse, faultMessage } from '../../utils/faults.js'
 import { campaignHeld } from '../leads/campaign.js'
 import { recordLead } from '../leads/conversion.js'
 
@@ -91,7 +92,13 @@ export async function openCheckout({
 
   const payload = await response.json().catch(() => null)
   if (!response.ok || !payload?.url) {
-    throw new Error(payload?.error || FALLBACK_ERROR)
+    // A refusal is written by whatever refused: the endpoint's own sentence
+    // where it got that far, Stripe's error body where it did not, and a
+    // gateway's where the request never reached either. All three arrive in the
+    // same field, so the body is read here rather than by the page that catches
+    // this. An answer that came back fine but carries no page to send anybody to
+    // is the same failure without a status to read, and lands on the fallback.
+    throw new Error(faultFromResponse(response, payload, FALLBACK_ERROR))
   }
 
   recordLead('checkout', { held: campaign, person: { email: email.trim() } })
@@ -99,9 +106,17 @@ export async function openCheckout({
 }
 
 /**
- * Turns a caught checkout error into a user-safe message: the server's own text
- * where it is short enough to trust, otherwise a generic fallback.
+ * What to show when a checkout did not open.
+ *
+ * Everything that can stop one arrives at the form as a single thrown thing:
+ * the endpoint refusing, Stripe refusing behind it, a request that never
+ * landed. None of it is written for the person about to hand over a card, so
+ * the one door in `utils/faults` answers for all of it. A refusal that carried
+ * either readable words or a status was answered where it was read, and that
+ * sentence is what arrives here and what stands. The fallback is for what
+ * reaches this with neither, where naming the checkout is the only true thing
+ * left to tell a buyer.
  */
 export function checkoutErrorMessage(error) {
-  return error?.message?.length && error.message.length < 200 ? error.message : FALLBACK_ERROR
+  return faultMessage(error, FALLBACK_ERROR)
 }

@@ -254,7 +254,7 @@ export async function run(db, { slug, issueId }) {
     slug ? issueQuery.eq('slug', slug) : issueQuery.eq('id', issueId)
   ).maybeSingle()
   if (issueError) throw new Error(issueError.message)
-  if (!issue) return { status: 404, body: { error: 'no such issue' } }
+  if (!issue) return { status: 404, body: { error: 'That issue is no longer here.' } }
 
   // Answered before a single recipient is claimed: a run that wrote send rows
   // and then stopped leaves an issue reading as half delivered when nothing
@@ -278,10 +278,17 @@ export async function run(db, { slug, issueId }) {
   // be mailed, or mails them twice. None of those is recoverable once the
   // messages are out, so a truncated read stops the run instead.
   if (!recipients.complete || !suppression.complete || !sends.complete) {
+    // Where the ceiling is set is a fact about this codebase rather than about
+    // the issue, so it goes to the log. What the console needs is that nothing
+    // has gone out and that sending again will not help until somebody raises
+    // it, which is the difference between waiting and acting.
+    console.error('newsletter-send: the audience is past the row ceiling in lib/db/rows.js')
     return {
       status: 503,
       body: {
-        error: 'The audience is larger than one run reads. Raise the ceiling in lib/db/rows.js.',
+        error:
+          'The audience is too large for one run to read, so nothing was sent. Sending again ' +
+          'will not help until somebody looks at it.',
       },
     }
   }
@@ -359,7 +366,7 @@ export default async function handler(request, response) {
     return
   }
   if (!SERVICE_KEY || !RESEND_API_KEY) {
-    response.status(503).json({ error: 'newsletter sending not configured' })
+    response.status(503).json({ error: 'Newsletter sending is not set up, so nothing can go out.' })
     return
   }
   const db = serviceClient()
@@ -375,7 +382,7 @@ export default async function handler(request, response) {
 
   const { slug, issueId } = request.body ?? {}
   if (!slug && !issueId) {
-    response.status(400).json({ error: 'name an issue by slug or issueId' })
+    response.status(400).json({ error: 'Name the issue to send.' })
     return
   }
 
@@ -386,6 +393,12 @@ export default async function handler(request, response) {
     response.status(answer.status).json(answer.body)
   } catch (cause) {
     console.error('newsletter-send: %s', cause.message)
-    response.status(502).json({ error: 'send did not complete' })
+    // A run that stopped part way has already claimed and sent whoever it
+    // reached, and the next run reads those rows back and skips them - so the
+    // answer says the thing that decides what to do next, which is that
+    // sending again is safe rather than a way to mail somebody twice.
+    response.status(502).json({
+      error: 'That send did not finish. Anybody already sent to is skipped, so run it again.',
+    })
   }
 }

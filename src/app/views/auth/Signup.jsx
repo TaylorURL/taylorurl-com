@@ -4,6 +4,7 @@ import ConsoleShell from '@components/account/ConsoleShell'
 import Seo from '@components/Seo'
 import Waiting from '@components/app-shell/Waiting'
 import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
+import { useToast } from '@hooks/chrome/useToast'
 import { useSession } from '@hooks/session/useSession'
 import { paidBuyer } from '@data/checkout/checkoutSession'
 import AuthShell, { Field } from './AuthShell'
@@ -39,7 +40,7 @@ const ARRIVALS = {
 const MIN_PASSWORD = 6
 
 export default function Signup() {
-  const { session, checking, busy, error, signUp } = useSession()
+  const { session, checking, busy, error, signUp, clearError } = useSession()
   const [query] = useSearchParams()
   const bought = query.get('bought') === '1'
   const arrival = bought ? ARRIVALS.bought : ARRIVALS.plain
@@ -50,6 +51,8 @@ export default function Signup() {
   // buyer never watches a heading rewrite itself.
   const [business, setBusiness] = useState(null)
   const [password, setPassword] = useState('')
+  // The one rule this form checks for itself, which is the one thing here that
+  // is about a single box and stays under it.
   const [local, setLocal] = useState(null)
   // Set when the account was made but no session came back, which means
   // Supabase is holding it until the address is confirmed.
@@ -58,6 +61,19 @@ export default function Signup() {
   // holding the one already there and drawing a placeholder in place of one
   // that never was.
   const drawn = useRef(false)
+  const toast = useToast()
+
+  // Everything that can refuse an account is about the account or the service
+  // rather than about one of the three boxes - an address already signed up, a
+  // password the server thinks too weak, a connection that dropped - so it is
+  // said in the corner rather than under a field it does not name. Clearing it
+  // is what stops the same refusal being read out again on the next render
+  // that touches this screen.
+  useEffect(() => {
+    if (!error) return
+    toast(error, 'error')
+    clearError()
+  }, [error, toast, clearError])
 
   // What the checkout already knows about the buyer, filled in rather than
   // merely suggested. The address is the one that matters: the build is waiting
@@ -110,8 +126,6 @@ export default function Signup() {
     const made = await signUp(email.trim(), password, fullName.trim())
     if (made.confirming) setConfirming(true)
   }
-
-  const shown = local || error
 
   const leaving = !checking && Boolean(session)
 
@@ -166,7 +180,6 @@ export default function Signup() {
               ? `Your account is made. Confirm ${email.trim()} and your build opens.`
               : `Your account is made. Confirm ${email.trim()} to finish.`
           }
-          statusId={STATUS_ID}
           formName="sign-up-sent"
           alternative={{ to: loginHref, lead: 'Already confirmed?', label: 'Log in' }}
         >
@@ -188,7 +201,7 @@ export default function Signup() {
         blurb={arrival.blurb}
         statusId={STATUS_ID}
         formName="sign-up"
-        error={shown}
+        error={local}
         busy={busy || settling}
         submitLabel="Sign Up"
         busyLabel="Creating Account"
@@ -208,7 +221,6 @@ export default function Signup() {
           }}
           autoComplete="name"
           autoFocus={!fullName}
-          describedBy={STATUS_ID}
         />
         <Field
           id="signup-email"
@@ -222,8 +234,6 @@ export default function Signup() {
             setEmail(value)
           }}
           autoComplete="username"
-          invalid={Boolean(shown)}
-          describedBy={STATUS_ID}
         />
         <Field
           id="signup-password"
@@ -232,7 +242,7 @@ export default function Signup() {
           value={password}
           onChange={setPassword}
           autoComplete="new-password"
-          invalid={Boolean(shown)}
+          invalid={Boolean(local)}
           describedBy={STATUS_ID}
         />
       </AuthShell>

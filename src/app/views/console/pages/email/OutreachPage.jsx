@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { m } from 'framer-motion'
 import { Ban, ChevronLeft, ChevronRight, ExternalLink, Pause, Play, Plus, X } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
+import { faultFromResponse, faultMessage, readsAsWritten } from '@utils/faults'
+import { useToast } from '@hooks/chrome/useToast'
 import { useSession } from '@hooks/session/useSession'
 import { useOutreachFeed } from '@hooks/console/useOutreachFeed'
 import {
@@ -377,6 +379,33 @@ const CHECK_REASON = {
   dns_unavailable: 'the domain could not be looked up',
 }
 
+/**
+ * What a message that never arrived says, where the reason it came back with
+ * was written for a mail server rather than for anybody.
+ *
+ * A row records whatever the send threw, and that is a provider's own line -
+ * an SMTP code, a policy URL, a thousand characters of it. The stage the row
+ * sits at already says whether it failed on the way out or came back after.
+ *
+ * This is a log rather than a control, and the difference decides how the line
+ * is read. `faultMessage` answers the question a person is asking while they
+ * wait - what happened, and what to do about it - so it hands back live advice:
+ * give it a moment, try again, check the address. Beside a send that failed on
+ * Tuesday there is nothing to wait for and nothing to retry from this row, and
+ * its table would go further and read a provider's stored 'Invalid login
+ * credentials' as the reader's own sign-in being wrong. So a recorded failure
+ * takes only the half of the door that keeps machine text out: the provider's
+ * line if it reads as something a person could have written, and this sentence
+ * if it does not.
+ *
+ * It reports and does not instruct, because the address is not known to be the
+ * fault - a refusal at the studio's own transport lands in this column too.
+ */
+const NOT_DELIVERED = 'This message did not reach the address.'
+
+/** A failure a row recorded earlier, with a provider's own machinery kept out. */
+const asRecorded = said => (readsAsWritten(said) ? said : NOT_DELIVERED)
+
 /** The three verdicts a check gives, and how each reads beside an address. */
 const VERDICT = {
   deliverable: { label: 'Verified', tone: 'good' },
@@ -480,6 +509,38 @@ const BLANK_BUSINESS = {
   phone: '',
   email: '',
 }
+
+/** Where a business typed in by hand is filed. */
+const ADD_PATH = '/api/outreach-admin'
+
+/** What a reader is told when the add did not reach the file at all. */
+const NOT_ADDED = 'That business could not be added. Try it again.'
+
+/** The two answers that are a refusal about a field rather than a failure. */
+const REFUSED = new Set([400, 409])
+
+/**
+ * Which field an add is refused over.
+ *
+ * The endpoint measures the same fields this form does and answers one at a
+ * time, naming it in its own words, so the sentence it sends back is read
+ * under the input it is about. A name left out, an address that is not one and
+ * a business already on file are each about the field the reader typed into,
+ * and none of them is news to anybody looking anywhere else.
+ */
+const ADD_FIELD = [
+  [/business name|already on file/i, 'name'],
+  [/website/i, 'website'],
+  [/contact address|left alone/i, 'email'],
+]
+
+/** The field a refusal names, or nothing where it names none of them. */
+function fieldOf(said) {
+  return ADD_FIELD.find(([mark]) => mark.test(said))?.[1] ?? null
+}
+
+/** A refusal, at the size the hints beside these fields are read at. */
+const FAULT_NOTE = 'text-[12px] leading-relaxed text-[color:var(--danger-on-paper)]'
 
 /** A saved settings row as the draft the form holds. */
 function toDraft(settings) {
@@ -912,7 +973,12 @@ function Switch({ name, on, note, busy, loading, onToggle }) {
 function Verdict({ prospect }) {
   const verdict = VERDICT[prospect.email_verdict]
   if (!verdict) return null
-  const said = CHECK_REASON[prospect.email_check_reason] || prospect.email_check_reason
+  // Only a reason there are words for is read back. The column holds the
+  // checker's own key, and a key nothing here names prints as a key - the
+  // chip beside it already carries the verdict, so a row whose reason has no
+  // sentence yet says the verdict and stops, the same way a row checked
+  // before the columns existed says nothing at all.
+  const said = CHECK_REASON[prospect.email_check_reason]
   return (
     <span className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
       <Chip tone={verdict.tone}>{verdict.label}</Chip>
@@ -1046,7 +1112,9 @@ function Message({ message, step, letters, onOpenLetter }) {
       )}
 
       {message.error && (
-        <p className="text-[13px] leading-relaxed text-[color:var(--danger)]">{message.error}</p>
+        <p className="text-[13px] leading-relaxed text-[color:var(--danger)]">
+          {asRecorded(message.error)}
+        </p>
       )}
     </li>
   )
@@ -1196,6 +1264,11 @@ function LetterSheet({
   const segment = variant && !everyone ? SEGMENT[variant.segment] : null
   const state = variant ? VARIANT_STATUS[variant.status] : null
   const ready = Boolean(preview && !preview.error && !rendering)
+  // Why the letter is not on the stage, where the render came back with a
+  // reason instead of a message. It is a sentence rather than a subject, so it
+  // is read in the body, which has the room for one, and stands in place of
+  // the bars that would otherwise say a message is still on its way.
+  const unrendered = rendering ? null : (preview?.error ?? null)
   // What this letter has brought back so far, on the sheet rather than a
   // table away, so a letter is read beside what it does.
   const record = results
@@ -1247,7 +1320,7 @@ function LetterSheet({
         </div>
         <div className="grid gap-0.5">
           <span className="truncate text-[12px] font-medium text-ink-paper">
-            {rendering ? 'Rendering' : (preview?.error ?? preview?.subject ?? '')}
+            {rendering ? 'Rendering' : (preview?.subject ?? '')}
           </span>
           <span className="text-paper-faint text-[11px] leading-relaxed">
             {ready ? renderedFor(preview) : ''}
@@ -1258,7 +1331,14 @@ function LetterSheet({
         </div>
       </header>
       <div className="min-h-0 flex-1 bg-[color:var(--paper-field)]">
-        {!ready ? (
+        {unrendered ? (
+          <p
+            role="status"
+            className="px-5 py-4 text-[13px] leading-relaxed text-[color:var(--danger-on-paper)]"
+          >
+            {unrendered}
+          </p>
+        ) : !ready ? (
           <div className="grid gap-3 px-5 py-4">
             <SkeletonBar className="w-full max-w-[26rem]" />
             <SkeletonBar className="w-full max-w-[22rem]" />
@@ -1624,6 +1704,10 @@ function Reach({ row }) {
 function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
   const status = MESSAGE_STATUS[row.status]
   const step = row.step ?? stepOfMessage(row, letters) ?? 1
+  // Read once and drawn in two places: the failure sits in the subject column
+  // where there is room for it, and moves under the state chip at the widths
+  // that column is gone.
+  const fault = row.error ? asRecorded(row.error) : null
   return (
     <tr className="border-hair-paper border-t align-top">
       <td className={`${CELL} ${FROM_SM} text-paper-soft`}>
@@ -1671,9 +1755,9 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
         <span className="block truncate text-paper-soft" title={row.subject || ''}>
           {row.subject || 'No subject'}
         </span>
-        {row.error && (
+        {fault && (
           <span className="block break-words text-[12px] leading-relaxed text-[color:var(--danger)]">
-            {row.error}
+            {fault}
           </span>
         )}
       </td>
@@ -1691,9 +1775,9 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
         <Chip tone={status ? status.tone : 'muted'}>{status ? status.label : row.status}</Chip>
         {/* The failure belongs beside the state it explains once the column
             holding it is gone. */}
-        {row.error && (
+        {fault && (
           <span className="mt-1.5 block break-words text-[12px] leading-relaxed text-[color:var(--danger)] xl:hidden">
-            {row.error}
+            {fault}
           </span>
         )}
       </td>
@@ -2672,6 +2756,7 @@ function ProfileSheet({
 export default function OutreachPage() {
   const { session } = useSession()
   const token = session?.access_token ?? null
+  const toast = useToast()
 
   // Which view is open, which business, which letter and which half of the
   // mail list, all held in the address so a link lands on them.
@@ -2734,6 +2819,7 @@ export default function OutreachPage() {
     mailLoading,
     acting,
     running,
+    refresh,
     act,
     run,
     preview: readPreview,
@@ -2744,6 +2830,11 @@ export default function OutreachPage() {
   // The business being added by hand. It is held whole rather than a field at
   // a time so closing the panel over a half-typed name does not lose it.
   const [business, setBusiness] = useState(BLANK_BUSINESS)
+  // What the add was refused over, and the field the refusal is about where it
+  // names one, so the sentence can be read under the input rather than beside
+  // the button.
+  const [addFault, setAddFault] = useState(null)
+  const [adding, setAdding] = useState(false)
 
   const settings = data?.settings || null
   // The form reads from the saved row until it is typed in, and from the
@@ -2894,19 +2985,58 @@ export default function OutreachPage() {
     if (answer?.settings) setEdited(null)
   }
 
-  const typeInto = key => event =>
-    setBusiness(current => ({ ...current, [key]: event.target.value }))
+  // Typing into a field answers the refusal under it, so the sentence goes as
+  // the reader acts on it rather than standing over a value it is no longer
+  // about.
+  const typeInto = key => event => {
+    const typing = event.target.value
+    setBusiness(current => ({ ...current, [key]: typing }))
+    setAddFault(current => (current?.field === key ? null : current))
+  }
+
+  const closeAdd = () => {
+    setPanel(null)
+    setAddFault(null)
+  }
 
   // A filed business opens on its own profile, which is the section's account
   // of where a row stands. Nothing else here says a change went through, and a
   // form that empties itself says only that the typing has gone.
+  //
+  // It is asked for on its own rather than through the board's changes,
+  // because what it comes back refused with is about a field: a name left out,
+  // an address that is not one, a business already on file. Those are read
+  // beside the typing, and reading the answer here is what puts them there.
+  // A failure behind the form is not the reader's to correct and is said the
+  // way the section's other failures are.
   const submitAdd = async event => {
     event.preventDefault()
-    const answer = await act({ action: 'add', ...business }, 'add')
-    if (!answer?.prospect) return
-    setBusiness(BLANK_BUSINESS)
-    setPanel(null)
-    openProspect(answer.prospect.id)
+    if (!token || adding) return
+    setAdding(true)
+    setAddFault(null)
+    try {
+      const response = await fetch(ADD_PATH, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', ...business }),
+      })
+      const payload = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        const said = faultFromResponse(response, payload, NOT_ADDED)
+        if (REFUSED.has(response.status)) setAddFault({ field: fieldOf(said), said })
+        else toast(said, 'error')
+        return
+      }
+      if (!payload?.prospect) return
+      setBusiness(BLANK_BUSINESS)
+      setPanel(null)
+      await refresh()
+      openProspect(payload.prospect.id)
+    } catch (cause) {
+      toast(faultMessage(cause, NOT_ADDED), 'error')
+    } finally {
+      setAdding(false)
+    }
   }
 
   const runJob = name => run(name)
@@ -2918,6 +3048,13 @@ export default function OutreachPage() {
   const record = profile?.prospect
     ? { ...profile.prospect, messages: profile.messages || [] }
     : null
+
+  // The three fields the add form can be refused over. Each says so itself:
+  // the sentence under the input, and the input marked as the one refused, so
+  // a reader who cannot see the colour is told the same thing.
+  const nameFault = addFault?.field === 'name' ? addFault.said : null
+  const websiteFault = addFault?.field === 'website' ? addFault.said : null
+  const emailFault = addFault?.field === 'email' ? addFault.said : null
 
   // The search field and the five that narrow the table stand on the same row
   // as the halves, each showing what it is set to, so a table missing rows
@@ -3542,7 +3679,7 @@ export default function OutreachPage() {
           a map result carries, so a row filed here is the same shape as every
           other row at the found stage and every job downstream reads it
           without knowing which way it arrived. */}
-      <SidePanel open={panel === 'add'} title="Add Prospect" onClose={() => setPanel(null)}>
+      <SidePanel open={panel === 'add'} title="Add Prospect" onClose={closeAdd}>
         <form onSubmit={submitAdd} className="grid gap-4 px-5 py-4">
           <label className="grid gap-1.5">
             <span className={`${MONO_LABEL} text-paper-faint`}>Business Name</span>
@@ -3551,8 +3688,15 @@ export default function OutreachPage() {
               type="text"
               value={business.name}
               onChange={typeInto('name')}
+              aria-invalid={nameFault ? 'true' : undefined}
+              aria-describedby={nameFault ? 'add-name-note' : undefined}
               className={FIELD}
             />
+            {nameFault ? (
+              <p id="add-name-note" className={FAULT_NOTE}>
+                {nameFault}
+              </p>
+            ) : null}
           </label>
           <label className="grid gap-1.5">
             <span className={`${MONO_LABEL} text-paper-faint`}>Town</span>
@@ -3586,8 +3730,15 @@ export default function OutreachPage() {
               value={business.website}
               onChange={typeInto('website')}
               placeholder="example.com"
+              aria-invalid={websiteFault ? 'true' : undefined}
+              aria-describedby={websiteFault ? 'add-website-note' : undefined}
               className={FIELD}
             />
+            {websiteFault ? (
+              <p id="add-website-note" className={FAULT_NOTE}>
+                {websiteFault}
+              </p>
+            ) : null}
             <span className="text-paper-faint text-[12px] leading-relaxed">
               The site enrichment reads an address off and the audit measures. Left out, enrichment
               looks for one.
@@ -3618,8 +3769,15 @@ export default function OutreachPage() {
               value={business.email}
               onChange={typeInto('email')}
               placeholder="name@example.com"
+              aria-invalid={emailFault ? 'true' : undefined}
+              aria-describedby={emailFault ? 'add-email-note' : undefined}
               className={FIELD}
             />
+            {emailFault ? (
+              <p id="add-email-note" className={FAULT_NOTE}>
+                {emailFault}
+              </p>
+            ) : null}
             <span className="text-paper-faint text-[12px] leading-relaxed">
               Where a message would go, where it is already known. One that has asked to be left
               alone is refused; one left blank is found by enrichment.
@@ -3629,20 +3787,17 @@ export default function OutreachPage() {
           {/* The panel covers the page, and with it the notice at the top of
               the page that every other refusal is read from. A business
               already on file is the ordinary answer here, so it is said where
-              the typing is. */}
-          {error && (
-            <p className={`${MONO_LABEL} text-[color:var(--warn)]`} role="status">
-              {error}
+              the typing is: under the field it is about, or here beside the
+              button where it is about none of them. */}
+          {addFault && !addFault.field ? (
+            <p className={FAULT_NOTE} role="status">
+              {addFault.said}
             </p>
-          )}
+          ) : null}
 
-          <button
-            type="submit"
-            disabled={acting === 'add'}
-            className={`${BUTTON} justify-self-start`}
-          >
+          <button type="submit" disabled={adding} className={`${BUTTON} justify-self-start`}>
             <Plus className="h-3 w-3" strokeWidth={2} aria-hidden="true" />
-            {acting === 'add' ? 'Adding' : 'Add Prospect'}
+            {adding ? 'Adding' : 'Add Prospect'}
           </button>
           <p className="text-[13px] leading-relaxed text-paper-soft">
             The business enters at the found stage. Enrichment, the address check and the audit take

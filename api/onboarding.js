@@ -67,6 +67,19 @@ const ANSWERS_LIMIT = 60000
 const STEP_LIMIT = 40
 
 /**
+ * A 500 for a driver fault, with the driver's own words kept out of it.
+ *
+ * What comes back from the database names tables, columns and constraints, and
+ * the person reading it is halfway through describing their opening hours.
+ * Postgres gets the log, where its words are the ones we need to find the
+ * cause; the client gets the sentence for whichever thing did not happen.
+ */
+function faulted(error, said) {
+  console.error('onboarding: %s', error?.message || error)
+  return { error: said }
+}
+
+/**
  * The answers, if what arrived is a set of them.
  *
  * An array and a string both survive a jsonb column and neither is a form, so
@@ -127,7 +140,11 @@ export default async function handler(request, response) {
       p_actor: account.userId,
       p_project: project,
     })
-    if (error) return response.status(500).json({ error: error.message })
+    if (error) {
+      return response
+        .status(500)
+        .json(faulted(error, 'Your brief could not be opened. Try again in a moment.'))
+    }
     if (data?.error) return response.status(400).json({ error: data.error })
 
     response.setHeader('Cache-Control', 'no-store')
@@ -143,7 +160,9 @@ export default async function handler(request, response) {
 
   // The writes answer the same way, so they are read off one table rather than
   // written out as two near-identical blocks: the difference between them is
-  // the function and its arguments, and nothing else.
+  // the function and its arguments, the sentence a failed call gets, and
+  // nothing else. The sentence sits here rather than at the call because only
+  // this table knows which of the two things the client asked for.
   const writes = {
     save: () => {
       const project = uuid(body.project_id)
@@ -158,6 +177,7 @@ export default async function handler(request, response) {
       }
       return {
         name: 'project_onboarding_save',
+        failed: 'Your answers could not be saved just now. They are still on screen, so try again.',
         args: {
           p_actor: account.userId,
           p_project: project,
@@ -174,6 +194,7 @@ export default async function handler(request, response) {
       if (!project) return { fault: 'Which project?' }
       return {
         name: 'project_onboarding_submit',
+        failed: 'Your brief could not be sent. Try again in a moment.',
         args: { p_actor: account.userId, p_project: project },
       }
     },
@@ -186,7 +207,7 @@ export default async function handler(request, response) {
   if (call.fault) return response.status(400).json({ error: call.fault })
 
   const { data, error } = await wired.db.rpc(call.name, call.args)
-  if (error) return response.status(500).json({ error: error.message })
+  if (error) return response.status(500).json(faulted(error, call.failed))
   if (data?.error) return response.status(400).json({ error: data.error })
 
   // The stored row rather than an acknowledgement, because what the browser

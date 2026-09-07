@@ -20,10 +20,12 @@ const FIELD = 'field mt-1.5 min-h-[44px] py-2 text-[16px]'
  * One labelled field, so the two auth screens cannot drift apart in the small
  * things — label case, spacing, height, which state the error is described by.
  *
- * `id` ties the label, the input and the error text together, and `describedBy`
- * points the field at the form's one status line, so a refusal is announced
- * once wherever focus happens to be. `invalid` marks the field a refused
- * attempt was typed into.
+ * `id` ties the label, the input and the line under the form together, and
+ * `describedBy` points the field at that line, so the rule it broke is read out
+ * with it. `invalid` marks the field the refused value was typed into. Only the
+ * rules a form checks for itself go there; a failure that is not about one box
+ * is announced in the corner and points at no field, because pointing it at one
+ * says the value in it is wrong when it is not.
  *
  * A password field carries a reveal, because the alternative to seeing what was
  * typed is typing it again.
@@ -89,10 +91,17 @@ export function Field({
  * where two columns would squeeze the form. On a phone the form has the screen
  * to itself.
  *
- * The status line is always in the layout rather than appearing on failure, so
- * a refused attempt does not push the button down the page under the cursor
- * that is about to press it again. `statusId` is the id the caller's fields
- * point at, which is what puts the refusal on the field that was typed into.
+ * The status line carries the rules a form checks for itself - a password too
+ * short, two that do not match, an address in the wrong shape - and nothing
+ * else. `statusId` is the id the caller's fields point at, which is what puts
+ * the rule on the field that broke it, and passing one is what draws the line:
+ * it then holds its own height from the first render, so a rule arriving does
+ * not push the button down the page under the cursor that is about to press it
+ * again. A screen that checks no rules of its own passes no id and gets no
+ * line, because a live region with nothing to announce and a gap reserved for
+ * nothing are both furniture. Everything else that goes wrong here - the
+ * account, the service, the connection - is not about a field and is said in
+ * the corner instead.
  *
  * `alternative` is the other screen this one leads to, and it is optional: the
  * two-factor step is reached from here rather than chosen, so it offers none.
@@ -199,9 +208,11 @@ export default function AuthShell({
 
               <div className="auth-fields">{children}</div>
 
-              <p id={statusId} role="status" className="auth-status">
-                {error || ''}
-              </p>
+              {statusId && (
+                <p id={statusId} role="status" className="auth-status">
+                  {error || ''}
+                </p>
+              )}
 
               {/* A step that has nothing left to submit carries no button. The
                   screen saying an email is on its way is the one of these that

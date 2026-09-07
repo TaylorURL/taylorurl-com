@@ -69,6 +69,28 @@ const ANSWER_LIMIT = 4000
 const NAME_LIMIT = 200
 
 /**
+ * A fault from the database or from storage, with its own words kept out of it.
+ *
+ * What comes back names tables, buckets and constraints, and the person
+ * reading it is a client looking at their own build. Those words go to the
+ * log, where they are what we need to find the cause; what comes back is the
+ * sentence for whichever thing did not happen.
+ */
+function faulted(error, said) {
+  console.error('projects: %s', error?.message || error)
+  return { error: said }
+}
+
+/**
+ * What a client is told when a file will not go up.
+ *
+ * Signing an upload is two steps against two systems and either can refuse, so
+ * one sentence stands for both: which of them failed is a fact about this
+ * endpoint, and what the client can do about it is the same either way.
+ */
+const ATTACH_FAILED = 'That file could not be attached. Try again in a moment.'
+
+/**
  * Every capture, as a link that works for an hour.
  *
  * The bucket is private, so what the database holds is an object path and
@@ -142,20 +164,25 @@ async function signIntakeUpload(db, actor, taskId, contentType) {
     p_actor: actor,
     p_task: taskId,
   })
-  if (error) return { error: error.message }
+  if (error) return faulted(error, ATTACH_FAILED)
   if (data?.error) return { error: data.error }
   if (!data?.project_id) return { error: 'Which item?' }
 
   const path = `${data.project_id}/${taskId}/${crypto.randomUUID()}.${extension}`
   const signed = await db.storage.from(INTAKE_BUCKET).createSignedUploadUrl(path)
-  if (signed.error) return { error: signed.error.message }
+  if (signed.error) return faulted(signed.error, ATTACH_FAILED)
   return { url: signed.data.signedUrl, path }
 }
 
 export default async function handler(request, response) {
   if (!servedHereOr404(request, response)) return
   const wired = connect()
-  if (!wired) return response.status(503).json({ error: 'Projects are not available right now.' })
+  if (!wired) {
+    return response.status(503).json({
+      error:
+        'Your projects cannot be loaded. Get in touch and we will tell you how the build is going.',
+    })
+  }
 
   const account = await authorizeAccount(
     wired,
@@ -168,7 +195,11 @@ export default async function handler(request, response) {
     const { data, error } = await wired.db.rpc('projects_for_account', {
       p_profile: account.userId,
     })
-    if (error) return response.status(500).json({ error: error.message })
+    if (error) {
+      return response
+        .status(500)
+        .json(faulted(error, 'Your projects could not be loaded. Try again in a moment.'))
+    }
 
     const shown = await withSignedShots(wired.db, data ?? [])
     const projects = await withSignedFiles(wired.db, shown)
@@ -200,13 +231,16 @@ export default async function handler(request, response) {
 
   // The writes answer the same way, so they are read off one table rather than
   // written out as five near-identical blocks: the difference between them is
-  // the function and its arguments, and nothing else.
+  // the function and its arguments, the sentence a failed call gets, and
+  // nothing else. The sentence sits here rather than at the call because only
+  // this table knows which of the five things the client asked for.
   const writes = {
     tick: () => {
       const task = uuid(body.task_id)
       if (!task) return { fault: 'Which item?' }
       return {
         name: 'project_task_tick',
+        failed: 'That item could not be updated. Try again in a moment.',
         args: { p_actor: account.userId, p_task: task, p_done: body.done !== false },
       }
     },
@@ -215,6 +249,7 @@ export default async function handler(request, response) {
       if (!task) return { fault: 'Which item?' }
       return {
         name: 'project_task_answer',
+        failed: 'That answer could not be saved. Try again in a moment.',
         args: {
           p_actor: account.userId,
           p_task: task,
@@ -232,6 +267,7 @@ export default async function handler(request, response) {
       if (!path) return { fault: 'Which file?' }
       return {
         name: 'project_task_file',
+        failed: ATTACH_FAILED,
         args: {
           p_actor: account.userId,
           p_task: task,
@@ -247,6 +283,7 @@ export default async function handler(request, response) {
       if (!file) return { fault: 'Which file?' }
       return {
         name: 'project_task_file_remove',
+        failed: 'That file could not be removed. Try again in a moment.',
         args: { p_actor: account.userId, p_file: file },
       }
     },
@@ -255,6 +292,7 @@ export default async function handler(request, response) {
       if (!project) return { fault: 'Which project?' }
       return {
         name: 'project_mark_seen',
+        failed: 'That update could not be marked as read. Try again in a moment.',
         args: { p_actor: account.userId, p_project: project },
       }
     },
@@ -267,7 +305,7 @@ export default async function handler(request, response) {
   if (call.fault) return response.status(400).json({ error: call.fault })
 
   const { data, error } = await wired.db.rpc(call.name, call.args)
-  if (error) return response.status(500).json({ error: error.message })
+  if (error) return response.status(500).json(faulted(error, call.failed))
   if (data?.error) return response.status(400).json({ error: data.error })
   return response.status(200).json({ ok: true })
 }

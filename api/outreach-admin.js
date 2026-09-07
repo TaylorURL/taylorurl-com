@@ -291,10 +291,30 @@ function absent(error) {
   return /does not exist|could not find the table/i.test(error?.message || '')
 }
 
-/** The answer a failed read becomes: a missing table names itself, the rest report. */
-function refusal(error) {
+/** What is said when the board itself will not come back. */
+const BOARD_UNREAD = 'The outreach board could not be read. Try again in a moment.'
+
+/** What is said when taking a business off the list does not go through. */
+const SKIP_FAILED = 'That prospect could not be skipped. Try again in a moment.'
+
+/** What is said when a business typed in by hand does not go on. */
+const ADD_FAILED = 'That business could not be added. Try again in a moment.'
+
+/** What is said when a change to a letter does not stick. */
+const VARIANT_FAILED = 'That letter could not be saved. Try again in a moment.'
+
+/**
+ * The answer a failed read becomes: a missing table names itself, the rest report.
+ *
+ * The missing table is the one fault worth naming outright, because the repair
+ * is a migration and nothing in a general sentence points at one. Everything
+ * else Postgres says names columns and constraints and goes to the log, where
+ * it is what we need to find the cause; `said` names whichever thing on the
+ * board did not happen.
+ */
+function refusal(error, said = BOARD_UNREAD) {
   if (absent(error)) return { status: 503, body: { error: NO_TABLES } }
-  const said = error?.message || 'The outreach endpoint could not read the database.'
+  console.error('outreach-admin: %s', error?.message || error)
   return { status: 500, body: { error: said } }
 }
 
@@ -1305,7 +1325,9 @@ async function saveSettings(db, body) {
     .upsert({ id: 1, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'id' })
     .select(SETTINGS_COLUMNS)
     .maybeSingle()
-  if (saved.error) return refusal(saved.error)
+  if (saved.error) {
+    return refusal(saved.error, 'Those settings could not be saved. Try again in a moment.')
+  }
 
   return { status: 200, body: { ok: true, settings: saved.data } }
 }
@@ -1333,12 +1355,12 @@ async function skip(db, body) {
     .eq('id', id)
     .neq('stage', 'unsubscribed')
     .select('id')
-  if (skipped.error) return refusal(skipped.error)
+  if (skipped.error) return refusal(skipped.error, SKIP_FAILED)
   if (!skipped.data.length) {
     // Nothing was written, which is either a row that has gone or the one row
     // this refuses to touch. The second read only runs on that failure.
     const found = await db.from('outreach_prospects').select('stage').eq('id', id).maybeSingle()
-    if (found.error) return refusal(found.error)
+    if (found.error) return refusal(found.error, SKIP_FAILED)
     if (!found.data) return { status: 404, body: { error: 'That prospect is no longer on file.' } }
     return {
       status: 409,
@@ -1564,11 +1586,11 @@ export async function addProspect(db, body) {
       })
       .select(PROSPECT_ROW)
       .maybeSingle()
-    if (added.error) return refusal(added.error)
+    if (added.error) return refusal(added.error, ADD_FAILED)
 
     return { status: 200, body: { ok: true, prospect: added.data } }
   } catch (cause) {
-    return refusal(cause)
+    return refusal(cause, ADD_FAILED)
   }
 }
 
@@ -1618,7 +1640,21 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
       html: message.html,
     })
   } catch (cause) {
-    return { status: 502, body: { error: `The proof did not leave: ${cause.message}` } }
+    // A proof is a diagnostic rather than a delivery. Nobody sends one except
+    // to find out whether this mailbox can send at all, so what the provider
+    // said - the address it would not take, the rule it broke - is the answer
+    // being asked for rather than noise to be spared. It is carried here and
+    // logged, and the console draws its own sentence from the status.
+    //
+    // It does not say to try again. A transport refusing a proof refuses the
+    // next one identically until something is changed, and an instruction that
+    // cannot work is worse than none.
+    const said = cause?.message || String(cause)
+    console.error('outreach-admin: the proof did not leave: %s', said)
+    return {
+      status: 502,
+      body: { error: `The proof did not leave. The mail server said: ${said}` },
+    }
   }
 
   return {
@@ -1712,7 +1748,7 @@ export async function setVariant(db, body, registry = VARIANTS, holdouts = HOLDO
       .upsert({ id, ...patch, updated_at: new Date().toISOString() }, { onConflict: 'id' })
       .select(VARIANT_COLUMNS)
       .maybeSingle()
-    if (saved.error) return refusal(saved.error)
+    if (saved.error) return refusal(saved.error, VARIANT_FAILED)
 
     const row = saved.data ?? { id, ...patch }
     const variant = withSettings(known.holdout ? holdouts : registry, [row]).find(
@@ -1720,7 +1756,7 @@ export async function setVariant(db, body, registry = VARIANTS, holdouts = HOLDO
     )
     return { status: 200, body: { ok: true, variant: describeVariant(variant, row) } }
   } catch (cause) {
-    return refusal(cause)
+    return refusal(cause, VARIANT_FAILED)
   }
 }
 

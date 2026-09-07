@@ -88,6 +88,32 @@ function slugFrom(title) {
 }
 
 /**
+ * A driver fault, with the driver's own words kept out of the answer.
+ *
+ * Postgres names tables, columns and constraints in a message. The composer
+ * draws whatever comes back beside the writing, and a constraint name there is
+ * not something anybody can act on: it goes to the log, where it is what we
+ * need to find the cause, and the answer carries the sentence for whichever
+ * thing did not happen.
+ */
+function faulted(error, said) {
+  console.error('newsletter-admin: %s', error?.message || error)
+  return said
+}
+
+/** What is said when an issue itself will not come back. */
+const ISSUE_UNREAD = 'That issue could not be opened. Try again in a moment.'
+
+/**
+ * What is said when the preview will not draw.
+ *
+ * The issue and the recipient it is rendered against are two reads standing
+ * behind one panel, and neither of them on its own is a preview, so both
+ * answer with the same sentence.
+ */
+const PREVIEW_UNDRAWN = 'That issue could not be previewed. Try again in a moment.'
+
+/**
  * How many people an issue sent right now would reach, on each side of the list.
  *
  * Counted through the same module the send selects through, so the figure on
@@ -127,7 +153,10 @@ async function list(db) {
       .limit(ISSUE_LIMIT),
     audienceSplit(db),
   ])
-  if (issues.error) return { status: 500, body: { error: issues.error.message } }
+  if (issues.error) {
+    const said = faulted(issues.error, 'The issues could not be read. Try again in a moment.')
+    return { status: 500, body: { error: said } }
+  }
 
   const ids = issues.data.map(row => row.id)
   const tally = new Map(ids.map(id => [id, { claimed: 0, sent: 0, failed: 0 }]))
@@ -163,7 +192,7 @@ async function read(db, query) {
     .select(`${ISSUE_COLUMNS}, body`)
     .eq('id', id)
     .maybeSingle()
-  if (error) return { status: 500, body: { error: error.message } }
+  if (error) return { status: 500, body: { error: faulted(error, ISSUE_UNREAD) } }
   if (!data) return { status: 404, body: { error: 'That issue is no longer here.' } }
   return { status: 200, body: { generated_at: new Date().toISOString(), issue: data } }
 }
@@ -198,9 +227,11 @@ async function preview(db, query) {
     selectRecipients(db, RECIPIENT_COLUMNS).order('created_at', { ascending: true }).limit(25),
     readAll(() => db.from('suppression').select('email')),
   ])
-  if (found.error) return { status: 500, body: { error: found.error.message } }
+  if (found.error) return { status: 500, body: { error: faulted(found.error, PREVIEW_UNDRAWN) } }
   if (!found.data) return { status: 404, body: { error: 'That issue is no longer here.' } }
-  if (recipients.error) return { status: 500, body: { error: recipients.error.message } }
+  if (recipients.error) {
+    return { status: 500, body: { error: faulted(recipients.error, PREVIEW_UNDRAWN) } }
+  }
 
   const suppressed = new Set(held.rows.map(row => String(row.email).toLowerCase()))
   const reader = (recipients.data || []).find(
@@ -277,7 +308,8 @@ async function create(db, body) {
     if (inserted.error.code === UNIQUE_VIOLATION) {
       return { status: 409, body: { error: `An issue already answers to ${slug}.` } }
     }
-    return { status: 500, body: { error: inserted.error.message } }
+    const said = faulted(inserted.error, 'That issue could not be created. Try again in a moment.')
+    return { status: 500, body: { error: said } }
   }
   return { status: 200, body: { ok: true, issue: inserted.data } }
 }
@@ -309,7 +341,7 @@ async function standing(db, body) {
     .select('id, slug, status')
     .eq('id', id)
     .maybeSingle()
-  if (error) return { refusal: { status: 500, body: { error: error.message } } }
+  if (error) return { refusal: { status: 500, body: { error: faulted(error, ISSUE_UNREAD) } } }
   return { id, issue: data }
 }
 
@@ -324,7 +356,8 @@ function refused(error) {
       body: { error: 'That issue has gone out. What readers received cannot be rewritten.' },
     }
   }
-  return { status: 500, body: { error: error.message } }
+  const said = faulted(error, 'That change could not be saved. Try again in a moment.')
+  return { status: 500, body: { error: said } }
 }
 
 /** The writing, saved. */
@@ -380,7 +413,7 @@ async function ready(db, body) {
     .select('body')
     .eq('id', id)
     .maybeSingle()
-  if (error) return { status: 500, body: { error: error.message } }
+  if (error) return { status: 500, body: { error: faulted(error, ISSUE_UNREAD) } }
   if (!readBody(held?.body).length) {
     return { status: 400, body: { error: 'Write the issue before marking it ready.' } }
   }
@@ -426,7 +459,10 @@ async function remove(db, body) {
   if (blocked) return blocked
 
   const deleted = await db.from('newsletter_issues').delete().eq('id', id)
-  if (deleted.error) return { status: 500, body: { error: deleted.error.message } }
+  if (deleted.error) {
+    const said = faulted(deleted.error, 'That issue could not be removed. Try again in a moment.')
+    return { status: 500, body: { error: said } }
+  }
   return { status: 200, body: { ok: true, removed: issue.slug } }
 }
 
