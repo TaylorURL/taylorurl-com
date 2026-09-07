@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Gauge } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
+import CheckStage from '@components/conversion/CheckStage'
 import CtaSection from '@components/conversion/CtaSection'
 import Mesh from '@components/mesh/Mesh'
 import PageHero from '@components/page-bands/PageHero'
@@ -299,7 +300,36 @@ export default function SpeedCheck() {
       <section {...GROUND.attrs} className={`section-y relative overflow-hidden ${GROUND.section}`}>
         <div className={`absolute inset-0 ${GROUND.grid} ${DRAFTS.ledger}`} aria-hidden="true" />
         <div className="container-rail relative">
-          <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
+          <CheckStage
+            running={running}
+            panel={
+              running ? (
+                <CheckProgress
+                  address={values.site.trim()}
+                  elapsed={elapsed}
+                  stages={STAGE_LABELS}
+                  at={stageIndex(stage)}
+                  note={WAIT_NOTE}
+                  ground={GROUND}
+                />
+              ) : (
+                <div className={`p-8 ${GROUND.shell}`}>
+                  <p className="section-label-sm text-accent">What Gets Measured</p>
+                  <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
+                    <li>How the page performs on a throttled phone, scored out of a hundred.</li>
+                    <li>
+                      Accessibility, build quality, and search readiness from the same report.
+                    </li>
+                    <li>The five timings the performance score is built from.</li>
+                    <li>What the page looked like when it finished loading.</li>
+                  </ul>
+                  <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
+                    This measures speed. Rankings and competitor data are not part of it.
+                  </p>
+                </div>
+              )
+            }
+          >
             <form onSubmit={run} className="space-y-6" noValidate>
               <div>
                 <label htmlFor={FIELDS.site} className={LABEL}>
@@ -375,31 +405,7 @@ export default function SpeedCheck() {
                 </p>
               )}
             </form>
-
-            {running ? (
-              <CheckProgress
-                address={values.site.trim()}
-                elapsed={elapsed}
-                stages={STAGE_LABELS}
-                at={stageIndex(stage)}
-                note={WAIT_NOTE}
-                ground={GROUND}
-              />
-            ) : (
-              <div className={`p-8 ${GROUND.shell}`}>
-                <p className="section-label-sm text-accent">What Gets Measured</p>
-                <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                  <li>How the page performs on a throttled phone, scored out of a hundred.</li>
-                  <li>Accessibility, build quality, and search readiness from the same report.</li>
-                  <li>The five timings the performance score is built from.</li>
-                  <li>What the page looked like when it finished loading.</li>
-                </ul>
-                <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
-                  This measures speed. Rankings and competitor data are not part of it.
-                </p>
-              </div>
-            )}
-          </div>
+          </CheckStage>
 
           {reading && (
             <div className="mt-20 animate-fade-in-up sm:mt-28">
