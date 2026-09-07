@@ -6,7 +6,7 @@ const ORDER_ROWS = [
   { k: 'Turnaround', v: 'Most sites, two to four weeks' },
   {
     k: 'After Launch',
-    v: 'Hosting, backups, monitoring, and small changes. From $99 a month, ongoing.',
+    v: 'Hosting, backups, monitoring, and small changes. From $250 a month, ongoing.',
   },
 ]
 

@@ -87,6 +87,17 @@ export default function MarketTally() {
   // thing on the sheet fills it and the scale under them all is one scale.
   const share = amount => amount / high
 
+  // What the gap is worth over the run. The monthly here sits inside the band
+  // the studios quote rather than under the whole of it, so on a long enough
+  // term the bottom of that band falls below this side and there is nothing
+  // kept at that end. The figure is stated as a range only while both ends are
+  // a saving; past that the sentence names the end that holds and says the
+  // other quote is what decides it, rather than printing a negative number as
+  // though it were money staying in the business.
+  const savedLow = low - here
+  const savedHigh = high - here
+  const run = years === 1 ? 'a year' : `${years} years`
+
   return (
     <div ref={ref} className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
@@ -174,12 +185,21 @@ export default function MarketTally() {
         <p
           className={`shrink-0 text-[15px] leading-relaxed ${BAND.title} sm:max-w-[16rem] sm:text-right`}
         >
-          <span className="font-semibold tabular-nums">
-            {money(low - here)} to {money(high - here)}
-          </span>{' '}
-          <span className={BAND.body}>
-            stays in the business over {years === 1 ? 'a year' : `${years} years`}.
-          </span>
+          {savedLow > 0 ? (
+            <>
+              <span className="font-semibold tabular-nums">
+                {money(savedLow)} to {money(savedHigh)}
+              </span>{' '}
+              <span className={BAND.body}>stays in the business over {run}.</span>
+            </>
+          ) : (
+            <>
+              <span className="font-semibold tabular-nums">Up to {money(savedHigh)}</span>{' '}
+              <span className={BAND.body}>
+                stays in the business over {run}, depending where the other quote lands.
+              </span>
+            </>
+          )}
         </p>
       </div>
     </div>

@@ -551,7 +551,7 @@ export default function Start() {
     <div>
       <Seo
         title="Start Your Small Business Website"
-        description="Pick your trade and see the work already live, the software the site runs beside, business email, and the price: from $1,000 up front and $99 a month."
+        description="Pick your trade and see the work already live, the software the site runs beside, business email, and the price: from $1,000 up front and $250 a month."
         path="/start"
         schema={[
           breadcrumbSchema([
