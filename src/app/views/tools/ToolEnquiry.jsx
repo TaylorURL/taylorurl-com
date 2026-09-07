@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { ArrowUpRight, Check } from 'lucide-react'
-import ContactMethodChoice from '@components/ContactMethodChoice'
+import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
-import { submitEnquiry, enquiryErrorMessage } from '@data/sendEnquiry'
+import { submitEnquiry, enquiryErrorMessage } from '@data/leads/sendEnquiry'
 import { GROUND } from './lib/ground'
 
 const LABEL = 'section-label-sm mb-2 block text-paper-faint'

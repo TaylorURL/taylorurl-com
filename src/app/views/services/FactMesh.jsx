@@ -1,4 +1,4 @@
-import Mesh from '@components/Mesh'
+import Mesh from '@components/mesh/Mesh'
 import { GROUNDS } from '@constants/grounds'
 
 /**

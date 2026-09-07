@@ -6,7 +6,7 @@ import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import Magnet from '@reactbits/Magnet/Magnet'
 import { fadeInUpMount } from '@constants/animations'
-import { announceGroundChange } from '@hooks/useOnDarkBackground'
+import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
 
 /**
  * The frame both list pages report into.

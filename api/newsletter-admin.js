@@ -54,7 +54,7 @@ import {
   LIMITS,
 } from '../lib/mail/issues.js'
 import { readAll } from '../lib/db/rows.js'
-import { renderIssueEmail } from '../src/app/utils/emailTemplate.js'
+import { renderIssueEmail } from '../lib/mail/emailTemplate.js'
 
 const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 const UNSUBSCRIBE_PAGE = `${SITE_URL}/unsubscribe`

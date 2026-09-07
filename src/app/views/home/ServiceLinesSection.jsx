@@ -2,7 +2,7 @@ import { m } from 'framer-motion'
 import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { fadeInUp } from '@constants/animations'
-import { HOME } from '@data/homeTaylorwebsite'
+import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import { Card, Plane } from './CapabilityCard'
 
 /**

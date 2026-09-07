@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
-import Layout from '@components/Layout'
+import Layout from '@components/chrome/Layout'
 import { ROUTE_DEFINITIONS } from '@constants/routes'
 
 function renderRoute({ key, index, path, children }, views) {

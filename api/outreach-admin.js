@@ -77,9 +77,9 @@
  */
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { countOf, readAll } from '../lib/db/rows.js'
-import { bounceRecord } from '../lib/outreach/bounces.js'
-import { DAILY_CAP_MAX } from '../lib/outreach/limits.js'
-import { hostOf } from '../lib/outreach/platforms.js'
+import { bounceRecord } from '../lib/outreach/sending/bounces.js'
+import { DAILY_CAP_MAX } from '../lib/outreach/sending/limits.js'
+import { hostOf } from '../lib/outreach/prospects/platforms.js'
 import {
   CANDIDATE_COLUMNS,
   candidates,
@@ -92,8 +92,8 @@ import {
   VARIANT_COLUMNS,
   followUpColumns,
   variantSettings,
-} from '../lib/outreach/queue.js'
-import { loadHeldDomains } from '../lib/outreach/exclusions.js'
+} from '../lib/outreach/sending/queue.js'
+import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
 import {
   HOLDOUTS,
   VARIANTS,
@@ -107,12 +107,17 @@ import {
   wouldEmptySegment,
 } from '../lib/outreach/variants.js'
 import { segmentOf } from '../lib/outreach/segments.js'
-import { isYoung } from '../lib/outreach/youth.js'
-import { ranksAhead } from '../lib/outreach/rank.js'
-import { storedShot } from '../lib/outreach/shot.js'
+import { isYoung } from '../lib/outreach/prospects/youth.js'
+import { ranksAhead } from '../lib/outreach/sending/rank.js'
+import { storedShot } from '../lib/outreach/audit/shot.js'
 import { compose, deliverProof, sender } from './outreach/send.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
-import { capAppliesNow, dayStartsAt, reachesMore, slotsAt } from '../lib/outreach/schedule.js'
+import {
+  capAppliesNow,
+  dayStartsAt,
+  reachesMore,
+  slotsAt,
+} from '../lib/outreach/sending/schedule.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { field, uuid } from '../lib/db/fields.js'
 import {

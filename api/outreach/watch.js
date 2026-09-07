@@ -21,7 +21,7 @@
  * outbound message invites one by reply, which makes that reply the opt-out
  * channel, and an opt-out that reaches a mailbox and waits for somebody to act
  * on it is the failure CAN-SPAM names. The reading is in
- * lib/outreach/replies.js, over the sender's own new text rather than the copy
+ * lib/outreach/sending/replies.js, over the sender's own new text rather than the copy
  * quoted underneath it.
  *
  * Every message a person wrote is then handed to the studio inbox. The mailbox
@@ -69,7 +69,7 @@ import { servedHereOr404 } from '../../lib/http/guard.js'
 import { ImapFlow } from 'imapflow'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { field } from '../../lib/db/fields.js'
-import { readAutoReply, readOptOut } from '../../lib/outreach/replies.js'
+import { readAutoReply, readOptOut } from '../../lib/outreach/sending/replies.js'
 import { sendNotice, notice } from '../../lib/mail/notice.js'
 
 const IMAP_HOST = process.env.OUTREACH_IMAP_HOST || 'imap.gmail.com'

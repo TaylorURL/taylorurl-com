@@ -7,7 +7,7 @@ import { fadeInUp } from '@constants/animations'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, START_LINK, SUPPORT_EMAIL } from '@constants/navigation'
 import Magnet from '@reactbits/Magnet/Magnet'
 import { AccentGradient } from '@reactbits/kit'
-import { HOME } from '@data/homeTaylorwebsite'
+import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
 /**

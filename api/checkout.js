@@ -54,7 +54,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
-import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/pricing.js'
+import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { markLead } from '../lib/leads/record.js'

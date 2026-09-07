@@ -1,6 +1,6 @@
 import { Renderer, Program, Mesh, Color, Triangle } from 'ogl'
 import { useEffect, useRef } from 'react'
-import { useThemeTokens } from '@hooks/useThemeTokens'
+import { useThemeTokens } from '@hooks/theme/useThemeTokens'
 import { drawsInSoftware, webglAvailable } from '@utils/softwareRenderer'
 
 const VERT = `#version 300 es

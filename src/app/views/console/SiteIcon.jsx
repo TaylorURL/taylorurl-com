@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { capturedIcon, iconGround } from '@data/siteIcons'
+import { capturedIcon, iconGround } from '@data/console/siteIcons'
 
 /**
  * A site's own mark, drawn so a column of them reads as one set.

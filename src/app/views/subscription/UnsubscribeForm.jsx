@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { AlertCircle } from 'lucide-react'
-import { subscriptionErrorMessage, unsubscribeAddress } from '@data/subscription'
+import { subscriptionErrorMessage, unsubscribeAddress } from '@data/newsletter/subscription'
 import { isValidEmail } from '@utils/validation'
 
 /**

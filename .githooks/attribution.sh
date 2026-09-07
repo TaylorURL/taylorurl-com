@@ -1,7 +1,7 @@
 # The vendors and phrases .github/workflows/ci.yml refuses, kept here in the
 # same shape so the two cannot drift into disagreeing about what attribution
 # is. CI is the wall; these are the guard rail before it. If the wall moves,
-# move this with it — scripts/check-attribution-guard.js fails when the two
+# move this with it — scripts/repo/check-attribution-guard.js fails when the two
 # stop matching.
 
 # An identity that names an AI vendor. A bare `[bot]` is deliberately not

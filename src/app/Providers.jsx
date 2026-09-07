@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { HelmetProvider } from 'react-helmet-async'
 import { domAnimation, LazyMotion, MotionConfig } from 'framer-motion'
-import { ToastProvider } from '@components/Toast'
+import { ToastProvider } from '@components/app-shell/Toast'
 import { PrerenderDataContext } from '@hooks/usePrerenderData'
 
 /**
