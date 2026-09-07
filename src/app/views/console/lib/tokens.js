@@ -76,6 +76,14 @@ export const ROW_HEIGHT = {
   statusSite: '73px',
   statusIssue: '100px',
   statusFixed: '125px',
+  // The call list's row is two lines in four of its nine columns - the business
+  // over its trade and town, the trade reading over the counts behind it, the
+  // state over when it comes back - the score cell carries a bar under its
+  // figure, and the reasons column stacks two to four chips. The mean over the
+  // whole table at 1280px rather than the height of its shortest row, which
+  // would leave the first paint short and move everything under it down as the
+  // feed lands.
+  calls: '98px',
 }
 
 // The console's controls, held once. Nothing about a select or a button
