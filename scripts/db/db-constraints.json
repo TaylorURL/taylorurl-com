@@ -30,6 +30,43 @@
         "definition": "CHECK ((status = ANY (ARRAY['draft'::text, 'scheduled'::text, 'sent'::text])))"
       }
     },
+    "notify_deliveries": {
+      "severity": {
+        "constraint": "notify_deliveries_severity_check",
+        "allows": ["info", "warning", "urgent"],
+        "definition": "CHECK ((severity = ANY (ARRAY['info'::text, 'warning'::text, 'urgent'::text])))"
+      }
+    },
+    "notify_projects": {
+      "mark_ground": {
+        "constraint": "notify_projects_mark_ground_check",
+        "allows": ["dark", "light"],
+        "definition": "CHECK ((mark_ground = ANY (ARRAY['dark'::text, 'light'::text])))"
+      }
+    },
+    "notify_recipients": {
+      "min_severity": {
+        "constraint": "notify_recipients_min_severity_check",
+        "allows": ["info", "warning", "urgent"],
+        "definition": "CHECK ((min_severity = ANY (ARRAY['info'::text, 'warning'::text, 'urgent'::text])))"
+      }
+    },
+    "outreach_calls": {
+      "outcome": {
+        "constraint": "outreach_calls_outcome_check",
+        "allows": [
+          "no_answer",
+          "voicemail",
+          "gatekeeper",
+          "spoke",
+          "callback",
+          "not_interested",
+          "wrong_number",
+          "booked"
+        ],
+        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text])))"
+      }
+    },
     "outreach_domains": {
       "verdict": {
         "constraint": "outreach_domains_verdict_check",
@@ -176,6 +213,13 @@
         "constraint": "speed_checks_status_check",
         "allows": ["running", "done", "failed"],
         "definition": "CHECK ((status = ANY (ARRAY['running'::text, 'done'::text, 'failed'::text])))"
+      }
+    },
+    "stripe_roster": {
+      "kind": {
+        "constraint": "stripe_roster_kind_known",
+        "allows": ["not_client", "setup_invoice", "off_stripe"],
+        "definition": "CHECK ((kind = ANY (ARRAY['not_client'::text, 'setup_invoice'::text, 'off_stripe'::text])))"
       }
     },
     "subscribers": {
@@ -357,6 +401,21 @@
       "table": "outreach_variants",
       "constraint": "outreach_variants_weight_check",
       "definition": "CHECK (((weight >= 0) AND (weight <= 100)))"
+    },
+    {
+      "table": "project_onboarding",
+      "constraint": "project_onboarding_answers_object",
+      "definition": "CHECK ((jsonb_typeof(answers) = 'object'::text))"
+    },
+    {
+      "table": "project_onboarding",
+      "constraint": "project_onboarding_progress_range",
+      "definition": "CHECK (((progress >= 0) AND (progress <= 100)))"
+    },
+    {
+      "table": "project_onboarding",
+      "constraint": "project_onboarding_step_named",
+      "definition": "CHECK ((step <> ''::text))"
     },
     {
       "table": "subscribers",

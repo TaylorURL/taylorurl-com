@@ -112,6 +112,8 @@ flowchart TD
 - **Real markup in the head.** React 19 hoists each page's `react-helmet-async` title, meta, canonical, Open Graph, and JSON-LD into the prerendered `<head>`, and `vite/sitemap-plugin.js`, `vite/feed-plugin.js` and `vite/llms-plugin.js` emit `sitemap.xml`, `feed.xml` and `llms.txt` from the same route table.
 - **Targeted at local search.** Pages carry `geo.*` meta and a `LocalBusiness` / `ProfessionalService` schema for Baytown, TX and the greater Houston area. The work is carried out from Baytown and there is nowhere a visitor can be met, so the schema's address stops at the locality and `areaServed` carries the reach as a circle plus the markets the service pages name.
 - **The console asks for a sign-in.** `/console/status` is the uptime monitor's board and is open to anyone; it reports on no account. Every other section verifies the session against the project, and the database functions decide what that account may read, so the page chooses what to show and never what it is allowed to fetch.
+- **What the sender cannot reach is a phone list rather than a dead end.** The cold email pipeline ends at an address, and about a fifth of what the map sweep finds has none to end at: the listing names no website, or names a Facebook page, a Linktree or a Square booking page whose only published address belongs to the platform. Those rows stop at `unreachable`, and they are the strongest leads on the table, because the thing being sold is the thing they visibly do not have. `/console/calls` is where they are dialled. The order is not the review count, which is not comparable across trades - a restaurant collects reviews from every table it turns and a machine shop collects them from the two customers a year who think to leave one - so a business is ranked on its count against the middle count for its own trade, behind any callback that has come due. `outreach_calls` holds one row per attempt rather than a state on the prospect, so a number rung twice reads as twice.
+
 - **One tracker, every site.** The collector serves the browser tracker that every site TaylorURL runs includes with a single script tag, so a change to what gets collected is one deploy rather than a dozen releases. Hits carry no address and no cookie: the country comes from the browser's own timezone, the session and visitor ids are random numbers in the browser's storage, and the collector accepts a hit only from the origins its site is registered with.
 - **Type is served from this origin.** Geist and Geist Mono are two variable woff2 files in `public/fonts/`, declared as `@font-face` in `src/index.css` and preloaded from `index.html`, so the first paint waits on nothing third-party.
 - **Secrets stay on the server.** Newsletter subscribers and lead submissions are written to Postgres tables whose RLS is locked to the service role — the browser's publishable key can neither read nor write them.
@@ -234,7 +236,7 @@ taylorurl-com/
 │   ├── live-chat/             How much of the assistant one connection gets, and what a typed message is read for before a turn is spent
 │   ├── mail/                  The mailing list's audience, issues, catalogue, bodies, template and identity, and the brand a message sent for a client project is drawn in
 │   ├── outreach/              The message a prospect is given, and the door every outreach job stands behind
-│   │   ├── prospects/         Whether a business can be written to at all - the address, the exclusions, the host, the youth reading
+│   │   ├── prospects/         Whether a business can be written to at all - the address, the exclusions, the host, the youth reading, and who is left to ring
 │   │   ├── audit/             The measurement of their site: the PageSpeed run, what a score means, the capture
 │   │   ├── sending/           The run itself - the queue and its ranking, the window, the caps and the ramp, the bounces and the replies
 │   │   └── openers/           The letters the sender can open with, one file each, listed by the registry beside them
@@ -286,7 +288,7 @@ taylorurl-com/
 │   │   │   ├── analytics/     Charts, and the number formatting under lib/
 │   │   │   ├── status/        The uptime board, the console's public section
 │   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
-│   │   ├── hooks/             console/ (the fifteen feeds and their shared state), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
+│   │   ├── hooks/             console/ (the sixteen feeds and their shared state), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
 │   │   ├── constants/         navigation, seo, animations, grounds, mesh, routes
 │   │   ├── data/              pages/ and taylorwebsite/ (the copy each site publishes), towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, newsletter/, console/, supabase/
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, and how a site reading is worded
