@@ -1,4 +1,4 @@
-import Mesh from '@components/Mesh'
+import Mesh from '@components/mesh/Mesh'
 import CountUp from '@reactbits/CountUp/CountUp'
 import { MAX_MS } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'

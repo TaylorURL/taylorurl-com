@@ -13,7 +13,7 @@
  * lives here, behind the one route that sets it. `@views/CaseStudy` is lazily
  * loaded, so a reader who never opens a study never fetches a word of this.
  *
- * The two halves are joined on `slug`, and `scripts/check-portfolio-split.js`
+ * The two halves are joined on `slug`, and `scripts/portfolio/check-portfolio-split.js`
  * holds them to each other: an entry claiming a study that is not written, a
  * study written for an entry that is gone, or a field a view reads going
  * missing from either side, all fail there.

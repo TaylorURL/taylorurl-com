@@ -18,7 +18,7 @@
  * answer at all, so a site that prints nothing but sales@ and dispatch@ is a
  * site with no address on it.
  *
- * The rules live in lib/outreach/exclusions.js beside the reasons they write.
+ * The rules live in lib/outreach/prospects/exclusions.js beside the reasons they write.
  * Most answer off one row; the domain count needs the whole table, since a
  * franchise only shows itself once its third town has been searched, which is
  * why every run reads the stored rows before it reads its batch. The sweep
@@ -73,9 +73,9 @@ import {
   platformOf,
   rowRuleOf,
   rowRuleWrote,
-} from '../../lib/outreach/exclusions.js'
-import { findSite } from '../../lib/outreach/site-search.js'
-import { mailboxKind, shapeOf } from '../../lib/outreach/address.js'
+} from '../../lib/outreach/prospects/exclusions.js'
+import { findSite } from '../../lib/outreach/prospects/site-search.js'
+import { mailboxKind, shapeOf } from '../../lib/outreach/prospects/address.js'
 
 /**
  * Prospects one run reads.

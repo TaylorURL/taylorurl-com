@@ -1,6 +1,6 @@
 import { hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { rememberCampaign } from './app/data/campaign'
+import { rememberCampaign } from './app/data/leads/campaign'
 import './index.css'
 import Providers from './app/Providers'
 import App from './app/App'

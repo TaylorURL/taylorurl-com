@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Download, ImageUp, Undo2 } from 'lucide-react'
-import Mesh from '@components/Mesh'
-import StepFlow from '../start/StepFlow'
+import Mesh from '@components/mesh/Mesh'
+import StepFlow from '../start/steps/StepFlow'
 import {
   REACHES,
   backgroundOf,

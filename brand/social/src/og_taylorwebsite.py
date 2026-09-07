@@ -13,7 +13,7 @@ company only if the furniture does not move, and the furniture here is the
 studio's to the pixel. What differs is the words and the domain in the corner.
 
 The words are the site's own. The three lines are the home page's headline as
-`src/app/data/homeTaylorwebsite.js` already sets it, third line in the accent
+`src/app/data/taylorwebsite/homeTaylorwebsite.js` already sets it, third line in the accent
 because that is where the page puts its gradient, and the label is that page's
 eyebrow in caps. Nothing on the card is written for the card, which is the same
 rule the studio's card was drawn under: a reader who follows the link lands on

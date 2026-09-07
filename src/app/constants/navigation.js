@@ -2,12 +2,12 @@ import { IS_SECOND_SITE, SITE } from '../../../lib/site/current.js'
 import { STATIC_ROUTES as SECOND_SITE_ROUTES } from '../../../lib/site/routes/taylorwebsite.js'
 import { CROSS_LINKS } from '../../../lib/site/cross-links.js'
 import { PORTFOLIO_PROJECTS, portfolioPreviewSrc } from '@data/portfolio'
-import { SERVICE_LINES } from '@data/services'
-import { MarkFacebook, MarkInstagram } from '@components/brandMarks'
-import { REVIEW_SOURCE_MARKS } from '@components/reviewMarks'
-import { FACEBOOK_PAGE_URL } from '@data/facebook'
-import { reviewSource, reviewSourcesWith } from '@data/reviews'
-import { TOOLS_INDEX } from '@data/tools'
+import { SERVICE_LINES } from '@data/pages/services'
+import { MarkFacebook, MarkInstagram } from '@components/marks/brandMarks'
+import { REVIEW_SOURCE_MARKS } from '@components/marks/reviewMarks'
+import { FACEBOOK_PAGE_URL } from '@data/reputation/facebook'
+import { reviewSource, reviewSourcesWith } from '@data/reputation/reviews'
+import { TOOLS_INDEX } from '@data/pages/tools'
 import {
   MarkArea,
   MarkAt,
@@ -29,7 +29,7 @@ import {
   MarkSteps,
   MarkTag,
   MarkTalk,
-} from '@components/marks'
+} from '@components/marks/marks'
 
 // The bar's curve and the three lengths it opens at, held as numbers because
 // the panel, the drawer and the account menu are animated in JavaScript and a

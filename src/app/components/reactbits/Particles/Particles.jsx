@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl'
-import { useThemeTokens } from '@hooks/useThemeTokens'
+import { useThemeTokens } from '@hooks/theme/useThemeTokens'
 import { drawsInSoftware, webglAvailable } from '@utils/softwareRenderer'
 
 const hexToRgb = hex => {

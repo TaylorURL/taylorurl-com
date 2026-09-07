@@ -3,7 +3,7 @@ import { DRAFTS, SEAMS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { EASE, fadeInUpMount } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
-import { HOME } from '@data/homeTaylorwebsite'
+import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import HeroActions from './HeroActions'
 
 const rise = delay => ({

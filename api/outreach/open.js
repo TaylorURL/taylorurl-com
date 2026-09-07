@@ -32,7 +32,7 @@
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { connect } from '../../lib/db/clients.js'
 import { UUID_PATTERN } from '../../lib/db/fields.js'
-import { shotUrl } from '../../lib/outreach/shot.js'
+import { shotUrl } from '../../lib/outreach/audit/shot.js'
 
 // A transparent GIF, one pixel each way, for a message that carries no capture
 // of its own. It is the smallest thing a mail client will fetch and draw.

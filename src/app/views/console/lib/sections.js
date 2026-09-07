@@ -18,7 +18,7 @@ import {
   MarkSteps,
   MarkTender,
   MarkTerritory,
-} from '@components/marks'
+} from '@components/marks/marks'
 
 /**
  * The console's sections, in menu order.

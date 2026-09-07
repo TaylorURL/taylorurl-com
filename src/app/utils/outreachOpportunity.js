@@ -20,7 +20,7 @@
  * list, so it ranks ahead of every scored business rather than falling in with
  * the rows nothing has been measured on yet.
  */
-import { hostOf, platformOf } from '../../../lib/outreach/platforms.js'
+import { hostOf, platformOf } from '../../../lib/outreach/prospects/platforms.js'
 
 /** The floor of the middle band, where a site stops being slow. */
 export const FAIR_FLOOR = 50

@@ -14,7 +14,7 @@
 
 // Relative, not `@lib`. This module is reached three ways - by the browser
 // through Vite, by vite/review-schema-plugin.js from Vite's own config process,
-// and by scripts/check-review-schema.js under bare node with no resolver hooks -
+// and by scripts/reviews/check-review-schema.js under bare node with no resolver hooks -
 // and an aliased import would resolve for exactly one of them.
 import { HAS_LOCAL_SEO, SITE } from '../../../lib/site/current.js'
 

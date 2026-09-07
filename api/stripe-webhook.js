@@ -45,7 +45,7 @@ import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
 import { markLead } from '../lib/leads/record.js'
-import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/pricing.js'
+import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { SITE } from '../lib/site/current.js'
 import { timedFetch } from '../lib/http/timed.js'
 

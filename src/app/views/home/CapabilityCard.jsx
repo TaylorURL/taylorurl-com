@@ -2,7 +2,7 @@ import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { staggerChild } from '@constants/animations'
-import { useScrollFocus } from '@hooks/useScrollFocus'
+import { useScrollFocus } from '@hooks/scroll/useScrollFocus'
 
 /**
  * The card the home page's second section is laid out in, and the two surfaces

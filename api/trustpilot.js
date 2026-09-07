@@ -19,8 +19,11 @@ import {
   TRUSTPILOT_EVALUATE_URL,
   TRUSTPILOT_PROFILE_URL,
   trustScoreLabel,
-} from '../src/app/data/trustpilot.js'
-import { STANDING_MAX_AGE_DAYS, TRUSTPILOT_STANDING } from '../src/app/data/trustpilot-standing.js'
+} from '../src/app/data/reputation/trustpilot.js'
+import {
+  STANDING_MAX_AGE_DAYS,
+  TRUSTPILOT_STANDING,
+} from '../src/app/data/reputation/trustpilot-standing.js'
 
 const REQUEST_TIMEOUT_MS = 4000
 const REPORT_TIMEOUT_MS = 2000

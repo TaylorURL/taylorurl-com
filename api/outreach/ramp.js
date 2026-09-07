@@ -2,14 +2,14 @@
  * The daily job that moves the sending cap.
  *
  * It runs before the sending window opens, reads the trailing hard-bounce
- * record, and writes daily_cap where lib/outreach/ramp.js says it belongs. That
+ * record, and writes daily_cap where lib/outreach/sending/ramp.js says it belongs. That
  * ordering is the whole design: a step taken at seven in the morning is a step
  * the entire day then runs at, so one step a day means every new level gets a
  * full day of its own before the next one is considered.
  *
  * The decision is not made here. This reads, calls, writes and reports; the
- * arithmetic is in lib/outreach/ramp.js where it can be walked without a
- * database, and the figures behind it are in lib/outreach/limits.js where the
+ * arithmetic is in lib/outreach/sending/ramp.js where it can be walked without a
+ * database, and the figures behind it are in lib/outreach/sending/limits.js where the
  * console reads the same ones.
  *
  * Three states are written back and only when they change:
@@ -31,8 +31,8 @@
  */
 
 import { servedHereOr404 } from '../../lib/http/guard.js'
-import { bounceRecord } from '../../lib/outreach/bounces.js'
-import { decide } from '../../lib/outreach/ramp.js'
+import { bounceRecord } from '../../lib/outreach/sending/bounces.js'
+import { decide } from '../../lib/outreach/sending/ramp.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 
 // The deployment's own sending switch, which the console cannot reach. The send

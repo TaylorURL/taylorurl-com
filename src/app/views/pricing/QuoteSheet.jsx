@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import Mesh from '@components/Mesh'
-import PriceFigures from '@components/PriceFigures'
+import Mesh from '@components/mesh/Mesh'
+import PriceFigures from '@components/conversion/PriceFigures'
 import { GROUNDS } from '@constants/grounds'
 import {
   BUILD_PRICE,
@@ -9,7 +9,7 @@ import {
   MONTHLY_PRICE,
   PRICE_BASIS,
   QUOTED_SEPARATELY,
-} from '@data/pricing'
+} from '@data/checkout/pricing'
 
 const PAPER = GROUNDS.paper
 

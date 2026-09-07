@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { m, useInView } from 'framer-motion'
 import { EASE } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
-import { MARKET } from '@data/pricing'
+import { MARKET } from '@data/checkout/pricing'
 
 const BAND = GROUNDS.band
 

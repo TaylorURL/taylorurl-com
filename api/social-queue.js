@@ -15,7 +15,7 @@
  *
  * Vercel signs a cron invocation with CRON_SECRET, which is the only caller
  * this accepts. The Buffer key is BUFFER_API_KEY here — a function has no vault
- * to read one from, unlike `scripts/social.js`.
+ * to read one from, unlike `scripts/social/social.js`.
  *
  * Buffer refuses every request once its allowance is spent, reads included, so
  * the run is opened with a fixed share of its own invocation to spend waiting

@@ -20,7 +20,7 @@
  *
  * That is why the queue is as wide as it is. A business with no site of its
  * own, one whose site scored ninety-six, and one nothing has managed to
- * measure all read the same letter, and lib/outreach/queue.js takes every one
+ * measure all read the same letter, and lib/outreach/sending/queue.js takes every one
  * of them that carries an address.
  *
  * Ordering is still by audit score, worst first, because a business with a
@@ -53,7 +53,7 @@
  * safety net beside it rather than the only door.
  *
  * Every address is verified before a message is written for it and again in
- * front of the transport, against lib/outreach/address.js. A prospect whose
+ * front of the transport, against lib/outreach/prospects/address.js. A prospect whose
  * address cannot receive mail moves to 'undeliverable' carrying the reason and
  * stays in the table, so the console says why a business was never written to
  * and a later run can take the reading again. A prospect whose reading could
@@ -100,8 +100,12 @@ import { randomUUID } from 'node:crypto'
 import nodemailer from 'nodemailer'
 import { runJob, wait } from '../../lib/outreach/runtime.js'
 import { field } from '../../lib/db/fields.js'
-import { FOLLOW_UP_DAYS, FOLLOW_UPS_PER_RUN, SEND_PER_RUN_MAX } from '../../lib/outreach/limits.js'
-import { dueBy } from '../../lib/outreach/schedule.js'
+import {
+  FOLLOW_UP_DAYS,
+  FOLLOW_UPS_PER_RUN,
+  SEND_PER_RUN_MAX,
+} from '../../lib/outreach/sending/limits.js'
+import { dueBy } from '../../lib/outreach/sending/schedule.js'
 import {
   candidates,
   dueFollowUps,
@@ -115,7 +119,7 @@ import {
   suppressed,
   variantSettings,
   writtenTo,
-} from '../../lib/outreach/queue.js'
+} from '../../lib/outreach/sending/queue.js'
 import {
   OUTREACH_ORIGIN,
   homeUrl,
@@ -128,7 +132,7 @@ import {
 } from '../../lib/outreach/message.js'
 import { firstNameOf } from '../../lib/outreach/first-names.js'
 import { BIO_PHONE } from '../../lib/mail/bio.js'
-import { ensureShot } from '../../lib/outreach/shot.js'
+import { ensureShot } from '../../lib/outreach/audit/shot.js'
 import {
   VARIANTS,
   familyHeld,
@@ -138,7 +142,11 @@ import {
   withSettings,
 } from '../../lib/outreach/variants.js'
 import { segmentOf } from '../../lib/outreach/segments.js'
-import { Undeliverable, assertDeliverable, checkAddress } from '../../lib/outreach/address.js'
+import {
+  Undeliverable,
+  assertDeliverable,
+  checkAddress,
+} from '../../lib/outreach/prospects/address.js'
 
 const SMTP_HOST = process.env.OUTREACH_SMTP_HOST || 'smtp.gmail.com'
 const SMTP_PORT = Number(process.env.OUTREACH_SMTP_PORT || 465)
