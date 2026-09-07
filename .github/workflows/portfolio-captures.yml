@@ -63,27 +63,11 @@ jobs:
           git config user.name "Trenton Taylor"
           git config user.email "trenton.taylor.email@gmail.com"
           git checkout -b "$branch"
-          # Every pull request into develop carries one version step, which the
-          # CI gate enforces, so the run takes it here rather than leaving a
-          # branch that cannot merge.
-          node -e '
-            const fs = require("node:fs")
-            const pkg = JSON.parse(fs.readFileSync("package.json", "utf8"))
-            const parts = pkg.version.split(".")
-            parts[parts.length - 1] = String(Number(parts[parts.length - 1]) + 1)
-            pkg.version = parts.join(".")
-            fs.writeFileSync("package.json", JSON.stringify(pkg, null, 2) + "\n")
-            if (fs.existsSync("public/release.json")) {
-              const rel = JSON.parse(fs.readFileSync("public/release.json", "utf8"))
-              rel.version = pkg.version
-              fs.writeFileSync("public/release.json", JSON.stringify(rel, null, 2) + "\n")
-            }
-            if (fs.existsSync("README.md")) {
-              const text = fs.readFileSync("README.md", "utf8")
-              fs.writeFileSync("README.md", text.replace(/version-[0-9][0-9.]*-/g, "version-" + pkg.version + "-"))
-            }
-            console.log(pkg.version)
-          '
+          # No version step. The version names a release and moves once inside
+          # /merge, so a branch that moves it collides with the next release by
+          # construction - and this one moved it wrong, rewriting the badge's
+          # URL and leaving the alt text beside it on the old number. The CI
+          # gate that was cited for it only runs on a pull request into main.
           git add -A
           git commit -m "Refresh the portfolio previews that moved" -m "${moved} committed shot(s) no longer matched the live site."
           git push -u origin "$branch"
