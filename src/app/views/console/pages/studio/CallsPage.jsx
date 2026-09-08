@@ -1,9 +1,18 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { m } from 'framer-motion'
-import { BookOpen, ChevronLeft, ChevronRight, Phone, RotateCw } from 'lucide-react'
+import {
+  BookOpen,
+  ChevronLeft,
+  ChevronRight,
+  Phone,
+  RotateCw,
+  SlidersHorizontal,
+  X,
+} from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
+import { useCallDesk } from '@hooks/console/useCallDesk'
 import { formatInstant } from '@lib/time/zone.js'
 import { platformName, hostOf } from '@lib/outreach/prospects/platforms.js'
 import {
@@ -19,6 +28,23 @@ import {
   waitAfter,
   whyListed,
 } from '@lib/outreach/prospects/calls.js'
+import {
+  CALL_PULLS,
+  CALL_SCORES,
+  CALL_SORTS,
+  CALL_STATES,
+  bandOf,
+  columnOf,
+  columnsAt,
+  columnWidths,
+  DEFAULT_PREFS,
+  filterChips,
+  filtersNarrow,
+  NO_FILTERS,
+  sameNarrowing,
+  withoutFilter,
+} from '@lib/outreach/prospects/callPrefs.js'
+import { callerMark, callerName, heldByOther } from '@lib/outreach/prospects/callPresence.js'
 import {
   Area,
   Badge,
@@ -39,17 +65,25 @@ import {
 } from '../../ui'
 import {
   BUTTON,
+  CELL_PACKED,
   CELL_TIGHT as CELL,
+  CHIP_BUTTON,
+  CHIP_ON,
   FIELD,
   MONO_LABEL,
   QUIET,
+  QUIET_ROW,
   ROW_HEIGHT,
   SELECT,
+  SELECT_ON,
   TH_TIGHT as TH,
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
+import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import { fullCount } from '../../../analytics/lib/format'
 import CallHandbook from './CallHandbook'
+import CallBoard from './CallBoard'
+import CallSetup from './CallSetup'
 
 /**
  * The businesses to ring, in the order to ring them, and what happened when
@@ -64,7 +98,7 @@ import CallHandbook from './CallHandbook'
  * visibly do not have. Every one of them carries the phone number the same
  * search returned. This is the section that dials them.
  *
- * Three things this page has to do that a table of names does not.
+ * Five things this page has to do that a table of names does not.
  *
  * SAY WHY EACH BUSINESS IS HERE. The answer has been in the payload since the
  * first version and was never drawn: `skip_reason` is the enrichment job's own
@@ -91,6 +125,21 @@ import CallHandbook from './CallHandbook'
  * opens. Suppression decides what the list OFFERS and never what a caller MAY
  * do.
  *
+ * SAY WHO IS ON A NUMBER RIGHT NOW. Suppression only ever works backwards: a
+ * business is taken off the list once a call to it has been recorded, and the
+ * whole of a double call happens in the four minutes before anybody records
+ * anything. Two callers who open this page a minute apart are handed the same
+ * page in the same order. So the list is live rather than a snapshot - it
+ * re-reads itself while somebody is watching - and every console says which
+ * number it is on, which is drawn on the row, on the board above it, and as a
+ * lock on the one control that would place the second call.
+ *
+ * LET THE READER SET IT UP. Which columns, how tight the rows, what it is
+ * narrowed to and which narrowings are worth keeping are all facts about the
+ * person working the list rather than about the list, so none of them is a
+ * default anybody has to be right about. They are stored on the account and
+ * read back on whichever machine that account signs in from.
+ *
  * `quiet` is not a weak lead and the page must not read as though it were. A
  * business that has traded for years and collected a tenth of what its
  * neighbours collected is a business nobody can find, which is the entire
@@ -110,11 +159,30 @@ const CALL_VIEWS = [
   { key: 'finished', label: 'Finished' },
 ]
 
-/** How the columns give way as the page narrows. The number never leaves. */
-const HIDE_SM = 'hidden sm:table-cell'
-const HIDE_MD = 'hidden md:table-cell'
-const HIDE_LG = 'hidden lg:table-cell'
-const HIDE_XL = 'hidden xl:table-cell'
+/**
+ * Which of the stylesheet's widths the window is at.
+ *
+ * A column that gives way as the page narrows cannot simply be hidden by a
+ * class here, because every column's width is a share of a hundred and a share
+ * can only be taken over the columns that are actually drawn. So the page
+ * knows the width it is at and draws the columns for it, and the shares add up
+ * at every size.
+ *
+ * Only a crossing changes anything. React drops a set to the same value, so a
+ * drag across the screen re-renders at four widths rather than at four hundred.
+ */
+function useBand() {
+  const [band, setBand] = useState(() =>
+    bandOf(typeof window === 'undefined' ? undefined : window.innerWidth)
+  )
+  useEffect(() => {
+    const measure = () => setBand(bandOf(window.innerWidth))
+    measure()
+    window.addEventListener('resize', measure)
+    return () => window.removeEventListener('resize', measure)
+  }, [])
+  return band
+}
 
 /** What each reading of a trade says under the badge. */
 const PULL_LABEL = {
@@ -127,37 +195,8 @@ const PULL_LABEL = {
 /** Only `busy` carries a tone: a page where three of four bands are coloured has no emphasis in it. */
 const PULL_TONE = { busy: 'good', steady: 'plain', quiet: 'plain', unread: 'plain' }
 
-const STATE_OPTIONS = [
-  { id: 'all', label: 'Any State' },
-  { id: 'due', label: 'Due Back' },
-  { id: 'fresh', label: 'Never Called' },
-  { id: 'rung', label: 'Rung And Ready' },
-]
-
-const PULL_OPTIONS = [
-  { id: 'all', label: 'Every Reading' },
-  { id: 'busy', label: 'Busy For Its Trade' },
-  { id: 'steady', label: 'Middling For Its Trade' },
-  { id: 'quiet', label: 'Findable By Nobody' },
-  { id: 'unread', label: 'Trade Unread' },
-]
-
-const SCORE_OPTIONS = [
-  { id: 'all', label: 'Any Score' },
-  { id: '40', label: 'Score 40 And Up' },
-  { id: '55', label: 'Score 55 And Up' },
-  { id: '70', label: 'Score 70 And Up' },
-]
-
-const SORT_OPTIONS = [
-  { id: 'best', label: 'Best First' },
-  { id: 'waited', label: 'Longest Since Rung' },
-  { id: 'reviews', label: 'Most Reviews' },
-  { id: 'newest', label: 'Newest On The List' },
-]
-
-/** The batch sizes Call Mode works in. */
-const BATCHES = [25, 50, 100]
+/** Where a table's remembered row shape is filed, per density. */
+const REMEMBERED = 'taylorurl_console_calls_rows'
 
 /** An instant as the day and time it happened, in the studio's own zone. */
 function when(value) {
@@ -244,22 +283,31 @@ function placeNote(row) {
 }
 
 /** The score, drawn against the fixed ceiling rather than the page maximum. */
-function ScoreCell({ row }) {
+function ScoreCell({ row, tight }) {
   return (
     <div className="min-w-[3rem]">
       <span className="text-[15px] tabular-nums text-ink-paper">{row.score}</span>
-      <ShareBar value={row.score} peak={SCORE_PEAK} />
+      {!tight && <ShareBar value={row.score} peak={SCORE_PEAK} />}
     </div>
   )
 }
 
-/** The two strongest reasons and every penalty, each carrying its own points. */
-function WhyChips({ terms }) {
+/**
+ * The two strongest reasons and every penalty, each carrying its own points.
+ *
+ * The tight setting keeps the best reason and every penalty and drops the
+ * second reason, which is the one chip that costs a row its second line. What
+ * it keeps is the half that changes a decision: the strongest thing about a
+ * business is usually why it is on the page at all, and a penalty is the thing
+ * a caller would otherwise not have known.
+ */
+function WhyChips({ terms, tight }) {
   const telling = tellingTerms(terms)
-  if (!telling.length) return <span className="text-paper-faint">—</span>
+  const drawn = tight ? telling.filter((term, at) => at === 0 || term.points < 0) : telling
+  if (!drawn.length) return <span className="text-paper-faint">—</span>
   return (
-    <span className="flex flex-wrap gap-1">
-      {telling.map(term => (
+    <span className={tight ? 'flex gap-1 overflow-hidden' : 'flex flex-wrap gap-1'}>
+      {drawn.map(term => (
         <Badge key={term.id} tone={term.points < 0 ? 'bad' : term.points >= 25 ? 'good' : 'plain'}>
           {term.chip} {term.points > 0 ? `+${term.points}` : term.points}
         </Badge>
@@ -290,84 +338,154 @@ function BandHeading({ cols, title, count, note }) {
   )
 }
 
-/** One business on the list. */
-function CallRow({ row, onOpen, onCall }) {
-  const place = placeOf(row.place)
-  const href = dialHref(row.phone)
-  const note = placeNote(row)
-
-  return (
-    <tr>
-      <td className={CELL}>
+/**
+ * One cell of one row.
+ *
+ * Every column is drawn from here rather than from a fixed run of `<td>`s,
+ * because which columns are on screen belongs to the account. The second line
+ * under a figure is what the tight setting takes away: it is the difference
+ * between a table that explains itself and one that fits twice as many
+ * businesses on the screen, and neither of those is the right answer for
+ * everybody.
+ */
+function RowCell({ id, row, tight, holder, onOpen, onCall }) {
+  if (id === 'business') {
+    // What it does and where it is goes under the name at the roomy setting.
+    // At the tight one the town alone stands beside it: a caller scanning for
+    // the next number reads the town nearly as often as the name, the trade is
+    // in the column beside it either way, and the two do not fit on one line
+    // without the name being the half that gets cut - which is the one thing
+    // the cell is for.
+    const where = [row.trade, row.town].filter(Boolean).join(' · ')
+    return tight ? (
+      <span className="flex max-w-full items-baseline gap-2">
         <button
           type="button"
-          className="text-left text-ink-paper hover:text-accent"
+          className="min-w-0 flex-1 truncate text-left text-ink-paper hover:text-accent"
           onClick={() => onOpen(row)}
           aria-haspopup="dialog"
         >
           {row.name || 'Unnamed business'}
         </button>
-        <span className={`${MONO_LABEL} text-paper-faint block`}>
-          {[row.trade, row.town].filter(Boolean).join(' · ')}
-        </span>
-      </td>
-      <td className={CELL}>
-        <ScoreCell row={row} />
-      </td>
-      <td className={CELL}>
-        {href ? (
-          <a href={href} className="whitespace-nowrap text-accent">
-            {row.phone}
-          </a>
-        ) : (
-          '—'
-        )}
-      </td>
-      <td className={`${CELL} ${HIDE_SM}`}>
-        <Badge tone={PULL_TONE[row.pull] ?? 'plain'}>{PULL_LABEL[row.pull] ?? 'Unread'}</Badge>
-        <span className={`${MONO_LABEL} text-paper-faint mt-1 block`}>
-          {row.trade_median === null
-            ? 'trade unread'
-            : `${fullCount(row.rating_count ?? 0)} reviews · middle ${fullCount(Math.round(row.trade_median))}`}
-        </span>
-      </td>
-      <td className={`${CELL} ${HIDE_XL}`}>
-        <WhyChips terms={row.terms} />
-      </td>
-      <td className={`${CELL} ${HIDE_LG}`}>{presence(row)}</td>
-      <td className={`${CELL} ${HIDE_MD}`}>
-        {row.last_call ? `${row.calls.length}×, ${when(row.last_call.called_at)}` : '—'}
-      </td>
-      <td className={CELL}>
-        <Badge tone={place?.tone ?? 'plain'}>{place?.label ?? 'Ready'}</Badge>
-        {note && <span className={`${MONO_LABEL} text-paper-faint mt-1 block`}>{note}</span>}
-      </td>
-      <td className={CELL}>
+        <span className={`${MONO_LABEL} text-paper-faint flex-shrink-0`}>{row.town}</span>
+      </span>
+    ) : (
+      <>
         <button
           type="button"
-          className={QUIET}
-          aria-label={`Call ${row.name || 'this business'}`}
-          onClick={() => onCall(row)}
+          className="block max-w-full truncate text-left text-ink-paper hover:text-accent"
+          onClick={() => onOpen(row)}
+          aria-haspopup="dialog"
         >
-          <Phone aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+          {row.name || 'Unnamed business'}
         </button>
-      </td>
+        <span className={`${MONO_LABEL} text-paper-faint block truncate`}>{where}</span>
+      </>
+    )
+  }
+
+  if (id === 'score') return <ScoreCell row={row} tight={tight} />
+
+  if (id === 'phone') {
+    const href = dialHref(row.phone)
+    return href ? (
+      <a href={href} className="whitespace-nowrap text-accent">
+        {row.phone}
+      </a>
+    ) : (
+      '—'
+    )
+  }
+
+  if (id === 'pull') {
+    return (
+      <>
+        <Badge tone={PULL_TONE[row.pull] ?? 'plain'}>{PULL_LABEL[row.pull] ?? 'Unread'}</Badge>
+        {!tight && (
+          <span className={`${MONO_LABEL} text-paper-faint mt-1 block truncate`}>
+            {row.trade_median === null
+              ? 'trade unread'
+              : `${fullCount(row.rating_count ?? 0)} reviews · middle ${fullCount(Math.round(row.trade_median))}`}
+          </span>
+        )}
+      </>
+    )
+  }
+
+  if (id === 'reviews') return <span className="tabular-nums">{reviews(row)}</span>
+  if (id === 'why') return <WhyChips terms={row.terms} tight={tight} />
+  if (id === 'site') return <span className="block truncate">{presence(row)}</span>
+  if (id === 'address') {
+    return <span className="block truncate text-paper-soft">{row.address || '—'}</span>
+  }
+
+  if (id === 'rung') {
+    return (
+      <span className="block truncate">
+        {row.last_call ? `${row.calls.length}×, ${when(row.last_call.called_at)}` : '—'}
+      </span>
+    )
+  }
+
+  if (id === 'state') {
+    const place = placeOf(row.place)
+    const note = placeNote(row)
+    return (
+      <>
+        <Badge tone={place?.tone ?? 'plain'}>{place?.label ?? 'Ready'}</Badge>
+        {!tight && note && (
+          <span className={`${MONO_LABEL} text-paper-faint mt-1 block truncate`}>{note}</span>
+        )}
+      </>
+    )
+  }
+
+  // The one control that would place a second call to a business somebody is
+  // already on. It says whose call it is rather than going quiet, because the
+  // reader's next move is to ask that person how it went.
+  if (holder) {
+    return (
+      <Badge tone="accent" title={`${callerName(holder)} is on this call`}>
+        {callerMark(holder)}
+      </Badge>
+    )
+  }
+  return (
+    <button
+      type="button"
+      className={tight ? QUIET_ROW : QUIET}
+      aria-label={`Call ${row.name || 'this business'}`}
+      onClick={() => onCall(row)}
+    >
+      <Phone aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+    </button>
+  )
+}
+
+/** One business on the list, in whichever columns this account draws. */
+function CallRow({ row, columns, tight, holder, yours, onOpen, onCall }) {
+  return (
+    <tr className={yours ? 'bg-[color:var(--wash-accent)]' : undefined}>
+      {columns.map(id => (
+        <td key={id} className={cellClass(id, tight)}>
+          <RowCell
+            id={id}
+            row={row}
+            tight={tight}
+            holder={holder}
+            onOpen={onOpen}
+            onCall={onCall}
+          />
+        </td>
+      ))}
     </tr>
   )
 }
 
-/** The nine placeholder columns, matching the hide classes above. */
-const LIST_COLS = [
-  'px-3',
-  'px-3',
-  'px-3',
-  `px-3 ${HIDE_SM}`,
-  `px-3 ${HIDE_XL}`,
-  `px-3 ${HIDE_LG}`,
-  `px-3 ${HIDE_MD}`,
-  'px-3',
-  'px-3',
-]
+/** What a column's cells wear, which at this point is only their measure. */
+function cellClass(id, tight) {
+  return tight ? CELL_PACKED : CELL
+}
 
 /**
  * The form that records one call, used in the side panel and in Call Mode
@@ -464,7 +582,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
 }
 
 /** Everything known about one business, and the form that adds to it. */
-function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook }) {
+function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook, holder }) {
   const href = dialHref(row.phone)
 
   return (
@@ -476,6 +594,17 @@ function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook }) {
         </p>
         {row.address && <p className="text-paper-faint text-[13px]">{row.address}</p>}
       </div>
+
+      {/* Somebody else has this number up to their ear right now. It is said
+          over the button rather than instead of it: the record is still worth
+          reading and the note is still worth adding, and the one thing not to
+          do is press the number. */}
+      {holder && (
+        <p className={`${MONO_LABEL} flex items-center gap-2 text-accent`}>
+          <Badge tone="accent">{callerMark(holder)}</Badge>
+          {callerName(holder)} is on this call.
+        </p>
+      )}
 
       {href && (
         <a href={href} className={BUTTON}>
@@ -596,7 +725,7 @@ function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook }) {
  * hand has one hand for the keyboard, and a dropdown plus a submit is four
  * actions for the outcome that happens most: nobody picks up.
  */
-function CallCard({ row, saving, recorded, onQuick, onOpen }) {
+function CallCard({ row, saving, recorded, holder, onQuick, onOpen, onSkip }) {
   const href = dialHref(row.phone)
 
   return (
@@ -609,11 +738,30 @@ function CallCard({ row, saving, recorded, onQuick, onOpen }) {
         <p className="text-paper-faint min-h-[18px] text-[13px]">{row.address || '—'}</p>
       </div>
 
-      {href && (
-        <a href={href} className={`${BUTTON} min-h-[56px] text-[18px]`}>
-          <Phone aria-hidden="true" className="h-5 w-5" strokeWidth={1.75} />
-          {row.phone}
-        </a>
+      {/* Somebody got to this one first. The number is drawn quiet rather than
+          removed - the batch is a snapshot and they may have hung up by now -
+          and the way past it is offered right here, because the caller wanted
+          the next business rather than this argument. */}
+      {holder ? (
+        <div className="border-hair-paper grid gap-2 rounded-[var(--console-radius-sm)] border px-4 py-3">
+          <p className={`${MONO_LABEL} flex items-center gap-2 text-accent`}>
+            <Badge tone="accent">{callerMark(holder)}</Badge>
+            {callerName(holder)} is on this call.
+          </p>
+          <p className="text-[13px] text-paper-soft">
+            Ringing them as well is the one thing this list exists to stop.
+          </p>
+          <button type="button" className={BUTTON} onClick={onSkip}>
+            Skip To The Next
+          </button>
+        </div>
+      ) : (
+        href && (
+          <a href={href} className={`${BUTTON} min-h-[56px] text-[18px]`}>
+            <Phone aria-hidden="true" className="h-5 w-5" strokeWidth={1.75} />
+            {row.phone}
+          </a>
+        )
       )}
 
       <div className="grid min-h-[64px] gap-1">
@@ -665,15 +813,18 @@ export default function CallsPage() {
   const token = session?.access_token ?? null
   const [view, go] = useView(CALL_VIEWS)
 
+  const desk = useCallDesk({ token, enabled: Boolean(token) })
+  // Until the account's own setup lands there is nothing to draw the list
+  // from, so the defaults stand in for it and the feed waits. Reading with the
+  // defaults first would be two full re-ranks on every open, the first of them
+  // answering a question nobody asked.
+  const prefs = desk.prefs ?? DEFAULT_PREFS
+  const settled = Boolean(desk.prefs) || Boolean(desk.error)
+
   const [typed, setTyped] = useState('')
   const [search, setSearch] = useState('')
-  const [state, setState] = useState('all')
-  const [pull, setPull] = useState('all')
-  const [minScore, setMinScore] = useState('all')
-  const [town, setTown] = useState('all')
-  const [trade, setTrade] = useState('all')
-  const [sort, setSort] = useState('best')
-  const [take, setTake] = useState(50)
+  const [filters, setFilters] = useState(NO_FILTERS)
+  const [sort, setSort] = useState(DEFAULT_PREFS.sort)
   const [page, setPage] = useState(1)
 
   const [openRow, setOpenRow] = useState(null)
@@ -686,6 +837,7 @@ export default function CallsPage() {
   const [worked, setWorked] = useState({})
   const [at, setAt] = useState(0)
   const [keyOpen, setKeyOpen] = useState(false)
+  const [setupOpen, setSetupOpen] = useState(false)
 
   // A fetch per keystroke re-reads the whole callable set and the whole calls
   // table, so the typing and the question are two states with a pause between.
@@ -694,26 +846,61 @@ export default function CallsPage() {
     return () => clearTimeout(timer)
   }, [typed])
 
-  const filters = useMemo(
+  // The account's own narrowing, once. After this the controls own it, and the
+  // stored copy follows them rather than the other way round - a second tab
+  // saving a filter must not reach across and move this one's list.
+  const taken = useRef(false)
+  const written = useRef(null)
+  useEffect(() => {
+    if (taken.current || !desk.prefs) return
+    taken.current = true
+    setFilters(desk.prefs.filters)
+    setSort(desk.prefs.sort)
+    written.current = JSON.stringify({ filters: desk.prefs.filters, sort: desk.prefs.sort })
+  }, [desk.prefs])
+
+  // And back the other way, once the caller has stopped moving controls. A
+  // write per keystroke of a dropdown would be five rows for one decision.
+  const save = useRef(desk.savePrefs)
+  useEffect(() => {
+    save.current = desk.savePrefs
+  }, [desk.savePrefs])
+  useEffect(() => {
+    if (!taken.current) return undefined
+    const snapshot = JSON.stringify({ filters, sort })
+    if (written.current === snapshot) return undefined
+    const timer = setTimeout(() => {
+      written.current = snapshot
+      save.current({ filters, sort })
+    }, 700)
+    return () => clearTimeout(timer)
+  }, [filters, sort])
+
+  // How many rows a page holds, and how many businesses a batch takes. One
+  // figure, because they are the same decision: a caller who wants fifty in
+  // front of them wants fifty to work through.
+  const take = prefs.take
+
+  const query = useMemo(
     () => ({
       view,
       search,
-      state,
-      pull,
-      min_score: minScore,
-      town,
-      trade,
+      state: filters.state,
+      pull: filters.pull,
+      min_score: filters.min_score,
+      town: filters.town,
+      trade: filters.trade,
       sort,
-      take: view === 'calling' ? 100 : take,
+      take,
       page,
     }),
-    [view, search, state, pull, minScore, town, trade, sort, take, page]
+    [view, search, filters, sort, take, page]
   )
 
-  const { data, retained, error, loading, saving, refresh, record } = useCallsFeed({
+  const { data, retained, error, loading, saving, readAt, refresh, record } = useCallsFeed({
     token,
-    enabled: Boolean(token),
-    filters,
+    enabled: Boolean(token) && settled,
+    filters: query,
   })
 
   // A new filter selects different rows and a new order selects the same rows
@@ -721,7 +908,7 @@ export default function CallsPage() {
   // either.
   useEffect(() => {
     setPage(1)
-  }, [view, search, state, pull, minScore, town, trade, sort, take])
+  }, [view, search, filters, sort, take])
 
   const rows = useMemo(() => data?.rows || [], [data])
   const totals = data?.totals || {}
@@ -734,6 +921,24 @@ export default function CallsPage() {
   const towns = retained?.towns || []
   const trades = retained?.trades || []
   const pages = retained?.pages || 1
+
+  const band = useBand()
+  // What this account chose, narrowed to what the window has room for. A column
+  // somebody ticked at their desk is not a column they want three words wide on
+  // a phone, and the table's widths only add up over the ones actually drawn.
+  const columns = useMemo(() => columnsAt(prefs.columns, band), [prefs.columns, band])
+  const tight = prefs.density === 'tight'
+  const widths = useMemo(() => columnWidths(columns), [columns])
+  const cellClasses = useMemo(() => columns.map(id => cellClass(id, tight)), [columns, tight])
+
+  // The placeholder is the shape of the rows this reader last saw at this
+  // density, so nothing under the table moves when the figures land.
+  const shapeKey = `${REMEMBERED}_${prefs.density}`
+  const shape = recalledRows(shapeKey, 10, tight ? ROW_HEIGHT.callsTight : ROW_HEIGHT.calls)
+  const body = useRef(null)
+  useEffect(() => {
+    if (!loading) rememberRows(shapeKey, body.current)
+  }, [loading, rows, shapeKey])
 
   // The batch is held rather than re-read, so the order under the caller never
   // moves while they work it.
@@ -749,6 +954,30 @@ export default function CallsPage() {
   }, [view, rows])
 
   const current = batch[at] ?? null
+  const heldHere = current ? heldByOther(desk.held, current.id, desk.you) : null
+  // Whose call it is rather than the row saying so. The board is re-read every
+  // twenty seconds and hands back a new object each time, so keying the claim
+  // on the row would re-send it on every beat.
+  const heldBy = heldHere?.user_id ?? null
+
+  // Being on this business in Call Mode is being on the phone with it, so the
+  // console says so and every other console draws the lock.
+  //
+  // The three ways of being on nothing all release: leaving Call Mode, reaching
+  // the end of the batch, and landing on a business somebody else already holds.
+  // The last is the one worth stating - a caller who moves off a number is not
+  // on it any more, and holding the one behind them while they read the one in
+  // front is how a colleague ends up locked out of a call that ended minutes
+  // ago. Claiming the held one instead would be the double call itself.
+  const claim = desk.takeNumber
+  const drop = desk.dropNumber
+  useEffect(() => {
+    if (view !== 'calling' || !current || heldBy) {
+      drop()
+      return
+    }
+    claim(current.id)
+  }, [view, current, heldBy, claim, drop])
 
   const write = useCallback(
     async call => {
@@ -850,16 +1079,33 @@ export default function CallsPage() {
     [go]
   )
 
-  const narrowed =
-    state !== 'all' || pull !== 'all' || minScore !== 'all' || town !== 'all' || trade !== 'all'
+  const narrowed = filtersNarrow(filters)
+  const chips = useMemo(() => filterChips(filters), [filters])
+  const clearAll = useCallback(() => setFilters(NO_FILTERS), [])
+  const narrow = useCallback((key, value) => {
+    setFilters(current => ({ ...current, [key]: value }))
+  }, [])
 
-  const clearAll = () => {
-    setState('all')
-    setPull('all')
-    setMinScore('all')
-    setTown('all')
-    setTrade('all')
-  }
+  const applyView = useCallback(saved => {
+    setFilters(saved.filters)
+    setSort(saved.sort)
+  }, [])
+
+  const keepView = useCallback(
+    name => {
+      const id =
+        globalThis.crypto?.randomUUID?.() ?? `view-${Date.now()}-${Math.random().toString(36)}`
+      save.current({ views: [...prefs.views, { id, name, filters, sort }] })
+    },
+    [prefs.views, filters, sort]
+  )
+
+  const dropView = useCallback(
+    id => save.current({ views: prefs.views.filter(one => one.id !== id) }),
+    [prefs.views]
+  )
+
+  const reading = prefs.views.find(one => sameNarrowing(one, { filters, sort })) ?? null
 
   // A refusal with nothing behind it is the whole answer, so it stands in
   // place of the table rather than above an empty one.
@@ -876,7 +1122,7 @@ export default function CallsPage() {
       listRows.push(
         <BandHeading
           key={`band-${band}`}
-          cols={9}
+          cols={columns.length}
           title={band === 'due' ? 'Promised Back, And Due Now' : 'To Call, Best First'}
           count={band === 'due' ? bands.due : bands.call}
           note={
@@ -888,13 +1134,25 @@ export default function CallsPage() {
       )
       lastBand = band
     }
-    listRows.push(<CallRow key={row.id} row={row} onOpen={openBusiness} onCall={callOne} />)
+    const holder = desk.held.get(row.id) ?? null
+    listRows.push(
+      <CallRow
+        key={row.id}
+        row={row}
+        columns={columns}
+        tight={tight}
+        holder={holder && holder.user_id !== desk.you ? holder : null}
+        yours={Boolean(holder && holder.user_id === desk.you)}
+        onOpen={openBusiness}
+        onCall={callOne}
+      />
+    )
   }
 
   return (
     <ConsolePage areas={['stats', 'views', 'work']} rows="auto auto minmax(0,1fr)">
       <Area area="stats">
-        <ConsoleError>{error}</ConsoleError>
+        <ConsoleError>{error || desk.error}</ConsoleError>
 
         <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
           <StatCard
@@ -921,6 +1179,17 @@ export default function CallsPage() {
             value={loading ? '' : fullCount(totals.resting ?? 0)}
             caption="rung recently, waiting out their gap"
             loading={loading}
+          />
+          {/* The one figure on the strip that is about right now rather than
+              about the table, which is why it pulses and why it sits beside the
+              rest instead of somewhere on its own. */}
+          <StatCard
+            label="On A Call"
+            value={desk.loading ? '' : fullCount(desk.held.size)}
+            caption="numbers somebody is on this minute"
+            tone={desk.held.size ? 'accent' : 'plain'}
+            pulse
+            loading={desk.loading}
           />
           <StatCard
             label="Booked"
@@ -949,6 +1218,15 @@ export default function CallsPage() {
           loading={loading}
         />
 
+        <CallBoard
+          presence={desk.presence}
+          you={desk.you}
+          loading={desk.loading}
+          readAt={readAt}
+          hanging={desk.claiming}
+          onHangUp={desk.dropNumber}
+        />
+
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -961,24 +1239,24 @@ export default function CallsPage() {
           {view !== 'resting' && view !== 'finished' && (
             <>
               <select
-                className={SELECT}
-                value={state}
-                onChange={event => setState(event.target.value)}
+                className={filters.state === 'all' ? SELECT : SELECT_ON}
+                value={filters.state}
+                onChange={event => narrow('state', event.target.value)}
                 aria-label="State"
               >
-                {STATE_OPTIONS.map(one => (
+                {CALL_STATES.map(one => (
                   <option key={one.id} value={one.id}>
                     {one.label}
                   </option>
                 ))}
               </select>
               <select
-                className={SELECT}
-                value={minScore}
-                onChange={event => setMinScore(event.target.value)}
+                className={filters.min_score === 'all' ? SELECT : SELECT_ON}
+                value={filters.min_score}
+                onChange={event => narrow('min_score', event.target.value)}
                 aria-label="Least Score"
               >
-                {SCORE_OPTIONS.map(one => (
+                {CALL_SCORES.map(one => (
                   <option key={one.id} value={one.id}>
                     {one.label}
                   </option>
@@ -987,21 +1265,21 @@ export default function CallsPage() {
             </>
           )}
           <select
-            className={SELECT}
-            value={pull}
-            onChange={event => setPull(event.target.value)}
+            className={filters.pull === 'all' ? SELECT : SELECT_ON}
+            value={filters.pull}
+            onChange={event => narrow('pull', event.target.value)}
             aria-label="For Its Trade"
           >
-            {PULL_OPTIONS.map(one => (
+            {CALL_PULLS.map(one => (
               <option key={one.id} value={one.id}>
                 {one.label}
               </option>
             ))}
           </select>
           <select
-            className={SELECT}
-            value={town}
-            onChange={event => setTown(event.target.value)}
+            className={filters.town === 'all' ? SELECT : SELECT_ON}
+            value={filters.town}
+            onChange={event => narrow('town', event.target.value)}
             aria-label="Town"
           >
             <option value="all">Every Town</option>
@@ -1012,9 +1290,9 @@ export default function CallsPage() {
             ))}
           </select>
           <select
-            className={SELECT}
-            value={trade}
-            onChange={event => setTrade(event.target.value)}
+            className={filters.trade === 'all' ? SELECT : SELECT_ON}
+            value={filters.trade}
+            onChange={event => narrow('trade', event.target.value)}
             aria-label="Trade"
           >
             <option value="all">Every Trade</option>
@@ -1031,23 +1309,68 @@ export default function CallsPage() {
               onChange={event => setSort(event.target.value)}
               aria-label="Sort Order"
             >
-              {SORT_OPTIONS.map(one => (
+              {CALL_SORTS.map(one => (
                 <option key={one.id} value={one.id}>
                   {one.label}
                 </option>
               ))}
             </select>
           )}
-          {narrowed && (
-            <button type="button" className={QUIET} onClick={clearAll}>
-              Clear All
-            </button>
-          )}
-          <button type="button" className={`${QUIET} ml-auto`} onClick={refresh}>
+          <button
+            type="button"
+            className={`${QUIET} ml-auto`}
+            onClick={() => setSetupOpen(true)}
+            aria-haspopup="dialog"
+          >
+            <SlidersHorizontal aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+            Set Up The List
+          </button>
+          <button type="button" className={QUIET} onClick={refresh}>
             <RotateCw aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
             Re-read
           </button>
         </div>
+
+        {/* What is actually narrowing the list, and this account's own
+            narrowings beside it. Six dropdowns each showing a value is six
+            things to read before somebody knows why a business they expected is
+            not on screen; this is one line, and every part of it is the way to
+            undo itself. */}
+        {(chips.length > 0 || prefs.views.length > 0) && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            {prefs.views.map(one => (
+              <button
+                key={one.id}
+                type="button"
+                className={reading?.id === one.id ? CHIP_ON : CHIP_BUTTON}
+                aria-pressed={reading?.id === one.id}
+                onClick={() => applyView(one)}
+              >
+                {one.name}
+              </button>
+            ))}
+            {prefs.views.length > 0 && chips.length > 0 && (
+              <span className="border-hair-paper mx-1 h-4 border-l" aria-hidden="true" />
+            )}
+            {chips.map(chip => (
+              <button
+                key={chip.key}
+                type="button"
+                className={CHIP_BUTTON}
+                aria-label={`Stop narrowing by ${chip.label}`}
+                onClick={() => setFilters(withoutFilter(filters, chip.key))}
+              >
+                {chip.label}
+                <X aria-hidden="true" className="h-3 w-3" strokeWidth={2} />
+              </button>
+            ))}
+            {narrowed && (
+              <button type="button" className={`${QUIET} px-2.5`} onClick={clearAll}>
+                Clear All
+              </button>
+            )}
+          </div>
+        )}
       </Area>
 
       {view === 'calling' ? (
@@ -1067,49 +1390,55 @@ export default function CallsPage() {
             >
               <PanelBody>
                 <div className="flex flex-wrap gap-2 px-3 py-2">
-                  {BATCHES.map(size => (
-                    <button
-                      key={size}
-                      type="button"
-                      className={QUIET}
-                      aria-pressed={take === size}
-                      onClick={() => {
-                        setTake(size)
-                        holdBatch()
-                      }}
-                    >
-                      Take {size}
-                    </button>
-                  ))}
                   <button type="button" className={QUIET} onClick={holdBatch}>
-                    Take A Fresh Batch
+                    Take A Fresh Batch Of {take}
+                  </button>
+                  <button
+                    type="button"
+                    className={QUIET}
+                    onClick={() => setSetupOpen(true)}
+                    aria-haspopup="dialog"
+                  >
+                    <SlidersHorizontal
+                      aria-hidden="true"
+                      className="h-3.5 w-3.5"
+                      strokeWidth={1.75}
+                    />
+                    Batch Size
                   </button>
                 </div>
                 <ul className="grid">
-                  {batch.map((one, index) => (
-                    <li
-                      key={one.id}
-                      className={`border-hair-paper flex items-baseline justify-between gap-2 border-t px-3 py-2 ${
-                        index === at ? 'bg-[color:var(--wash-accent)]' : ''
-                      }`}
-                    >
-                      <button
-                        type="button"
-                        className="truncate text-left text-[13px] text-ink-paper hover:text-accent"
-                        onClick={() => setAt(index)}
+                  {batch.map((one, index) => {
+                    const holder = heldByOther(desk.held, one.id, desk.you)
+                    return (
+                      <li
+                        key={one.id}
+                        className={`border-hair-paper flex items-baseline justify-between gap-2 border-t px-3 py-2 ${
+                          index === at ? 'bg-[color:var(--wash-accent)]' : ''
+                        }`}
                       >
-                        {one.name || 'Unnamed business'}
-                        <span className={`${MONO_LABEL} text-paper-faint block`}>{one.town}</span>
-                      </button>
-                      {worked[one.id] ? (
-                        <Badge tone={outcomeOf(worked[one.id])?.tone ?? 'plain'}>
-                          {outcomeOf(worked[one.id])?.label}
-                        </Badge>
-                      ) : (
-                        <span className={`${MONO_LABEL} text-paper-faint`}>{one.score}</span>
-                      )}
-                    </li>
-                  ))}
+                        <button
+                          type="button"
+                          className="truncate text-left text-[13px] text-ink-paper hover:text-accent"
+                          onClick={() => setAt(index)}
+                        >
+                          {one.name || 'Unnamed business'}
+                          <span className={`${MONO_LABEL} text-paper-faint block`}>{one.town}</span>
+                        </button>
+                        {worked[one.id] ? (
+                          <Badge tone={outcomeOf(worked[one.id])?.tone ?? 'plain'}>
+                            {outcomeOf(worked[one.id])?.label}
+                          </Badge>
+                        ) : holder ? (
+                          <Badge tone="accent" title={`${callerName(holder)} is on this call`}>
+                            {callerMark(holder)}
+                          </Badge>
+                        ) : (
+                          <span className={`${MONO_LABEL} text-paper-faint`}>{one.score}</span>
+                        )}
+                      </li>
+                    )
+                  })}
                 </ul>
               </PanelBody>
             </Panel>
@@ -1130,8 +1459,10 @@ export default function CallsPage() {
                   row={current}
                   saving={saving}
                   recorded={recorded}
+                  holder={heldHere}
                   onQuick={quick}
                   onOpen={openBusiness}
+                  onSkip={() => setAt(index => index + 1)}
                 />
               ) : (
                 <div className="grid gap-3 px-5 py-4">
@@ -1185,24 +1516,25 @@ export default function CallsPage() {
             <table className="console-table">
               <thead>
                 <tr>
-                  <th className={TH}>Business</th>
-                  <th className={TH}>Score</th>
-                  <th className={TH}>Number</th>
-                  <th className={`${TH} ${HIDE_SM}`}>For Its Trade</th>
-                  <th className={`${TH} ${HIDE_XL}`}>Why This One</th>
-                  <th className={`${TH} ${HIDE_LG}`}>Instead Of A Site</th>
-                  <th className={`${TH} ${HIDE_MD}`}>Rung</th>
-                  <th className={TH}>State</th>
-                  <th className={TH}>Call</th>
+                  {columns.map(id => (
+                    <th key={id} className={TH} style={{ width: widths[id] }}>
+                      {columnOf(id)?.label}
+                    </th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody ref={body}>
                 {loading ? (
-                  <SkeletonRows cols={LIST_COLS} rows={10} height={ROW_HEIGHT.calls} />
+                  <SkeletonRows
+                    cols={cellClasses}
+                    rows={shape.rows}
+                    height={shape.height}
+                    lastHeight={shape.lastHeight}
+                  />
                 ) : rows.length ? (
                   listRows
                 ) : (
-                  <EmptyRow cols={9}>
+                  <EmptyRow cols={columns.length}>
                     {view === 'resting'
                       ? 'Nothing is resting. Every business either waits for a call or is finished with.'
                       : view === 'finished'
@@ -1294,11 +1626,27 @@ export default function CallsPage() {
             row={openRow}
             saving={saving}
             recorded={recorded}
+            holder={heldByOther(desk.held, openRow.id, desk.you)}
             onRecord={writeFromSheet}
             startOn={asked}
             onHandbook={() => setHandbook(true)}
           />
         )}
+      </SidePanel>
+
+      {/* The list the way this account reads it. Kept on the account rather
+          than in this browser, because somebody who set the columns up at their
+          desk should not be handed the defaults again from a laptop. */}
+      <SidePanel open={setupOpen} title="Set Up The List" onClose={() => setSetupOpen(false)}>
+        <CallSetup
+          prefs={prefs}
+          filters={filters}
+          sort={sort}
+          onChange={desk.savePrefs}
+          onApply={applyView}
+          onDrop={dropView}
+          onKeep={keepView}
+        />
       </SidePanel>
 
       {/* What the score is made of, in one place, so a number on a row is

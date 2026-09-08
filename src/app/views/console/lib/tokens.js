@@ -34,6 +34,14 @@ export const CELL = 'px-5 py-3 text-[14px]'
 export const TH_TIGHT = `${MONO_LABEL} text-paper-faint whitespace-nowrap px-3 py-2.5 text-left`
 export const CELL_TIGHT = 'px-3 py-3 text-[14px]'
 
+// One line a row, for a table somebody is working down rather than reading.
+//
+// A row that carries a second line under each figure is easier to understand
+// and there are half as many of them on the screen. Which of those two a person
+// wants is not a fact about the table, so both are here and the section that
+// has a reader with a preference lets them keep it.
+export const CELL_PACKED = 'px-3 py-1.5 text-[13px]'
+
 // Every chart reserves its box before recharts measures the container, so a
 // panel does not grow under the reader when the series arrives. The heights sit
 // beside the other measures so a chart and the placeholder standing in for it
@@ -76,14 +84,18 @@ export const ROW_HEIGHT = {
   statusSite: '73px',
   statusIssue: '100px',
   statusFixed: '125px',
-  // The call list's row is two lines in four of its nine columns - the business
-  // over its trade and town, the trade reading over the counts behind it, the
-  // state over when it comes back - the score cell carries a bar under its
-  // figure, and the reasons column stacks two to four chips. The mean over the
-  // whole table at 1280px rather than the height of its shortest row, which
-  // would leave the first paint short and move everything under it down as the
-  // feed lands.
-  calls: '98px',
+  // The call list at its roomy setting: two lines in four of its columns - the
+  // business over its trade and town, the trade reading over the counts behind
+  // it, the state over when it comes back - a bar under the score, and two to
+  // four chips stacked in the reasons column. The mean over the whole table at
+  // 1280px rather than the height of its shortest row, which would leave the
+  // first paint short and move everything under it down as the feed lands.
+  calls: '77.5px',
+  // The same table with the second line out of every cell and the call control
+  // drawn at the row's height rather than a thumb's. Only a first visit reads
+  // either figure: after one, the placeholder is the size of the rows this
+  // reader last saw, at the density they last read them at.
+  callsTight: '38px',
 }
 
 // The console's controls, held once. Nothing about a select or a button
@@ -98,11 +110,40 @@ export const CONTROL_H = 'min-h-[44px]'
 
 export const SELECT = `${MONO_LABEL} ${CONTROL_H} border-hair-paper-strong cursor-pointer appearance-none rounded-[var(--console-radius-sm)] border bg-[color:var(--paper-field)] px-2.5 py-1 text-ink-paper transition-colors duration-150 ease-out-soft hover:border-[color:var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`
 
+// The same control, saying that it is the reason a row is missing.
+//
+// A row of six dropdowns is six values to read before a reader knows why the
+// business they expected is not on screen, and every one of them looks
+// identical whether it is narrowing anything or not. The one that is holding
+// something back says so: it carries the accent its own chip carries, so a
+// glance across the row finds it without reading a word.
+export const SELECT_ON = `${SELECT} border-[color:var(--accent)] text-accent`
+
+// One narrowing, with the way to take it off.
+//
+// Read as a group under the controls, so what the list is actually narrowed to
+// is one line rather than six values scattered along a row of boxes.
+export const CHIP = `${MONO_LABEL} border-hair-paper text-paper-soft inline-flex min-h-[28px] items-center gap-1.5 rounded-full border px-2.5 transition-colors duration-150 ease-out-soft`
+
+export const CHIP_BUTTON = `${CHIP} cursor-pointer hover:border-[color:var(--accent)] hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`
+
+// A chip that is on: the saved view being read right now.
+export const CHIP_ON = `${CHIP_BUTTON} border-[color:var(--accent)] bg-[color:var(--wash-accent)] text-accent`
+
 // Hover deepens the ground rather than fading it, which is the one hover
 // vocabulary the rest of the console uses.
 export const BUTTON = `${MONO_LABEL} ${CONTROL_H} inline-flex cursor-pointer touch-manipulation items-center justify-center gap-1.5 rounded-[var(--console-radius-sm)] bg-[color:var(--accent-fill)] px-3.5 text-[color:var(--on-accent)] transition-[background-color,transform] duration-150 ease-out-soft hover:bg-[color:var(--accent-fill-hi)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`
 
 export const QUIET = `${MONO_LABEL} ${CONTROL_H} text-paper-faint border-hair-paper inline-flex cursor-pointer touch-manipulation items-center gap-1.5 rounded-[var(--console-radius-sm)] border px-2.5 transition-[color,border-color,transform] duration-150 ease-out-soft hover:border-[color:var(--accent)] hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50`
+
+// The quiet control on a table row drawn at the tight setting, where a
+// forty-four pixel button is taller than the row it sits in.
+//
+// Only the drawing shrinks. The reach stays what a thumb needs and is carried
+// out over the row's own padding by a pseudo-element, which is the same trick
+// the account screens use on their three inline controls and for the same
+// reason: nothing on screen moves, and every one of them can still be hit.
+export const QUIET_ROW = `${MONO_LABEL} text-paper-faint border-hair-paper relative inline-flex min-h-[26px] cursor-pointer touch-manipulation items-center gap-1.5 rounded-[var(--console-radius-sm)] border px-1.5 transition-[color,border-color] duration-150 ease-out-soft before:absolute before:-inset-y-2.5 before:inset-x-0 before:content-[''] hover:border-[color:var(--accent)] hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)] disabled:cursor-not-allowed disabled:opacity-50`
 
 // A field carries a focus border as well as the shared outline, since where
 // the caret is is the one thing a form most needs to say.

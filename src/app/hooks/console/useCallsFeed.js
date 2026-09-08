@@ -12,6 +12,19 @@ const NO_READ = 'The call list could not be read. Try again in a moment.'
 const NO_RECORD = 'That call could not be recorded. Try it again.'
 
 /**
+ * How often the list re-reads itself while somebody is looking at it.
+ *
+ * The list is one queue with more than one person on it, so a page held still
+ * is a page that quietly stops being true: a business somebody else rang four
+ * minutes ago is still sitting at the top of it, offered. Thirty seconds is
+ * slower than the desk beat next door on purpose - this read ranks every
+ * callable business against the middle of its own trade and reads the whole
+ * calls table to do it, and the answer moves far more slowly than who is on a
+ * phone right now.
+ */
+const LIVE_MS = 30_000
+
+/**
  * The businesses to ring, and the record of what each call came to.
  *
  * One read covers the section. The list, the figures over it and the two
@@ -24,6 +37,13 @@ const NO_RECORD = 'That call could not be recorded. Try it again.'
  * place is its review count against the middle count for its own trade, which
  * is not a figure a page of rows can produce - and hands back one page of the
  * result. Narrowing what arrived would be searching inside a page.
+ *
+ * The read repeats on its own while somebody is watching, because the list is
+ * one queue with more than one caller on it: a business somebody else rang four
+ * minutes ago is otherwise still at the top of this console, offered. What that
+ * costs is a full re-rank every half minute, which is why it is half a minute
+ * and not five seconds - who is on a phone right now is answered by the desk
+ * feed next door, which is one small row and is polled far faster.
  *
  * Recording a call re-reads rather than patching the row on screen. A call
  * moves the business's place in the order, can take it off the list entirely,
@@ -44,13 +64,15 @@ const NO_RECORD = 'That call could not be recorded. Try it again.'
  *     town: string, trade: string, sort: string, search: string,
  *     take: number, page: number}}} options
  * @returns {{data: object|null, retained: object|null, error: string|null,
- *   loading: boolean, saving: boolean, refresh: () => Promise<void>,
+ *   loading: boolean, saving: boolean, readAt: Date|null,
+ *   refresh: () => Promise<void>,
  *   record: (call: object) => Promise<object|null>}}
  */
 export function useCallsFeed({ token, enabled, filters }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
+  const [readAt, setReadAt] = useState(null)
   const toast = useToast()
   const alive = useRef(true)
 
@@ -86,6 +108,7 @@ export function useCallsFeed({ token, enabled, filters }) {
       }
       setHeld({ key: query, value: payload })
       setFailed(NOTHING_HELD)
+      setReadAt(new Date())
     } catch (cause) {
       if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_READ) })
     }
@@ -94,6 +117,24 @@ export function useCallsFeed({ token, enabled, filters }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // And again, on its own, for as long as somebody is looking. A hidden tab
+  // re-reads nothing and catches up the moment it comes back: the list is
+  // worked at a desk with the console in front of the caller, and a background
+  // tab re-ranking fifteen hundred businesses nobody is reading is the one case
+  // where being live costs something and returns nothing.
+  useEffect(() => {
+    if (!token || !enabled) return undefined
+    const tick = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    const timer = setInterval(tick, LIVE_MS)
+    document.addEventListener('visibilitychange', tick)
+    return () => {
+      clearInterval(timer)
+      document.removeEventListener('visibilitychange', tick)
+    }
+  }, [token, enabled, load])
 
   const record = useCallback(
     async call => {
@@ -134,5 +175,14 @@ export function useCallsFeed({ token, enabled, filters }) {
   // pager the moment Next is pressed.
   const retained = held.value
 
-  return { data, retained, error, loading: !data && !error, saving, refresh: load, record }
+  return {
+    data,
+    retained,
+    error,
+    loading: !data && !error,
+    saving,
+    readAt,
+    refresh: load,
+    record,
+  }
 }
