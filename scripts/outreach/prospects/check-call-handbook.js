@@ -152,6 +152,62 @@ check('a listing with no website is not told about its website', () => {
   ok(!/your .* page/.test(say), `a business with no site was told about its page: "${say}"`)
 })
 
+// ── A line too long to say ─────────────────────────────────────────────────
+
+/**
+ * Everything a caller reads out loud, from every part of the handbook.
+ *
+ * The script is composed, so it is taken off a real row rather than off the
+ * module - a length rule that never sees the interpolated version is a rule
+ * about the template rather than about the sentence somebody says.
+ */
+const SPOKEN = () => [
+  ...scriptFor(business()).map(one => [one.label, one.say]),
+  ...QUESTIONS.map(one => [one.ask, one.say]),
+  ...PUSHBACK.map(one => [one.said, one.say]),
+  ...CLOSING.map(one => [one.label, one.say]),
+]
+
+/** Sentences, counted the way a person reads them off a screen. */
+const sentences = text => (String(text).match(/[.?!](\s|$)/g) ?? []).length || 1
+
+/**
+ * Nothing said down a phone runs past three sentences, and most of it stops at
+ * two.
+ *
+ * A caller reads these while somebody waits on the other end, and a paragraph
+ * is the one shape that cannot be read that way: they lose the line, start
+ * paraphrasing, and the handbook is worth nothing from there on. The ceiling is
+ * absolute and the average is a floor under the habit, because a set where
+ * every answer sits at exactly three has drifted even though no single answer
+ * broke a rule.
+ */
+check('nothing a caller says runs past three sentences', () => {
+  for (const [what, say] of SPOKEN()) {
+    const run = sentences(say)
+    ok(run <= 3, `"${what}" is ${run} sentences: ${say}`)
+  }
+})
+
+check('most of what a caller says is one or two sentences', () => {
+  const spoken = SPOKEN()
+  const brief = spoken.filter(([, say]) => sentences(say) <= 2).length
+  ok(brief * 2 > spoken.length, `only ${brief} of ${spoken.length} replies stop at two sentences`)
+})
+
+/**
+ * No dash stands in for a clause in anything read aloud.
+ *
+ * A dash is a pause a writer hears and a reader has to work out, and the whole
+ * of the site's own customer-facing copy is written without them. A caller
+ * reading one aloud either swallows it or stops in the middle of a sentence.
+ */
+check('nothing a caller says leans on a dash', () => {
+  for (const [what, say] of SPOKEN()) {
+    ok(!/[—–]/.test(say), `"${what}" carries a dash: ${say}`)
+  }
+})
+
 // ── A claim with nothing behind it ─────────────────────────────────────────
 
 check('work of ours is only named where there is work to name', () => {
