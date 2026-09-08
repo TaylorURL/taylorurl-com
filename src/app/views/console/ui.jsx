@@ -19,7 +19,17 @@ import { MONO_LABEL, ROW_HEIGHT } from './lib/tokens'
  * border.
  */
 
-export function Panel({ title, aside, children, className = '', busy, loading, area, style }) {
+export function Panel({
+  title,
+  aside,
+  note,
+  children,
+  className = '',
+  busy,
+  loading,
+  area,
+  style,
+}) {
   return (
     <m.section
       {...fadeInUp}
@@ -44,6 +54,14 @@ export function Panel({ title, aside, children, className = '', busy, loading, a
         ) : (
           aside && <p>{aside}</p>
         )}
+        {/* How the card is worked, for whoever is working it. It wraps onto its
+            own line inside the head rather than standing between the head and
+            the body, so a card that says how to use itself is still one ruled
+            block rather than two. It never waits on the read: what a card is
+            for does not depend on what the read comes back with, and a line
+            that appears a second late is a line nobody was looking at when it
+            arrived. */}
+        {note && <p className="console-card-note">{note}</p>}
       </header>
       {children}
     </m.section>
@@ -140,6 +158,7 @@ export function SidePanel({
   open,
   title,
   aside,
+  note,
   onClose,
   children,
   loading,
@@ -203,6 +222,11 @@ export function SidePanel({
             ) : (
               aside && <p>{aside}</p>
             )}
+            {/* What the panel is for, in a line, the same way a card carries
+                one. A panel is opened from a control somewhere else on the
+                page, so it is the one surface a reader arrives at without
+                having read anything about it first. */}
+            {note && <p className="console-card-note">{note}</p>}
           </div>
           <button type="button" ref={closer} aria-label="Close" onClick={onClose}>
             <X className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />

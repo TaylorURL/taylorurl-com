@@ -25,11 +25,16 @@
  * cosmetic fault: a dropped newest call silently changes the run, the wait,
  * the place and the score of the business it belonged to.
  *
- * Two verbs. GET answers the list. POST records one call, and it is the only
- * write in here: an outcome, a note in whoever's own words, and a time to ring
- * back where one was named. Nothing composes a note, and nothing sends
- * anything - the whole point of this section is that a person picks up a
- * phone.
+ * Two verbs. GET answers the list. POST records one call - an outcome, a note
+ * in whoever's own words, and a time to ring back where one was named - or
+ * hands a business from one caller to another. Nothing composes a note, and
+ * nothing sends anything: the whole point of this section is that a person
+ * picks up a phone.
+ *
+ * A recorded call also settles who the business belongs to, where nobody holds
+ * it yet. That write is here rather than anywhere else because it is the same
+ * event - somebody rang them - and doing it in a second request would leave
+ * the two able to disagree.
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
@@ -39,6 +44,7 @@ import { field, uuid } from '../lib/db/fields.js'
 import { sharesTrade } from '../lib/outreach/message.js'
 import { PORTFOLIO_PROJECTS } from '../src/app/data/portfolio.js'
 import {
+  ASSIGNED_STANDINGS,
   byCallOrder,
   callPlace,
   isCallable,
@@ -46,6 +52,7 @@ import {
   medianOf,
   outcomeEnds,
   OUTCOME_IDS,
+  ownerOf,
   placeCalls,
   promiseOf,
   pullBand,
@@ -70,6 +77,7 @@ import {
 
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
+const PROFILES = 'profiles'
 
 /** The views, which decide which bucket of the set is answered for. */
 const VIEWS = Object.freeze(['list', 'calling', 'resting', 'finished'])
@@ -102,6 +110,8 @@ const COLUMNS = [
   'business_status',
   'skip_reason',
   'created_at',
+  'assigned_to',
+  'assigned_at',
 ].join(', ')
 
 /** A note is a person's own sentence, and the column holds this much of one. */
@@ -115,6 +125,9 @@ const LIST_UNREAD = 'The call list could not be read. Try again in a moment.'
 
 /** What is said when a call will not go on the record. */
 const NOT_RECORDED = 'That call could not be saved. Try again in a moment.'
+
+/** And when a business will not change hands. */
+const NOT_HANDED = 'That business could not be handed over. Try again in a moment.'
 
 /**
  * What a driver said, turned into an answer the console can print.
@@ -165,6 +178,22 @@ function floorOf(value) {
 }
 
 /**
+ * A filter on who holds a business: one of the two standings, an account's id,
+ * or nothing.
+ *
+ * Anything else is dropped rather than refused. A filter is a way of looking at
+ * a list, and a console that has been handed a value this endpoint does not
+ * know should show the whole list rather than an error where the businesses
+ * were.
+ */
+function assignedTerm(value) {
+  const held = term(value)
+  if (!held) return null
+  if (ASSIGNED_STANDINGS.includes(held)) return held
+  return uuid(held)
+}
+
+/**
  * Every call on file, newest first, filed under the business it was placed to.
  *
  * Read whole rather than joined, because the join would be one query per page
@@ -178,7 +207,7 @@ async function callsByProspect(db) {
     () =>
       db
         .from(CALLS)
-        .select('id, prospect_id, outcome, note, callback_at, called_at')
+        .select('id, prospect_id, outcome, note, callback_at, called_at, called_by')
         .order('called_at', { ascending: false })
         .order('id', { ascending: false }),
     { max: SET_MAX * 4 }
@@ -190,6 +219,26 @@ async function callsByProspect(db) {
     else byProspect.set(call.prospect_id, [call])
   }
   return byProspect
+}
+
+/**
+ * The people a business can belong to.
+ *
+ * Everybody who can reach this endpoint at all, which is the same set the role
+ * check lets through, so a picker cannot offer somebody the write would then
+ * refuse. It is three rows and it is read on every list, because the console
+ * needs a name against an id in three places - the column, the chip and the
+ * hand-over - and a page that knows an id and not a name draws a business as
+ * belonging to nobody.
+ */
+async function callers(db) {
+  const { data, error } = await db
+    .from(PROFILES)
+    .select('id, full_name')
+    .eq('role', 'admin')
+    .order('full_name')
+  if (error) throw error
+  return (data || []).map(row => ({ id: row.id, name: row.full_name || null }))
 }
 
 /**
@@ -279,8 +328,15 @@ function proofWork(row, kind) {
  * what it scores and why, where it sits, when it comes back, and every call
  * placed to it.
  */
-function drawn(row, { medians, calls, proof, now }) {
-  const history = calls.get(row.id) ?? []
+function drawn(row, { medians, calls, proof, now, named }) {
+  // Every call carries who placed it. The record is read by whoever picks the
+  // business up next, and a note reading "he said ring back Tuesday" is a
+  // different instruction depending on who wrote it - the colleague at the next
+  // desk, or somebody who left in March.
+  const history = (calls.get(row.id) ?? []).map(call => ({
+    ...call,
+    called_by_name: call.called_by ? (named.get(call.called_by) ?? null) : null,
+  }))
   const carried = { ...row, calls: history }
   const median = medians.get(row.trade) ?? null
   const promise = promiseOf(carried, now)
@@ -290,6 +346,9 @@ function drawn(row, { medians, calls, proof, now }) {
 
   return {
     ...row,
+    // The name beside the id, so a row can say whose it is without the console
+    // holding a second index and joining it per render.
+    assigned_name: ownerOf(row) ? (named.get(ownerOf(row)) ?? null) : null,
     pull: pullBand(row, median),
     pull_ratio: pullOf(row, median),
     trade_median: median,
@@ -383,10 +442,10 @@ function byLastCall(rows) {
 }
 
 /** The whole list, filtered, counted and paged. */
-async function list(db, query) {
+async function list(db, query, account) {
   const now = new Date()
 
-  const [{ rows, complete }, calls] = await Promise.all([
+  const [{ rows, complete }, calls, people] = await Promise.all([
     readAll(
       () =>
         db
@@ -398,12 +457,14 @@ async function list(db, query) {
       { max: SET_MAX }
     ),
     callsByProspect(db),
+    callers(db),
   ])
 
+  const named = new Map(people.map(one => [one.id, one.name]))
   const callable = rows.filter(isCallable)
   const medians = mediansByTrade(callable)
   const proof = proofIndex(new Set(callable.map(row => row.trade).filter(Boolean)))
-  const drawnRows = callable.map(row => drawn(row, { medians, calls, proof, now }))
+  const drawnRows = callable.map(row => drawn(row, { medians, calls, proof, now, named }))
 
   const buckets = placed(drawnRows)
   // The strip, the dropdowns and the soonest return all answer for the whole
@@ -426,6 +487,8 @@ async function list(db, query) {
     town: term(query.town),
     trade: term(query.trade),
     search: term(query.search),
+    assigned: assignedTerm(query.assigned),
+    you: account.userId,
   })
 
   const ordered =
@@ -462,6 +525,7 @@ async function list(db, query) {
       next_back: backs[0] ?? null,
       towns: [...new Set(buckets.call.map(row => row.town).filter(Boolean))].sort(),
       trades: [...new Set(buckets.call.map(row => row.trade).filter(Boolean))].sort(),
+      people,
       complete,
       cap: SET_MAX,
     },
@@ -518,7 +582,7 @@ async function record(db, body, account) {
   // that unsubscribed, which is the one thing the whole section must not do.
   const found = await db
     .from(PROSPECTS)
-    .select('id, name, phone, site_kind, stage, business_status')
+    .select('id, name, phone, site_kind, stage, business_status, assigned_to')
     .eq('id', prospectId)
     .maybeSingle()
   if (found.error) return refusal(found.error, NOT_RECORDED)
@@ -540,7 +604,90 @@ async function record(db, body, account) {
     .maybeSingle()
   if (written.error) return refusal(written.error, NOT_RECORDED)
 
-  return { status: 200, body: { ok: true, call: written.data?.id ?? null } }
+  const took = await claim(db, prospectId, account.userId)
+
+  return {
+    status: 200,
+    body: { ok: true, call: written.data?.id ?? null, assigned_to: took },
+  }
+}
+
+/**
+ * The business put in the caller's name, where nobody had it.
+ *
+ * `is('assigned_to', null)` is the whole of the race. Two callers who record
+ * against the same unheld business in the same second both read it as unheld
+ * a moment earlier, and without the condition in the statement the second
+ * write would take it off the first. With it, the second update matches no row
+ * and the business stays with whoever got there first, which is the rule.
+ *
+ * A failure here is not a failure of the call. The call is on the record and
+ * the caller is owed the confirmation for it; who the business belongs to is
+ * settled by the next call, or by hand. So it is logged and the answer says
+ * nobody was claimed rather than telling somebody their call did not save.
+ */
+async function claim(db, prospectId, userId) {
+  const { data, error } = await db
+    .from(PROSPECTS)
+    .update({ assigned_to: userId, assigned_at: new Date().toISOString() })
+    .eq('id', prospectId)
+    .is('assigned_to', null)
+    .select('assigned_to')
+    .maybeSingle()
+  if (error) {
+    console.error('calls-admin: the business could not be claimed: %s', error.message)
+    return null
+  }
+  return data?.assigned_to ?? null
+}
+
+/**
+ * One business handed from whoever holds it to somebody else, or to nobody.
+ *
+ * Every other change of hands in this file is automatic and conditional. This
+ * one is a person deciding, so it is unconditional: it takes a business off
+ * the caller who has had it since the first call, which is exactly the thing
+ * `claim` above refuses to do on its own.
+ *
+ * `to` may be null, which puts the business back in the pool. That is the only
+ * way back to unheld, and it is worth having: a caller who leaves, or a
+ * business claimed by a wrong number, would otherwise stay in a name nobody
+ * can act on.
+ */
+async function assign(db, body) {
+  const prospectId = uuid(body.id)
+  if (!prospectId) return { status: 400, body: { error: 'Pick the business to hand over.' } }
+
+  const to = body.to === null || body.to === '' ? null : uuid(body.to)
+  if (body.to && !to) return { status: 400, body: { error: 'Pick who it goes to.' } }
+
+  // Only somebody who can work the list at all. Without this an id from
+  // anywhere would put a business in the name of an account that will never
+  // see it, and it would read on every screen exactly like a real hand-over.
+  if (to) {
+    const people = await callers(db)
+    if (!people.some(one => one.id === to)) {
+      return { status: 400, body: { error: 'That person does not work the call list.' } }
+    }
+  }
+
+  const written = await db
+    .from(PROSPECTS)
+    .update({ assigned_to: to, assigned_at: to ? new Date().toISOString() : null })
+    .eq('id', prospectId)
+    .select('id, assigned_to, assigned_at')
+    .maybeSingle()
+  if (written.error) return refusal(written.error, NOT_HANDED)
+  if (!written.data) return { status: 404, body: { error: 'That business is no longer on file.' } }
+
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      assigned_to: written.data.assigned_to,
+      assigned_at: written.data.assigned_at,
+    },
+  }
 }
 
 export default async function handler(request, response) {
@@ -566,10 +713,17 @@ export default async function handler(request, response) {
 
     let answer
     try {
+      const body = request.body ?? {}
       answer =
         request.method === 'GET'
-          ? await list(wired.db, request.query ?? {})
-          : await record(wired.db, request.body ?? {}, account)
+          ? await list(wired.db, request.query ?? {}, account)
+          : // A hand-over and a recorded call are both POSTs to this endpoint
+            // and they are told apart by what the body carries, because they
+            // are the same thing happening to the same business and splitting
+            // them across two addresses would say otherwise.
+            'assign' in body
+            ? await assign(wired.db, body.assign ?? {})
+            : await record(wired.db, body, account)
     } catch (cause) {
       answer = refusal(cause, request.method === 'POST' ? NOT_RECORDED : LIST_UNREAD)
     }

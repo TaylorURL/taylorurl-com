@@ -51,6 +51,7 @@ import {
   columnOf,
   columnsAt,
   columnWidths,
+  assignedLabel,
   filterChips,
   filtersNarrow,
   normalizeColumns,
@@ -76,7 +77,16 @@ import {
   saidAgo,
   saidSince,
 } from '../../../lib/outreach/prospects/callPresence.js'
-import { PULLS } from '../../../lib/outreach/prospects/calls.js'
+import {
+  ASSIGNED_MINE,
+  ASSIGNED_NOBODY,
+  ASSIGNED_STANDINGS,
+  callTakesOwner,
+  matchesAssigned,
+  ownedByOther,
+  ownerOf,
+  PULLS,
+} from '../../../lib/outreach/prospects/calls.js'
 
 const cases = []
 const check = (name, run) => cases.push([name, run])
@@ -274,8 +284,9 @@ check('every chip carries the key that takes it off again', () => {
   }
 })
 
-/** The first value of a listed filter that is not 'all'. */
+/** The first value of a filter that is not 'all'. */
 function offeredValue(key) {
+  if (key === 'assigned') return ASSIGNED_MINE
   const options = { state: CALL_STATES, pull: CALL_PULLS, min_score: CALL_SCORES }[key]
   return options.find(one => one.id !== 'all').id
 }
@@ -486,6 +497,94 @@ check('a call is said in minutes, because seconds are movement rather than news'
   same(saidSince(null, NOW), 'just now', 'no instant at all')
   same(saidAgo(new Date(NOW.getTime() - 61_000), NOW), '1 min ago', 'said as time past')
   same(saidAgo(new Date(NOW.getTime() - 20_000), NOW), 'just now', 'and not "just now ago"')
+})
+
+// ── Whose business it is ─────────────────────────────────────────────
+
+const YOU = '11111111-1111-4111-8111-111111111111'
+const THEM = '22222222-2222-4222-8222-222222222222'
+
+check('a business reads as held only when somebody actually holds it', () => {
+  same(ownerOf({ assigned_to: YOU }), YOU, 'an id is who holds it')
+  same(ownerOf({ assigned_to: '  ' }), null, 'whitespace holds nothing')
+  same(ownerOf({ assigned_to: null }), null, 'null holds nothing')
+  same(ownerOf({}), null, 'a row with no column holds nothing')
+  same(ownerOf(null), null, 'no row holds nothing')
+})
+
+check("a caller's own business is not a warning about somebody else", () => {
+  same(ownedByOther({ assigned_to: YOU }, YOU), null, 'their own reads as theirs')
+  same(ownedByOther({ assigned_to: THEM }, YOU), THEM, "somebody else's is named")
+  same(ownedByOther({ assigned_to: null }, YOU), null, 'nobody is not somebody else')
+})
+
+check('a call takes a business only where nobody holds it', () => {
+  ok(callTakesOwner({ assigned_to: null }), 'an unheld business is claimed')
+  ok(callTakesOwner({}), 'and so is one that has never been')
+  ok(!callTakesOwner({ assigned_to: THEM }), 'a held one is left where it is')
+  // The rule the whole feature turns on: covering one call for somebody does
+  // not move the relationship onto the person who covered it.
+  ok(!callTakesOwner({ assigned_to: YOU }), 'not even for the person holding it')
+})
+
+check('the filter on who holds a business answers for every standing', () => {
+  const mine = { assigned_to: YOU }
+  const theirs = { assigned_to: THEM }
+  const nobodys = { assigned_to: null }
+
+  for (const row of [mine, theirs, nobodys]) {
+    ok(matchesAssigned(row, 'all', YOU), 'everything survives all')
+    ok(matchesAssigned(row, '', YOU), 'and an empty filter')
+    ok(matchesAssigned(row, undefined, YOU), 'and no filter at all')
+  }
+
+  ok(matchesAssigned(mine, ASSIGNED_MINE, YOU), 'mine keeps mine')
+  ok(!matchesAssigned(theirs, ASSIGNED_MINE, YOU), 'and drops theirs')
+  ok(!matchesAssigned(nobodys, ASSIGNED_MINE, YOU), "and drops nobody's")
+  ok(!matchesAssigned(mine, ASSIGNED_MINE, null), 'nobody signed in owns nothing')
+
+  ok(matchesAssigned(nobodys, ASSIGNED_NOBODY, YOU), 'nobody keeps the unheld')
+  ok(!matchesAssigned(mine, ASSIGNED_NOBODY, YOU), 'and drops the held')
+
+  ok(matchesAssigned(theirs, THEM, YOU), 'an id keeps that person')
+  ok(!matchesAssigned(mine, THEM, YOU), 'and drops everybody else')
+})
+
+check('the two standings are the only ones that are not an id', () => {
+  same(ASSIGNED_STANDINGS.length, 2, 'two standings')
+  ok(ASSIGNED_STANDINGS.includes(ASSIGNED_MINE), 'mine is one')
+  ok(ASSIGNED_STANDINGS.includes(ASSIGNED_NOBODY), 'nobody is the other')
+  ok(!ASSIGNED_STANDINGS.includes('all'), "'all' is no filter rather than a standing")
+})
+
+check('a filter on who holds a business is stored and taken off like any other', () => {
+  same(NO_FILTERS.assigned, 'all', 'it starts at all')
+  same(normalizeFilters({ assigned: ASSIGNED_MINE }).assigned, ASSIGNED_MINE, 'a standing keeps')
+  same(normalizeFilters({ assigned: THEM }).assigned, THEM, 'and so does an id')
+  same(normalizeFilters({ assigned: '  ' }).assigned, 'all', 'whitespace is no filter')
+  ok(filtersNarrow({ ...NO_FILTERS, assigned: ASSIGNED_MINE }), 'it narrows the list')
+  same(withoutFilter({ ...NO_FILTERS, assigned: THEM }, 'assigned').assigned, 'all', 'it comes off')
+})
+
+check('a chip for who holds a business reads as a person rather than an id', () => {
+  const people = [{ id: THEM, name: 'Dylan Jordan' }]
+  same(assignedLabel(ASSIGNED_MINE, people), 'Mine', 'the caller themselves')
+  same(assignedLabel(ASSIGNED_NOBODY, people), 'Nobody Yet', 'and the unheld')
+  same(assignedLabel(THEM, people), 'Dylan Jordan', 'a known id reads as a name')
+  ok(!assignedLabel(THEM, []).includes(THEM), 'and an unknown one never prints the id')
+  const chips = filterChips({ ...NO_FILTERS, assigned: THEM }, people)
+  same(chips.length, 1, 'one narrowing, one chip')
+  same(chips[0].key, 'assigned', 'carrying the key that takes it off')
+  same(chips[0].label, 'Dylan Jordan', 'and the name')
+})
+
+check('the list can draw who a business belongs to', () => {
+  const column = columnOf('assigned')
+  ok(column, 'the column exists')
+  same(column.label, 'Assigned To', 'and is named for what it says')
+  ok(!column.fixed, 'it is one the chooser can turn off')
+  ok(!columnsAt(['assigned'], 'xs').length, 'and it is off a phone')
+  same(columnsAt(['assigned'], 'lg').join(), 'assigned', 'and on from the desk width')
 })
 
 let failed = 0

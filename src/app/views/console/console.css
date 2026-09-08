@@ -1020,6 +1020,16 @@
   color: var(--paper-ink-mute);
 }
 
+/* How a card is worked, said to whoever is working it.
+   It is a full-width line inside the head, so the head keeps its one rule and
+   a card that explains itself is not two stacked blocks. Set below the title
+   and above the figures, which is the order somebody reads a card they have
+   not used before: what it is, then what it says. */
+.console-card-note {
+  @apply w-full text-[13px] leading-snug;
+  color: var(--paper-ink-mute);
+}
+
 /* The block a card closes on.
    The ground is mixed from the card's own ink rather than taken from the field
    token, which on the light setting is the card colour itself - so the foot
@@ -2061,6 +2071,16 @@
 .console-side-lead header p {
   @apply text-[12px];
   color: var(--paper-ink-faint);
+}
+
+/* The panel's own usage line, stated rather than inherited. A panel head can
+   carry an aside and a note at once - a number against the business, and the
+   sentence saying what the panel is for - and drawn at the aside's size and
+   colour the two read as one wrapped line of the same thing. */
+.console-side-card header .console-card-note,
+.console-side-lead header .console-card-note {
+  @apply text-[13px] leading-snug;
+  color: var(--paper-ink-mute);
 }
 
 .console-side-card header button,

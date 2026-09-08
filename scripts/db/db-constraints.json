@@ -400,6 +400,11 @@
       "definition": "CHECK (((prospect_id IS NULL) = (on_phone_since IS NULL)))"
     },
     {
+      "table": "outreach_prospects",
+      "constraint": "outreach_prospects_assignment_has_a_start",
+      "definition": "CHECK (((assigned_to IS NULL) = (assigned_at IS NULL)))"
+    },
+    {
       "table": "outreach_settings",
       "constraint": "outreach_settings_daily_cap_check",
       "definition": "CHECK (((daily_cap >= 0) AND (daily_cap <= 150)))"
