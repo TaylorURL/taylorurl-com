@@ -2008,28 +2008,77 @@
   animation: console-side-in 0.28s var(--ease-out-soft);
 }
 
-.console-side-card header {
+/* The card against the far edge: what the panel opposite is read alongside
+   rather than after.
+
+   Two shapes, and the width picks between them. Wide enough for both and it is
+   a second column against the left edge, so a reader looks from one to the
+   other without either moving. Narrower than that and there is no such thing as
+   beside - two cards sharing a phone's width are two columns of four words - so
+   it lies over the panel instead and is brought forward by a control on it.
+
+   1180px is where 28rem plus 27rem plus the gutter between them stops
+   squeezing the panel that opens under it. */
+.console-side-lead {
+  @apply absolute inset-0 z-10 hidden flex-col overflow-hidden;
+  background-color: var(--console-card-bg);
+  animation: console-side-lead-in 0.28s var(--ease-out-soft);
+}
+
+.console-side-lead[data-open='true'] {
+  @apply flex;
+}
+
+@media (min-width: 1180px) {
+  .console-side-lead,
+  .console-side-lead[data-open='true'] {
+    @apply static z-0 mr-auto flex h-full w-full max-w-[27rem];
+    border-right: 1px solid var(--paper-hairline-strong);
+    box-shadow: var(--console-float-shadow);
+  }
+}
+
+.console-side-card header,
+.console-side-lead header {
   @apply flex flex-shrink-0 items-center justify-between gap-4 px-5 py-3;
   border-bottom: 1px solid var(--paper-hairline);
 }
 
-.console-side-card header h2 {
+.console-side-card header h2,
+.console-side-lead header h2 {
   @apply text-[13px] font-semibold tracking-tight;
   color: var(--paper-ink);
 }
 
-.console-side-card header p {
+.console-side-card header p,
+.console-side-lead header p {
   @apply text-[12px];
   color: var(--paper-ink-faint);
 }
 
-.console-side-card header button {
+.console-side-card header button,
+.console-side-lead header button {
   @apply flex h-7 w-7 items-center justify-center rounded-[var(--r-tiny)] transition-colors duration-150 ease-out-soft;
   color: var(--paper-ink-faint);
 }
 
-.console-side-card header button:hover {
+.console-side-card header button:hover,
+.console-side-lead header button:hover {
   color: var(--paper-ink);
+}
+
+/* The lead's close is the way back to the panel it is covering, so at the width
+   where it covers nothing there is nowhere to go back to and it comes off: the
+   record's own close takes both cards.
+
+   After the rule it overrides rather than beside the layout above, because the
+   two selectors weigh the same and the later one wins. Held here rather than as
+   a utility on the button for the same reason - a rule naming the header
+   outranks a single class whatever the class says. */
+@media (min-width: 1180px) {
+  .console-side-lead header button {
+    @apply hidden;
+  }
 }
 
 /* The body is the only thing in here that scrolls, and it keeps its scroll to
@@ -2159,12 +2208,28 @@
   }
 }
 
+/* The same arrival off the other edge, since the card it belongs to enters
+   from the left and one moving the wrong way reads as the panel sliding out. */
+@keyframes console-side-lead-in {
+  from {
+    transform: translateX(-1.5rem);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .console-side-card {
+  .console-side-card,
+  .console-side-lead {
     animation: none;
   }
 
-  .console-side-card header button {
+  .console-side-card header button,
+  .console-side-lead header button {
     transition-duration: var(--motion-off);
   }
 }

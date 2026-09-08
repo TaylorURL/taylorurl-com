@@ -126,8 +126,26 @@ export function SkeletonList({ rows = 5 }) {
  * Focus goes to the close button on open and back to whatever opened the panel
  * on close, so a panel opened from the keyboard is a panel the keyboard can
  * leave.
+ *
+ * `lead` is a second card against the OPPOSITE edge, for the reference a
+ * section's panel is read alongside rather than after. It is one dialog and one
+ * scrim: two panels each with their own backdrop would darken the page twice
+ * and would close one at a time, and what is on the left is only ever there
+ * because of what is on the right. Where there is no room for two cards the
+ * lead lies over the panel instead of beside it, and `leadOpen` is what brings
+ * it forward - the width that decides which of those happens is the
+ * stylesheet's, so a caller passes the state and never the measurement.
  */
-export function SidePanel({ open, title, aside, onClose, children, loading }) {
+export function SidePanel({
+  open,
+  title,
+  aside,
+  onClose,
+  children,
+  loading,
+  lead,
+  leadOpen = false,
+}) {
   const closer = useRef(null)
 
   // Opening and closing is all this effect answers to. Hanging it on the close
@@ -165,6 +183,11 @@ export function SidePanel({ open, title, aside, onClose, children, loading }) {
         if (event.target === event.currentTarget) onClose()
       }}
     >
+      {lead && (
+        <div className="console-side-lead" data-open={leadOpen ? 'true' : 'false'}>
+          {lead}
+        </div>
+      )}
       <div className="console-side-card">
         <header>
           <div className="grid min-w-0 gap-0.5">
