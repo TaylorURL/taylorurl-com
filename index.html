@@ -507,8 +507,16 @@
         ]
         // The two that are also ordinary destinations the site links to, where
         // the path is the only thing separating a beacon from a link.
+        //
+        // `/g/collect` is the measurement hit itself. It normally goes to
+        // `google-analytics.com`, which is named above and so never arrived
+        // here - but with Google Signals on, the tag sends the same hit to
+        // `www.google.com` as well, and that copy is the one that reaches this
+        // list. It is the identical beacon wearing a hostname the site does
+        // link to, which is what put a blocked analytics hit through as a site
+        // fault while its twin an hour earlier was classified correctly.
         var beaconPaths = {
-          'google.com': ['/pagead', '/ccm', '/rmkt', '/ads'],
+          'google.com': ['/pagead', '/ccm', '/rmkt', '/ads', '/g/collect'],
           'facebook.com': ['/tr'],
         }
         function marketingBeacon(address) {
