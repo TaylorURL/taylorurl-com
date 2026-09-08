@@ -1279,7 +1279,12 @@ export default function CallsPage() {
         leadOpen={handbook}
         lead={
           openRow && (
-            <CallHandbook key={openRow.id} row={openRow} onClose={() => setHandbook(false)} />
+            <CallHandbook
+              key={openRow.id}
+              row={openRow}
+              caller={session?.user?.user_metadata?.full_name}
+              onClose={() => setHandbook(false)}
+            />
           )
         }
       >
