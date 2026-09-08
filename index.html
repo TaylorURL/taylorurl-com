@@ -390,6 +390,9 @@
         // browser's own network layer, which no page script can reach.
         var loud = false
         var held = []
+        // Which endpoints have already answered that they ran out of time. The
+        // first one is not a fault; a second from the same place is.
+        var slow = {}
         try {
           if (location.search.indexOf('console=on') > -1)
             localStorage.setItem('reporter-console', '1')
@@ -619,8 +622,29 @@
             if (target.indexOf(endpoint) === 0) return originalFetch.apply(window, arguments)
             return originalFetch.apply(window, arguments).then(
               function (response) {
-                if (response.status >= 500)
-                  report('http', 'HTTP ' + response.status + ' from ' + target.split('?')[0])
+                if (response.status >= 500) {
+                  var where = target.split('?')[0]
+                  // A gateway timeout is this site's own proxy giving up on a
+                  // slow upstream, which is the policy rather than a break: it
+                  // holds a deadline and answers rather than keep a serverless
+                  // function open with nothing to say, and the console's feeds
+                  // carry the last good figures straight through one and ask
+                  // again seconds later. Nobody sees anything. Filed as a
+                  // fault it becomes an incident on the board visitors read -
+                  // raised by a page only the studio can open, and cleared
+                  // before anyone looks at it. That is not a claim worth
+                  // making about a client's site being up.
+                  //
+                  // A second from the same endpoint is a different claim: the
+                  // upstream is not merely slow, it is not coming back. That
+                  // one is reported, so an outage stays as loud as it was.
+                  if (response.status === 504 && !slow[where]) {
+                    slow[where] = true
+                    hold('slow', 'No answer in time from ' + where, '')
+                  } else {
+                    report('http', 'HTTP ' + response.status + ' from ' + where)
+                  }
+                }
                 return response
               },
               function (error) {
