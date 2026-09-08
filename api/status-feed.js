@@ -33,7 +33,7 @@ function describe(error) {
 // view: filtered server-side they never reach a browser, and every surface
 // reading this proxy - the public board, the console, the signed-in case - is
 // covered by the one rule.
-const WITHHELD = ['domebreak', 'knightplugins', 'knight-plugins', 'knight plugins']
+const WITHHELD = ['domebreak']
 
 /** Whether a feed row names one of the projects the site does not present. */
 function withheld(row) {
