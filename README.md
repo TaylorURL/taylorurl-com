@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.37.19-2f6bff?style=for-the-badge" alt="Version 2026.37.19" />
+  <img src="https://img.shields.io/badge/version-2026.37.20-2f6bff?style=for-the-badge" alt="Version 2026.37.20" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -250,7 +250,7 @@ The row is the whole of it. Nothing about a new project is a release on this sid
 ```
 taylorurl-com/
 ├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the newsletter's send, its due schedule and its Resend webhook, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
-├── brand/                     The social post generator, the subsidiary's share card, and the faces they draw with
+├── brand/                     The post cards the queue publishes, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
 │   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, and the shapes a value takes before it reaches a column
 │   ├── enquiry/               What each enquiry form asks, in the words the sender read
