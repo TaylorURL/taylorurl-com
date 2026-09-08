@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
-import { MODIFIER } from '../lib/useConsoleShortcuts'
+import { useModifierLabel } from '../lib/useConsoleShortcuts'
 
 /**
  * The written half of the keyboard: the list a reader opens with `?` to find
@@ -17,14 +17,14 @@ import { MODIFIER } from '../lib/useConsoleShortcuts'
  * not have.
  */
 
-const KEYS = [
-  { press: `${MODIFIER}K`, does: 'Search sections and sites' },
-  { press: `${MODIFIER}B`, does: 'Narrow or widen the menu' },
-  { press: '?', does: 'Open this list' },
-]
-
 export function ShortcutSheet({ open, onClose }) {
   const closer = useRef(null)
+  const modifier = useModifierLabel()
+  const keys = [
+    { press: `${modifier}K`, does: 'Search sections and sites' },
+    { press: `${modifier}B`, does: 'Narrow or widen the menu' },
+    { press: '?', does: 'Open this list' },
+  ]
   useEffect(() => {
     if (open) closer.current?.focus()
   }, [open])
@@ -52,7 +52,7 @@ export function ShortcutSheet({ open, onClose }) {
           </button>
         </header>
         <ul>
-          {KEYS.map(row => (
+          {keys.map(row => (
             <li key={row.press}>
               <span>{row.does}</span>
               <kbd>{row.press}</kbd>
