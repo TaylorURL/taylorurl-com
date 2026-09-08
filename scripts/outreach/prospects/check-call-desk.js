@@ -76,6 +76,7 @@ import {
   presenceLive,
   saidAgo,
   saidSince,
+  settleDesk,
 } from '../../../lib/outreach/prospects/callPresence.js'
 import {
   ASSIGNED_MINE,
@@ -585,6 +586,68 @@ check('the list can draw who a business belongs to', () => {
   ok(!column.fixed, 'it is one the chooser can turn off')
   ok(!columnsAt(['assigned'], 'xs').length, 'and it is off a phone')
   same(columnsAt(['assigned'], 'lg').join(), 'assigned', 'and on from the desk width')
+})
+
+// ── What a beat is allowed to redraw ─────────────────────────────────
+
+const SETUP = Object.freeze({
+  columns: ['business', 'score', 'phone', 'state', 'call'],
+  density: 'roomy',
+  take: 50,
+  sort: 'best',
+  filters: { ...NO_FILTERS },
+  views: [],
+})
+const BOARD = [
+  { user_id: YOU, name: 'A Caller', prospect_id: null, on_phone_since: null, last_seen: 't1' },
+]
+const DESK = { you: YOU, prefs: SETUP, presence: BOARD, at: '2026-09-08T20:00:00Z' }
+
+/** The same answer again, as a fresh object, the way a real beat arrives. */
+function again(extra = {}) {
+  return JSON.parse(JSON.stringify({ ...DESK, at: '2026-09-08T20:00:20Z', ...extra }))
+}
+
+check('a beat that says nothing new redraws nothing', () => {
+  // The whole point. The beat lands three times a minute per console and
+  // almost always repeats itself, and a fresh object every time made the
+  // columns fresh too - which rebuilt the entire table to say nothing had
+  // happened. Identity is the assertion because identity is what React reads.
+  const beat = again()
+  delete beat.prefs
+  ok(settleDesk(DESK, beat) === DESK, 'the desk is the same object')
+})
+
+check('a beat carrying no setup is not a beat saying the setup is gone', () => {
+  const beat = again()
+  delete beat.prefs
+  same(settleDesk(DESK, beat).prefs, SETUP, 'the held setup is kept')
+  ok(settleDesk(null, beat).prefs === null, 'and a first answer without one holds none')
+})
+
+check('a beat that says something new redraws only that', () => {
+  const onCall = again({
+    presence: [{ ...BOARD[0], prospect_id: '33333333-3333-4333-8333-333333333333' }],
+  })
+  delete onCall.prefs
+  const after = settleDesk(DESK, onCall)
+  ok(after !== DESK, 'a caller picking up a phone is a change')
+  ok(after.prefs === SETUP, 'and the untouched setup keeps its identity')
+  ok(after.presence !== DESK.presence, 'while the board that moved is replaced')
+})
+
+check('a saved setup is adopted, and an unchanged one is not', () => {
+  const saved = again({ prefs: { ...SETUP, density: 'tight' } })
+  same(settleDesk(DESK, saved).prefs.density, 'tight', 'a real change lands')
+  ok(settleDesk(DESK, again()) === DESK, 'and saving what was already set redraws nothing')
+})
+
+check('the clock an answer was taken on is never a reason to redraw', () => {
+  // Every answer carries a different `at` and nothing on the page draws it, so
+  // comparing it would defeat the whole check above.
+  const beat = again({ at: '2026-09-08T23:59:59Z' })
+  delete beat.prefs
+  ok(settleDesk(DESK, beat) === DESK, 'a later clock alone changes nothing')
 })
 
 let failed = 0
