@@ -127,7 +127,7 @@ const TOO_MANY = 'That is a lot of rewrites at once. Give it a moment.'
 /** What the client reads when the build has spent every rewrite it has. */
 const SPENT =
   'That is as much rewriting as this build gets. The starters, the examples and the checklist ' +
-  'are all still there, and Trenton reads anything you send.'
+  'are all still there, and we read anything you send.'
 
 /** What the client reads when the box holds more than the help takes. */
 const TOO_LONG = 'That is longer than the writing help takes. Trim it and try again.'

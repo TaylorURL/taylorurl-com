@@ -12,17 +12,13 @@ import {
   EmptyRow,
   Panel,
   PanelBody,
-  PanelFill,
   PanelFoot,
   SectionNotice,
-  SkeletonBox,
   SkeletonRows,
 } from '../../ui'
-import { CELL_TIGHT, CHART_HEIGHT, MONO_LABEL, QUIET, ROW_HEIGHT, TH_TIGHT } from '../../lib/tokens'
+import { CELL_TIGHT, MONO_LABEL, QUIET, ROW_HEIGHT, TH_TIGHT } from '../../lib/tokens'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import { SiteIcon } from '../../SiteIcon'
-import { DeviceKey, ScoreBars, VitalBars } from './VitalsCharts'
-import { VITALS, vitalFor } from '../../lib/vitals'
 
 /**
  * What a page costs the person opening it, measured by Google's PageSpeed
@@ -33,32 +29,16 @@ import { VITALS, vitalFor } from '../../lib/vitals'
  * Google's hardware and takes the better part of a minute. Measuring is
  * therefore something asked for, one site at a time.
  *
- * The table leads and the chart stands beside it. Across the account the
- * table is a row per site carrying the four scores of one device, with the
- * other device a switch away, and the chart is one of the three vitals across
- * every site, slowest first - which is where a slow site is seen before its
- * row is found.
- *
- * The chart shows a timing rather than the performance score because the
- * score is already the table's first column, and a chart repeating a column
- * it stands beside says nothing twice. It is also the shape the numbers are
- * in: every site that is being looked after scores in the nineties, so
- * fifteen scores are fifteen marks in one tenth of the card, while the
- * timings under them run from half a second to four and spread across the
- * whole of it. The score says whether a page is fine; the timing says which
- * second of the load to go and look at.
- *
- * With one site in scope the table is the whole reading, the four scores and
- * then what they were built from, with the two devices as its columns, and
- * the chart is the same four scores drawn so the distance between the phone
- * and the desktop is a shape rather than a subtraction. There the timings are
- * in the table already, in full and for both devices, so the chart is free to
- * carry the scores.
+ * The table is the whole of the page. Across the account it is a row per site
+ * carrying the four scores of one device, with the other device a switch
+ * away. With one site in scope it is that site's whole reading: the four
+ * scores, and then the timings they were built from, with the two devices as
+ * its columns.
  *
  * The bands are Lighthouse's own: 90 and over is good, 50 to 89 needs work,
  * under 50 is poor. A score is drawn in its band rather than described in a
- * paragraph, and the three bands stand as a key at the foot of the card that
- * draws them, because a reader who needs the key needs it beside the figures.
+ * paragraph, and the three bands stand as a key at the foot of the table,
+ * because a reader who needs the key needs it beside the figures.
  */
 
 const STRATEGIES = [
@@ -80,8 +60,9 @@ const STRATEGIES = [
 ]
 
 // The width is the column's in the account table, where the four stand
-// beside a site name and a measured time and every one is declared so the
-// table fits the card rather than pushing past it.
+// beside a site name and a measured time. Every column but the name is
+// declared, so the name takes whatever the card has over the width the rest of
+// them need - which is what a hostname does with room, and a button does not.
 const CATEGORIES = [
   { key: 'performance', label: 'Performance', width: 'w-[6.5rem]' },
   { key: 'accessibility', label: 'Accessibility', width: 'w-[6.75rem]' },
@@ -112,14 +93,6 @@ const READING_KEY = 'taylorurl_console_vitals_reading_rows'
 // placeholder rows share the columns the readings land in.
 const ESTATE_CELLS = [CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, 'px-3', 'px-3']
 const READING_CELLS = [CELL_TIGHT, CELL_TIGHT, CELL_TIGHT]
-
-// The height the account chart keeps on a phone is a row's worth per site,
-// two bars and the gap between rows. The ceiling is what the shortest desk
-// cell still holds after the card's head and foot, because the floor is kept
-// at the desk too, and a chart taller than its card puts its foot below the
-// card's edge.
-const BAR_PITCH = 24
-const CHART_CEILING = 360
 
 function band(value) {
   if (value === null || value === undefined) return 'plain'
@@ -152,11 +125,6 @@ function since(stamp) {
   const hours = Math.round(minutes / 60)
   if (hours < 48) return `${hours}h ago`
   return `${Math.round(hours / 24)}d ago`
-}
-
-/** The worse of a row's two readings, which is where the chart places it. */
-function worst(row) {
-  return Math.max(row.mobile ?? -1, row.desktop ?? -1)
 }
 
 /** The newer of a site's two readings, which is when it was last measured. */
@@ -203,32 +171,6 @@ function DeviceSwitch({ device, onPick }) {
   )
 }
 
-/**
- * The three vitals, as a switch between them.
- *
- * Abbreviated, because the card is a third of the page at the desk and three
- * full names do not fit under it. The one that is open has its whole name
- * spelled out in the head of the card above, which is where a reader who does
- * not know the initials will look.
- */
-function VitalSwitch({ vital, onPick }) {
-  return (
-    <span className="console-segmented" role="group" aria-label="Vital">
-      {VITALS.map(entry => (
-        <button
-          key={entry.key}
-          type="button"
-          onClick={() => onPick(entry.key)}
-          aria-pressed={vital === entry.key}
-          title={entry.name}
-        >
-          {entry.label}
-        </button>
-      ))}
-    </span>
-  )
-}
-
 /** Lighthouse's three bands, as the key to every score on the page. */
 function BandKey() {
   return (
@@ -265,7 +207,7 @@ function EstateTable({ title, sites, loading, measuring, measure, device, onDevi
         <table className="console-table min-w-[47rem] text-[13px]" aria-busy={loading}>
           <thead>
             <tr>
-              <th scope="col" className={`${TH_TIGHT} w-[10rem]`}>
+              <th scope="col" className={TH_TIGHT}>
                 Site
               </th>
               {CATEGORIES.map(category => (
@@ -276,7 +218,7 @@ function EstateTable({ title, sites, loading, measuring, measure, device, onDevi
               <th scope="col" className={`${TH_TIGHT} w-[5.5rem]`}>
                 Measured
               </th>
-              <th scope="col" className={`${TH_TIGHT} text-right`}>
+              <th scope="col" className={`${TH_TIGHT} w-[7rem] text-right`}>
                 <span className="sr-only">Measure</span>
               </th>
             </tr>
@@ -377,11 +319,11 @@ function SiteReading({ name, site, siteId, loading, measuring, measure }) {
         <table className="console-table min-w-[30rem] text-[13px]" aria-busy={loading}>
           <thead>
             <tr>
-              <th scope="col" className={TH_TIGHT}>
+              <th scope="col" className={`${TH_TIGHT} w-[34%]`}>
                 <span className="sr-only">Reading</span>
               </th>
               {STRATEGIES.map(strategy => (
-                <th key={strategy.key} scope="col" className={`${TH_TIGHT} w-[9.5rem] align-top`}>
+                <th key={strategy.key} scope="col" className={`${TH_TIGHT} w-[33%] align-top`}>
                   <span className="flex items-center gap-1.5">
                     <strategy.Icon className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
                     {strategy.label}
@@ -433,7 +375,8 @@ function SiteReading({ name, site, siteId, loading, measuring, measure }) {
         </table>
       </PanelBody>
       <PanelFoot>
-        <span className="min-w-0 flex-1 truncate font-mono text-[12px]">
+        <BandKey />
+        <span className="min-w-0 flex-1 truncate text-right font-mono text-[12px]">
           {loading ? '' : readings?.mobile?.url || readings?.desktop?.url || 'not measured yet'}
         </span>
         <MeasureButton onClick={() => measure(siteId)} busy={busy || loading} label="Measure" />
@@ -473,66 +416,17 @@ export default function VitalsPage() {
   // account-wide table first and replaced it with the reading a moment later.
   const site = siteId ? sites.find(row => row.site_id === siteId) : null
   const [device, setDevice] = useState('mobile')
-  const [vitalKey, setVitalKey] = useState(VITALS[0].key)
-  const vital = vitalFor(vitalKey)
-  // The shape of the table the reader last saw, which is also how many bars
-  // the chart beside it is about to draw.
+  // The shape of the table the reader last saw, so the placeholder rows stand
+  // where the readings are about to land.
   const remembered = recalledRows(ROWS_KEY, 5, ROW_HEIGHT.plain)
 
-  // Worst first - the top of the card being the part a reader sees without
-  // scrolling, and the slow site being the reason to open it. A row is placed
-  // by its worse device rather than by the phone: the phone is the harsher of
-  // the two on paint, but blocking time is routinely worse on the desktop,
-  // and a list headed "worst first" that buries the worst reading on the page
-  // is worse than one that is not ordered at all.
-  //
-  // A site measured on neither device has no marks to draw.
-  const ranked = useMemo(
-    () =>
-      sites
-        .map(row => ({
-          name: displayDomain(row.name),
-          mobile: row.readings?.mobile?.[vital.key] ?? null,
-          desktop: row.readings?.desktop?.[vital.key] ?? null,
-        }))
-        .filter(row => row.mobile !== null || row.desktop !== null)
-        .sort((a, b) => worst(b) - worst(a)),
-    [sites, vital]
-  )
-  const categories = useMemo(() => {
-    const readings = site?.readings
-    if (!STRATEGIES.some(strategy => readings?.[strategy.key])) return []
-    return CATEGORIES.map(category => ({
-      name: category.label,
-      mobile: readings.mobile?.[category.key] ?? null,
-      desktop: readings.desktop?.[category.key] ?? null,
-    }))
-  }, [site])
-
   if (error && !measured.length) return <SectionNotice>{error}</SectionNotice>
-
-  const chart = siteId
-    ? { title: 'Scores', aside: 'out of 100', rows: categories, empty: 'Not measured yet.' }
-    : {
-        title: 'Core Web Vitals',
-        aside: `${vital.name}, worst first`,
-        rows: ranked,
-        empty: 'Nothing has been measured yet.',
-      }
-  // The floor the chart keeps on a phone, where the card has no height to hand
-  // it. While the read is out the count is the remembered one, so the card
-  // does not grow under the reader when the bars land.
-  const expected = loading ? remembered.rows : ranked.length
-  const floor = siteId
-    ? CHART_HEIGHT.traffic
-    : Math.min(CHART_CEILING, Math.max(CHART_HEIGHT.traffic, expected * BAR_PITCH + 24))
 
   return (
     <ConsolePage
       // The notice takes a row of its own only while there is one to show, so
-      // the two cards have the whole of the room the rest of the time.
-      areas={error ? ['note note', 'reading chart'] : ['reading chart']}
-      cols={siteId ? 'minmax(0,1fr) minmax(0,1fr)' : 'minmax(0,2.8fr) minmax(18rem,1fr)'}
+      // the table has the whole of the room the rest of the time.
+      areas={error ? ['note', 'reading'] : ['reading']}
       rows={error ? 'auto minmax(0,1fr)' : 'minmax(0,1fr)'}
     >
       {error && (
@@ -562,31 +456,6 @@ export default function VitalsPage() {
           placeholder={remembered}
         />
       )}
-
-      <Panel
-        title={chart.title}
-        aside={chart.aside}
-        area="chart"
-        busy={loading || Boolean(measuring)}
-      >
-        <PanelFill minHeight={floor}>
-          {loading ? (
-            <SkeletonBox height="100%" />
-          ) : !chart.rows.length ? (
-            <p className="flex items-center justify-center px-5 text-center text-[13px] text-paper-soft">
-              {chart.empty}
-            </p>
-          ) : siteId ? (
-            <ScoreBars rows={chart.rows} fill />
-          ) : (
-            <VitalBars rows={chart.rows} vital={vital.key} fill />
-          )}
-        </PanelFill>
-        <PanelFoot>
-          <DeviceKey />
-          {siteId ? <BandKey /> : <VitalSwitch vital={vital.key} onPick={setVitalKey} />}
-        </PanelFoot>
-      </Panel>
     </ConsolePage>
   )
 }

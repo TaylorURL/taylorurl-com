@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowUp, Mail, MessageSquare, Phone, RotateCcw, X } from 'lucide-react'
-import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
-import { COMPANY_PHONE, COMPANY_PHONE_HREF, SUPPORT_EMAIL } from '@constants/navigation'
+import {
+  BRAND_SHORT_NAME,
+  COMPANY_PHONE,
+  COMPANY_PHONE_HREF,
+  SUPPORT_EMAIL,
+} from '@constants/navigation'
 import { assistantUp, dropThread, sendTurn, threadHeld } from '@app/data/liveChat'
 import { EASE } from '@constants/animations'
 import { faultMessage } from '@utils/faults'
@@ -12,9 +16,13 @@ import { faultMessage } from '@utils/faults'
  * phone.
  *
  * It answers a stranger's first question at the hour they thought of it, and
- * its one job after that is to put them in front of the owner. So it opens on
- * his face and his own sentence about himself rather than on a robot greeting:
- * the thing being offered is a person, and the widget is the door.
+ * its one job after that is to put them in front of the team. It used to open
+ * on the founder's face and a paragraph in his voice, from a time when the team
+ * and the founder were the same thing - which made this the fifth surface
+ * carrying that photograph and the one that carried it furthest, since a panel
+ * in the corner of every page is on every page. It opens under the company's
+ * own name now, and says what it is in the line underneath, because a visitor
+ * who thinks a person is typing finds out otherwise on the first reply.
  *
  * There are two shells around one thread. On a pointer-sized screen the panel
  * is not modal: a visitor reading a page with a half-typed question open is the
@@ -274,22 +282,12 @@ function Conversation({
           roomy ? 'py-2.5' : 'py-3.5'
         }`}
       >
-        <img
-          src="/images/trenton-taylor.webp"
-          srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
-          alt=""
-          width="40"
-          height="40"
-          className="border-hair-paper-strong h-10 w-10 shrink-0 rounded-md border object-cover"
-          loading="lazy"
-        />
-
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14px] font-semibold leading-tight text-[color:var(--paper-ink)]">
-            {BIO_NAME}
+            {BRAND_SHORT_NAME}
           </span>
           <span className="block truncate text-[12px] leading-tight text-[color:var(--paper-ink-mute)]">
-            {BIO_TITLE}
+            Assistant
           </span>
         </span>
 
@@ -331,7 +329,8 @@ function Conversation({
             <p
               className={`leading-relaxed text-paper-soft ${roomy ? 'text-[15px]' : 'text-[14px]'}`}
             >
-              {BIO_TEXT}
+              We are a small team of designers, developers and local-search specialists in Baytown,
+              building and looking after websites for business owners across Southeast Texas.
             </p>
             <p
               className={`leading-relaxed text-[color:var(--paper-ink)] ${

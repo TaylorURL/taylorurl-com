@@ -10,7 +10,7 @@ import { MAX_MS, fadeInUp, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { ABOUT } from '@data/pages/about'
 import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
-import { BIO_TITLE } from '@lib/mail/bio.js'
+import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import CountUp from '@reactbits/CountUp/CountUp'
 import { AccentGradient } from '@reactbits/kit'
@@ -20,6 +20,47 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 // is part of that claim rather than decoration: a heart for the town the studio
 // works in, a globe for an offer that reaches anywhere.
 const PlaceIcon = ABOUT.place.icon
+
+/**
+ * The one face on the site, at the foot of the story that explains it.
+ *
+ * The portrait used to hang on the home page, the contact page, the first step
+ * of the configurator and the head of the chat panel, from a time when the
+ * company and the person were the same thing. They are not, and a face repeated
+ * across five surfaces makes the claim that they still are: a reader who meets
+ * it on the front door reads a one-man shop, whatever the sentence beside it
+ * says about a team.
+ *
+ * So it is drawn once, here, where the page has already said who does the work
+ * and the founder is the last thing left to say. The title carries the weight -
+ * a name over "Founder and CEO" is a seat in a company, and the same name over
+ * a photograph anywhere else is just the company.
+ *
+ * The name, the title and the paragraph are the studio's one bio, read from the
+ * module the mail signs off with, so the person a reply arrives from is the
+ * person this page introduces.
+ */
+function Founder() {
+  return (
+    <div className="border-hair-paper mt-4 flex flex-col gap-6 border-t pt-8 sm:flex-row sm:gap-7">
+      <img
+        src="/images/trenton-taylor.webp"
+        srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
+        alt={BIO_NAME}
+        width="96"
+        height="96"
+        loading="lazy"
+        decoding="async"
+        className="border-hair-paper-strong h-24 w-24 shrink-0 rounded-md border object-cover"
+      />
+      <div className="max-w-[52ch]">
+        <p className="text-[15px] font-semibold text-ink-paper">{BIO_NAME}</p>
+        <p className="section-label-sm mt-1 text-accent">{BIO_TITLE}</p>
+        <p className="mt-4 text-[15px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
+      </div>
+    </div>
+  )
+}
 
 export default function About() {
   // Scroll-driven parallax — the stats column rises as the story section
@@ -79,6 +120,7 @@ export default function About() {
                   <p key={paragraph}>{paragraph}</p>
                 ))}
               </div>
+              <Founder />
             </m.div>
 
             {/* The drift and the reveal both want a transform on this
