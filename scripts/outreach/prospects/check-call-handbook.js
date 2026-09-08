@@ -399,6 +399,117 @@ check('the handbook opens with the record and is styled where it lands', () => {
   )
 })
 
+// ── The word that was just said ────────────────────────────────────────────
+
+/** Everything a search runs over, which is the whole handbook bar the script. */
+const EVERYTHING = () => [...QUESTIONS, ...PUSHBACK, ...FACTS, ...CLOSING]
+
+check('the words said down the phone reach the answer for them', () => {
+  // Not synonyms in general: each of these is a word somebody says out loud
+  // whose answer is written in different words, which is the one case a
+  // search over the visible text cannot cover. "That is too much" is what the
+  // objection is headed and "expensive" is what gets said.
+  const said = [
+    'expensive',
+    'afford',
+    'price',
+    'pricing',
+    'deposit',
+    'wix',
+    'squarespace',
+    'godaddy',
+    'instagram',
+    'social media',
+    'manager',
+    'edit',
+    'pictures',
+    'free',
+  ]
+  for (const word of said) {
+    ok(
+      EVERYTHING().some(entry => handbookMatches(entry, word)),
+      `somebody who was told "${word}" is shown nothing`
+    )
+  }
+})
+
+check('a word searched under an entry is not already written in it', () => {
+  for (const entry of EVERYTHING()) {
+    for (const word of entry.also ?? []) {
+      const shown = [
+        entry.ask,
+        entry.said,
+        entry.say,
+        entry.label,
+        entry.value,
+        entry.note,
+        entry.after,
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+      ok(
+        !shown.includes(word),
+        `${entry.id} is searched under "${word}", which its own words already carry`
+      )
+    }
+  }
+})
+
+check('a word searched under an entry is never read out', () => {
+  const drawn = read('src/app/views/console/pages/studio/CallHandbook.jsx')
+  ok(!/\.also\b/.test(drawn), 'the words that are only searched reached the screen')
+})
+
+// ── Whose name is said ─────────────────────────────────────────────────────
+
+check('the caller says their own name where the console knows it', () => {
+  const said = who => scriptFor(business(), who).find(line => line.id === 'opener').say
+
+  ok(
+    said('Trenton Taylor').includes('This is Trenton with'),
+    `a name went unsaid: "${said('Trenton Taylor')}"`
+  )
+  ok(!said('Trenton Taylor').includes('['), 'the slot was left in beside the name that fills it')
+  // Settings takes any string, and what is in it on a given day may be an
+  // address, an initial, or nothing at all. A caller reads this line without
+  // looking at it after the first day, so anything that is not plainly a name
+  // stays the blank they already know to fill rather than something they say.
+  for (const junk of [undefined, '', '   ', 'T', 'trenton@taylorurl.com', '42']) {
+    ok(
+      said(junk).includes('[your name]'),
+      `${JSON.stringify(junk)} was said down the phone as a name: "${said(junk)}"`
+    )
+  }
+})
+
+// ── The way through it ─────────────────────────────────────────────────────
+
+check('every folded answer can be opened and shut without twenty presses', () => {
+  const drawn = read('src/app/views/console/pages/studio/CallHandbook.jsx')
+
+  // Twenty answers fold, and the two things done with all of them at once are
+  // opening them to read down and shutting them to scan headings again. One
+  // control does both, and which it is is decided by what is already open, so
+  // both labels have to be in the file and both have to be reachable.
+  ok(drawn.includes("'Expand All'"), 'there is no way to open every answer at once')
+  ok(drawn.includes("'Collapse All'"), 'there is no way to shut every answer at once')
+  ok(/allOut \? SHUT : new Set\(folded\)/.test(drawn), 'the control no longer moves every fold')
+
+  // Whether a row is open belongs to the card rather than to the row: a fold
+  // holding its own state cannot be moved by the control above it or by a
+  // search, and both of those are how this is actually read.
+  ok(
+    !/function Foldable\([^)]*\)\s*\{\s*const \[/.test(drawn),
+    'a fold went back to holding its own state, so nothing above it can move it'
+  )
+
+  // The ids are only unique inside their own list. A question and an objection
+  // sharing one would open and shut together, which is silent and looks like a
+  // bug in the fold rather than in the key.
+  ok(drawn.includes('`${part}:${id}`'), 'the two lists no longer fold under separate keys')
+})
+
 // ── Run them ────────────────────────────────────────────────────────────
 
 const failures = []
