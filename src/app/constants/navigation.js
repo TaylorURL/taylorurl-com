@@ -325,8 +325,8 @@ const STUDIO_NAV_GROUPS = [
           },
           {
             to: '/about',
-            label: 'About Trenton',
-            summary: 'Who builds it, and why there is no agency in between.',
+            label: 'About Us',
+            summary: 'The team that builds it, and who you talk to while it runs.',
             mark: MarkSquare,
           },
           {
@@ -555,6 +555,12 @@ export const CONTACT_METHODS = [
 export const DEFAULT_CONTACT_METHOD = 'either'
 
 export const BRAND_NAME = SITE.brandName
+
+// The mark without the company form after it. `BRAND_NAME` is the legal name
+// and belongs wherever the company is the party being named - the policies, the
+// site name in a search result. Anywhere the brand is simply being spoken to a
+// reader, the two extra letters are a filing detail standing in a sentence.
+export const BRAND_SHORT_NAME = SITE.shortName
 
 // Where the business can be followed. One entry per account that exists, so a
 // page listing them shows what is actually there rather than a row of icons

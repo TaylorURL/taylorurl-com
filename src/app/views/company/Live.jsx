@@ -9,7 +9,6 @@ import { fadeInUp, staggerChild } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
 import { breadcrumbSchema } from '@constants/seo'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, SUPPORT_EMAIL } from '@constants/navigation'
-import { BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 
 const BAND = GROUNDS.band
 
@@ -30,7 +29,7 @@ const TRAITS = [
     icon: PhoneCall,
     title: 'It hands you over',
     description:
-      'Anything about your specific shop, your timeline or your number goes to Trenton. Leave an address in the box and it reaches him while you are still on the page.',
+      'Anything about your specific shop, your timeline or your number goes to the team. Leave an address in the box and it reaches us while you are still on the page.',
   },
   {
     icon: ShieldCheck,
@@ -45,7 +44,7 @@ export default function Live() {
     <div>
       <Seo
         title="Live: Ask About Your Site Any Time"
-        description="An assistant on hand day and night to answer questions about a custom website from TaylorURL, and to put you in front of Trenton Taylor when you want a number."
+        description="An assistant on hand day and night to answer questions about a custom website from TaylorURL, and to put you in front of the team when you want a number."
         path="/live"
         schema={[
           breadcrumbSchema([
@@ -59,7 +58,7 @@ export default function Live() {
         draft="column"
         eyebrow="Live"
         title="Ask now, not on Monday."
-        description="There is an assistant in the corner of every page here. It answers questions about the work at whatever hour you thought of them, and it puts you in front of Trenton when the answer needs a person."
+        description="There is an assistant in the corner of every page here. It answers questions about the work at whatever hour you thought of them, and it puts you in front of the team when the answer needs a person."
       />
 
       <section className="section-y relative overflow-hidden bg-paper">
@@ -71,41 +70,30 @@ export default function Live() {
           <m.div {...fadeInUp} className="flex max-w-[820px] flex-col gap-6">
             <p className="section-label text-accent">Who You Are Reaching</p>
             <h2 className="display-3 font-semibold leading-[1.04] tracking-tightest text-ink-paper [text-wrap:balance]">
-              The assistant answers first. Trenton answers next.
+              The assistant answers first. We answer next.
             </h2>
 
-            <div className="flex flex-col gap-6 pt-2 sm:flex-row sm:items-start sm:gap-8">
-              <img
-                src="/images/trenton-taylor.webp"
-                srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
-                alt=""
-                width="96"
-                height="96"
-                loading="lazy"
-                className="border-hair-paper-strong h-24 w-24 shrink-0 rounded-md border object-cover"
-              />
-              <div className="space-y-4 text-[17px] leading-relaxed text-paper-soft">
-                <p>
-                  <span className="font-semibold text-ink-paper">Trenton Taylor</span>, {BIO_TITLE}.{' '}
-                  {BIO_TEXT}
-                </p>
-                <p>
-                  The assistant knows what he builds and how he works, and it is honest about the
-                  edge of what it knows. Anything about your shop specifically is his to answer:
-                  what it would take, what it would cost, when it could start. Getting you to him is
-                  the whole reason the box is there.
-                </p>
-                <p className="text-[15px]">
-                  Straight to him:{' '}
-                  <a className="accent-underline text-accent" href={`mailto:${SUPPORT_EMAIL}`}>
-                    {SUPPORT_EMAIL}
-                  </a>{' '}
-                  ·{' '}
-                  <a className="accent-underline text-accent" href={COMPANY_PHONE_HREF}>
-                    {COMPANY_PHONE}
-                  </a>
-                </p>
-              </div>
+            <div className="space-y-4 pt-2 text-[17px] leading-relaxed text-paper-soft">
+              <p>
+                TaylorURL is a small team of designers, developers and local-search specialists in
+                Baytown. The assistant knows what we build and how we work, and it is honest about
+                the edge of what it knows.
+              </p>
+              <p>
+                Anything about your shop specifically is ours to answer: what it would take, what it
+                would cost, when it could start. Getting you to one of us is the whole reason the
+                box is there.
+              </p>
+              <p className="text-[15px]">
+                Straight to us:{' '}
+                <a className="accent-underline text-accent" href={`mailto:${SUPPORT_EMAIL}`}>
+                  {SUPPORT_EMAIL}
+                </a>{' '}
+                ·{' '}
+                <a className="accent-underline text-accent" href={COMPANY_PHONE_HREF}>
+                  {COMPANY_PHONE}
+                </a>
+              </p>
             </div>
           </m.div>
         </div>
@@ -155,7 +143,7 @@ export default function Live() {
         eyebrow="When You Are Ready"
         title={
           <>
-            Tell him what the business does and what has to{' '}
+            Tell us what the business does and what has to{' '}
             <span className="text-accent">change</span>.
           </>
         }
