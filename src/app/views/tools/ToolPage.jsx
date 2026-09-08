@@ -74,7 +74,7 @@ export default function ToolPage() {
             Want this <span className="text-accent">handled for you</span>?
           </>
         }
-        description="Tell me about the business and what it needs. A reply usually comes back within the hour, and a plan and a price before any work starts."
+        description="Tell us about the business and what it needs. A reply usually comes back within the hour, and a plan and a price before any work starts."
       />
     </div>
   )

@@ -101,7 +101,7 @@ const STUDIO_STATIC_ROUTES = [
     path: '/live',
     name: 'Live',
     summary:
-      'An assistant on hand day and night for questions about a build, and the way through to Trenton when the answer needs a person.',
+      'An assistant on hand day and night for questions about a build, and the way through to the team when the answer needs a person.',
     group: 'company',
     changefreq: 'monthly',
     priority: '0.7',
@@ -164,7 +164,7 @@ const STUDIO_STATIC_ROUTES = [
   {
     path: '/about',
     name: 'About',
-    summary: 'Trenton Taylor, the one person behind TaylorURL.',
+    summary: 'The small team behind TaylorURL, and how a project runs with them.',
     group: 'company',
     changefreq: 'monthly',
     priority: '0.8',

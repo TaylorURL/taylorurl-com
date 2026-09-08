@@ -50,7 +50,7 @@ export default function Area() {
   const trades = area.trades.map(id => TRADES.find(trade => trade.id === id)).filter(Boolean)
   const description =
     profile?.search ||
-    `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from one person in Baytown.`
+    `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from a small team in Baytown.`
 
   const bands = profile ? ['work', 'notes', 'trades', 'services'] : ['work', 'trades', 'services']
   const groundFor = band => groundAt(bands.indexOf(band))
@@ -103,7 +103,7 @@ export default function Area() {
         title={`Websites for ${area.name} businesses.`}
         description={
           profile?.lede ||
-          `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after by one person.`
+          `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after by a small team.`
         }
       />
 
@@ -213,7 +213,7 @@ export default function Area() {
         }
         description={
           profile?.close ||
-          `Tell me what your ${area.name} business needs and you get a plan and a price back. Most sites are live in two to four weeks.`
+          `Tell us what your ${area.name} business needs and you get a plan and a price back. Most sites are live in two to four weeks.`
         }
       />
     </div>

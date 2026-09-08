@@ -13,16 +13,16 @@ import WorkDeck from './WorkDeck'
  * Who builds it, answered with what has been built.
  *
  * Everything above this band is the offer and everything below it is the
- * evidence, and between them the page has always made one claim it never
- * showed: that one person builds the site and keeps it running. A portrait
+ * evidence, and between them the page makes one claim it cannot show: that a
+ * small team builds the site and brings the business customers. A portrait
  * stood here for a while, and a portrait is a claim of the same kind as the
  * sentence beside it - a face is not proof that anybody answers the phone. The
  * client sites are, because each one is a business that let a stranger rebuild
  * the thing its customers arrive on, and there are eleven of them.
  *
- * So the sentence stays and the evidence changes: the headline claims one
- * person, and the row underneath is what that person shipped, each frame
- * carrying the live hostname and a way through to how it was built.
+ * So the sentence stays and the evidence changes: the headline claims a small
+ * team, and the row underneath is what that team shipped, each frame carrying
+ * the live hostname and a way through to how it was built.
  *
  * The sentences are the about page's, read from its own record rather than
  * transcribed. The claim exists in one place, and a band on the front door that
@@ -33,7 +33,7 @@ import WorkDeck from './WorkDeck'
  * one being read faces the reader square and its neighbours are edging away.
  * The rail advances itself, and holds still while a pointer is over it.
  */
-export default function OnePersonSection() {
+export default function SmallTeamSection() {
   // The claim swells as its turn comes round; the deck under it does not. The
   // frames on that rail are already turning as they travel, and a band that
   // scaled them at the same time would be two motions arguing over one row.
@@ -63,7 +63,7 @@ export default function OnePersonSection() {
           <div>
             <p className="section-label mb-5 flex items-center gap-3 text-accent">
               <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />
-              Built by One Person
+              Who Builds It
             </p>
             <h2 className="display-3 max-w-[17ch] font-semibold leading-[1.04] tracking-tightest text-ink-paper [text-wrap:balance]">
               {ABOUT.hero.title}

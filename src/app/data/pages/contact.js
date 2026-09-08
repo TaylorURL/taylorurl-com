@@ -24,22 +24,22 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  */
 const STUDIO_CONTACT = {
   seo: {
-    title: 'Contact a Baytown Web Designer',
+    title: 'Contact the Baytown Team at TaylorURL',
     description:
-      'Tell a Baytown web designer what the business does and what the site has to do. A reply usually comes within the hour, a plan and a price before any work starts.',
+      'Tell a small Baytown web team what the business does and which customers you want. A reply usually comes within the hour, a plan and a price before any work starts.',
   },
 
   hero: {
     eyebrow: 'Get in Touch',
     title: 'A plan and a price, before any work starts.',
     description:
-      'Tell me about your Baytown or Houston-area business and what the site has to do. The reply usually comes back within the hour, and nothing is charged to find out what it costs.',
+      'Tell us about your Baytown or Houston-area business and which customers you want walking in. The reply usually comes back within the hour, and nothing is charged to find out what it costs.',
   },
 
   aside: {
     eyebrow: 'Who Answers',
-    heading: 'One person builds it and answers the phone.',
-    para: 'A new site, an old one that needs redoing, or a site someone else built and walked away from. Tell me what the business does and what has to change.',
+    heading: 'A small team builds it and answers the phone.',
+    para: 'A new site, an old one that needs redoing, or a site someone else built and walked away from. Tell us what the business does and what has to change.',
   },
 
   place: {
@@ -52,7 +52,7 @@ const STUDIO_CONTACT = {
     {
       title: 'First call',
       description:
-        'You tell me what the business does and what the site has to do. I ask what I need to price it, and say so if the work is not worth doing.',
+        'You tell us what the business does and which customers you want more of. We ask what we need to price it, and say so if the work is not worth doing.',
     },
     {
       title: 'Plan and price',
@@ -62,12 +62,12 @@ const STUDIO_CONTACT = {
     {
       title: 'Build and go live',
       description:
-        'I build it, show you the work as it goes, and put it online. Most sites are live in two to four weeks.',
+        'We build it, show you the work as it goes, and put it online. Most sites are live in two to four weeks.',
     },
   ],
 
   form: {
-    heading: 'Tell me about the business',
+    heading: 'Tell us about the business',
     confirmation:
       'Thanks. A reply usually comes back within the hour, and a plan and a price before any work starts.',
     submit: 'Get My Plan and Price',
@@ -104,7 +104,7 @@ const STUDIO_CONTACT = {
     'Fast pages, checked on Google’s own test',
     'Daily backups',
     'Text and photo changes, no charge',
-    'One person who answers',
+    'A small team that answers',
   ],
 }
 

@@ -19,8 +19,8 @@ const ONBOARDING = [
     body: 'The receipt lands and the build opens under the address you paid with.',
   },
   {
-    title: 'I Reach Out',
-    body: 'A message from me on that address, usually within the hour, to go through what you picked.',
+    title: 'We Reach Out',
+    body: 'A message from us on that address, usually within the hour, to go through what you picked.',
   },
   {
     title: 'The First Draft',
@@ -175,7 +175,7 @@ export default function PaySection({
                 className="text-paper-faint mt-2 text-[13px] leading-snug"
               >
                 The receipt goes here, your project waits under this address until you pick a
-                password, and it is where I reach you.
+                password, and it is where we reach you.
               </p>
             </div>
           </div>

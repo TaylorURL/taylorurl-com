@@ -44,20 +44,20 @@ export const PRIVACY = {
     'What this site collects, what it is used for, who else sees it, and how to have it removed.',
   eyebrow: 'Privacy',
   effectiveDate: EFFECTIVE,
-  appliesTo: 'Visitors to this site and the companies I work for',
+  appliesTo: 'Visitors to this site and the companies we work for',
 
   summary: [
     'Nothing is sold on this site and there is nothing to sign in to. No accounts, no card details.',
-    'The enquiry form is the only thing here that asks you for anything, and what you write goes to my inbox rather than into a database.',
+    'The enquiry form is the only thing here that asks you for anything, and what you write goes to our inbox rather than into a database.',
     'No analytics, no advertising pixels and no cookie banner. Reading a page here is not counted.',
-    'I do not sell your personal information and I never have.',
-    'Ask and you get a copy, a correction or a deletion, free, with an answer inside forty-five days and an appeal if I say no.',
+    'We do not sell your personal information and we never have.',
+    'Ask and you get a copy, a correction or a deletion, free, with an answer inside forty-five days and an appeal if we say no.',
   ],
 
   introText:
     'TaylorURL LLC is the company behind this site, and it is the company that decides what is ' +
-    'collected here and answers for it. It is run by one person, Trenton Taylor, which is why ' +
-    'this policy is written as "I": the voice is his and the responsibility is the company’s. ' +
+    'collected here and answers for it. This policy is written as "we": the voice is the ' +
+    'company’s and so is the responsibility. ' +
     'This is the whole of what happens to information that passes through this site, and it is ' +
     'written to be read rather than to be survived.',
 
@@ -66,9 +66,9 @@ export const PRIVACY = {
       title: 'What This Covers',
       content: `This policy covers this site and nothing else.
 
-Everything collected here is collected by me and answers to me. If you sent an enquiry, or simply read a page, this is the whole answer and you can write to me directly.
+Everything collected here is collected by us and answers to us. If you sent an enquiry, or simply read a page, this is the whole answer and you can write to us directly.
 
-Work I do for a client is a different matter. It reaches information this site never sees: a database I am building against, an ad account I am repairing tracking in, a list I am sending from. What happens to that is set out under Working On A Project below, and in the agreement signed before any of it starts.`,
+Work we do for a client is a different matter. It reaches information this site never sees: a database we are building against, an ad account we are repairing tracking in, a list we are sending from. What happens to that is set out under Working On A Project below, and in the agreement signed before any of it starts.`,
     },
     {
       title: 'What The Site Collects',
@@ -76,13 +76,13 @@ Work I do for a client is a different matter. It reaches information this site n
 
 What you hand over: your name, your email address, your business name, what you need, a phone number if you ask to be called back, and whatever you write in the message. That is the enquiry form, and it is the only thing on this site that asks you for anything.
 
-Where an enquiry goes: to my inbox, as an email. The message you wrote is not written into a database. What is filed is the form you used, the page you were on, and any campaign tags the link you arrived on carried, so I can tell which pages and which advertising produce work. That record cannot say who sent anything, because nothing about you is in it.
+Where an enquiry goes: to our inbox, as an email. The message you wrote is not written into a database. What is filed is the form you used, the page you were on, and any campaign tags the link you arrived on carried, so we can tell which pages and which advertising produce work. That record cannot say who sent anything, because nothing about you is in it.
 
-What reading a page produces on its own: nothing I keep. There is no analytics on this site and no advertising pixel, so a visit is not counted, not timed, and not tied to any later one. The hosting that serves the pages keeps its own short-lived request logs, as any web server does, and I read those only when something is broken.
+What reading a page produces on its own: nothing we keep. There is no analytics on this site and no advertising pixel, so a visit is not counted, not timed, and not tied to any later one. The hosting that serves the pages keeps its own short-lived request logs, as any web server does, and we read those only when something is broken.
 
 Your address is read for a moment when you send the form, to count how many messages have come from one connection, and it is not written down.
 
-If a page throws an error in your browser, the error, the address it happened on and the line your browser uses to describe itself are reported to me so I can fix it. Those reports carry the fault, not you.`,
+If a page throws an error in your browser, the error, the address it happened on and the line your browser uses to describe itself are reported to us so we can fix it. Those reports carry the fault, not you.`,
     },
     {
       title: 'What The Site Does Not Do',
@@ -98,23 +98,23 @@ Your browser keeps two small things of its own: which colour setting you picked,
       title: 'How The Information Is Used',
       content: `To answer you, to quote and carry out work, to invoice for it, to understand which pages and which advertising are worth keeping, and to meet legal and accounting obligations.
 
-It is not used to make an automated decision about you, and it is not used for anything I have not named here. An enquiry does not put you on a mailing list, because there is not one to be put on.`,
+It is not used to make an automated decision about you, and it is not used for anything we have not named here. An enquiry does not put you on a mailing list, because there is not one to be put on.`,
     },
     {
       title: 'Cookies, Analytics And Advertising',
-      content: `There is no cookie banner on this site, and that is because there is nothing to consent to rather than because I have skipped it.
+      content: `There is no cookie banner on this site, and that is because there is nothing to consent to rather than because we have skipped it.
 
 This site runs no analytics and no advertising pixels. Nothing here counts your visit, follows you to another site, or reports what you read to a third party. If you have a blocker on, it will find nothing to block.
 
-Advertising I run points at this site from elsewhere; the counting happens on the platform running the ad, not in your browser here. What tells me an ad worked is the campaign tag on the link, and that only becomes a record if you choose to send the form.
+Advertising we run points at this site from elsewhere; the counting happens on the platform running the ad, not in your browser here. What tells us an ad worked is the campaign tag on the link, and that only becomes a record if you choose to send the form.
 
 Should that ever change, this section changes with it and the effective date at the top moves, before the change takes effect rather than after.`,
     },
     {
       title: 'Who The Information Is Shared With',
-      content: `I do not sell personal information, I do not trade it, and I do not hand it to anyone for money.
+      content: `We do not sell personal information, we do not trade it, and we do not hand it to anyone for money.
 
-It reaches the companies that run the machinery behind this site and no further: Vercel, which serves the pages; Supabase, which holds the database; and Resend, which delivers the enquiry to my inbox. Each is bound to use what it holds only to provide that service.
+It reaches the companies that run the machinery behind this site and no further: Vercel, which serves the pages; Supabase, which holds the database; and Resend, which delivers the enquiry to our inbox. Each is bound to use what it holds only to provide that service.
 
 Beyond those, information is disclosed only where the law requires it, where it is needed to establish or defend a legal claim, where it is needed to protect somebody's safety, or to a buyer as part of a sale of the business, in which case this policy follows it.`,
     },
@@ -122,43 +122,43 @@ Beyond those, information is disclosed only where the law requires it, where it 
       title: 'Where It Is Held',
       content: `This site and taylorurl.com are two sites run by one company on one set of systems. They share a database, an error reporting service and a mail account, which means an enquiry sent here lands in the same inbox and the same database as one sent there.
 
-That is a statement about plumbing rather than about use. Nothing sent here is used for anything named on the other site, and the sharing does not widen who can reach it: administrative access to those systems is limited to me on both.`,
+That is a statement about plumbing rather than about use. Nothing sent here is used for anything named on the other site, and the sharing does not widen who can reach it: administrative access to those systems is limited to us on both.`,
     },
     {
       title: 'Working On A Project',
       content: `Doing the work reaches information this site does not. Building software means working against your database and the accounts it runs on. Repairing tracking means being inside your ad and analytics accounts, and sending hashed contact details back to an ad platform so it can match a conversion to the click that caused it. Running outbound means holding the list, the messages and the replies.
 
-All of it is yours. I hold it on your instructions, use it only to do the work you asked for, and never for anything of my own. I do not sell it, mine it, or add it to a list of mine. You can have a copy at any time, and when the work ends you take it with you.
+All of it is yours. We hold it on your instructions, use it only to do the work you asked for, and never for anything of our own. We do not sell it, mine it, or add it to a list of ours. You can have a copy at any time, and when the work ends you take it with you.
 
-The accounts stay in your name. For software, so does the repository, which is what lets another engineer pick it up after me. What each of us may do with what the other holds is in the agreement, and the Terms page sets out the shape of it.`,
+The accounts stay in your name. For software, so does the repository, which is what lets another engineer pick it up after us. What each of us may do with what the other holds is in the agreement, and the Terms page sets out the shape of it.`,
     },
     {
       title: 'How Long It Is Kept',
-      content: `Enquiries and messages are kept for two years from the last contact, so that a conversation picked up again a year later still makes sense. Invoices, receipts and the records behind them are kept for seven years, because tax law requires it. What I hold for a client is kept for as long as the work runs, and then deleted once they confirm they have their copy.
+      content: `Enquiries and messages are kept for two years from the last contact, so that a conversation picked up again a year later still makes sense. Invoices, receipts and the records behind them are kept for seven years, because tax law requires it. What we hold for a client is kept for as long as the work runs, and then deleted once they confirm they have their copy.
 
 Where something has to be kept for one of those reasons it is kept, and a deletion request that collides with a legal obligation gets an honest answer saying which one and for how long.`,
     },
     {
       title: 'How It Is Protected',
-      content: `Everything is served over HTTPS. The database sits behind row level security so an account can only read what it is entitled to, administrative access is limited to me and protected by multi-factor authentication, and credentials are held encrypted rather than in files. Backups are taken and are covered by the same controls as the live data.
+      content: `Everything is served over HTTPS. The database sits behind row level security so an account can only read what it is entitled to, administrative access is limited to us and protected by multi-factor authentication, and credentials are held encrypted rather than in files. Backups are taken and are covered by the same controls as the live data.
 
-No system is perfectly secure and I will not pretend otherwise. If a breach affects your personal information I will tell you and, where the law requires it, the authorities, without waiting to be asked and without waiting for the investigation to finish.`,
+No system is perfectly secure and we will not pretend otherwise. If a breach affects your personal information we will tell you and, where the law requires it, the authorities, without waiting to be asked and without waiting for the investigation to finish.`,
     },
     {
       title: 'Your Rights',
-      content: `You can ask me to confirm whether I hold anything about you, to give you a copy of it in a form you can take elsewhere, to correct it, or to delete it. You do not need a reason and you do not need a lawyer.
+      content: `You can ask us to confirm whether we hold anything about you, to give you a copy of it in a form you can take elsewhere, to correct it, or to delete it. You do not need a reason and you do not need a lawyer.
 
-Write to ${EMAIL}. The first request in any twelve month period costs nothing. You will have an answer within forty-five days, and if a request is genuinely complicated I may take a further forty-five, in which case I will tell you before the first period is up and say why.
+Write to ${EMAIL}. The first request in any twelve month period costs nothing. You will have an answer within forty-five days, and if a request is genuinely complicated we may take a further forty-five, in which case we will tell you before the first period is up and say why.
 
-If I refuse a request you can appeal it by replying and saying so. An appeal is answered in writing within sixty days with the reasoning behind the decision. TaylorURL LLC is a Texas limited liability company, so if the appeal is refused you may complain to the Texas Attorney General, and nothing here removes a right you have under state or federal law.`,
+If we refuse a request you can appeal it by replying and saying so. An appeal is answered in writing within sixty days with the reasoning behind the decision. TaylorURL LLC is a Texas limited liability company, so if the appeal is refused you may complain to the Texas Attorney General, and nothing here removes a right you have under state or federal law.`,
     },
     {
       title: 'Children',
-      content: `This site is for businesses and is not directed at children. I do not knowingly collect personal information from anyone under thirteen. If you believe a child has sent me something, write to ${EMAIL} and it will be deleted.`,
+      content: `This site is for businesses and is not directed at children. We do not knowingly collect personal information from anyone under thirteen. If you believe a child has sent us something, write to ${EMAIL} and it will be deleted.`,
     },
     {
       title: 'Other Sites',
-      content: `Pages here link out to other people's sites and other people's tools. Once you follow a link you are on somebody else's site under somebody else's policy, and this one stops at the edge of mine.`,
+      content: `Pages here link out to other people's sites and other people's tools. Once you follow a link you are on somebody else's site under somebody else's policy, and this one stops at the edge of ours.`,
     },
     {
       title: 'Changes To This Policy',
@@ -176,44 +176,44 @@ export const TERMS = {
 
   title: 'Terms of Service',
   description:
-    'The arrangement between you and me: what I build, how it is quoted, who owns what, and how either of us can end it.',
+    'The arrangement between you and us: what we build, how it is quoted, who owns what, and how either of us can end it.',
   eyebrow: 'Terms',
   effectiveDate: EFFECTIVE,
   appliesTo: 'Clients and visitors to this site',
 
   summary: [
-    'Your agreement is with TaylorURL LLC, a limited liability company run by one person. The company is what you engage and what answers.',
+    'Your agreement is with TaylorURL LLC, a limited liability company. The company is what you engage and what answers.',
     'Nothing is sold on this site. Every price is quoted in writing after a call and agreed before any work starts.',
     'Software and tracking repair are one-off projects. There is no retainer and nothing monthly behind them.',
     'Outbound runs month to month with no term to sign. Setup is billed once at the start.',
     'Before a single outbound message goes out, we sign an agreement covering consent and CAN-SPAM.',
-    'For software, the repository and the accounts are in your name, so another engineer can pick it up after me.',
-    'I do not promise a number of replies, meetings or sales, and nobody honestly can. I guarantee the work.',
+    'For software, the repository and the accounts are in your name, so another engineer can pick it up after us.',
+    'We do not promise a number of replies, meetings or sales, and nobody honestly can. We guarantee the work.',
     'Complaints are acknowledged in one business day and answered within five.',
   ],
 
   sections: [
     {
       title: 'Acceptance Of These Terms',
-      content: `Using this website, or engaging me to carry out work, means you accept these terms. If you do not accept them, do not use my services. Where a signed agreement, statement of work or quote says something different from this page, that document governs for that project and these terms cover everything it does not.`,
+      content: `Using this website, or engaging us to carry out work, means you accept these terms. If you do not accept them, do not use our services. Where a signed agreement, statement of work or quote says something different from this page, that document governs for that project and these terms cover everything it does not.`,
     },
     {
       title: 'Who You Are Contracting With',
       content: `These terms are between you and ${SITE.brandName}, a Texas limited liability company. The company is the party to this agreement, and it is the company you are engaging, paying and holding to these terms.
 
-The company is run by Trenton Taylor, its sole member and manager, and he is the person who does the work and answers the email. That is why these pages are written as "I" and "me": the voice is his and the party is the company, and every obligation and every liability on this page is the company's.
+These pages are written as "we" because the company is what answers: whoever on its side carries out the work, every obligation and every liability on this page is the company's.
 
 The work is done remotely and the people it is done for are anywhere. There is no premises where visitors are received. You can reach a person at ${EMAIL}.`,
     },
     {
-      title: 'What I Provide',
+      title: 'What We Provide',
       content: `Three things. Custom software built to order: applications, integrations, automations and internal tools. Conversion tracking repaired, so the leads an ad platform counts are the ones that actually came in. Outbound email run for you, from a sending domain registered in your name.
 
 The scope, deliverables, timeline and price for your project are set out in your own agreement. Anything outside that scope is new work and is quoted before it is started, never added to an invoice afterwards.`,
     },
     {
       title: 'Nothing Is Sold On This Site',
-      content: `There is no checkout here and no account to open. This site describes what I do and gives you a form to start a conversation on, and that is the whole of what it does.
+      content: `There is no checkout here and no account to open. This site describes what we do and gives you a form to start a conversation on, and that is the whole of what it does.
 
 Every engagement starts with a call. The number comes back in writing, and you agree to it before anything begins. The figures shown on the service pages are floors rather than quotes: a bigger job costs more, and you will know that number before it costs you anything.`,
     },
@@ -227,77 +227,77 @@ Charges for things bought on your behalf, such as a domain name, a mailbox or a 
     },
     {
       title: 'Late Payment And Suspension',
-      content: `If an invoice goes unpaid you will hear from me about it rather than discover it from a service that stopped. For outbound, sending pauses while an account is behind and resumes when it is current; pausing is not deletion, and the domains, the mailboxes and the list are untouched by it.
+      content: `If an invoice goes unpaid you will hear from us about it rather than discover it from a service that stopped. For outbound, sending pauses while an account is behind and resumes when it is current; pausing is not deletion, and the domains, the mailboxes and the list are untouched by it.
 
 Where work is being paid for in stages, work stops at the end of a stage that has not been paid for, and starts again when it has.`,
     },
     {
       title: 'What You Are Responsible For',
-      content: `Giving me the access, the accounts and the information I need to do the work; answering questions and reviewing what comes back in reasonable time; making sure what you tell me about your business is accurate; and paying on the terms agreed.
+      content: `Giving us the access, the accounts and the information we need to do the work; answering questions and reviewing what comes back in reasonable time; making sure what you tell us about your business is accurate; and paying on the terms agreed.
 
-A project runs on the slower of the two of us. Where access or approvals are outstanding, the timeline moves by the time it takes to get them, and I will say so at the time rather than at the end.`,
+A project runs on the slower of the two of us. Where access or approvals are outstanding, the timeline moves by the time it takes to get them, and we will say so at the time rather than at the end.`,
     },
     {
       title: 'Your Content And The Rights To It',
       content: `You keep everything you supply. You also confirm, by supplying it, that you are entitled to: that the material is yours or licensed, that the copy is not lifted from somebody else, and that nothing you hand over infringes anyone's rights or breaks any law.
 
-If a claim is made against me because of material you supplied or instructed me to publish or to send, you cover the cost of dealing with it. If I am the one who put something out without the right to, that is mine to fix and mine to pay for.`,
+If a claim is made against us because of material you supplied or instructed us to publish or to send, you cover the cost of dealing with it. If we are the ones who put something out without the right to, that is ours to fix and ours to pay for.`,
     },
     {
       title: 'Outbound Email And The Law',
-      content: `Before a single message goes out, you and I sign an agreement covering consent and how the sending complies with CAN-SPAM. That is not a formality and it is not optional; the sending does not start without it.
+      content: `Before a single message goes out, you and we sign an agreement covering consent and how the sending complies with CAN-SPAM. That is not a formality and it is not optional; the sending does not start without it.
 
-Every message carries a real postal address and a working way to opt out, and an opt out is honoured on the first send after it arrives. Lists are researched and checked one company at a time against what you sell. Nothing is bought from a list broker, and I will not send to a list you bought from one.
+Every message carries a real postal address and a working way to opt out, and an opt out is honoured on the first send after it arrives. Lists are researched and checked one company at a time against what you sell. Nothing is bought from a list broker, and we will not send to a list you bought from one.
 
 Sending goes out from a domain registered for you, with SPF, DKIM and DMARC set and tested first, and it warms up over several weeks before it runs at full rate. Skipping that is how mail ends up in spam, so it is not a step either of us can decide to skip.
 
-If you ask me to send something that would break the law or the agreement, I will say no, and continuing to ask is grounds to end the arrangement.`,
+If you ask us to send something that would break the law or the agreement, we will say no, and continuing to ask is grounds to end the arrangement.`,
     },
     {
       title: "Your Data And Your Customers' Data",
-      content: `Doing the work puts me inside accounts and records that are yours: a database, an ad account, an analytics property, a list of people you want to write to, and the replies that come back. All of it is yours. I hold it on your instructions, use it only to run the work you asked for, and never for anything of my own.
+      content: `Doing the work puts us inside accounts and records that are yours: a database, an ad account, an analytics property, a list of people you want to write to, and the replies that come back. All of it is yours. We hold it on your instructions, use it only to run the work you asked for, and never for anything of our own.
 
-I do not sell it, share it, or add it to a list of mine. You can have a copy at any time. Where tracking work sends contact details back to an ad platform, they are hashed before they go, which is what the platform requires and what keeps the details themselves on your side of the line. If I become aware of a breach affecting any of it, you will hear from me promptly and with what I know, so that you can meet your own obligations. The Privacy page sets this out in full.`,
+We do not sell it, share it, or add it to a list of ours. You can have a copy at any time. Where tracking work sends contact details back to an ad platform, they are hashed before they go, which is what the platform requires and what keeps the details themselves on your side of the line. If we become aware of a breach affecting any of it, you will hear from us promptly and with what we know, so that you can meet your own obligations. The Privacy page sets this out in full.`,
     },
     {
       title: 'Ownership',
-      content: `For software, what is built is yours. The repository and the accounts it runs on are in your name from the start, which is the point: another engineer can pick the work up after me without asking my permission or waiting for a handover. There is no licence to keep current and nothing switches off when the project ends.
+      content: `For software, what is built is yours. The repository and the accounts it runs on are in your name from the start, which is the point: another engineer can pick the work up after us without asking our permission or waiting for a handover. There is no licence to keep current and nothing switches off when the project ends.
 
 For tracking repair, the configuration is yours and it lives in your own accounts. For outbound, the sending domains, the mailboxes and the list are registered and held in your name, and they stay with you.
 
-I keep the general knowledge, methods and reusable components I brought to the job, and I may use them again elsewhere. That is not your material and using it again takes nothing from you.
+We keep the general knowledge, methods and reusable components we brought to the job, and we may use them again elsewhere. That is not your material and using it again takes nothing from you.
 
-I may describe completed work in general terms unless you ask me not to, and asking costs nothing. Nothing about you is named without your say-so.`,
+We may describe completed work in general terms unless you ask us not to, and asking costs nothing. Nothing about you is named without your say-so.`,
     },
     {
       title: 'Acceptable Use',
-      content: `Nothing I build, repair or send may be used to break the law, to infringe someone else's rights, to send email to people who have opted out, to distribute malware, or to deceive the people it reaches.
+      content: `Nothing we build, repair or send may be used to break the law, to infringe someone else's rights, to send email to people who have opted out, to distribute malware, or to deceive the people it reaches.
 
-If something crosses one of those lines I will tell you what the problem is and give you a fair chance to fix it. Where the breach is one that cannot wait, because it is causing harm or exposing me or my other clients to liability, the sending or the service stops first and is discussed second.`,
+If something crosses one of those lines we will tell you what the problem is and give you a fair chance to fix it. Where the breach is one that cannot wait, because it is causing harm or exposing us or our other clients to liability, the sending or the service stops first and is discussed second.`,
     },
     {
       title: 'Third-Party Services',
-      content: `Some of what the work depends on is not mine: the domain registrar, the mail provider, the ad platform, the analytics property, the hosting, and any tool you have asked for. Each has its own terms, its own pricing and its own uptime, and I pick them on the same basis I would for my own work.
+      content: `Some of what the work depends on is not ours: the domain registrar, the mail provider, the ad platform, the analytics property, the hosting, and any tool you have asked for. Each has its own terms, its own pricing and its own uptime, and we pick them on the same basis we would for our own work.
 
-Where one of them fails, changes its pricing, withdraws a feature or changes how it counts something, I will tell you and find the best way through it. I cannot be responsible for the acts of a company I do not run, and I will not pretend the choice was not mine either.`,
+Where one of them fails, changes its pricing, withdraws a feature or changes how it counts something, we will tell you and find the best way through it. We cannot be responsible for the acts of a company we do not run, and we will not pretend the choice was not ours either.`,
     },
     {
-      title: 'What I Do Not Promise',
+      title: 'What We Do Not Promise',
       content: `Services are provided as they are, without warranties of any kind beyond what your agreement sets out.
 
-For outbound: how many messages go out, whether they arrive, and what they say are what I control. Nobody can promise a number of replies, meetings or sales, and anyone who does is guessing.
+For outbound: how many messages go out, whether they arrive, and what they say are what we control. Nobody can promise a number of replies, meetings or sales, and anyone who does is guessing.
 
-For tracking repair: the months already reported stay wrong. Fixing the tracking gives you a clean record from the day it is fixed, and nothing recovers what was mismeasured before it. I do not guarantee any particular figure will go up once the numbers are right, only that they will be right.
+For tracking repair: the months already reported stay wrong. Fixing the tracking gives you a clean record from the day it is fixed, and nothing recovers what was mismeasured before it. We do not guarantee any particular figure will go up once the numbers are right, only that they will be right.
 
-For software: I do not guarantee that a system will be uninterrupted or free of faults. Faults found in what I built, inside the period your agreement names, are fixed as part of the work.`,
+For software: we do not guarantee that a system will be uninterrupted or free of faults. Faults found in what we built, inside the period your agreement names, are fixed as part of the work.`,
     },
     {
       title: 'Cancellation And Ending The Work',
       content: `Outbound runs month to month. There is no cancellation fee and no notice period. To stop it, write to ${EMAIL}; there is no form to find and no retention call to sit through. Billing stops at the end of the period you have already paid for, and sending stops with it. The domains, the mailboxes and the list are yours and stay yours.
 
-Project work can be stopped by either of us in writing. You are responsible for payment for the work carried out up to that date. Where a project ends part way through, whether a fee already paid is refunded in whole or in part depends on how much of it had been done, and I will put the calculation in writing before anything is settled, so you can see the reasoning rather than just the figure.
+Project work can be stopped by either of us in writing. You are responsible for payment for the work carried out up to that date. Where a project ends part way through, whether a fee already paid is refunded in whole or in part depends on how much of it had been done, and we will put the calculation in writing before anything is settled, so you can see the reasoning rather than just the figure.
 
-Whatever the reason for ending it, you get what has been built and a copy of anything I hold for you.`,
+Whatever the reason for ending it, you get what has been built and a copy of anything we hold for you.`,
     },
     {
       title: 'Confidentiality',
@@ -319,11 +319,11 @@ Nothing in these terms limits liability for fraud, for wilful misconduct, or for
     },
     {
       title: 'Indemnity',
-      content: `You agree to cover the company's reasonable costs, including legal costs, arising from a third-party claim caused by material you supplied, by instructions you gave me, by a list or a recipient you insisted on, or by use of the work in breach of the acceptable use section above. That cover extends to the company's member, manager, employees and contractors. The company agrees to do the same for you where a claim arises from its own infringement or its own breach of these terms.`,
+      content: `You agree to cover the company's reasonable costs, including legal costs, arising from a third-party claim caused by material you supplied, by instructions you gave us, by a list or a recipient you insisted on, or by use of the work in breach of the acceptable use section above. That cover extends to the company's member, manager, employees and contractors. The company agrees to do the same for you where a claim arises from its own infringement or its own breach of these terms.`,
     },
     {
-      title: 'Events Outside My Control',
-      content: `Neither of us is in breach for a delay or a failure caused by something genuinely outside our control: a hosting or network outage upstream, a mail provider or ad platform going down or changing its rules, a power failure, an act of government, or a serious illness. Where one of those things happens I will tell you as soon as I know, say what I am doing about it, and get back to normal as quickly as I can.`,
+      title: 'Events Outside Our Control',
+      content: `Neither of us is in breach for a delay or a failure caused by something genuinely outside our control: a hosting or network outage upstream, a mail provider or ad platform going down or changing its rules, a power failure, an act of government, or a serious illness. Where one of those things happens we will tell you as soon as we know, say what we are doing about it, and get back to normal as quickly as we can.`,
     },
     {
       title: 'Complaints',
@@ -333,7 +333,7 @@ Raising a complaint costs you nothing and does not affect your work or your bill
     },
     {
       title: 'Changes To These Terms',
-      content: `These terms may change. A change that affects what you pay, what you own, or how either of us may end the arrangement is a material change, and existing clients are told about one by email at least thirty days before it takes effect, so nobody is bound by a term they were never shown. Corrections that do not change the substance take effect when they are posted here, and the effective date at the top moves with them. Continuing to use my services after a change takes effect is acceptance of it.`,
+      content: `These terms may change. A change that affects what you pay, what you own, or how either of us may end the arrangement is a material change, and existing clients are told about one by email at least thirty days before it takes effect, so nobody is bound by a term they were never shown. Corrections that do not change the substance take effect when they are posted here, and the effective date at the top moves with them. Continuing to use our services after a change takes effect is acceptance of it.`,
     },
     {
       title: 'Governing Law',
@@ -343,7 +343,7 @@ Nothing here waives or limits a right you have under state or federal consumer p
     },
     {
       title: 'General',
-      content: `If any part of these terms is found to be unenforceable, the rest stands. Not enforcing a term on one occasion is not a waiver of it. Neither of us may transfer this arrangement to somebody else without the other's written agreement, except that I may transfer it as part of a sale of the whole business, on the same terms. Notices under these terms are given in writing by email to the addresses each of us uses for the work.
+      content: `If any part of these terms is found to be unenforceable, the rest stands. Not enforcing a term on one occasion is not a waiver of it. Neither of us may transfer this arrangement to somebody else without the other's written agreement, except that we may transfer it as part of a sale of the whole business, on the same terms. Notices under these terms are given in writing by email to the addresses each of us uses for the work.
 
 These terms, together with your own agreement and the Privacy page, are the whole of the arrangement between us, and they replace anything said before them.`,
     },

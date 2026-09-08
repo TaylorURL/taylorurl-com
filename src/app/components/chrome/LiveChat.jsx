@@ -170,7 +170,7 @@ function openerFor(pathname) {
   if (path.startsWith('/blog') || path.startsWith('/articles')) {
     return 'Ask me anything about this, or about a site for your own business.'
   }
-  return 'Ask me anything about the work, and I will point you to Trenton when you need him.'
+  return 'Ask me anything about the work, and I will pass you to the team when you need a person.'
 }
 
 /** Openings a visitor can press instead of writing one. */
@@ -414,13 +414,13 @@ function Conversation({
           </button>
         </div>
 
-        {/* A phone is the thing the number is for. Reaching him is one press
-            there rather than a hairline link inside a sentence, and the
+        {/* A phone is the thing the number is for. Reaching the team is one
+            press there rather than a hairline link inside a sentence, and the
             sentence keeps the part that has to be said either way. */}
         {roomy ? (
           <div className="pt-2.5">
             <p className="px-1 pb-2 text-[12px] leading-snug text-[color:var(--paper-ink-faint)]">
-              An assistant, not Trenton.
+              An assistant, not the team.
             </p>
             <div className="grid grid-cols-2 gap-2">
               <a
@@ -428,20 +428,20 @@ function Conversation({
                 className="flex h-11 touch-manipulation items-center justify-center gap-2 rounded-[var(--r-control)] text-[14px] font-medium text-[color:var(--paper-ink)] ring-1 ring-[color:var(--paper-hairline-strong)] transition-colors duration-150 active:bg-[color:var(--surface-2)]"
               >
                 <Mail className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-                Email Trenton
+                Email the Team
               </a>
               <a
                 href={COMPANY_PHONE_HREF}
                 className="flex h-11 touch-manipulation items-center justify-center gap-2 rounded-[var(--r-control)] text-[14px] font-medium text-[color:var(--paper-ink)] ring-1 ring-[color:var(--paper-hairline-strong)] transition-colors duration-150 active:bg-[color:var(--surface-2)]"
               >
                 <Phone className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-                Call Trenton
+                Call the Team
               </a>
             </div>
           </div>
         ) : (
           <p className="px-1 pt-2 text-[12px] leading-snug text-[color:var(--paper-ink-faint)]">
-            An assistant, not Trenton. Reach him at{' '}
+            An assistant, not the team. Reach them at{' '}
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               className="underline underline-offset-2 hover:text-[color:var(--paper-ink-mute)]"

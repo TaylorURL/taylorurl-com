@@ -249,7 +249,7 @@ export default function Footer() {
           ))}
 
           <div className="sm:col-span-2 lg:col-span-1">
-            <p className="section-label-sm mb-4 text-ink-faint">Hire Me</p>
+            <p className="section-label-sm mb-4 text-ink-faint">Hire Us</p>
             <Magnet padding={50} magnetStrength={6}>
               <Link to={START_LINK.to} className="btn btn-secondary group">
                 {START_LINK.label}
@@ -261,8 +261,8 @@ export default function Footer() {
                 priced, and says "scope" for that everywhere else it speaks. */}
             <p className="mt-4 text-[13px] leading-relaxed text-ink-mute">
               {IS_SECOND_SITE
-                ? 'Tell me what you need. A scope and a price come back at no charge.'
-                : 'Tell me what you need. A plan and a price come back at no charge.'}
+                ? 'Tell us what you need. A scope and a price come back at no charge.'
+                : 'Tell us what you need. A plan and a price come back at no charge.'}
             </p>
           </div>
         </div>

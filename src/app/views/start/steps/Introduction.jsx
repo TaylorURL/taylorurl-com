@@ -46,7 +46,7 @@ export default function Introduction() {
           {BIO_NAME} <span className={`font-normal ${GROUND.meta}`}>· {BIO_TITLE}</span>
         </p>
         <p className={`mt-4 text-[17px] leading-relaxed ${GROUND.title}`}>
-          Your answers come to me, and I draw the first draft from them.
+          Your answers come to us, and we draw the first draft from them.
         </p>
         <p className={`mt-3 text-[15px] leading-relaxed ${GROUND.body}`}>{BIO_TEXT}</p>
       </div>

@@ -22,7 +22,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: 'That is the whole brief. Everything a plumbing website does either helps that person call you or gets in their way. Most of what follows I learned on trades that look nothing like plumbing, where the caller arrives in exactly the same state.',
+        text: 'That is the whole brief. Everything a plumbing website does either helps that person call you or gets in their way. Most of what follows we learned on trades that look nothing like plumbing, where the caller arrives in exactly the same state.',
       },
       { type: 'h2', text: 'Where Does the Phone Number Go?' },
       {
@@ -84,7 +84,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: 'Every site I build gets tested the same way before it goes live, throttled to a slow mobile connection on a real phone, with one question being asked: is the number tappable before the page has finished loading. If you have to wait for a page to settle before you can call it, the page is broken, however good it looks on a laptop.',
+        text: 'Every site we build gets tested the same way before it goes live, throttled to a slow mobile connection on a real phone, with one question being asked: is the number tappable before the page has finished loading. If you have to wait for a page to settle before you can call it, the page is broken, however good it looks on a laptop.',
       },
       { type: 'h2', text: 'Does a Plumber Need a Quote Form?' },
       {
@@ -93,7 +93,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: 'Short means name, phone, and what is wrong. Every extra field is another reason to close the tab. And whatever it collects has to reach you somewhere you look, which sounds obvious until you meet the number of trade sites mailing their leads to an inbox nobody has opened since launch. I test that path on every build and again on every change, because a form that silently stops working is worse than no form at all.',
+        text: 'Short means name, phone, and what is wrong. Every extra field is another reason to close the tab. And whatever it collects has to reach you somewhere you look, which sounds obvious until you meet the number of trade sites mailing their leads to an inbox nobody has opened since launch. We test that path on every build and again on every change, because a form that silently stops working is worse than no form at all.',
       },
       { type: 'h2', text: 'What Does This Add Up To?' },
       {
@@ -102,7 +102,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: 'Get those seven things right and you are ahead of nearly every plumber in your county, many of whom are running a template from 2019 that takes five seconds to load and hides the phone number behind a hamburger menu. If you want to know which of the seven yours is missing, send me the address.',
+        text: 'Get those seven things right and you are ahead of nearly every plumber in your county, many of whom are running a template from 2019 that takes five seconds to load and hides the phone number behind a hamburger menu. If you want to know which of the seven yours is missing, send us the address.',
       },
     ],
   },
@@ -148,7 +148,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: 'The fix is a homepage that leads with whichever mood matches the season, and a maintenance page and an emergency page that both stay one tap away from it all year. Every build I do keeps the seasonal push as a single line in the site\'s own content rather than something baked into the layout, so switching the homepage from "same-day AC repair" to "get your furnace ready for winter" is a five-minute edit in October and again in April, not a redesign.',
+        text: 'The fix is a homepage that leads with whichever mood matches the season, and a maintenance page and an emergency page that both stay one tap away from it all year. Every build we do keeps the seasonal push as a single line in the site\'s own content rather than something baked into the layout, so switching the homepage from "same-day AC repair" to "get your furnace ready for winter" is a five-minute edit in October and again in April, not a redesign.',
       },
       { type: 'h2', text: 'Should You Have a Filter Size Page?' },
       {
@@ -216,7 +216,7 @@ export const BLOG_ARTICLES_4 = [
       { type: 'h2', text: 'What Does "Hosting" Include?' },
       {
         type: 'p',
-        text: 'This line should say what it keeps running: the server, the SSL certificate, backups, and whoever answers when the site goes down. Every quote I send names what "hosting" includes, the server, the certificate, backups and monitoring, rather than the single word, because the single word is where a client finds out six months later that "hosting" meant a server and nothing else. A monthly number with no list behind it is a number you cannot compare to anyone else\'s.',
+        text: 'This line should say what it keeps running: the server, the SSL certificate, backups, and whoever answers when the site goes down. Every quote we send names what "hosting" includes, the server, the certificate, backups and monitoring, rather than the single word, because the single word is where a client finds out six months later that "hosting" meant a server and nothing else. A monthly number with no list behind it is a number you cannot compare to anyone else\'s.',
       },
       { type: 'h2', text: 'What Do "Revisions" Cover?' },
       {
@@ -235,7 +235,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: "None of this requires knowing anything about web development. It requires reading the quote the same way you would read a contractor's estimate, line by line, asking what each one buys, instead of reading the number at the bottom and deciding from that alone. Any quote you are holding can go back with these questions before you sign it, and any quote I send is written to answer them on the first read.",
+        text: "None of this requires knowing anything about web development. It requires reading the quote the same way you would read a contractor's estimate, line by line, asking what each one buys, instead of reading the number at the bottom and deciding from that alone. Any quote you are holding can go back with these questions before you sign it, and any quote we send is written to answer them on the first read.",
       },
     ],
   },
@@ -279,7 +279,7 @@ export const BLOG_ARTICLES_4 = [
       { type: 'h2', text: 'Why Does the Google Map Matter More?' },
       {
         type: 'p',
-        text: 'The three roofers Google shows on a map when someone searches after a storm get most of the calls, and almost none of that has to do with the website. The Google Business Profile is filled out, the address matches the website exactly down to the "Suite" abbreviation, and the reviews are recent and answered. <strong>A roofer whose website is beautiful but whose Business Profile still lists the phone number from before the last office move loses to the one whose site is plain and whose Profile is right.</strong> On every build I do, I cross-check the Profile and the website against each other before launch, same address, same hours, same phone number, same service area, so a storm week does not turn up a mismatch nobody noticed in April.',
+        text: 'The three roofers Google shows on a map when someone searches after a storm get most of the calls, and almost none of that has to do with the website. The Google Business Profile is filled out, the address matches the website exactly down to the "Suite" abbreviation, and the reviews are recent and answered. <strong>A roofer whose website is beautiful but whose Business Profile still lists the phone number from before the last office move loses to the one whose site is plain and whose Profile is right.</strong> On every build we do, we cross-check the Profile and the website against each other before launch, same address, same hours, same phone number, same service area, so a storm week does not turn up a mismatch nobody noticed in April.',
       },
       { type: 'h2', text: 'Which Reviews Do Homeowners Read?' },
       {
@@ -363,7 +363,7 @@ export const BLOG_ARTICLES_4 = [
       { type: 'h2', text: 'How Do I Test It Before Launch?' },
       {
         type: 'p',
-        text: "On every site I ship, I open the page on a two-year-old Android on a throttled connection before the domain switches over. Not the browser's phone-emulator, which uses your desktop's processor and reports numbers nobody's customer sees. A real handset, tethered to a slow cell profile, held in a hand. If the page reads inside two seconds on that setup, it reads for the person tapping a Maps pin in a parking lot. <strong>If it does not, the domain does not move until it does.</strong>",
+        text: "On every site we ship, we open the page on a two-year-old Android on a throttled connection before the domain switches over. Not the browser's phone-emulator, which uses your desktop's processor and reports numbers nobody's customer sees. A real handset, tethered to a slow cell profile, held in a hand. If the page reads inside two seconds on that setup, it reads for the person tapping a Maps pin in a parking lot. <strong>If it does not, the domain does not move until it does.</strong>",
       },
       { type: 'h2', text: 'How Do You See What Customers See?' },
       {
@@ -451,7 +451,7 @@ export const BLOG_ARTICLES_4 = [
       { type: 'h2', text: 'Does the Form Reach Anybody?' },
       {
         type: 'p',
-        text: "On every site I build, the contact form's mail has to arrive somewhere a person looks. I send a copy to a second address and check it the day the site goes live, then again a week later, because a form that silently drops leads is worse than no form. <strong>It is the check the trades who lose leads to a broken form never think to run, and it takes ten minutes.</strong>",
+        text: "On every site we build, the contact form's mail has to arrive somewhere a person looks. We send a copy to a second address and check it the day the site goes live, then again a week later, because a form that silently drops leads is worse than no form. <strong>It is the check the trades who lose leads to a broken form never think to run, and it takes ten minutes.</strong>",
       },
       { type: 'h2', text: 'What Should You Leave Off?' },
       {
@@ -470,7 +470,7 @@ export const BLOG_ARTICLES_4 = [
       { type: 'h2', text: 'What Does a Good Pricing Page Get You?' },
       {
         type: 'p',
-        text: 'The measure of a good pricing page is not how many calls it produces. It is how few of the calls it produces are the wrong ones. Once a page like this goes up, a shop answers fewer calls and books a larger share of them. <strong>The front desk gets its mornings back, and the trucks stop rolling out to look at things nobody was going to hire them to fix.</strong> That is the win. If you want the page written, the service call fee, your six most common jobs with a range on each, and the list of what you do not take are all I need to start.',
+        text: 'The measure of a good pricing page is not how many calls it produces. It is how few of the calls it produces are the wrong ones. Once a page like this goes up, a shop answers fewer calls and books a larger share of them. <strong>The front desk gets its mornings back, and the trucks stop rolling out to look at things nobody was going to hire them to fix.</strong> That is the win. If you want the page written, the service call fee, your six most common jobs with a range on each, and the list of what you do not take are all we need to start.',
       },
     ],
   },

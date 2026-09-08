@@ -79,8 +79,8 @@ const MAILED = new Set()
 /** What a visitor is told when the assistant cannot be reached. */
 const OFFLINE =
   'The assistant is not answering right now, which is on this end and not on yours. ' +
-  'Trenton reads everything that reaches trenton@taylorurl.com, and he is on (281) 862-8687. ' +
-  'Leave an address here and it goes straight to him either way.'
+  'We read everything that reaches trenton@taylorurl.com, and the team is on (281) 862-8687. ' +
+  'Leave an address here and it reaches us either way.'
 
 function connect() {
   if (!SERVICE_KEY) return null

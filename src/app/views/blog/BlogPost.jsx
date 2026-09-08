@@ -282,7 +282,7 @@ function Article({ post }) {
         draft="quiet"
         heading="Need help with"
         accentText="your website?"
-        description="I build custom websites for local businesses from scratch and look after them once they are live. Tell me about yours, and a plan and a price come back before any work starts."
+        description="We build custom websites for local businesses from scratch and look after them once they are live. Tell us about yours, and a plan and a price come back before any work starts."
         primaryLabel="Get a Plan and a Price"
         primaryTo="/contact"
       />

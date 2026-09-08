@@ -85,7 +85,8 @@ export default function HeroArtboard() {
                 {...rise(0.3)}
                 className="mt-8 max-w-[48ch] text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
               >
-                I design and build the page that meeting happens on. One person, start to finish.
+                We design and build the page that meeting happens on, so the meeting turns into a
+                customer.
               </m.p>
 
               <m.div {...rise(0.4)} className="mt-10 flex justify-center">

@@ -34,7 +34,7 @@ const DETAIL = {
   'new-website': {
     mark: MarkFrame,
     eyebrow: 'New Builds',
-    description: `A custom website for a Baytown or Houston business: designed, written, built, and launched by one person. From ${BUILD_PRICE} up front and ${MONTHLY_PRICE} a month to run.`,
+    description: `A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team. From ${BUILD_PRICE} up front and ${MONTHLY_PRICE} a month to run.`,
     lede: 'Design, writing, build, domain, and launch all happen here, whether you have never had a site or you have a page somebody set up years ago and walked away from.',
     covers: [
       {
@@ -43,7 +43,7 @@ const DETAIL = {
       },
       {
         title: 'The Writing',
-        body: 'Page copy written from what you tell me on the first call, then edited until it sounds like you talking.',
+        body: 'Page copy written from what you tell us on the first call, then edited until it sounds like you talking.',
       },
       {
         title: 'Every Screen',
@@ -65,7 +65,7 @@ const DETAIL = {
     excludes: [
       {
         title: 'Logo Design',
-        body: 'The site is built around the logo you have. If there isn’t one yet, I can point you at people who draw them.',
+        body: 'The site is built around the logo you have. If there isn’t one yet, we can point you at people who draw them.',
       },
       {
         title: 'Photography',
@@ -182,7 +182,7 @@ const DETAIL = {
     beside: { to: '/tools', label: 'The Free Tools' },
     timeline:
       'The site runs two to four weeks. A tool built into it adds to that, and the date is agreed with the plan before any work starts.',
-    running: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tool built into that price. A bigger project costs more, and you agree to that number before anything starts. What a payment processor or a booking system charges is billed by them, not through me.`,
+    running: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tool built into that price. A bigger project costs more, and you agree to that number before anything starts. What a payment processor or a booking system charges is billed by them, not through us.`,
   },
   care: {
     mark: MarkGuard,
@@ -200,7 +200,7 @@ const DETAIL = {
       },
       {
         title: 'Realtime Error Monitoring',
-        body: 'Every fault the site throws in a visitor’s browser reaches me as it happens.',
+        body: 'Every fault the site throws in a visitor’s browser reaches us as it happens.',
       },
       {
         title: 'Watched Around the Clock',
@@ -212,7 +212,7 @@ const DETAIL = {
       },
       {
         title: 'One Person to Call',
-        body: 'You text the person who built it. No account manager, no support queue.',
+        body: 'You text the people who built it. No account manager, no support queue.',
       },
     ],
     excludes: [

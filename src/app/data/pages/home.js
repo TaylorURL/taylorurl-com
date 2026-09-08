@@ -5,23 +5,23 @@ const STUDIO_HOW_IT_WORKS_STEPS = [
   {
     step: '1',
     stage: 'You Start',
-    title: 'Tell me what you need',
+    title: 'Tell us what you need',
     description:
-      'Send the form and say how you want to be reached. Tell me what the business does and what you need from a website. I usually reply within the hour.',
+      'Send the form and say how you want to be reached. Tell us what the business does and what you need from a website. We usually reply within the hour.',
   },
   {
     step: '2',
-    stage: 'I Build',
-    title: 'I build it',
+    stage: 'We Build',
+    title: 'We build it',
     description:
-      'You get a plan and a price in writing before any work starts. Then I build it, and you see the site while it goes up.',
+      'You get a plan and a price in writing before any work starts. Then we build it, and you see the site while it goes up.',
   },
   {
     step: '3',
     stage: 'We Ship',
     title: 'Go live',
     description:
-      'The site goes live. Hosting, backups, monitoring, and small changes stay with me, so you can get back to running the business.',
+      'The site goes live. Hosting, backups, monitoring, and small changes stay with us, so you can get back to running the business.',
   },
 ]
 
