@@ -62,7 +62,7 @@ export default function HeroSection() {
   const reduced = useReducedMotion()
   const [order, setOrder] = useState(pinnedOrder)
   const [index, setIndex] = useState(0)
-  const [running, setRunning] = useState(!reduced)
+  const [running, setRunning] = useState(true)
 
   const active = order[index]
   const stageRef = useRef(null)
@@ -74,6 +74,20 @@ export default function HeroSection() {
   useEffect(() => {
     setOrder(visitOrder())
   }, [])
+
+  // The preference is answered after the page has been adopted, for the same
+  // reason the order is. The build has no reader to ask, so every visitor is
+  // served the rotation running: a pause glyph on the control, `aria-pressed`
+  // true beside it, and the dwell rule drawn under the first mark. Reading the
+  // preference into the opening state instead made a browser that reduces
+  // motion draw the stopped control on the frame it was adopting the running
+  // one - a play glyph where the served page had a pause - and React threw the
+  // whole document away and built the page again. The turn is stopped here
+  // before its first dwell has run, so nothing moves either way; the stylesheet
+  // already holds the mark still under the same query.
+  useEffect(() => {
+    if (reduced) setRunning(false)
+  }, [reduced])
 
   // A presentation is only worth changing while somebody is looking at it.
   // The four are not the same height on a narrow viewport, so a change made
