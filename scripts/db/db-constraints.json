@@ -51,6 +51,18 @@
         "definition": "CHECK ((min_severity = ANY (ARRAY['info'::text, 'warning'::text, 'urgent'::text])))"
       }
     },
+    "outreach_call_prefs": {
+      "density": {
+        "constraint": "outreach_call_prefs_density_check",
+        "allows": ["roomy", "tight"],
+        "definition": "CHECK (((density IS NULL) OR (density = ANY (ARRAY['roomy'::text, 'tight'::text]))))"
+      },
+      "sort": {
+        "constraint": "outreach_call_prefs_sort_check",
+        "allows": ["best", "waited", "reviews", "newest"],
+        "definition": "CHECK (((sort IS NULL) OR (sort = ANY (ARRAY['best'::text, 'waited'::text, 'reviews'::text, 'newest'::text]))))"
+      }
+    },
     "outreach_calls": {
       "outcome": {
         "constraint": "outreach_calls_outcome_check",
@@ -382,6 +394,11 @@
     }
   },
   "unread": [
+    {
+      "table": "outreach_call_presence",
+      "constraint": "outreach_call_presence_phone_has_a_start",
+      "definition": "CHECK (((prospect_id IS NULL) = (on_phone_since IS NULL)))"
+    },
     {
       "table": "outreach_settings",
       "constraint": "outreach_settings_daily_cap_check",
