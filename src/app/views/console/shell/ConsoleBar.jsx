@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, ChevronDown, Keyboard, LogIn, Menu, Search, SunMoon, X } from 'lucide-react'
 import { ConsoleScope } from './ConsoleScope'
-import { MODIFIER } from '../lib/useConsoleShortcuts'
+import { useModifierLabel } from '../lib/useConsoleShortcuts'
 
 /**
  * The console's top rail.
@@ -162,6 +162,7 @@ export function ConsoleBar({
   // A section whose group repeats its own name gets no crumb. "Traffic / Traffic"
   // is a breadcrumb that has told the reader nothing twice.
   const crumb = group && group !== title ? group : null
+  const modifier = useModifierLabel()
 
   return (
     <header className="console-topbar" data-reading={reading ? 'true' : 'false'}>
@@ -233,11 +234,11 @@ export function ConsoleBar({
             className="console-search-open"
             onClick={onSearch}
             aria-haspopup="dialog"
-            aria-label={`Search sections and sites. ${MODIFIER}K`}
+            aria-label={`Search sections and sites. ${modifier}K`}
           >
             <Search className="h-4 w-4 flex-shrink-0" strokeWidth={2} aria-hidden="true" />
             <span>Search</span>
-            <kbd aria-hidden="true">{MODIFIER}K</kbd>
+            <kbd aria-hidden="true">{modifier}K</kbd>
           </button>
 
           {publicOnly && (

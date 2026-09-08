@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { Phone, Search, UserRound } from 'lucide-react'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, NAV_DURATION, NAV_EASE } from '@constants/navigation'
 import { HAS_ACCOUNTS } from '@constants/routes'
-import { modifierLabel } from '@utils/keyboard'
+import { useModifierLabel } from '@utils/keyboard'
 
 /**
  * The bar's way in to the search, dressed as the field it opens.
@@ -19,9 +19,7 @@ import { modifierLabel } from '@utils/keyboard'
  * what it was sent, which React repairs by throwing the tree away.
  */
 export function NavSearchButton({ className, labelClass, markClass, shortcut = false, onOpen }) {
-  const [modifier, setModifier] = useState('⌘')
-
-  useEffect(() => setModifier(modifierLabel()), [])
+  const modifier = useModifierLabel()
 
   return (
     <button
