@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react'
+
 /**
  * The two things every keyboard shortcut on the site has to agree about: which
  * modifier a reader is told to press, and when a bare key belongs to the page
@@ -11,6 +13,12 @@
 const TYPING = /^(?:INPUT|TEXTAREA|SELECT)$/
 
 /**
+ * The glyph written wherever there is no keyboard to ask: the build's answer,
+ * and every browser's first render, so those two always agree.
+ */
+const ASSUMED = '⌘'
+
+/**
  * The label, not the key. What the handlers actually test is `metaKey ||
  * ctrlKey`, which covers both platforms without asking what this one is; this
  * is only the glyph a reader is shown.
@@ -18,14 +26,36 @@ const TYPING = /^(?:INPUT|TEXTAREA|SELECT)$/
  * The trailing space after Ctrl is deliberate. Every call site writes
  * `${modifierLabel()}K`, and "CtrlK" is not a shortcut anybody can read.
  *
- * Rendered on the server there is no platform to read, so it answers with the
- * Mac glyph and the client corrects it after mounting. Answering during the
- * first client render instead would have the markup disagree with the server's
- * on every Windows machine, which React repairs by throwing the tree away.
+ * `window` is what says whether there is a keyboard to name, and `navigator` is
+ * not. Node has carried a global `navigator` since 21 and answers `platform`
+ * with the machine the build ran on - "Linux x86_64" - so a render at build
+ * time asking for `navigator` gets a confident wrong answer rather than none,
+ * and every page ships with Ctrl written into it.
  */
 export function modifierLabel() {
-  if (typeof navigator === 'undefined') return '⌘'
-  return /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl '
+  if (typeof window === 'undefined') return ASSUMED
+  return /Mac|iPhone|iPad/.test(navigator.platform) ? ASSUMED : 'Ctrl '
+}
+
+/**
+ * The same label, for a tree the browser adopts rather than builds.
+ *
+ * Every route is rendered to markup at build time and served whole, so the
+ * first render in the browser has to come out as the markup it was handed; a
+ * text node that does not match is a mismatch React repairs by throwing the
+ * page away and drawing it again. The build has no keyboard, so it writes the
+ * assumed glyph. This holds that glyph through the first render and answers for
+ * the real keyboard once mounted, which is the one moment the two are allowed
+ * to differ.
+ *
+ * Read at module scope instead - a constant computed once when the file is
+ * imported - it answers for the browser during that first render, and the
+ * markup disagrees on every platform the build machine is not.
+ */
+export function useModifierLabel() {
+  const [modifier, setModifier] = useState(ASSUMED)
+  useEffect(() => setModifier(modifierLabel()), [])
+  return modifier
 }
 
 /**

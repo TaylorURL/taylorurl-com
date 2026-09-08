@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { isTyping, modifierLabel } from '@utils/keyboard'
+import { isTyping } from '@utils/keyboard'
 
 /**
  * The console's keyboard, which is three keys.
@@ -34,8 +34,12 @@ import { isTyping, modifierLabel } from '@utils/keyboard'
  * and the sheet already reach it by. The console and the marketing bar both
  * draw a shortcut and both bind one, and two copies of the same platform sniff
  * is how a shortcut ends up printed one way and bound another.
+ *
+ * A hook rather than a constant. The bar is part of a page the browser adopts
+ * from served markup, and a platform read once at import time answers for the
+ * browser during the render that markup is checked against.
  */
-export const MODIFIER = modifierLabel()
+export { useModifierLabel } from '@utils/keyboard'
 
 export function useConsoleShortcuts({ openSearch, toggleRail }) {
   const [sheetOpen, setSheetOpen] = useState(false)
