@@ -615,6 +615,49 @@
           }
           return parts.join(' ')
         }
+        // A hint is an offer, and the browser is free to turn it down.
+        // `preload`, `modulepreload` and `prefetch` say the page would like
+        // something fetched early; they do not say the page depends on it. A
+        // renderer short of time or bandwidth declines them by the dozen, and a
+        // crawler declines almost all of them - being the first thing dropped
+        // when something has to give is what a hint is for.
+        //
+        // Declining one fires exactly the `error` event a real failure fires,
+        // and nothing has been lost when it does: whatever the hint named is
+        // still asked for by the `@font-face` rule, the stylesheet link or the
+        // import that actually needs it, and that request reports for itself if
+        // it genuinely fails. Filing the hint as well accuses a file that is
+        // answering, which is how a crawler dropping its module preloads
+        // arrived as a page whose scripts had gone missing.
+        //
+        // Read as all-or-nothing, because `rel` carries a list: a link that is
+        // also a `stylesheet` is a real dependency wearing a hint, and it keeps
+        // reporting.
+        var speculativeRels = [
+          'preload',
+          'modulepreload',
+          'prefetch',
+          'prerender',
+          'preconnect',
+          'dns-prefetch',
+        ]
+        function speculative(target) {
+          if (!target || target.tagName !== 'LINK') return false
+          var rel = String(target.getAttribute('rel') || '')
+            .toLowerCase()
+            .split(/\s+/)
+          var tokens = 0
+          for (var i = 0; i < rel.length; i += 1) {
+            if (!rel[i]) continue
+            tokens += 1
+            var known = false
+            for (var j = 0; j < speculativeRels.length; j += 1) {
+              if (rel[i] === speculativeRels[j]) known = true
+            }
+            if (!known) return false
+          }
+          return tokens > 0
+        }
         // Capture phase, because element load failures fire error events that do not bubble.
         window.addEventListener(
           'error',
@@ -632,6 +675,8 @@
                 var address = event.target.src || event.target.href || ''
                 if (event.target.hasAttribute('data-probe')) {
                   hold('probe', 'No answer at ' + address, '')
+                } else if (speculative(event.target)) {
+                  hold('hint', 'Declined ' + address.split('?')[0], '')
                 } else if (marketingBeacon(address)) {
                   hold('beacon', 'No answer from ' + address.split('?')[0], '')
                 } else {
