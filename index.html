@@ -571,6 +571,13 @@
         addEventListener('pagehide', function () {
           unloading = true
         })
+        // And back again. A page frozen into the back/forward cache fired
+        // `pagehide` and then did not go anywhere, so a document being shown
+        // is a document alive: it has a console to write to and a reader to
+        // answer for, and both are read off this flag.
+        addEventListener('pageshow', function () {
+          unloading = false
+        })
         // Everything swallowed stays readable on the page itself, so a live
         // console with the flag off still answers what happened.
         function hold(kind, message, stack) {
@@ -724,6 +731,32 @@
                 // being able to see.
                 if (error && error.name === 'AbortError') {
                   hold('aborted', 'Cancelled ' + target.split('?')[0], '')
+                  throw error
+                }
+                // The same cancellation, worded by the platform instead of by
+                // the page, and it arrives without the name that identifies
+                // one. A request still in flight when the document goes away
+                // is torn down by the browser rather than by any controller,
+                // and WebKit calls that a plain `TypeError: Load failed` - so
+                // on an iPhone the reader who closes the tab, follows a link
+                // out or lets the phone sleep produces a rejection
+                // indistinguishable, by its message, from an endpoint that is
+                // down.
+                //
+                // Some of these the page asks for outright: the call desk
+                // hands back the number it was holding from its own `pagehide`
+                // handler, and onboarding flushes what the client typed, both
+                // deliberately issued as the document is dismantled so the work
+                // is not lost. A request whose whole purpose is to outlive the
+                // page cannot also be evidence the page is broken.
+                //
+                // `pagehide` is the signal that separates them, and it has
+                // always fired before any of this. A rejection after it is the
+                // reader leaving; there is no longer anybody on screen to tell,
+                // and nothing to fix. Held rather than reported, so the live
+                // console still shows it went.
+                if (unloading) {
+                  hold('aborted', 'Cancelled by leaving ' + target.split('?')[0], '')
                   throw error
                 }
                 if (marketingBeacon(target)) {
