@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { m } from 'framer-motion'
 import {
   BookOpen,
@@ -502,7 +502,7 @@ function RowCell({ id, row, tight, holder, you, onOpen, onCall }) {
 }
 
 /** One business on the list, in whichever columns this account draws. */
-function CallRow({ row, columns, tight, holder, yours, you, onOpen, onCall }) {
+const CallRow = memo(function CallRow({ row, columns, tight, holder, yours, you, onOpen, onCall }) {
   return (
     <tr className={yours ? 'bg-[color:var(--wash-accent)]' : undefined}>
       {columns.map(id => (
@@ -520,6 +520,57 @@ function CallRow({ row, columns, tight, holder, yours, you, onOpen, onCall }) {
       ))}
     </tr>
   )
+}, unchanged)
+
+/**
+ * Whether a row would draw itself exactly as it already has.
+ *
+ * The list re-reads every thirty seconds and hands back a fresh object for
+ * every business whether or not anything about it moved, so without this the
+ * whole table - fifty rows of up to eleven cells - is rebuilt twice a minute to
+ * put back what was already there.
+ *
+ * The comparison is over what the cells actually draw rather than over the
+ * whole row, because the row carries a good deal this table never shows: the
+ * scoring breakdown behind the chips, every call ever placed, the audit
+ * readings. A field this list starts drawing has to be added here, and that is
+ * the cost of the check - it is worth paying once for the one table in the
+ * console that redraws on a timer.
+ */
+function unchanged(before, after) {
+  if (before.tight !== after.tight || before.yours !== after.yours) return false
+  if (before.you !== after.you || before.columns !== after.columns) return false
+  if ((before.holder?.user_id ?? null) !== (after.holder?.user_id ?? null)) return false
+  return drawnAs(before.row) === drawnAs(after.row)
+}
+
+/** Everything about a business that a row on this table puts on screen. */
+function drawnAs(row) {
+  return [
+    row.id,
+    row.name,
+    row.town,
+    row.trade,
+    row.phone,
+    row.address,
+    row.score,
+    row.pull,
+    row.pull_ratio,
+    row.trade_median,
+    row.rating,
+    row.rating_count,
+    row.site_kind,
+    row.website,
+    row.place,
+    row.assigned_to,
+    row.assigned_name,
+    row.callback_at,
+    row.ready_at,
+    row.calls?.length ?? 0,
+    row.last_call?.called_at ?? '',
+    row.last_call?.called_by ?? '',
+    row.terms?.map(term => `${term.id}:${term.points}`).join('|') ?? '',
+  ].join('\u0000')
 }
 
 /** What a column's cells wear: their measure, and which edge they set against. */
@@ -946,11 +997,13 @@ export default function CallsPage() {
   const token = session?.access_token ?? null
   const [view, go] = useView(CALL_VIEWS)
 
-  const desk = useCallDesk({ token, enabled: Boolean(token) })
-  // Until the account's own setup lands there is nothing to draw the list
-  // from, so the defaults stand in for it and the feed waits. Reading with the
-  // defaults first would be two full re-ranks on every open, the first of them
-  // answering a question nobody asked.
+  const desk = useCallDesk({ token, userId: session?.user?.id ?? null, enabled: Boolean(token) })
+  // The list cannot be read until the filters are known, and the filters belong
+  // to the account - so the read used to sit and wait for a round trip before
+  // asking for a single business. The desk hands over the setup this browser
+  // saw last time straight away and replaces it when the account answers, so
+  // the two reads go out together and the disagreement, when there is one, is
+  // settled below rather than paid for up front.
   const prefs = desk.prefs ?? DEFAULT_PREFS
   const settled = Boolean(desk.prefs) || Boolean(desk.error)
 
@@ -979,18 +1032,31 @@ export default function CallsPage() {
     return () => clearTimeout(timer)
   }, [typed])
 
-  // The account's own narrowing, once. After this the controls own it, and the
-  // stored copy follows them rather than the other way round - a second tab
-  // saving a filter must not reach across and move this one's list.
-  const taken = useRef(false)
+  // The account's own narrowing, twice at most and never after the reader has
+  // touched a control.
+  //
+  // Twice because the setup arrives twice: what this browser remembered, which
+  // is here on the first render and is what lets the list be read at once, and
+  // then the account's own, which is the authority and may disagree - somebody
+  // who narrowed the list at their desk this morning should not be handed a
+  // laptop's stale copy of it. Adopting the second is one more read rather than
+  // an emptied screen, because the rows stay up while it lands.
+  //
+  // Never after a control has moved, because by then the reader is the
+  // authority: a late answer from the account reaching across to undo the
+  // filter somebody just picked is the worst of the three behaviours.
+  const seeded = useRef(null)
+  const touched = useRef(false)
   const written = useRef(null)
   useEffect(() => {
-    if (taken.current || !desk.prefs) return
-    taken.current = true
+    if (touched.current || !desk.prefs) return
+    const from = desk.settled ? 'account' : 'browser'
+    if (seeded.current === from || seeded.current === 'account') return
+    seeded.current = from
     setFilters(desk.prefs.filters)
     setSort(desk.prefs.sort)
     written.current = JSON.stringify({ filters: desk.prefs.filters, sort: desk.prefs.sort })
-  }, [desk.prefs])
+  }, [desk.prefs, desk.settled])
 
   // And back the other way, once the caller has stopped moving controls. A
   // write per keystroke of a dropdown would be five rows for one decision.
@@ -999,7 +1065,7 @@ export default function CallsPage() {
     save.current = desk.savePrefs
   }, [desk.savePrefs])
   useEffect(() => {
-    if (!taken.current) return undefined
+    if (!seeded.current) return undefined
     const snapshot = JSON.stringify({ filters, sort })
     if (written.current === snapshot) return undefined
     const timer = setTimeout(() => {
@@ -1031,11 +1097,12 @@ export default function CallsPage() {
     [view, search, filters, sort, take, page]
   )
 
-  const { data, retained, error, loading, saving, readAt, refresh, record, hand } = useCallsFeed({
-    token,
-    enabled: Boolean(token) && settled,
-    filters: query,
-  })
+  const { shown, retained, error, loading, behind, saving, readAt, refresh, record, hand } =
+    useCallsFeed({
+      token,
+      enabled: Boolean(token) && settled,
+      filters: query,
+    })
 
   // A new filter selects different rows and a new order selects the same rows
   // in a different sequence, and page four of the last question is no part of
@@ -1044,9 +1111,15 @@ export default function CallsPage() {
     setPage(1)
   }, [view, search, filters, sort, take])
 
-  const rows = useMemo(() => data?.rows || [], [data])
-  const totals = data?.totals || {}
-  const matchedTotals = data?.matched_totals || {}
+  // `shown` is the answer to the question being asked, or the last one that
+  // landed while that answer is on its way. A filter picked, a page turned or a
+  // call recorded used to replace a correct table with grey bars for as long as
+  // it took to re-rank every callable business; the businesses did not stop
+  // existing while that happened, so they stay on screen and the head says the
+  // list is a question behind.
+  const rows = useMemo(() => shown?.rows || [], [shown])
+  const totals = shown?.totals || {}
+  const matchedTotals = shown?.matched_totals || {}
 
   // The lists the dropdowns offer and the pager's count of pages describe the
   // question rather than answer it, so they read the last payload that landed.
@@ -1247,12 +1320,24 @@ export default function CallsPage() {
     },
     [hand, people]
   )
-  const clearAll = useCallback(() => setFilters(NO_FILTERS), [])
+  // Every way of moving a narrowing says so, which is what stops the account's
+  // own setup landing a moment later and undoing it.
+  const clearAll = useCallback(() => {
+    touched.current = true
+    setFilters(NO_FILTERS)
+  }, [])
   const narrow = useCallback((key, value) => {
+    touched.current = true
     setFilters(current => ({ ...current, [key]: value }))
   }, [])
 
+  const reorder = useCallback(value => {
+    touched.current = true
+    setSort(value)
+  }, [])
+
   const applyView = useCallback(saved => {
+    touched.current = true
     setFilters(saved.filters)
     setSort(saved.sort)
   }, [])
@@ -1274,11 +1359,13 @@ export default function CallsPage() {
   const reading = prefs.views.find(one => sameNarrowing(one, { filters, sort })) ?? null
 
   // A refusal with nothing behind it is the whole answer, so it stands in
-  // place of the table rather than above an empty one.
-  if (error && !data) return <SectionNotice>{error}</SectionNotice>
+  // place of the table rather than above an empty one. A refusal with a list
+  // behind it is not: the rows are still right, so they stay and the notice
+  // sits above them where every other console failure sits.
+  if (error && !shown) return <SectionNotice>{error}</SectionNotice>
 
-  const banded = data?.sort === 'best'
-  const bands = data?.bands || {}
+  const banded = shown?.sort === 'best'
+  const bands = shown?.bands || {}
 
   const listRows = []
   let lastBand = null
@@ -1509,7 +1596,7 @@ export default function CallsPage() {
             <select
               className={SELECT}
               value={sort}
-              onChange={event => setSort(event.target.value)}
+              onChange={event => reorder(event.target.value)}
               aria-label="Sort Order"
             >
               {CALL_SORTS.map(one => (
@@ -1691,8 +1778,8 @@ export default function CallsPage() {
                   </p>
                   <p className={`${MONO_LABEL} text-paper-faint`}>
                     {fullCount(totals.resting ?? 0)} are resting
-                    {data?.next_back
-                      ? `, and the first comes back ${shortWhen(data.next_back)}`
+                    {shown?.next_back
+                      ? `, and the first comes back ${shortWhen(shown.next_back)}`
                       : ''}
                     .
                   </p>
@@ -1719,14 +1806,18 @@ export default function CallsPage() {
           loading={loading}
           aside={
             <span className={`${MONO_LABEL} text-paper-faint`}>
-              {loading ? '' : `${fullCount(data?.matched ?? 0)} matching`}
+              {/* Said where the count sits, because the count is the thing that
+                  is out of date: the rows below are the last question's answer
+                  and this is the one line that would otherwise state them as
+                  the answer to the question just asked. */}
+              {loading ? '' : behind ? 'Reading' : `${fullCount(shown?.matched ?? 0)} matching`}
             </span>
           }
         >
           <PanelBody>
-            {data?.complete === false && (
+            {shown?.complete === false && (
               <SectionNotice>
-                The read stopped at its ceiling of {fullCount(data.cap)} businesses, so the figures
+                The read stopped at its ceiling of {fullCount(shown.cap)} businesses, so the figures
                 above cover that many rather than the whole table.
               </SectionNotice>
             )}
@@ -1782,7 +1873,7 @@ export default function CallsPage() {
             {pages > 1 && (
               <span className="inline-flex items-center gap-2">
                 <span className={`${MONO_LABEL} text-paper-faint`}>
-                  Page {fullCount(data?.page ?? page)} of {fullCount(pages)}
+                  Page {fullCount(shown?.page ?? page)} of {fullCount(pages)}
                 </span>
                 <button
                   type="button"

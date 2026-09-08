@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { normalizePrefs } from '@lib/outreach/prospects/callPrefs.js'
-import { BEAT_MS, heldNumbers } from '@lib/outreach/prospects/callPresence.js'
+import { BEAT_MS, heldNumbers, settleDesk } from '@lib/outreach/prospects/callPresence.js'
 
 const DESK_PATH = '/api/calls-desk'
 
@@ -11,6 +11,50 @@ const NO_DESK = 'The call desk could not be read.'
 
 /** And when a change to their setup will not save. */
 const NO_SAVE = 'That setting could not be saved. Try it again.'
+
+/** Where this browser remembers one account's setup between visits. */
+const HINT_KEY = 'console.calls.setup'
+
+/**
+ * The setup this browser last saw for this account, or nothing.
+ *
+ * The account is the only authority on how somebody has the list set up, and
+ * this does not change that: it is read once, it is replaced the moment the
+ * account's own answer lands, and a disagreement is settled in the account's
+ * favour. What it buys is the round trip the list used to spend waiting.
+ *
+ * The list cannot be read until the filters are known, so asking the desk first
+ * and the list second made two waits out of what should be one - roughly half
+ * the time between opening the tab and seeing a business. With the last known
+ * setup in hand both reads start together, and a reader who has opened this
+ * console before sees the list about a second sooner.
+ *
+ * Stored against the account it belongs to, because two people sign in to this
+ * console from the same machine and one reading the other's filters would be a
+ * list of businesses they do not work. Every access is wrapped, because a
+ * private window and a browser set to refuse site data both throw here rather
+ * than returning nothing.
+ */
+function readHint(userId) {
+  if (!userId) return null
+  try {
+    const held = JSON.parse(window.localStorage.getItem(`${HINT_KEY}.${userId}`) || 'null')
+    return held ? normalizePrefs(held) : null
+  } catch {
+    return null
+  }
+}
+
+/** The same, written back, and never a reason to fail anything. */
+function writeHint(userId, prefs) {
+  if (!userId || !prefs) return
+  try {
+    window.localStorage.setItem(`${HINT_KEY}.${userId}`, JSON.stringify(prefs))
+  } catch {
+    // A browser refusing site data costs the next visit one round trip, which
+    // is exactly what it cost before this existed.
+  }
+}
 
 /**
  * Says this console is here, holds whichever number it is on, and reads back
@@ -37,10 +81,17 @@ const NO_SAVE = 'That setting could not be saved. Try it again.'
  * @param {{token: string|null, enabled: boolean}} options
  * @returns {object} the board, this account's setup, and the ways to change both
  */
-export function useCallDesk({ token, enabled }) {
+export function useCallDesk({ token, userId, enabled }) {
   const [desk, setDesk] = useState(null)
   const [error, setError] = useState(null)
   const [claiming, setClaiming] = useState(false)
+  // The setup this browser saw last time, read once so the list can be asked
+  // for in the same breath as the board rather than after it. It is a head
+  // start and never an authority: `desk` replaces it the moment it lands.
+  const [hint, setHint] = useState(() => readHint(userId))
+  useEffect(() => {
+    setHint(readHint(userId))
+  }, [userId])
   const toast = useToast()
   const alive = useRef(true)
   // What this console believes it is holding. A ref rather than state, because
@@ -57,7 +108,9 @@ export function useCallDesk({ token, enabled }) {
   /** What a landed answer does to what is on screen, wherever it came from. */
   const land = useCallback(payload => {
     if (!payload?.presence) return
-    setDesk(payload)
+    setDesk(current => settleDesk(current, payload))
+    // Only an answer that actually carried a setup rewrites the remembered one.
+    if (payload.prefs) writeHint(payload.you, payload.prefs)
     holding.current = payload.presence.find(row => row.user_id === payload.you)?.prospect_id ?? null
   }, [])
 
@@ -209,13 +262,24 @@ export function useCallDesk({ token, enabled }) {
   )
 
   return {
-    prefs: desk?.prefs ?? null,
+    // The setup to draw the list from: the account's own the moment it lands,
+    // and until then whatever this browser saw last time. Both are a real
+    // setup, so the list can be read from either.
+    prefs: desk?.prefs ?? hint,
+    // Whether that is the account speaking or this browser remembering. The
+    // page seeds its controls from the hint and seeds them again from the
+    // account, because somebody who changed a filter at their desk should not
+    // be handed a laptop's stale copy of it.
+    settled: Boolean(desk),
     you,
     presence,
     held,
     onCall,
     error,
     claiming,
+    // The board is still waiting whatever the hint says. A hint carries a
+    // setup and nothing about who is on a call, and "nobody is on a call"
+    // drawn from a guess is the one sentence that would make somebody dial.
     loading: !desk && !error,
     takeNumber,
     dropNumber,

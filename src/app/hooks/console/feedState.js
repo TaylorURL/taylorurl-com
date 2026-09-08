@@ -30,3 +30,41 @@ export const NOTHING_HELD = { key: null, value: null }
 export function answerFor(held, key) {
   return held.key === key ? held.value : null
 }
+
+/**
+ * What a section should draw: the answer to the question being asked, the last
+ * answer while that one is on its way, and which of those two it is.
+ *
+ * `answerFor` above says a payload filed under one question is not the answer
+ * to another, and that is right. What it does not say is that the rows should
+ * come off the screen while the right answer is fetched - and drawing "not the
+ * answer" as "no answer" is what made every filter, every sort, every page and
+ * every recorded call replace a correct table with placeholder bars for as long
+ * as the endpoint took.
+ *
+ * So there are three states rather than two. `loading` is the first read of
+ * all, where placeholders are the truth because there is nothing to keep.
+ * `behind` is every read after it, where the rows on screen are a question out
+ * of date and stay up saying so. And when neither is set, what is on screen is
+ * the answer to what was asked.
+ *
+ * @param {{key: string|null, value: unknown}} held what landed, and for what
+ * @param {{key: string|null, value: unknown}} failed what refused, and for what
+ * @param {string} key the query being asked now
+ */
+export function feedShows(held, failed, key) {
+  const data = answerFor(held, key)
+  const error = answerFor(failed, key)
+  const retained = held.value
+  const behind = !data && !error && Boolean(retained)
+  return {
+    data,
+    error,
+    retained,
+    loading: !data && !error && !retained,
+    behind,
+    // The rows to put on screen: this question's answer, or the last one while
+    // this question is being read.
+    shown: data ?? (behind ? retained : null),
+  }
+}
