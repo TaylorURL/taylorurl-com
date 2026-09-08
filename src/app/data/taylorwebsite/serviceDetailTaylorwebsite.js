@@ -27,7 +27,7 @@ const DETAIL = {
     mark: MarkPanel,
     eyebrow: 'Custom Software',
     description:
-      'Custom applications, integrations, automations, and internal tools, built by one person. Priced per project and quoted in writing after a call.',
+      'Custom applications, integrations, automations, and internal tools, built by a small team. Priced per project and quoted in writing after a call.',
     lede: 'You have a job that runs on spreadsheets and email, two systems that never pass anything between them, or work somebody redoes by hand every week. The software that does it instead gets built here.',
     covers: [
       {
@@ -52,7 +52,7 @@ const DETAIL = {
       },
       {
         title: 'Yours to Keep',
-        body: 'React, Node, Postgres, and functions on Vercel and Supabase. The repository and the accounts are in your name, so another engineer can pick it up after me.',
+        body: 'React, Node, Postgres, and functions on Vercel and Supabase. The repository and the accounts are in your name, so another engineer can pick it up after us.',
       },
     ],
     excludes: [
@@ -151,7 +151,7 @@ const DETAIL = {
       },
       {
         title: 'Signed Before Sending',
-        body: 'Before the first message goes out, you and I sign an agreement covering consent and CAN-SPAM. Every send carries a real postal address and a working way to opt out.',
+        body: 'Before the first message goes out, we sign an agreement with you covering consent and CAN-SPAM. Every send carries a real postal address and a working way to opt out.',
       },
       {
         title: 'The Writing',
@@ -177,7 +177,7 @@ const DETAIL = {
       },
       {
         title: 'A Promised Number of Meetings',
-        body: 'How many messages go out, whether they arrive, and what they say are what I control. No one can promise a count of booked calls, and anyone who does is guessing.',
+        body: 'How many messages go out, whether they arrive, and what they say are what we control. No one can promise a count of booked calls, and anyone who does is guessing.',
       },
     ],
     offers: [

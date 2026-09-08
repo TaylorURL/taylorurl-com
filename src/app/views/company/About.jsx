@@ -237,7 +237,7 @@ export default function About() {
                   </div>
                   <div className="border-hair-paper border-l pl-4">
                     <p className="section-label-sm mb-2 flex items-center gap-2 text-accent">
-                      <Monitor className="h-3 w-3" /> Me
+                      <Monitor className="h-3 w-3" /> Us
                     </p>
                     <p className="text-[13px] text-paper-soft">{step.me}</p>
                   </div>

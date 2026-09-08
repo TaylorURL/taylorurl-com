@@ -125,7 +125,7 @@ export default function Contact() {
   // and so the submit can ask about all of them with the same rules.
   const faultIn = (field, values) => {
     if (field === 'name' && !hasMinLength(values.name, 2)) {
-      return 'I need a name to put on the reply.'
+      return 'We need a name to put on the reply.'
     }
     if (field === 'email' && !isValidEmail(values.email)) {
       return 'The reply goes to this address, so check it reads right.'

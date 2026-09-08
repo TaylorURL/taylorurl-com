@@ -123,7 +123,7 @@ export const BLOG_ARTICLES_3 = [
       },
       {
         type: 'p',
-        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing I help with.",
+        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing we help with.",
       },
     ],
   },
@@ -157,7 +157,7 @@ export const BLOG_ARTICLES_3 = [
       },
       {
         type: 'p',
-        text: "Your website is one of the bigger investments your business makes. <strong>Don't hand it to someone who can't back up their claims.</strong> Ask those five questions of anyone you are considering, me included, and look at the live sites before you look at the price.",
+        text: "Your website is one of the bigger investments your business makes. <strong>Don't hand it to someone who can't back up their claims.</strong> Ask those five questions of anyone you are considering, us included, and look at the live sites before you look at the price.",
       },
     ],
   },
@@ -181,7 +181,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: 'What Is the Most Common Mistake?' },
       {
         type: 'p',
-        text: "Using too many colors. I see it constantly: a homepage that looks like a bag of Skittles. Pick two or three colors max for your brand palette. One primary, one secondary, and maybe an accent. That's it. Consistency builds recognition, and recognition builds trust.",
+        text: "Using too many colors. We see it constantly: a homepage that looks like a bag of Skittles. Pick two or three colors max for your brand palette. One primary, one secondary, and maybe an accent. That's it. Consistency builds recognition, and recognition builds trust.",
       },
       { type: 'h2', text: 'How Do You Choose a Palette?' },
       {

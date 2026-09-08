@@ -60,7 +60,7 @@ export const MONTHLY_COVERS = [
   },
   {
     title: 'Realtime Error Monitoring',
-    body: 'Every fault the site throws in a visitor’s browser reaches me as it happens.',
+    body: 'Every fault the site throws in a visitor’s browser reaches us as it happens.',
   },
   {
     title: 'Found on Google',

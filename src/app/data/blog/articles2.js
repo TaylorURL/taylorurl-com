@@ -57,7 +57,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: 'Your website needs a blog because Google ranks pages, and every post is one more. I hear the objections every week: "I\'m not a writer." "Nobody reads blogs." "I don\'t have time." The blog is for Google before it is for readers, and Google favors fresh, relevant pages.',
+        text: 'Your website needs a blog because Google ranks pages, and every post is one more. We hear the objections every week: "I\'m not a writer." "Nobody reads blogs." "I don\'t have time." The blog is for Google before it is for readers, and Google favors fresh, relevant pages.',
       },
       { type: 'h2', text: 'How Does a Blog Help You Rank?' },
       {
@@ -157,7 +157,7 @@ export const BLOG_ARTICLES_2 = [
     content: [
       {
         type: 'p',
-        text: 'The difference between a template website and a custom one is rarely design time. It is what runs underneath. Ask three developers what your business needs and you get three prices with nothing to explain the gap, so here are three sites I have built, from the one with no server at all to the one carrying an entire coaching practice.',
+        text: 'The difference between a template website and a custom one is rarely design time. It is what runs underneath. Ask three developers what your business needs and you get three prices with nothing to explain the gap, so here are three sites we have built, from the one with no server at all to the one carrying an entire coaching practice.',
       },
       { type: 'h2', text: 'What Does a Site With No Backend Look Like?' },
       {
@@ -242,7 +242,7 @@ export const BLOG_ARTICLES_2 = [
       { type: 'h2', text: 'What Should You Fix First?' },
       {
         type: 'p',
-        text: 'Speed, because it is measurable and everything else sits on top of it. Then pages, then reviews, then structure. Your competitor has a better website, and a better website is something you can buy. Send me your address and theirs and I will tell you where the gap is.',
+        text: 'Speed, because it is measurable and everything else sits on top of it. Then pages, then reviews, then structure. Your competitor has a better website, and a better website is something you can buy. Send us your address and theirs and we will tell you where the gap is.',
       },
     ],
   },

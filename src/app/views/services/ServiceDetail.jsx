@@ -29,10 +29,10 @@ const STUDIO = {
     { to: '/process', label: 'How a Build Runs' },
   ],
   cta: {
-    heading: 'Tell me what',
+    heading: 'Tell us what',
     accentText: 'you need.',
     description:
-      'Pick your trade and the page fills in around it, price included. Or send a message. I read it and answer it myself, usually within the hour.',
+      'Pick your trade and the page fills in around it, price included. Or send a message. We read it and answer it ourselves, usually within the hour.',
     secondary: { label: 'See the Price', to: '/pricing' },
   },
 }
@@ -45,7 +45,7 @@ const SECOND_SITE = {
     heading: 'Start with',
     accentText: 'a call.',
     description:
-      'Tell me what the work is and what it has to do when it is done. I read it and answer it myself, usually within the hour, and the scope and the price come back in writing before anything is charged.',
+      'Tell us what the work is and what it has to do when it is done. We read it and answer it ourselves, usually within the hour, and the scope and the price come back in writing before anything is charged.',
     secondary: null,
   },
 }

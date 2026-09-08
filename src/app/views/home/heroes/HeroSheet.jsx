@@ -33,10 +33,10 @@ export default function HeroSheet() {
 
         <h1 className="display-1 mt-8 font-semibold leading-[0.88] tracking-tightest text-ink [text-wrap:balance]">
           <m.span {...rise(0.08)} className="block">
-            Look like the business{' '}
+            Turn local searches{' '}
           </m.span>
           <m.span {...rise(0.16)} className="block">
-            <AccentGradient>you already are.</AccentGradient>
+            <AccentGradient>into customers.</AccentGradient>
           </m.span>
         </h1>
 
@@ -67,8 +67,8 @@ export default function HeroSheet() {
             {...rise(0.38)}
             className="max-w-[46ch] text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
           >
-            Custom websites for shops and trades around Baytown and Houston. Most go live in two to
-            four weeks.
+            A small team of designers, developers, and search specialists, working with shops and
+            trades around Baytown and Houston. Most sites go live in two to four weeks.
           </m.p>
           <m.div {...rise(0.46)} className="flex-shrink-0">
             <HeroActions />

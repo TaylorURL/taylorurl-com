@@ -43,7 +43,7 @@ const QUESTIONS = [
   },
   {
     q: `Why does a web design agency charge ${ELSEWHERE} for this?`,
-    a: 'The work is the same work, and you talk to whoever did it. Google grades every client site already live, and those grades are published per site on the portfolio. There is one person here and no floor of them, so nobody is billing you for an account manager, a project manager, a sales commission, or an office.',
+    a: 'The work is the same work, and you talk to whoever did it. Google grades every client site already live, and those grades are published per site on the portfolio. There is a small team here and no floor of them, so nobody is billing you for an account manager, a project manager, a sales commission, or an office.',
   },
   {
     q: 'Are there setup fees or extras?',

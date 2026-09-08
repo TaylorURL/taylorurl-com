@@ -457,7 +457,7 @@ export default function Blog() {
         draft="quiet"
         heading="Ready to fix your"
         accentText="website?"
-        description="Tell me about the business and what isn’t working. A plan and a price come back before any work starts."
+        description="Tell us about the business and what isn’t working. A plan and a price come back before any work starts."
         primaryLabel="Get a Plan and a Price"
         primaryTo="/contact"
       />

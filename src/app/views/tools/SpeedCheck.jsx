@@ -394,7 +394,7 @@ export default function SpeedCheck() {
                     id={`${FIELDS.email}-note`}
                     className={`mt-2 text-[14px] leading-relaxed ${GROUND.meta}`}
                   >
-                    The reading appears on this page. I keep the address with it so a reply can
+                    The reading appears on this page. We keep the address with it so a reply can
                     reach you, and it joins no mailing list.
                   </p>
                 )}
@@ -425,7 +425,7 @@ export default function SpeedCheck() {
         draft="column"
         eyebrow="Next"
         title="The number tells you where to start."
-        description="If the reading found something worth fixing, the fix is a build. Tell me what the site is for and get a plan and a price back before any work starts."
+        description="If the reading found something worth fixing, the fix is a build. Tell us what the site is for and get a plan and a price back before any work starts."
       />
     </div>
   )

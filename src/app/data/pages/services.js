@@ -31,7 +31,7 @@ const LINES = [
   {
     slug: 'care',
     name: 'Keeping It Running',
-    summary: 'Hosting, security, backups, and a direct line to me.',
+    summary: 'Hosting, security, backups, and a direct line to the team.',
   },
 ]
 

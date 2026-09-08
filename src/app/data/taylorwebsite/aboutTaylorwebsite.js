@@ -16,14 +16,14 @@ export const ABOUT_PAGE = {
   seo: {
     title: 'About Trenton Taylor, Software Engineer',
     description:
-      'I’m Trenton Taylor. I build custom software, repair conversion tracking, and run outbound email for companies anywhere. One person does the work.',
+      'We are a small team that builds custom software, repairs conversion tracking, and runs outbound email for companies anywhere. You talk to the people doing the work.',
   },
 
   hero: {
-    eyebrow: 'About Me',
-    title: 'One person scopes the work, builds it, and hands it over.',
+    eyebrow: 'About Us',
+    title: 'A small team scopes the work, builds it, and hands it over.',
     description:
-      'I’m Trenton Taylor. I take the first call, and I’m the one you message while the work runs. I build software to order, repair conversion tracking, and run outbound email.',
+      'We take the first call, and we are who you message while the work runs. We build software to order, repair conversion tracking, and run outbound email.',
   },
 
   story: {
@@ -32,7 +32,7 @@ export const ABOUT_PAGE = {
     paragraphs: [
       'An agency sells you the work, and the people who scoped it hand it to whoever is free. The person answering your email in month three has never opened the code.',
       'The other option is a contractor who takes the job, finishes it, and leaves you with something nobody can pick up: no repository you own, no account in your name, no written record of what was done.',
-      'I do the work myself, and I am still the person you message while it is running. Everything is handed over in your name with a written account of what was done, so you are not tied to me to keep using it.',
+      'We do the work ourselves, and we are still who you message while it is running. Everything is handed over in your name with a written account of what was done, so you are not tied to us to keep using it.',
     ],
   },
 
@@ -54,13 +54,13 @@ export const ABOUT_PAGE = {
       icon: Code2,
       title: 'You own what gets built',
       description:
-        'The repository, the domains, and the accounts are registered in your name. Another engineer can pick the work up after me without asking me for anything.',
+        'The repository, the domains, and the accounts are registered in your name. Another engineer can pick the work up after us without asking us for anything.',
     },
     {
       icon: Headphones,
       title: 'You talk to the person doing the work',
       description:
-        'There is nobody between us. You send a message, it lands on my phone, and the answer usually comes back inside the hour.',
+        'No account manager sits between you and the work. You send a message, it lands on the phone of somebody building it, and the answer usually comes back inside the hour.',
     },
     {
       icon: Zap,
@@ -77,7 +77,7 @@ export const ABOUT_PAGE = {
   ],
 
   work: {
-    eyebrow: 'How I Work',
+    eyebrow: 'How We Work',
     headingLine: 'What you get',
     accentText: 'on every job.',
     lede: 'Four things that hold whichever of the three you buy, and whatever the work costs.',
@@ -95,17 +95,17 @@ export const ABOUT_PAGE = {
       num: '01',
       title: 'You get in touch',
       description:
-        'Tell me what the work is and what it has to do when it is done. A few sentences is plenty. There is no thirty-field intake form.',
-      you: 'Send me a message',
+        'Tell us what the work is and what it has to do when it is done. A few sentences is plenty. There is no thirty-field intake form.',
+      you: 'Send us a message',
       me: 'Reply usually within the hour',
     },
     {
       num: '02',
       title: 'We go through it',
       description:
-        'A call, then a read of how the job runs now. I ask what I need to scope it, and say so if the work is not worth doing.',
-      you: 'Walk me through the job',
-      me: 'Ask what I need to price it',
+        'A call, then a read of how the job runs now. We ask what we need to scope it, and say so if the work is not worth doing.',
+      you: 'Walk us through the job',
+      me: 'Ask what we need to price it',
     },
     {
       num: '03',
@@ -117,7 +117,7 @@ export const ABOUT_PAGE = {
     },
     {
       num: '04',
-      title: 'I do the work and hand it over',
+      title: 'We do the work and hand it over',
       description:
         'You see where it stands as it goes rather than in a status email. At the end everything is in your name, with a written account of what was done. Outbound is the one that keeps running; the other two end when they are done.',
       you: 'Review as it goes',
@@ -127,7 +127,7 @@ export const ABOUT_PAGE = {
 
   closing: {
     eyebrow: 'Get in Touch',
-    heading: 'Tell me about',
+    heading: 'Tell us about',
     accentText: 'the work.',
     description:
       'A few sentences on what you need and what it has to do when it is done. A reply usually comes back within the hour: a straight answer on whether it is a fit, then a scope and a price.',

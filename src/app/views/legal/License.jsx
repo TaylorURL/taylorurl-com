@@ -43,7 +43,7 @@ It is not about your business, your content, or your customers. The short versio
   {
     title: 'What You Own',
     content:
-      'Your domain name is registered in your name and is yours to move to another registrar or provider whenever you like. Everything you supply stays yours: your text, your photographs, your logo and brand marks, your customer records, and anything you write into the site after launch. None of that is licensed to me and none of it is affected by this page. You may take copies of it at any time, and you do not need a reason or permission to ask.',
+      'Your domain name is registered in your name and is yours to move to another registrar or provider whenever you like. Everything you supply stays yours: your text, your photographs, your logo and brand marks, your customer records, and anything you write into the site after launch. None of that is licensed to us and none of it is affected by this page. You may take copies of it at any time, and you do not need a reason or permission to ask.',
   },
   {
     title: 'What You Are Licensed To Do',
@@ -66,13 +66,13 @@ It is not about your business, your content, or your customers. The short versio
     ),
   },
   {
-    title: 'Components I Did Not Write',
+    title: 'Components We Did Not Write',
     content:
-      'The platform is built on open-source software written by other people, and each piece carries its own licence, which continues to apply to it. Nothing on this page grants you rights over those components, and nothing on this page takes away rights their own licences give you. Ask and I will tell you what a given site is built on.',
+      'The platform is built on open-source software written by other people, and each piece carries its own licence, which continues to apply to it. Nothing on this page grants you rights over those components, and nothing on this page takes away rights their own licences give you. Ask and we will tell you what a given site is built on.',
   },
   {
     title: 'If Your Business Changes Hands',
-    content: `The licence is for the business the site was built for. If you sell that business, tell me and the licence moves to the buyer on these same terms, at no charge, so long as the monthly fee continues. What it does not do is pass to somebody who buys the code out from under the business, because the code is not yours to sell.`,
+    content: `The licence is for the business the site was built for. If you sell that business, tell us and the licence moves to the buyer on these same terms, at no charge, so long as the monthly fee continues. What it does not do is pass to somebody who buys the code out from under the business, because the code is not yours to sell.`,
   },
   {
     title: 'When The Licence Ends',
@@ -109,14 +109,14 @@ export default function License() {
       />
       <LegalPage
         title="License"
-        description="What you may do with the software behind your site, and what stays with me."
+        description="What you may do with the software behind your site, and what stays with us."
         eyebrow="License"
         effectiveDate="September 4, 2026"
         appliesTo="Clients with a current agreement"
         summary={[
           'Run your business on your site however you like: sell, take bookings and payments, advertise against it, print the address on a van.',
-          'Your domain, your content and your customer records are yours and are not licensed to me.',
-          'The code and the platform stay mine, licensed to you for as long as the monthly fee is current.',
+          'Your domain, your content and your customer records are yours and are not licensed to us.',
+          'The code and the platform stay ours, licensed to you for as long as the monthly fee is current.',
           'What you may not do is copy, resell, sublicense or reverse engineer the codebase.',
           'Sell your business and the licence moves to the buyer, free, on these same terms.',
         ]}
@@ -125,7 +125,7 @@ export default function License() {
           heading: 'Licensing Inquiries',
           body: (
             <>
-              For licensing questions or permissions, contact me at{' '}
+              For licensing questions or permissions, contact us at{' '}
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
                 className="text-accent underline transition-colors duration-200 hover:text-[color:var(--accent-hi)]"
