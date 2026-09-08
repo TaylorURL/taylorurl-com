@@ -16,10 +16,14 @@ import { useCallDesk } from '@hooks/console/useCallDesk'
 import { formatInstant } from '@lib/time/zone.js'
 import { platformName, hostOf } from '@lib/outreach/prospects/platforms.js'
 import {
+  ASSIGNED_MINE,
+  ASSIGNED_NOBODY,
   CALL_OUTCOMES,
+  callTakesOwner,
   dialHref,
   outcomeNeedsCallback,
   outcomeOf,
+  ownerOf,
   placeOf,
   SCORE_PEAK,
   SCORE_WEIGHTS,
@@ -65,6 +69,8 @@ import {
 } from '../../ui'
 import {
   BUTTON,
+  CELL_END,
+  CELL_END_PACKED,
   CELL_PACKED,
   CELL_TIGHT as CELL,
   CHIP_BUTTON,
@@ -76,6 +82,7 @@ import {
   ROW_HEIGHT,
   SELECT,
   SELECT_ON,
+  TH_END,
   TH_TIGHT as TH,
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
@@ -265,11 +272,19 @@ function pullSentence(row) {
 }
 
 /** What the history says, in a clause. */
-function historyLine(row) {
+function historyLine(row, you = null) {
   if (!row.last_call) return 'Nobody has rung this number.'
   const outcome = outcomeOf(row.last_call.outcome)?.label ?? row.last_call.outcome
   const nth = row.calls.length === 1 ? 'Rung once' : `Rung ${row.calls.length} times`
-  return `${nth}, last ${when(row.last_call.called_at)} — ${outcome}.`
+  // Who made the last one, because the thing a caller most wants before they
+  // dial again is whether the last conversation was theirs.
+  const by =
+    row.last_call.called_by === you
+      ? ' by you'
+      : row.last_call.called_by_name
+        ? ` by ${row.last_call.called_by_name}`
+        : ''
+  return `${nth}, last ${when(row.last_call.called_at)}${by} — ${outcome}.`
 }
 
 /** Where the business stands with the phone, and what that means in time. */
@@ -348,7 +363,7 @@ function BandHeading({ cols, title, count, note }) {
  * businesses on the screen, and neither of those is the right answer for
  * everybody.
  */
-function RowCell({ id, row, tight, holder, onOpen, onCall }) {
+function RowCell({ id, row, tight, holder, you, onOpen, onCall }) {
   if (id === 'business') {
     // What it does and where it is goes under the name at the roomy setting.
     // At the tight one the town alone stands beside it: a caller scanning for
@@ -420,9 +435,33 @@ function RowCell({ id, row, tight, holder, onOpen, onCall }) {
   }
 
   if (id === 'rung') {
+    const last = row.last_call
     return (
-      <span className="block truncate">
-        {row.last_call ? `${row.calls.length}×, ${when(row.last_call.called_at)}` : '—'}
+      <>
+        <span className="block truncate">
+          {last ? `${row.calls.length}×, ${when(last.called_at)}` : '—'}
+        </span>
+        {/* Who made the last one. At the tight setting it goes, like every
+            other second line: the column is there to say how worked a business
+            is, and whose call it was is one cell over in Assigned To. */}
+        {!tight && last && (
+          <span className={`${MONO_LABEL} text-paper-faint mt-1 block truncate`}>
+            {last.called_by === you ? 'you' : callerName({ name: last.called_by_name })}
+          </span>
+        )}
+      </>
+    )
+  }
+
+  if (id === 'assigned') {
+    const owner = ownerOf(row)
+    if (!owner) return <span className="text-paper-faint">Nobody yet</span>
+    // A caller's own book is the work in front of them and everybody else's is
+    // a name to ask. Drawn as the difference it is: theirs in the accent, the
+    // rest plain.
+    return (
+      <span className={`block truncate ${owner === you ? 'text-accent' : ''}`}>
+        {owner === you ? 'You' : callerName({ name: row.assigned_name })}
       </span>
     )
   }
@@ -463,7 +502,7 @@ function RowCell({ id, row, tight, holder, onOpen, onCall }) {
 }
 
 /** One business on the list, in whichever columns this account draws. */
-function CallRow({ row, columns, tight, holder, yours, onOpen, onCall }) {
+function CallRow({ row, columns, tight, holder, yours, you, onOpen, onCall }) {
   return (
     <tr className={yours ? 'bg-[color:var(--wash-accent)]' : undefined}>
       {columns.map(id => (
@@ -473,6 +512,7 @@ function CallRow({ row, columns, tight, holder, yours, onOpen, onCall }) {
             row={row}
             tight={tight}
             holder={holder}
+            you={you}
             onOpen={onOpen}
             onCall={onCall}
           />
@@ -482,9 +522,15 @@ function CallRow({ row, columns, tight, holder, yours, onOpen, onCall }) {
   )
 }
 
-/** What a column's cells wear, which at this point is only their measure. */
+/** What a column's cells wear: their measure, and which edge they set against. */
 function cellClass(id, tight) {
+  if (columnOf(id)?.align === 'end') return tight ? CELL_END_PACKED : CELL_END
   return tight ? CELL_PACKED : CELL
+}
+
+/** And what its heading wears, so the two are set against the same edge. */
+function headClass(id) {
+  return columnOf(id)?.align === 'end' ? TH_END : TH
 }
 
 /**
@@ -581,8 +627,70 @@ function RecordForm({ row, saving, onRecord, startOn }) {
   )
 }
 
+/**
+ * Who the business belongs to, and the way to hand it to somebody else.
+ *
+ * A business goes into the name of whoever first rings it and stays there, so
+ * the second call is made by the person who remembers the first - what was
+ * said, what was promised, who they asked for. None of that is in the note,
+ * and none of it survives the business being worked by whoever happens to
+ * reach the top of the list that morning.
+ *
+ * The hand-over is a select rather than a button per person, because there are
+ * three people today and a list of buttons is a control that stops fitting the
+ * moment there are six. Nobody is an option on it: a caller who leaves, or a
+ * business claimed by a wrong number, has to have a way back to the pool.
+ */
+function Owner({ row, people, you, saving, onHand }) {
+  const owner = ownerOf(row)
+  const held = people.find(one => one.id === owner) ?? null
+
+  return (
+    <div className="grid gap-1.5">
+      <p className={`${MONO_LABEL} text-paper-faint`}>Assigned To</p>
+      <p className="text-[13px] text-ink-paper">
+        {owner ? (
+          <>
+            <span className={owner === you ? 'text-accent' : undefined}>
+              {owner === you ? 'You' : callerName({ name: held?.name ?? row.assigned_name })}
+            </span>
+            {row.assigned_at ? `, since ${when(row.assigned_at)}` : ''}
+          </>
+        ) : (
+          'Nobody yet. Recording a call puts them in your name.'
+        )}
+      </p>
+      <select
+        className={SELECT}
+        value={owner ?? ''}
+        disabled={saving}
+        aria-label="Hand This Business To"
+        onChange={event => onHand(row.id, event.target.value || null)}
+      >
+        <option value="">Nobody</option>
+        {people.map(one => (
+          <option key={one.id} value={one.id}>
+            {one.id === you ? `${one.name || 'You'} (you)` : one.name || 'One Person'}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 /** Everything known about one business, and the form that adds to it. */
-function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook, holder }) {
+function Sheet({
+  row,
+  saving,
+  recorded,
+  onRecord,
+  startOn,
+  onHandbook,
+  holder,
+  people,
+  you,
+  onHand,
+}) {
   const href = dialHref(row.phone)
 
   return (
@@ -594,6 +702,8 @@ function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook, holder })
         </p>
         {row.address && <p className="text-paper-faint text-[13px]">{row.address}</p>}
       </div>
+
+      <Owner row={row} people={people} you={you} saving={saving} onHand={onHand} />
 
       {/* Somebody else has this number up to their ear right now. It is said
           over the button rather than instead of it: the record is still worth
@@ -643,8 +753,8 @@ function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook, holder })
         <dl className="grid gap-1">
           {row.terms.map(term => (
             <div key={term.id} className="flex items-baseline justify-between gap-3">
-              <dt className="text-[13px] text-ink-paper">{term.label}</dt>
-              <dd className={`${MONO_LABEL} text-paper-faint whitespace-nowrap`}>
+              <dt className="min-w-0 text-[13px] text-ink-paper">{term.label}</dt>
+              <dd className={`${MONO_LABEL} text-paper-faint flex-shrink-0 whitespace-nowrap`}>
                 {term.chip}{' '}
                 <span className="tabular-nums text-ink-paper">
                   {term.points > 0 ? `+${term.points}` : term.points}
@@ -689,11 +799,21 @@ function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook, holder })
           <ul className="grid gap-2">
             {row.calls.map(call => (
               <li key={call.id} className="border-hair-paper grid gap-1 border-t pt-2">
-                <p className="flex flex-wrap items-center gap-2">
+                {/* Who made it, beside what it came to. A note is somebody's
+                    own sentence about a conversation they had, and whoever
+                    reads it next needs to know which of them to ask about the
+                    half that is not written down. */}
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <Badge tone={outcomeOf(call.outcome)?.tone ?? 'plain'}>
                     {outcomeOf(call.outcome)?.label ?? call.outcome}
                   </Badge>
                   <span className={`${MONO_LABEL} text-paper-faint`}>{when(call.called_at)}</span>
+                  <span className={`${MONO_LABEL} text-paper-faint`}>·</span>
+                  <span
+                    className={`${MONO_LABEL} ${call.called_by === you ? 'text-accent' : 'text-paper-soft'}`}
+                  >
+                    {call.called_by === you ? 'You' : callerName({ name: call.called_by_name })}
+                  </span>
                 </p>
                 {call.callback_at && (
                   <p className={`${MONO_LABEL} text-paper-faint`}>
@@ -725,7 +845,7 @@ function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook, holder })
  * hand has one hand for the keyboard, and a dropdown plus a submit is four
  * actions for the outcome that happens most: nobody picks up.
  */
-function CallCard({ row, saving, recorded, holder, onQuick, onOpen, onSkip }) {
+function CallCard({ row, saving, recorded, holder, you, onQuick, onOpen, onSkip }) {
   const href = dialHref(row.phone)
 
   return (
@@ -737,6 +857,19 @@ function CallCard({ row, saving, recorded, holder, onQuick, onOpen, onSkip }) {
         </p>
         <p className="text-paper-faint min-h-[18px] text-[13px]">{row.address || '—'}</p>
       </div>
+
+      {/* Whose business this is, said before the number is pressed rather than
+          in the record behind it. A caller who is about to ring somebody
+          else's business is about to have a first conversation with a business
+          that has already had one, and the person who had it is one line
+          away. */}
+      <p className={`${MONO_LABEL} text-paper-faint`}>
+        {callTakesOwner(row)
+          ? 'Nobody holds this one. Recording a call puts it in your name.'
+          : ownerOf(row) === you
+            ? 'Yours since the first call.'
+            : `${callerName({ name: row.assigned_name })} holds this one.`}
+      </p>
 
       {/* Somebody got to this one first. The number is drawn quiet rather than
           removed - the batch is a snapshot and they may have hung up by now -
@@ -767,7 +900,7 @@ function CallCard({ row, saving, recorded, holder, onQuick, onOpen, onSkip }) {
       <div className="grid min-h-[64px] gap-1">
         <p className="text-[13px] text-ink-paper">{whyListed(row)}</p>
         <p className={`${MONO_LABEL} text-paper-faint`}>{pullSentence(row)}</p>
-        <p className={`${MONO_LABEL} text-paper-faint`}>{historyLine(row)}</p>
+        <p className={`${MONO_LABEL} text-paper-faint`}>{historyLine(row, you)}</p>
       </div>
 
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -890,6 +1023,7 @@ export default function CallsPage() {
       min_score: filters.min_score,
       town: filters.town,
       trade: filters.trade,
+      assigned: filters.assigned,
       sort,
       take,
       page,
@@ -897,7 +1031,7 @@ export default function CallsPage() {
     [view, search, filters, sort, take, page]
   )
 
-  const { data, retained, error, loading, saving, readAt, refresh, record } = useCallsFeed({
+  const { data, retained, error, loading, saving, readAt, refresh, record, hand } = useCallsFeed({
     token,
     enabled: Boolean(token) && settled,
     filters: query,
@@ -921,6 +1055,10 @@ export default function CallsPage() {
   const towns = retained?.towns || []
   const trades = retained?.trades || []
   const pages = retained?.pages || 1
+  // Everybody a business can belong to, which is everybody who can open this
+  // section at all. Read with the list rather than held here, so a person added
+  // to the studio appears in the picker without a release.
+  const people = useMemo(() => retained?.people || [], [retained])
 
   const band = useBand()
   // What this account chose, narrowed to what the window has room for. A column
@@ -1080,7 +1218,35 @@ export default function CallsPage() {
   )
 
   const narrowed = filtersNarrow(filters)
-  const chips = useMemo(() => filterChips(filters), [filters])
+  const chips = useMemo(() => filterChips(filters, people), [filters, people])
+
+  /**
+   * One business put in somebody's name, or taken out of everybody's.
+   *
+   * The record on screen is held in state rather than resolved out of the
+   * current page, so the re-read behind the hand-over does not reach it. It is
+   * patched here from what the endpoint wrote, which is the value that is now
+   * on the row rather than the one that was asked for.
+   */
+  const handOver = useCallback(
+    async (id, to) => {
+      const done = await hand(id, to)
+      if (!done) return
+      setOpenRow(row =>
+        row && row.id === id
+          ? {
+              ...row,
+              assigned_to: done.assigned_to ?? null,
+              assigned_at: done.assigned_at ?? null,
+              assigned_name: done.assigned_to
+                ? (people.find(one => one.id === done.assigned_to)?.name ?? null)
+                : null,
+            }
+          : row
+      )
+    },
+    [hand, people]
+  )
   const clearAll = useCallback(() => setFilters(NO_FILTERS), [])
   const narrow = useCallback((key, value) => {
     setFilters(current => ({ ...current, [key]: value }))
@@ -1143,6 +1309,7 @@ export default function CallsPage() {
         tight={tight}
         holder={holder && holder.user_id !== desk.you ? holder : null}
         yours={Boolean(holder && holder.user_id === desk.you)}
+        you={desk.you}
         onOpen={openBusiness}
         onCall={callOne}
       />
@@ -1153,6 +1320,13 @@ export default function CallsPage() {
     <ConsolePage areas={['stats', 'views', 'work']} rows="auto auto minmax(0,1fr)">
       <Area area="stats">
         <ConsoleError>{error || desk.error}</ConsoleError>
+
+        {/* What the six figures are counting, said once above them. A strip
+            of totals is the one thing on the page a reader is most likely to
+            take for the page they are looking at. */}
+        <p className={`${MONO_LABEL} text-paper-soft`}>
+          These count every business on the list, not the page in front of you.
+        </p>
 
         <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
           <StatCard
@@ -1227,6 +1401,14 @@ export default function CallsPage() {
           onHangUp={desk.dropNumber}
         />
 
+        {/* Said above the row rather than under it, because the point of the
+            line is that a filter set here is still set tomorrow - which is
+            worth knowing before the first one is picked. */}
+        <p className={`${MONO_LABEL} text-paper-soft`}>
+          Narrow the list here. What you pick is saved to your account and waiting next time you
+          sign in.
+        </p>
+
         <div className="flex flex-wrap items-center gap-2">
           <input
             type="search"
@@ -1275,6 +1457,27 @@ export default function CallsPage() {
                 {one.label}
               </option>
             ))}
+          </select>
+          {/* Whose book to work. `Mine` is first because it is the one a
+              caller picks, and it is stored as a standing rather than as their
+              own id so a saved narrowing means the same thing to whoever
+              opens it. */}
+          <select
+            className={filters.assigned === 'all' ? SELECT : SELECT_ON}
+            value={filters.assigned}
+            onChange={event => narrow('assigned', event.target.value)}
+            aria-label="Assigned To"
+          >
+            <option value="all">Anybody's</option>
+            <option value={ASSIGNED_MINE}>Mine</option>
+            <option value={ASSIGNED_NOBODY}>Nobody Yet</option>
+            {people
+              .filter(one => one.id !== desk.you)
+              .map(one => (
+                <option key={one.id} value={one.id}>
+                  {one.name || 'One Person'}
+                </option>
+              ))}
           </select>
           <select
             className={filters.town === 'all' ? SELECT : SELECT_ON}
@@ -1379,6 +1582,7 @@ export default function CallsPage() {
           list={
             <Panel
               title="The Batch"
+              note="The businesses this sitting works through, best first. Click any name to jump to it."
               loading={loading}
               aside={
                 <span className={`${MONO_LABEL} text-paper-faint`}>
@@ -1389,7 +1593,7 @@ export default function CallsPage() {
               }
             >
               <PanelBody>
-                <div className="flex flex-wrap gap-2 px-3 py-2">
+                <div className="flex flex-wrap gap-2 px-5 py-2">
                   <button type="button" className={QUIET} onClick={holdBatch}>
                     Take A Fresh Batch Of {take}
                   </button>
@@ -1407,23 +1611,31 @@ export default function CallsPage() {
                     Batch Size
                   </button>
                 </div>
-                <ul className="grid">
+                {/* One column at the width the card has, never at the width
+                    the longest name wants. A bare `grid` sizes its column to
+                    max-content, so one business with a long name widened every
+                    row in the batch and pushed all fifty scores out past the
+                    card's edge, where they were clipped rather than scrolled
+                    to. The name is the part that gives way. */}
+                <ul className="grid grid-cols-1">
                   {batch.map((one, index) => {
                     const holder = heldByOther(desk.held, one.id, desk.you)
                     return (
                       <li
                         key={one.id}
-                        className={`border-hair-paper flex items-baseline justify-between gap-2 border-t px-3 py-2 ${
+                        className={`border-hair-paper flex items-baseline justify-between gap-2 border-t px-5 py-2 ${
                           index === at ? 'bg-[color:var(--wash-accent)]' : ''
                         }`}
                       >
                         <button
                           type="button"
-                          className="truncate text-left text-[13px] text-ink-paper hover:text-accent"
+                          className="min-w-0 flex-1 text-left text-[13px] text-ink-paper hover:text-accent"
                           onClick={() => setAt(index)}
                         >
-                          {one.name || 'Unnamed business'}
-                          <span className={`${MONO_LABEL} text-paper-faint block`}>{one.town}</span>
+                          <span className="block truncate">{one.name || 'Unnamed business'}</span>
+                          <span className={`${MONO_LABEL} text-paper-faint block truncate`}>
+                            {one.town}
+                          </span>
                         </button>
                         {worked[one.id] ? (
                           <Badge tone={outcomeOf(worked[one.id])?.tone ?? 'plain'}>
@@ -1434,7 +1646,9 @@ export default function CallsPage() {
                             {callerMark(holder)}
                           </Badge>
                         ) : (
-                          <span className={`${MONO_LABEL} text-paper-faint`}>{one.score}</span>
+                          <span className={`${MONO_LABEL} text-paper-faint flex-shrink-0`}>
+                            {one.score}
+                          </span>
                         )}
                       </li>
                     )
@@ -1446,6 +1660,7 @@ export default function CallsPage() {
         >
           <Panel
             title="Calling"
+            note="Ring the number, then press what the call came to and the next business comes up on its own."
             loading={loading}
             aside={
               <span className={`${MONO_LABEL} text-paper-faint`}>
@@ -1460,6 +1675,7 @@ export default function CallsPage() {
                   saving={saving}
                   recorded={recorded}
                   holder={heldHere}
+                  you={desk.you}
                   onQuick={quick}
                   onOpen={openBusiness}
                   onSkip={() => setAt(index => index + 1)}
@@ -1499,6 +1715,7 @@ export default function CallsPage() {
         <Panel
           title={view === 'resting' ? 'Resting' : view === 'finished' ? 'Finished' : 'Call List'}
           area="work"
+          note="Work it from the top down. The name opens a business, the button beside it dials."
           loading={loading}
           aside={
             <span className={`${MONO_LABEL} text-paper-faint`}>
@@ -1517,7 +1734,7 @@ export default function CallsPage() {
               <thead>
                 <tr>
                   {columns.map(id => (
-                    <th key={id} className={TH} style={{ width: widths[id] }}>
+                    <th key={id} className={headClass(id)} style={{ width: widths[id] }}>
                       {columnOf(id)?.label}
                     </th>
                   ))}
@@ -1606,6 +1823,7 @@ export default function CallsPage() {
       <SidePanel
         open={Boolean(openRow)}
         title="Business"
+        note="Everything known about them, and the form that puts today's call on the record."
         aside={openRow ? openRow.phone || undefined : undefined}
         onClose={closeBusiness}
         leadOpen={handbook}
@@ -1627,6 +1845,9 @@ export default function CallsPage() {
             saving={saving}
             recorded={recorded}
             holder={heldByOther(desk.held, openRow.id, desk.you)}
+            people={people}
+            you={desk.you}
+            onHand={handOver}
             onRecord={writeFromSheet}
             startOn={asked}
             onHandbook={() => setHandbook(true)}
@@ -1637,9 +1858,15 @@ export default function CallsPage() {
       {/* The list the way this account reads it. Kept on the account rather
           than in this browser, because somebody who set the columns up at their
           desk should not be handed the defaults again from a laptop. */}
-      <SidePanel open={setupOpen} title="Set Up The List" onClose={() => setSetupOpen(false)}>
+      <SidePanel
+        open={setupOpen}
+        title="Set Up The List"
+        note="Set the list up the way you work it. Every change here saves to your account as you make it."
+        onClose={() => setSetupOpen(false)}
+      >
         <CallSetup
           prefs={prefs}
+          people={people}
           filters={filters}
           sort={sort}
           onChange={desk.savePrefs}
@@ -1651,7 +1878,12 @@ export default function CallsPage() {
 
       {/* What the score is made of, in one place, so a number on a row is
           never the only explanation of itself. */}
-      <SidePanel open={keyOpen} title="How It Is Ranked" onClose={() => setKeyOpen(false)}>
+      <SidePanel
+        open={keyOpen}
+        title="How It Is Ranked"
+        note="What the score on each row is made of, so you can see why a business is near the top."
+        onClose={() => setKeyOpen(false)}
+      >
         <div className="grid gap-4 px-5 py-4">
           <p className="text-[13px] text-ink-paper">
             Every business is scored out of {SCORE_PEAK} and the list is worked from the top. A

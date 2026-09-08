@@ -34,6 +34,20 @@ export const CELL = 'px-5 py-3 text-[14px]'
 export const TH_TIGHT = `${MONO_LABEL} text-paper-faint whitespace-nowrap px-3 py-2.5 text-left`
 export const CELL_TIGHT = 'px-3 py-3 text-[14px]'
 
+// The same head and cell for a column that sets its content against the far
+// edge rather than the reading one.
+//
+// Written out rather than composed with a `text-right` after `text-left`: two
+// utilities of the same specificity are settled by the order the stylesheet
+// happens to emit them in, not by the order they are written in the class
+// attribute, so one of the two would win everywhere and it would not
+// necessarily be this one. The left measure is the half that gives way, because
+// the gutter on the far side is the card's own edge and is what the head above
+// is aligned to.
+export const TH_END = `${MONO_LABEL} text-paper-faint whitespace-nowrap pl-1 pr-3 py-2.5 text-right`
+export const CELL_END = 'pl-1 pr-3 py-3 text-[14px] text-right'
+export const CELL_END_PACKED = 'pl-1 pr-3 py-1.5 text-[13px] text-right'
+
 // One line a row, for a table somebody is working down rather than reading.
 //
 // A row that carries a second line under each figure is easier to understand

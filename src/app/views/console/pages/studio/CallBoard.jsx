@@ -17,7 +17,11 @@ import { MONO_LABEL, QUIET } from '../../lib/tokens'
  * So it says the live thing and nothing else. Not a count of calls today, not
  * a leaderboard - who is here, what they are on, and how long they have been on
  * it. A caller reads it in the second before they press a number, which is why
- * it is one line above the list rather than a card somewhere on the page.
+ * it sits above the list rather than in a card somewhere on the page.
+ *
+ * Under the live line, the one sentence saying what to do with it. A board of
+ * names is only a safeguard if somebody reads it before dialling rather than
+ * after, and nothing else on the page says so.
  *
  * The whole strip waits for the read. "Nobody is on a call" drawn while the
  * board is still loading is the one sentence that would make somebody dial.
@@ -32,7 +36,7 @@ export default function CallBoard({ presence, you, loading, readAt, onHangUp, ha
   // right up until somebody looks at it.
   return (
     <div className="console-card">
-      <div className="flex min-h-[42px] flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2">
+      <div className="flex min-h-[42px] flex-wrap items-center gap-x-4 gap-y-2 px-4 pb-1 pt-2">
         <span className="flex flex-shrink-0 items-center gap-2">
           <span className="console-stat-dot" aria-hidden="true" />
           <span className={`${MONO_LABEL} text-ink-paper`}>On The Phone</span>
@@ -41,7 +45,7 @@ export default function CallBoard({ presence, you, loading, readAt, onHangUp, ha
         {loading ? (
           <SkeletonBar className="w-44" />
         ) : calls.length ? (
-          <ul className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
+          <ul className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1.5">
             {calls.map(row => (
               <li key={row.user_id} className={`${MONO_LABEL} flex items-center gap-1.5`}>
                 {/* Whose call it is comes first, because that is what decides
@@ -50,7 +54,9 @@ export default function CallBoard({ presence, you, loading, readAt, onHangUp, ha
                     is what nobody reads about themselves. */}
                 <span className="text-accent">{row.user_id === you ? 'You' : callerName(row)}</span>
                 <span className="text-paper-faint">on</span>
-                <span className="text-ink-paper">{row.business?.name || 'a business'}</span>
+                <span className="min-w-0 truncate text-ink-paper">
+                  {row.business?.name || 'a business'}
+                </span>
                 <span className="text-paper-faint">{saidSince(row.on_phone_since, now)}</span>
               </li>
             ))}
@@ -76,6 +82,10 @@ export default function CallBoard({ presence, you, loading, readAt, onHangUp, ha
           )}
         </span>
       </div>
+
+      <p className={`${MONO_LABEL} px-4 pb-2 text-paper-soft`}>
+        Read this before you dial. Anyone named here is already on that business.
+      </p>
     </div>
   )
 }

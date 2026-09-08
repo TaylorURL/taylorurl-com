@@ -32,10 +32,19 @@ import { BUTTON, CHIP, FIELD, MONO_LABEL, QUIET } from '../../lib/tokens'
  * because a setup panel with a Save button is a setup panel somebody changes
  * three things in and closes.
  */
-export default function CallSetup({ prefs, filters, sort, onChange, onApply, onDrop, onKeep }) {
+export default function CallSetup({
+  prefs,
+  people = [],
+  filters,
+  sort,
+  onChange,
+  onApply,
+  onDrop,
+  onKeep,
+}) {
   const [naming, setNaming] = useState('')
   const chosen = new Set(prefs.columns)
-  const narrowings = filterChips(filters)
+  const narrowings = filterChips(filters, people)
   const kept = prefs.views
   const already = kept.find(one => sameNarrowing(one, { filters, sort })) ?? null
   const full = kept.length >= SAVED_VIEW_MAX
