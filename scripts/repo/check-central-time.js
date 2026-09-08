@@ -104,8 +104,6 @@ const EXCEPT = new Map([
   // A stored `YYYY-MM-DD` is a square on a calendar rather than a moment, and
   // moving it into a zone is how it lands on the day before.
   ['src/app/views/portfolio/CaseStudy.jsx', 'a calendar date, rendered from its parts'],
-  // A field with no zone on it, which is what the input is defined to take.
-  ['src/app/views/console/pages/email/NewsletterPage.jsx', 'a datetime-local field'],
   // Machine formats, read by somebody else's parser.
   ['vite/feed-plugin.js', 'RFC-822, in GMT because the format says so'],
   ['vite/site-routes.js', 'sitemap and feed stamps'],
