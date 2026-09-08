@@ -11,6 +11,9 @@ const NO_READ = 'The call list could not be read. Try again in a moment.'
 /** And when a call does not get written down. */
 const NO_RECORD = 'That call could not be recorded. Try it again.'
 
+/** And when a business will not change hands. */
+const NO_HAND = 'That business could not be handed over. Try it again.'
+
 /**
  * How often the list re-reads itself while somebody is looking at it.
  *
@@ -61,12 +64,13 @@ const LIVE_MS = 30_000
  *
  * @param {{token: string|null, enabled: boolean,
  *   filters: {view: string, state: string, pull: string, min_score: string,
- *     town: string, trade: string, sort: string, search: string,
- *     take: number, page: number}}} options
+ *     town: string, trade: string, assigned: string, sort: string,
+ *     search: string, take: number, page: number}}} options
  * @returns {{data: object|null, retained: object|null, error: string|null,
  *   loading: boolean, saving: boolean, readAt: Date|null,
  *   refresh: () => Promise<void>,
- *   record: (call: object) => Promise<object|null>}}
+ *   record: (call: object) => Promise<object|null>,
+ *   hand: (id: string, to: string|null) => Promise<object|null>}}
  */
 export function useCallsFeed({ token, enabled, filters }) {
   const [held, setHeld] = useState(NOTHING_HELD)
@@ -163,6 +167,40 @@ export function useCallsFeed({ token, enabled, filters }) {
     [token, load, toast]
   )
 
+  /**
+   * One business put in somebody else's name, or in nobody's.
+   *
+   * It re-reads for the same reason recording a call does: who holds a business
+   * is one of the things the list can be narrowed by, so a hand-over made while
+   * the list is filtered to one person changes which rows belong on the page.
+   */
+  const hand = useCallback(
+    async (id, to) => {
+      if (!token) return null
+      setSaving(true)
+      try {
+        const response = await fetch(CALLS_PATH, {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ assign: { id, to: to ?? null } }),
+        })
+        const payload = await response.json().catch(() => ({}))
+        if (!response.ok) {
+          if (alive.current) toast(faultFromResponse(response, payload, NO_HAND), 'error')
+          return null
+        }
+        await load()
+        return payload
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_HAND), 'error')
+        return null
+      } finally {
+        if (alive.current) setSaving(false)
+      }
+    },
+    [token, load, toast]
+  )
+
   // Filed under the filter that asked for it: a new town, trade or page is a
   // different question, and the list on screen is not its answer.
   const data = answerFor(held, query)
@@ -184,5 +222,6 @@ export function useCallsFeed({ token, enabled, filters }) {
     readAt,
     refresh: load,
     record,
+    hand,
   }
 }
