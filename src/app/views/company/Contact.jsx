@@ -18,7 +18,6 @@ import {
 import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
 import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { faultMessage } from '@utils/faults'
@@ -275,25 +274,6 @@ export default function Contact() {
                 <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
                   {CONTACT.aside.para}
                 </p>
-                <div className="border-hair-paper mt-8 border-t pt-7">
-                  <div className="flex items-center gap-4">
-                    <img
-                      src="/images/trenton-taylor.webp"
-                      srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
-                      alt=""
-                      width="80"
-                      height="80"
-                      loading="lazy"
-                      decoding="async"
-                      className="border-hair-paper-strong h-20 w-20 shrink-0 rounded-md border object-cover"
-                    />
-                    <div>
-                      <p className="text-[15px] font-semibold text-ink-paper">Trenton Taylor</p>
-                      <p className="section-label-sm text-paper-faint">{BIO_TITLE}</p>
-                    </div>
-                  </div>
-                  <p className="mt-5 text-[14px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
-                </div>
               </div>
 
               <SpotlightCard

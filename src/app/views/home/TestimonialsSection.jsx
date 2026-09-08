@@ -7,7 +7,6 @@ import ReviewStandingRail from '@components/reviews/ReviewStandingRail'
 import { reviewSourceFill, reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
 import { fadeInUp } from '@constants/animations'
 import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
-import { BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import { CLIENT_REVIEW_LIST, QUOTED_SOURCES, reviewSourcesWith } from '@data/reputation/reviews'
 import { AccentGradient } from '@reactbits/kit'
 
@@ -54,25 +53,6 @@ export default function TestimonialsSection() {
               itself this column would be asked for the width of all five badges
               laid end to end and would take it out of the headline beside it. */}
             <div className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
-              <div className="flex items-start gap-4 lg:flex-row-reverse">
-                <img
-                  src="/images/trenton-taylor.webp"
-                  srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
-                  alt=""
-                  width="72"
-                  height="72"
-                  loading="lazy"
-                  decoding="async"
-                  className="border-hair-paper-strong h-[72px] w-[72px] shrink-0 rounded-md border object-cover"
-                />
-                <div className="max-w-[46ch] lg:text-right">
-                  <p className="text-[14px] font-semibold text-ink-paper">
-                    Trenton Taylor{' '}
-                    <span className="text-paper-faint font-normal">· {BIO_TITLE}</span>
-                  </p>
-                  <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
-                </div>
-              </div>
               <ReviewStandingRail />
 
               {/*
