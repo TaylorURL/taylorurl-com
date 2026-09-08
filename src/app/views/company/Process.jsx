@@ -26,9 +26,9 @@ const TIMELINE_DETAIL = [
   {
     icon: MessageCircle,
     description:
-      'You tell me what the business does and what the site has to do for it. I ask questions and tell you straight whether I’m the right fit. Nobody gets a pitch out of this call.',
+      'You tell us what the business does and which customers you want more of. We ask questions and tell you straight whether we are the right fit. Nobody gets a pitch out of this call.',
     client: [
-      'Tell me about the business',
+      'Tell us about the business',
       'Share sites you like (and ones you don’t)',
       'Explain how customers find you today',
     ],
@@ -52,10 +52,10 @@ const TIMELINE_DETAIL = [
   {
     icon: Palette,
     description:
-      'You see the site before it gets built, as real pages with your own photos in them. Tell me what is wrong with it and I keep changing it until it looks like your business.',
+      'You see the site before it gets built, as real pages with your own photos in them. Tell us what is wrong with it and we keep changing it until it looks like your business.',
     client: [
       'Send your logo, photos, and content',
-      'Look the designs over and tell me what you think',
+      'Look the designs over and tell us what you think',
       'Flag anything that doesn’t feel like you',
     ],
     taylorurl: [
@@ -67,7 +67,7 @@ const TIMELINE_DETAIL = [
   {
     icon: Code,
     description:
-      'This is the quiet stretch. I build the site from scratch and send a preview link as it goes, so the finished site is one you have already seen.',
+      'This is the quiet stretch. We build the site from scratch and send a preview link as it goes, so the finished site is one you have already seen.',
     client: [
       'Check in on progress whenever you want',
       'Flag anything that needs to change',
@@ -82,7 +82,7 @@ const TIMELINE_DETAIL = [
   {
     icon: Rocket,
     description:
-      'You click through every page and list what is off. I fix all of it, then put the site live the day you say go.',
+      'You click through every page and list what is off. We fix all of it, then put the site live the day you say go.',
     client: [
       'Click through the whole site',
       'Send any final changes',
@@ -97,8 +97,8 @@ const TIMELINE_DETAIL = [
   {
     icon: HeadphonesIcon,
     description:
-      'Hosting, backups and monitoring stay with me, and so do the small changes: new hours, a new photo on the front page. You text me, and it is handled.',
-    client: ['Run the business', 'Text me when something changes', 'Send photos as you get them'],
+      'Hosting, backups and monitoring stay with us, and so do the small changes: new hours, a new photo on the front page. You text us, and it is handled.',
+    client: ['Run the business', 'Text us when something changes', 'Send photos as you get them'],
     taylorurl: [
       'Keep the site fast and safe',
       'Handle hosting and backups',
@@ -167,7 +167,7 @@ function TimelineRow({ step, index }) {
           </ul>
         </div>
         <div className="bg-paper p-5">
-          <p className="section-label-sm mb-3 text-accent">My Part</p>
+          <p className="section-label-sm mb-3 text-accent">Our Part</p>
           <ul className="space-y-2">
             {step.taylorurl.map(item => (
               <li
@@ -197,8 +197,8 @@ export default function Process() {
   return (
     <div>
       <Seo
-        title="How I Build Your Website in Baytown, TX"
-        description="How I build websites for Baytown and Houston-area small businesses: a reply within the hour, a written plan and price, and a live site in two to four weeks."
+        title="How We Build Your Website in Baytown, TX"
+        description="How we build websites for Baytown and Houston-area small businesses: a reply within the hour, a written plan and price, and a live site in two to four weeks."
         path="/process"
         schema={breadcrumbSchema([
           { name: 'Home', path: '/' },
@@ -209,7 +209,7 @@ export default function Process() {
         draft="iso"
         eyebrow="Process"
         title="Most of the work is mine."
-        description="Six steps, two to four weeks, one person from the first call to launch, for shops around Baytown and Houston. Your part is a few answers and a yes when it looks right."
+        description="Six steps, two to four weeks, one small team from the first call to launch, for shops around Baytown and Houston. Your part is a few answers and a yes when it looks right."
       />
 
       <section className="section-y relative overflow-hidden bg-paper">
@@ -258,12 +258,12 @@ export default function Process() {
             <div>
               <p className="section-label mb-6 block text-accent">What You Bring</p>
               <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink [text-wrap:balance]">
-                What I&apos;ll need <br />
+                What we&apos;ll need <br />
                 <AccentGradient>from you.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              None of it has to be finished. Send what you have and I fill the gaps as we go.
+              None of it has to be finished. Send what you have and we fill the gaps as we go.
             </p>
           </m.div>
 
@@ -296,7 +296,7 @@ export default function Process() {
             transition={{ ...fadeInUp.transition, delay: 0.2 }}
             className="section-label-sm leading-relaxed text-ink-faint"
           >
-            No logo or photos yet? I can point you to people who do that.
+            No logo or photos yet? We can point you to people who do that.
           </m.p>
         </div>
       </section>
@@ -305,7 +305,7 @@ export default function Process() {
         draft="iso"
         heading="Two to four weeks"
         accentText="from here."
-        description="Tell me what the business does and what you want the site to do. A plan and a price come back before any work starts."
+        description="Tell us what the business does and which customers you want. A plan and a price come back before any work starts."
         primaryLabel="Start a Project"
         primaryTo="/start"
       />

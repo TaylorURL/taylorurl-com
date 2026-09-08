@@ -38,7 +38,7 @@ export default function Preamble() {
         <h1
           className={`display-3 font-semibold leading-[1.05] tracking-tightest [text-wrap:balance] ${GROUND.title}`}
         >
-          Everything I do, built into one website.
+          Everything we do, built into one website.
         </h1>
         <p className={`mt-6 text-[17px] leading-relaxed ${GROUND.body}`}>
           One project at one price: from {BUILD_PRICE} paid once for the build, then {MONTHLY_PRICE}{' '}

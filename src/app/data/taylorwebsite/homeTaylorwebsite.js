@@ -76,14 +76,14 @@ export const HOME = {
     eyebrow: 'Process',
     headingLine: 'From first message',
     accentText: 'to handover.',
-    lede: 'One person from the first message to the handover, and a price agreed in writing before any work starts.',
+    lede: 'A small team from the first message to the handover, and a price agreed in writing before any work starts.',
   },
 
   steps: [
     {
       step: '1',
       stage: 'You Start',
-      title: 'Tell me what the work is',
+      title: 'Tell us what the work is',
       description:
         'Send the form and say what you need built or fixed and what it has to do when it is done. A few sentences is plenty. A reply usually comes back within the hour.',
     },
@@ -96,7 +96,7 @@ export const HOME = {
     },
     {
       step: '3',
-      stage: 'I Build',
+      stage: 'We Build',
       title: 'The work, then the handover',
       description:
         'You see where it stands as it goes rather than in a status email. At the end the repositories and the accounts are in your name, with a written account of what was done.',

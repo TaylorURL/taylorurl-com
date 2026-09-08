@@ -24,24 +24,24 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  */
 const STUDIO_ABOUT = {
   seo: {
-    title: 'About Trenton Taylor, Baytown Web Designer',
+    title: 'About TaylorURL, Baytown Web Design Team',
     description:
-      "I'm Trenton Taylor, an independent Baytown, TX web designer building custom websites for shops, trades, and small businesses across the Houston area.",
+      'We are a small team of designers, developers, and local-search specialists in Baytown, TX, bringing customers to shops, trades, and small businesses across the Houston area.',
   },
 
   hero: {
-    eyebrow: 'About Me',
-    title: 'One person builds your site and keeps it running.',
+    eyebrow: 'About Us',
+    title: 'A small team of experts who bring you customers.',
     description:
-      "I'm Trenton Taylor. I answer the phone, I build the site, and when your hours change you text me. Most of my clients are shops and trades around Baytown and the Houston area.",
+      'We are designers, developers, and local-search specialists. We answer the phone, we build the site, and when your hours change you text us. Most of our clients are shops and trades around Baytown and the Houston area.',
   },
 
   story: {
-    eyebrow: 'My Story',
+    eyebrow: 'Our Story',
     heading: 'Baytown shops end up with one of two websites.',
     paragraphs: [
       'One is an agency build that cost more than the shop could justify and looks like every other site that agency sells. The other went up on a free builder years back and still shows hours that changed a while ago.',
-      'I started TaylorURL in Baytown to be the third option. I build the site myself and stay the person who answers when it needs to change. There is nobody here to hand you off to.',
+      'We started TaylorURL in Baytown to be the third option. We build the site ourselves and stay the people who answer when it needs to change. The team is small enough that there is nobody here to hand you off to.',
       'Hosting, backups, monitoring and the small content changes are in the price, and the price stays where it started. The domain is yours and stays in your name.',
     ],
   },
@@ -73,29 +73,29 @@ const STUDIO_ABOUT = {
     },
     {
       icon: Headphones,
-      title: 'You talk to me directly',
+      title: 'You talk to the people doing the work',
       description:
-        'There is nobody between us. You send a message, it lands on my phone, and the answer usually comes back inside the hour.',
+        'No account manager sits between you and the build. You send a message, it lands on the phone of somebody who works on your site, and the answer usually comes back inside the hour.',
     },
     {
       icon: Zap,
       title: 'Live in two to four weeks',
       description:
-        'Most sites go live inside a month. The time goes into building the thing rather than into meetings about building it. You tell me about the business, I get to work.',
+        'Most sites go live inside a month. The time goes into building the thing rather than into meetings about building it. You tell us about the business, we get to work.',
     },
     {
       icon: Shield,
       title: 'Built for local businesses',
       description:
-        'Plumbers, barbers, printers, restaurants, contractors. Businesses that get looked up on a phone before anyone walks in, and that need one person to call when the hours change.',
+        'Plumbers, barbers, printers, restaurants, contractors. Businesses that get looked up on a phone before anyone walks in, and that need somebody who picks up when the hours change.',
     },
   ],
 
   work: {
-    eyebrow: 'How I Work',
+    eyebrow: 'How We Work',
     headingLine: 'Why owners',
-    accentText: 'work with me.',
-    lede: "Four things I won't budge on, whatever the shop does and whatever the site costs.",
+    accentText: 'work with us.',
+    lede: "Four things we won't budge on, whatever the shop does and whatever the site costs.",
   },
 
   processIntro: {
@@ -110,23 +110,23 @@ const STUDIO_ABOUT = {
       num: '01',
       title: 'You reach out',
       description:
-        'Tell me about the business and what you need. A few sentences is plenty. There is no thirty-field intake form.',
-      you: 'Send me a message',
+        'Tell us about the business and what you need. A few sentences is plenty. There is no thirty-field intake form.',
+      you: 'Send us a message',
       me: 'Reply usually within the hour',
     },
     {
       num: '02',
-      title: 'I plan it out',
+      title: 'We plan it out',
       description:
-        'A written plan comes back with the price on it. Nothing gets built until you tell me the plan is right.',
+        'A written plan comes back with the price on it. Nothing gets built until you tell us the plan is right.',
       you: 'Look it over and give feedback',
       me: 'Send a plan and a price in writing',
     },
     {
       num: '03',
-      title: 'I build it',
+      title: 'We build it',
       description:
-        'You watch it come together on a preview link rather than in a status email. Say the word at any point and I change it there and then.',
+        'You watch it come together on a preview link rather than in a status email. Say the word at any point and we change it there and then.',
       you: 'Review and request changes',
       me: 'Build, test, and polish',
     },
@@ -134,7 +134,7 @@ const STUDIO_ABOUT = {
       num: '04',
       title: 'Launch and look after it',
       description:
-        'Your site goes live. Hosting, backups and updates stay on my side, so nothing technical ever lands on your desk.',
+        'Your site goes live. Hosting, backups and updates stay on our side, so nothing technical ever lands on your desk.',
       you: 'Run the business',
       me: 'Keep everything running',
     },
@@ -145,7 +145,7 @@ const STUDIO_ABOUT = {
   // `@components/CtaBanner`, which takes the accented tail whole.
   closing: {
     eyebrow: 'Get in Touch',
-    heading: 'Tell me about',
+    heading: 'Tell us about',
     accentText: 'the business',
     description:
       'A few sentences on what you do and who you want walking in. A reply usually comes back within the hour: a straight answer on fit, then a plan and a price.',

@@ -338,7 +338,7 @@ const STUDIO_NAV_GROUPS = [
         ],
       },
       {
-        head: 'Where I Work',
+        head: 'Where We Work',
         items: [
           {
             to: '/areas',

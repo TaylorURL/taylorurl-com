@@ -105,10 +105,10 @@ export default function SaveSection({ summary, tradeName = '', email = '' }) {
       <div className="grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:gap-16">
         <div>
           <p className={PANEL_EYEBROW}>No Card Needed</p>
-          <h2 className={PANEL_TITLE}>Send me what you have so far.</h2>
+          <h2 className={PANEL_TITLE}>Send us what you have so far.</h2>
           <p className="mt-5 max-w-[46ch] text-[15px] leading-relaxed text-paper-soft">
-            Everything you have picked comes with it. I read it, write back with a plan and a price,
-            and nothing is charged to find out what the work costs.
+            Everything you have picked comes with it. We read it, write back with a plan and a
+            price, and nothing is charged to find out what the work costs.
           </p>
           <p className="mt-4 max-w-[46ch] text-[15px] leading-relaxed text-paper-soft">
             You can keep going through the steps either way. This does not close them.

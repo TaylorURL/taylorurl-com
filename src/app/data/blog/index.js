@@ -52,7 +52,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'So Does Your Business Need a Website?' },
       {
         type: 'p',
-        text: 'If you are a local business trying to grow, yes. Social media sends people to the site. Google ranks the site. Customers trust the site. Without one, the work goes to whoever has one. If yours is still the Facebook page, message me and I will tell you what a site for your business would cost, in writing, before any work starts.',
+        text: 'If you are a local business trying to grow, yes. Social media sends people to the site. Google ranks the site. Customers trust the site. Without one, the work goes to whoever has one. If yours is still the Facebook page, message us and we will tell you what a site for your business would cost, in writing, before any work starts.',
       },
     ],
   },
@@ -104,7 +104,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'What Should You Do About It?' },
       {
         type: 'p',
-        text: 'If the Wix site is your main source of leads and it is not producing them, replace it. A site built for your business, structured for Google, and built to load fast is the upgrade that shows up in the phone log. Send me the address and I will come back with a written plan and a price for replacing it.',
+        text: 'If the Wix site is your main source of leads and it is not producing them, replace it. A site built for your business, structured for Google, and built to load fast is the upgrade that shows up in the phone log. Send us the address and we will come back with a written plan and a price for replacing it.',
       },
     ],
   },
@@ -160,7 +160,7 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: 'A fast, well-structured site and a complete Google Business Profile is how a local business wins search in 2026. None of it is a trick. If you want to know which of those yours is missing, send me the address and I will look.',
+        text: 'A fast, well-structured site and a complete Google Business Profile is how a local business wins search in 2026. None of it is a trick. If you want to know which of those yours is missing, send us the address and we will look.',
       },
     ],
   },
@@ -168,7 +168,7 @@ const ORIGINAL_POSTS = [
     slug: 'how-fast-should-my-website-load',
     title: 'How Fast Should My Website Load?',
     excerpt:
-      'Google publishes the target and then grades every site against it. Here are the grades on work I have shipped, including the ones that came back low.',
+      'Google publishes the target and then grades every site against it. Here are the grades on work we have shipped, including the ones that came back low.',
     category: 'Site Speed',
     date: 'January 25, 2026',
     readTime: '5 min read',
@@ -179,7 +179,7 @@ const ORIGINAL_POSTS = [
       },
       {
         type: 'p',
-        text: "Here is what that looks like on sites I have built. Delux Financial Solutions, a credit-education practice in Houston, scores 98 on mobile and 100 on desktop. Hollingshead Harbor, the marine arm of SRM, comes back at 91 and 99. Compound Industrial Scale Services in Huffman scores 93 on mobile. Faded Barber Shop in Liberty scores 96. Those are Google's own figures, each one the median of three runs.",
+        text: "Here is what that looks like on sites we have built. Delux Financial Solutions, a credit-education practice in Houston, scores 98 on mobile and 100 on desktop. Hollingshead Harbor, the marine arm of SRM, comes back at 91 and 99. Compound Industrial Scale Services in Huffman scores 93 on mobile. Faded Barber Shop in Liberty scores 96. Those are Google's own figures, each one the median of three runs.",
       },
       { type: 'h2', text: 'Why Do the Fast Ones Score High?' },
       {
@@ -212,7 +212,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'Can Speed Be Added Afterwards?' },
       {
         type: 'p',
-        text: 'Almost everything that makes a page fast is decided before a line of it is written: how much code goes to the browser, how the images are sized, where the site is served from, and whether anything has to run before the first word appears. You can trim a slow site. You cannot retrofit a fast one. If your current site is slow, fixing it comes before new content and before anything else you were planning to add, and if you send me the score I will tell you what is behind it.',
+        text: 'Almost everything that makes a page fast is decided before a line of it is written: how much code goes to the browser, how the images are sized, where the site is served from, and whether anything has to run before the first word appears. You can trim a slow site. You cannot retrofit a fast one. If your current site is slow, fixing it comes before new content and before anything else you were planning to add, and if you send us the score we will tell you what is behind it.',
       },
     ],
   },
@@ -227,7 +227,7 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: 'The five website mistakes small businesses keep making are the same on almost every site I look at: no clear next step, stock photos, a hidden phone number, a page that breaks on a phone, and a site nobody has touched since launch. None of them is hard to fix.',
+        text: 'The five website mistakes small businesses keep making are the same on almost every site we look at: no clear next step, stock photos, a hidden phone number, a page that breaks on a phone, and a site nobody has touched since launch. None of them is hard to fix.',
       },
       { type: 'h2', text: '1. There Is No Clear Next Step' },
       {
@@ -265,7 +265,7 @@ const ORIGINAL_POSTS = [
       { type: 'h2', text: 'How Hard Are These to Fix?' },
       {
         type: 'p',
-        text: 'Not very. The photos, the phone number, and the next step you can fix this week. A rebuild for phones or a move off a template builder takes longer, and when I do it the site is usually live inside a month. A site that gets these five right is ahead of most small business sites in town.',
+        text: 'Not very. The photos, the phone number, and the next step you can fix this week. A rebuild for phones or a move off a template builder takes longer, and when we do it the site is usually live inside a month. A site that gets these five right is ahead of most small business sites in town.',
       },
     ],
   },

@@ -248,7 +248,7 @@ export default function NotesIssue() {
             Need help with <AccentGradient>your website</AccentGradient>?
           </>
         }
-        description="I build custom websites for local businesses, look after them, and answer directly when something needs to change."
+        description="We are a small team that brings customers to local businesses: we build the site, look after it, and answer directly when something needs to change."
       />
     </div>
   )

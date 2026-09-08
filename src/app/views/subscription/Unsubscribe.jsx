@@ -29,17 +29,17 @@ const COPY = {
   missing: {
     eyebrow: 'Unsubscribe',
     heading: 'Take your address off the list.',
-    body: 'Enter the address the email arrived at. It comes off every list I send from.',
+    body: 'Enter the address the email arrived at. It comes off every list we send from.',
   },
   invalid: {
     eyebrow: 'Link Refused',
     heading: 'This link doesn’t match an address.',
-    body: 'Open the unsubscribe link from the email again, or reply to that email and I will take the address off.',
+    body: 'Open the unsubscribe link from the email again, or reply to that email and we will take the address off.',
   },
   failed: {
     eyebrow: 'Link Refused',
     heading: 'This link didn’t work.',
-    body: 'Reply to that email and I will take the address off.',
+    body: 'Reply to that email and we will take the address off.',
   },
 }
 

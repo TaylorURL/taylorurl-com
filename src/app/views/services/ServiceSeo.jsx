@@ -197,7 +197,7 @@ export default function ServiceSeo() {
         eyebrow="Let’s Talk"
         heading="Get found where"
         accentText="you work."
-        description="Tell me about the business and the towns it serves. The search work starts with the build and does not stop at launch."
+        description="Tell us about the business and the towns it serves. The search work starts with the build and does not stop at launch."
         primaryLabel="Start a Project"
         primaryTo="/start"
         secondaryLabel="See the Price"

@@ -90,8 +90,8 @@ export default function FinalCtaSection() {
                     Ready to <AccentGradient>be the one they call</AccentGradient>?
                   </h2>
                   <p className="max-w-[44ch] text-[16px] leading-relaxed text-[color:var(--plane-ink-soft)] sm:text-[17px]">
-                    You tell me what the business does and what you need. Hosting, backups,
-                    monitoring, and the small changes after launch stay with me.
+                    You tell us what the business does and which customers you want. Hosting,
+                    backups, monitoring, and the small changes after launch stay with us.
                   </p>
                 </>
               )}

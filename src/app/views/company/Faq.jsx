@@ -23,32 +23,32 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Who do you build websites for?',
-        a: 'Small businesses around Baytown and Houston. Live right now: a barber shop, a print shop, a fleeting service on the bay, an industrial scale company, a real estate agent, and a youth football league. If you serve a local area and most of your work comes from people near you, you are the kind of client I work with.',
+        a: 'Small businesses around Baytown and Houston. Live right now: a barber shop, a print shop, a fleeting service on the bay, an industrial scale company, a real estate agent, and a youth football league. If you serve a local area and most of your work comes from people near you, you are the kind of client we work with.',
       },
       {
         q: 'How long does a build take?',
-        a: 'Most sites are live in two to four weeks. You tell me about the business, I build it, you say what is wrong, I fix it and put it online. What usually moves that date is photos and content coming back slowly, so having those ready is the fastest thing you can do.',
+        a: 'Most sites are live in two to four weeks. You tell us about the business, we build it, you say what is wrong, we fix it and put it online. What usually moves that date is photos and content coming back slowly, so having those ready is the fastest thing you can do.',
       },
       {
         q: 'What do you need from me to get started?',
-        a: 'Your logo if you have one, whatever photos of the work you already have, and half an hour on the phone. I write the copy and design the site. If nothing is ready, we build the content as we go rather than waiting on it.',
+        a: 'Your logo if you have one, whatever photos of the work you already have, and half an hour on the phone. We write the copy and design the site. If nothing is ready, we build the content as we go rather than waiting on it.',
       },
       {
         q: 'Can you redesign an existing site?',
-        a: 'Yes. I look at what you have, work out which pages are costing you calls, and rebuild it. The layout, the order of the pages, and the words all get rethought, not just the colors.',
+        a: 'Yes. We look at what you have, work out which pages are costing you calls, and rebuild it. The layout, the order of the pages, and the words all get rethought, not just the colors.',
       },
     ],
   },
   {
-    title: 'How I work',
+    title: 'How we work',
     questions: [
       {
         q: 'What does ongoing care include?',
-        a: 'Hosting, daily backups, security and software updates, and text or photo changes whenever you need them. If the site throws an error in a visitor’s browser, it reaches me as it happens rather than when somebody calls to tell me.',
+        a: 'Hosting, daily backups, security and software updates, and text or photo changes whenever you need them. If the site throws an error in a visitor’s browser, it reaches us as it happens rather than when somebody calls to tell us.',
       },
       {
         q: 'How is this different from working with an agency?',
-        a: 'You talk to the person building the site, because there is nobody else here. No account manager and no ticket queue. You text me, I make the change, and a year later I am still the one answering.',
+        a: 'You talk to the people building the site. The team is small, so there is no account manager and no ticket queue. You text us, we make the change, and a year later the same people are still answering.',
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',
@@ -69,7 +69,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Can I update content myself?',
-        a: 'On some sites, yes: they come with a simple editor for text and photos. On the rest, you text me the change and it goes live the same day at no charge. Either way, you are never sitting in a queue waiting to fix a price.',
+        a: 'On some sites, yes: they come with a simple editor for text and photos. On the rest, you text us the change and it goes live the same day at no charge. Either way, you are never sitting in a queue waiting to fix a price.',
       },
       {
         q: 'What if I need changes after launch?',
@@ -77,11 +77,11 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Do you only work with businesses in the Houston area?',
-        a: 'No. I am based in Baytown and most clients are around Houston and the bay, but the whole project runs fine by phone, text, and email. Being close enough to come look at the shop is a bonus, not a requirement.',
+        a: 'No. We are based in Baytown and most clients are around Houston and the bay, but the whole project runs fine by phone, text, and email. Being close enough to come look at the shop is a bonus, not a requirement.',
       },
       {
         q: 'Can I stop the monthly?',
-        a: `Yes, any time. There is no annual term to sign, no notice period, and no cancellation fee. The ${MONTHLY_PRICE} is what keeps the site hosted, backed up and watched, so it is part of the cost of having the site rather than an add-on to it: the site stays online to the end of the period you have paid for and comes offline after that. If the monthly ever changes you hear about it in writing well before it is charged. Your domain is yours to move anywhere, and the content you gave me is yours to take.`,
+        a: `Yes, any time. There is no annual term to sign, no notice period, and no cancellation fee. The ${MONTHLY_PRICE} is what keeps the site hosted, backed up and watched, so it is part of the cost of having the site rather than an add-on to it: the site stays online to the end of the period you have paid for and comes offline after that. If the monthly ever changes you hear about it in writing well before it is charged. Your domain is yours to move anywhere, and the content you gave us is yours to take.`,
       },
     ],
   },
@@ -184,7 +184,7 @@ export default function Faq() {
       <PageHero
         draft="node"
         eyebrow="FAQ"
-        title="What owners ask before they hire me."
+        title="What owners ask before they hire us."
         description="Timelines, what it costs, who owns the site, and what happens after launch. If yours is not here, ask and get a straight answer."
       />
 

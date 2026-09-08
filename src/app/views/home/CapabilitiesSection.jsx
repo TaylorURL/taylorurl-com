@@ -195,7 +195,7 @@ export default function CapabilitiesSection() {
           >
             Every site on this page is live.{' '}
             <span className="text-paper-soft">
-              Built for a business nearby, and I still look after every one of them.
+              Built for a business nearby, and we still look after every one of them.
             </span>
           </m.h2>
         </m.div>
@@ -235,7 +235,7 @@ export default function CapabilitiesSection() {
             to="/console/status"
             cta="Open the Board"
             title="Watched after launch"
-            blurb="Every site I look after reports its uptime and its errors to a page anyone can open. When something breaks, I know before you call."
+            blurb="Every site we look after reports its uptime and its errors to a page anyone can open. When something breaks, we know before you call."
           >
             <StatusBoardShot />
           </Card>
@@ -245,8 +245,8 @@ export default function CapabilitiesSection() {
             wide
             to="/process"
             cta="See the Process"
-            title="One person, start to finish"
-            blurb="You talk to whoever is building it. No account manager in between, and the same person answering after launch as before it."
+            title="A small team, start to finish"
+            blurb="You talk to whoever is building it. No account manager in between, and the same people answering after launch as before it."
           >
             <Foot className="p-8 sm:p-10">
               <p className="max-w-[52ch] text-[15px] leading-relaxed text-paper-soft">

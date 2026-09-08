@@ -196,7 +196,7 @@ export function describeArrival({ campaign, referrer } = {}) {
 function faultIn(enquiry) {
   if (enquiry.name.length < 2) return 'Enter your name.'
   if (!EMAIL_PATTERN.test(enquiry.email)) return 'That email address does not look right.'
-  if (enquiry.message.length < 10) return 'Tell me what you need, in a sentence or two.'
+  if (enquiry.message.length < 10) return 'Tell us what you need, in a sentence or two.'
   if (enquiry.contactMethod === 'phone' && enquiry.phone.length < 7) {
     return 'Add a phone number if you want a call back.'
   }

@@ -13,7 +13,7 @@ import { GROUNDS } from '@constants/grounds'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const DESCRIPTION =
-  'Towns around Baytown and Houston where I build and look after small business websites, with a page for each one showing the work already live there.'
+  'Towns around Baytown and Houston where we build and look after small business websites, with a page for each one showing the work already live there.'
 
 // How many trades a town names before its cell on the index stops reading as a
 // summary. The rest are on the town's own page.
@@ -140,7 +140,7 @@ export default function Areas() {
             Working in <span className="text-accent">one of these towns</span>?
           </>
         }
-        description="Tell me what the business needs and you get a plan and a price back. Most sites are live in two to four weeks."
+        description="Tell us what the business needs and you get a plan and a price back. Most sites are live in two to four weeks."
       />
     </div>
   )

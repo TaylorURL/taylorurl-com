@@ -1,7 +1,7 @@
 import Seo from '@components/Seo'
 import HeroSection from './HeroSection'
 import HeroLines from './heroes/HeroLines'
-import OnePersonSection from './OnePersonSection'
+import SmallTeamSection from './SmallTeamSection'
 import CapabilitiesSection from './CapabilitiesSection'
 import ServiceLinesSection from './ServiceLinesSection'
 import TestimonialsSection from './TestimonialsSection'
@@ -27,7 +27,7 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  * else.
  *
  * The second band does not run on the second site, for the reason the reviews
- * do not. Its claim is that one person builds the site, and what it offers as
+ * do not. Its claim is that a small team builds the site, and what it offers as
  * proof is the studio's own client work, read off `@data/portfolio`. The other
  * record sells work to order under a different name and has no portfolio of its
  * own, so the band there would be a row of somebody else's clients: proof it has
@@ -52,7 +52,7 @@ export default function Home() {
       <div id="hero">{IS_SECOND_SITE ? <HeroLines /> : <HeroSection />}</div>
       {IS_SECOND_SITE ? null : (
         <div id="who">
-          <OnePersonSection />
+          <SmallTeamSection />
         </div>
       )}
       <div id="capabilities">

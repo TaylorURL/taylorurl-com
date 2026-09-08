@@ -79,7 +79,7 @@ export default function Tools() {
         draft="iso"
         eyebrow="Built to Order"
         title="When the free one is not the one you need."
-        description="I build booking, ordering, quoting and the rest around how a business already runs rather than bending the business to fit a tool that came off a shelf."
+        description="We build booking, ordering, quoting and the rest around how a business already runs rather than bending the business to fit a tool that came off a shelf."
       >
         <Link to="/services/online-tools" className="btn btn-secondary">
           What a Custom Tool Covers
@@ -92,7 +92,7 @@ export default function Tools() {
         eyebrow="Start"
         title={
           <>
-            Tell me about <span className="text-accent">your business</span>.
+            Tell us about <span className="text-accent">your business</span>.
           </>
         }
         description="Pick the trade, check the software you already run, and get a plan and a price back. Most sites are live in two to four weeks."

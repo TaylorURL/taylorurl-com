@@ -18,7 +18,7 @@ const PAPER = GROUNDS.paper
 const NOT_INCLUDED = [
   {
     title: 'Logo Design and Photography',
-    body: 'Both come from you. If neither exists yet, I can point you at the people who do that work.',
+    body: 'Both come from you. If neither exists yet, we can point you at the people who do that work.',
   },
   {
     title: 'Paid Ads (Google and Facebook)',

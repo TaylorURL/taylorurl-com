@@ -39,7 +39,7 @@ export default function HeroSeam() {
             {...rise(0.28)}
             className="mt-8 max-w-[44ch] text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
           >
-            Somebody searches, picks one, and calls. I build the site that gets picked, for shops
+            Somebody searches, picks one, and calls. We build the site that gets picked, for shops
             around Baytown and clients anywhere.
           </m.p>
 

@@ -179,8 +179,8 @@ export default function HowItWorksSection() {
                   </h2>
                 </div>
                 <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-                  First message to live website, usually two to four weeks. One person to talk to,
-                  and I keep it online after that.
+                  First message to live website, usually two to four weeks. A small team to talk to,
+                  and we keep it online after that.
                 </p>
               </>
             )}

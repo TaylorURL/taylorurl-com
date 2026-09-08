@@ -121,7 +121,7 @@ export default function NotFound() {
           </m.h1>
 
           <m.p {...entering(2)} className="mt-5 max-w-md text-[16px] leading-relaxed text-ink-soft">
-            Catch a few bugs while you&apos;re here, then head to the home page or tell me what you
+            Catch a few bugs while you&apos;re here, then head to the home page or tell us what you
             were after.
           </m.p>
 

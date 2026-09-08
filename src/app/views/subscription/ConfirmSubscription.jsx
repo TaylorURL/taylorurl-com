@@ -34,7 +34,7 @@ const COPY = {
   failed: {
     eyebrow: 'Link Refused',
     heading: 'This link didn’t work.',
-    body: 'Open the link in the newest email, or reply to that email and I will confirm the address.',
+    body: 'Open the link in the newest email, or reply to that email and we will confirm the address.',
   },
 }
 

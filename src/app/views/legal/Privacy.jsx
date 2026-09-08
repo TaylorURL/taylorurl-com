@@ -6,7 +6,7 @@ import { PRIVACY as SECOND_SITE } from '@data/taylorwebsite/legalTaylorwebsite'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
 // The two hats, and the reason this page opens on them. Everything on
-// taylorurl.com is collected by me and answers to me. Everything on a site
+// taylorurl.com is collected by us and answers to us. Everything on a site
 // built for a client - a booking, an enquiry, a customer record - belongs to
 // that client and is only held on their instructions, and a policy that blurs
 // the two tells a shop's customer to write to the wrong person about their own
@@ -16,47 +16,47 @@ const SECTIONS = [
     title: 'Who This Covers',
     content: `This policy covers two different things and it is worth separating them at the top.
 
-On taylorurl.com, I decide what is collected and why, and I answer for it. If you filled in a form here, subscribed to the newsletter, opened the chat, or simply read a page, this policy is the whole answer and you can write to me directly.
+On taylorurl.com, we decide what is collected and why, and we answer for it. If you filled in a form here, subscribed to the newsletter, opened the chat, or simply read a page, this policy is the whole answer and you can write to us directly.
 
-On a website I built for a client, the client decides what is collected and why. Their bookings, enquiries, customer records and mailing lists are theirs. I hold that information for them, on their instructions, so that their site works and stays online, and I do not use it for anything of my own. If you are a customer of one of those businesses, they are the people to ask about your data, and their own privacy notice governs it. Write to me and I will pass the request to them rather than act on it myself.`,
+On a website we built for a client, the client decides what is collected and why. Their bookings, enquiries, customer records and mailing lists are theirs. We hold that information for them, on their instructions, so that their site works and stays online, and we do not use it for anything of our own. If you are a customer of one of those businesses, they are the people to ask about your data, and their own privacy notice governs it. Write to us and we will pass the request to them rather than act on it ourselves.`,
   },
   {
-    title: 'What I Collect On This Site',
+    title: 'What We Collect On This Site',
     content: `Only what the site needs to do its job, and no more than that.
 
 What you hand over: your name, email address, phone number, business name, and whatever else you choose to put in a contact form, a project enquiry, a speed check, the newsletter box or the chat. If you buy through the checkout, the details needed to raise and keep the subscription. A form is recorded as it is filled in rather than only when it is sent, so an address typed into one is kept whether or not you press the button underneath it.
 
 What a visit produces on its own: the page you were on, the address you arrived from, any campaign tags in the link, your browser, operating system and device type, your language, your screen and window size, an approximate location down to the town, how long you stayed, and a random identifier used to tell one visit from the next. Your IP address is read to work out that approximate location and is not kept in the record.
 
-If a page throws an error in your browser, the error and the address it happened on are reported to me so I can fix it. Those reports carry the fault, not you.`,
+If a page throws an error in your browser, the error and the address it happened on are reported to us so we can fix it. Those reports carry the fault, not you.`,
   },
   {
-    title: 'What I Collect For A Client',
-    content: `A site I build usually carries the same visit measurements described above, so the owner can see how many people came and where from, and it carries whatever the business itself asks for: a booking, a quote request, a message, an order.
+    title: 'What We Collect For A Client',
+    content: `A site we build usually carries the same visit measurements described above, so the owner can see how many people came and where from, and it carries whatever the business itself asks for: a booking, a quote request, a message, an order.
 
-That information is the business's, not mine. I do not sell it, mine it, add it to a mailing list of my own, or use it to sell anything to anybody. I keep it available and backed up for as long as the business is a client, and I hand it over on request. When a client leaves, they take it with them, and what remains on my systems is deleted once they confirm they have it.`,
+That information is the business's, not ours. We do not sell it, mine it, add it to a mailing list of our own, or use it to sell anything to anybody. We keep it available and backed up for as long as the business is a client, and we hand it over on request. When a client leaves, they take it with them, and what remains on our systems is deleted once they confirm they have it.`,
   },
   {
     title: 'How The Information Is Used',
     content: `To answer you, to quote and carry out work, to raise and collect payment for it, to keep sites online and fix them when they break, to send the newsletter to people who asked for it, to understand which pages and which advertising are worth keeping, and to meet legal and accounting obligations.
 
-It is not used to make an automated decision about you, and it is not used for anything I have not named here.`,
+It is not used to make an automated decision about you, and it is not used for anything we have not named here.`,
   },
   {
     title: 'Cookies, Analytics And Advertising',
-    content: `This site runs Google Analytics, Google Ads conversion tracking and the Meta advertising pixel. All three set cookies or similar identifiers and all three are third parties with privacy policies of their own. Google Analytics tells me how many people read a page and how they found it. Google Ads records that an advertisement led to a message or a call, so I can tell which advertising is worth paying for. The Meta pixel counts the same visits for advertising. Under Texas law the two advertising ones count as processing for targeted advertising.
+    content: `This site runs Google Analytics, Google Ads conversion tracking and the Meta advertising pixel. All three set cookies or similar identifiers and all three are third parties with privacy policies of their own. Google Analytics tells us how many people read a page and how they found it. Google Ads records that an advertisement led to a message or a call, so we can tell which advertising is worth paying for. The Meta pixel counts the same visits for advertising. Under Texas law the two advertising ones count as processing for targeted advertising.
 
 They load after the page is usable, except on a visit that arrived from an advertisement, where they load straight away: what identifies the click is written on the address you arrived at and is gone as soon as you open a second page.
 
 When you send a form, the name, email address and phone number you typed are also turned into one-way fingerprints in your browser and sent to Google with the record of the conversion, so it can tell that the person who wrote in is the person who clicked. Your details themselves never reach Google, a fingerprint cannot be turned back into them, and Google discards any that do not match an account it already holds.
 
-You can stop all of it. Refuse or delete cookies in your browser settings, use a blocker, or turn on Global Privacy Control, which several browsers and extensions offer as a single switch. Where your browser sends that signal I treat it as an opt out of targeted advertising and will not argue with it. You can also write to ${SUPPORT_EMAIL} and ask, and it will be honoured the same way.
+You can stop all of it. Refuse or delete cookies in your browser settings, use a blocker, or turn on Global Privacy Control, which several browsers and extensions offer as a single switch. Where your browser sends that signal we treat it as an opt out of targeted advertising and will not argue with it. You can also write to ${SUPPORT_EMAIL} and ask, and it will be honoured the same way.
 
 Turning any of this off does not change what the site does for you. Nothing here is behind a cookie wall and no page is withheld from anyone who declines.`,
   },
   {
     title: 'Who The Information Is Shared With',
-    content: `I do not sell personal information, I do not trade it, and I do not hand it to anyone for money.
+    content: `We do not sell personal information, we do not trade it, and we do not hand it to anyone for money.
 
 It reaches the companies that run the machinery behind this business and no further: Vercel, which serves the site; Supabase, which holds the database and runs the background jobs; Stripe, which takes payments; Resend, which delivers email; Google and Meta, as described above; and Trustpilot, where reviews are collected. Each is bound to use what it holds only to provide that service.
 
@@ -64,7 +64,7 @@ Beyond those, information is disclosed only where the law requires it, where it 
   },
   {
     title: 'Payments',
-    content: `Card details never reach me. Checkout and every recurring charge run through Stripe, which is a certified payment processor, and what comes back to me is the last four digits, the card brand, and whether the payment worked. There is nowhere on my systems where a full card number is stored, because there is nowhere it has ever been.`,
+    content: `Card details never reach us. Checkout and every recurring charge run through Stripe, which is a certified payment processor, and what comes back to us is the last four digits, the card brand, and whether the payment worked. There is nowhere on our systems where a full card number is stored, because there is nowhere it has ever been.`,
   },
   {
     title: 'Email And Messages',
@@ -72,9 +72,9 @@ Beyond those, information is disclosed only where the law requires it, where it 
 
 Email about a project, an invoice, an outage or a reply to something you sent is service email rather than marketing, and it continues while you are a client whatever your marketing preferences are.
 
-If you start a quote here, leave an address and do not finish, you may get one message from me asking whether you found what you needed. One message, not a sequence, and it carries the same one-click unsubscribe every other message does. Unsubscribing stops it and everything else.
+If you start a quote here, leave an address and do not finish, you may get one message from us asking whether you found what you needed. One message, not a sequence, and it carries the same one-click unsubscribe every other message does. Unsubscribing stops it and everything else.
 
-The chat on this site is answered by an assistant, with a way through to me when the answer needs a person. What you type there is kept so a conversation can be picked up again and so I can see where the answers were wrong. Do not put card numbers, passwords or anything else sensitive into it.`,
+The chat on this site is answered by an assistant, with a way through to us when the answer needs a person. What you type there is kept so a conversation can be picked up again and so we can see where the answers were wrong. Do not put card numbers, passwords or anything else sensitive into it.`,
   },
   {
     title: 'How Long It Is Kept',
@@ -84,25 +84,25 @@ Where something has to be kept for one of those reasons it is kept, and a deleti
   },
   {
     title: 'How It Is Protected',
-    content: `Everything is served over HTTPS. The database sits behind row level security so an account can only read what it is entitled to, administrative access is limited to me and protected by multi-factor authentication, and credentials are held encrypted rather than in files. Backups are taken and are covered by the same controls as the live data.
+    content: `Everything is served over HTTPS. The database sits behind row level security so an account can only read what it is entitled to, administrative access is limited to us and protected by multi-factor authentication, and credentials are held encrypted rather than in files. Backups are taken and are covered by the same controls as the live data.
 
-No system is perfectly secure and I will not pretend otherwise. If a breach affects your personal information I will tell you and, where the law requires it, the authorities, without waiting to be asked and without waiting for the investigation to finish.`,
+No system is perfectly secure and we will not pretend otherwise. If a breach affects your personal information we will tell you and, where the law requires it, the authorities, without waiting to be asked and without waiting for the investigation to finish.`,
   },
   {
     title: 'Your Rights',
-    content: `You can ask me to confirm whether I hold anything about you, to give you a copy of it in a form you can take elsewhere, to correct it, to delete it, or to stop using it for targeted advertising. You do not need a reason and you do not need a lawyer.
+    content: `You can ask us to confirm whether we hold anything about you, to give you a copy of it in a form you can take elsewhere, to correct it, to delete it, or to stop using it for targeted advertising. You do not need a reason and you do not need a lawyer.
 
-Write to ${SUPPORT_EMAIL} or call ${COMPANY_PHONE}. The first request in any twelve month period costs nothing. You will have an answer within forty-five days, and if a request is genuinely complicated I may take a further forty-five, in which case I will tell you before the first period is up and say why.
+Write to ${SUPPORT_EMAIL} or call ${COMPANY_PHONE}. The first request in any twelve month period costs nothing. You will have an answer within forty-five days, and if a request is genuinely complicated we may take a further forty-five, in which case we will tell you before the first period is up and say why.
 
-If I refuse a request you can appeal it by replying and saying so. An appeal is answered in writing within sixty days with the reasoning behind the decision. If the appeal is refused you may complain to the Texas Attorney General, and nothing here removes a right you have under Texas or federal law.`,
+If we refuse a request you can appeal it by replying and saying so. An appeal is answered in writing within sixty days with the reasoning behind the decision. If the appeal is refused you may complain to the Texas Attorney General, and nothing here removes a right you have under Texas or federal law.`,
   },
   {
     title: 'Children',
-    content: `This site is for businesses and is not directed at children. I do not knowingly collect personal information from anyone under thirteen. If you believe a child has sent me something, write to ${SUPPORT_EMAIL} and it will be deleted.`,
+    content: `This site is for businesses and is not directed at children. We do not knowingly collect personal information from anyone under thirteen. If you believe a child has sent us something, write to ${SUPPORT_EMAIL} and it will be deleted.`,
   },
   {
     title: 'Other Sites',
-    content: `Pages here link out to client sites, review platforms and other people's tools. Once you follow a link you are on somebody else's site under somebody else's policy, and this one stops at the edge of mine.`,
+    content: `Pages here link out to client sites, review platforms and other people's tools. Once you follow a link you are on somebody else's site under somebody else's policy, and this one stops at the edge of ours.`,
   },
   {
     title: 'Changes To This Policy',
@@ -125,19 +125,19 @@ const STUDIO = {
     'What TaylorURL LLC collects on taylorurl.com and on the sites it builds, who else sees it, how long it is kept, and how to get a copy, correction or deletion.',
   title: 'Privacy Policy',
   description:
-    'What is collected here and on the sites I build, what it is used for, who else sees it, and how to have it removed.',
+    'What is collected here and on the sites we build, what it is used for, who else sees it, and how to have it removed.',
   eyebrow: 'Privacy',
   effectiveDate: 'September 5, 2026',
-  appliesTo: 'Visitors, clients, and the customers of sites I build',
+  appliesTo: 'Visitors, clients, and the customers of sites we build',
   summary: [
-    'I do not sell your personal information and I never have.',
+    'We do not sell your personal information and we never have.',
     'A visit records the page, where you came from, your browser and an approximate town. Your IP address is read to work that out and is not kept.',
-    'Google Analytics, Google Ads and the Meta advertising pixel run on this site. You can turn the advertising ones off, and a browser signal asking me to counts.',
-    'On a site I build for a client, their customers’ data is the client’s. I hold it for them and act on their instructions.',
-    'Card numbers never reach me. Stripe takes every payment.',
-    'Ask and you get a copy, a correction or a deletion, free, with an answer inside forty-five days and an appeal if I say no.',
+    'Google Analytics, Google Ads and the Meta advertising pixel run on this site. You can turn the advertising ones off, and a browser signal asking us to counts.',
+    'On a site we build for a client, their customers’ data is the client’s. We hold it for them and act on their instructions.',
+    'Card numbers never reach us. Stripe takes every payment.',
+    'Ask and you get a copy, a correction or a deletion, free, with an answer inside forty-five days and an appeal if we say no.',
   ],
-  introText: `${BRAND_NAME} is a Texas limited liability company, and it is the company that decides what is collected here and answers for it. It is run by one person, Trenton Taylor, which is why this policy is written as "I": the voice is his and the responsibility is the company's. This is the whole of what happens to information that passes through this site and through the sites built on it, and it is written to be read rather than to be survived.`,
+  introText: `${BRAND_NAME} is a Texas limited liability company, and it is the company that decides what is collected here and answers for it. This policy is written as "we": the voice is the company's and so is the responsibility. This is the whole of what happens to information that passes through this site and through the sites built on it, and it is written to be read rather than to be survived.`,
   sections: SECTIONS,
 }
 
@@ -175,8 +175,8 @@ export default function Privacy() {
               >
                 {SUPPORT_EMAIL}
               </a>{' '}
-              or call {COMPANY_PHONE}. A request to see, correct or delete what I hold costs nothing
-              and is answered by the person who does the work.
+              or call {COMPANY_PHONE}. A request to see, correct or delete what we hold costs
+              nothing and is answered by the people who do the work.
             </>
           ),
         }}

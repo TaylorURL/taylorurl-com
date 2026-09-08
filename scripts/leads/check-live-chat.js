@@ -269,7 +269,7 @@ check(
 
 /* The sentence a refused visitor reads. */
 check(!/\bAI\b|bot|violat|abuse|attempt/i.test(REFUSAL), 'the refusal accuses the visitor')
-check(REFUSAL.includes('Trenton'), 'the refusal does not name the way through')
+check(/\bteam\b/i.test(REFUSAL), 'the refusal does not name the way through')
 
 if (failures) {
   console.error(`live-chat: ${failures} checks failed`)
