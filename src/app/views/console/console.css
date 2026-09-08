@@ -2017,8 +2017,15 @@
    beside - two cards sharing a phone's width are two columns of four words - so
    it lies over the panel instead and is brought forward by a control on it.
 
-   1180px is where 28rem plus 27rem plus the gutter between them stops
-   squeezing the panel that opens under it. */
+   Beside, it takes everything the panel leaves rather than a width of its own.
+   A card of a fixed width against the far edge leaves a band of scrim down the
+   middle of the screen, which reads as a third thing between the two rather
+   than as the room they are set in - and the room is not free: what is on the
+   left is a script somebody is reading out loud, and every column of it is one
+   fewer line their eye has to travel back for.
+
+   1180px is where the panel's 28rem still leaves this enough to be a column
+   rather than a margin. */
 .console-side-lead {
   @apply absolute inset-0 z-10 hidden flex-col overflow-hidden;
   background-color: var(--console-card-bg);
@@ -2032,7 +2039,7 @@
 @media (min-width: 1180px) {
   .console-side-lead,
   .console-side-lead[data-open='true'] {
-    @apply static z-0 mr-auto flex h-full w-full max-w-[27rem];
+    @apply static z-0 flex h-full min-w-0 flex-1;
     border-right: 1px solid var(--paper-hairline-strong);
     box-shadow: var(--console-float-shadow);
   }
