@@ -80,9 +80,16 @@ export default async function handler(request, response) {
     response.setHeader('Cache-Control', 'private, no-store')
     response.status(200).json(await upstream.json())
   } catch (cause) {
+    // 504 rather than 502, because the two are different conditions and only
+    // this one is routine. The collector answering badly is a fault; the
+    // collector not answering inside the deadline is this proxy choosing not to
+    // wait, which is the policy above working. The console rides straight over
+    // it on the last good figures, and the status is what lets the page's
+    // reporter tell a slow upstream from a broken one rather than raising an
+    // incident over a poll that cleared itself.
     console.error('analytics: the collector did not answer for view %s', view, cause)
     response
-      .status(502)
+      .status(504)
       .json({ error: 'The traffic figures could not be read just now. Try again shortly.' })
   } finally {
     clearTimeout(timer)

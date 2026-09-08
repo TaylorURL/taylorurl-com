@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.37.14-2f6bff?style=for-the-badge" alt="Version 2026.37.14" />
+  <img src="https://img.shields.io/badge/version-2026.37.15-2f6bff?style=for-the-badge" alt="Version 2026.37.15" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -232,7 +232,7 @@ Everything a reader sees comes off the project's own row. `name` and `mark_url` 
 
 The address has to be on a domain Resend has verified against the studio's account, which is `notifications@taylorurl.com` until a client verifies their own. Moving a project to its own address afterwards is one column changing and nothing else.
 
-There is no template per project. A notification is a heading, a short reading of facts and one thing to open, and a project that needs its own layout needs its own product rather than a branch in this one. `lib/mail/catalogue.js` draws the family from a sample, so what a client's message looks like can be read in the mail console beside everything else the studio sends.
+There is no template per project. A notification is a heading, a short reading of facts and one thing to open, and a project that needs its own layout needs its own product rather than a branch in this one.
 
 ### Adding the next project
 
@@ -249,7 +249,7 @@ The row is the whole of it. Nothing about a new project is a release on this sid
 
 ```
 taylorurl-com/
-├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the mailing list and its Resend webhook, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
+├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the newsletter's send, its due schedule and its Resend webhook, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
 ├── brand/                     The social post generator, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
 │   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, and the shapes a value takes before it reaches a column
@@ -257,7 +257,7 @@ taylorurl-com/
 │   ├── http/                  Request guards, the per-caller window, the timed fetch, the scheduler check, the public-address check, and the console's edge proxy
 │   ├── leads/                 The address the configurator records, the two pages that record one, and the one message a lead who did not finish gets
 │   ├── live-chat/             How much of the assistant one connection gets, and what a typed message is read for before a turn is spent
-│   ├── mail/                  The sheet every message is drawn on, the studio's identity and bio, the mailing list's audience and issues, the confirmation bodies, the notice to the studio's own inbox, the catalogue the mail console reads, the safe preview, and the brand a client project's notification is drawn in
+│   ├── mail/                  The sheet every message is drawn on, the studio's identity and bio, the mailing list's audience and issues, the confirmation bodies, the notice to the studio's own inbox, the catalogue every family is drawn from for a design read, and the brand a client project's notification is drawn in
 │   ├── outreach/              The message a prospect is given, the segments and the letter variants, the first names a mailbox can be greeted by, and the door every outreach job stands behind
 │   │   ├── prospects/         Whether a business can be written to at all - the address, the exclusions, the host, the site search, the youth reading, the speed-check bridge, and who is left to ring
 │   │   ├── audit/             The measurement of their site: the PageSpeed run, what a score means, the capture
@@ -316,7 +316,7 @@ taylorurl-com/
 │   │   │   ├── analytics/     Charts, and under lib/ the number formatting and the pages the console does not count
 │   │   │   ├── status/        The uptime board, the console's public section
 │   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
-│   │   ├── hooks/             console/ (fourteen feeds, the state they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
+│   │   ├── hooks/             console/ (eleven feeds, the state they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
 │   │   ├── constants/         navigation, seo, business-schema, drafting, animations, grounds, mesh, routes
 │   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, newsletter/, console/, supabase/, liveChat.js
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, how a site reading is worded, and the pacing of a wait nothing reports on
