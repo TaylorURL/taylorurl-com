@@ -148,9 +148,27 @@ async function readPresence(db, now) {
   })
 }
 
-/** The desk as a console draws it. */
-async function desk(db, userId, now) {
-  const [prefs, presence] = await Promise.all([readPrefs(db, userId), readPresence(db, now)])
+/**
+ * The desk as a console draws it.
+ *
+ * `withPrefs` is off for a beat, and that is most of the traffic here. A beat
+ * lands three times a minute per console and asks one question - who is on a
+ * number right now - while the setup it used to fetch alongside changes only
+ * when the person at the console changes it, and when they do they are the one
+ * telling this endpoint. So the second read is made when it can have an answer
+ * worth having: the first paint, and a save.
+ *
+ * What that gives up is a second tab picking up a setup changed in the first
+ * within twenty seconds. It never applied it to the list anyway - a filter
+ * moved in one tab reaching across to move another tab's list is the behaviour
+ * the console already refuses - so what is actually lost is the column chooser
+ * in the other tab reading a version behind until it is reopened.
+ */
+async function desk(db, userId, now, { withPrefs = true } = {}) {
+  const [prefs, presence] = await Promise.all([
+    withPrefs ? readPrefs(db, userId) : Promise.resolve(undefined),
+    readPresence(db, now),
+  ])
   return {
     status: 200,
     body: {
@@ -158,7 +176,10 @@ async function desk(db, userId, now) {
       // call they are on rather than a colleague's lock, and nothing else in
       // the payload distinguishes the two.
       you: userId,
-      prefs,
+      // Left off a beat's answer entirely rather than sent as null, because a
+      // console that reads null as "no setup stored" would draw the defaults
+      // over whatever the account actually chose.
+      ...(withPrefs ? { prefs } : {}),
       presence,
       at: now.toISOString(),
       beat_ms: BEAT_MS,
@@ -308,7 +329,12 @@ export default async function handler(request, response) {
         const body = request.body ?? {}
         if (body.prefs) await savePrefs(wired.db, account.userId, body.prefs)
         const refused = await beat(wired.db, account.userId, body, now)
-        answer = await desk(wired.db, account.userId, now)
+        // The setup comes back with a save, so the console draws what was
+        // actually stored rather than what it hoped would be, and with a claim
+        // or a release, which are rare. A plain beat gets the board alone.
+        answer = await desk(wired.db, account.userId, now, {
+          withPrefs: Boolean(body.prefs) || 'on_phone' in body,
+        })
         // A refused claim still answers with the desk. The console that met it
         // has to redraw the board it was refused against, or it sits holding a
         // lock nobody gave it and asks for the same number again.

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
-import { answerFor, NOTHING_HELD } from './feedState'
+import { feedShows, NOTHING_HELD } from './feedState'
 
 const CALLS_PATH = '/api/calls-admin'
 
@@ -53,6 +53,15 @@ const LIVE_MS = 30_000
  * and moves three of the five figures above it, so patching would mean
  * recomputing a ranking the page does not hold.
  *
+ * What a re-read never does is empty the screen. A payload is filed under the
+ * question it answered and reads back as nothing under any other, which is
+ * right - last question's rows are not this question's answer - but "not the
+ * answer" was being drawn as "no answer", so every filter, every sort, every
+ * page and every recorded call replaced a correct table with placeholder bars
+ * until the endpoint had re-ranked fifteen hundred businesses. The rows stay
+ * up and `reading` says they are one question behind. Placeholders are kept
+ * for the one case that has no rows to keep: the first read of all.
+ *
  * The two failures go to different places. A read that does not land leaves
  * the section with nothing to draw, so it is held in `error` and stands where
  * the rows would have been; a notice that faded after eight seconds would
@@ -67,7 +76,8 @@ const LIVE_MS = 30_000
  *     town: string, trade: string, assigned: string, sort: string,
  *     search: string, take: number, page: number}}} options
  * @returns {{data: object|null, retained: object|null, error: string|null,
- *   loading: boolean, saving: boolean, readAt: Date|null,
+ *   shown: object|null, loading: boolean, behind: boolean,
+ *   saving: boolean, readAt: Date|null,
  *   refresh: () => Promise<void>,
  *   record: (call: object) => Promise<object|null>,
  *   hand: (id: string, to: string|null) => Promise<object|null>}}
@@ -202,22 +212,20 @@ export function useCallsFeed({ token, enabled, filters }) {
   )
 
   // Filed under the filter that asked for it: a new town, trade or page is a
-  // different question, and the list on screen is not its answer.
-  const data = answerFor(held, query)
-  const error = answerFor(failed, query)
-
-  // The last answer that landed, whichever question it answered. The controls
-  // describing the question - the town and trade lists, the pager's count of
-  // pages - are not figures the read answers for, and deriving them from
-  // `data` would empty the dropdown of the option just picked and unmount the
-  // pager the moment Next is pressed.
-  const retained = held.value
+  // different question, and the list on screen is not its answer - but it is
+  // still the last true answer, so it stays up rather than being replaced by
+  // grey bars. The three states and the rule behind them live in `feedState`,
+  // because every console feed re-reads and every one of them had this to get
+  // right.
+  const { data, error, retained, loading, behind, shown } = feedShows(held, failed, query)
 
   return {
     data,
+    shown,
     retained,
     error,
-    loading: !data && !error,
+    loading,
+    behind,
     saving,
     readAt,
     refresh: load,
