@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { m } from 'framer-motion'
-import { ChevronLeft, ChevronRight, Phone, RotateCw } from 'lucide-react'
+import { BookOpen, ChevronLeft, ChevronRight, Phone, RotateCw } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
@@ -49,6 +49,7 @@ import {
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
 import { fullCount } from '../../../analytics/lib/format'
+import CallHandbook from './CallHandbook'
 
 /**
  * The businesses to ring, in the order to ring them, and what happened when
@@ -463,7 +464,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
 }
 
 /** Everything known about one business, and the form that adds to it. */
-function Sheet({ row, saving, recorded, onRecord, startOn }) {
+function Sheet({ row, saving, recorded, onRecord, startOn, onHandbook }) {
   const href = dialHref(row.phone)
 
   return (
@@ -482,6 +483,18 @@ function Sheet({ row, saving, recorded, onRecord, startOn }) {
           {row.phone}
         </a>
       )}
+
+      {/* The way to what to say, on a screen with no room to show it alongside.
+          Under the number rather than at the foot of the record, because the
+          moment it is wanted is the moment the number has just been pressed. */}
+      <button
+        type="button"
+        className={`${QUIET} justify-center min-[1180px]:hidden`}
+        onClick={onHandbook}
+      >
+        <BookOpen aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+        What To Say
+      </button>
 
       <div className="grid gap-1">
         <p className={`${MONO_LABEL} text-paper-faint`}>Why They Are Here</p>
@@ -666,6 +679,9 @@ export default function CallsPage() {
   const [openRow, setOpenRow] = useState(null)
   const [asked, setAsked] = useState(null)
   const [recorded, setRecorded] = useState(null)
+  // Only read on a screen too narrow to carry the handbook beside the record.
+  // Where there is room for both, the stylesheet shows it whatever this says.
+  const [handbook, setHandbook] = useState(false)
   const [batch, setBatch] = useState([])
   const [worked, setWorked] = useState({})
   const [at, setAt] = useState(0)
@@ -796,12 +812,14 @@ export default function CallsPage() {
     setOpenRow(row)
     setAsked(null)
     setRecorded(null)
+    setHandbook(false)
   }, [])
 
   const closeBusiness = useCallback(() => {
     setOpenRow(null)
     setAsked(null)
     setRecorded(null)
+    setHandbook(false)
   }, [])
 
   // A call recorded through the record while Call Mode is open finishes the
@@ -1246,12 +1264,24 @@ export default function CallsPage() {
           adds to that record. Held in state rather than resolved out of the
           current page, because recording a call takes the business off the
           working list and the panel would go blank under whoever was reading
-          it. */}
+          it.
+
+          Against the far edge, what to say to them: the opening written out
+          with this business's own facts in it, the answer to whatever they ask,
+          and the sentence for whatever they push back with. It arrives with the
+          record and leaves with it, because a script is only ever read at
+          somebody. */}
       <SidePanel
         open={Boolean(openRow)}
         title="Business"
         aside={openRow ? openRow.phone || undefined : undefined}
         onClose={closeBusiness}
+        leadOpen={handbook}
+        lead={
+          openRow && (
+            <CallHandbook key={openRow.id} row={openRow} onClose={() => setHandbook(false)} />
+          )
+        }
       >
         {openRow && (
           <Sheet
@@ -1261,6 +1291,7 @@ export default function CallsPage() {
             recorded={recorded}
             onRecord={writeFromSheet}
             startOn={asked}
+            onHandbook={() => setHandbook(true)}
           />
         )}
       </SidePanel>
