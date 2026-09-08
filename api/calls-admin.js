@@ -239,6 +239,39 @@ function proofOf(row, { inTrade, inTown }) {
   return null
 }
 
+/** How many client sites a caller is handed to name. Two is a claim; five is a list. */
+const WORK_NAMED = 2
+
+/**
+ * The client sites this business is actually worth naming out loud, if any.
+ *
+ * `proof` already says whether there is work in their trade or their town, and
+ * a score term can stop at that. A caller cannot: "we have built for your line
+ * of work" is a sentence anybody could say, and the whole value of the claim is
+ * that the person on the phone can look the name up while they are still on
+ * the call. So the matching projects come back with the row rather than the
+ * kind of match alone.
+ *
+ * Named against the same `sharesTrade` the letters use, for the reason the note
+ * above `proofIndex` gives. Only genuinely matching work is returned - a row
+ * with nothing to claim gets an empty array, and the handbook says the measured
+ * thing instead rather than naming a client in the wrong trade.
+ */
+function proofWork(row, kind) {
+  if (!kind) return []
+  const near = String(row.town ?? '').toLowerCase()
+  const matched = PORTFOLIO_PROJECTS.filter(project =>
+    kind === 'trade'
+      ? sharesTrade(project, row.trade)
+      : String(project.town ?? '').toLowerCase() === near
+  )
+  return matched.slice(0, WORK_NAMED).map(project => ({
+    name: project.name,
+    town: project.town ?? null,
+    url: project.displayUrl ?? project.url ?? null,
+  }))
+}
+
 /**
  * One business as the list draws it: the row, what its trade says about it,
  * what it scores and why, where it sits, when it comes back, and every call
@@ -250,14 +283,16 @@ function drawn(row, { medians, calls, proof, now }) {
   const median = medians.get(row.trade) ?? null
   const promise = promiseOf(carried, now)
   const ready = readyAt(carried, now)
-  const { score, raw, terms } = scoreOf(row, { median, proof: proofOf(row, proof), calls: history })
+  const held = proofOf(row, proof)
+  const { score, raw, terms } = scoreOf(row, { median, proof: held, calls: history })
 
   return {
     ...row,
     pull: pullBand(row, median),
     pull_ratio: pullOf(row, median),
     trade_median: median,
-    proof: proofOf(row, proof),
+    proof: held,
+    proof_work: proofWork(row, held),
     calls: history,
     last_call: history[0] ?? null,
     tries: triesRun(carried),
