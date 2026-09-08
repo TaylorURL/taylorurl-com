@@ -55,19 +55,21 @@ import {
   TRADE_FLOOR,
   triesRun,
 } from '../lib/outreach/prospects/calls.js'
+// The page sizes, the score floors and the orders are the console's own
+// controls, and they are read from the same module the console draws them from
+// rather than written out again here. Two copies is how an endpoint quietly
+// refuses an option a dropdown is still offering: the control moves, the
+// caller picks it, and the list comes back exactly as it was.
+import {
+  CALL_SCORE_FLOORS,
+  CALL_TAKES,
+  DEFAULT_SORT,
+  DEFAULT_TAKE,
+  SORT_IDS,
+} from '../lib/outreach/prospects/callPrefs.js'
 
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
-
-/** Rows one page carries, and the sizes a caller may ask for. */
-const TAKE_DEFAULT = 50
-const TAKES = Object.freeze([25, 50, 100])
-
-/** The score floors the console offers, which the endpoint holds it to. */
-const SCORE_FLOORS = Object.freeze([40, 55, 70])
-
-/** The orders the list can be read in. */
-const SORTS = Object.freeze(['best', 'waited', 'reviews', 'newest'])
 
 /** The views, which decide which bucket of the set is answered for. */
 const VIEWS = Object.freeze(['list', 'calling', 'resting', 'finished'])
@@ -153,13 +155,13 @@ function oneOf(value, allowed, fallback) {
 /** A page size the endpoint offers, or the default. */
 function takeOf(value) {
   const take = Number.parseInt(String(value ?? ''), 10)
-  return TAKES.includes(take) ? take : TAKE_DEFAULT
+  return CALL_TAKES.includes(take) ? take : DEFAULT_TAKE
 }
 
 /** A score floor the console offers, or null. */
 function floorOf(value) {
   const floor = Number.parseInt(String(value ?? ''), 10)
-  return SCORE_FLOORS.includes(floor) ? floor : null
+  return CALL_SCORE_FLOORS.includes(floor) ? floor : null
 }
 
 /**
@@ -411,7 +413,7 @@ async function list(db, query) {
   const totals = countPlaces(drawnRows)
 
   const view = oneOf(query.view, VIEWS, 'list')
-  const sort = oneOf(query.sort, SORTS, 'best')
+  const sort = oneOf(query.sort, SORT_IDS, DEFAULT_SORT)
   const take = takeOf(query.take)
 
   const pool =
