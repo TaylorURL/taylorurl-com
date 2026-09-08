@@ -478,6 +478,60 @@
           }
           return true
         }
+        // The site's tags fan out to endpoints the site never names. It writes
+        // one script tag for Google's tag library and one for the Meta pixel,
+        // and the vendor's script does the rest: the conversion beacon at
+        // doubleclick, the remarketing pixel, the pixel's own collector. Those
+        // requests render nothing, and they are the most blocked traffic on the
+        // web - every content blocker, privacy extension and filtered corporate
+        // network drops them, a mail scanner detonating a link tears them down
+        // mid-flight, and Google's and Meta's own crawlers refuse them outright
+        // so that crawling a landing page cannot bank a conversion nobody made.
+        // A failure there describes the network the page was opened on. It is
+        // not the site's to answer for and could not be fixed here if it were:
+        // the site does not choose the URL, issue the request or read the
+        // reply. Filed as faults they were nine separate tickets on
+        // 2026-09-08, ruled out one at a time, against a site that was working.
+        //
+        // The loaders are deliberately not in here. `googletagmanager.com` and
+        // `connect.facebook.net` are tags this page writes itself, so those
+        // failing is the site's own wiring and stays reported. Held either way,
+        // because a beacon that starts failing where it used to answer is worth
+        // being able to see from the live console.
+        var beaconHosts = [
+          'doubleclick.net',
+          'googleadservices.com',
+          'googlesyndication.com',
+          'google-analytics.com',
+          'analytics.google.com',
+        ]
+        // The two that are also ordinary destinations the site links to, where
+        // the path is the only thing separating a beacon from a link.
+        var beaconPaths = {
+          'google.com': ['/pagead', '/ccm', '/rmkt', '/ads'],
+          'facebook.com': ['/tr'],
+        }
+        function marketingBeacon(address) {
+          var host, path
+          try {
+            var parsed = new URL(String(address || ''), location.href)
+            host = parsed.hostname.toLowerCase()
+            path = parsed.pathname
+          } catch (ignored) {
+            return false
+          }
+          for (var i = 0; i < beaconHosts.length; i += 1) {
+            var domain = beaconHosts[i]
+            if (host === domain || host.slice(-(domain.length + 1)) === '.' + domain) return true
+          }
+          var paths = beaconPaths[host.replace(/^www\./, '')]
+          if (paths) {
+            for (var j = 0; j < paths.length; j += 1) {
+              if (path === paths[j] || path.indexOf(paths[j] + '/') === 0) return true
+            }
+          }
+          return false
+        }
         // A request the page makes writes its own failure to the console when it
         // fails, and a collector that cannot be reached would then be the loudest
         // thing on the page. The same request issued inside a worker writes
@@ -571,6 +625,8 @@
                 var address = event.target.src || event.target.href || ''
                 if (event.target.hasAttribute('data-probe')) {
                   hold('probe', 'No answer at ' + address, '')
+                } else if (marketingBeacon(address)) {
+                  hold('beacon', 'No answer from ' + address.split('?')[0], '')
                 } else {
                   report(
                     'resource',
@@ -624,6 +680,14 @@
               function (response) {
                 if (response.status >= 500) {
                   var where = target.split('?')[0]
+                  // A beacon answering 500 is the same thing as one not
+                  // answering: somebody else's endpoint, on a request the site
+                  // did not make. Reported here it would be the identical
+                  // ticket arriving through a different door.
+                  if (marketingBeacon(target)) {
+                    hold('beacon', 'HTTP ' + response.status + ' from ' + where, '')
+                    return response
+                  }
                   // A gateway timeout is this site's own proxy giving up on a
                   // slow upstream, which is the policy rather than a break: it
                   // holds a deadline and answers rather than keep a serverless
@@ -660,6 +724,10 @@
                 // being able to see.
                 if (error && error.name === 'AbortError') {
                   hold('aborted', 'Cancelled ' + target.split('?')[0], '')
+                  throw error
+                }
+                if (marketingBeacon(target)) {
+                  hold('beacon', 'No answer from ' + target.split('?')[0], '')
                   throw error
                 }
                 report(
