@@ -15,13 +15,23 @@
  *   node scripts/social/social.js post --text-file draft.txt --draft --channel googlebusiness
  *   node scripts/social/social.js post --text-file draft.txt --draft --channel instagram --image trades
  *   node scripts/social/social.js cards --channel instagram
+ *   node scripts/social/social.js rewrite --file edits.json [--dry-run]
  *   node scripts/social/social.js promote
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
 import { registerHooks } from 'node:module'
-import { CADENCE, connect, post, posts, promote, status, wiring } from '../../lib/social/buffer.js'
+import {
+  CADENCE,
+  connect,
+  post,
+  posts,
+  promote,
+  rewrite,
+  status,
+  wiring,
+} from '../../lib/social/buffer.js'
 import { CARDS, assetFor, card, landingFor, leastRecentlyUsed } from '../../lib/social/cards.js'
 import { announce } from '../../lib/social/announce.js'
 import { summary, watch } from '../../lib/social/watch.js'
@@ -243,6 +253,25 @@ async function main() {
     return
   }
 
+  // New words on posts the queue already holds. The file is a list of
+  // `{ id, text }`, which is the shape `status` and `cards` answer in, so a run
+  // that reads the queue and rewrites part of it never has to retype an id.
+  if (command === 'rewrite') {
+    const file = flag('--file')
+    if (!file) throw new Error('rewrite needs --file <edits.json>')
+    const edits = JSON.parse(readFileSync(file, 'utf8'))
+    if (!Array.isArray(edits)) throw new Error(`${file} is not a list of edits`)
+
+    const answer = await rewrite(key, edits, { dryRun: process.argv.includes('--dry-run') })
+    console.log(JSON.stringify(answer, null, 2))
+
+    // A post the queue does not hold is the one failure worth an exit code: it
+    // means the file names something that has already published or been
+    // deleted, and the words it was carrying are still out there.
+    if (answer.missing.length) process.exit(1)
+    return
+  }
+
   if (command === 'post') {
     const file = flag('--text-file')
     if (!file) throw new Error('post needs --text-file')
@@ -285,6 +314,7 @@ async function main() {
     'usage: social.js status | social.js watch | social.js promote [--limit N] | ' +
       'social.js announce --slug SLUG [--dry-run] | ' +
       'social.js cards [--channel SERVICE] | ' +
+      'social.js rewrite --file EDITS.json [--dry-run] | ' +
       'social.js post --text-file F (--at ISO | --draft) [--channel SERVICE] [--image CARD]\n' +
       'watch exits 0 when the queue is publishing, 1 when something needs ' +
       'doing, and 2 when Buffer would not answer and it could not tell.'

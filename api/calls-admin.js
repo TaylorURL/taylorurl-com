@@ -217,7 +217,7 @@ function mediansByTrade(callable) {
  * The trades and towns the studio holds work in, as two sets built once per
  * request rather than a portfolio scan per row.
  *
- * The trade claim is the strongest opener a one-person studio has and it is
+ * The trade claim is the strongest opener this studio has and it is
  * the one claim on a call a person can check in a second, so it is asked
  * exactly the way the letter pipeline asks it - through `sharesTrade`, which
  * exists because calling a pest control company's line of work a go-kart track
