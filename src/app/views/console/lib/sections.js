@@ -1,6 +1,5 @@
 import {
   MarkAccess,
-  MarkAt,
   MarkCanvass,
   MarkDial,
   MarkDials,
@@ -8,13 +7,11 @@ import {
   MarkGauge,
   MarkIndex,
   MarkInflow,
-  MarkIssues,
   MarkLedger,
   MarkNow,
   MarkPage,
   MarkPulse,
   MarkQuery,
-  MarkReach,
   MarkStack,
   MarkSteps,
   MarkTender,
@@ -67,14 +64,13 @@ import {
  * to sign in on clicking one. Settings is locked on the same terms: it is one
  * account's own arrangements, and there is nothing in it to read without one.
  *
- * Outreach, Newsletter, Subscribers, Sent Mail, Builds, Payments and Admin are
- * the other exceptions, and they are the same kind: `admin` marks a section
- * that is not in the menu at all unless the account holds that role. A locked
- * section is one this reader could open by signing in, which is worth showing;
- * a section for a role they will never hold is not an invitation but a list of
- * what somebody else can do, and the endpoints behind them refuse any account
- * that is not an admin, so listing them to a client offers a door that answers
- * only by refusing.
+ * Outreach, Builds, Payments and Admin are the other exceptions, and they are
+ * the same kind: `admin` marks a section that is not in the menu at all unless
+ * the account holds that role. A locked section is one this reader could open
+ * by signing in, which is worth showing; a section for a role they will never
+ * hold is not an invitation but a list of what somebody else can do, and the
+ * endpoints behind them refuse any account that is not an admin, so listing
+ * them to a client offers a door that answers only by refusing.
  *
  * Neither mark is what keeps anything private. The collector verifies the
  * session on every request and answers by account, and the admin endpoints
@@ -104,7 +100,7 @@ import {
  * any one site. Every other section has two readings - the site in scope, or
  * every site at once - and the chooser under the heading is what moves between
  * them. A section with no such pair is offered no chooser, because picking a
- * site over a mailing list or a roll of accounts narrows nothing.
+ * site over a build or a roll of accounts narrows nothing.
  *
  * `description` is the tooltip the menu shows; `meta` is the same section
  * written for a search result, which needs a fuller sentence than a tooltip
@@ -244,49 +240,6 @@ export const SECTIONS = [
     description: 'Businesses found, what went out to them, and what came back.',
     title: 'Outreach - Console',
     meta: 'Every business the cold email engine has found: the address it reached, the audit behind the approach, the stage it stands at, and every message to and from it.',
-  },
-  {
-    id: 'newsletter',
-    mark: MarkIssues,
-    group: 'Email',
-    path: 'newsletter',
-    label: 'Newsletter',
-    admin: true,
-    scope: false,
-    figures: false,
-    description: 'The issues, what is written, what has gone out, and what came back.',
-    title: 'Newsletter - Console',
-    meta: 'Where an issue is written, previewed as the message a reader receives, marked ready, and sent to the people who asked for it, with what each issue did once it landed.',
-  },
-  {
-    id: 'audience',
-    mark: MarkReach,
-    group: 'Email',
-    path: 'audience',
-    label: 'Subscribers',
-    admin: true,
-    // A mailing list is not read over a traffic window, so the strip of
-    // traffic figures and the window that moves them answer nothing here.
-    account: true,
-    scope: false,
-    description: 'Everyone on the mailing list, and where each of them stands.',
-    title: 'Subscribers - Console',
-    meta: 'Every person on the mailing list: the address, the segment it belongs to, where the signup came from, and whether it is subscribed, waiting, or gone.',
-  },
-  {
-    id: 'mail',
-    mark: MarkAt,
-    group: 'Email',
-    path: 'mail',
-    label: 'Sent Mail',
-    admin: true,
-    // What has been sent is not a reading taken over a window, so the strip of
-    // traffic figures and the window that moves them answer nothing here.
-    account: true,
-    scope: false,
-    description: 'Every message the site sends, and who it reached.',
-    title: 'Sent Mail - Console',
-    meta: 'Every message this site sends, laid out as the person on the other end receives it: when it went, the address it reached, and the state it ended in. Any of them can be sent to your own inbox and read as mail.',
   },
   {
     id: 'settings',

@@ -590,7 +590,7 @@ export default function ConsoleFrame() {
   // choice. Every section that reads a site has two readings - the one site, or
   // every site at once - so the line naming the scope is the control that moves
   // between them. The sections answering for the account have one reading, and
-  // naming a site over a mailing list or a roll of accounts states a scope they
+  // naming a site over a build or a roll of accounts states a scope they
   // do not have and cannot be narrowed to.
   const chooseScope = !publicOnly && section?.scope !== false
   const scopeLine = publicOnly
