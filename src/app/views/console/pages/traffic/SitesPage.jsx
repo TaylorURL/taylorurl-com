@@ -3,7 +3,7 @@ import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useSearchParams } from 'react-router-dom'
 import { useConsole } from '../../lib/context'
 import { Sparkline } from '../../../analytics/charts'
-import { compactCount, fullCount, percent } from '../../../analytics/lib/format'
+import { fullCount, percent } from '../../../analytics/lib/format'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import {
   ConsolePage,
@@ -13,13 +13,11 @@ import {
   PanelBody,
   PanelFill,
   PanelFoot,
-  SkeletonBar,
   SkeletonBox,
   SkeletonRows,
 } from '../../ui'
 import { SiteIcon } from '../../SiteIcon'
 import { CELL_TIGHT, CHART_HEIGHT, MONO_LABEL, ROW_HEIGHT, TH_TIGHT } from '../../lib/tokens'
-import { BAR_PITCH, SiteBars } from './SitesCharts'
 
 const REMEMBERED = 'taylorurl_console_sites'
 
@@ -28,30 +26,21 @@ const REMEMBERED = 'taylorurl_console_sites'
 // uses for them.
 const DEFAULT_SORT = 'pageviews'
 
-// How many sites the chart draws. A bar a site wide reads down to about this
-// many in the room the card has; past it the table is the reading and the
-// chart is the head of it.
-const CHARTED = 12
-
 /**
  * The figures a site is compared on, keyed as the overview row carries them.
- *
- * `label` heads the column and `chart` titles the card that draws the figure
- * across every site. `axis` is the short form where there is one, since a tick
- * has a fifth of the room a cell has.
+ * `label` heads the column.
  */
 const FIGURES = {
-  pageviews: { label: 'Views', chart: 'Pageviews', format: fullCount, axis: compactCount },
-  visitors: { label: 'Visitors', chart: 'Visitors', format: fullCount, axis: compactCount },
-  sessions: { label: 'Sessions', chart: 'Sessions', format: fullCount, axis: compactCount },
-  live: { label: 'Now', chart: 'Reading Now', format: fullCount, axis: compactCount },
+  pageviews: { label: 'Views', format: fullCount },
+  visitors: { label: 'Visitors', format: fullCount },
+  sessions: { label: 'Sessions', format: fullCount },
+  live: { label: 'Now', format: fullCount },
 }
 
-// The column of sections is a drawer up to 1024px and a rail from there, so
-// the work is wider at 768 than at 1024: a column let in at `md` has to step
-// out again at `lg`, where the chart beside the table takes a third of the
-// room, and come back once there is width for both.
-const FROM_MD = 'hidden md:table-cell lg:hidden xl:table-cell'
+// Below the tablet width the work is a phone's, where a trend drawn a hundred
+// pixels wide is a squiggle and a fifth figure beside the name crowds every
+// column. Both step out there and come back once there is room for them.
+const FROM_MD = 'hidden md:table-cell'
 
 /**
  * The table's columns in order, each with its share of the width and, where
@@ -162,30 +151,6 @@ function standing({ scoped, sites }) {
   }
 }
 
-/**
- * One reading of the chart above it, in the block its card closes on.
- *
- * A bar says which site is longest and never what it was worth, so the figure
- * answering that belongs against the chart rather than in a card of its own.
- */
-function Reading({ label, value, note, loading }) {
-  return (
-    <span className="flex min-w-0 items-baseline gap-2">
-      <span className={`${MONO_LABEL} text-paper-faint`}>{label}</span>
-      {loading ? (
-        <SkeletonBar className="w-16" />
-      ) : (
-        <span className="font-mono text-[13px] tabular-nums text-ink-paper">{value}</span>
-      )}
-      {!loading && note && (
-        <span className={`${MONO_LABEL} text-paper-faint min-w-0 truncate`} title={note}>
-          {note}
-        </span>
-      )}
-    </span>
-  )
-}
-
 /** What a chart's box says when there is no chart to draw in it. */
 function EmptyFill({ children }) {
   return (
@@ -200,10 +165,9 @@ function EmptyFill({ children }) {
  * which one is drawn.
  *
  * Across the account it is every site side by side over one window, which is
- * the comparison the section exists for. The table is the page: it sorts on
- * any of its figures, and the chart beside it draws whichever figure the table
- * is sorted on, ranked, so a heading clicked is both the rows reordered and
- * the bars redrawn. A row picked scopes the whole console to that site.
+ * the comparison the section exists for. The table is the page, and it sorts on
+ * any of its figures, so a heading clicked is the account ranked on that
+ * figure. A row picked scopes the whole console to that site.
  *
  * Scoped to one it is that site's place in the same comparison - where it
  * ranks, what share of the account's reading it carries, and the shape of its
@@ -327,22 +291,8 @@ export default function SitesPage() {
 
   const rows = ordered(inScope, key, dir)
 
-  // The chart draws the figure the table is sorted on, ranked from the top. A
-  // table sorted by name is sorted on nothing a bar can be the length of, so
-  // the chart falls to views.
-  const chartKey = isFigure(key) ? key : DEFAULT_SORT
-  const figure = FIGURES[chartKey]
-  const ranked = ordered(inScope, chartKey, 'desc')
-  const charted = ranked.slice(0, CHARTED)
-  const highest = ranked[0]
-  const lowest = ranked[ranked.length - 1]
-  // The floor the chart keeps is a bar per site it will draw, which on a first
-  // visit is the live feed's count, since that answers first.
-  const expected = loading ? Math.min(CHARTED, Math.max(3, liveSites.length || 5)) : charted.length
-  const floor = Math.max(CHART_HEIGHT.traffic, expected * BAR_PITCH)
-
   return (
-    <ConsolePage areas={['table chart']} cols="minmax(0,1fr) 18rem">
+    <ConsolePage areas={['table']}>
       <Panel
         area="table"
         title="Sites"
@@ -463,56 +413,6 @@ export default function SitesPage() {
             </tbody>
           </table>
         </PanelBody>
-      </Panel>
-
-      <Panel
-        area="chart"
-        title={figure.chart}
-        aside={
-          charted.length < inScope.length
-            ? `top ${charted.length} of ${inScope.length}`
-            : `${inScope.length} sites`
-        }
-        loading={loading}
-      >
-        {loading ? (
-          <PanelFill minHeight={floor}>
-            <SkeletonBox className="flex flex-col [&>span]:flex-1" />
-          </PanelFill>
-        ) : unreachable ? (
-          <PanelFill minHeight={floor}>
-            <EmptyFill>The traffic figures are not answering.</EmptyFill>
-          </PanelFill>
-        ) : charted.length ? (
-          <PanelFill minHeight={floor} className="pt-2">
-            <SiteBars
-              rows={charted}
-              dataKey={chartKey}
-              label={figure.chart}
-              format={figure.format}
-              axisFormat={figure.axis}
-              fill
-            />
-          </PanelFill>
-        ) : (
-          <PanelFill minHeight={floor}>
-            <EmptyFill>No sites are reporting yet.</EmptyFill>
-          </PanelFill>
-        )}
-        <PanelFoot>
-          <Reading
-            label="Highest"
-            value={highest ? figure.format(highest[chartKey]) : '—'}
-            note={highest?.name}
-            loading={loading}
-          />
-          <Reading
-            label="Lowest"
-            value={lowest ? figure.format(lowest[chartKey]) : '—'}
-            note={lowest?.name}
-            loading={loading}
-          />
-        </PanelFoot>
       </Panel>
     </ConsolePage>
   )
