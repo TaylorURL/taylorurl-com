@@ -166,7 +166,7 @@ export default function Area() {
         id="area-services"
         ground={servicesGround}
         eyebrow="What Gets Built"
-        title="Four ways the work usually starts."
+        title="Four ways the work starts."
         description="A new site, a rebuild of the one you have, the tools that sit behind it, or looking after what is already running."
         meta="Baytown, Texas"
       >

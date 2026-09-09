@@ -84,7 +84,7 @@ export const BLOG_ARTICLES_4 = [
       },
       {
         type: 'p',
-        text: 'Every site we build gets tested the same way before it goes live, throttled to a slow mobile connection on a real phone, with one question being asked: is the number tappable before the page has finished loading. If you have to wait for a page to settle before you can call it, the page is broken, however good it looks on a laptop.',
+        text: 'Every site we build gets tested the same way before it goes live, throttled to a slow mobile connection on a real phone, and we ask one question: is the number tappable before the page has finished loading. If you have to wait for a page to settle before you can call it, the page is broken, however good it looks on a laptop.',
       },
       { type: 'h2', text: 'Does a Plumber Need a Quote Form?' },
       {

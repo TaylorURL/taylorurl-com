@@ -215,7 +215,7 @@ The scope, deliverables, timeline and price for your project are set out in your
       title: 'Nothing Is Sold On This Site',
       content: `There is no checkout here and no account to open. This site describes what we do and gives you a form to start a conversation on, and that is the whole of what it does.
 
-Every engagement starts with a call. The number comes back in writing, and you agree to it before anything begins. The figures shown on the service pages are floors rather than quotes: a bigger job costs more, and you will know that number before it costs you anything.`,
+Every engagement starts with a call. The number comes back in writing, and you agree to it before anything begins. The figures shown on the service pages are floors rather than quotes: the scope settled on the call is what moves the number, and you will know that number before it costs you anything.`,
     },
     {
       title: 'Payment Terms',

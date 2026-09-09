@@ -38,7 +38,7 @@ export const ABOUT_PAGE = {
 
   stats: [
     { value: '3', unit: '', label: 'Services' },
-    { value: '1', unit: '', label: 'Person on the Work' },
+    { value: '0', unit: '', label: 'Account Managers' },
     { value: '<1', unit: 'hr', label: 'Typical Reply Time' },
     { value: '0', unit: '', label: 'Contracts With a Term' },
   ],
