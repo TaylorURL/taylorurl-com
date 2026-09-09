@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react'
 import { m } from 'framer-motion'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { HOW_IT_WORKS_STEPS } from '@data/pages/home'
@@ -62,16 +63,41 @@ function PageShot({ shot, alt }) {
   )
 }
 
-/** A client's own site, off the same capture the portfolio draws. */
+/**
+ * A client's own site, off the same capture the portfolio draws.
+ *
+ * A capture that does not arrive leaves the plane, because the browser's own
+ * mark for a missing image is a torn page and a line of alt text set in the
+ * middle of the strongest band on the home page. The step reads as a claim with
+ * the thing itself behind it, or as a claim standing on its own; it must never
+ * read as a claim whose picture is broken. The frames in `DevicePreview` settle
+ * the same failure the same way, and this is the same capture at the same
+ * address, so the two agree about what a lost one looks like.
+ *
+ * `complete` with no width is read at mount as well as caught on the event. An
+ * image that finished before React attached its handlers fired into nothing,
+ * and this page is prerendered, so the fetch starts while the markup is being
+ * parsed and that race is lost often rather than rarely.
+ */
 function ClientShot({ project }) {
+  const [lost, setLost] = useState(false)
+
+  const readSettledImage = useCallback(node => {
+    if (node && node.complete && node.naturalWidth === 0) setLost(true)
+  }, [])
+
+  if (lost) return null
+
   return (
     <img
+      ref={readSettledImage}
       src={portfolioPreviewSrc(project, 'desktop')}
       alt={`The ${project.name} website, live`}
       width="1200"
       height="750"
       loading="lazy"
       decoding="async"
+      onError={() => setLost(true)}
       className="plane-shot block w-[118%] max-w-none"
     />
   )
