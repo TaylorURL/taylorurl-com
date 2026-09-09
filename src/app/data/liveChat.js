@@ -106,7 +106,20 @@ export async function assistantUp({ signal } = {}) {
     // no would record an outage against a page the reader has already left.
     // It is passed on so the caller can drop it.
     if (cause.name === 'AbortError') throw cause
-    tellUsTheAssistantIsGone(`The door could not be reached: ${cause.message}`)
+    // Everything else here is a probe that never arrived, and that is a
+    // different fact from the two above it: those are the endpoint answering,
+    // and this is nothing answering at all. It stays a no - a browser that
+    // cannot reach the endpoint cannot reach the assistant through it either -
+    // but it is not said out loud, because the sentence would name the
+    // assistant for a fault that belongs to the connection, and because the
+    // reporter's own fetch wrapper has already judged this exact rejection with
+    // more to go on than there is here. It knows whether a controller aborted
+    // the request, whether `pagehide` has fired and the reader is simply
+    // leaving, and what the platform called it; a reader closing the tab
+    // mid-probe produces a bare `TypeError: Failed to fetch` with no name on
+    // it, indistinguishable from an outage by anything this function can see.
+    // Saying it again from up here both files it twice and files it under the
+    // wrong cause.
     return false
   }
 }

@@ -48,11 +48,29 @@ const AGENT_TIMEOUT_MS = 50000
 // page load can afford rather than the one a turn gets.
 const REACH_TIMEOUT_MS = 3000
 
+// How many times the door is knocked on before the answer is taken as no. Two,
+// because the knock crosses to a machine on a home connection and one lost
+// request there is weather rather than an outage.
+const REACH_ASKS = 2
+
+// Between the knocks. Long enough not to land in the same lost moment, short
+// enough to stay inside the page load waiting on the answer.
+const REACH_RETRY_MS = 250
+
 // How long one reachability answer stands in front of the rest. A minute is
 // short enough that a visitor arriving after the assistant comes back is
 // handed it, and long enough that a busy hour costs one probe rather than one
 // per page.
 const REACH_FRESH_S = 60
+
+// How long a no stands, which is not the same question. A yes is cheap to be
+// wrong about for a minute - the widget draws and the turn that follows finds
+// out for itself - and a no takes the widget off the page for everyone handed
+// it. Held under `stale-while-revalidate` a single failed knock was still being
+// served eighty seconds later, so one lost connection removed the widget for
+// close to three minutes and every page load in that window reported it. Ten
+// seconds keeps a real outage cheap without letting a blip outlive itself.
+const REACH_DOWN_S = 10
 
 const MAX_MESSAGE_CHARS = 2000
 const HOUR_MS = 60 * 60 * 1000
@@ -182,19 +200,21 @@ export function answering(status) {
 }
 
 /**
- * Whether the assistant would answer a visitor asking now.
+ * One knock on the door a turn goes through.
  *
- * It knocks on the door a turn goes through rather than the health route
- * beside it, because the health route is answered by the web server in front
- * of the assistant and says nothing about the credential. The body carries no
- * message on purpose: the upstream checks the credential before it reads the
- * body, so the probe proves the door and spends nothing behind it.
+ * It knocks there rather than on the health route beside it, because the
+ * health route is answered by the web server in front of the assistant and
+ * says nothing about the credential. The body carries no message on purpose:
+ * the upstream checks the credential before it reads the body, so the probe
+ * proves the door and spends nothing behind it.
+ *
+ * A status is an answer and is returned. Anything else throws, because the
+ * caller treats a door that answered and a door that could not be knocked on
+ * as two different facts.
  *
  * @returns {Promise<boolean>}
  */
-async function reachable() {
-  if (!SERVICE_KEY || !AGENT_URL || !AGENT_SECRET) return false
-
+async function knock() {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REACH_TIMEOUT_MS)
   try {
@@ -208,12 +228,43 @@ async function reachable() {
       body: '{}',
     })
     return answering(upstream.status)
-  } catch (cause) {
-    console.error('live-chat: probing: %s', cause.message)
-    return false
   } finally {
     clearTimeout(timer)
   }
+}
+
+/**
+ * Whether the assistant would answer a visitor asking now.
+ *
+ * The knock crosses the open internet to a computer in a house, and a single
+ * connection to it failing is the ordinary weather of that route rather than
+ * the assistant being gone. One that does fail is asked again, because the
+ * cost of being wrong is not symmetric: a spare knock costs one request, and a
+ * wrong no takes the widget off the page for everyone the answer is handed to
+ * and files the disappearance as a fault. Measured against production, two
+ * lost connections in an afternoon each removed the widget and each arrived as
+ * a ticket, with the assistant itself up and answering throughout.
+ *
+ * Only a knock that threw is repeated. A status is the upstream answering, and
+ * asking a door that just said no to say it again buys nothing and doubles what
+ * a real outage costs.
+ *
+ * @returns {Promise<boolean>}
+ */
+async function reachable() {
+  if (!SERVICE_KEY || !AGENT_URL || !AGENT_SECRET) return false
+
+  for (let ask = 0; ask < REACH_ASKS; ask += 1) {
+    try {
+      return await knock()
+    } catch (cause) {
+      console.error('live-chat: probing: %s', cause.message)
+    }
+    // Far enough from the last attempt not to land in the same bad moment, and
+    // short enough to stay inside the page load that is waiting on the answer.
+    if (ask < REACH_ASKS - 1) await new Promise(rest => setTimeout(rest, REACH_RETRY_MS))
+  }
+  return false
 }
 
 /** Tells the owner, and never lets the telling break the answer. */
@@ -288,9 +339,14 @@ export default async function handler(request, response) {
   // time, because every visitor on the site asks it once.
   if (request.method === 'GET') {
     const up = await reachable()
+    // A yes is held and served stale while it is checked again; a no is held
+    // briefly and never served stale, so the next visitor asks rather than
+    // inheriting the last one's bad moment.
     response.setHeader(
       'Cache-Control',
-      `public, max-age=0, s-maxage=${REACH_FRESH_S}, stale-while-revalidate=${REACH_FRESH_S * 2}`
+      up
+        ? `public, max-age=0, s-maxage=${REACH_FRESH_S}, stale-while-revalidate=${REACH_FRESH_S * 2}`
+        : `public, max-age=0, s-maxage=${REACH_DOWN_S}`
     )
     response.status(200).json({ up })
     return

@@ -78,6 +78,15 @@ function PreviewImage({ project, device, priority, stageClassName }) {
   const source =
     attempt > CAPTURE_ASKS ? null : previewSource(project, device, attempt, number.current)
   const box = PREVIEW_BOX[device]
+  // The last rung is somebody else's service, and by the time the frame reaches
+  // it the page has already settled what a missing capture looks like: the stage
+  // standing on its own, which is this component working rather than broken.
+  // `data-probe` is what the reporter in the page head reads to tell an ask from
+  // a dependency - it holds the failure for the live console and files nothing -
+  // and it is here for the same reason the console's favicon lookup carries it.
+  // The rungs before this one are this site's own file and keep reporting, so a
+  // capture that has genuinely gone missing still arrives as a fault.
+  const asking = attempt >= CAPTURE_ASKS
 
   useEffect(() => () => clearTimeout(waiting.current), [])
 
@@ -132,6 +141,7 @@ function PreviewImage({ project, device, priority, stageClassName }) {
           key={attempt}
           ref={readSettledImage}
           src={source}
+          {...(asking ? { 'data-probe': '' } : null)}
           alt={`The ${project.name} website on a ${device === 'phone' ? 'phone' : 'desktop'}`}
           width={box.width}
           height={box.height}
