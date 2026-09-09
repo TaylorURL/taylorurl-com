@@ -1,7 +1,9 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Suspense, useEffect, useRef, useState } from 'react'
+import QuietBoundary from '../app-shell/QuietBoundary'
+import { lazyWithRetry } from '@utils/lazyWithRetry'
 
-const Aurora = lazy(() => import('./Aurora/Aurora'))
-const Particles = lazy(() => import('./Particles/Particles'))
+const Aurora = lazyWithRetry(() => import('./Aurora/Aurora'))
+const Particles = lazyWithRetry(() => import('./Particles/Particles'))
 
 // How far ahead of the viewport a background is built. Far enough that it has
 // drawn its first frame before the section it sits behind is scrolled to, near
@@ -53,13 +55,20 @@ function NearViewport({ children }) {
  * The two WebGL backgrounds, split out of the route's initial bundle and held
  * until the reader is near them. Both draw decoration and nothing else, so a
  * visit that never reaches one never pays for it.
+ *
+ * Which is also why neither may answer for the page it sits behind. These mount
+ * from a scroll, long after the document was served, and the chunk they ask for
+ * is the deploy's to delete; without the boundary that rejection reached the
+ * one above the routes, and a wash at the foot of a page reloaded the page.
  */
 export function LazyAurora(props) {
   return (
     <NearViewport>
-      <Suspense fallback={null}>
-        <Aurora {...props} />
-      </Suspense>
+      <QuietBoundary>
+        <Suspense fallback={null}>
+          <Aurora {...props} />
+        </Suspense>
+      </QuietBoundary>
     </NearViewport>
   )
 }
@@ -67,9 +76,11 @@ export function LazyAurora(props) {
 export function LazyParticles(props) {
   return (
     <NearViewport>
-      <Suspense fallback={null}>
-        <Particles {...props} />
-      </Suspense>
+      <QuietBoundary>
+        <Suspense fallback={null}>
+          <Particles {...props} />
+        </Suspense>
+      </QuietBoundary>
     </NearViewport>
   )
 }
