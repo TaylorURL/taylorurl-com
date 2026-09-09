@@ -41,8 +41,8 @@ export default function Preamble() {
           Everything we do, built into one website.
         </h1>
         <p className={`mt-6 text-[17px] leading-relaxed ${GROUND.body}`}>
-          One project at one price: from {BUILD_PRICE} paid once for the build, then {MONTHLY_PRICE}{' '}
-          a month that covers everything the site needs after it.
+          One project at one price: from {BUILD_PRICE} paid once for the build, then from{' '}
+          {MONTHLY_PRICE} a month that covers everything the site needs after it.
         </p>
       </div>
 

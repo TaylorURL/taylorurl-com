@@ -95,7 +95,7 @@ const TIMELINE_DETAIL = [
   {
     icon: HeadphonesIcon,
     description:
-      'Hosting, backups and monitoring stay with us, and so do the small changes: new hours, a new photo on the front page. You text us, and it is handled.',
+      'Hosting, backups and monitoring stay with us, and so do the changes: new hours, a new photo on the front page, a new page. You text us, and it is handled.',
     client: ['Run the business', 'Text us when something changes', 'Send photos as you get them'],
     taylorurl: [
       'Keep the site fast and safe',

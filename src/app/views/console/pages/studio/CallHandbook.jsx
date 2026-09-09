@@ -235,13 +235,13 @@ export default function CallHandbook({ row, caller, onClose }) {
     <>
       <header>
         <div className="grid min-w-0 gap-0.5">
-          <h2>What To Say</h2>
+          <h2>What to Say</h2>
           <p>{row?.name || 'The business on the right'}</p>
         </div>
         {/* Only ever the way back on a screen too narrow to hold both cards.
             Where they sit side by side there is nothing to go back to, and the
             stylesheet takes the button off. */}
-        <button type="button" aria-label="Back To The Business" onClick={onClose}>
+        <button type="button" aria-label="Back to the Business" onClick={onClose}>
           <X className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
         </button>
       </header>
@@ -279,14 +279,14 @@ export default function CallHandbook({ row, caller, onClose }) {
                 event.stopPropagation()
                 retype('')
               }}
-              aria-label="Search The Handbook"
+              aria-label="Search the Handbook"
             />
             {typed && (
               <button
                 type="button"
                 className="text-paper-faint absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-[var(--r-tiny)] transition-colors duration-150 ease-out-soft hover:text-accent"
                 onClick={() => retype('')}
-                aria-label="Clear The Search"
+                aria-label="Clear the Search"
               >
                 <X className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
               </button>
@@ -335,7 +335,7 @@ export default function CallHandbook({ row, caller, onClose }) {
             <div>
               {lines.length > 0 && (
                 <section>
-                  <PartHead label="Opening The Call" count={`${lines.length} lines`} />
+                  <PartHead label="Opening the Call" count={`${lines.length} lines`} />
                   {lines.map(line => (
                     <Line key={line.id} label={line.label}>
                       {line.say}
@@ -347,7 +347,7 @@ export default function CallHandbook({ row, caller, onClose }) {
               {closing.length > 0 && (
                 <section>
                   <PartHead
-                    label="Closing The Call"
+                    label="Closing the Call"
                     count={`${closing.length} of ${CLOSING.length}`}
                   />
                   {closing.map(step => (

@@ -88,7 +88,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: 'Setup and the move are quoted with the rest of the work. After that the only ongoing cost is what the provider charges per mailbox.',
+    body: 'Setup and the move are quoted with the rest of the work. After that the only cost on top of the monthly is what the provider charges per mailbox.',
   },
 ]
 
