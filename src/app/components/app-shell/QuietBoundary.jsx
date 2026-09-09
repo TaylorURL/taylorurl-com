@@ -25,6 +25,11 @@ import { Component } from 'react'
  * it -- which is what the page looked like a frame earlier anyway, since all of
  * these arrive late by design.
  *
+ * How long it stays gone is not decided here. This boundary holds `failed` for
+ * as long as it is mounted, which is the whole visit for anything the layout
+ * carries; `LateChrome` is what offers the piece again, and what a piece not
+ * wrapped in one gets is a single chance.
+ *
  * Silent to the reader is not silent to us. The import's rejection has already
  * gone to the collector by the time this catches it: the reporter in the page
  * head wraps `fetch`, and a chunk that 404s is filed as the fault it is. This
@@ -38,10 +43,13 @@ export default class QuietBoundary extends Component {
   }
 
   // A piece that a press opened leaves the bar behind it holding it open, and
-  // the bar is the only thing that can put that back. Decoration passes no
-  // handler, and nothing is called for it.
-  componentDidCatch() {
-    if (this.props.onFail) this.props.onFail()
+  // the bar is the only thing that can put that back. `LateChrome` listens for
+  // a second reason: this stays failed for as long as it is mounted, so
+  // something outside it has to hear that a piece has gone if the piece is ever
+  // to be offered again. The failure itself goes with the news, because the
+  // address to ask at next is inside it.
+  componentDidCatch(error) {
+    if (this.props.onFail) this.props.onFail(error)
   }
 
   render() {
