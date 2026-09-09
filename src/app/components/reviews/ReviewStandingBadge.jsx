@@ -93,7 +93,17 @@ function StandingRating({ standing }) {
       // lettering and its own blue, and on the dark setting's near-black field
       // its teal half falls to under three to one against what it sits on. The
       // tile is also what keeps one mark from reading two ways on one page.
-      <span className="flex rounded-[var(--r-tiny)] bg-white p-1">
+      //
+      // It hugs the seal and takes the seal's own corner, which is the other
+      // half of that rule. A tile wider than the artwork is white the network
+      // did not issue, and on a dark card it is the lit thing in a row of
+      // muted ones - the badge beside it draws five stars and nothing behind
+      // them. Cutting the tile to the file's own curve leaves the seal reading
+      // as the seal rather than as a sticker on the rail.
+      <span
+        className="flex bg-white"
+        style={{ borderRadius: `${(SEAL_HEIGHT * seal.radius) / seal.height}px` }}
+      >
         <img
           src={seal.src}
           alt=""
