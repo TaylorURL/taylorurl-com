@@ -1,15 +1,17 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { m } from 'framer-motion'
+import { m, useReducedMotion } from 'framer-motion'
 import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  Maximize2,
+  Minimize2,
   Phone,
   RotateCw,
   SlidersHorizontal,
   X,
 } from 'lucide-react'
-import { fadeInUp } from '@constants/animations'
+import { EASE, fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
 import { useCallDesk } from '@hooks/console/useCallDesk'
@@ -50,7 +52,6 @@ import {
 } from '@lib/outreach/prospects/callPrefs.js'
 import { callerMark, callerName, heldByOther } from '@lib/outreach/prospects/callPresence.js'
 import {
-  Area,
   Badge,
   ConsoleError,
   ConsolePage,
@@ -204,6 +205,55 @@ const PULL_TONE = { busy: 'good', steady: 'plain', quiet: 'plain', unread: 'plai
 
 /** Where a table's remembered row shape is filed, per density. */
 const REMEMBERED = 'taylorurl_console_calls_rows'
+
+/**
+ * The block above the table, and how long it takes to fold away.
+ *
+ * The figures, the tabs, the board and the six filters are what the list is
+ * read against, and on a laptop they are also two thirds of the window - which
+ * leaves the table itself eight rows deep, and a caller working fifteen hundred
+ * businesses scrolling a card rather than reading a list. So the whole block
+ * folds, and the table takes the room it leaves.
+ *
+ * It is one fold rather than four collapsible strips, because a page a reader
+ * has to reassemble is worse than either of the two states. The button says
+ * which of the two is on and nothing else is a control.
+ *
+ * A third of a second: long enough to be followed from one state to the other,
+ * short enough that a caller who folds it to read a row is not waiting on it.
+ * A reader who has asked for less motion gets neither: the config around the
+ * page carries that preference for anything that travels, and a box closing on
+ * its own height is not one of the things it reaches, so the fold reads it.
+ */
+const CHROME = 'calls-chrome'
+const FOLD = 0.32
+
+/**
+ * How tall the block is when it is open, measured rather than named.
+ *
+ * A fold has to travel between two numbers, and `auto` is not one: the whole
+ * of what is in there wraps differently at every width, and gains a line the
+ * moment a filter is set. So the content is measured where it stands and the
+ * box around it is animated to that, which also means the box follows the
+ * content while it is open - a chip row appearing eases the block down rather
+ * than snapping it.
+ */
+function useFoldHeight() {
+  const inner = useRef(null)
+  const [tall, setTall] = useState(null)
+  useEffect(() => {
+    const el = inner.current
+    if (!el) return undefined
+    // Rounded up rather than down: half a pixel short of the content is half a
+    // pixel of the last row clipped, and half a pixel over is nothing.
+    const measure = () => setTall(Math.ceil(el.getBoundingClientRect().height))
+    measure()
+    const watch = new ResizeObserver(measure)
+    watch.observe(el)
+    return () => watch.disconnect()
+  }, [])
+  return [inner, tall]
+}
 
 /** An instant as the day and time it happened, in the studio's own zone. */
 function when(value) {
@@ -1024,6 +1074,13 @@ export default function CallsPage() {
   const [at, setAt] = useState(0)
   const [keyOpen, setKeyOpen] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
+  // Whether the list has the page to itself. Held for the sitting rather than
+  // saved to the account: it is the answer to what the caller is doing this
+  // minute - reading the figures, or working the rows - rather than a fact
+  // about how they like the list set up.
+  const [alone, setAlone] = useState(false)
+  const [fold, foldTall] = useFoldHeight()
+  const reducedMotion = useReducedMotion()
 
   // A fetch per keystroke re-reads the whole callable set and the whole calls
   // table, so the typing and the question are two states with a pause between.
@@ -1163,6 +1220,14 @@ export default function CallsPage() {
     if (view !== 'calling') return
     setBatch(current => (current.length ? current : rows))
   }, [view, rows])
+
+  // Call Mode is reached from a row's own dial button as well as from the tabs,
+  // so it can be entered while the block above the list is folded away - and
+  // its batch controls, its tabs and the way back out are all in there. It
+  // unfolds rather than stranding a caller in a view with no way off it.
+  useEffect(() => {
+    if (view === 'calling') setAlone(false)
+  }, [view])
 
   const current = batch[at] ?? null
   const heldHere = current ? heldByOther(desk.held, current.id, desk.you) : null
@@ -1404,264 +1469,297 @@ export default function CallsPage() {
   }
 
   return (
-    <ConsolePage areas={['stats', 'views', 'work']} rows="auto auto minmax(0,1fr)">
-      <Area area="stats">
-        <ConsoleError>{error || desk.error}</ConsoleError>
+    <ConsolePage areas={['alert', 'chrome', 'work']} rows="auto auto minmax(0,1fr)" gap="0">
+      {/* A read that did not land stands outside the fold, because the fold is
+          the one thing that could hide it: a caller working the list at full
+          height is exactly the reader who would otherwise be handed stale rows
+          with nothing on screen saying so. It carries its own air under it
+          rather than taking it from the page, which is what lets the row take
+          no room at all on the reads that do land. */}
+      {(error || desk.error) && (
+        <div className="pb-4" style={{ '--area': 'alert' }}>
+          <ConsoleError>{error || desk.error}</ConsoleError>
+        </div>
+      )}
 
-        {/* What the six figures are counting, said once above them. A strip
-            of totals is the one thing on the page a reader is most likely to
-            take for the page they are looking at. */}
-        <p className={`${MONO_LABEL} text-paper-soft`}>
-          These count every business on the list, not the page in front of you.
-        </p>
+      {/* Everything the list is read against: what the whole set counts to,
+          which view is open, who is on a number, and what the list is narrowed
+          by. It folds away as one block so the table below it can have the
+          screen, and the block carries the gap between itself and the table
+          inside its own height - so a fold that closes leaves nothing behind
+          it, not even the air it stood in.
 
-        <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
-          <StatCard
-            label="To Call"
-            value={loading ? '' : fullCount(totals.call ?? 0)}
-            caption="ready to ring right now"
+          Nothing in here is reachable while it is closed. A search field and
+          six dropdowns clipped to no height are still on the tab order, and a
+          caller tabbing out of the table would otherwise land in controls
+          nobody can see. */}
+      <m.div
+        id={CHROME}
+        className="overflow-hidden"
+        style={{ '--area': 'chrome' }}
+        initial={false}
+        animate={alone ? 'shut' : 'open'}
+        variants={{
+          open: { height: foldTall ?? 'auto', opacity: 1 },
+          shut: { height: 0, opacity: 0 },
+        }}
+        transition={reducedMotion ? { duration: 0 } : { duration: FOLD, ease: EASE }}
+        inert={alone}
+      >
+        <div ref={fold} className="flex flex-col gap-4 pb-4">
+          {/* What the six figures are counting, said once above them. A strip
+              of totals is the one thing on the page a reader is most likely to
+              take for the page they are looking at. */}
+          <p className={`${MONO_LABEL} text-paper-soft`}>
+            These count every business on the list, not the page in front of you.
+          </p>
+
+          <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
+            <StatCard
+              label="To Call"
+              value={loading ? '' : fullCount(totals.call ?? 0)}
+              caption="ready to ring right now"
+              loading={loading}
+            />
+            <StatCard
+              label="Due Back"
+              value={loading ? '' : fullCount(totals.due ?? 0)}
+              caption="asked to be rung back by now"
+              tone={totals.due ? 'accent' : 'plain'}
+              loading={loading}
+            />
+            <StatCard
+              label="Never Called"
+              value={loading ? '' : fullCount(totals.fresh ?? 0)}
+              caption="nobody has tried this number"
+              loading={loading}
+            />
+            <StatCard
+              label="Resting"
+              value={loading ? '' : fullCount(totals.resting ?? 0)}
+              caption="rung recently, waiting out their gap"
+              loading={loading}
+            />
+            {/* The one figure on the strip that is about right now rather than
+                about the table, which is why it pulses and why it sits beside the
+                rest instead of somewhere on its own. */}
+            <StatCard
+              label="On A Call"
+              value={desk.loading ? '' : fullCount(desk.held.size)}
+              caption="numbers somebody is on this minute"
+              tone={desk.held.size ? 'accent' : 'plain'}
+              pulse
+              loading={desk.loading}
+            />
+            <StatCard
+              label="Booked"
+              value={loading ? '' : fullCount(totals.booked ?? 0)}
+              caption="came off the list as work"
+              tone="good"
+              loading={loading}
+            />
+          </m.div>
+
+          <ViewNav
+            views={CALL_VIEWS.map(one => ({
+              ...one,
+              count:
+                one.key === 'resting'
+                  ? (totals.resting ?? 0)
+                  : one.key === 'finished'
+                    ? (totals.booked ?? 0) + (totals.closed ?? 0)
+                    : undefined,
+            }))}
+            current={view}
+            onPick={go}
+            label="Call List Views"
             loading={loading}
           />
-          <StatCard
-            label="Due Back"
-            value={loading ? '' : fullCount(totals.due ?? 0)}
-            caption="asked to be rung back by now"
-            tone={totals.due ? 'accent' : 'plain'}
-            loading={loading}
-          />
-          <StatCard
-            label="Never Called"
-            value={loading ? '' : fullCount(totals.fresh ?? 0)}
-            caption="nobody has tried this number"
-            loading={loading}
-          />
-          <StatCard
-            label="Resting"
-            value={loading ? '' : fullCount(totals.resting ?? 0)}
-            caption="rung recently, waiting out their gap"
-            loading={loading}
-          />
-          {/* The one figure on the strip that is about right now rather than
-              about the table, which is why it pulses and why it sits beside the
-              rest instead of somewhere on its own. */}
-          <StatCard
-            label="On A Call"
-            value={desk.loading ? '' : fullCount(desk.held.size)}
-            caption="numbers somebody is on this minute"
-            tone={desk.held.size ? 'accent' : 'plain'}
-            pulse
+
+          <CallBoard
+            presence={desk.presence}
+            you={desk.you}
             loading={desk.loading}
+            readAt={readAt}
+            hanging={desk.claiming}
+            onHangUp={desk.dropNumber}
           />
-          <StatCard
-            label="Booked"
-            value={loading ? '' : fullCount(totals.booked ?? 0)}
-            caption="came off the list as work"
-            tone="good"
-            loading={loading}
-          />
-        </m.div>
-      </Area>
 
-      <Area area="views">
-        <ViewNav
-          views={CALL_VIEWS.map(one => ({
-            ...one,
-            count:
-              one.key === 'resting'
-                ? (totals.resting ?? 0)
-                : one.key === 'finished'
-                  ? (totals.booked ?? 0) + (totals.closed ?? 0)
-                  : undefined,
-          }))}
-          current={view}
-          onPick={go}
-          label="Call List Views"
-          loading={loading}
-        />
+          {/* Said above the row rather than under it, because the point of the
+              line is that a filter set here is still set tomorrow - which is
+              worth knowing before the first one is picked. */}
+          <p className={`${MONO_LABEL} text-paper-soft`}>
+            Narrow the list here. What you pick is saved to your account and waiting next time you
+            sign in.
+          </p>
 
-        <CallBoard
-          presence={desk.presence}
-          you={desk.you}
-          loading={desk.loading}
-          readAt={readAt}
-          hanging={desk.claiming}
-          onHangUp={desk.dropNumber}
-        />
-
-        {/* Said above the row rather than under it, because the point of the
-            line is that a filter set here is still set tomorrow - which is
-            worth knowing before the first one is picked. */}
-        <p className={`${MONO_LABEL} text-paper-soft`}>
-          Narrow the list here. What you pick is saved to your account and waiting next time you
-          sign in.
-        </p>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <input
-            type="search"
-            className={`${FIELD} max-w-[220px]`}
-            placeholder="Name, town or number"
-            value={typed}
-            onChange={event => setTyped(event.target.value)}
-            aria-label="Search The Call List"
-          />
-          {view !== 'resting' && view !== 'finished' && (
-            <>
-              <select
-                className={filters.state === 'all' ? SELECT : SELECT_ON}
-                value={filters.state}
-                onChange={event => narrow('state', event.target.value)}
-                aria-label="State"
-              >
-                {CALL_STATES.map(one => (
-                  <option key={one.id} value={one.id}>
-                    {one.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                className={filters.min_score === 'all' ? SELECT : SELECT_ON}
-                value={filters.min_score}
-                onChange={event => narrow('min_score', event.target.value)}
-                aria-label="Least Score"
-              >
-                {CALL_SCORES.map(one => (
-                  <option key={one.id} value={one.id}>
-                    {one.label}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
-          <select
-            className={filters.pull === 'all' ? SELECT : SELECT_ON}
-            value={filters.pull}
-            onChange={event => narrow('pull', event.target.value)}
-            aria-label="For Its Trade"
-          >
-            {CALL_PULLS.map(one => (
-              <option key={one.id} value={one.id}>
-                {one.label}
-              </option>
-            ))}
-          </select>
-          {/* Whose book to work. `Mine` is first because it is the one a
-              caller picks, and it is stored as a standing rather than as their
-              own id so a saved narrowing means the same thing to whoever
-              opens it. */}
-          <select
-            className={filters.assigned === 'all' ? SELECT : SELECT_ON}
-            value={filters.assigned}
-            onChange={event => narrow('assigned', event.target.value)}
-            aria-label="Assigned To"
-          >
-            <option value="all">Anybody's</option>
-            <option value={ASSIGNED_MINE}>Mine</option>
-            <option value={ASSIGNED_NOBODY}>Nobody Yet</option>
-            {people
-              .filter(one => one.id !== desk.you)
-              .map(one => (
-                <option key={one.id} value={one.id}>
-                  {one.name || 'One Person'}
-                </option>
-              ))}
-          </select>
-          <select
-            className={filters.town === 'all' ? SELECT : SELECT_ON}
-            value={filters.town}
-            onChange={event => narrow('town', event.target.value)}
-            aria-label="Town"
-          >
-            <option value="all">Every Town</option>
-            {towns.map(one => (
-              <option key={one} value={one}>
-                {one}
-              </option>
-            ))}
-          </select>
-          <select
-            className={filters.trade === 'all' ? SELECT : SELECT_ON}
-            value={filters.trade}
-            onChange={event => narrow('trade', event.target.value)}
-            aria-label="Trade"
-          >
-            <option value="all">Every Trade</option>
-            {trades.map(one => (
-              <option key={one} value={one}>
-                {one}
-              </option>
-            ))}
-          </select>
-          {view === 'list' && (
+          <div className="flex flex-wrap items-center gap-2">
+            <input
+              type="search"
+              className={`${FIELD} max-w-[220px]`}
+              placeholder="Name, town or number"
+              value={typed}
+              onChange={event => setTyped(event.target.value)}
+              aria-label="Search The Call List"
+            />
+            {view !== 'resting' && view !== 'finished' && (
+              <>
+                <select
+                  className={filters.state === 'all' ? SELECT : SELECT_ON}
+                  value={filters.state}
+                  onChange={event => narrow('state', event.target.value)}
+                  aria-label="State"
+                >
+                  {CALL_STATES.map(one => (
+                    <option key={one.id} value={one.id}>
+                      {one.label}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className={filters.min_score === 'all' ? SELECT : SELECT_ON}
+                  value={filters.min_score}
+                  onChange={event => narrow('min_score', event.target.value)}
+                  aria-label="Least Score"
+                >
+                  {CALL_SCORES.map(one => (
+                    <option key={one.id} value={one.id}>
+                      {one.label}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
             <select
-              className={SELECT}
-              value={sort}
-              onChange={event => reorder(event.target.value)}
-              aria-label="Sort Order"
+              className={filters.pull === 'all' ? SELECT : SELECT_ON}
+              value={filters.pull}
+              onChange={event => narrow('pull', event.target.value)}
+              aria-label="For Its Trade"
             >
-              {CALL_SORTS.map(one => (
+              {CALL_PULLS.map(one => (
                 <option key={one.id} value={one.id}>
                   {one.label}
                 </option>
               ))}
             </select>
-          )}
-          <button
-            type="button"
-            className={`${QUIET} ml-auto`}
-            onClick={() => setSetupOpen(true)}
-            aria-haspopup="dialog"
-          >
-            <SlidersHorizontal aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Set Up The List
-          </button>
-          <button type="button" className={QUIET} onClick={refresh}>
-            <RotateCw aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-            Re-read
-          </button>
-        </div>
-
-        {/* What is actually narrowing the list, and this account's own
-            narrowings beside it. Six dropdowns each showing a value is six
-            things to read before somebody knows why a business they expected is
-            not on screen; this is one line, and every part of it is the way to
-            undo itself. */}
-        {(chips.length > 0 || prefs.views.length > 0) && (
-          <div className="flex flex-wrap items-center gap-1.5">
-            {prefs.views.map(one => (
-              <button
-                key={one.id}
-                type="button"
-                className={reading?.id === one.id ? CHIP_ON : CHIP_BUTTON}
-                aria-pressed={reading?.id === one.id}
-                onClick={() => applyView(one)}
+            {/* Whose book to work. `Mine` is first because it is the one a
+                caller picks, and it is stored as a standing rather than as their
+                own id so a saved narrowing means the same thing to whoever
+                opens it. */}
+            <select
+              className={filters.assigned === 'all' ? SELECT : SELECT_ON}
+              value={filters.assigned}
+              onChange={event => narrow('assigned', event.target.value)}
+              aria-label="Assigned To"
+            >
+              <option value="all">Anybody's</option>
+              <option value={ASSIGNED_MINE}>Mine</option>
+              <option value={ASSIGNED_NOBODY}>Nobody Yet</option>
+              {people
+                .filter(one => one.id !== desk.you)
+                .map(one => (
+                  <option key={one.id} value={one.id}>
+                    {one.name || 'One Person'}
+                  </option>
+                ))}
+            </select>
+            <select
+              className={filters.town === 'all' ? SELECT : SELECT_ON}
+              value={filters.town}
+              onChange={event => narrow('town', event.target.value)}
+              aria-label="Town"
+            >
+              <option value="all">Every Town</option>
+              {towns.map(one => (
+                <option key={one} value={one}>
+                  {one}
+                </option>
+              ))}
+            </select>
+            <select
+              className={filters.trade === 'all' ? SELECT : SELECT_ON}
+              value={filters.trade}
+              onChange={event => narrow('trade', event.target.value)}
+              aria-label="Trade"
+            >
+              <option value="all">Every Trade</option>
+              {trades.map(one => (
+                <option key={one} value={one}>
+                  {one}
+                </option>
+              ))}
+            </select>
+            {view === 'list' && (
+              <select
+                className={SELECT}
+                value={sort}
+                onChange={event => reorder(event.target.value)}
+                aria-label="Sort Order"
               >
-                {one.name}
-              </button>
-            ))}
-            {prefs.views.length > 0 && chips.length > 0 && (
-              <span className="border-hair-paper mx-1 h-4 border-l" aria-hidden="true" />
+                {CALL_SORTS.map(one => (
+                  <option key={one.id} value={one.id}>
+                    {one.label}
+                  </option>
+                ))}
+              </select>
             )}
-            {chips.map(chip => (
-              <button
-                key={chip.key}
-                type="button"
-                className={CHIP_BUTTON}
-                aria-label={`Stop narrowing by ${chip.label}`}
-                onClick={() => setFilters(withoutFilter(filters, chip.key))}
-              >
-                {chip.label}
-                <X aria-hidden="true" className="h-3 w-3" strokeWidth={2} />
-              </button>
-            ))}
-            {narrowed && (
-              <button type="button" className={`${QUIET} px-2.5`} onClick={clearAll}>
-                Clear All
-              </button>
-            )}
+            <button
+              type="button"
+              className={`${QUIET} ml-auto`}
+              onClick={() => setSetupOpen(true)}
+              aria-haspopup="dialog"
+            >
+              <SlidersHorizontal aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Set Up The List
+            </button>
+            <button type="button" className={QUIET} onClick={refresh}>
+              <RotateCw aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Re-read
+            </button>
           </div>
-        )}
-      </Area>
+
+          {/* What is actually narrowing the list, and this account's own
+              narrowings beside it. Six dropdowns each showing a value is six
+              things to read before somebody knows why a business they expected is
+              not on screen; this is one line, and every part of it is the way to
+              undo itself. */}
+          {(chips.length > 0 || prefs.views.length > 0) && (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {prefs.views.map(one => (
+                <button
+                  key={one.id}
+                  type="button"
+                  className={reading?.id === one.id ? CHIP_ON : CHIP_BUTTON}
+                  aria-pressed={reading?.id === one.id}
+                  onClick={() => applyView(one)}
+                >
+                  {one.name}
+                </button>
+              ))}
+              {prefs.views.length > 0 && chips.length > 0 && (
+                <span className="border-hair-paper mx-1 h-4 border-l" aria-hidden="true" />
+              )}
+              {chips.map(chip => (
+                <button
+                  key={chip.key}
+                  type="button"
+                  className={CHIP_BUTTON}
+                  aria-label={`Stop narrowing by ${chip.label}`}
+                  onClick={() => setFilters(withoutFilter(filters, chip.key))}
+                >
+                  {chip.label}
+                  <X aria-hidden="true" className="h-3 w-3" strokeWidth={2} />
+                </button>
+              ))}
+              {narrowed && (
+                <button type="button" className={`${QUIET} px-2.5`} onClick={clearAll}>
+                  Clear All
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </m.div>
 
       {view === 'calling' ? (
         <ConsoleSplit
@@ -1812,6 +1910,28 @@ export default function CallsPage() {
                   the answer to the question just asked. */}
               {loading ? '' : behind ? 'Reading' : `${fullCount(shown?.matched ?? 0)} matching`}
             </span>
+          }
+          tools={
+            /* The one control that is not about which businesses are on the
+               list but about how much of the screen they get. It sits in the
+               card's own head because the card is what moves, and because the
+               head is the only part of it still on screen once everything
+               above has folded away - a button that folded with the rest
+               would be a door that locks behind you. */
+            <button
+              type="button"
+              className={QUIET_ROW}
+              aria-controls={CHROME}
+              aria-expanded={!alone}
+              onClick={() => setAlone(one => !one)}
+            >
+              {alone ? (
+                <Minimize2 aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+              ) : (
+                <Maximize2 aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+              )}
+              {alone ? 'Bring The Rest Back' : 'Give It The Screen'}
+            </button>
           }
         >
           <PanelBody>
