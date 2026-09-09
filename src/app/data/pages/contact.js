@@ -26,7 +26,7 @@ const STUDIO_CONTACT = {
   seo: {
     title: 'Contact the Baytown Team at TaylorURL',
     description:
-      'Tell a small Baytown web team what the business does and which customers you want. A reply usually comes within the hour, a plan and a price before any work starts.',
+      'Tell a small Baytown web team what the business does and which customers you want. A reply usually comes within the hour, and a plan and a price before work.',
   },
 
   hero: {

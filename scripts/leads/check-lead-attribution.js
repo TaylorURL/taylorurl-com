@@ -676,7 +676,7 @@ check('every answer in the notice carries the question that produced it', () => 
     same(html.includes(`>${question}</td>`), true, `the laid-out half asks ${question}`)
   }
   // A question already ending in a question mark takes no colon after it.
-  same(text.includes('How should I get back to you? Phone call'), true, 'how to answer')
+  same(text.includes('How should we get back to you? Phone call'), true, 'how to answer')
   same(text.includes('What the site has to do:'), true, 'the written answer has its question')
   same(text.includes('Message:'), false, 'the label that named no question is gone')
 })

@@ -16,7 +16,7 @@ export const ABOUT_PAGE = {
   seo: {
     title: 'About Trenton Taylor, Software Engineer',
     description:
-      'We are a small team that builds custom software, repairs conversion tracking, and runs outbound email for companies anywhere. You talk to the people doing the work.',
+      'A small team that builds custom software, repairs conversion tracking, and runs outbound email for companies anywhere. You talk to the people doing the work.',
   },
 
   hero: {

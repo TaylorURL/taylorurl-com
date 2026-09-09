@@ -16,7 +16,7 @@ import { FIELD_FAULT, FIELD_LABEL, GROUND, PANEL_EYEBROW, PANEL_TITLE } from '..
 const ONBOARDING = [
   {
     title: 'Pick a Password',
-    body: 'The receipt lands and the build opens under the address you paid with.',
+    body: 'The receipt lands, and picking a password opens the build under the address you paid with.',
   },
   {
     title: 'We Reach Out',

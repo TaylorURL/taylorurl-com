@@ -90,7 +90,7 @@ If a page throws an error in your browser, the error, the address it happened on
 
 Nothing is sold here. There is no checkout, no card form and no payment page, so no card number, billing address or bank detail is ever asked for or handled on this site. Work is quoted after a call and invoiced separately, and the Terms page sets that out.
 
-There is no mailing list on this site. Nothing here asks for your address in order to write to you later.
+There is no mailing list on this site. Nothing here asks for your address to write to you later.
 
 Your browser keeps two small things of its own: which colour setting you picked, and any campaign tags the link you arrived on carried, held for up to ninety days so that an enquiry sent a fortnight after the click still says where it came from. Both sit on your device, both are yours to clear, and clearing them costs you nothing on this site.`,
     },
@@ -172,7 +172,7 @@ If we refuse a request you can appeal it by replying and saying so. An appeal is
 export const TERMS = {
   seoTitle: 'Terms of Service',
   seoDescription:
-    'The terms for working with TaylorURL LLC on software, tracking repair and outbound: how work is quoted, what is paid when, who owns what, and how a complaint is handled.',
+    'The terms for working with TaylorURL LLC on software, tracking repair and outbound: how work is quoted, what is paid when, who owns what, and how to complain.',
 
   title: 'Terms of Service',
   description:
@@ -261,7 +261,7 @@ We do not sell it, share it, or add it to a list of ours. You can have a copy at
     },
     {
       title: 'Ownership',
-      content: `For software, what is built is yours. The repository and the accounts it runs on are in your name from the start, which is the point: another engineer can pick the work up after us without asking our permission or waiting for a handover. There is no licence to keep current and nothing switches off when the project ends.
+      content: `For software, what is built is yours. The repository and the accounts it runs on are in your name from the start, which is the point: another engineer can pick the work up after us without asking our permission or waiting for a handover. There is no license to keep current and nothing switches off when the project ends.
 
 For tracking repair, the configuration is yours and it lives in your own accounts. For outbound, the sending domains, the mailboxes and the list are registered and held in your name, and they stay with you.
 
