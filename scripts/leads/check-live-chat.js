@@ -23,7 +23,7 @@ import { fileURLToPath } from 'node:url'
 import { contactIn, leaked, REFUSAL, screen } from '../../lib/live-chat/screen.js'
 import { LIMITS, overCeiling, retryAfter } from '../../lib/live-chat/limits.js'
 import { answering } from '../../api/live-chat.js'
-import { assistantUp } from '../../src/app/data/liveChat.js'
+import { ASK_GAPS_MS, assistantUp } from '../../src/app/data/liveChat.js'
 
 // Nothing here is allowed to reach the network. An unstubbed path fails loudly
 // rather than passing for the wrong reason.
@@ -198,22 +198,90 @@ const body = (ok, payload) => () => ({
   json: () => (payload instanceof Error ? Promise.reject(payload) : Promise.resolve(payload)),
 })
 
+// The same ladder the widget climbs, with the waiting taken out of it. The
+// length is read off the real one rather than written down again, so a round
+// that gains or loses an ask is still the round these checks drive.
+const NOW = ASK_GAPS_MS.map(() => 0)
+const ROUND = ASK_GAPS_MS.length + 1
+
 stub(body(true, { up: true }))
 check((await assistantUp()) === true, 'a reachable assistant did not show the widget')
 check(asked.at(-1).url === '/api/live-chat', 'the widget asked the wrong endpoint')
 check(asked.at(-1).method === 'GET', 'the widget spent a turn asking whether it had one')
 
 stub(body(true, { up: false }))
-check((await assistantUp()) === false, 'an unreachable assistant still showed the widget')
+check(
+  (await assistantUp({ gapsMs: NOW })) === false,
+  'an unreachable assistant still showed the widget'
+)
 
 stub(body(false, { error: 'no' }))
-check((await assistantUp()) === false, 'a refused probe still showed the widget')
+check((await assistantUp({ gapsMs: NOW })) === false, 'a refused probe still showed the widget')
 
 stub(body(true, new Error('not json')))
-check((await assistantUp()) === false, 'an unreadable probe still showed the widget')
+check((await assistantUp({ gapsMs: NOW })) === false, 'an unreadable probe still showed the widget')
 
 globalThis.fetch = () => Promise.reject(new Error('offline'))
-check((await assistantUp()) === false, 'a probe that could not be sent still showed the widget')
+check(
+  (await assistantUp({ gapsMs: NOW })) === false,
+  'a probe that could not be sent still showed the widget'
+)
+
+/* That a no is asked again rather than kept.
+ *
+ * This is the fault itself. The endpoint's answer crosses to a machine on a
+ * home connection, and production has that route answering, losing both of its
+ * knocks inside three seconds, and answering again minutes later with the
+ * assistant up throughout. One ask meant one lost moment took the chat off
+ * every page of a visit and filed the disappearance as a fault, and the reader
+ * got it back only if they happened to switch tabs and come back. */
+
+// The endpoint holds a no in front of the function for ten seconds. An ask
+// inside that window is handed the same answer back rather than a fresh one,
+// so the first gap has to clear it or the round is three copies of one answer.
+check(ASK_GAPS_MS.length > 0, 'a no is taken as the answer on the first ask')
+check(ASK_GAPS_MS[0] > 10_000, 'the second ask lands inside the ten seconds a no is held for')
+
+let spent = 0
+stub(body(true, { up: false }))
+const counted = globalThis.fetch
+globalThis.fetch = (url, options) => {
+  spent += 1
+  return counted(url, options)
+}
+await assistantUp({ gapsMs: NOW })
+check(spent === ROUND, `a no was asked ${spent} times rather than ${ROUND}`)
+
+// The one that matters: a route that comes back mid-round draws the widget.
+spent = 0
+globalThis.fetch = (url, options) => {
+  spent += 1
+  asked.push({ url, method: options?.method, signal: options?.signal })
+  return Promise.resolve(body(true, { up: spent > 1 })())
+}
+check(
+  (await assistantUp({ gapsMs: NOW })) === true,
+  'an assistant that answered the second ask was still called gone'
+)
+check(spent === 2, 'the round kept asking after a yes')
+
+// The wait between asks is real, and a reader leaving the page cuts it short
+// rather than holding a request open behind them.
+stub(body(true, { up: false }))
+const started = Date.now()
+await assistantUp({ gapsMs: [40, 0, 0] })
+check(Date.now() - started >= 40, 'the asks went out in one breath with no wait between them')
+
+const going = new AbortController()
+stub(body(true, { up: false }))
+setTimeout(() => going.abort(), 5)
+let left = false
+try {
+  await assistantUp({ signal: going.signal, gapsMs: [2000, 2000, 2000] })
+} catch (cause) {
+  left = cause.name === 'AbortError'
+}
+check(left, 'a reader who left during the wait was answered rather than dropped')
 
 /* What a probe the page cancelled on its way out is worth, which is nothing.
  *
@@ -347,20 +415,35 @@ const answers = []
 const realError = console.error
 globalThis.window = globalThis.window || {}
 console.error = message => reports.push(String(message))
+let recovered = null
+let quiet = 0
 try {
+  // A round that ends on a yes is a widget that was drawn, so it has nothing
+  // to report. The sentence says no widget was drawn, and filing it for a page
+  // that got one puts a lost connection in the queue as a defect.
+  let asks = 0
+  globalThis.fetch = () => {
+    asks += 1
+    return Promise.resolve(body(true, { up: asks > 1 })())
+  }
+  recovered = await assistantUp({ gapsMs: NOW })
+  quiet = reports.length
+
   stub(body(true, { up: false }))
-  answers.push(await assistantUp())
+  answers.push(await assistantUp({ gapsMs: NOW }))
   // The probe goes again every time a hidden tab comes back, and a reader
   // switching tabs is not a second outage.
   stub(body(true, { up: false }))
-  answers.push(await assistantUp())
+  answers.push(await assistantUp({ gapsMs: NOW }))
   stub(body(false, {}))
-  answers.push(await assistantUp())
+  answers.push(await assistantUp({ gapsMs: NOW }))
 } finally {
   console.error = realError
   delete globalThis.window
 }
 
+check(recovered === true, 'a round that ended on a yes did not draw the widget')
+check(quiet === 0, 'a lost connection the next ask recovered was reported as no widget at all')
 check(
   answers.every(answer => answer === false),
   'a reported outage stopped the widget answering no'
