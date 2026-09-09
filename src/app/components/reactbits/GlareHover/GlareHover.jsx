@@ -69,10 +69,15 @@ const GlareHover = ({
     pointerEvents: 'none',
   }
 
+  // The glare is the whole of what this element is for, so it states nothing
+  // about how the children under it are laid out or how wide they sit. It used
+  // to be a centred grid, which a caller that wanted its own layout could only
+  // half undo: overriding the display left `justify-items: center` behind, and
+  // that alone is enough to shrink a block-level child to its contents.
   return (
     <div
       {...rest}
-      className={`relative grid cursor-pointer place-items-center overflow-hidden border ${className}`}
+      className={`relative cursor-pointer overflow-hidden border ${className}`}
       style={{
         width,
         height,
