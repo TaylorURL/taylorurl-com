@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import Beasties from 'beasties'
 import { createServer } from 'vite'
-import { issueRoutes, PRERENDER_ROUTES, routeSeeds, sentIssues } from './site-routes.js'
+import { PRERENDER_ROUTES } from './site-routes.js'
 
 const ROOT_PLACEHOLDER = '<div id="root"></div>'
 const BODY_CLOSE_TAG = '</body>'
@@ -177,12 +177,7 @@ export default function prerenderPlugin() {
 
       const template = await readFile(join(outDir, 'index.html'), 'utf8')
       const { headInner, bodyTail } = parseTemplate(template)
-      // Database-backed routes and the data each one renders from, read once
-      // for the build. Nothing is rendered for a slug the table does not
-      // carry, so the archive's own pages are the only ones that exist.
-      const issues = await sentIssues()
-      const seeds = routeSeeds(issues)
-      const routes = [...PRERENDER_ROUTES, ...issueRoutes(issues).map(route => route.path)]
+      const routes = PRERENDER_ROUTES
       const ssrServer = await createServer({
         appType: 'custom',
         server: { middlewareMode: true },
@@ -201,7 +196,7 @@ export default function prerenderPlugin() {
             routeCss
               .map(file => `<link rel="stylesheet" crossorigin href="${base}${file}">`)
               .join('')
-          const rendered = render(route, head, seeds.get(route) ?? null).replace(
+          const rendered = render(route, head, null).replace(
             BODY_CLOSE_TAG,
             `${bodyTail}${BODY_CLOSE_TAG}`
           )

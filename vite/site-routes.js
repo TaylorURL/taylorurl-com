@@ -1,5 +1,4 @@
 import { BLOG_POSTS, BLOG_SERIES_INDEX } from '../src/app/data/blog/index.js'
-import { fetchIssues, ISSUE_COLUMNS } from '../src/app/data/newsletter/newsletterIssues.js'
 import { INDUSTRY_SLUGS } from '../src/app/data/towns-and-trades/industries.js'
 import { INDUSTRY_DETAIL } from '../src/app/data/towns-and-trades/industryDetail.js'
 import { AREAS } from '../src/app/data/towns-and-trades/areas.js'
@@ -230,14 +229,6 @@ const STUDIO_STATIC_ROUTES = [
     priority: '0.8',
   },
   {
-    path: '/notes',
-    name: 'Notes',
-    summary: 'The newsletter archive, every issue as it was sent.',
-    group: 'newsletter',
-    changefreq: 'weekly',
-    priority: '0.7',
-  },
-  {
     path: '/faq',
     name: 'FAQ',
     summary: 'Common questions about pricing, timelines, and ownership.',
@@ -448,11 +439,10 @@ const STUDIO_PRERENDER_ROUTES = [
   // kept out of the sitemap because a page nobody is meant to arrive at from a
   // search result has no business being offered to one.
   '/payment',
-  // The two pages a newsletter link opens. Built for the same reason as the
-  // rest and kept out of the sitemap for the same one: a link arrives from an
-  // inbox, so the URL has to answer on a direct load, and neither is a page to
-  // rank.
-  '/subscribe/confirm',
+  // The page a mailed unsubscribe link lands on. Built for the same reason as
+  // the rest and kept out of the sitemap for the same one: a link arrives from
+  // an inbox, so the URL has to answer on a direct load, and it is not a page
+  // to rank.
   '/unsubscribe',
   '/forgot-password',
   '/reset-password',
@@ -486,68 +476,3 @@ export const SITEMAP_ROUTES = SECOND_SITE ? taylorwebsite.STATIC_ROUTES : STUDIO
 export const PRERENDER_ROUTES = SECOND_SITE
   ? taylorwebsite.PRERENDER_ROUTES
   : STUDIO_PRERENDER_ROUTES
-
-// How long the build waits on the newsletter table before going on without it.
-const ISSUE_TIMEOUT_MS = 8000
-
-let issuesRead = null
-
-/**
- * Every sent newsletter issue, read once per build and shared by both plugins.
- *
- * The archive lives in the database rather than in a data module, so the routes
- * it produces are only knowable at build time. A table that is unreachable, or
- * not there yet, yields an empty list: the site builds with no issue routes
- * rather than failing, which is the same answer a reader gets from an archive
- * with nothing in it.
- *
- * The archive belongs to the newsletter, and the newsletter belongs to the
- * studio. A site that does not route /notes takes no issue routes and asks the
- * database for nothing: the three callers append what this returns without
- * gating it themselves, so a site answered here is a site answered everywhere.
- */
-export function sentIssues() {
-  if (issuesRead) return issuesRead
-  if (SECOND_SITE) return (issuesRead = Promise.resolve([]))
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), ISSUE_TIMEOUT_MS)
-  issuesRead = fetchIssues({ signal: controller.signal, columns: ISSUE_COLUMNS })
-    .catch(cause => {
-      console.warn('site-routes: newsletter issues unavailable (%s)', cause.message)
-      return []
-    })
-    .finally(() => clearTimeout(timer))
-  return issuesRead
-}
-
-/** One sitemap entry per sent issue, in the shape the blog routes take. */
-export function issueRoutes(issues) {
-  return issues.map(issue => ({
-    path: `/notes/${issue.slug}`,
-    name: issue.title,
-    summary: issue.preheader,
-    group: 'newsletter',
-    lastmod: new Date(issue.published_at).toISOString().slice(0, 10),
-    changefreq: 'yearly',
-    priority: '0.6',
-  }))
-}
-
-/**
- * What each route needs handed to it before it is rendered to static HTML,
- * keyed by path. Routes absent from the map render from an empty seed and
- * fetch for themselves in the browser.
- */
-export function routeSeeds(issues) {
-  const summary = ({ slug, title, preheader, published_at }) => ({
-    slug,
-    title,
-    preheader,
-    published_at,
-  })
-  const seeds = new Map([['/notes', { issues: issues.map(summary) }]])
-  for (const issue of issues) {
-    seeds.set(`/notes/${issue.slug}`, { issue })
-  }
-  return seeds
-}

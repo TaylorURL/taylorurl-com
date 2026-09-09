@@ -43,9 +43,9 @@ export const ANIMATE = false
 /**
  * The thickness of a ranked bar.
  *
- * A row on Sources, a row on Sites and a row on the newsletter are the same
- * kind of row - one name, one length - and three weights across three tabs
- * read as three different charts rather than as one console.
+ * A row on Sources, a row on Sites and a row on Pages are the same kind of row
+ * - one name, one length - and three weights across three tabs read as three
+ * different charts rather than as one console.
  */
 export const BAR_SIZE = 11
 

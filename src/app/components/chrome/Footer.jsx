@@ -21,7 +21,6 @@ import {
 import { fadeInUp } from '@constants/animations'
 import { SERVICE_TOWNS } from '@data/towns-and-trades/serviceTowns'
 import BbbSeal from '@components/reviews/BbbSeal'
-import NewsletterSignup from '@components/conversion/NewsletterSignup'
 import ThemePicker from '@components/navigation/ThemePicker'
 import Magnet from '@reactbits/Magnet/Magnet'
 import ShinyText from '@reactbits/ShinyText/ShinyText'
@@ -255,26 +254,6 @@ export default function Footer() {
             </p>
           </div>
         </div>
-
-        {/*
-          The list, on the bar's own ground rather than a sheet set into it. A
-          card pinned to one palette is the one thing down here that would not
-          follow the setting the control beside it changes.
-        */}
-        {/*
-          The list belongs to the site that writes the articles. It is the
-          studio's newsletter, about getting found on Google and turning
-          visitors into customers, and the address it collects goes onto the
-          studio's audience - so a second domain standing this up is collecting
-          for a list whose subject it does not write about and whose readers
-          never asked that site for anything. Gated on the same flag as the
-          feed, because they are the same publication.
-        */}
-        {SITE.blog ? (
-          <div className="border-hair border-b py-10">
-            <NewsletterSignup source="taylorurl-footer" compact />
-          </div>
-        ) : null}
 
         {/*
           The service area, rendered twice. Interpuncts and a wrapped run of

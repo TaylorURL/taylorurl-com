@@ -11,7 +11,7 @@ import { isTyping } from '@utils/keyboard'
  * character out of somebody's sentence is worse than no shortcut.
  *
  * The modifier pair is not gated that way on purpose: a reader who is halfway
- * through typing into the newsletter box and reaches for the search is asking
+ * through typing into the speed check box and reaches for the search is asking
  * for the search, and no field on the site wants that combination for itself.
  *
  * Bound once on the window and reading the callback through a ref, so a parent

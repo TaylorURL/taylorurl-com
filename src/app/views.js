@@ -1,5 +1,5 @@
 import { lazyWithRetry } from '@utils/lazyWithRetry'
-import { HAS_ACCOUNTS, HAS_NEWSLETTER, matchViewKeys } from '@constants/routes'
+import { HAS_ACCOUNTS, matchViewKeys } from '@constants/routes'
 import { IS_SECOND_SITE } from '../../lib/site/current.js'
 
 // The import itself, held by name rather than handed straight to lazy(). A
@@ -7,14 +7,14 @@ import { IS_SECOND_SITE } from '../../lib/site/current.js'
 // hydrates, and a lazy() component gives no way to ask for the module behind
 // it; the factory does.
 //
-// Gated the way the route table next door is gated, and on the same two
-// constants, because a key this build cannot mount must carry no import() for
-// Rollup to find. Both fold to a literal (see lib/site/current.js), so the
-// branch that lost is dropped along with every chunk it named. Ungated, this
-// map was reachable through Object.entries below whatever the route table said,
-// and reachable is all Rollup asks: the subsidiary's dist carried the console
-// and its seventeen sections, the sign-in and password screens, and the whole of
-// the newsletter, as files nothing on that site could ever ask for.
+// Gated the way the route table next door is gated, and on the same constants,
+// because a key this build cannot mount must carry no import() for Rollup to
+// find. Each folds to a literal (see lib/site/current.js), so the branch that
+// lost is dropped along with every chunk it named. Ungated, this map was
+// reachable through Object.entries below whatever the route table said, and
+// reachable is all Rollup asks: the subsidiary's dist carried the console and
+// its seventeen sections, the sign-in and password screens, and the portfolio
+// with every client on it, as files nothing on that site could ever ask for.
 const loaders = {
   Home: () => import('@views/home/Home'),
   About: () => import('@views/company/About'),
@@ -55,17 +55,15 @@ const loaders = {
         BlogPost: () => import('@views/blog/BlogPost'),
         BlogSeries: () => import('@views/blog/BlogSeries'),
         Faq: () => import('@views/company/Faq'),
+        // The page a mailed unsubscribe link lands on. It outlived the
+        // newsletter it was built beside because it was never only the
+        // newsletter's: `api/lead-unsubscribe.js` and
+        // `api/outreach/unsubscribe.js` both redirect a click here, so it
+        // answers the unsubscribe link in every lead follow-up and every cold
+        // email. Studio-only, because the studio is the site that sends them.
+        Unsubscribe: () => import('@views/subscription/Unsubscribe'),
       }),
   NotFound: () => import('@views/NotFound'),
-  // The archive, an issue's own page, and the two pages a mailed link opens.
-  ...(HAS_NEWSLETTER
-    ? {
-        Notes: () => import('@views/notes/Notes'),
-        NotesIssue: () => import('@views/notes/NotesIssue'),
-        ConfirmSubscription: () => import('@views/subscription/ConfirmSubscription'),
-        Unsubscribe: () => import('@views/subscription/Unsubscribe'),
-      }
-    : {}),
   // The console, its sections, and the four screens that exist only to reach
   // it. SessionScope is here rather than above because it is the holder those
   // screens sit under, and routes.jsx reads it only when there are any.
