@@ -271,18 +271,24 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                       {...featureLink}
                       onClick={onCloseAll}
                       data-tone={held.feature.tone}
-                      className="nav-panel-feature group/feature flex h-full flex-col rounded-[var(--r-card)] p-5"
+                      className="nav-panel-feature group/feature relative flex h-full flex-col overflow-hidden rounded-[var(--r-card)] p-6"
                     >
-                      {held.feature.mark && (
-                        <held.feature.mark className="nav-panel-mark h-10 w-10" />
+                      {/* The group's own mark, drawn at the size of the card
+                          and bled off its corner rather than set at the top
+                          like a bullet. A rail the height of the columns has
+                          room the words do not need, and a 40px drawing alone
+                          in it read as something left behind; the same drawing
+                          at the card's own scale is what the card is made of.
+                          It is the sign the group already carries, so nothing
+                          here is invented to fill a space. */}
+                      {held.feature.mark && !held.feature.shots && (
+                        <held.feature.mark className="nav-panel-watermark" aria-hidden="true" />
                       )}
                       {/* Everything the card says sits at its foot, so a rail
                           the height of the columns beside it reads as one
                           composition rather than as a card with a hole under
-                          it. The mark holds the top, the sentence and the way
-                          in hold the bottom, and the space between them is the
-                          card rather than what is left over. */}
-                      <span className="mt-auto flex flex-col gap-3 pt-8">
+                          it. */}
+                      <span className="relative mt-auto flex flex-col gap-3">
                         {held.feature.shots && (
                           <span className="grid grid-cols-3 gap-1.5">
                             {held.feature.shots.map(shot => (
@@ -307,7 +313,7 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                             thing the name does not: that the proof is held in
                             several places, none of which is this site. */}
                         {held.feature.marks?.length > 0 && (
-                          <span className="nav-panel-sources flex items-center gap-3">
+                          <span className="nav-panel-sources flex items-center gap-3 pb-1">
                             {held.feature.marks.map(source => (
                               <source.mark key={source.key} className="h-4 w-4" />
                             ))}
