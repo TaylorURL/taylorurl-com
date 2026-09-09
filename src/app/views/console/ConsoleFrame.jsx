@@ -36,6 +36,11 @@ import { withCountedPages } from '../analytics/lib/counted'
 
 // Live figures move on their own; the windowed ones only move as hits land in
 // them, and a 30-day total does not change visibly in thirty seconds.
+// The presence window the collector counts "now" over. The payload states the
+// real one and wins the moment it lands; this is only what the caption reads on
+// the first frame, before there is an answer to read.
+const LIVE_WINDOW_MINUTES = 10
+
 const LIVE_POLL_MS = 10_000
 const SITE_POLL_MS = 30_000
 const OVERVIEW_POLL_MS = 60_000
@@ -324,6 +329,11 @@ export default function ConsoleFrame() {
   )
   // Across the scope rather than for one site or for the account, so a set of
   // two reads the two added together rather than the whole estate.
+  // How far back "now" reaches on the live figures. It is read from the payload
+  // rather than written here, so the caption under the count cannot drift away
+  // from the window the count was actually taken over - which is what a sentence
+  // typed once beside a figure does the first time the window moves.
+  const liveWindowMinutes = Math.round(live.data?.window_minutes ?? LIVE_WINDOW_MINUTES)
   const liveNow = siteIds.length
     ? liveSites
         .filter(entry => siteIds.includes(entry.site_id))
@@ -709,7 +719,7 @@ export default function ConsoleFrame() {
                   <StatCard
                     label="Online Now"
                     value={String(liveNow)}
-                    caption="last five minutes"
+                    caption={`last ${liveWindowMinutes} minutes`}
                     tone={liveNow > 0 ? 'accent' : 'plain'}
                     pulse={liveNow > 0}
                     loading={live.loading}
