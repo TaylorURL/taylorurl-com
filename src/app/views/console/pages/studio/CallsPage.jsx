@@ -7,7 +7,6 @@ import {
   Maximize2,
   Minimize2,
   Phone,
-  RotateCw,
   SlidersHorizontal,
   X,
 } from 'lucide-react'
@@ -1154,12 +1153,11 @@ export default function CallsPage() {
     [view, search, filters, sort, take, page]
   )
 
-  const { shown, retained, error, loading, behind, saving, readAt, refresh, record, hand } =
-    useCallsFeed({
-      token,
-      enabled: Boolean(token) && settled,
-      filters: query,
-    })
+  const { shown, retained, error, loading, behind, saving, readAt, record, hand } = useCallsFeed({
+    token,
+    enabled: Boolean(token) && settled,
+    filters: query,
+  })
 
   // A new filter selects different rows and a new order selects the same rows
   // in a different sequence, and page four of the last question is no part of
@@ -1711,10 +1709,6 @@ export default function CallsPage() {
             >
               <SlidersHorizontal aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
               Set Up The List
-            </button>
-            <button type="button" className={QUIET} onClick={refresh}>
-              <RotateCw aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Re-read
             </button>
           </div>
 
