@@ -46,6 +46,7 @@ const { default: linkHandler, linkFields, quotedCents } = await import('../../ap
 const { openArgs } = await import('../../api/stripe-webhook.js')
 const { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } =
   await import('../../src/app/data/checkout/pricing.js')
+const { claimHolds } = await import('../../lib/stripe/claim.js')
 
 const cases = []
 const check = (name, run) => cases.push([name, run])
@@ -171,12 +172,31 @@ const ONLY_ON_START = new Set([
   'allow_promotion_codes',
 ])
 
+/**
+ * The two fields that are a fresh secret on every checkout.
+ *
+ * Each session is opened with its own one-use key: the token goes out in the
+ * return address and only its hash is left on the session, which is what stops
+ * the session id - a string that rides back in the address bar and gets pasted
+ * into support threads - from being enough to sign anybody in. Two checkouts
+ * therefore differ in these two fields by design, and comparing them as strings
+ * would fail for the one reason that is not a drift.
+ *
+ * So they are held to each other with the key normalised out, and the key
+ * itself is checked for the property that matters: that the token in the
+ * address is the one the hash on the session recognises, on both endpoints.
+ */
+const MINTED_PER_CHECKOUT = new Set(['metadata[claim]', 'success_url'])
+
+/** A return address with whichever key it happens to carry taken out. */
+const lessKey = url => String(url).replace(/([?&]claim=)[^&]*/, '$1')
+
 const started = await bodyFromStart()
 
 check('a link with nothing quoted sends what the pricing page sends', () => {
   const link = bodyFromLink()
   for (const [key, value] of started.entries()) {
-    if (ONLY_ON_START.has(key)) continue
+    if (ONLY_ON_START.has(key) || MINTED_PER_CHECKOUT.has(key)) continue
     same(link.get(key), value, `${key}, which the pricing page sends`)
   }
 })
@@ -211,9 +231,31 @@ check('a link with nothing quoted charges the two published figures', () => {
 
 check('a buyer off a link lands where a buyer off the pricing page lands', () => {
   const link = bodyFromLink()
-  same(link.get('success_url'), started.get('success_url'), 'where a paid checkout returns to')
+  same(
+    lessKey(link.get('success_url')),
+    lessKey(started.get('success_url')),
+    'where a paid checkout returns to'
+  )
   same(link.get('cancel_url'), started.get('cancel_url'), 'where an abandoned one returns to')
   same(link.get('mode'), 'subscription', 'the mode that opens the monthly with the build')
+})
+
+check('both checkouts hand the buyer a key the session alone cannot forge', () => {
+  const faults = []
+  for (const [what, body] of [
+    ['the pricing page', started],
+    ['a link', bodyFromLink()],
+  ]) {
+    const carried = new URL(body.get('success_url')).searchParams.get('claim')
+    if (!carried) faults.push(`${what} sends a buyer back with no key`)
+    else if (!claimHolds(body.get('metadata[claim]'), carried)) {
+      faults.push(`${what} leaves a hash on the session that does not know its own key`)
+    }
+    // The session must carry the hash and never the token, or anything that can
+    // read the session can mint a sign-in from it.
+    if (body.get('metadata[claim]') === carried) faults.push(`${what} put the key on the session`)
+  }
+  if (faults.length) throw new Error(faults.join('; '))
 })
 
 check('the buyer address is prefilled, so the receipt and the build agree', () => {

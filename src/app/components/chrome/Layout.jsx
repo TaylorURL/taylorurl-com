@@ -161,7 +161,7 @@ export default function Layout() {
   // saying what the account opens. The marketing bar over them puts a second
   // wordmark beside that one and offers a reader on the log-in page a link to
   // the log-in page.
-  const isAuth = views.includes('Login') || views.includes('Signup')
+  const isAuth = views.includes('Login') || views.includes('Welcome')
   const bare = isConsole || isAuth
   const mainRef = useRef(null)
 

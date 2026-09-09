@@ -624,7 +624,7 @@ export default function Navigation() {
                     neither half, and the number and the enquiry stand on their
                     own. */}
                 {HAS_ACCOUNTS && !checking && (
-                  <div className="mb-3 grid grid-cols-2 gap-3">
+                  <div className={`mb-3 grid gap-3 ${signedIn ? 'grid-cols-2' : 'grid-cols-1'}`}>
                     {signedIn ? (
                       <>
                         <Link
@@ -646,22 +646,13 @@ export default function Navigation() {
                         </button>
                       </>
                     ) : (
-                      <>
-                        <Link
-                          className="drawer-account-button"
-                          to="/login"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          Log In
-                        </Link>
-                        <Link
-                          className="drawer-account-button"
-                          to="/signup"
-                          onClick={() => setMobileOpen(false)}
-                        >
-                          Sign Up
-                        </Link>
-                      </>
+                      <Link
+                        className="drawer-account-button"
+                        to="/login"
+                        onClick={() => setMobileOpen(false)}
+                      >
+                        Log In
+                      </Link>
                     )}
                   </div>
                 )}

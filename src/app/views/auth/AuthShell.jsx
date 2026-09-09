@@ -117,14 +117,15 @@ export function Field({
  * nothing worth filling in from a saved entry.
  *
  * `bought` is the one arrival this screen closes itself around. Every other
- * reader here is deciding, and the two ways out and the panel arguing the case
- * are what a person deciding is owed. A buyer has already decided and paid, and
- * the same furniture becomes three doors out of a purchase that is not finished
- * being claimed: the wordmark, the way back to the site, and a panel selling
- * what they hold a receipt for. So for them the wordmark stops being a link and
- * stays a mark, the way out is not drawn, and the panel says what happens next
- * instead of why to sign up. Nothing is hidden that they need - the account is
- * two fields away and the site is one browser button behind them.
+ * reader here is deciding whether to sign in or how to get back in, and the two
+ * ways out and the panel arguing the case are what a person deciding is owed. A
+ * buyer has already decided and paid, and the same furniture becomes three
+ * doors out of a build that is not open yet: the wordmark, the way back to the
+ * site, and a panel selling what they hold a receipt for. So for them the
+ * wordmark stops being a link and stays a mark, the way out is not drawn, and
+ * the panel says what happens next instead of why to hold an account. Nothing
+ * is hidden that they need - the way in is one press away and the site is one
+ * browser button behind them.
  */
 export default function AuthShell({
   title,
