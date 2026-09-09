@@ -1,5 +1,6 @@
 import { useConsole } from '../../lib/context'
 import { fullCount } from '../../../analytics/lib/format'
+import { channelOf, DIRECT, hostOf } from '../../../analytics/lib/sources'
 import { seriesColor } from '../../../analytics/chartKit'
 import {
   ConsolePage,
@@ -14,61 +15,6 @@ import {
 import { CELL, CHART_HEIGHT, TH } from '../../lib/tokens'
 import { ChannelDonut } from './SourcesCharts'
 
-// What the collector calls an arrival that carried no referrer. It is one row
-// of the same ranking as every named source, and it is almost always the
-// largest, so the split between it and everything else is the first thing the
-// section has to answer.
-const DIRECT = 'direct'
-
-// The collector files an arrival under the host that sent it and nothing more,
-// so which channel a host belongs to is read here, from the host's own name.
-// A name without a dot is matched against the labels of the host, so a search
-// engine is found under any of its country domains and behind any subdomain;
-// a name with one is a whole domain, since a two-letter host like `t.co`
-// would otherwise be found inside half the web.
-const SEARCH = [
-  'google',
-  'bing',
-  'duckduckgo',
-  'yahoo',
-  'ecosia',
-  'brave',
-  'yandex',
-  'baidu',
-  'startpage',
-  'qwant',
-  'kagi',
-  'aol',
-]
-const SOCIAL = [
-  'facebook',
-  'fb.com',
-  'fb.me',
-  'instagram',
-  'twitter',
-  't.co',
-  'x.com',
-  'linkedin',
-  'lnkd.in',
-  'reddit',
-  'pinterest',
-  'pin.it',
-  'tiktok',
-  'youtube',
-  'youtu.be',
-  'threads',
-  'bsky.app',
-  'mastodon',
-  'snapchat',
-  'nextdoor',
-  'tumblr',
-  'quora',
-  'discord',
-  'whatsapp',
-  'telegram',
-  'messenger',
-]
-
 // In the order the ring and its legend are read, which is the order the
 // section describes itself in. Each channel keeps one colour from window to
 // window, so a reader flipping between them is not re-learning which slice
@@ -80,29 +26,6 @@ const CHANNELS = [
   { key: 'referral', label: 'Referral', color: seriesColor(2) },
   { key: 'direct', label: 'Direct', color: seriesColor(3) },
 ]
-
-/** The host a source names, however the collector spelled it. */
-function hostOf(source) {
-  return String(source || '')
-    .toLowerCase()
-    .replace(/^[a-z][\w+.-]*:\/\//, '')
-    .split('/')[0]
-}
-
-function inFamily(host, names) {
-  const labels = host.split('.')
-  return names.some(name =>
-    name.includes('.') ? host === name || host.endsWith(`.${name}`) : labels.includes(name)
-  )
-}
-
-function channelOf(source) {
-  const host = hostOf(source)
-  if (host === DIRECT) return 'direct'
-  if (inFamily(host, SEARCH)) return 'search'
-  if (inFamily(host, SOCIAL)) return 'social'
-  return 'referral'
-}
 
 /** A channel's name against the colour it is drawn in. */
 function ChannelLabel({ name, color }) {
