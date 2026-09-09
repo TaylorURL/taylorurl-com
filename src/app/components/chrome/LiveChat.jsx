@@ -115,13 +115,19 @@ function useVisibleViewport(active) {
  * Whether there is an assistant to talk to, as the three states the widget
  * needs: null while nobody has asked, and then the answer.
  *
- * Nothing is drawn until this says yes, so the first probe is what decides
- * whether the visitor ever sees a launcher. A no is asked again when the tab
- * comes back to the front, because the ordinary no is a moment of the
- * visitor's own connection rather than an outage, and believing one of those
- * for the rest of a visit costs the widget on every page of it. A yes is not
- * asked again: an assistant that stops answering mid-thread is caught by the
- * turn that was sent to it.
+ * Nothing is drawn until this says yes, so the probe is what decides whether
+ * the visitor ever sees a launcher. The probe asks several times before it
+ * answers no at all, because the ordinary no is a lost moment on the route to
+ * the assistant rather than an outage, and believing one of those for the rest
+ * of a visit costs the widget on every page of it. A no that survives that is
+ * asked again when the tab comes back to the front. A yes is not asked again:
+ * an assistant that stops answering mid-thread is caught by the turn that was
+ * sent to it.
+ *
+ * Only one round is ever in flight, and a no arriving after a yes is dropped.
+ * A round runs for a couple of minutes, so a reader flapping between tabs can
+ * otherwise start a second one alongside the first and have the slower of the
+ * two take the widget back off the page it had just been drawn on.
  *
  * @returns {[boolean|null, () => void]} the answer, and the way to record one
  *   the widget learned from a turn instead
@@ -129,14 +135,21 @@ function useVisibleViewport(active) {
 function useAssistant() {
   const [up, setUp] = useState(null)
   const answer = useRef(null)
+  const asking = useRef(false)
 
   const ask = useCallback(signal => {
+    if (asking.current) return
+    asking.current = true
     assistantUp({ signal })
       .then(said => {
+        if (answer.current === true) return
         answer.current = said
         setUp(said)
       })
       .catch(() => {})
+      .finally(() => {
+        asking.current = false
+      })
   }, [])
 
   useEffect(() => {

@@ -10,7 +10,8 @@
  * nothing of theirs on a shared machine.
  *
  * The same endpoint says whether there is an assistant to send a turn to at
- * all, which is the question the widget asks before it appears.
+ * all, which is the question the widget asks before it appears. It is asked
+ * more than once, because a no and an outage are not the same fact.
  *
  * Both calls take a signal and the widget aborts it as it unmounts. A request
  * still in flight when a reader leaves the page is cancelled by the browser
@@ -66,9 +67,9 @@ let toldOnce = false
  * app writes to one either, and this is the exception rather than a new habit -
  * the site has not had anything to say to us before.
  *
- * Once per page, because the probe goes again whenever a hidden tab comes back,
- * and a reader switching tabs is not new information. The collector dedupes
- * across visitors on its own.
+ * Once per page, and only once every ask has been spent, because the sentence
+ * claims no widget was drawn and that is not true of a page whose second ask
+ * was answered. The collector dedupes across visitors on its own.
  *
  * @param {string} why - What the door answered, in the report's own words.
  */
@@ -79,49 +80,108 @@ function tellUsTheAssistantIsGone(why) {
 }
 
 /**
+ * How long the widget waits before asking again, and so how many times it asks:
+ * once on arrival, and once after each of these.
+ *
+ * A no is not the same fact as an outage. The knock behind this endpoint
+ * crosses the open internet to a machine on a home connection, and that route
+ * loses a connection now and then with the assistant itself up throughout.
+ * Production has the endpoint answering at 22:52, both of its knocks failing at
+ * 22:55, and answering again at 22:59, against a service that had not restarted
+ * in four days. One ask was all the widget made, so that visitor had no chat on
+ * any page of their visit and the disappearance arrived as a fault.
+ *
+ * The first gap clears the ten seconds the endpoint holds a no in front of the
+ * function, because anything shorter is handed the same answer back rather than
+ * a fresh one. The rest widen to cover a lost moment measured in minutes
+ * without turning a real outage into a poll. Four asks, and then the page has
+ * its answer.
+ */
+export const ASK_GAPS_MS = [12000, 30000, 60000]
+
+/** An abort as the browser raises one, so a caller can tell it from a refusal. */
+const cancelled = () => Object.assign(new Error('The probe was cancelled.'), { name: 'AbortError' })
+
+/** A wait between asks that a reader leaving the page cuts short. */
+function rest(ms, signal) {
+  return new Promise((settle, drop) => {
+    if (signal?.aborted) {
+      drop(cancelled())
+      return
+    }
+    const stop = () => {
+      clearTimeout(timer)
+      drop(cancelled())
+    }
+    const timer = setTimeout(() => {
+      signal?.removeEventListener('abort', stop)
+      settle()
+    }, ms)
+    signal?.addEventListener('abort', stop, { once: true })
+  })
+}
+
+/**
+ * One ask, as the answer and the words the door answered it in.
+ *
+ * `why` is what the report would say, and it is null where there is nothing
+ * worth saying. A probe that never arrived is a different fact from the two
+ * above it: those are the endpoint answering, and this is nothing answering at
+ * all. It stays a no - a browser that cannot reach the endpoint cannot reach
+ * the assistant through it either - but it is not said out loud, because the
+ * sentence would name the assistant for a fault that belongs to the connection,
+ * and because the reporter's own fetch wrapper has already judged this exact
+ * rejection with more to go on than there is here. It knows whether a
+ * controller aborted the request, whether `pagehide` has fired and the reader
+ * is simply leaving, and what the platform called it; a reader closing the tab
+ * mid-probe produces a bare `TypeError: Failed to fetch` with no name on it,
+ * indistinguishable from an outage by anything this function can see. Saying it
+ * again from up here both files it twice and files it under the wrong cause.
+ *
+ * @returns {Promise<{ up: boolean, why: string|null }>}
+ */
+async function askOnce(signal) {
+  try {
+    const response = await fetch(ENDPOINT, { method: 'GET', signal })
+    if (!response.ok) return { up: false, why: `The door answered HTTP ${response.status}.` }
+    const payload = await response.json()
+    if (payload.up === true) return { up: true, why: null }
+    return { up: false, why: 'The door answered that there is nothing behind it.' }
+  } catch (cause) {
+    // A probe the widget cancelled itself answers nothing, and calling that a
+    // no would record an outage against a page the reader has already left. It
+    // is passed on so the caller can drop it.
+    if (cause.name === 'AbortError') throw cause
+    return { up: false, why: null }
+  }
+}
+
+/**
  * Whether the assistant is behind the endpoint and would answer a turn sent
  * now.
  *
  * The widget asks before it draws itself. Anything short of a plain yes is a
- * no, including a probe that could not be made: a browser that cannot reach
- * the endpoint cannot reach the assistant through it either, and a corner box
- * offering to answer is worth less than nothing when nothing answers.
+ * no, including a probe that could not be made: a corner box offering to answer
+ * is worth less than nothing when nothing answers.
  *
- * @param {{ signal?: AbortSignal }} [options]
+ * A no is asked again rather than kept, on the gaps above, and the first yes
+ * ends it. Only a no that survives every ask is the answer, and only that one
+ * is reported - a widget that arrived late arrived.
+ *
+ * @param {{ signal?: AbortSignal, gapsMs?: number[] }} [options]
  * @returns {Promise<boolean>}
  */
-export async function assistantUp({ signal } = {}) {
-  try {
-    const response = await fetch(ENDPOINT, { method: 'GET', signal })
-    if (!response.ok) {
-      tellUsTheAssistantIsGone(`The door answered HTTP ${response.status}.`)
-      return false
-    }
-    const payload = await response.json()
-    if (payload.up === true) return true
-    tellUsTheAssistantIsGone('The door answered that there is nothing behind it.')
-    return false
-  } catch (cause) {
-    // A probe the widget cancelled itself answers nothing, and calling that a
-    // no would record an outage against a page the reader has already left.
-    // It is passed on so the caller can drop it.
-    if (cause.name === 'AbortError') throw cause
-    // Everything else here is a probe that never arrived, and that is a
-    // different fact from the two above it: those are the endpoint answering,
-    // and this is nothing answering at all. It stays a no - a browser that
-    // cannot reach the endpoint cannot reach the assistant through it either -
-    // but it is not said out loud, because the sentence would name the
-    // assistant for a fault that belongs to the connection, and because the
-    // reporter's own fetch wrapper has already judged this exact rejection with
-    // more to go on than there is here. It knows whether a controller aborted
-    // the request, whether `pagehide` has fired and the reader is simply
-    // leaving, and what the platform called it; a reader closing the tab
-    // mid-probe produces a bare `TypeError: Failed to fetch` with no name on
-    // it, indistinguishable from an outage by anything this function can see.
-    // Saying it again from up here both files it twice and files it under the
-    // wrong cause.
-    return false
+export async function assistantUp({ signal, gapsMs = ASK_GAPS_MS } = {}) {
+  let last = { up: false, why: null }
+
+  for (let asked = 0; asked <= gapsMs.length; asked += 1) {
+    if (asked > 0) await rest(gapsMs[asked - 1], signal)
+    last = await askOnce(signal)
+    if (last.up) return true
   }
+
+  if (last.why) tellUsTheAssistantIsGone(last.why)
+  return false
 }
 
 /**
