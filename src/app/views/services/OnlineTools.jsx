@@ -201,7 +201,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tools, the tracking, the sending domain, and the monitoring built into that price. A bigger project costs more, and you agree to that number before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.`,
+    body: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tools, the tracking, the sending domain, and the monitoring built into that price. What moves the price is how big the whole project is, and you agree to that number before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.`,
   },
 ]
 
@@ -321,7 +321,7 @@ export default function OnlineTools() {
     <div>
       <Seo
         title="Booking, Ordering, and Tools in Baytown, TX"
-        description="Booking, ordering, and payment built onto your site, with ad tracking, the Meta Pixel, Google Ads and Ad Manager, outbound email, and monitoring wired in underneath."
+        description="Booking, ordering, and payment built onto your site, with ad tracking, the Meta Pixel, Google Ads and Ad Manager, outbound email, and monitoring underneath."
         path={PAGE.path}
         schema={[
           breadcrumbSchema([

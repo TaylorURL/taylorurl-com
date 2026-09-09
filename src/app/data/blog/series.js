@@ -22,7 +22,7 @@ export const BLOG_SERIES = [
     name: 'Getting Found',
     tagline: 'Showing up when someone searches',
     description:
-      'Google, the map pack, reviews, and every free lever a local business has for being the result someone clicks.',
+      'Google, the map pack, reviews, and every free lever a local business has for being the result someone clicks. Written for shops and trades around Houston.',
     mark: 'find',
   },
   {
@@ -30,7 +30,7 @@ export const BLOG_SERIES = [
     name: 'Speed & Vitals',
     tagline: 'What a page costs to open',
     description:
-      'Load times, the numbers Google measures a page by, and the difference a fast site makes to the phone ringing.',
+      'Load times, the numbers Google measures a page by, and the difference a fast site makes to the phone ringing. What slows a page down, and what to fix first.',
     mark: 'gauge',
   },
   {
@@ -38,7 +38,7 @@ export const BLOG_SERIES = [
     name: 'Design That Sells',
     tagline: 'Layout, color, and the path to the call',
     description:
-      'How a page is laid out, what it says first, and why some sites turn visitors into customers while better-looking ones do not.',
+      'How a page is laid out, what it says first, and why some sites turn visitors into customers while better-looking ones do not. Layout, color, and the call.',
     mark: 'rule',
   },
   {
@@ -46,7 +46,7 @@ export const BLOG_SERIES = [
     name: "Owner's Handbook",
     tagline: 'Running a business online',
     description:
-      'The decisions that land on the owner: who to hire, what to sign, what to keep current, and what to stop worrying about.',
+      'The decisions that land on the owner: who to hire, what to sign, what to keep current, and what to stop worrying about. Plain answers, one question at a time.',
     mark: 'page',
   },
   {
@@ -54,7 +54,7 @@ export const BLOG_SERIES = [
     name: 'What It Costs',
     tagline: 'Budgets, quotes, and what comes back',
     description:
-      'Plain figures on what a website costs to build and to keep, what the cheap one really costs, and how to read a quote.',
+      'Plain figures on what a website costs to build and to keep, what the cheap one really costs, and how to read a quote line by line before you agree to it.',
     mark: 'ledger',
   },
   {
@@ -62,7 +62,7 @@ export const BLOG_SERIES = [
     name: 'Trade Playbooks',
     tagline: 'One trade at a time',
     description:
-      'What a website has to do for one trade at a time: the pages it needs, the questions it answers, and the jobs it books.',
+      'What a website has to do for one trade at a time: the pages it needs, the questions it answers, and the jobs it books. Plumbers, HVAC, roofers, electricians.',
     mark: 'trade',
   },
 ]

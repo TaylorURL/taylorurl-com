@@ -83,7 +83,7 @@ const TOWN_PROFILES = {
     client: 'delux-financial-solutions',
     lede: 'Twenty-six miles west on I-10, where the east side is the half of the city a Baytown studio reaches first: the ship channel terminals, the East End, and the strips along Navigation and Wayside. Websites for the businesses working that side of Houston.',
     search:
-      'Web design in Houston, TX for east-side businesses, from the ship channel to the East End. Custom sites by one developer. See Delux Financial Solutions, live.',
+      'Web design in Houston, TX for east-side businesses, from the ship channel to the East End. Custom sites from a small team. See Delux Financial Solutions, live.',
     work: {
       title: 'Delux Financial Solutions books both kinds of appointment.',
       description:

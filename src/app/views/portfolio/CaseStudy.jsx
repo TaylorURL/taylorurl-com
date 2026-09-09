@@ -273,7 +273,7 @@ function Study({ project }) {
             Want your business <span className="text-accent">built like this</span>?
           </>
         }
-        description="Tell us what your business needs. You get a plan and a price back before anything gets built."
+        description="Tell us what your business needs. You get a plan and a price back before any work starts."
       />
     </div>
   )

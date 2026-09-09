@@ -50,15 +50,15 @@ const STUDY_BODIES = {
     ],
     site: [
       {
-        title: 'Fleet and assets',
+        title: 'Every asset carries its own history',
         body: 'Mixers, tractors, trailers, equipment, and pickup trucks, each with a verification status, service tracking, and a change-history timeline that keeps every edit.',
       },
       {
-        title: 'People and personnel',
+        title: 'An operator, from onboarding to separation',
         body: 'The operator lifecycle from onboarding through training, active duty, light duty, and separation, alongside manager profiles and role-based access.',
       },
       {
-        title: 'Productivity and reporting',
+        title: 'Plant figures that roll up across regions',
         body: 'Plant efficiency scoring, live dashboards, and weekly role-based reports across regions, with charts, maps, and export to Excel and PDF.',
       },
     ],
