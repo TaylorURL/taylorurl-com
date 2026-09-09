@@ -59,7 +59,7 @@ const LOCAL = [
 const NOT_INCLUDED = [
   {
     title: 'Paid Ads',
-    body: 'This is organic search. Google Ads and social ads are not bought or managed here.',
+    body: 'This is organic search. Google Ads and social ads are quoted as their own work, and the tracking under them goes in with the build.',
   },
   {
     title: 'A Promised Position',

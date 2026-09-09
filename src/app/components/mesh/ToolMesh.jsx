@@ -124,8 +124,14 @@ function NameChip({ tool, tone, checked, onToggle }) {
  * @param {string[]} [props.chosen] - Ids of the products already ticked.
  * @param {(id: string) => void} [props.onToggle] - Ticks a product. Left out,
  *   the panel is read rather than answered.
+ * @param {string} [props.note] - The sentence set under the panel. It defaults
+ *   to the one about the software a trade already runs, which is what every
+ *   panel drawn from `TOOLS` is saying. A panel listing something else - an
+ *   advertising account rather than a shop's own software - says what its own
+ *   list means instead, because the note is the page's claim about the names
+ *   above it and a claim about the wrong names is worse than none.
  */
-export default function ToolMesh({ tools, ground = 'paper', chosen = [], onToggle }) {
+export default function ToolMesh({ tools, ground = 'paper', chosen = [], onToggle, note }) {
   const tone = GROUNDS[ground]
   const marked = tools.filter(tool => tool.mark)
   const plain = tools.filter(tool => !tool.mark && !tool.generic)
@@ -171,7 +177,9 @@ export default function ToolMesh({ tools, ground = 'paper', chosen = [], onToggl
         )}
       </div>
 
-      <p className={`mt-5 max-w-2xl text-[14px] leading-relaxed ${tone.body}`}>{TOOL_NOTE}</p>
+      <p className={`mt-5 max-w-2xl text-[14px] leading-relaxed ${tone.body}`}>
+        {note || TOOL_NOTE}
+      </p>
     </div>
   )
 }
