@@ -51,7 +51,7 @@ const QUESTIONS = [
   },
   {
     q: 'Are there setup fees or extras?',
-    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site. The two figures are where the price starts, what moves them is how big the whole project is, and you agree to that number before anything starts. What sits outside them is named up front: Google or Microsoft bill for each mailbox, no ad budget is bought or spent here, and running the campaigns is quoted on its own.',
+    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site. The two figures are where the price starts, what moves them is how big the whole project is, and you agree to that number before anything starts. What sits outside them is named up front: Google or Microsoft bill for each mailbox, any ad budget is yours to spend, and buying and running the campaigns is quoted on its own.',
   },
   {
     q: `Is the ${MONTHLY_PRICE} a month optional?`,
@@ -149,7 +149,11 @@ export default function Pricing() {
       >
         <IncludedSheet />
         <div className="mt-8">
-          <SectionLink to="/services/online-tools" label="Booking and Tools" ground="paper" />
+          <SectionLink
+            to="/services/online-tools"
+            label="Booking, Ordering, and Tools"
+            ground="paper"
+          />
         </div>
       </ServiceSection>
 
