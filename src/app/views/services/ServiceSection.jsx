@@ -1,6 +1,5 @@
 import { m } from 'framer-motion'
 import { fadeInUp } from '@constants/animations'
-import { DRAFTS, SEAMS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 
 /**
@@ -28,8 +27,6 @@ export default function ServiceSection({
   id,
   ground = 'paper',
   eyebrow,
-  draft = 'plan',
-  seam = 'band',
   title,
   lede,
   meta,
@@ -45,10 +42,6 @@ export default function ServiceSection({
       {...tone.attrs}
       className={`section-y relative overflow-hidden border-t ${tone.section}`}
     >
-      <div
-        className={`absolute inset-0 ${tone.grid} ${DRAFTS[draft]} ${SEAMS[seam]}`.trimEnd()}
-        aria-hidden="true"
-      />
       <div className="container-rail relative">
         <header className={`mb-12 border-b pb-8 ${tone.rule}`}>
           <p className="section-label mb-4 text-accent">{eyebrow}</p>

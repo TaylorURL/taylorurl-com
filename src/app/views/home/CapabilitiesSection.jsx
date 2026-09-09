@@ -1,6 +1,4 @@
 import { m } from 'framer-motion'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { fadeInUp } from '@constants/animations'
 import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import {
@@ -185,7 +183,6 @@ export default function CapabilitiesSection() {
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.iso}`} aria-hidden="true" />
       <div className="container-rail relative">
         <m.div {...fadeInUp}>
           <m.h2

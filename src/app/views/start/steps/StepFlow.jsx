@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
 import { EASE } from '@constants/animations'
 import { GROUND } from '../lib/ground'
 
@@ -139,7 +138,6 @@ export default function StepFlow({
   atTop,
   label = 'Configurator steps',
   resumeAt = null,
-  draft = 'node',
   onStep,
   aside = null,
   head = null,
@@ -239,8 +237,6 @@ export default function StepFlow({
         atTop ? 'pt-28 sm:pt-36' : 'border-t'
       } ${GROUND.section}`}
     >
-      <div className={`absolute inset-0 ${GROUND.grid} ${DRAFTS[draft]}`} aria-hidden="true" />
-
       <div className="container-rail relative">
         {head}
 

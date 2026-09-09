@@ -14,7 +14,6 @@ import {
   UserRound,
   Zap,
 } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
 import {
   MarkFrame,
   MarkGauge,
@@ -163,7 +162,6 @@ const STUDIO = {
   serviceName: 'Small business websites and online tools',
   catalogName: 'Small business website services',
   hero: {
-    draft: 'iso',
     eyebrow: 'What We Do',
     title: 'A small team builds it, hosts it, and answers when you call.',
     description:
@@ -192,7 +190,6 @@ const STUDIO = {
     ],
   },
   cta: {
-    draft: 'iso',
     eyebrow: 'Let’s Talk',
     heading: 'Get a plan',
     accentText: 'and a price.',
@@ -210,7 +207,6 @@ const SECOND_SITE = {
   serviceName: 'Software engineering, tracking repair, and outbound email',
   catalogName: 'Engineering, tracking, and outbound services',
   hero: {
-    draft: 'iso',
     eyebrow: 'What We Do',
     title: 'Software built to order, tracking repaired, outbound run.',
     description:
@@ -233,7 +229,6 @@ const SECOND_SITE = {
     ],
   },
   cta: {
-    draft: 'iso',
     eyebrow: 'Let’s Talk',
     heading: 'Say which one',
     accentText: 'you need.',
@@ -352,17 +347,12 @@ export default function Services() {
         ]}
       />
       <PageHero
-        draft={DOC.hero.draft}
         eyebrow={DOC.hero.eyebrow}
         title={DOC.hero.title}
         description={DOC.hero.description}
       />
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <div className="divide-hair-paper border-hair-paper divide-y border-y">
             {SERVICE_LINES.map((line, i) => (
@@ -388,10 +378,6 @@ export default function Services() {
         data-ground="band"
         className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
       >
-        <div
-          className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.plan}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <m.div {...fadeInUp} className="border-hair mb-12 border-b pb-8">
             <p className="section-label mb-4 text-accent">{DOC.band.eyebrow}</p>
@@ -446,10 +432,6 @@ export default function Services() {
       */}
       {IS_SECOND_SITE ? null : (
         <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-          <div
-            className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.node}`}
-            aria-hidden="true"
-          />
           <div className="container-rail relative">
             <m.div {...fadeInUp} className="grid items-end gap-10 lg:grid-cols-[1.4fr_1fr]">
               <div>
@@ -481,7 +463,6 @@ export default function Services() {
       )}
 
       <CtaBanner
-        draft={DOC.cta.draft}
         eyebrow={DOC.cta.eyebrow}
         heading={DOC.cta.heading}
         accentText={DOC.cta.accentText}

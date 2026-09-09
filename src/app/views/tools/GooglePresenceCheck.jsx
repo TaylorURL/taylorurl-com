@@ -241,7 +241,7 @@ export default function GooglePresenceCheck({ tool }) {
     },
   ]
 
-  return <StepFlow steps={steps} atTop draft="plan" label="Presence check steps" />
+  return <StepFlow steps={steps} atTop label="Presence check steps" />
 }
 
 /** What the report says about itself, before any single finding. */

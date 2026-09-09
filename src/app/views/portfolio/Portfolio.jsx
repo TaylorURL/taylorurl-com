@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import Seo from '@components/Seo'
@@ -209,17 +207,12 @@ export default function Portfolio() {
         ]}
       />
       <PageHero
-        draft="iso"
         eyebrow="Portfolio"
         title="Every site on this page is live."
         description={`${spellCount(CLIENT_PROJECTS.length)} businesses around Baytown and Houston, each site built, hosted, and looked after by the same small team. Open any of them, then read how it was put together.`}
       />
 
       <section className="section-y-lg relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.plan}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <div className="flex flex-col gap-32 sm:gap-40 lg:gap-56">
             {PORTFOLIO_PROJECTS.map((project, index) => (
@@ -230,7 +223,6 @@ export default function Portfolio() {
       </section>
 
       <CtaSection
-        draft="iso"
         eyebrow="Next: Your Site"
         title={
           <>

@@ -521,7 +521,7 @@ export default function LogoCleaner({ tool }) {
     },
   ]
 
-  return <StepFlow steps={steps} atTop draft="iso" label="Logo cleaner steps" />
+  return <StepFlow steps={steps} atTop label="Logo cleaner steps" />
 }
 
 /**

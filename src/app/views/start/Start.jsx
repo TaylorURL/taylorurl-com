@@ -578,7 +578,6 @@ export default function Start() {
       <StepFlow
         steps={steps}
         atTop
-        draft="column"
         head={<Preamble />}
         resumeAt={resumeAt}
         onStep={setStep}

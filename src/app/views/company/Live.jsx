@@ -1,6 +1,5 @@
 import { m } from 'framer-motion'
 import { Clock, MessageSquare, PhoneCall, ShieldCheck } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import Mesh from '@components/mesh/Mesh'
@@ -55,17 +54,12 @@ export default function Live() {
       />
 
       <PageHero
-        draft="column"
         eyebrow="Live"
         title="Ask now, not on Monday."
         description="There is an assistant in the corner of every page here. It answers questions about the work at whatever hour you thought of them, and it puts you in front of the team when the answer needs a person."
       />
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.node}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <m.div {...fadeInUp} className="flex max-w-[820px] flex-col gap-6">
             <p className="section-label text-accent">Who You Are Reaching</p>
@@ -103,7 +97,6 @@ export default function Live() {
         data-ground="band"
         className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
       >
-        <div className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.iso}`} aria-hidden="true" />
         <div className="container-rail relative">
           <m.div {...fadeInUp} className="flex max-w-[820px] flex-col gap-5">
             <p className="section-label text-accent">What It Does</p>
@@ -138,7 +131,6 @@ export default function Live() {
       </section>
 
       <CtaSection
-        draft="ledger"
         ground="paper"
         eyebrow="When You Are Ready"
         title={

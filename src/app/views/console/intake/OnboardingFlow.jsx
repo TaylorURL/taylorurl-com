@@ -11,8 +11,8 @@ import { formatInstant } from '@lib/time/zone.js'
  * trail of them across the top, and the two controls that move between them.
  *
  * It is the configurator's shape rather than the configurator itself. The
- * marketing frame is a section of a page, drawn on the drafting field, sized
- * by the page's own rhythm and free to be as tall as its longest step. This
+ * marketing frame is a section of a page, sized by the page's own rhythm and
+ * free to be as tall as its longest step. This
  * one is a card in a dashboard: it takes the cell it is given, its head keeps
  * the reading, its foot keeps the controls, and the step in the middle is the
  * only part that scrolls. A reader who has already learned the console reads

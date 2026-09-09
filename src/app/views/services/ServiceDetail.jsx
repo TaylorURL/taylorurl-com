@@ -106,12 +106,11 @@ export default function ServiceDetail() {
           },
         ]}
       />
-      <PageHero draft="column" eyebrow={page.eyebrow} title={page.name} description={page.lede} />
+      <PageHero eyebrow={page.eyebrow} title={page.name} description={page.lede} />
 
       <ServiceSection
         id="covers"
         ground="paper"
-        draft="plan"
         eyebrow="What It Covers"
         title="What you get."
         lede="Everything below is part of the work. Nothing here is an upgrade."
@@ -122,7 +121,6 @@ export default function ServiceDetail() {
       <ServiceSection
         id="limits"
         ground="band"
-        draft="hatch"
         eyebrow="What It Does Not"
         title="What it does not cover."
         lede="You find this out now, not halfway through the work."
@@ -130,13 +128,7 @@ export default function ServiceDetail() {
         <FactMesh items={page.excludes} ground="band" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
 
-      <ServiceSection
-        id="terms"
-        ground="paper"
-        draft="ledger"
-        eyebrow="Time and Cost"
-        title={DOC.termsTitle}
-      >
+      <ServiceSection id="terms" ground="paper" eyebrow="Time and Cost" title={DOC.termsTitle}>
         <FactMesh items={terms} ground="paper" columns={{ base: 1, sm: 2 }} />
         {asides.length > 0 && (
           <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
@@ -150,7 +142,6 @@ export default function ServiceDetail() {
       <ServiceSection
         id="more"
         ground="paper"
-        draft="quiet"
         eyebrow="The Rest of It"
         title="Everything else on offer."
       >
@@ -162,7 +153,6 @@ export default function ServiceDetail() {
       </ServiceSection>
 
       <CtaBanner
-        draft="column"
         eyebrow="Let’s Talk"
         heading={DOC.cta.heading}
         accentText={DOC.cta.accentText}

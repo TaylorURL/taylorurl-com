@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import { m, AnimatePresence } from 'framer-motion'
 import { ArrowLeft, ArrowRight, ArrowUpRight, Calendar, Clock, Search, X } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import SeriesMark, { CategoryMark } from '@components/marks/SeriesMark'
@@ -36,26 +34,18 @@ function CategoryChip({ category, active, onSelect, count }) {
 }
 
 function FeaturedPost({ post }) {
-  // Scroll-driven backdrop — the blueprint grid drifts inside the featured
-  // card as the band scrolls past, plus a gentle parallax on the right-hand
-  // meta panel. Both are decorative, so the article copy stays readable.
-  const { ref, transform: gridTransform } = useScrollParallax({ range: [0, -60] })
+  // A gentle parallax on the right-hand meta panel. It is decorative, so the
+  // article copy stays readable.
   const { ref: metaRef, transform: metaTransform } = useScrollParallax({
     range: [50, -50],
   })
 
   return (
     <m.article
-      ref={ref}
       {...fadeInUpMount}
       data-ground="dark"
       className="card-lift relative overflow-hidden bg-bg text-ink"
     >
-      <m.div
-        style={{ transform: gridTransform }}
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.column} ${SEAMS.card}`}
-        aria-hidden="true"
-      />
       <div className="relative grid gap-12 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:p-16">
         <div>
           <div className="section-label mb-6 text-accent">Featured · {post.category}</div>
@@ -291,7 +281,6 @@ export default function Blog() {
         ]}
       />
       <PageHero
-        draft="ledger"
         eyebrow="Blog"
         title="Straight answers about websites and Google."
         description="Why customers can’t find you on Google, and what to fix first on the site they do land on. Written for shops and trades around Baytown."
@@ -369,10 +358,6 @@ export default function Blog() {
       </section>
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.plan}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           {!isDefaultView && (
             <m.p
@@ -441,10 +426,6 @@ export default function Blog() {
       </section>
 
       <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <NewsletterSignup source="taylorurl-blog" />
           <div className="mt-10">
@@ -454,7 +435,6 @@ export default function Blog() {
       </section>
 
       <CtaBanner
-        draft="quiet"
         heading="Ready to fix your"
         accentText="website?"
         description="Tell us about the business and what isn’t working. A plan and a price come back before any work starts."

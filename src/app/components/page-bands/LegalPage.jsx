@@ -1,5 +1,3 @@
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { SITE } from '../../../../lib/site/current.js'
 
 /**
@@ -89,10 +87,6 @@ export default function LegalPage({
           what a reader has to have in order to know whether the rest of it
           applies to them. */}
       <header className="border-hair-paper relative overflow-hidden border-b bg-paper pb-14 pt-32 sm:pb-16 sm:pt-40">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.hatch} ${SEAMS.hero}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <div className="mx-auto max-w-[760px]">
             <p className="section-label text-accent">{eyebrow}</p>
@@ -126,10 +120,6 @@ export default function LegalPage({
       </header>
 
       <div className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.quiet}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <div className="mx-auto max-w-[760px]">
             {/* The document in a reader's own words, ahead of the document in

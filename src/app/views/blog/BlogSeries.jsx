@@ -1,8 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowLeft, ArrowUpRight } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import Seo from '@components/Seo'
 import CtaBanner from '@components/conversion/CtaBanner'
 import NotFound from '@views/NotFound'
@@ -60,10 +58,6 @@ export default function BlogSeries() {
         data-ground="dark"
         className="relative overflow-hidden bg-bg pb-20 pt-32 text-ink sm:pb-28 sm:pt-44"
       >
-        <div
-          className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.ledger} ${SEAMS.hero}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <m.div {...fadeInUpMount}>
             <Link
@@ -96,10 +90,6 @@ export default function BlogSeries() {
       </section>
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.plan}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <ol className="panel-static divide-hair-paper divide-y overflow-hidden">
             {series.posts.map((post, index) => (
@@ -156,7 +146,6 @@ export default function BlogSeries() {
       </section>
 
       <CtaBanner
-        draft="ledger"
         heading="Want this done on"
         accentText="your site?"
         description="Tell us what the site does now and what it should do. We usually reply within the hour, and a plan and a price come back before any work starts."

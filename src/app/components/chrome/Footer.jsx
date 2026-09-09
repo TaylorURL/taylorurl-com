@@ -1,5 +1,3 @@
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react'
@@ -137,15 +135,6 @@ export default function Footer() {
   // the page is the whole screen, that is a press with nothing to show for it.
   return (
     <footer className="border-hair relative overflow-hidden border-t bg-bg text-ink">
-      {/* The colophon is the same object on every page, so it is the one band
-          that does not take the page's module. It holds a fixed station field
-          at a fixed pitch, which is what stops a closing call butting an
-          identical grid straight into it - the site's most repeated seam. */}
-      <div
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.node}`}
-        style={{ '--sig-tile': '128px' }}
-        aria-hidden="true"
-      />
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
 
       <m.div {...fadeInUp} className="container-rail relative pb-10 pt-16 sm:pt-20">

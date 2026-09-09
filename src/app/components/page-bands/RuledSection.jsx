@@ -1,6 +1,5 @@
 import { m } from 'framer-motion'
 import { fadeInUp } from '@constants/animations'
-import { DRAFTS, SEAMS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 
 /**
@@ -20,12 +19,6 @@ import { GROUNDS } from '@constants/grounds'
  * @param {string} props.id - Anchor, and the base of the heading's own id.
  * @param {'paper' | 'sheet' | 'dark' | 'band'} [props.ground] - Which ground
  *   the band sits on.
- * @param {'plan' | 'ledger' | 'column' | 'node' | 'hatch' | 'iso' | 'quiet'}
- *   [props.draft] - What the band's field draws. It describes what the band is
- *   holding rather than how it should look; `@constants/drafting` says what
- *   each one means. The pitch it is drawn at comes from the page.
- * @param {'band' | 'foot' | 'hero' | 'card'} [props.seam] - How the field meets
- *   the band's own edges.
  * @param {string} props.eyebrow - Standing label above the heading.
  * @param {import('react').ReactNode} props.title - Heading content.
  * @param {string} [props.description] - Supporting line under the heading.
@@ -35,8 +28,6 @@ import { GROUNDS } from '@constants/grounds'
 export default function RuledSection({
   id,
   ground = 'paper',
-  draft = 'plan',
-  seam = 'band',
   eyebrow,
   title,
   description,
@@ -53,10 +44,6 @@ export default function RuledSection({
       {...tone.attrs}
       className={`relative overflow-hidden border-t py-20 sm:py-28 ${tone.section}`}
     >
-      <div
-        className={`absolute inset-0 ${tone.grid} ${DRAFTS[draft]} ${SEAMS[seam]}`.trimEnd()}
-        aria-hidden="true"
-      />
       <div className="container-rail relative">
         <header className={`mb-12 border-b pb-8 ${tone.rule}`}>
           <p className="section-label mb-4 text-accent">{eyebrow}</p>

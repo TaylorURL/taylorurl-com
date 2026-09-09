@@ -55,7 +55,6 @@ export default function Tools() {
       />
 
       <PageHero
-        draft="column"
         eyebrow="Free Tools"
         title="Run one, get your answer, leave."
         description="No account, no fee, nothing to install. Each one runs in your browser and finishes on this page."
@@ -64,7 +63,6 @@ export default function Tools() {
       <RuledSection
         id="tools-list"
         ground="paper"
-        draft="plan"
         eyebrow="The Tools"
         title="Pick the one you came for."
         description="Every field starts on a sensible default, so pressing next the whole way through still gets you a correct result."
@@ -76,7 +74,6 @@ export default function Tools() {
       <RuledSection
         id="tools-custom"
         ground="band"
-        draft="iso"
         eyebrow="Built to Order"
         title="When the free one is not the one you need."
         description="We build booking, ordering, quoting and the rest around how a business already runs rather than bending the business to fit a tool that came off a shelf."
@@ -87,7 +84,6 @@ export default function Tools() {
       </RuledSection>
 
       <CtaSection
-        draft="ledger"
         ground="paper"
         eyebrow="Start"
         title={

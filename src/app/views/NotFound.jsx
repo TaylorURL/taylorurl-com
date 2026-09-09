@@ -2,8 +2,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Bug } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import Seo from '@components/Seo'
 import { EASE, fadeInUpMount, settleIn } from '@constants/animations'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
@@ -68,13 +66,10 @@ export default function NotFound() {
     moveBug()
   }
 
-  // Scroll-driven parallax — the blueprint grid backdrop drifts slowly and the
-  // bug-catcher panel rises faster, giving the otherwise-static 404 a small
-  // sense of depth on viewports tall enough to scroll. Both collapse under
-  // reduced motion via the hook's built-in handling.
-  const { ref: sectionRef, transform: gridTransform } = useScrollParallax({
-    range: [0, -50],
-  })
+  // Scroll-driven parallax — the bug-catcher panel rises as the page scrolls,
+  // giving the otherwise-static 404 a small sense of depth on viewports tall
+  // enough to scroll. It collapses under reduced motion via the hook's
+  // built-in handling.
   const { ref: panelRef, transform: panelTransform } = useScrollParallax({
     range: [60, -60],
   })
@@ -84,7 +79,6 @@ export default function NotFound() {
 
   return (
     <div
-      ref={sectionRef}
       data-ground="dark"
       className="relative flex min-h-[calc(100dvh-var(--nav-height))] items-center justify-center overflow-hidden bg-bg pb-16 pt-32 text-ink sm:pb-20 sm:pt-44"
     >
@@ -96,11 +90,6 @@ export default function NotFound() {
           <LazyAurora amplitude={1.2} blend={0.6} speed={0.7} />
         </div>
       )}
-      <m.div
-        style={{ transform: gridTransform }}
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.hatch} ${SEAMS.hero}`}
-        aria-hidden="true"
-      />
       <Seo title="Page Not Found" description={DESCRIPTION} path="/404" noIndex />
 
       <div className="container-rail-tight relative grid items-center gap-12 lg:grid-cols-[1.4fr_1fr]">
@@ -162,10 +151,6 @@ export default function NotFound() {
               className="border-hair-strong bg-surface-1 relative mx-auto w-full overflow-hidden border border-dashed"
               style={{ aspectRatio: '1 / 1' }}
             >
-              <div
-                className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.plan} ${SEAMS.card}`}
-                aria-hidden="true"
-              />
               <m.button
                 type="button"
                 onClick={catchBug}

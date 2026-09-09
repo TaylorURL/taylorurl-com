@@ -67,7 +67,6 @@ export default function ToolPage() {
       <Flow tool={tool} />
 
       <CtaSection
-        draft="column"
         eyebrow="Start"
         title={
           <>
