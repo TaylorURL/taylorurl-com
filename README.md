@@ -60,7 +60,7 @@ Most small-business sites are either a static template that never ranks or a sin
 | Auth                 | Supabase Auth — accounts, with a role per profile                                                                                                                                  |
 | Analytics            | First-party, cookieless, one collector for every site under care                                                                                                                   |
 | Ad measurement       | The Google tag (GA4 and Ads conversions) and the Meta pixel, identified per site in `lib/site/registry.js`, fetched only after the reader's first touch or ten settled seconds     |
-| Outbound mail        | Resend for enquiries, the newsletter, the configurator's follow-up and client notifications; Nodemailer and IMAP for outreach                                                      |
+| Outbound mail        | Resend for enquiries, the configurator's follow-up and client notifications; Nodemailer and IMAP for outreach                                                                      |
 | SEO                  | `react-helmet-async` + build-time static prerender                                                                                                                                 |
 | The Pi               | The studio's own machine, behind `api/`: the uptime feed, the chat assistant and the brief's writing help, and the browser error reporter the page posts to directly               |
 | Serverless & hosting | Vercel Functions, on two Vercel projects built from this one tree and keyed by `SITE`                                                                                              |
@@ -114,7 +114,7 @@ flowchart TD
     V --> Sub["taylor.website: the same tree built with SITE=taylorwebsite, with no console, no blog and no schedules"]
     Any["Every tracked site"] -->|"pageview, heartbeat, pageleave"| IN["analytics-tracker, a Supabase Edge Function"]
     IN --> DB[("Postgres, RLS-locked")]
-    Site -->|"newsletter signup, confirm, unsubscribe"| EF["collect-email and the subscription functions"] --> DB
+    Site -->|"unsubscribe"| EF["the unsubscribe function"] --> DB
     Site -->|"enquiry"| CT["api/contact.js"] --> RS["Resend"]
     Site -->|"configurator address"| SL["api/start-lead.js"] --> DB
     Site -->|"checkout"| CK["api/checkout.js"] --> ST["Stripe"] -->|"signed webhook"| WH["api/stripe-webhook.js"] --> DB
@@ -123,7 +123,7 @@ flowchart TD
     Site -->|"browser errors, straight from the page"| PI
     Console["/console"] -->|"signed-in session"| ADM["api/*-admin.js, and the proxies to the analytics-summary, console-admin and site-speed functions"] --> DB
     Client["A client project's own deployment"] -->|"bearer secret per project"| NF["api/notify.js"] --> RS
-    Cron["Vercel cron: ten schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js, api/newsletter-due.js, api/start-followup.js"]
+    Cron["Vercel cron: nine schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js, api/start-followup.js"]
 ```
 
 ## How it works
@@ -137,12 +137,12 @@ flowchart TD
 
 - **One tracker, every site.** The collector serves the browser tracker that every site TaylorURL runs includes with a single script tag, so a change to what gets collected is one deploy rather than a dozen releases. Hits carry no address and no cookie: the country comes from the browser's own timezone, the session and visitor ids are random numbers in the browser's storage, and the collector accepts a hit only from the origins its site is registered with.
 - **Type is served from this origin.** Geist and Geist Mono are two variable woff2 files in `public/fonts/`, declared as `@font-face` in `src/index.css` and preloaded from `index.html`, so the first paint waits on nothing third-party.
-- **Secrets stay on the server.** Newsletter subscribers, the configurator's leads, the enquiry attribution and the notify tables all have row-level security on with no policies at all, so only the service role reaches them — the browser's publishable key can neither read nor write them. The browser never writes to them directly either: a signup goes through the `collect-email` function and a lead through `api/start-lead.js`, and each measures what it was sent before a row is written.
+- **Secrets stay on the server.** The configurator's leads, the enquiry attribution and the notify tables all have row-level security on with no policies at all, so only the service role reaches them — the browser's publishable key can neither read nor write them. The browser never writes to them directly either: a lead goes through `api/start-lead.js`, which measures what it was sent before a row is written.
 - **Client projects send through this one.** Every product the studio runs eventually has to reach somebody with the site closed, and a sender per client would be a domain to warm and a reputation to earn per client. `api/notify.js` lends them this one: a project posts what happened with its own bearer secret, and the message is drawn on the same sheet in that project's name, colour and mark. The identity is a row rather than a branch — a project becomes able to send when one appears in `notify_projects` — and the row is found by the digest of the secret presented, so a deployment can only ever send as itself.
 
 ## The lead figure
 
-Three surfaces take an enquiry, and all three post to `api/contact.js`: the contact page, the free tools, and the configurator. Each names itself in `form`, so `public.enquiry_attribution` answers which of the three produced a lead and which campaign it arrived on. That table is the lead figure. Nothing else on the site counts as one — a checkout that opens is a sale in Stripe, a newsletter subscriber is a reader, and the address the configurator and the payment page record in `start_leads` on their first screen is a lead to follow up rather than an enquiry. That row is what `/console/leads` lists and what `api/start-followup.js` writes to an hour later, and it reaches this table only when the person writes in.
+Three surfaces take an enquiry, and all three post to `api/contact.js`: the contact page, the free tools, and the configurator. Each names itself in `form`, so `public.enquiry_attribution` answers which of the three produced a lead and which campaign it arrived on. That table is the lead figure. Nothing else on the site counts as one — a checkout that opens is a sale in Stripe, and the address the configurator and the payment page record in `start_leads` on their first screen is a lead to follow up rather than an enquiry. That row is what `/console/leads` lists and what `api/start-followup.js` writes to an hour later, and it reaches this table only when the person writes in.
 
 The configurator is the newest of the three and the reason the number moved. It asks five screens of questions and used to end at a card, so a visitor who answered four of them and stopped left nothing behind at all; `SaveSection` sends the configuration as it stands, and the pay step's second button carries the same answers to the contact form rather than dropping them.
 
@@ -249,7 +249,7 @@ The row is the whole of it. Nothing about a new project is a release on this sid
 
 ```
 taylorurl-com/
-├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the newsletter's send, its due schedule and its Resend webhook, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
+├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
 ├── brand/                     The post cards the queue publishes, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
 │   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, and the shapes a value takes before it reaches a column
@@ -310,7 +310,7 @@ taylorurl-com/
 │   │   ├── views/             One folder per section of the site: the route views it publishes, above the parts that build them
 │   │   │   ├── home/ company/ services/ pricing/ start/     The sales path, from the front page to the card (the configurator's own steps under start/steps/)
 │   │   │   ├── portfolio/ industries/ areas/ blog/ tools/   The pages that argue for it
-│   │   │   ├── notes/ subscription/                          The newsletter and its two confirmations
+│   │   │   ├── subscription/                                The page a mailed unsubscribe link lands on
 │   │   │   ├── auth/ legal/                                  Signing in, and the three standing documents
 │   │   │   ├── console/       Console.jsx, its shell/, its intake/, its lib/, and pages/ filed under the sidebar's own headings: traffic/, email/, health/, studio/
 │   │   │   ├── analytics/     Charts, and under lib/ the number formatting and the pages the console does not count
@@ -318,7 +318,7 @@ taylorurl-com/
 │   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
 │   │   ├── hooks/             console/ (eleven feeds, the state they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
 │   │   ├── constants/         navigation, seo, business-schema, animations, grounds, mesh, routes
-│   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, newsletter/, console/, supabase/, liveChat.js
+│   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, console/, supabase/, liveChat.js
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, how a site reading is worded, and the pacing of a wait nothing reports on
 │   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, and how a prospect's audit score reads
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)

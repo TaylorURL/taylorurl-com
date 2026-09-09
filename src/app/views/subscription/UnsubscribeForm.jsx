@@ -1,6 +1,6 @@
 import { useId, useState } from 'react'
 import { AlertCircle } from 'lucide-react'
-import { unsubscribeAddress } from '@data/newsletter/subscription'
+import { unsubscribeAddress } from '@data/leads/subscription'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'

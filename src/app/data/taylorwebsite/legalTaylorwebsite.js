@@ -3,9 +3,9 @@
  *
  * Held apart from the views because the two sites answer these questions
  * differently and the answers are facts about each deployment rather than
- * wording. The studio sells through a checkout, publishes a newsletter, runs
- * Google Analytics and the Meta pixel, builds sites that hold other people's
- * customers, and works from a town it names. None of that is true here, and a
+ * wording. The studio sells through a checkout, runs Google Analytics and the
+ * Meta pixel, builds sites that hold other people's customers, and works from
+ * a town it names. None of that is true here, and a
  * legal page is the one place on a site where saying otherwise is not a
  * cosmetic error.
  *

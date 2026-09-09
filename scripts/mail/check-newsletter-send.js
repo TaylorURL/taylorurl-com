@@ -1100,11 +1100,17 @@ check('a run with nothing due says so without asking for attention', async () =>
   same(answer.body.needsAttention, false, 'whether a person is told')
 })
 
-check('the schedule and the endpoint agree on which cron path is registered', () => {
+// The newsletter was taken off the site: no signup form, no archive, and no
+// page that mentions it. What is left here is the send path, which nothing now
+// feeds and nothing now calls, and the schedule that used to call it is gone -
+// so this asserts the absence rather than the schedule. A cron that mails a
+// list is the one part of a retired product that can still act on its own.
+check('no schedule fires the send path any more', () => {
   const registered = JSON.parse(readFileSync(join(ROOT, 'vercel.json'), 'utf8')).crons || []
-  const cron = registered.find(entry => entry.path === '/api/newsletter-due')
-  ok(cron, `the schedule names the endpoint: ${registered.map(entry => entry.path).join(', ')}`)
-  same(cron.schedule, '0 14 1 * *', 'when it fires')
+  ok(
+    !registered.some(entry => entry.path === '/api/newsletter-due'),
+    `a schedule still names the endpoint: ${registered.map(entry => entry.path).join(', ')}`
+  )
 })
 
 const failures = []

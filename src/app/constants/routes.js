@@ -22,32 +22,15 @@ import { VIEW_KEYS as SECOND_SITE_VIEWS } from '../../../lib/site/routes/taylorw
 export const HAS_ACCOUNTS = !IS_SECOND_SITE
 
 /**
- * Whether this build has a newsletter.
- *
- * The newsletter belongs to the studio, and four routes exist only because of
- * it: the archive at `/notes`, an issue's own page, and the two pages a mailed
- * link opens. The subsidiary sends none. It stands up no signup form, its guide
- * has no newsletter section, `vite/site-routes.js` already answers the issue
- * query with an empty list for it, and its allowlist admits neither subscription
- * endpoint - so the archive drew nothing and both link pages answered a token
- * they had nowhere to send. None of the four is in that site's list of pages
- * either, so none was prerendered and none was in a menu: they were reachable by
- * typing the URL and by nothing else.
- */
-export const HAS_NEWSLETTER = !IS_SECOND_SITE
-
-/**
  * Routes are data so the two entry points can load views differently: the
  * browser entry passes lazy() views for code splitting, the prerender entry
  * passes eager ones because static rendering can't await. Each `key` is the
  * view's file name under `@views`.
  *
- * `account: true` marks a route that exists only because there are accounts, and
- * `newsletter: true` one that exists only because there is a newsletter. Both
- * come out below on the site that has neither, so a URL typed by hand reaches
- * the same nothing the menus offer rather than the studio's sign-in form
- * rendered against the shared project on the wrong origin, or an archive with no
- * issues behind it.
+ * `account: true` marks a route that exists only because there are accounts. It
+ * comes out below on the site that has none, so a URL typed by hand reaches the
+ * same nothing the menus offer rather than the studio's sign-in form rendered
+ * against the shared project on the wrong origin.
  */
 const ALL_ROUTES = [
   { key: 'Home', index: true },
@@ -102,11 +85,6 @@ const ALL_ROUTES = [
   { key: 'Blog', path: 'blog' },
   { key: 'BlogSeries', path: 'blog/series/:slug' },
   { key: 'BlogPost', path: 'blog/:slug' },
-  // The newsletter archive. Issues live in the database rather than in a data
-  // module, so which detail routes exist is decided at build time by the same
-  // query the page makes (see vite/site-routes.js).
-  { key: 'Notes', path: 'notes', newsletter: true },
-  { key: 'NotesIssue', path: 'notes/:slug', newsletter: true },
   { key: 'Faq', path: 'faq' },
   // The assistant's own page. The widget itself is mounted in the layout and
   // reaches every route; this is where it is introduced and where it opens on
@@ -114,10 +92,17 @@ const ALL_ROUTES = [
   { key: 'Live', path: 'live' },
   { key: 'Login', path: 'login', session: true, account: true },
   { key: 'Signup', path: 'signup', session: true, account: true },
-  // The two pages a newsletter link opens. Each reads the token in its query
-  // string, acts on it and reports; both are noindex and out of the sitemap.
-  { key: 'ConfirmSubscription', path: 'subscribe/confirm', newsletter: true },
-  { key: 'Unsubscribe', path: 'unsubscribe', newsletter: true },
+  // The page a mailed unsubscribe link lands on. It reads the token in its
+  // query string, acts on it and reports; noindex and out of the sitemap.
+  //
+  // It outlived the newsletter it was built beside, and the reason is that it
+  // was never only the newsletter's. `api/lead-unsubscribe.js` and
+  // `api/outreach/unsubscribe.js` both redirect a click here, so this is the
+  // page that answers the unsubscribe link in every lead follow-up and every
+  // cold email the studio sends. Taking it out with the rest would have left
+  // those links landing on a 404, which is the one thing an unsubscribe link
+  // may not do.
+  { key: 'Unsubscribe', path: 'unsubscribe' },
   // The two halves of a password reset: the page that asks for the link, and
   // the page the link lands on. Both are noindex, like the rest of the account
   // screens.
@@ -156,13 +141,13 @@ const ALL_ROUTES = [
 ]
 
 /** Whether a route is one this build has no reason to carry. */
-const omitted = route => (route.account && !HAS_ACCOUNTS) || (route.newsletter && !HAS_NEWSLETTER)
+const omitted = route => route.account && !HAS_ACCOUNTS
 
 /**
  * Whether this build mounts a route at all.
  *
- * The markers above take a family off a site that has no accounts or no
- * newsletter, and they only ever describe the studio's own reasons. The
+ * The marker above takes a family off a site that has no accounts, and it only
+ * ever describes the studio's own reasons. The
  * subsidiary's reason is the opposite one: it publishes a written list of pages
  * and mounts what that list names, so a route family added to the studio next
  * year reaches it never rather than reaching it by default. That is why this
@@ -177,13 +162,13 @@ const mounted = route =>
  * The same array on the studio, by reference, so nothing about the site that has
  * always been here goes through a filter to come out unchanged.
  *
- * `!IS_SECOND_SITE` is redundant beside the two flags today, because both are
+ * `!IS_SECOND_SITE` is redundant beside the flag today, because the flag is
  * defined as exactly that. It is written anyway: a third site registered with
- * accounts and a newsletter would otherwise take the by-reference branch and
- * mount the studio's whole table, which is the failure this file exists to stop.
+ * accounts would otherwise take the by-reference branch and mount the studio's
+ * whole table, which is the failure this file exists to stop.
  */
 export const ROUTE_DEFINITIONS =
-  HAS_ACCOUNTS && HAS_NEWSLETTER && !IS_SECOND_SITE ? ALL_ROUTES : ALL_ROUTES.filter(mounted)
+  HAS_ACCOUNTS && !IS_SECOND_SITE ? ALL_ROUTES : ALL_ROUTES.filter(mounted)
 
 /*
  * The same definitions in the shape react-router matches against, so a URL can

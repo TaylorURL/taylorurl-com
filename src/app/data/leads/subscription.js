@@ -2,7 +2,7 @@ import { faultMessage } from '../../utils/faults.js'
 
 const FUNCTIONS_URL = 'https://gujgtjqqurildqurpffh.supabase.co/functions/v1'
 const PUBLISHABLE_KEY = 'sb_publishable_qn4ZWB2n95HGMJm0L58I0w_ClE_Qu4M'
-// Two of the three ways in are a link followed out of an email and one is an
+// One of the two ways in is a link followed out of an email and the other is an
 // address typed into a form, so there is no one noun for what did not work.
 // Each entry point names its own, and the shared one is the last resort for a
 // caller that named nothing.
@@ -28,24 +28,19 @@ async function post(slug, body, fallback = FALLBACK_ERROR) {
   const payload = await response.json().catch(() => null)
   // Read here rather than handed on, because what comes back is only sometimes
   // the function's own words: a gateway, a rate limiter or a project asleep
-  // answers in its own, and all of them land in the same field. Two of the
-  // three ways in are a link followed out of an email, where there is no form
-  // in front of the reader to be told to correct, so the sentence they get has
-  // to stand on its own.
+  // answers in its own, and all of them land in the same field. One of the two
+  // ways in is a link followed out of an email, where there is no form in front
+  // of the reader to be told to correct, so the sentence they get has to stand
+  // on its own.
   //
   // Read out of the body and not the status beside it. Everyone who reaches
-  // these three pages is an address on a mailing list rather than somebody
-  // holding an account, so a sentence chosen for a refusal on its status --
-  // sign in again, this account is not allowed -- names a step they have no way
-  // to take. One of the three ways in is a person leaving, and nobody is held
-  // on a list by a sentence they cannot act on.
+  // this page is an address on a mailing list rather than somebody holding an
+  // account, so a sentence chosen for a refusal on its status -- sign in again,
+  // this account is not allowed -- names a step they have no way to take. Both
+  // ways in are a person leaving, and nobody is held on a list by a sentence
+  // they cannot act on.
   if (!response.ok) throw new Error(faultMessage(payload, fallback))
   return { already: Boolean(payload?.already) }
-}
-
-/** Turns a pending signup into a subscription. */
-export function confirmSubscription(token) {
-  return post('confirm-subscription', { token }, FROM_LINK)
 }
 
 /** Takes the address a link names off the list and onto suppression. */

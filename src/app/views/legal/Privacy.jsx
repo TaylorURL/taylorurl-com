@@ -16,7 +16,7 @@ const SECTIONS = [
     title: 'Who This Covers',
     content: `This policy covers two different things and it is worth separating them at the top.
 
-On taylorurl.com, we decide what is collected and why, and we answer for it. If you filled in a form here, subscribed to the newsletter, opened the chat, or simply read a page, this policy is the whole answer and you can write to us directly.
+On taylorurl.com, we decide what is collected and why, and we answer for it. If you filled in a form here, opened the chat, or simply read a page, this policy is the whole answer and you can write to us directly.
 
 On a website we built for a client, the client decides what is collected and why. Their bookings, enquiries, customer records and mailing lists are theirs. We hold that information for them, on their instructions, so that their site works and stays online, and we do not use it for anything of our own. If you are a customer of one of those businesses, they are the people to ask about your data, and their own privacy notice governs it. Write to us and we will pass the request to them rather than act on it ourselves.`,
   },
@@ -24,7 +24,7 @@ On a website we built for a client, the client decides what is collected and why
     title: 'What We Collect On This Site',
     content: `Only what the site needs to do its job, and no more than that.
 
-What you hand over: your name, email address, phone number, business name, and whatever else you choose to put in a contact form, a project enquiry, a speed check, the newsletter box or the chat. If you buy through the checkout, the details needed to raise and keep the subscription. A form is recorded as it is filled in rather than only when it is sent, so an address typed into one is kept whether or not you press the button underneath it.
+What you hand over: your name, email address, phone number, business name, and whatever else you choose to put in a contact form, a project enquiry, a speed check or the chat. If you buy through the checkout, the details needed to raise and keep the subscription. A form is recorded as it is filled in rather than only when it is sent, so an address typed into one is kept whether or not you press the button underneath it.
 
 What a visit produces on its own: the page you were on, the address you arrived from, any campaign tags in the link, your browser, operating system and device type, your language, your screen and window size, an approximate location down to the town, how long you stayed, and a random identifier used to tell one visit from the next. Your IP address is read to work out that approximate location and is not kept in the record.
 
@@ -38,7 +38,7 @@ That information is the business's, not ours. We do not sell it, mine it, add it
   },
   {
     title: 'How The Information Is Used',
-    content: `To answer you, to quote and carry out work, to raise and collect payment for it, to keep sites online and fix them when they break, to send the newsletter to people who asked for it, to understand which pages and which advertising are worth keeping, and to meet legal and accounting obligations.
+    content: `To answer you, to quote and carry out work, to raise and collect payment for it, to keep sites online and fix them when they break, to understand which pages and which advertising are worth keeping, and to meet legal and accounting obligations.
 
 It is not used to make an automated decision about you, and it is not used for anything we have not named here.`,
   },
@@ -68,9 +68,9 @@ Beyond those, information is disclosed only where the law requires it, where it 
   },
   {
     title: 'Email And Messages',
-    content: `The newsletter is opt in and confirmed: nobody is added because they filled in a different form. Every issue carries an unsubscribe link that works in one click and without signing in, and unsubscribing takes effect immediately.
+    content: `Email about a project, an invoice, an outage or a reply to something you sent is service email rather than marketing, and it continues while you are a client whatever your marketing preferences are.
 
-Email about a project, an invoice, an outage or a reply to something you sent is service email rather than marketing, and it continues while you are a client whatever your marketing preferences are.
+Every message we send that is not service email carries an unsubscribe link that works in one click and without signing in, and unsubscribing takes effect immediately across every list we send from.
 
 If you start a quote here, leave an address and do not finish, you may get one message from us asking whether you found what you needed. One message, not a sequence, and it carries the same one-click unsubscribe every other message does. Unsubscribing stops it and everything else.
 
@@ -78,7 +78,7 @@ The chat on this site is answered by an assistant, with a way through to us when
   },
   {
     title: 'How Long It Is Kept',
-    content: `Enquiries and messages are kept for two years from the last contact, so that a conversation picked up again a year later still makes sense. Newsletter subscriptions are kept until you unsubscribe, and the record that you unsubscribed is kept afterwards so you are not added again by mistake. Visit measurements are kept for twenty-five months. Invoices, receipts and the records behind them are kept for seven years, because tax law requires it. Client data is kept for as long as the client is a client, and then deleted once they confirm they have their copy.
+    content: `Enquiries and messages are kept for two years from the last contact, so that a conversation picked up again a year later still makes sense. Where you have asked us to stop writing, the record that you did is kept afterwards so you are not written to again by mistake. Visit measurements are kept for twenty-five months. Invoices, receipts and the records behind them are kept for seven years, because tax law requires it. Client data is kept for as long as the client is a client, and then deleted once they confirm they have their copy.
 
 Where something has to be kept for one of those reasons it is kept, and a deletion request that collides with a legal obligation gets an honest answer saying which one and for how long.`,
   },

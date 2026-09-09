@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { issueRoutes, sentIssues, SITE_URL, SITEMAP_ROUTES } from './site-routes.js'
+import { SITE_URL, SITEMAP_ROUTES } from './site-routes.js'
 
 function toUrlEntry({ path, lastmod, changefreq, priority }) {
   const lines = [`    <loc>${SITE_URL}${path}</loc>`]
@@ -20,7 +20,7 @@ export default function sitemapPlugin() {
       outDir = config.build.outDir
     },
     async closeBundle() {
-      const routes = [...SITEMAP_ROUTES, ...issueRoutes(await sentIssues())]
+      const routes = SITEMAP_ROUTES
       const body = routes.map(toUrlEntry).join('\n')
       const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`
       await writeFile(join(outDir, 'sitemap.xml'), xml, 'utf8')

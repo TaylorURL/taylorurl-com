@@ -185,62 +185,6 @@ try {
 }
 check(refused, 'an unrecognised SITE resolved instead of throwing')
 
-// The newsletter archive is read from the database at build time and appended by
-// three plugins - sitemap, llms and prerender - none of which gates it on the
-// site. A site that does not route /notes would publish a /notes/<slug> for every
-// sent issue and prerender pages its router has no entry for, so the gate lives
-// in sentIssues and this is what holds it there.
-//
-// Asserting the list comes back empty would pass for the wrong reason: a checkout
-// with no database credentials gets an empty list whether the gate is there or
-// not, so removing the gate would still read as green. What separates them is
-// whether the read is attempted at all, so fetch is replaced with a recorder and
-// the assertion is that nothing called it.
-const archiveProbe = key =>
-  JSON.parse(
-    execFileSync(
-      process.execPath,
-      [
-        '--input-type=module',
-        '-e',
-        'let called = false;' +
-          "globalThis.fetch = () => { called = true; return Promise.reject(new Error('blocked')) };" +
-          "const m = await import('./vite/site-routes.js');" +
-          'const issues = await m.sentIssues();' +
-          "console.log(JSON.stringify({ routesNotes: m.SITEMAP_ROUTES.some(r => r.path === '/notes'), " +
-          'called, count: m.issueRoutes(issues).length }))',
-      ],
-      {
-        cwd: ROOT,
-        env: { ...process.env, SITE: key },
-        encoding: 'utf8',
-        stdio: ['ignore', 'pipe', 'pipe'],
-      }
-    ).trim()
-  )
-
-for (const key of SITE_KEYS) {
-  let probe
-  try {
-    probe = archiveProbe(key)
-  } catch {
-    fail(`SITE=${key}: the newsletter archive could not be resolved`)
-    continue
-  }
-  if (probe.routesNotes) continue
-  check(
-    probe.called === false,
-    `SITE=${key} does not route /notes but still read the newsletter table. ` +
-      'Something appends the archive ahead of the gate in sentIssues, and this ' +
-      "site's sitemap, llms.txt and prerender will carry /notes/<slug> the " +
-      'moment an issue is sent.'
-  )
-  check(
-    probe.count === 0,
-    `SITE=${key} does not route /notes but took ${probe.count} issue route(s)`
-  )
-}
-
 // One reader of the variable. The rule exists because the expression means three
 // different things in three runtimes, and every extra reader is a place that gets
 // one of them wrong.

@@ -213,18 +213,6 @@ export function MarkArea(props) {
   )
 }
 
-/** The newsletter: the issues sent so far, side by side. */
-export function MarkIssues(props) {
-  return (
-    <svg {...BASE} {...props}>
-      <path d="M3 20.5h18" />
-      <path d="M4.5 7.5h4v10h-4z" />
-      <path d="M10 4.5h4v13h-4z" />
-      <path d="M15.5 10.5h4v7h-4z" />
-    </svg>
-  )
-}
-
 /** Get in touch: a note sent, and the one that comes back. */
 export function MarkTalk(props) {
   return (

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Seo from '@components/Seo'
-import { unsubscribeToken } from '@data/newsletter/subscription'
+import { unsubscribeToken } from '@data/leads/subscription'
 import { faultMessage } from '@utils/faults'
 import SubscriptionShell from './SubscriptionShell'
 import UnsubscribeForm from './UnsubscribeForm'
@@ -46,12 +46,18 @@ const COPY = {
 /**
  * The page an unsubscribe link opens, and the page a reader reaches without one.
  *
- * Two lists send links here and each arrives having done a different amount of
- * the work. A newsletter link carries `token`, which is the whole credential, so
- * the request goes out on arrival and the page reports what came back. An
- * outreach link goes to api/outreach/unsubscribe first, which retires the
- * prospect and redirects here carrying `state`, so the work is already done and
- * the page only states the outcome.
+ * Links arrive here having done a different amount of the work. A link carrying
+ * `token` carries the whole credential, so the request goes out on arrival and
+ * the page reports what came back. A lead follow-up and a cold email both go to
+ * their own endpoint first - api/lead-unsubscribe.js and
+ * api/outreach/unsubscribe.js - which retires the address and redirects here
+ * carrying `state`, so the work is already done and the page only states it.
+ *
+ * Nothing the studio sends today builds a `token` link; the newsletter was the
+ * one that did, and it was taken off the site. The branch stays because the
+ * mail it was written for is sitting in inboxes: somebody who kept an issue and
+ * clicks unsubscribe next year is a person asking to be left alone, and the
+ * cost of honouring that is a query string this page already knows how to read.
  *
  * Neither link has a button. A reader who followed an unsubscribe link has
  * already said what they want, and a mail client that prefetches the link finds

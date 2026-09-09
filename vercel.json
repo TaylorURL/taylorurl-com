@@ -35,10 +35,6 @@
       "schedule": "40 17 * * *"
     },
     {
-      "path": "/api/newsletter-due",
-      "schedule": "0 14 1 * *"
-    },
-    {
       "path": "/api/start-followup",
       "schedule": "*/15 * * * *"
     }
