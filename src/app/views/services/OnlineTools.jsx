@@ -52,11 +52,11 @@ const STAGES = [
   },
   {
     when: 'Six Months In',
-    body: 'The retargeting audience holds six months of real visitors. The ad platforms have a conversion history to read. The sending domain has been sending clean mail long enough to be trusted with more of it.',
+    body: 'The retargeting audience holds six months of real visitors. The ad platforms have a conversion history to read. The sending domain has been sending clean mail long enough that more of it reaches an inbox instead of a spam folder.',
   },
   {
     when: 'The Day You Advertise',
-    body: 'Nothing to install, nothing to backfill, no month spent learning what the site already knows. The first campaign runs against data the site has been collecting since it went live.',
+    body: 'There is nothing to install and nothing to fill in after the fact, and nobody spends a month teaching the ad platforms what the site already knows. The first campaign runs against data the site has been collecting since it went live.',
   },
 ]
 
@@ -109,7 +109,7 @@ const SYSTEMS = [
     lede: 'A sending domain of your own, warmed up over weeks, so the mail reaches an inbox instead of a spam folder.',
     pieces: [
       'A sending domain registered in your name, kept apart from the one your customers write to',
-      'SPF, DKIM, and DMARC set right before the first message goes out',
+      'SPF, DKIM, and DMARC set correctly before the first message goes out',
       'A handful of messages a day at first, climbing to full rate over several weeks',
       'A list built one company at a time, from businesses that fit what you sell',
       'Every message written for the companies it goes to',
@@ -182,7 +182,7 @@ const NOT_INCLUDED = [
   },
   {
     title: 'A Bought List',
-    body: 'Outbound goes to companies picked one at a time. Nothing here sends to a list somebody sold us, which is the quickest way there is to burn a sending domain.',
+    body: 'Outbound goes to companies picked one at a time. Nothing here sends to a list somebody sold us, because sending to one is the quickest way there is to burn a sending domain.',
   },
   {
     title: 'A Promised Number',
@@ -345,7 +345,7 @@ export default function OnlineTools() {
       />
       <PageHero
         eyebrow="What Runs Underneath"
-        title="The machinery goes in with the site."
+        title="Booking, payment, and tracking go in with the site."
         description="Booking, ordering, and payment at the front. Ad tracking, conversion events, a sending domain, and monitoring underneath. All of it goes in during the build, so none of it has to be retrofitted the day you decide to use it."
       />
 
@@ -354,7 +354,7 @@ export default function OnlineTools() {
         ground="band"
         eyebrow="Why It Goes In Early"
         title="Worth more in year two than it was at launch."
-        lede="Most sites peak the week they go live and lose ground from there. What holds the value is the machinery underneath, and every piece of it is worth more the longer it has already been running."
+        lede="A website is at its newest the week it goes live, and nothing about it gets better on its own from there. What holds the value is the machinery underneath, and every piece of it is worth more the longer it has already been running."
       >
         <div className="panel-static bg-hair grid gap-px overflow-hidden lg:grid-cols-3">
           {STAGES.map((stage, index) => (
