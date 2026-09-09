@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useSyncExternalStore } from 'react'
 
 /** Where the choice is kept, and the key the pre-paint script in the page head reads. */
 export const THEME_KEY = 'taylorurl_theme'
@@ -16,8 +16,15 @@ export const THEMES = ['light', 'dark', 'system']
 
 const DARK_QUERY = '(prefers-color-scheme: dark)'
 
+// One query object for the document, because a listener is registered against
+// the object rather than against the string: a second `matchMedia` call for the
+// same query answers the same question from a different handle, and removing a
+// listener through that handle removes nothing.
+let query = null
+
 function media() {
-  return window.matchMedia(DARK_QUERY)
+  if (!query) query = window.matchMedia(DARK_QUERY)
+  return query
 }
 
 /** What `system` means at this moment. */
@@ -87,6 +94,110 @@ export function applyTheme(choice) {
 }
 
 /**
+ * The setting, held once for the document rather than once for each reader.
+ *
+ * There is one setting, so there is one copy of it and React subscribes to that
+ * copy. Holding it in the hook's own state gave every caller a copy instead:
+ * the drawer's control, the footer's, and every section that swaps a light
+ * capture for a dark one each kept their own. A press moved the copy that was
+ * pressed and stamped the document, so the palette turned while the other
+ * control still showed the old word and the home page's shots stayed on their
+ * light captures, which is a white rectangle in the middle of a dark page.
+ */
+const readers = new Set()
+
+// The choice and what it resolves to, as one object, because a subscription
+// re-renders on identity: a new object every read would re-render every caller
+// on every pass, and a value that never changes identity would re-render none
+// of them when the setting moved.
+let state = null
+
+// What the prerender pass stands on. It has no window to read a preference from
+// and paints nothing, so it takes the default and the browser corrects it.
+const SERVER_STATE = Object.freeze({ choice: DEFAULT_THEME, resolved: 'light' })
+
+function snapshot() {
+  if (typeof window === 'undefined') return SERVER_STATE
+  if (!state) {
+    const choice = storedChoice()
+    state = { choice, resolved: choice === 'system' ? systemTheme() : choice }
+  }
+  return state
+}
+
+/**
+ * The same default, given to the render that adopts the prerendered markup.
+ *
+ * React hydrates by taking that markup as it stands rather than by comparing it
+ * to what the component would draw, so a first client render already holding the
+ * reader's setting leaves what the prerender wrote in place and nothing
+ * afterwards goes back for it. The setting is right, the document is right, and
+ * the markup between them is a visit old: the picker read Light under a dark
+ * palette and stayed there, because a store that already agrees with itself
+ * never publishes and so never re-renders anyone.
+ *
+ * A capture is safe from this - the ground picks between the pair in CSS - but
+ * every reader that decides in JavaScript needs the render after hydration, and
+ * answering the hydrating one with the prerender's own value is what produces
+ * it. This is the only reader of `SERVER_STATE` that runs in a browser.
+ */
+function prerendered() {
+  return SERVER_STATE
+}
+
+/**
+ * Stamp a choice on the document and hand it to everyone reading.
+ *
+ * The stamp is unconditional and the publish is not. The page head sets the
+ * attribute before the first paint but leaves the browser chrome alone, so the
+ * first call of the visit has work to do even though it changes nothing.
+ *
+ * @param {'light'|'dark'|'system'} choice
+ */
+function commit(choice) {
+  const resolved = applyTheme(choice)
+  const current = snapshot()
+  if (current.choice === choice && current.resolved === resolved) return
+  state = { choice, resolved }
+  window.dispatchEvent(new Event(THEME_EVENT))
+  readers.forEach(reader => reader())
+}
+
+/** Another tab is the same device and the same preference, so it lands here. */
+function reread(event) {
+  if (event.key && event.key !== THEME_KEY) return
+  commit(storedChoice())
+}
+
+/**
+ * The machine's preference, followed only while the choice is `system`: a
+ * reader who picked light has asked for light on a machine that turns dark at
+ * sunset. The listener stays wired and the word is checked when it fires,
+ * rather than the listener being rewired every time the word changes.
+ */
+function follow() {
+  if (snapshot().choice !== 'system') return
+  commit('system')
+}
+
+function subscribe(reader) {
+  readers.add(reader)
+  if (readers.size === 1) {
+    window.addEventListener('storage', reread)
+    media().addEventListener('change', follow)
+  }
+  return () => {
+    readers.delete(reader)
+    if (readers.size > 0) return
+    window.removeEventListener('storage', reread)
+    media().removeEventListener('change', follow)
+  }
+}
+
+// The document is stamped once a visit, by whichever caller mounts first.
+let stamped = false
+
+/**
  * The reader's light or dark setting.
  *
  * The choice is one of three: light, dark, or system, which follows the
@@ -94,6 +205,9 @@ export function applyTheme(choice) {
  * document element as `data-theme`, which is where the stylesheet's palettes
  * hang, and it survives a reload in localStorage — read back by the script in
  * the page head so the first paint is already in the right palette.
+ *
+ * Every caller reads the one setting and moves with it, so a press on any
+ * control anywhere in the page is the same press to all of them.
  *
  * Every localStorage call is wrapped: a browser in a private context throws on
  * the read as well as the write, and a theme control that throws is worse than
@@ -103,51 +217,23 @@ export function applyTheme(choice) {
  *   setChoice: (next: 'light'|'dark'|'system') => void}}
  */
 export function useTheme() {
-  // The prerender pass has no window to read a preference from and paints
-  // nothing, so it stands on the default and the browser corrects it.
-  const [choice, setStored] = useState(() =>
-    typeof window === 'undefined' ? DEFAULT_THEME : storedChoice()
-  )
-  const [resolved, setResolved] = useState(() =>
-    typeof window === 'undefined' ? 'light' : choice === 'system' ? systemTheme() : choice
-  )
+  const { choice, resolved } = useSyncExternalStore(subscribe, snapshot, prerendered)
 
   useEffect(() => {
-    const stamp = () => {
-      const next = applyTheme(choice)
-      setResolved(next)
-      window.dispatchEvent(new Event(THEME_EVENT))
-    }
-    stamp()
-
-    // Only while the choice is `system`: a reader who picked light has asked
-    // for light on a machine that turns dark at sunset.
-    if (choice !== 'system') return undefined
-    const query = media()
-    query.addEventListener('change', stamp)
-    return () => query.removeEventListener('change', stamp)
-  }, [choice])
-
-  useEffect(() => {
-    // Another tab is the same account and the same preference, so a change
-    // there lands here without a reload.
-    const reread = event => {
-      if (event.key && event.key !== THEME_KEY) return
-      setStored(storedChoice())
-    }
-    window.addEventListener('storage', reread)
-    return () => window.removeEventListener('storage', reread)
+    if (stamped) return
+    stamped = true
+    commit(snapshot().choice)
   }, [])
 
   const setChoice = useCallback(next => {
     if (!THEMES.includes(next)) return
-    setStored(next)
     try {
       window.localStorage.setItem(THEME_KEY, next)
     } catch {
       // Nothing to do; the setting holds for this visit and the next one starts
       // from the default again.
     }
+    commit(next)
   }, [])
 
   return { choice, resolved, setChoice }

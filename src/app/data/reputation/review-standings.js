@@ -1,4 +1,10 @@
-import { BBB_SEAL_HEIGHT, BBB_SEAL_SRC, BBB_SEAL_WIDTH, bbbAccredited } from './bbb.js'
+import {
+  BBB_SEAL_HEIGHT,
+  BBB_SEAL_RADIUS,
+  BBB_SEAL_SRC,
+  BBB_SEAL_WIDTH,
+  bbbAccredited,
+} from './bbb.js'
 import { REVIEW_SOURCES } from './reviews.js'
 
 /**
@@ -36,7 +42,12 @@ export const REVIEW_STANDINGS = {
   // the separate reading of how many customers have written a review.
   bbb: {
     seal: bbbAccredited()
-      ? { src: BBB_SEAL_SRC, width: BBB_SEAL_WIDTH, height: BBB_SEAL_HEIGHT }
+      ? {
+          src: BBB_SEAL_SRC,
+          width: BBB_SEAL_WIDTH,
+          height: BBB_SEAL_HEIGHT,
+          radius: BBB_SEAL_RADIUS,
+        }
       : undefined,
     verdict: bbbAccredited() ? 'BBB Accredited Business' : undefined,
     reviewCount: 0,

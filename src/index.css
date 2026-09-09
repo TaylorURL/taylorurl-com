@@ -2524,6 +2524,22 @@
     background-color: var(--paper-field);
   }
 
+  /* One half of a capture committed in both palettes, of which the ground shows
+     one. `display` is owned here rather than passed in as a utility, because a
+     class that sets it would outrank this rule and both halves would draw.
+
+     A shot with no `data-theme` above it is the light one: the attribute is
+     stamped before the first paint, and the page a reader gets with the script
+     refused is the light page. */
+  .palette-shot {
+    display: none;
+  }
+
+  :root:not([data-theme='dark']) .palette-shot[data-palette='light'],
+  [data-theme='dark'] .palette-shot[data-palette='dark'] {
+    display: block;
+  }
+
   /* The nearer sheet of a layered pair. Same construction, one step closer. */
   .plane-shot-near {
     border-radius: var(--r-card);
