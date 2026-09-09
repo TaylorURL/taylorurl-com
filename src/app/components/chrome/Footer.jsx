@@ -205,10 +205,16 @@ export default function Footer() {
             </Link>
             <p className="mt-6 text-[14px] leading-relaxed text-ink-soft">{SITE.footerBlurb}</p>
             <div className="mt-6 space-y-1">
-              <div className={CONTACT_ROW}>
-                <MapPin className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
-                <span>{COMPANY_LOCATION}</span>
-              </div>
+              {/* A site that claims no area draws no row for one. The pin
+                  was rendered whatever the record held, so the second site,
+                  which is run from nowhere it names, opened a 44px row on an
+                  icon with nothing beside it. */}
+              {COMPANY_LOCATION ? (
+                <div className={CONTACT_ROW}>
+                  <MapPin className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
+                  <span>{COMPANY_LOCATION}</span>
+                </div>
+              ) : null}
               <a href={COMPANY_PHONE_HREF} className={CONTACT_ROW}>
                 <Phone className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
                 <span>{COMPANY_PHONE}</span>
