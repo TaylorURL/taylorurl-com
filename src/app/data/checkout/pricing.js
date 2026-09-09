@@ -167,7 +167,7 @@ export const INCLUDED_GROUPS = [
       'Website Updates Any Time',
       'Software and Security Updates',
       'Monthly SEO Work',
-      'A Direct Line to the Team',
+      'Text the People Who Built It',
       'One Flat Monthly',
       'Website Analytics',
     ],

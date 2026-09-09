@@ -22,7 +22,7 @@ export const BLOG_SERIES = [
     name: 'Getting Found',
     tagline: 'Showing up when someone searches',
     description:
-      'Google, the map pack, reviews, and every free lever a local business has for being the result someone clicks. Written for shops and trades around Houston.',
+      'Google, the map pack, reviews, and every free lever a local business has for being the result someone clicks. Your profile, your pages, and your schema markup.',
     mark: 'find',
   },
   {
@@ -38,7 +38,7 @@ export const BLOG_SERIES = [
     name: 'Design That Sells',
     tagline: 'Layout, color, and the path to the call',
     description:
-      'How a page is laid out, what it says first, and why some sites turn visitors into customers while better-looking ones do not. Layout, color, and the call.',
+      'How a page is laid out, what it says first, and why some sites turn visitors into customers while better-looking ones do not. Homepages, forms, logos, copy.',
     mark: 'rule',
   },
   {
