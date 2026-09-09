@@ -33,7 +33,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'how-to-get-more-google-reviews',
     title: 'How to Get More Google Reviews Without Being Annoying',
     excerpt:
-      'Google reviews are free and they move your ranking. Ask right after a job goes well, by text, with a link that opens the review box. That is the whole method.',
+      'Google reviews are free and they move your ranking. Ask right after a job goes well, by text, with a short message and a link that opens the review box.',
     category: 'SEO',
     date: 'October 22, 2025',
     readTime: '5 min read',
@@ -97,7 +97,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'why-fast-websites-make-more-money',
     title: 'Why Fast Websites Make More Money',
     excerpt:
-      'More than half of mobile visitors leave a page that takes longer than three seconds. What slows a site down, what a slow second costs, and the afternoon fixes.',
+      'More than half of mobile visitors leave a page that takes longer than three seconds. What slows a site down, what a slow second costs, and how to check yours.',
     category: 'Site Speed',
     date: 'November 19, 2025',
     readTime: '5 min read',

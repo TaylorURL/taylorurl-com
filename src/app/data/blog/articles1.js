@@ -190,7 +190,7 @@ export const BLOG_ARTICLES_1 = [
     slug: 'why-nobodys-filling-out-your-contact-form',
     title: "Why Nobody's Filling Out Your Contact Form",
     excerpt:
-      'The longest form we have ever built is also the one people finish. Length was never what was killing yours: friction is, and most of it is on the phone.',
+      'The longest form we have ever built is also the one people finish. Length was never what was killing yours: friction is, and most of it is not the fields.',
     category: 'Design',
     date: 'January 25, 2026',
     readTime: '5 min read',

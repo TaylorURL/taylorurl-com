@@ -51,7 +51,7 @@ const QUESTIONS = [
   },
   {
     q: 'Are there setup fees or extras?',
-    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site. The two figures are where the price starts, what moves them is how big the whole project is, and you agree to that number before anything starts. What sits outside them is named up front: Google or Microsoft bill for each mailbox, any ad budget is yours to spend, and buying and running the campaigns is quoted on its own.',
+    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site. The two figures are where the price starts, what moves it is how big the whole project is, and you agree to that number before anything starts. What sits outside them is named up front: Google or Microsoft bill for each mailbox, any ad budget is yours to spend, and buying and running the campaigns is quoted on its own.',
   },
   {
     q: `Is the ${MONTHLY_PRICE} a month optional?`,
@@ -67,7 +67,7 @@ const QUESTIONS = [
   },
   {
     q: 'What if the build stops before the site is live?',
-    a: 'The build fee pays for the work carried out, so whether it is refunded in whole or in part depends on how much of the build has been done. The calculation goes to you in writing before anything is settled, so you see the reasoning rather than just the figure.',
+    a: 'The build fee pays for work already done, so whether you get all of it back or part of it depends on how far the build got. We send you the calculation in writing before we settle up, so you see the reasoning and not just the figure.',
   },
 ]
 
