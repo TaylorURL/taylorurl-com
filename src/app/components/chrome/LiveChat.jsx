@@ -181,11 +181,27 @@ function openerFor(pathname) {
   return 'Ask me anything about the work, and I will pass you to the team when you need a person.'
 }
 
-/** Openings a visitor can press instead of writing one. */
+/**
+ * Openings a visitor can press instead of writing one.
+ *
+ * Every one of them has to read as the first thing anybody has said, because
+ * that is what it is. The greeting above these buttons is the widget's own: it
+ * is drawn on the page and never sent, so a pressed opener reaches the
+ * assistant cold, with nothing in front of it to point back at.
+ *
+ * A question written as a reply to that greeting arrives with its subject
+ * missing. "Can you redo the one I already have" is a sentence about a website
+ * only to somebody who read the paragraph above the button, and the assistant,
+ * which did not, spends its first answer asking what was meant. That is the
+ * worst turn in the thread to spend that way -- the visitor pressed the button
+ * the site offered them and got a question back.
+ *
+ * So each one names its subject rather than pointing at it.
+ */
 const PROMPTS = [
   'What would a site for my shop involve?',
-  'Can you redo the one I already have?',
-  'What is included after it launches?',
+  'Can you redo the website I already have?',
+  'What is included after a site launches?',
 ]
 
 const now = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
