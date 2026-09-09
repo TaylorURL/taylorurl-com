@@ -34,12 +34,10 @@ import {
   EmptyRow,
   Panel,
   PanelBody,
-  PanelFill,
   PanelFoot,
   SectionNotice,
   SidePanel,
   SkeletonBar,
-  SkeletonBox,
   SkeletonList,
   SkeletonRows,
   StatCard,
@@ -48,7 +46,6 @@ import {
 import {
   BUTTON,
   CELL_TIGHT as CELL,
-  CHART_HEIGHT,
   FIELD,
   MONO_LABEL,
   QUIET,
@@ -56,7 +53,6 @@ import {
   TH_TIGHT as TH,
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
-import { BounceChart } from './OutreachCharts'
 import { fullCount, percent } from '../../../analytics/lib/format'
 
 /**
@@ -2339,61 +2335,6 @@ function MailPanel({
 }
 
 /**
- * The trailing window's sending against its bounces, as a shape beside the
- * day table that holds the figures.
- *
- * Fourteen days of two numbers each is a shape rather than twenty-eight
- * figures - whether the bounces cluster on one day or run through every day
- * - and the shape is what says whether the rate the cap moves on is a bad
- * address list or a bad day.
- */
-function BouncePanel({ bounces, loading, error, area }) {
-  const days = bounces?.days || []
-  const over = bounces?.rate !== null && bounces?.rate !== undefined && bounces.rate >= BOUNCE_LIMIT
-  return (
-    <Panel
-      area={area}
-      title="Bounces by Day"
-      aside={`${fullCount(bounces?.bounced)} of ${fullCount(bounces?.sent)} sent`}
-      loading={loading}
-    >
-      <PanelFill minHeight={CHART_HEIGHT.traffic}>
-        {loading ? (
-          <SkeletonBox height={CHART_HEIGHT.traffic} />
-        ) : error ? (
-          <p className="px-5 py-10 text-center text-[13px] text-paper-soft">{error}</p>
-        ) : days.some(row => row.sent) ? (
-          <BounceChart days={days} limit={BOUNCE_LIMIT} fill />
-        ) : (
-          <p className="px-5 py-10 text-center text-[13px] text-paper-soft">
-            Nothing has been sent in the last {fullCount(bounces?.window_days)} days, so there is no
-            bounce rate to read.
-          </p>
-        )}
-      </PanelFill>
-      <PanelFoot>
-        <p className="leading-relaxed">
-          {loading ? (
-            <SkeletonBar className="w-full max-w-[30rem]" />
-          ) : (
-            <>
-              <span className={over ? 'text-[color:var(--warn)]' : undefined}>
-                {bounces?.rate === null || bounces?.rate === undefined
-                  ? 'No rate yet'
-                  : `${percent(bounces.rate)} bounced`}
-              </span>
-              , counted against the day each message went out. The daily cap rises only while this
-              stays under {BOUNCE_LIMIT}%, because a hard bounce is charged against the sending
-              domain the newsletter and the client mail leave from as well.
-            </>
-          )}
-        </p>
-      </PanelFoot>
-    </Panel>
-  )
-}
-
-/**
  * The section's views, first one the front. Each is one question: how the
  * pipeline stands, who is on file and what has been written to them, the
  * letters themselves, and what it is set up with.
@@ -3363,41 +3304,18 @@ export default function OutreachPage() {
       ) : null}
 
       {view === 'mail' ? (
-        half === 'bounces' ? (
-          <Board area="work" areas={['chart table']} cols="minmax(0,1fr) minmax(24rem,0.9fr)">
-            <BouncePanel
-              area="chart"
-              bounces={mail?.bounces}
-              loading={mailLoading}
-              error={mailError}
-            />
-            <MailPanel
-              area="table"
-              mail={mail}
-              error={mailError}
-              loading={mailLoading}
-              half={half}
-              onHalf={openMail}
-              letters={variants}
-              prospects={onFile}
-              onOpenProspect={openProspect}
-              onOpenLetter={openLetter}
-            />
-          </Board>
-        ) : (
-          <MailPanel
-            area="work"
-            mail={mail}
-            error={mailError}
-            loading={mailLoading}
-            half={half}
-            onHalf={openMail}
-            letters={variants}
-            prospects={onFile}
-            onOpenProspect={openProspect}
-            onOpenLetter={openLetter}
-          />
-        )
+        <MailPanel
+          area="work"
+          mail={mail}
+          error={mailError}
+          loading={mailLoading}
+          half={half}
+          onHalf={openMail}
+          letters={variants}
+          prospects={onFile}
+          onOpenProspect={openProspect}
+          onOpenLetter={openLetter}
+        />
       ) : null}
 
       {view === 'letters' ? (
