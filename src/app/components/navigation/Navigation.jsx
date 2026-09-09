@@ -325,6 +325,7 @@ export default function Navigation() {
           aria-label="Primary"
           data-ground={onDarkGround ? 'dark' : undefined}
           data-surfaced={surfaced}
+          data-expanded={openGroup !== null ? 'true' : undefined}
           className="nav-shell pointer-events-auto"
           onPointerEnter={event => event.pointerType !== 'touch' && clearHover()}
           onPointerLeave={event => event.pointerType !== 'touch' && openGroup && hoverClose()}

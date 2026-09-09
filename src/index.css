@@ -156,8 +156,13 @@
   --key-lift: 0 1px 1px rgb(10 10 10 / 8%), 0 2px 5px -1px rgb(10 10 10 / 14%);
   --key-lift-soft: 0 1px 2px rgb(10 10 10 / 5%);
   /* The bar's ground once content has scrolled beneath it, at an alpha the blur
-     behind it can read through. */
+     behind it can read through. The solid one is what an open panel stands on:
+     a bar 76px deep can be a scrim over the page, but a panel that runs four
+     hundred pixels down it is a surface someone reads forty-six names off, and
+     display type behind it survives an 18px blur at 15% and shows through the
+     words. */
   --nav-surface: rgba(246, 246, 245, 0.85);
+  --nav-surface-solid: #f6f6f5;
   /* The hand-rolled chart's furniture: its grid, the muted series, and the line
      that follows the pointer. */
   --chart-grid: rgba(10, 10, 10, 0.15);
@@ -511,6 +516,7 @@
   --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
   --nav-surface: rgba(11, 12, 15, 0.85);
+  --nav-surface-solid: #0b0c0f;
   --chart-grid: rgba(244, 245, 247, 0.15);
   --chart-baseline: rgba(244, 245, 247, 0.4);
   --shine-sweep: rgba(255, 255, 255, 0.95);
@@ -593,6 +599,7 @@
   --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
   --nav-surface: rgba(0, 0, 0, 0.85);
+  --nav-surface-solid: #000000;
   --chart-grid: rgba(255, 255, 255, 0.15);
   --chart-baseline: rgba(255, 255, 255, 0.4);
   --shine-sweep: #ffffff;
@@ -1133,6 +1140,17 @@
     box-shadow: var(--lift);
   }
 
+  /* An open panel takes the ground rather than the scrim. The frosting is the
+     bar's, and it is right for a bar: 15% of the page through an 18px blur
+     reads as depth at 76px deep. Held open over the hero it stops being depth -
+     the headline behind it comes through the panel's own sentences, legibly
+     enough to read. The ground fades at the panel's own speed rather than the
+     bar's, so it is still there while the panel is collapsing over it. */
+  .nav-shell[data-expanded='true'] {
+    background-color: var(--nav-surface-solid);
+    transition-duration: var(--nav-duration-slow);
+  }
+
   .nav-row {
     height: var(--nav-height);
   }
@@ -1208,11 +1226,16 @@
      at two widths. The column count is set per group on the element, which is
      what lets the twenty-two trades read as four headed lists rather than one
      run. */
+  /* The rail is the height of the card in it, not the height of the columns
+     beside it. Stretching it gave the card a height its three lines could not
+     fill, and tint with nothing in it is not composition - it is a hole with a
+     border. The ground under a short card is the panel's own, which is the
+     same ground the columns stand on. */
   .nav-panel-layout {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
     gap: 2.5rem;
-    align-items: stretch;
+    align-items: start;
   }
 
   .nav-panel-layout[data-feature='true'] {
@@ -1314,29 +1337,34 @@
     letter-spacing: -0.01em;
   }
 
-  /* The group's mark at the card's own scale, bled off the top corner and
-     clipped by it. It is the ground the words sit on rather than an object in
-     the card, which is why it takes no space in the flow and why the block
-     above it is the only thing that positions anything.
+  /* The group's mark, in the flow above the sentence it belongs to. It was
+     drawn at the card's own scale and bled off the top corner for one round,
+     on the reasoning that a mark that large stops being an object and becomes
+     the ground. At the card's real height it is not: two edges crop it, and a
+     shape cut by the box it sits in reads as something that overflowed rather
+     than something placed. Full strength and at the size of a row's mark, it
+     is the sign the group carries and nothing else.
 
-     A card carrying captures does not get one. The shots already fill the
-     space the watermark is for, and the two together left a pale rectangle
-     showing along the edge of the strip that reads as something misplaced
-     rather than as a ground. */
-  .nav-panel-watermark {
-    position: absolute;
-    top: -1.5rem;
-    right: -1.5rem;
-    height: 7.5rem;
-    width: 7.5rem;
-    opacity: 0.1;
-    pointer-events: none;
-    transition: opacity var(--nav-duration) var(--nav-easing);
+     A card carrying captures gets none. The shots are what the card leads
+     with, and a mark above them is a second opening. */
+  .nav-panel-feature-mark {
+    height: 1.75rem;
+    width: 1.75rem;
+    color: var(--accent);
+    transition: transform var(--nav-duration) var(--nav-easing);
   }
 
-  .nav-panel-feature:hover .nav-panel-watermark,
-  .nav-panel-feature:focus-visible .nav-panel-watermark {
-    opacity: 0.16;
+  .nav-panel-feature:hover .nav-panel-feature-mark,
+  .nav-panel-feature:focus-visible .nav-panel-feature-mark {
+    transform: translateY(-1px);
+  }
+
+  .nav-panel-feature[data-tone='trustpilot'] .nav-panel-feature-mark {
+    color: var(--tp-star);
+  }
+
+  .nav-panel-feature[data-tone='bbb'] .nav-panel-feature-mark {
+    color: var(--bbb-blue);
   }
 
   /* The way in, at the foot of the card. It is filled with the page's own
