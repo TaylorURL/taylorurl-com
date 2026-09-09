@@ -5,6 +5,7 @@ import { Phone, Search, UserRound } from 'lucide-react'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, NAV_DURATION, NAV_EASE } from '@constants/navigation'
 import { HAS_ACCOUNTS } from '@constants/routes'
 import { useModifierLabel } from '@utils/keyboard'
+import { warm } from '@utils/lazyWithRetry'
 
 /**
  * The bar's way in to the search, dressed as the field it opens.
@@ -26,8 +27,8 @@ export function NavSearchButton({ className, labelClass, markClass, shortcut = f
       type="button"
       className={className}
       onClick={onOpen}
-      onPointerEnter={() => import('./SiteSearch')}
-      onFocus={() => import('./SiteSearch')}
+      onPointerEnter={() => warm(() => import('./SiteSearch'))}
+      onFocus={() => warm(() => import('./SiteSearch'))}
       aria-label="Search"
       aria-keyshortcuts="Meta+K Control+K"
     >

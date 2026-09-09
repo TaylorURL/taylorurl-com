@@ -41,6 +41,25 @@ function refetch(error, attempt) {
 }
 
 /**
+ * The same chunk, asked for ahead of the press that will need it.
+ *
+ * A warm-up is an offer rather than a request: nothing waits on it, and a
+ * reader who never presses never learns whether it arrived. So the one thing it
+ * must not do is fail loudly. Written as a bare `import()` inside a handler it
+ * is a promise nobody holds, and a chunk a deploy has replaced rejects it into
+ * `unhandledrejection` — which the page files as a fault the reader met, over a
+ * hover that cost them nothing and that they may never follow with a press.
+ *
+ * The press is where the same missing chunk becomes something a reader can see,
+ * and it is reported from there, by the boundary that catches it.
+ *
+ * @param {() => Promise<unknown>} factory - The dynamic import to start now.
+ */
+export function warm(factory) {
+  factory().catch(() => {})
+}
+
+/**
  * `React.lazy` that survives a flaky first fetch. A route's code-split chunk is
  * requested the moment the view mounts, so a transient network blip — or a chunk
  * that is momentarily unavailable at the CDN edge right after a deploy — would

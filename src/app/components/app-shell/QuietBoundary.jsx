@@ -37,6 +37,13 @@ export default class QuietBoundary extends Component {
     return { failed: true }
   }
 
+  // A piece that a press opened leaves the bar behind it holding it open, and
+  // the bar is the only thing that can put that back. Decoration passes no
+  // handler, and nothing is called for it.
+  componentDidCatch() {
+    if (this.props.onFail) this.props.onFail()
+  }
+
   render() {
     return this.state.failed ? null : this.props.children
   }
