@@ -138,6 +138,37 @@ for (const [file, piece] of [
   }
 }
 
+// The search is the only chunk on the site a reader asks for by name, and that
+// makes it the only one that owes them a sentence when it will not come.
+//
+// Everything else behind a QuietBoundary arrives on its own, so leaving without
+// a word costs nobody anything: the page looks exactly as it did a frame
+// earlier. A press is the opposite. The panel opens for as long as the fetch
+// takes and then closes with nothing said, and the reader is left holding a
+// control that swallowed their press. `lazy` then keeps the rejection for the
+// life of the document, so it is not the first press that fails but every one
+// after it too, in the same frame and just as silently.
+//
+// Only a newer document can reach the file a deploy replaced, so the reload is
+// the whole recovery -- and the reader cannot choose it if nobody tells them it
+// is there.
+const searching = swept.find(entry => entry.name === 'src/app/components/navigation/Navigation.jsx')
+if (searching) {
+  const named = /onFail={\s*([A-Za-z_$][\w$]*)\s*}/.exec(searching.source)
+  check(
+    Boolean(named),
+    'the search panel hands its failure to an inline handler, so there is nowhere for it to say anything — give it a named one'
+  )
+  if (named) {
+    const opens = searching.source.indexOf(`const ${named[1]} =`)
+    const closes = searching.source.indexOf('\n  }', opens)
+    check(
+      opens !== -1 && closes !== -1 && searching.source.slice(opens, closes).includes('toast('),
+      'a press on the search that cannot be answered closes the bar and says nothing, and every press after it fails the same way — the reader is never told that reloading is what brings it back'
+    )
+  }
+}
+
 if (failures.length) {
   console.error('check-chunk-recovery: failed')
   for (const failure of failures) console.error(`  ${failure}`)
