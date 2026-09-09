@@ -22,7 +22,7 @@ const STEPS = [
   {
     mark: MarkPanel,
     label: 'Your Build Opens',
-    line: 'Pick a password and the tracker is there, with your project already on it.',
+    line: 'Set a password from the emailed link and your console is there, with your project already on it.',
   },
   {
     mark: MarkSteps,

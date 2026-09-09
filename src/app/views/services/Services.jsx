@@ -77,7 +77,7 @@ const STUDIO_ROWS = {
       'Online booking, ordering, and quote forms',
       'Checkout through Stripe, Square, or PayPal',
       'Meta Pixel, Google Ads, and Ad Manager wired in',
-      'A sending domain of your own for outbound',
+      'A sending domain of your own for cold email',
     ],
     mockup: 'analytics',
   },
