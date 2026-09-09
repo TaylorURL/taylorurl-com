@@ -127,8 +127,8 @@ export default function Welcome() {
         title="Set a Password"
         blurb={
           address
-            ? `Your build is open on ${address}. Set a password on that address and the tracker opens.`
-            : 'Your build is open on the address you paid with. Set a password on that address and the tracker opens.'
+            ? `Your build is open on ${address}. Set a password on that address and your console opens.`
+            : 'Your build is open on the address you paid with. Set a password on that address and your console opens.'
         }
         formName="welcome"
         bought
@@ -139,8 +139,7 @@ export default function Welcome() {
           Set a Password
         </Link>
         <p className="auth-note">
-          The link lands within a minute or two, works once, and expires in an hour. If nothing
-          arrives, check the spam folder before asking for another.
+          The next screen sends the link to that address. It works once and expires in an hour.
         </p>
       </AuthShell>
     </>

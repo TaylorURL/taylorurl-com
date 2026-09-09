@@ -110,7 +110,7 @@ const SYSTEMS = [
     pieces: [
       'A sending domain registered in your name, kept apart from the one your customers write to',
       'SPF, DKIM, and DMARC set right before the first message goes out',
-      'A warm-up ramp over several weeks before it sends at full rate',
+      'A handful of messages a day at first, climbing to full rate over several weeks',
       'A list built one company at a time, from businesses that fit what you sell',
       'Every message written for the companies it goes to',
       'Replies landing in your own inbox, and an unsubscribe on every message',
@@ -201,7 +201,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tools, the tracking, and the monitoring built into that price. A bigger project costs more, and you agree to that number before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.`,
+    body: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tools, the tracking, the sending domain, and the monitoring built into that price. A bigger project costs more, and you agree to that number before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.`,
   },
 ]
 
