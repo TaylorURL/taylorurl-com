@@ -18,6 +18,7 @@ import { NavBarLink, NavPanelViewport, NavTrigger } from './NavMenu'
 import { NavSearchButton, NavUtility } from './NavUtility'
 import ThemePicker from '@components/navigation/ThemePicker'
 import { useSearchShortcut } from '@hooks/chrome/useSearchShortcut'
+import { useToast } from '@hooks/chrome/useToast'
 import { useSessionGlimpse } from '@hooks/session/useSessionGlimpse'
 import { announceGroundChange, useOnDarkBackground } from '@hooks/theme/useOnDarkBackground'
 import { useScrolledPast } from '@hooks/scroll/useScrolledPast'
@@ -117,6 +118,7 @@ export default function Navigation() {
   const landed = useRef(false)
   const scrolled = useScrolledPast(SCROLL_SURFACE_THRESHOLD)
   const onDark = useOnDarkBackground(probeRef, [navRef])
+  const toast = useToast()
 
   const openPanel = NAV_GROUPS.find(group => group.key === openGroup) || null
 
@@ -166,6 +168,33 @@ export default function Navigation() {
   }
 
   useSearchShortcut(openSearch)
+
+  // A press the site cannot answer is answered anyway.
+  //
+  // Failing quietly is right for the pieces that arrive on their own: nobody
+  // asked for the wash behind the hero or the marks down the side, so nobody is
+  // owed a sentence when one does not turn up. The search is the one piece of
+  // chrome a reader reaches for on purpose, and the same silence there is a
+  // control that swallowed a press - the panel opens for the length of the
+  // fetch and closes again with nothing said, which reads as a button that does
+  // not work rather than as a search that could not be fetched.
+  //
+  // It is also permanent, which is the part a reader could never guess. `lazy`
+  // records a rejected module for the life of the document, so the second press
+  // is not a second attempt: it is the first one's failure handed straight back.
+  // Every press after that fails in the same frame and just as quietly, and the
+  // search stays gone for as long as the page is open.
+  //
+  // What has actually happened is that a deploy replaced the file this document
+  // was built to ask for, and only a newer document carries the new address. So
+  // a fresh page is the entire recovery, and it is the reader's to make rather
+  // than ours to take: reloading for them would throw away whatever they were
+  // part-way through typing, over a panel they can have back in a second. The
+  // notice names the one thing that works and then waits to be acted on.
+  const reportSearchUnavailable = useCallback(() => {
+    setSearchOpen(false)
+    toast('Search needs a fresh copy of this page. Reload to open it.', 'error')
+  }, [toast])
 
   const closeAndRefocus = () => {
     const key = openGroup
@@ -454,10 +483,10 @@ export default function Navigation() {
           routes -- which answers for a page by reloading the document, and had
           been reloading whatever the reader was in the middle of over a search
           they had not opened yet. Closing on the way out puts the bar back the
-          way it was, so the press reads as a press that did nothing rather than
-          as a panel that opened empty. */}
+          way it was; the notice is what keeps that from reading as a press that
+          did nothing. */}
       {searchOpen && (
-        <QuietBoundary onFail={() => setSearchOpen(false)}>
+        <QuietBoundary onFail={reportSearchUnavailable}>
           <Suspense fallback={null}>
             <SiteSearch onClose={() => setSearchOpen(false)} />
           </Suspense>
