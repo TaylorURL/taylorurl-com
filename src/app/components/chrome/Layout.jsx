@@ -1,8 +1,10 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Navigation from '../navigation/Navigation'
 import PageTransition from './PageTransition'
 import { DeferredWaiting } from '../app-shell/Waiting'
+import QuietBoundary from '../app-shell/QuietBoundary'
+import { lazyWithRetry } from '@utils/lazyWithRetry'
 import Footer from './Footer'
 import ScrollProgress from './ScrollProgress'
 import BackToTop from './BackToTop'
@@ -12,7 +14,16 @@ import { recordCall, recordPageView } from '@data/leads/conversion'
 import { counted } from '../../views/analytics/lib/counted.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
-const SectionIndicator = lazy(() => import('./SectionIndicator'))
+// The two pieces below arrive on their own, after the page they decorate, and
+// both go through the same retry every route view goes through.
+//
+// They did not, and being the only lazy things in the app holding a bare
+// `lazy()` is half of what took the assistant off the corner of the site. A
+// hashed chunk is replaced by every deploy, so a page open across one asks for a
+// file that has gone; these two asked once and gave up. The other half was that
+// asking again would not have helped either, which is the fault fixed in
+// `lazyWithRetry` itself.
+const SectionIndicator = lazyWithRetry(() => import('./SectionIndicator'))
 
 // Whether there is an assistant to mount.
 //
@@ -32,7 +43,7 @@ const HAS_ASSISTANT = !IS_SECOND_SITE
 // assistant carries no reference to the chunk at all: the constant folds, the
 // import is unreachable, and the widget leaves the deployment rather than
 // sitting in it waiting to be asked for.
-const LiveChat = HAS_ASSISTANT ? lazy(() => import('./LiveChat')) : null
+const LiveChat = HAS_ASSISTANT ? lazyWithRetry(() => import('./LiveChat')) : null
 
 /**
  * Tells the fixed chrome that the ground under it has been replaced.
@@ -274,15 +285,25 @@ export default function Layout() {
       </main>
       {!bare && <Footer />}
       {!bare && <BackToTop />}
+      {/* Each under a boundary of its own, because the one above the routes
+          answers for the page by reloading it, and neither of these is the page.
+          Left on that path, a chunk the corner could not fetch reloaded the
+          document under whoever was reading it - or, once the deploy that broke
+          the chunk had already spent that one reload, replaced the page they
+          were reading with the screen kept for a page that will not load. */}
       {HAS_ASSISTANT && !bare && adopted && (
-        <Suspense fallback={null}>
-          <LiveChat startOpen={location.pathname === '/live'} />
-        </Suspense>
+        <QuietBoundary>
+          <Suspense fallback={null}>
+            <LiveChat startOpen={location.pathname === '/live'} />
+          </Suspense>
+        </QuietBoundary>
       )}
       {isHome && adopted && (
-        <Suspense fallback={null}>
-          <SectionIndicator />
-        </Suspense>
+        <QuietBoundary>
+          <Suspense fallback={null}>
+            <SectionIndicator />
+          </Suspense>
+        </QuietBoundary>
       )}
     </div>
   )

@@ -1372,8 +1372,8 @@ const MAIL_TABS = [
 /**
  * The trailing hard-bounce rate the daily cap may rise under.
  *
- * At or above it the sending domain is taking damage that the newsletter and
- * the client mail share, so the figure is drawn as a warning rather than as one
+ * At or above it the sending domain is taking damage that the outreach and the
+ * client mail share, so the figure is drawn as a warning rather than as one
  * more percentage on the row. It is the ramp's own threshold rather than a
  * second copy of it: a console warning that disagreed with the figure the cap
  * actually moves on would be worse than no warning.

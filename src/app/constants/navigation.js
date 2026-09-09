@@ -8,15 +8,17 @@ import { REVIEW_SOURCE_MARKS } from '@components/marks/reviewMarks'
 import { FACEBOOK_PAGE_URL } from '@data/reputation/facebook'
 import { reviewSource, reviewSourcesWith } from '@data/reputation/reviews'
 import { TOOLS_INDEX } from '@data/pages/tools'
+import { BLOG_SERIES } from '@data/blog/series'
 import {
   MarkArea,
   MarkAt,
   MarkCanvass,
+  MarkCurve,
   MarkFind,
   MarkFrame,
   MarkGuard,
   MarkIndex,
-  MarkIssues,
+  MarkNow,
   MarkPage,
   MarkPanel,
   MarkPulse,
@@ -29,6 +31,7 @@ import {
   MarkSteps,
   MarkTag,
   MarkTalk,
+  MarkTrade,
 } from '@components/marks/marks'
 
 // The bar's curve and the three lengths it opens at, held as numbers because
@@ -63,12 +66,29 @@ const TOOL_MARKS = {
   'qr-code-generator': MarkScan,
 }
 
-const TOOL_ENTRIES = TOOLS_INDEX.map(tool => ({
-  to: tool.path,
-  label: tool.name,
-  summary: tool.summary,
-  mark: TOOL_MARKS[tool.slug],
-}))
+// The speed check, which is a free tool and is not in the registry above.
+// `TOOLS_INDEX` drives the `/tools/:slug` routes, and this one has an endpoint,
+// a form and a page of its own at the top level, so it was never a row there -
+// and being absent from the registry left it absent from the panel too, on a
+// site whose home page sends people to it. It is written here rather than added
+// to the registry because the registry decides which `/tools/` routes exist and
+// this is not one of them.
+const SPEED_CHECK_ENTRY = {
+  to: '/speed-check',
+  label: 'Website Speed Check',
+  summary: 'Google measures your page on a phone and this shows what came back.',
+  mark: MarkCurve,
+}
+
+const TOOL_ENTRIES = [
+  ...TOOLS_INDEX.map(tool => ({
+    to: tool.path,
+    label: tool.name,
+    summary: tool.summary,
+    mark: TOOL_MARKS[tool.slug],
+  })),
+  SPEED_CHECK_ENTRY,
+]
 
 // The service pages that are not service lines. Each has a page under
 // /services and none is priced or sold as one of the four lines, so the copy
@@ -176,6 +196,31 @@ const CASE_STUDY_SHOTS = IS_SECOND_SITE
       return project && { src: portfolioPreviewSrc(project, 'desktop'), name: project.name }
     }).filter(Boolean)
 
+// The blog's running series, which are the shelves the articles sit on.
+//
+// Six pages carrying twenty-nine articles between them, and the bar reached
+// none of them: the panel offered `/blog` and stopped, so every series page was
+// a route the site prerendered, listed in its own sitemap, and linked from
+// nowhere above the article a reader was already reading.
+//
+// Names alone. A series name says what the series is about - that is the whole
+// job a series name has - and the tagline under it would be six more lines in a
+// column that is a shelf rather than a pitch. Same reason the studies above
+// carry no mark: one drawing repeated down a column of six says nothing the six
+// names do not.
+//
+// Read off `@data/blog/series`, which is the register itself rather than
+// `BLOG_SERIES_INDEX`. That index is derived from every article on the site, so
+// asking it here would put the whole blog - twenty-nine articles, in full - in
+// the chunk the bar is built from. The register imports nothing and holds six
+// records, and the sitemap build reads it under plain Node for the same reason.
+//
+// Written against the key, like the studies above and for the same reason: on
+// the site with no blog the fold leaves nothing behind to be kept.
+const BLOG_SERIES_ENTRIES = IS_SECOND_SITE
+  ? []
+  : BLOG_SERIES.map(series => ({ to: `/blog/series/${series.slug}`, label: series.name }))
+
 export const FACEBOOK_URL = FACEBOOK_PAGE_URL
 
 // The Instagram account, which is a handle rather than a numbered page, so
@@ -269,16 +314,19 @@ const REVIEW_FEATURE = featureSource && {
 // the rows is it.
 //
 // An entry without a `summary` is a name that already says what it is, and the
-// panel sets those in a tighter row. The column that leaves a review is the
-// whole of that case: its head has already said what every row under it does.
+// panel sets those in a tighter row. Two columns are the whole of that case:
+// the one that leaves a review, whose head has already said what every row
+// under it does, and the blog's shelves, whose names are what a reader is
+// choosing between.
 //
 // An entry carries either a `to` for a route on this site or an `href` for one
 // off it, and the routes are all real ones: the services come from
-// `SERVICE_LINES` and the client studies from `PORTFOLIO_PROJECTS`, each keyed
-// on what the route ends in, so a row cannot name something the data does not
-// hold. Three sets stop at their index rather than running into the bar: the
-// towns, which /areas carries in full, the trades, which /industries carries,
-// and the clients, of whom the panel names three and /portfolio holds all.
+// `SERVICE_LINES`, the client studies from `PORTFOLIO_PROJECTS`, the free tools
+// from `TOOLS_INDEX` and the shelves from `BLOG_SERIES`, each keyed on what the
+// route ends in, so a row cannot name something the data does not hold. Three
+// sets stop at their index rather than running into the bar: the towns, which
+// /areas carries in full, the trades, which /industries carries, and the
+// clients, of whom the panel names three and /portfolio holds all.
 //
 // /start is absent from the panels because the bar's own Start a Project
 // button opens it, and /contact carries the slower route to the same
@@ -337,9 +385,19 @@ const STUDIO_NAV_GROUPS = [
           },
         ],
       },
+      // The two landing families, together, because they answer one question
+      // between them: whether this is a shop like yours, in a town like yours.
+      // The trades were reachable from the footer alone until now - twenty-two
+      // pages under one index that the bar never named.
       {
-        head: 'Where We Work',
+        head: 'Trades and Towns',
         items: [
+          {
+            to: '/industries',
+            label: 'Industries',
+            summary: 'What the site has to do for your trade, a page per trade.',
+            mark: MarkTrade,
+          },
           {
             to: '/areas',
             label: 'Service Areas',
@@ -360,9 +418,6 @@ const STUDIO_NAV_GROUPS = [
   {
     key: 'reviews',
     label: 'Reviews',
-    // The middle column is names alone, so it takes about half the width of
-    // the two that carry a line under each name.
-    columnTemplate: 'minmax(0, 1.15fr) minmax(0, 0.7fr) minmax(0, 1.15fr)',
     columns: [
       reviewColumn('Read the Reviews', 'reads', true),
       reviewColumn('Leave a Review', 'writes', false),
@@ -415,27 +470,22 @@ const STUDIO_NAV_GROUPS = [
     key: 'resources',
     label: 'Resources',
     columns: [
+      { head: 'Article Series', items: BLOG_SERIES_ENTRIES },
       {
-        head: 'Reading',
+        head: 'Answers',
         items: [
-          {
-            to: '/notes',
-            label: 'The Newsletter',
-            summary:
-              'Short letters on getting found on Google, monthly at most, one click to stop.',
-            mark: MarkIssues,
-          },
           {
             to: '/faq',
             label: 'Questions and Answers',
             summary: 'What a site costs, how long it takes, and who owns it when it is done.',
             mark: MarkQuery,
           },
-        ],
-      },
-      {
-        head: 'Talk',
-        items: [
+          {
+            to: '/live',
+            label: 'Ask the Assistant',
+            summary: 'A question about the work answered at whatever hour you thought of it.',
+            mark: MarkNow,
+          },
           {
             to: '/contact',
             label: 'Get in Touch',
@@ -457,10 +507,10 @@ const STUDIO_NAV_GROUPS = [
 // What the drawer carries on a phone.
 //
 // The bar's five groups are a directory: they exist because a pointer can hover
-// one and read a panel of thirty-eight destinations without committing to any
-// of them. A thumb cannot do that, and the same thirty-eight poured into one
-// column run four screens before the button most readers came for. So the
-// phone gets its own list, and it is six indexes rather than a flattened tree.
+// one and read a panel of forty-six destinations without committing to any of
+// them. A thumb cannot do that, and the same forty-six poured into one column
+// run five screens before the button most readers came for. So the phone gets
+// its own list, and it is six indexes rather than a flattened tree.
 //
 // Each of these is a real page that carries the rest of its branch, so the
 // tree is one tap deeper rather than gone: /services holds the six lines,
@@ -505,8 +555,8 @@ const STUDIO_PRIMARY_LINKS = [
   { to: '/process', label: 'Process' },
   { to: '/about', label: 'About' },
   { to: '/blog', label: 'Blog' },
-  { to: '/notes', label: 'Newsletter' },
   { to: '/faq', label: 'FAQ' },
+  { to: '/live', label: 'Live Chat' },
   { to: '/contact', label: 'Contact' },
 ]
 

@@ -26,22 +26,9 @@ import {
   SITEMAP_ROUTES,
   SITE_URL,
   TOOL_ROUTES,
-  issueRoutes,
 } from '../../vite/site-routes.js'
 
-// Stands in for the newsletter table, which the build reads over the network.
-// The archive is a route family like any other, and a family that only exists
-// on a machine able to reach the database is a family nothing checks.
-const ISSUES = [
-  {
-    slug: 'the-two-in-the-morning-call',
-    title: 'The Two in the Morning Call',
-    preheader: 'What a trade site has to do at the hour the work actually arrives.',
-    published_at: '2026-08-14T13:00:00Z',
-  },
-]
-
-const ROUTES = [...SITEMAP_ROUTES, ...issueRoutes(ISSUES)]
+const ROUTES = SITEMAP_ROUTES
 
 // The refusals the builder raises stop a build, so they are reported here the
 // way every other failure is rather than as a stack trace.

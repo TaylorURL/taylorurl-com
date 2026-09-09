@@ -1,6 +1,6 @@
 import { writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { issueRoutes, sentIssues, SITE_URL, SITEMAP_ROUTES } from './site-routes.js'
+import { SITE_URL, SITEMAP_ROUTES } from './site-routes.js'
 import { SITE } from '../lib/site/current.js'
 
 const TITLE = SITE.brandName
@@ -70,11 +70,6 @@ const STUDIO_SECTIONS = [
     line: 'The running series the blog is organized into. Each one lists its own articles.',
   },
   { id: 'articles', heading: 'Articles', line: 'Every published article, newest first.' },
-  {
-    id: 'newsletter',
-    heading: 'Newsletter',
-    line: 'The newsletter archive, and every issue that has been sent.',
-  },
   {
     id: 'standing',
     heading: 'Standing Pages',
@@ -154,7 +149,7 @@ export default function llmsPlugin() {
       outDir = config.build.outDir
     },
     async closeBundle() {
-      const routes = [...SITEMAP_ROUTES, ...issueRoutes(await sentIssues())]
+      const routes = SITEMAP_ROUTES
       await writeFile(join(outDir, 'llms.txt'), llmsText(routes), 'utf8')
     },
   }

@@ -8,7 +8,6 @@ import CtaBanner from '@components/conversion/CtaBanner'
 import SeriesMark from '@components/marks/SeriesMark'
 import ShareBar from '@components/article/ShareBar'
 import SocialLinks from '@components/article/SocialLinks'
-import NewsletterSignup from '@components/conversion/NewsletterSignup'
 import ArticleBody from '@components/article/ArticleBody'
 import { ArticleDeck, ArticleRail, ArticleStatus } from '@components/article/ArticleRail'
 import {
@@ -150,9 +149,6 @@ function Article({ post }) {
       </div>
       <div className="mt-8">
         <SocialLinks />
-      </div>
-      <div className="mt-14">
-        <NewsletterSignup source="taylorurl-post" />
       </div>
     </>
   )

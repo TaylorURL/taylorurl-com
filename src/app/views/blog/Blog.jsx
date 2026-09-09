@@ -5,7 +5,6 @@ import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import SeriesMark, { CategoryMark } from '@components/marks/SeriesMark'
 import SocialLinks from '@components/article/SocialLinks'
-import NewsletterSignup from '@components/conversion/NewsletterSignup'
 import Seo from '@components/Seo'
 import { fadeInUp, fadeInUpMount, staggerChild } from '@constants/animations'
 import { BLOG_POSTS, BLOG_SERIES_INDEX } from '@data/blog'
@@ -427,10 +426,7 @@ export default function Blog() {
 
       <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
         <div className="container-rail relative">
-          <NewsletterSignup source="taylorurl-blog" />
-          <div className="mt-10">
-            <SocialLinks />
-          </div>
+          <SocialLinks />
         </div>
       </section>
 
