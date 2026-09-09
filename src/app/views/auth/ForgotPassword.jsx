@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/chrome/useToast'
 import { supabase } from '@data/supabase/supabaseClient'
@@ -16,7 +17,13 @@ const SENT_NOTE =
   'If that address has an account, a link to set a new password is on its way. The link works once and expires in an hour. If nothing arrives in a few minutes, check your spam folder, then send it again.'
 
 export default function ForgotPassword() {
-  const [email, setEmail] = useState('')
+  // The address, where whatever sent somebody here already knows it. A buyer
+  // arriving from the screen after a payment has one job on this page and has
+  // just typed that address into Stripe; asking for it again is asking them to
+  // remember which of their addresses the card was used with, and getting it
+  // wrong sends the link nowhere and says nothing about why.
+  const [query] = useSearchParams()
+  const [email, setEmail] = useState(() => (query.get('email') || '').trim())
   const [busy, setBusy] = useState(false)
   // The shape of the address, which is the only thing on this page that is
   // about the box it is written under.
@@ -80,7 +87,7 @@ export default function ForgotPassword() {
           value={email}
           onChange={setEmail}
           autoComplete="username"
-          autoFocus
+          autoFocus={!email}
           invalid={Boolean(error)}
           describedBy={STATUS_ID}
         />

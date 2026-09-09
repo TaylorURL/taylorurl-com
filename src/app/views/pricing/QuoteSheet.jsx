@@ -22,7 +22,7 @@ const NOT_INCLUDED = [
   },
   {
     title: 'Paid Ads (Google and Facebook)',
-    body: 'No Google Ads and no social ads are bought or run here. The search work in the monthly is organic.',
+    body: 'No ad budget is bought or spent here, and running the campaigns is quoted on its own. The tracking they run on is part of the build, and the search work in the monthly is organic.',
   },
   {
     title: 'Mailbox Fees',

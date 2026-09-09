@@ -73,7 +73,7 @@ const DETAIL = {
       },
       {
         title: 'Paid Ads',
-        body: 'Google Ads and social ads are not bought or run here. The search work is organic.',
+        body: 'The tracking a campaign runs on goes in with the build. Buying the ads and running the campaigns is separate work with its own price, and the search work in the monthly is organic.',
       },
     ],
     timeline:
@@ -133,56 +133,19 @@ const DETAIL = {
     timeline: 'Two to four weeks. A redesign takes about as long as a new site, because it is one.',
     running: `From ${BUILD_PRICE} to rebuild, paid once before the work begins, then from ${MONTHLY_PRICE} a month to run it. The same two figures as a new build.`,
   },
+  /**
+   * The one line whose page is not the shared shape.
+   *
+   * `@views/services/OnlineTools` renders it, and the words are held there
+   * beside the layout they were written for, the way business email and the
+   * search work hold theirs. What stays here is what every other surface reads:
+   * the mark a card and a menu row draw, and - through `SERVICE_LINES` - the
+   * name, the summary and the path. A second copy of the page's own covers and
+   * limits would sit here rendering nowhere and drift from the page inside a
+   * release.
+   */
   'online-tools': {
     mark: MarkPanel,
-    eyebrow: 'Booking and Tools',
-    description:
-      'Booking, ordering, customer accounts, and quote forms built onto your site and tied into the software you already run. Part of the build itself.',
-    lede: 'Booking, ordering, customer accounts, quote forms, and the back-office screens that go with them. Built onto the site and wired into the software you already run.',
-    covers: [
-      {
-        title: 'Booking and Scheduling',
-        body: 'A slot booked from a phone at ten at night, on the hours and the services you actually offer.',
-      },
-      {
-        title: 'Ordering and Payment',
-        body: 'Checkout through Stripe, Square, or PayPal, with the money landing in your account.',
-      },
-      {
-        title: 'Quote and Intake Forms',
-        body: 'Everything you need to know before you can price a job, asked once and sent straight to you.',
-      },
-      {
-        title: 'Customer Accounts',
-        body: 'Logins for customers who need to see their bookings, invoices, or history.',
-      },
-      {
-        title: 'Tied Into Your Software',
-        body: 'Jobber, Housecall Pro, ServiceTitan, QuickBooks, Toast, and the rest, connected wherever they allow it.',
-      },
-      {
-        title: 'Back-Office Screens',
-        body: 'A simple screen for you and your staff showing today’s work, not every record you own.',
-      },
-    ],
-    excludes: [
-      {
-        title: 'Replacing What You Run',
-        body: 'The tools sit beside Jobber or Housecall Pro. You keep running whatever you run now.',
-      },
-      {
-        title: 'Holding Card Numbers',
-        body: 'Payments run through Stripe, Square, or PayPal. Card details never sit on the site.',
-      },
-      {
-        title: 'A Phone App',
-        body: 'Everything is built for the browser, which is what your customers already have open.',
-      },
-    ],
-    beside: { to: '/tools', label: 'The Free Tools' },
-    timeline:
-      'The site runs two to four weeks. A tool built into it adds to that, and the date is agreed with the plan before any work starts.',
-    running: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tool built into that price. A bigger project costs more, and you agree to that number before anything starts. What a payment processor or a booking system charges is billed by them, not through us.`,
   },
   care: {
     mark: MarkGuard,
@@ -226,7 +189,7 @@ const DETAIL = {
       },
       {
         title: 'Ad Spend',
-        body: 'The monthly buys no advertising. The search work in it is organic.',
+        body: 'The monthly buys no advertising and runs no campaigns. It keeps the tracking under them working, and the search work in it is organic.',
       },
       {
         title: 'A Contract',

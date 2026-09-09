@@ -4,7 +4,7 @@ Allow: /
 Allow: /console/status
 Disallow: /console
 Disallow: /login
-Disallow: /signup
+Disallow: /welcome
 Disallow: /forgot-password
 Disallow: /reset-password
 # /site:console
@@ -23,7 +23,7 @@ Allow: /
 Allow: /console/status
 Disallow: /console
 Disallow: /login
-Disallow: /signup
+Disallow: /welcome
 Disallow: /forgot-password
 Disallow: /reset-password
 # /site:console

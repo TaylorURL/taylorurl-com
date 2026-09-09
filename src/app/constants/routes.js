@@ -44,6 +44,12 @@ const ALL_ROUTES = [
   // rather than the one above.
   { key: 'BusinessEmail', path: 'services/business-email' },
   { key: 'ServiceSeo', path: 'services/seo' },
+  // The one line that is not the shared service shape. It is still one of the
+  // four - the menu, the cards and the sitemap all read it from the same list -
+  // and it is served here rather than by the view above because its page makes
+  // an argument about the machinery a build installs that the other three do
+  // not make.
+  { key: 'OnlineTools', path: 'services/online-tools' },
   // The price, on a page of its own rather than only at the end of the
   // configurator.
   { key: 'Pricing', path: 'pricing' },
@@ -91,7 +97,10 @@ const ALL_ROUTES = [
   // arrival.
   { key: 'Live', path: 'live' },
   { key: 'Login', path: 'login', session: true, account: true },
-  { key: 'Signup', path: 'signup', session: true, account: true },
+  // Where a paid checkout returns to. Nobody signs up for this site: an account
+  // is opened by the payment, and this is the screen that spends the key the
+  // return address carries and puts the buyer in their console.
+  { key: 'Welcome', path: 'welcome', session: true, account: true },
   // The page a mailed unsubscribe link lands on. It reads the token in its
   // query string, acts on it and reports; noindex and out of the sitemap.
   //

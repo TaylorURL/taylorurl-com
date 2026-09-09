@@ -13,11 +13,11 @@
  * anywhere reported it, because dropping a field is not an error.
  *
  * The second: a build attaches to the account whose address matches the one
- * that paid, exactly. A buyer who paid from a personal address and signed up
- * from a work one landed in an empty console reading that no build was open on
- * their account. The signup screen has to carry the session forward for that
- * not to happen, and the console has to say something better than nothing when
- * it does.
+ * that paid, exactly. Nobody types that address any more - the account is
+ * opened against it by the payment itself - but a build can still be pointed at
+ * an address whose owner is looking somewhere else, so the screen after a
+ * payment has to carry the session forward to name it, and the console has to
+ * say something better than nothing when a console has no build in it.
  *
  * The brief is checked for its whole route rather than at one end: collected,
  * posted, stored, named to Stripe, read back and attached. Any link missing is
@@ -51,9 +51,10 @@ const START = 'src/app/views/start/Start.jsx'
 const SENDER = 'src/app/data/checkout/startCheckout.js'
 const CHECKOUT = 'api/checkout.js'
 const WEBHOOK = 'api/stripe-webhook.js'
-const SIGNUP = 'src/app/views/auth/Signup.jsx'
-const LOOKUP = 'api/checkout-session.js'
-const READER = 'src/app/data/checkout/checkoutSession.js'
+const RETURN = 'lib/stripe/claim.js'
+const WELCOME = 'src/app/views/auth/Welcome.jsx'
+const LOOKUP = 'api/checkout-claim.js'
+const READER = 'src/app/data/checkout/checkoutClaim.js'
 const TRACKER = 'src/app/views/console/pages/health/ProjectPage.jsx'
 const ADMIN = 'api/projects-admin.js'
 const BUILDS = 'src/app/views/console/pages/studio/BuildsPage.jsx'
@@ -106,27 +107,34 @@ check('the studio can read the brief on the build', () => {
 })
 
 check('a buyer is carried back to the address they paid with', () => {
-  const checkout = read(CHECKOUT)
   same(
-    checkout.includes('session_id={CHECKOUT_SESSION_ID}'),
+    read(CHECKOUT).includes('claimReturnUrl(SITE_URL'),
     true,
-    'the success address carries the session'
+    'the checkout sets a return address'
   )
-  same(read(SIGNUP).includes('paidBuyer'), true, 'the signup screen looks the buyer up')
-  same(read(READER).includes('/api/checkout-session'), true, 'the reader asks the endpoint')
+  same(
+    read(RETURN).includes('session_id={CHECKOUT_SESSION_ID}'),
+    true,
+    'the return address carries the session'
+  )
+  same(
+    read(WELCOME).includes('claimCheckout('),
+    true,
+    'the screen after a payment looks the buyer up'
+  )
+  same(read(READER).includes('/api/checkout-claim'), true, 'the reader asks the endpoint')
 })
 
-check('the lookup answers with what the form fills in and no figure at all', () => {
+check('the lookup answers with what the screen names back and no figure at all', () => {
   const lookup = read(LOOKUP)
   // The session id rides back in the address bar, so it is not a secret and
   // this has to answer as though it were public.
   same(lookup.includes("payment_status !== 'paid'"), true, 'an unpaid session is not readable')
 
-  // Three fields, and they are three because the form has three boxes. The
-  // buyer's own name, address and business are theirs, are about to be typed
-  // into that form anyway, and say nothing about the purchase.
-  const answered = lookup.slice(lookup.indexOf('return response.status(200).json({'))
-  for (const filled of ['email:', 'name:', 'business:']) {
+  // Three fields. The buyer's own name, address and business are theirs, are
+  // what the screen says back to them, and say nothing about the purchase.
+  const answered = lookup.slice(lookup.indexOf('const buyer = {'))
+  for (const filled of ['email,', 'name:', 'business:']) {
     same(answered.includes(filled), true, `the lookup answers with ${filled.slice(0, -1)}`)
   }
 

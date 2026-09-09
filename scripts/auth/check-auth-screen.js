@@ -10,9 +10,15 @@
  *
  * The walks below are the ones a real sign-in takes, in order, and the check
  * each time is the same: once leaving, the screen holds.
+ *
+ * The screen after a payment is the same fault seen from the other side. It
+ * signs a buyer in without being asked to, which hands it an account a frame or
+ * two before the page has finished reading that account back - and a rule that
+ * reads that gap as an ending draws the screen offering a password to somebody
+ * who is already signed in and on their way to the console.
  */
 
-import { nextScreen } from '../../src/app/views/auth/lib/screen.js'
+import { nextScreen, welcomeScreen } from '../../src/app/views/auth/lib/screen.js'
 
 const cases = []
 function check(name, run) {
@@ -84,6 +90,31 @@ check('leaving holds every screen, whatever else changes under it', () => {
 check('leaving never draws nothing', () => {
   const drawn = walk([OWES_CODE, DONE])
   same(Boolean(drawn[1]), true, 'a screen is drawn on the way out')
+})
+
+/* ----------------------------------------------------------------------- *
+ * The screen after a payment.
+ * ----------------------------------------------------------------------- */
+
+const CLAIMING = { settled: false, signedIn: false, leaving: false }
+const REDEEMED = { settled: false, signedIn: true, leaving: false }
+const READING_BACK = { settled: true, signedIn: true, leaving: false }
+const IN_HAND = { settled: true, signedIn: true, leaving: true }
+const NO_WAY_IN = { settled: true, signedIn: false, leaving: false }
+
+check('a buyer waits while the key is being spent', () => {
+  same(welcomeScreen(CLAIMING), 'wait', 'screen')
+})
+
+check('a buyer signed in waits rather than being offered a password', () => {
+  // The whole arrival, in the order it happens. The two middle steps are the
+  // gap: the sign-in has landed and the account has not been read back yet.
+  const drawn = [CLAIMING, REDEEMED, READING_BACK, IN_HAND].map(welcomeScreen)
+  same(drawn.join(' '), 'wait wait wait wait', 'the screens drawn')
+})
+
+check('a key that opened nothing is what reaches the second screen', () => {
+  same(welcomeScreen(NO_WAY_IN), 'password', 'screen')
 })
 
 let failed = 0

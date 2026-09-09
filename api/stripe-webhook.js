@@ -23,6 +23,14 @@
  * about the purchase still there in a year, and it is what a cancellation or
  * a failed monthly will name.
  *
+ * It opens the buyer's account too, because nobody signs up for this site. The
+ * account is made against the address the card was used with, which is the
+ * address the project is opened under, so the two cannot disagree. The browser
+ * coming back from Stripe opens the same account by the same door and usually
+ * gets there first; both are idempotent, and the reason this one exists is the
+ * buyer who pays and never comes back. Their build is claimed and waiting
+ * whether or not a browser ever returned to ask for it.
+ *
  * Opening the project is also the moment a person has to hear about it. Stripe
  * says a card cleared; it does not say a business now has a build waiting and a
  * brief to read, and a purchase nobody is told about is a purchase that waits
@@ -45,6 +53,7 @@ import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
 import { markLead } from '../lib/leads/record.js'
+import { openBuyerAccount } from '../lib/auth/buyer.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { SITE } from '../lib/site/current.js'
 import { timedFetch } from '../lib/http/timed.js'
@@ -701,6 +710,26 @@ export default async function handler(request, response) {
   }
 
   const db = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } })
+
+  // The account, before the project rather than after it. `project_open`
+  // attaches a build to the account whose address matches the one that paid, and
+  // it can only attach to an account that already exists - so opening the
+  // account first is what makes a build claimed the moment it is opened rather
+  // than claimed later by whoever happens to sign in under that address.
+  //
+  // Not fatal. A buyer coming back from Stripe opens the same account by the
+  // same door, an account that exists already is not opened twice, and a project
+  // with no account on it is claimed on the first read the console does. What
+  // must not happen is a paid build refused a row because the auth service was
+  // briefly unreachable.
+  const account = await openBuyerAccount(db, {
+    email,
+    name: session?.customer_details?.name || null,
+  })
+  if (account.error) {
+    console.error('stripe-webhook: the buyer account was not opened', account.error.message)
+  }
+
   const args = openArgs(session, email)
   const { data, error } = await db.rpc('project_open', args)
 

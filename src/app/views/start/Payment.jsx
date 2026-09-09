@@ -28,10 +28,10 @@ import { hasMinLength, isValidEmail } from '@utils/validation'
  *
  * It is deliberately not a second checkout. `openCheckout` is the pricing
  * page's own sender, called with the same shape and reaching the same
- * endpoint, so the webhook, the signup screen and the project that comes out
- * the other side cannot tell the two apart - which is the property that stops
- * a build sold this way from becoming a customer the console handles
- * differently.
+ * endpoint, so the webhook, the screen a paid checkout returns to and the
+ * project that comes out the other side cannot tell the two apart - which is
+ * the property that stops a build sold this way from becoming a customer the
+ * console handles differently.
  *
  * The name and the number ride in the brief rather than in fields of their
  * own on the endpoint. `api/checkout.js` and `api/checkout-link.js` are held

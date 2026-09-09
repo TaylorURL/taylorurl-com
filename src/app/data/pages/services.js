@@ -26,7 +26,7 @@ const LINES = [
   {
     slug: 'online-tools',
     name: 'Booking, Ordering, and Tools',
-    summary: 'Booking, ordering, and quote forms wired into what you already run.',
+    summary: 'Booking and payment at the front, ad tracking and outbound underneath.',
   },
   {
     slug: 'care',

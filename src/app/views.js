@@ -25,6 +25,7 @@ const loaders = {
     : {
         BusinessEmail: () => import('@views/services/BusinessEmail'),
         ServiceSeo: () => import('@views/services/ServiceSeo'),
+        OnlineTools: () => import('@views/services/OnlineTools'),
         Pricing: () => import('@views/pricing/Pricing'),
       }),
   Contact: () => import('@views/company/Contact'),
@@ -88,7 +89,7 @@ const loaders = {
         ConsoleAdmin: () => import('@views/console/pages/studio/AdminPage'),
         ConsoleStatus: () => import('@views/console/pages/health/StatusPage'),
         Login: () => import('@views/auth/Login'),
-        Signup: () => import('@views/auth/Signup'),
+        Welcome: () => import('@views/auth/Welcome'),
         ForgotPassword: () => import('@views/auth/ForgotPassword'),
         ResetPassword: () => import('@views/auth/ResetPassword'),
         SessionScope: () => import('@components/account/SessionScope'),
