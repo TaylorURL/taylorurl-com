@@ -64,7 +64,7 @@ const DETAIL = {
     townsDescription:
       'Slab housing runs the length of the ship channel and the towns along it call plumbers for the same three or four things. Each town has a page of its own.',
     ctaDescription:
-      'Tell us how many trucks you run and what hours you answer. You get a reply within the hour and a written plan and price before any work starts.',
+      'Tell us how many trucks you run and what hours you answer. You usually get a reply within the hour and a written plan and price before any work starts.',
   },
 
   hvac: {
@@ -72,7 +72,7 @@ const DETAIL = {
       'HVAC websites for Baytown and Houston contractors. A repair request that loads fast in July, plans signed up for online, and financing in plain numbers.',
     heroTitle: 'HVAC sites that hold up in July.',
     heroDescription:
-      'Half a year of calls arrive in about ten weeks, and most of them start on a phone in a hot house. A site that is slow in August costs you jobs.',
+      'The summer calls come all at once, and most of them start on a phone in a hot house. A site that is slow in August costs you jobs.',
     needsTitle: 'Three visitors, one page.',
     needsDescription:
       'A no-cool call, a planned replacement, and the maintenance plan that carries a customer through winter are bought by three different people. The page has to serve all three.',
@@ -178,7 +178,7 @@ const DETAIL = {
     townsDescription:
       'Hail and wind claims move in bands across these towns, and roofs on either side of a line get very different work.',
     ctaDescription:
-      'Tell us whether you chase storm work or retail and how far you travel for it. We reply within the hour, and no work starts before you have agreed a price.',
+      'Tell us whether you chase storm work or retail and how far you travel for it. We usually reply within the hour, and no work starts before you have agreed a price.',
   },
 
   fencing: {
@@ -291,7 +291,7 @@ const DETAIL = {
     townsDescription:
       'St. Augustine, chinch bugs, and a nine-month growing season set the work here, and a crew that names the town it cuts in gets the yard next door.',
     ctaDescription:
-      'Tell us how many yards you cut a week and where they sit. A reply comes back within the hour, and the plan and the price are written down before the first page is built.',
+      'Tell us how many yards you cut a week and where they sit. A reply usually comes back within the hour, and the plan and the price are written down before the first page is built.',
   },
 
   'pest-control': {
@@ -299,7 +299,7 @@ const DETAIL = {
       'Pest control websites for Baytown and Houston. Quarterly plans and one-off treatments priced apart, every pest named, and safety answered up front.',
     heroTitle: 'Pest control sites that sell the quarterly.',
     heroDescription:
-      'One roach call is a morning of margin. The same house on a quarterly plan is worth twenty of them, and the site is where that choice gets made.',
+      'One roach call is a morning of margin. The same house on a quarterly plan keeps paying, and the site is where that choice gets made.',
     needsTitle: 'The plan is the product.',
     needsDescription:
       'A one-time treatment is what a visitor asks for. A recurring plan is what the page should make the obvious answer.',
@@ -366,7 +366,7 @@ const DETAIL = {
     townsDescription:
       'Facilities along 146 and the interstate draw from the towns beside them rather than from a radius on a map.',
     ctaDescription:
-      'Tell us how many units you run and which sizes sit empty. You get a reply within the hour and a written price before any work, and most sites are live inside a month.',
+      'Tell us how many units you run and which sizes sit empty. You usually get a reply within the hour and a written price before any work, and most sites are live inside a month.',
   },
 
   'auto-repair': {
@@ -442,7 +442,7 @@ const DETAIL = {
     townsDescription:
       '146, 225, and the interstate feed most of the calls on this side of the bay, and a driver on the shoulder searches the town they can see the sign for.',
     ctaDescription:
-      'Tell us how many trucks you run and whether you work motor club or private property. We reply within the hour, and the price is settled before anything is built.',
+      'Tell us how many trucks you run and whether you work motor club or private property. We usually reply within the hour, and the price is settled before anything is built.',
   },
 
   'marine-services': {
@@ -543,7 +543,7 @@ const DETAIL = {
       },
       {
         title: 'Walk-In Hours Stated',
-        body: 'Which days take walk-ins and roughly how long the wait runs, which is the question the shop answers forty times a week.',
+        body: 'Which days take walk-ins and roughly how long the wait runs, which is the question nobody can call and ask while the shop is shut.',
       },
     ],
     toolsTitle: 'The book stays where it is.',
@@ -554,7 +554,7 @@ const DETAIL = {
       'Faded Barber Shop in Liberty runs a booking site built here, with the walk-in day stated on the page instead of answered on the phone.',
     townsDescription: 'A shop draws from a few miles, so the page has to say the town out loud.',
     ctaDescription:
-      'Tell us how many chairs you run and which app you book on. A reply comes back within the hour, and you agree to the price before we start.',
+      'Tell us how many chairs you run and which app you book on. A reply usually comes back within the hour, and you agree to the price before we start.',
   },
 
   'hair-salon': {
@@ -630,7 +630,7 @@ const DETAIL = {
     townsDescription:
       'Clients drive ten minutes to a gym and no further than that, so a gym is found by the town it is in.',
     ctaDescription:
-      'Tell us whether you run classes, one to one, or both. We reply within the hour, the price is fixed before any work, and most sites are live inside a month.',
+      'Tell us whether you run classes, one to one, or both. We usually reply within the hour, the price is fixed before any work, and most sites are live inside a month.',
   },
 
   dentist: {
@@ -648,7 +648,7 @@ const DETAIL = {
     build: [
       {
         title: 'Insurance Listed by Name',
-        body: 'The plans you take, written out, and what in network means for the visit. The alternative is somebody answering it forty times a day.',
+        body: 'The plans you take, written out, and what in network means for the visit. The alternative is the front desk repeating it all day.',
       },
       {
         title: 'Forms Done Before the Chair',
@@ -705,7 +705,7 @@ const DETAIL = {
       'No clinic has hired us yet. The sites below are the closest in shape, each one a booking site built and hosted from Baytown.',
     townsDescription: 'Injury work follows the freeways, and the towns beside them see most of it.',
     ctaDescription:
-      'Tell us what you treat most and whether you bill insurance. You get a reply within the hour and a price in writing before any work starts.',
+      'Tell us what you treat most and whether you bill insurance. You usually get a reply within the hour and a price in writing before any work starts.',
   },
 
   'law-firm': {
@@ -780,7 +780,7 @@ const DETAIL = {
     townsDescription:
       'Small business clients stay close to their accountant and refer inside a town.',
     ctaDescription:
-      'Tell us the mix of tax, bookkeeping, and payroll you want more of. A reply comes within the hour, and the price is agreed before the first page is built.',
+      'Tell us the mix of tax, bookkeeping, and payroll you want more of. A reply usually comes within the hour, and the price is agreed before the first page is built.',
   },
 
   'real-estate': {
@@ -856,7 +856,7 @@ const DETAIL = {
     townsDescription:
       'A dining room fills from the streets around it and from whoever is driving past at six.',
     ctaDescription:
-      'Tell us whether you do delivery, reservations, or both. We reply within the hour, and you see the plan and the price before any work starts.',
+      'Tell us whether you do delivery, reservations, or both. We usually reply within the hour, and you see the plan and the price before any work starts.',
   },
 }
 

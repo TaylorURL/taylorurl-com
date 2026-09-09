@@ -150,8 +150,8 @@ const DETAIL = {
   care: {
     mark: MarkGuard,
     eyebrow: 'After Launch',
-    description: `Hosting, backups, security, changes any time, and realtime error monitoring. The ${MONTHLY_PRICE} a month is what keeps the site online. No per-change fee.`,
-    lede: `What the ${MONTHLY_PRICE} a month pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.`,
+    description: `Hosting, backups, security, changes any time, and realtime error monitoring. The monthly, from ${MONTHLY_PRICE}, is what keeps the site online. No per-change fee.`,
+    lede: `What the monthly, from ${MONTHLY_PRICE}, pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.`,
     covers: [
       {
         title: 'Hosting and Backups',

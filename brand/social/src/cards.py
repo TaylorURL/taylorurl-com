@@ -135,8 +135,8 @@ def get_started(path):
         head_size=168,
         base=463,
         lead=161,
-        body="Tell us about the business and what you need. Reply within 24 hours, "
-        "no sales pitch, honest answers.",
+        body="Tell us about the business and what you need. A reply usually comes "
+        "back within the hour, no sales pitch, honest answers.",
         body_base=897,
     )
 

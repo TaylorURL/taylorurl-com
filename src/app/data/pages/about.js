@@ -42,7 +42,7 @@ const STUDIO_ABOUT = {
     paragraphs: [
       'One is an agency build that cost more than the shop could justify and looks like every other site that agency sells. The other went up on a free builder years back and still shows hours that changed a while ago.',
       'We started TaylorURL in Baytown to be the third option. We build the site ourselves and stay the people who answer when it needs to change. The team is small enough that there is nobody here to hand you off to.',
-      'Hosting, backups, monitoring and the small content changes are in the price, and the price stays where it started. The domain is yours and stays in your name.',
+      'Hosting, backups, monitoring and any update you need are in the price, and if the monthly ever changes you hear about it in writing well before it is charged. The domain is yours and stays in your name.',
     ],
   },
 

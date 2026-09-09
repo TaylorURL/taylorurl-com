@@ -82,7 +82,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs',
-    body: `Nothing on top. It sits inside the ${MONTHLY_PRICE} a month, beside hosting, monitoring, backups, and changes.`,
+    body: `Nothing on top. It sits inside the monthly, from ${MONTHLY_PRICE}, beside hosting, monitoring, backups, and changes.`,
   },
 ]
 
@@ -121,7 +121,7 @@ export default function ServiceSeo() {
       <PageHero
         eyebrow="Getting Found"
         title="Getting found on Google, every month."
-        description={`The search work sits inside the ${MONTHLY_PRICE} a month. There is no separate SEO bill, and no promise about where you land.`}
+        description={`The search work sits inside the monthly, from ${MONTHLY_PRICE}. There is no separate SEO bill, and no promise about where you land.`}
       />
 
       <ServiceSection

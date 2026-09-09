@@ -21,7 +21,7 @@ const STUDIO_HOW_IT_WORKS_STEPS = [
     stage: 'We Ship',
     title: 'Go live',
     description:
-      'The site goes live. Hosting, backups, monitoring, and small changes stay with us, so you can get back to running the business.',
+      'The site goes live. Hosting, backups, monitoring, and changes whenever you need them stay with us, so you can get back to running the business.',
   },
 ]
 
