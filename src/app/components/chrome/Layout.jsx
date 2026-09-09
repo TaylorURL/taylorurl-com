@@ -3,8 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom'
 import Navigation from '../navigation/Navigation'
 import PageTransition from './PageTransition'
 import { DeferredWaiting } from '../app-shell/Waiting'
-import QuietBoundary from '../app-shell/QuietBoundary'
-import { lazyWithRetry } from '@utils/lazyWithRetry'
+import LateChrome from '../app-shell/LateChrome'
 import Footer from './Footer'
 import ScrollProgress from './ScrollProgress'
 import BackToTop from './BackToTop'
@@ -23,7 +22,14 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 // file that has gone; these two asked once and gave up. The other half was that
 // asking again would not have helped either, which is the fault fixed in
 // `lazyWithRetry` itself.
-const SectionIndicator = lazyWithRetry(() => import('./SectionIndicator'))
+//
+// Both are now handed to `LateChrome` as the factory rather than as a lazy
+// component, because a piece that gave up is offered again by building it a
+// second time and only that component knows when. The factories are written
+// here, at the module, so that each is one function for the life of the page: an
+// arrow written inline at the call is a different factory on every render, and a
+// piece rebuilt on every navigation is the opposite of the fix.
+const loadSectionIndicator = () => import('./SectionIndicator')
 
 // Whether there is an assistant to mount.
 //
@@ -43,7 +49,7 @@ const HAS_ASSISTANT = !IS_SECOND_SITE
 // assistant carries no reference to the chunk at all: the constant folds, the
 // import is unreachable, and the widget leaves the deployment rather than
 // sitting in it waiting to be asked for.
-const LiveChat = HAS_ASSISTANT ? lazyWithRetry(() => import('./LiveChat')) : null
+const loadLiveChat = HAS_ASSISTANT ? () => import('./LiveChat') : null
 
 /**
  * Tells the fixed chrome that the ground under it has been replaced.
@@ -290,21 +296,16 @@ export default function Layout() {
           Left on that path, a chunk the corner could not fetch reloaded the
           document under whoever was reading it - or, once the deploy that broke
           the chunk had already spent that one reload, replaced the page they
-          were reading with the screen kept for a page that will not load. */}
+          were reading with the screen kept for a page that will not load.
+
+          The boundary is inside `LateChrome`, which also decides when a piece
+          that failed is offered again. Nothing above it is torn down by a
+          navigation, so without that the first failed fetch was the last one
+          attempted and the corner stayed empty for the rest of the visit. */}
       {HAS_ASSISTANT && !bare && adopted && (
-        <QuietBoundary>
-          <Suspense fallback={null}>
-            <LiveChat startOpen={location.pathname === '/live'} />
-          </Suspense>
-        </QuietBoundary>
+        <LateChrome load={loadLiveChat} startOpen={location.pathname === '/live'} />
       )}
-      {isHome && adopted && (
-        <QuietBoundary>
-          <Suspense fallback={null}>
-            <SectionIndicator />
-          </Suspense>
-        </QuietBoundary>
-      )}
+      {isHome && adopted && <LateChrome load={loadSectionIndicator} />}
     </div>
   )
 }
