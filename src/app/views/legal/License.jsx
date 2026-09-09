@@ -3,12 +3,12 @@ import Seo from '@components/Seo'
 import { breadcrumbSchema } from '@constants/seo'
 import { BRAND_NAME, SUPPORT_EMAIL } from '@constants/navigation'
 
-// What the licence actually restrains, which is dealing in the codebase rather
+// What the license actually restrains, which is dealing in the codebase rather
 // than running the business the site was built for. An earlier version of this
 // page forbade commercial use outright, which is the one thing every client is
-// here to do: a shop's website exists to take bookings and sell work. A licence
+// here to do: a shop's website exists to take bookings and sell work. A license
 // that reads as prohibiting the whole purpose of the thing being licensed is
-// not a strict licence, it is a wrong one, and it is exactly the sort of clause
+// not a strict license, it is a wrong one, and it is exactly the sort of clause
 // a reader is entitled to be confused by.
 const RESTRICTIONS = [
   {
@@ -36,7 +36,7 @@ const RESTRICTIONS = [
 const SECTIONS = [
   {
     title: 'What This Covers',
-    content: `This page is about the code and the platform a site is built and served on. Both are owned by ${BRAND_NAME}, a Texas limited liability company, and both are protected by copyright. The company is the licensor and the party to this licence, and every right and obligation on this page is the company's.
+    content: `This page is about the code and the platform a site is built and served on. Both are owned by ${BRAND_NAME}, a Texas limited liability company, and both are protected by copyright. The company is the licensor and the party to this license, and every right and obligation on this page is the company's.
 
 It is not about your business, your content, or your customers. The short version is on the Terms page and this is the same arrangement set out at length; where the two could be read differently, the Terms page governs.`,
   },
@@ -68,15 +68,15 @@ It is not about your business, your content, or your customers. The short versio
   {
     title: 'Components We Did Not Write',
     content:
-      'The platform is built on open-source software written by other people, and each piece carries its own licence, which continues to apply to it. Nothing on this page grants you rights over those components, and nothing on this page takes away rights their own licences give you. Ask and we will tell you what a given site is built on.',
+      'The platform is built on open-source software written by other people, and each piece carries its own license, which continues to apply to it. Nothing on this page grants you rights over those components, and nothing on this page takes away rights their own licenses give you. Ask and we will tell you what a given site is built on.',
   },
   {
     title: 'If Your Business Changes Hands',
-    content: `The licence is for the business the site was built for. If you sell that business, tell us and the licence moves to the buyer on these same terms, at no charge, so long as the monthly fee continues. What it does not do is pass to somebody who buys the code out from under the business, because the code is not yours to sell.`,
+    content: `The license is for the business the site was built for. If you sell that business, tell us and the license moves to the buyer on these same terms, at no charge, so long as the monthly fee continues. What it does not do is pass to somebody who buys the code out from under the business, because the code is not yours to sell.`,
   },
   {
-    title: 'When The Licence Ends',
-    content: `The licence runs with the monthly fee. If the fee stops, the site comes offline and the right to use the platform ends with it, which is the same thing the Terms page and the pricing page both say. What you own does not end with it: the domain stays yours to point anywhere, and the content you supplied stays yours to take. Ask at ${SUPPORT_EMAIL} and you will get copies of it, whatever the reason for stopping.`,
+    title: 'When The License Ends',
+    content: `The license runs with the monthly fee. If the fee stops, the site comes offline and the right to use the platform ends with it, which is the same thing the Terms page and the pricing page both say. What you own does not end with it: the domain stays yours to point anywhere, and the content you supplied stays yours to take. Ask at ${SUPPORT_EMAIL} and you will get copies of it, whatever the reason for stopping.`,
   },
   {
     title: 'Authorized Use',
@@ -86,7 +86,7 @@ It is not about your business, your content, or your customers. The short versio
     title: 'Disclaimer',
     content: `THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-The copyright holder is ${BRAND_NAME}. A claim under this licence lies against the company, and the limits on liability set out on the Terms page apply to it and to the company's member, manager, employees and contractors.`,
+The copyright holder is ${BRAND_NAME}. A claim under this license lies against the company, and the limits on liability set out on the Terms page apply to it and to the company's member, manager, employees and contractors.`,
   },
   {
     title: 'Enforcement',
@@ -118,7 +118,7 @@ export default function License() {
           'Your domain, your content and your customer records are yours and are not licensed to us.',
           'The code and the platform stay ours, licensed to you for as long as the monthly fee is current.',
           'What you may not do is copy, resell, sublicense or reverse engineer the codebase.',
-          'Sell your business and the licence moves to the buyer, free, on these same terms.',
+          'Sell your business and the license moves to the buyer, free, on these same terms.',
         ]}
         sections={SECTIONS}
         footer={{

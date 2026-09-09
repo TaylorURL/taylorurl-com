@@ -38,20 +38,24 @@ const QUESTIONS = [
     a: 'Design, the writing, the build itself, the domain set up, and launch day. One finished site, with no page or feature billed separately.',
   },
   {
+    q: 'How long does a build take?',
+    a: 'Most sites are live in two to four weeks. You tell us about the business, we build it, you say what is wrong, we fix it and put it online. What usually moves that date is photos and content coming back slowly, so having those ready is the fastest thing you can do.',
+  },
+  {
     q: `What is in the ${MONTHLY_PRICE} a month?`,
     a: 'Hosting, daily backups, security, changes whenever you want them, realtime error monitoring, and the organic search work. There is no per-change fee.',
   },
   {
     q: `Why does a web design agency charge ${ELSEWHERE} for this?`,
-    a: 'The work is the same work, and you talk to whoever did it. Google grades every client site already live, and those grades are published per site on the portfolio. There is a small team here and no floor of them, so nobody is billing you for an account manager, a project manager, a sales commission, or an office.',
+    a: 'The work is the same work, and you talk to whoever did it. Google grades every client site already live, and those grades are published per site on the portfolio. The team here is small, so nobody is billing you for an account manager, a project manager, a sales commission, or an office.',
   },
   {
     q: 'Are there setup fees or extras?',
-    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, and the tools behind them are built as part of the site. The two figures are where the price starts, a bigger project costs more, and you agree to that number before anything starts. Two costs sit outside them and neither is mine: Google or Microsoft bill for each mailbox, and no advertising is bought here.',
+    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, and the tools behind them are built as part of the site. The two figures are where the price starts, a bigger project costs more, and you agree to that number before anything starts. Two costs sit outside them and neither is ours: Google or Microsoft bill for each mailbox, and no advertising is bought here.',
   },
   {
     q: `Is the ${MONTHLY_PRICE} a month optional?`,
-    a: 'No. It is what keeps the site online and looked after, so it runs for as long as the site does. There is no annual term to sign, and it stops whenever you say so. If it does end, the site comes offline; your domain and your content go with you.',
+    a: 'No. It is what keeps the site online and looked after, so it runs for as long as the site does. It stops whenever you say so: there is no annual term to sign, no notice period, and no cancellation fee. If it does end, the site comes offline; your domain and your content go with you.',
   },
   {
     q: 'Who owns the domain?',
@@ -59,7 +63,7 @@ const QUESTIONS = [
   },
   {
     q: 'What happens to the site if I stop the monthly?',
-    a: 'It comes down. Hosting, backups, monitoring, and the search work all sit in the monthly, so nothing is paying to keep it up.',
+    a: 'It stays online to the end of the period you have paid for and comes offline after that. Hosting, backups, monitoring, and the search work all sit in the monthly, so nothing is paying to keep it up.',
   },
 ]
 

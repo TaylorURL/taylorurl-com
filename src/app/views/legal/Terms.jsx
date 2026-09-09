@@ -41,7 +41,7 @@ A project runs on the slower of the two of us. Where materials or approvals are 
     title: 'Your Content And The Rights To It',
     content: `You keep everything you supply. You also confirm, by supplying it, that you are entitled to: that the photographs are yours or licensed, that the logo is yours to use, that the text is not copied from a competitor, and that nothing you hand over infringes anyone's rights or breaks any law.
 
-This matters more than it sounds. A stock photograph used without a licence is a bill that arrives eighteen months later, and it arrives at whoever published it. If a claim is made against us because of material you supplied or instructed us to publish, you cover the cost of dealing with it. If we are the ones who put something on your site without a licence, that is ours to fix and ours to pay for.`,
+This matters more than it sounds. A stock photograph used without a license is a bill that arrives eighteen months later, and it arrives at whoever published it. If a claim is made against us because of material you supplied or instructed us to publish, you cover the cost of dealing with it. If we are the ones who put something on your site without a license, that is ours to fix and ours to pay for.`,
   },
   {
     title: 'Payment Terms',
@@ -69,7 +69,7 @@ The build fee pays for the work carried out. Where a project ends before the sit
     title: 'Ownership',
     content: `You own your domain name, your content, your brand marks, your customer records, and anything you write into the site after launch. The domain is registered in your name and you may move it to another registrar or provider at any time, for any reason or none.
 
-We own the source code behind the site and the platform it is built and served on. That is licensed to you for as long as the monthly fee is current, and the terms of that licence are set out on the License page. Ending the arrangement ends the licence; it does not touch anything in the paragraph above.
+We own the source code behind the site and the platform it is built and served on. That is licensed to you for as long as the monthly fee is current, and the terms of that license are set out on the License page. Ending the arrangement ends the license; it does not touch anything in the paragraph above.
 
 We may show completed work in our portfolio and case studies unless you ask us not to, and asking costs nothing.`,
   },
@@ -97,7 +97,7 @@ Where one of them fails, changes its pricing, or withdraws a feature, we will te
   },
   {
     title: 'Accessibility',
-    content: `We build to recognised web accessibility guidance, because a site that a customer using a screen reader or a keyboard cannot use is a site turning away business, and because the law increasingly expects it. That is a standard we work to and not a certification we can grant.
+    content: `We build to recognized web accessibility guidance, because a site that a customer using a screen reader or a keyboard cannot use is a site turning away business, and because the law increasingly expects it. That is a standard we work to and not a certification we can grant.
 
 Accessibility is also a moving target once a site is live: content you add afterwards, a third-party widget, or an untagged image can undo it. Tell us if you find something on your site that is hard to use and we will fix it.`,
   },

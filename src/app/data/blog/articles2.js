@@ -1,7 +1,7 @@
 export const BLOG_ARTICLES_2 = [
   {
     slug: 'google-business-profile-the-most-important-free-tool',
-    title: "Google Business Profile: The Most Important Free Tool You're Not Using",
+    title: "Google Business Profile: The Free Tool You're Not Using",
     excerpt:
       'Your Google Business Profile is free, takes 20 minutes to set up, and decides whether local customers find you before they ever reach your website.',
     category: 'SEO',
@@ -93,7 +93,7 @@ export const BLOG_ARTICLES_2 = [
     slug: 'how-to-write-website-copy-that-sounds-human',
     title: "How to Write Website Copy That Doesn't Sound Like a Robot",
     excerpt:
-      'Three client sites that say what they mean, and the industry phrasing every one of them could have used instead.',
+      'Website copy that does not sound like a robot is the sentence a customer already says, written down. Three client sites that do it, and what they avoided.',
     category: 'Design',
     date: 'November 18, 2025',
     readTime: '5 min read',
@@ -150,7 +150,7 @@ export const BLOG_ARTICLES_2 = [
     slug: 'the-difference-between-a-500-website-and-a-5000-one',
     title: 'The Difference Between a Template Website and a Custom One',
     excerpt:
-      'Three client sites at three very different prices, and what the money actually bought in each one.',
+      'The difference between a template website and a custom one is rarely design time. Three client sites, and what the money actually bought in each one.',
     category: 'Business',
     date: 'December 1, 2025',
     readTime: '6 min read',
@@ -248,7 +248,7 @@ export const BLOG_ARTICLES_2 = [
   },
   {
     slug: 'accessibility-the-website-requirement-youre-ignoring',
-    title: "Accessibility: The Website Requirement You're Probably Ignoring",
+    title: "Accessibility: The Website Requirement You're Ignoring",
     excerpt:
       'Web accessibility is a legal requirement small business sites routinely miss, and the fixes (contrast, alt text, form labels, keyboard use) also help you rank.',
     category: 'Design',

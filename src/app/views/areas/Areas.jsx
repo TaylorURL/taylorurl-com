@@ -76,7 +76,7 @@ export default function Areas() {
 
       <PageHero
         eyebrow="Service Areas"
-        title="Where these sites get built."
+        title="Websites built for your town."
         description={`${AREAS.length} towns across Southeast Texas, each with a page carrying the work already live there and the trades it most often calls for.`}
       />
 

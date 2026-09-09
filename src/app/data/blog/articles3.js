@@ -150,7 +150,7 @@ export const BLOG_ARTICLES_3 = [
         type: 'p',
         text: 'They can\'t show you a portfolio. They quote you a price before understanding what you need. They promise you\'ll be on page one of Google in a week. They use a drag-and-drop builder and call it "custom development." They disappear for days without updates. If any of these sound familiar, run.',
       },
-      { type: 'h2', text: 'What Should You Ask Before You Sign?' },
+      { type: 'h2', text: 'What Should You Ask About Owning Your Site?' },
       {
         type: 'p',
         text: 'Before you sign anything, ask: What platform or tech will you use to build my site? Will I own the code? What happens if I want to leave, and can I take my site with me? How do you handle hosting and security? What does ongoing maintenance look like? A good developer will have clear, confident answers. A bad one will dodge or get vague.',
@@ -164,7 +164,8 @@ export const BLOG_ARTICLES_3 = [
   {
     slug: 'color-psychology-why-your-website-colors-matter',
     title: 'Color Psychology: Why Your Website Colors Matter',
-    excerpt: 'Color is doing work on your site whether you chose it deliberately or not.',
+    excerpt:
+      'Website colors register before a single word is read. What each color says, the mistake that makes a homepage loud, and how to pick a palette.',
     category: 'Design',
     date: 'January 7, 2026',
     readTime: '5 min read',
@@ -198,7 +199,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'bounce-rate-what-it-is-and-how-to-fix-it',
     title: 'Bounce Rate: What It Is and How to Fix It',
     excerpt:
-      'If people land on your site and leave without touching anything, the page is answering the wrong question.',
+      'Bounce rate is the share of visitors who land and leave without touching anything. What counts as normal, why they bounce, and how to fix it.',
     category: 'Site Speed',
     date: 'January 21, 2026',
     readTime: '5 min read',

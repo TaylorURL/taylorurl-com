@@ -47,7 +47,7 @@ export const PRICE_FIGURES = [
 
 /** What the two figures are: a starting point, and what moves a project above it. */
 export const PRICE_BASIS =
-  'That is where a site starts, and it is what most of them cost. Booking, ordering, a shop, and the tools behind them are built as part of the site rather than billed on top of it. A bigger project costs more than a smaller one, and you see that number and agree to it before any work begins.'
+  'That is where a site starts, and it is what most of them cost. Booking, ordering, a shop, and the tools behind them are built as part of the site rather than billed on top of it. What moves the price is how big the whole project is, and you see that number and agree to it before any work begins.'
 
 export const MONTHLY_COVERS = [
   {

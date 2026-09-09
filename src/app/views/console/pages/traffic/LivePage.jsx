@@ -15,18 +15,19 @@ import {
 } from '../../ui'
 import { CHART_HEIGHT } from '../../lib/tokens'
 import { recalledCount, rememberCount } from '../../lib/rowMemory'
-import ReadingNow from './ReadingNow'
+import WhoIsOn from './WhoIsOn'
 
 const REMEMBERED_PLACES = 'taylorurl_console_live_places'
 
 /**
- * The live section: how many are reading, how that has moved, who they are and
- * where they are reading from.
+ * The live section: how many are reading, how that has moved, and who each of
+ * them is - the page they have open, what sent them, where they are, and how
+ * long they have been on.
  *
- * Every figure here comes from the presence table's five-minute window rather
- * than the traffic history, so the section answers in a fraction of the time
- * the windowed ones take - and none of it is a total for a day, which is what
- * the strip above already carries.
+ * Every figure here comes from the presence window rather than the traffic
+ * history, so the section answers in a fraction of the time the windowed ones
+ * take - and none of it is a total for a day, which is what the strip above
+ * already carries.
  *
  * The count leads, and it leads with its own history rather than with a line
  * that starts empty. The presence table answers who is here and remembers
@@ -36,11 +37,12 @@ const REMEMBERED_PLACES = 'taylorurl_console_live_places'
  * of the morning is on screen the moment the section opens, and the window in
  * the bar changes how much of it is shown.
  *
- * Who is reading stands beside the chart and runs the height of the section,
- * since a list of pages is the one thing here that can be a screenful; where
- * they are sits under the chart. The count itself is in the strip above and on
- * the list's own head, so the chart's head names the stretch it draws instead,
- * which is the one fact about it the bar does not state.
+ * The chart and the places take the top of the section between them, and the
+ * readers themselves take the width underneath: a row is four things about one
+ * person and a card a fifth of the page wide can carry one of them. The count
+ * is in the strip above and on that card's own head, so the chart's head names
+ * the stretch it draws instead, which is the one fact about it the bar does not
+ * state.
  */
 
 // How much of the record the chart draws, against the window the bar is set to.
@@ -119,9 +121,9 @@ export default function LivePage() {
 
   return (
     <ConsolePage
-      areas={['history now', 'where now']}
+      areas={['history where', 'people people']}
       cols="minmax(0,1fr) 20rem"
-      rows="minmax(0,1.2fr) minmax(0,1fr)"
+      rows="minmax(0,1fr) minmax(0,1.1fr)"
     >
       <Panel area="history" title="Over Time" aside={span.label} busy={recorded.loading}>
         {/* The placeholder takes the same box the chart will, so the card
@@ -145,8 +147,6 @@ export default function LivePage() {
         </PanelFoot>
       </Panel>
 
-      <ReadingNow area="now" />
-
       <Panel
         area="where"
         title="Where They Are"
@@ -165,6 +165,8 @@ export default function LivePage() {
           />
         </PanelBody>
       </Panel>
+
+      <WhoIsOn area="people" />
     </ConsolePage>
   )
 }
