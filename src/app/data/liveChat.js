@@ -42,6 +42,42 @@ export const holdThread = id => held(store => store.setItem(THREAD_KEY, id))
 
 export const dropThread = () => held(store => store.removeItem(THREAD_KEY))
 
+/** Whether this page has already said the assistant was missing. */
+let toldOnce = false
+
+/**
+ * Says, once, that the site is serving pages with no assistant on them.
+ *
+ * The widget removing itself is the correct answer to an assistant that would
+ * not reply, and it is also the one fault on this site that nothing was able to
+ * see. Every other break announces itself: a chunk that will not load, a script
+ * that throws, an endpoint answering 500 - the reporter in the page head is
+ * watching for all of those and files a ticket the error routine claims within
+ * ten minutes. A probe that answers `{"up": false}` is none of them. It is a
+ * clean, fast, correct HTTP 200, so the reporter sees a request that worked, the
+ * uptime monitor sees a site returning 200, and the daily routine sees a
+ * PageSpeed score that is if anything better for the widget being gone. The
+ * queue stays empty, and an empty queue reads exactly like a working site.
+ *
+ * `console.error` is the door, and it is the one the reporter opened for this:
+ * it wraps the three console methods precisely so that code addressing whoever
+ * maintains the site can reach them rather than the visitor, and it swallows
+ * what it takes. Nothing is written to a reader's console. Nowhere else in the
+ * app writes to one either, and this is the exception rather than a new habit -
+ * the site has not had anything to say to us before.
+ *
+ * Once per page, because the probe goes again whenever a hidden tab comes back,
+ * and a reader switching tabs is not new information. The collector dedupes
+ * across visitors on its own.
+ *
+ * @param {string} why - What the door answered, in the report's own words.
+ */
+function tellUsTheAssistantIsGone(why) {
+  if (toldOnce || typeof window === 'undefined') return
+  toldOnce = true
+  console.error(`Live chat: no assistant, so no widget was drawn. ${why}`)
+}
+
 /**
  * Whether the assistant is behind the endpoint and would answer a turn sent
  * now.
@@ -57,14 +93,20 @@ export const dropThread = () => held(store => store.removeItem(THREAD_KEY))
 export async function assistantUp({ signal } = {}) {
   try {
     const response = await fetch(ENDPOINT, { method: 'GET', signal })
-    if (!response.ok) return false
+    if (!response.ok) {
+      tellUsTheAssistantIsGone(`The door answered HTTP ${response.status}.`)
+      return false
+    }
     const payload = await response.json()
-    return payload.up === true
+    if (payload.up === true) return true
+    tellUsTheAssistantIsGone('The door answered that there is nothing behind it.')
+    return false
   } catch (cause) {
     // A probe the widget cancelled itself answers nothing, and calling that a
     // no would record an outage against a page the reader has already left.
     // It is passed on so the caller can drop it.
     if (cause.name === 'AbortError') throw cause
+    tellUsTheAssistantIsGone(`The door could not be reached: ${cause.message}`)
     return false
   }
 }

@@ -267,6 +267,82 @@ check(
   'the widget no longer cancels a turn still in flight as it leaves'
 )
 
+/* How the widget's own chunk is asked for, and what happens when it does not
+ * arrive.
+ *
+ * This is the half of the gate that is not in the widget, and it is the half
+ * that took the assistant off the site: the layout held the import with a bare
+ * `lazy()`, which asks once. Every hashed chunk is replaced by a deploy, so a
+ * page open across one asks for a file that has gone, and one 404 on
+ * `LiveChat-*.js` left the corner empty for the rest of the visit. The route
+ * views never had that problem because they go through the retry.
+ *
+ * The boundary is the other half. The one above the routes recovers a page by
+ * reloading the document, which is right for a route and wrong for a corner: it
+ * threw away the page under whoever was reading it, and once the deploy had
+ * spent that single allowed reload it drew the screen kept for a page that will
+ * not load, over a page that had loaded. */
+const layout = readFileSync(join(HERE, '../..', 'src/app/components/chrome/Layout.jsx'), 'utf8')
+check(
+  /const LiveChat = HAS_ASSISTANT \? lazyWithRetry\(/.test(layout),
+  "the widget's chunk is asked for once, so a deploy takes the assistant off the site"
+)
+check(
+  /const SectionIndicator = lazyWithRetry\(/.test(layout),
+  "the section marks' chunk is asked for once, so a deploy takes them off the home page"
+)
+check(
+  !/\blazy\(\s*\(\)\s*=>/.test(layout),
+  'a piece of chrome went back to a bare lazy() with no retry'
+)
+check(
+  (layout.match(/<QuietBoundary>/g) || []).length === 2,
+  'a piece of chrome can reload or blank the page it decorates when its chunk fails'
+)
+
+/* That the widget's disappearance is something we can be told about.
+ *
+ * A probe answering `{"up": false}` is a clean HTTP 200, so it is invisible to
+ * every watcher: the page reporter sees a request that worked, the uptime
+ * monitor sees a site answering, and the daily routine sees a PageSpeed score no
+ * worse for the widget being gone. Nothing filed a ticket, so the error routine
+ * was never woken - it starts a turn only when one is open. The report is what
+ * closes that, so what is checked here is that it is made and that the widget
+ * still answers no either way. */
+// The reporter reads `console.error`, so the probe is run with that held and
+// every answer collected before anything is judged. Nothing is checked while it
+// is held, because `check` writes a failure the same way and would file its own
+// complaint into the evidence.
+const reports = []
+const answers = []
+const realError = console.error
+globalThis.window = globalThis.window || {}
+console.error = message => reports.push(String(message))
+try {
+  stub(body(true, { up: false }))
+  answers.push(await assistantUp())
+  // The probe goes again every time a hidden tab comes back, and a reader
+  // switching tabs is not a second outage.
+  stub(body(true, { up: false }))
+  answers.push(await assistantUp())
+  stub(body(false, {}))
+  answers.push(await assistantUp())
+} finally {
+  console.error = realError
+  delete globalThis.window
+}
+
+check(
+  answers.every(answer => answer === false),
+  'a reported outage stopped the widget answering no'
+)
+check(reports.length > 0, 'an assistant that is down was not reported, so nothing files a ticket')
+check(reports.length === 1, 'an outage was reported once per probe rather than once per page')
+check(
+  /no assistant/i.test(reports[0]) && /nothing behind it/i.test(reports[0]),
+  'the report does not say what happened'
+)
+
 /* The sentence a refused visitor reads. */
 check(!/\bAI\b|bot|violat|abuse|attempt/i.test(REFUSAL), 'the refusal accuses the visitor')
 check(/\bteam\b/i.test(REFUSAL), 'the refusal does not name the way through')
