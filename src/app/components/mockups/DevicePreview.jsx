@@ -182,7 +182,7 @@ export function DesktopMockup({ project, index, priority = false }) {
       transitionDuration={MAX_MS * 1000}
       // The frame is a picture of a site rather than a way into one, so the
       // pointer stays what it is over the rest of the page.
-      className="border-hair-paper device-window !block !cursor-default overflow-hidden border bg-paper shadow-[var(--lift)]"
+      className="border-hair-paper device-window !cursor-default overflow-hidden border bg-paper shadow-[var(--lift)]"
     >
       <div className="border-hair-paper flex items-center gap-1.5 border-b bg-paper px-4 py-2.5">
         <span className="h-2 w-2 rounded-full bg-[color:var(--ink-ghost)]" />
