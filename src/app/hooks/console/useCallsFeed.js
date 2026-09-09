@@ -78,7 +78,6 @@ const LIVE_MS = 30_000
  * @returns {{data: object|null, retained: object|null, error: string|null,
  *   shown: object|null, loading: boolean, behind: boolean,
  *   saving: boolean, readAt: Date|null,
- *   refresh: () => Promise<void>,
  *   record: (call: object) => Promise<object|null>,
  *   hand: (id: string, to: string|null) => Promise<object|null>}}
  */
@@ -228,7 +227,6 @@ export function useCallsFeed({ token, enabled, filters }) {
     behind,
     saving,
     readAt,
-    refresh: load,
     record,
     hand,
   }
