@@ -22,6 +22,7 @@ import { MONO_LABEL, ROW_HEIGHT } from './lib/tokens'
 export function Panel({
   title,
   aside,
+  tools,
   note,
   children,
   className = '',
@@ -42,17 +43,28 @@ export function Panel({
           mid-word - which is what a long aside does to a short title at 375px. */}
       <header className="console-card-head">
         <h2>{title}</h2>
-        {/* An aside is a count of what is in the card, and a count of nothing
+        {/* What the card says about itself and what works it, together at the
+            far end of the head - so the head is a name at one edge and
+            everything else at the other, however many of them there are.
+
+            An aside is a count of what is in the card, and a count of nothing
             read while the read is still out says the card is empty. It waits
             here rather than in each section, so no section can forget it, and
             it holds a placeholder of its own so the head does not change
-            height when the figure lands. */}
-        {loading ? (
-          <p>
-            <SkeletonBar className="w-16" />
-          </p>
-        ) : (
-          aside && <p>{aside}</p>
+            height when the figure lands. A control is not a reading and waits
+            for nothing: the placeholder stands in for the figure alone, and
+            anything in `tools` is there from the first frame. */}
+        {(loading || aside || tools) && (
+          <div className="flex min-w-0 items-center gap-3">
+            {loading ? (
+              <p>
+                <SkeletonBar className="w-16" />
+              </p>
+            ) : (
+              aside && <p>{aside}</p>
+            )}
+            {tools}
+          </div>
         )}
         {/* How the card is worked, for whoever is working it. It wraps onto its
             own line inside the head rather than standing between the head and
@@ -515,11 +527,16 @@ export function SectionNotice({ children, area }) {
  * `grid-template-areas` reads them. A card names its area with the `area`
  * prop, and anything that is not a card stands in an `Area`.
  */
-function boardStyle({ areas, cols, rows }) {
+function boardStyle({ areas, cols, rows, gap }) {
   const style = {}
   if (areas) style['--board-areas'] = areas.map(row => `"${row}"`).join(' ')
   if (cols) style['--board-cols'] = cols
   if (rows) style['--board-rows'] = rows
+  // A page whose rows have to close up against each other says so and carries
+  // the air itself. It is written straight onto the element rather than into a
+  // variable, because a variable would inherit into any board laid out inside
+  // the page and quietly close that up too.
+  if (gap !== undefined) style.gap = gap
   return style
 }
 
@@ -538,9 +555,9 @@ function boardStyle({ areas, cols, rows }) {
  * scrolling inside its own card. Letting every card shrink is what keeps the
  * page itself from scrolling sideways.
  */
-export function ConsolePage({ children, areas, cols, rows, className = '' }) {
+export function ConsolePage({ children, areas, cols, rows, gap, className = '' }) {
   return (
-    <div className={`console-page ${className}`} style={boardStyle({ areas, cols, rows })}>
+    <div className={`console-page ${className}`} style={boardStyle({ areas, cols, rows, gap })}>
       {children}
     </div>
   )
