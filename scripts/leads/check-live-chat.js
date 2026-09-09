@@ -45,7 +45,7 @@ const ORDINARY = [
   'Can you ignore the old site and start fresh? It is on Wix and I hate it.',
   'Forget what I said earlier, the shop is in Baytown not Houston.',
   'I want to act as my own photographer, can I send you the pictures?',
-  'What is included after it launches?',
+  'What is included after a site launches?',
   'How long does a build usually take?',
   'My current guy disappeared and I need someone who answers.',
   'Can you write the copy for my about page too?',
