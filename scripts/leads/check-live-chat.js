@@ -281,23 +281,52 @@ check(
  * reloading the document, which is right for a route and wrong for a corner: it
  * threw away the page under whoever was reading it, and once the deploy had
  * spent that single allowed reload it drew the screen kept for a page that will
- * not load, over a page that had loaded. */
+ * not load, over a page that had loaded.
+ *
+ * The third half, which took a report of its own to find, is how long a piece
+ * stays gone. The boundary holds its failure for as long as it is mounted and a
+ * navigation does not rebuild the layout, so a corner that lost one fetch was
+ * empty for the rest of the visit even once the file was answering again.
+ * `LateChrome` is where all three now live, so what is asked of the layout is
+ * that it hands both pieces over rather than holding either itself. */
 const layout = readFileSync(join(HERE, '../..', 'src/app/components/chrome/Layout.jsx'), 'utf8')
+const lateChrome = readFileSync(
+  join(HERE, '../..', 'src/app/components/app-shell/LateChrome.jsx'),
+  'utf8'
+)
+const retry = readFileSync(join(HERE, '../..', 'src/app/utils/lazyWithRetry.js'), 'utf8')
 check(
-  /const LiveChat = HAS_ASSISTANT \? lazyWithRetry\(/.test(layout),
-  "the widget's chunk is asked for once, so a deploy takes the assistant off the site"
+  /const loadLiveChat = HAS_ASSISTANT \?/.test(layout) &&
+    /<LateChrome load={loadLiveChat}/.test(layout),
+  "the widget's chunk is not held by anything that can ask for it twice"
 )
 check(
-  /const SectionIndicator = lazyWithRetry\(/.test(layout),
-  "the section marks' chunk is asked for once, so a deploy takes them off the home page"
+  /const loadSectionIndicator = \(\) =>/.test(layout) &&
+    /<LateChrome load={loadSectionIndicator}/.test(layout),
+  "the section marks' chunk is not held by anything that can ask for it twice"
 )
 check(
-  !/\blazy\(\s*\(\)\s*=>/.test(layout),
+  !/\blazy\(\s*\(\)\s*=>/.test(layout) && !/\blazy\(\s*\(\)\s*=>/.test(lateChrome),
   'a piece of chrome went back to a bare lazy() with no retry'
 )
 check(
-  (layout.match(/<QuietBoundary>/g) || []).length === 2,
+  /lazyWithRetry\(load/.test(lateChrome) && /<QuietBoundary/.test(lateChrome),
   'a piece of chrome can reload or blank the page it decorates when its chunk fails'
+)
+// A renewal that reuses an address is not a renewal. React re-throws the
+// rejection it recorded against the lazy component, and the browser's module map
+// re-throws the one it recorded against every address already asked for, so a
+// second pass built the same way and numbered from one sends nothing at all -
+// which is what the first draft of this did, reporting fresh failures with no
+// request on the wire. The counter belongs to the document, and the failure has
+// to travel into the pass that follows it.
+check(
+  /after: cause\.current/.test(lateChrome) && /after = null/.test(retry),
+  'a piece that failed is offered again at an address the browser has already refused'
+)
+check(
+  /^let spent = 0$/m.test(retry) && /spent \+= 1/.test(retry),
+  'the retry counter restarts per pass, so a second pass asks where the first has been'
 )
 
 /* That the widget's disappearance is something we can be told about.

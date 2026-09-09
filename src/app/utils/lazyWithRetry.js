@@ -5,6 +5,16 @@ const DEFAULT_DELAY_MS = 350
 
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
+// How many retried addresses this page has already spent. Counted for the whole
+// document rather than per pass, because the module map that makes a repeated
+// address worthless is the document's: a second pass at the same piece, minutes
+// later and on another page, numbering its attempts 1 and 2 again would ask for
+// two addresses the map already holds a rejection for and send nothing for
+// either. Measured against the built site with the chunk refused and then
+// served, that was a renewal that reported a fresh failure without making a
+// single request.
+let spent = 0
+
 // The address inside the sentence a browser throws when a module will not load.
 // Chrome and Edge say "Failed to fetch dynamically imported module: <url>", and
 // Firefox and Safari word it differently and sometimes name no address at all -
@@ -27,16 +37,20 @@ const MODULE_URL = /\bhttps?:\/\/[^\s'")]+\.m?js\b/i
  * reaches the same file, because a hashed asset is served by path and the
  * query is ignored by everything that answers for one.
  *
+ * The address is read out of the message and its query dropped by the pattern
+ * above, so what is numbered is always the built address rather than the last
+ * attempt's.
+ *
  * @param {unknown} error - What the failed import threw.
- * @param {number} attempt - Which retry this is, so no two share a key.
  * @returns {Promise<unknown>|null} The retried import, or null if the browser
  *   named no address to retry.
  */
-function refetch(error, attempt) {
+function refetch(error) {
   const found = MODULE_URL.exec(String((error && error.message) || ''))
   if (!found) return null
   const address = new URL(found[0])
-  address.searchParams.set('retry', String(attempt))
+  spent += 1
+  address.searchParams.set('retry', String(spent))
   return import(/* @vite-ignore */ address.href)
 }
 
@@ -75,23 +89,27 @@ export function warm(factory) {
  *
  * @param {() => Promise<{ default: React.ComponentType }>} factory - Dynamic
  *   import returning a module with a default-exported component.
- * @param {{ retries?: number, delayMs?: number }} [options]
+ * @param {{ retries?: number, delayMs?: number, after?: unknown }} [options] -
+ *   `after` is what an earlier pass at this same piece died of. Given one, the
+ *   plain address is skipped: it is the address that already failed, and the
+ *   module map will hand back that failure without sending anything.
  * @returns {React.LazyExoticComponent} A lazy component with retry built in.
  */
 export function lazyWithRetry(
   factory,
-  { retries = DEFAULT_RETRIES, delayMs = DEFAULT_DELAY_MS } = {}
+  { retries = DEFAULT_RETRIES, delayMs = DEFAULT_DELAY_MS, after = null } = {}
 ) {
   return lazy(async () => {
-    let lastError
+    let lastError = after
     for (let attempt = 0; attempt <= retries; attempt++) {
       try {
         // The first attempt is the factory itself, so a chunk that loads
         // normally - which is all of them, nearly all of the time - is asked
         // for exactly as it was before any of this, at the address the build
-        // wrote and with the preload the build issued for it.
-        if (attempt === 0) return await factory()
-        const again = refetch(lastError, attempt)
+        // wrote and with the preload the build issued for it. A pass that
+        // already knows this address failed starts one line down instead.
+        if (attempt === 0 && !lastError) return await factory()
+        const again = refetch(lastError)
         if (!again) return await factory()
         return await again
       } catch (error) {

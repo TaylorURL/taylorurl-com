@@ -123,8 +123,15 @@ check(swept.length > 200, 'the sweep did not read the app')
 
 // The pieces this was written for, named so that moving one somewhere without a
 // boundary is a failure here rather than a fault on the site.
+//
+// A piece handed to `LateChrome` is covered by the boundary inside it, so naming
+// that component counts the same as naming the boundary - and `LateChrome` is on
+// the list itself, so the one place the delegation leads to has to hold a real
+// one.
+const COVERED = /QuietBoundary|LateChrome/
 for (const [file, piece] of [
   ['src/app/components/chrome/Layout.jsx', 'the assistant and the section marks'],
+  ['src/app/components/app-shell/LateChrome.jsx', 'everything that arrives after its page'],
   ['src/app/components/navigation/Navigation.jsx', 'the search panel'],
   ['src/app/components/reactbits/LazyBg.jsx', 'the page backgrounds'],
 ]) {
@@ -132,7 +139,9 @@ for (const [file, piece] of [
   check(Boolean(found), `${file} has moved, and ${piece} is what this was watching`)
   if (found) {
     check(
-      /QuietBoundary/.test(found.source),
+      file.endsWith('LateChrome.jsx')
+        ? /QuietBoundary/.test(found.source)
+        : COVERED.test(found.source),
       `${piece} can reload the page underneath a reader when a deploy deletes its chunk`
     )
   }
