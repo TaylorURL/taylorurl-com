@@ -44,6 +44,12 @@ const ALL_ROUTES = [
   // rather than the one above.
   { key: 'BusinessEmail', path: 'services/business-email' },
   { key: 'ServiceSeo', path: 'services/seo' },
+  // The one line that is not the shared service shape. It is still one of the
+  // four - the menu, the cards and the sitemap all read it from the same list -
+  // and it is served here rather than by the view above because its page makes
+  // an argument about the machinery a build installs that the other three do
+  // not make.
+  { key: 'OnlineTools', path: 'services/online-tools' },
   // The price, on a page of its own rather than only at the end of the
   // configurator.
   { key: 'Pricing', path: 'pricing' },

@@ -72,12 +72,12 @@ const STUDIO_ROWS = {
   'online-tools': {
     mark: MarkPanel,
     description:
-      'Online booking, ordering, customer logins, quote forms, and simple dashboards. Built onto the site and wired into Jobber, Housecall Pro, QuickBooks, or whatever you already run.',
+      'Booking, ordering, customer logins, and quote forms on the front, wired into Jobber, Housecall Pro, or whatever you already run. Ad tracking, a sending domain, and monitoring underneath, all of it put in while the site is built.',
     features: [
-      'Checkout through Stripe, Square, or PayPal',
       'Online booking, ordering, and quote forms',
-      'Connects to the apps you already use',
-      'A slot booked from a phone at ten at night',
+      'Checkout through Stripe, Square, or PayPal',
+      'Meta Pixel, Google Ads, and Ad Manager wired in',
+      'A sending domain of your own for outbound',
     ],
     mockup: 'analytics',
   },
