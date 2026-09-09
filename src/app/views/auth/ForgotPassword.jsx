@@ -66,7 +66,7 @@ export default function ForgotPassword() {
       />
       <AuthShell
         title="Forgot Password"
-        blurb="Enter the email address on your account. A link to set a new password goes to it."
+        blurb="A link to set a password goes to the address on your account."
         statusId={STATUS_ID}
         error={error}
         busy={busy}

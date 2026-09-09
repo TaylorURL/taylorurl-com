@@ -15,8 +15,8 @@ import { FIELD_FAULT, FIELD_LABEL, GROUND, PANEL_EYEBROW, PANEL_TITLE } from '..
  */
 const ONBOARDING = [
   {
-    title: 'Pick a Password',
-    body: 'The receipt lands, and picking a password opens the build under the address you paid with.',
+    title: 'Your Build Opens',
+    body: 'The receipt lands and the build opens on the address you paid with, with you already signed in.',
   },
   {
     title: 'We Reach Out',
@@ -174,8 +174,8 @@ export default function PaySection({
                 id="start-buy-email-note"
                 className="text-paper-faint mt-2 text-[13px] leading-snug"
               >
-                The receipt goes here, your project waits under this address until you pick a
-                password, and it is where we reach you.
+                The receipt goes here, your project opens under this address, and it is where we
+                reach you.
               </p>
             </div>
           </div>

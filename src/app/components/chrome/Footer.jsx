@@ -65,6 +65,28 @@ const DIRECTORY = [
 const SPLIT_AT = 6
 
 /**
+ * How many tracks the directory needs: one for every column, and a second for a
+ * column long enough to split.
+ *
+ * Counted off the lists rather than written into the grid, because a number
+ * here is a number that stops matching the day a page is added to
+ * `@constants/navigation` — the one edit these columns are built to absorb.
+ */
+const DIRECTORY_TRACKS = DIRECTORY.reduce(
+  (tracks, column) => tracks + (column.items.length > SPLIT_AT ? 2 : 1),
+  0
+)
+
+/**
+ * What a split column does with the second track it is given: fills the two
+ * down rather than across.
+ *
+ * A reader scanning a sitemap reads one column to the bottom and then starts
+ * the next, and row flow put the second entry at the top of the second half.
+ */
+const SPLIT_COLUMN = 'sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-[repeat(var(--rows),auto)]'
+
+/**
  * Everywhere this business can be found off its own site, as a row of marks.
  *
  * Two kinds of address sit in the one row on purpose. Facebook, Trustpilot and
@@ -138,14 +160,21 @@ export default function Footer() {
 
       <m.div {...fadeInUp} className="container-rail relative pb-10 pt-16 sm:pt-20">
         {/*
-          The masthead: who this is, where the rest of the site is, and the one
-          thing a reader came down here to do. Four tracks at full width and two
-          below it, with the brand and the button each taking the whole row on a
-          narrow screen — a name and a call to action are the two things that
-          read badly in half a column.
+          The masthead: who this is on the left, and everything a reader came
+          down here to click on the right.
+
+          Two blocks rather than one row of columns, because the two answer to
+          different measures. The brand runs as long as the address and the
+          marks make it; the directory is a set of equal tracks that has to
+          divide evenly and end on the rail. Laid out as one grid they fought:
+          the columns were hand-picked fractions, the widest of them held a
+          single row, the directory stopped two hundred pixels short of the
+          right edge, and the call to action — a fifth child of a four-track
+          grid — wrapped under the brand with the whole width of the directory
+          sitting empty beside it.
         */}
-        <div className="border-hair grid gap-x-8 gap-y-12 border-b pb-12 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1.3fr)_minmax(0,0.62fr)_minmax(0,1.15fr)] lg:gap-x-12">
-          <div className="max-w-sm sm:col-span-2 lg:col-span-1">
+        <div className="border-hair grid gap-x-8 gap-y-12 border-b pb-12 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,4fr)] xl:gap-x-10">
+          <div className="max-w-sm lg:max-w-none">
             {/*
               The wordmark through a window, the way the bar already reads it.
               The file is a 384-unit square carrying 328x98 of lettering in the
@@ -209,49 +238,82 @@ export default function Footer() {
             )}
           </div>
 
-          {DIRECTORY.map(column => (
-            <nav key={column.head} aria-label={column.head}>
-              <p className="section-label-sm mb-4 text-ink-faint">{column.head}</p>
-              <ul
-                className={`grid gap-x-6 gap-y-2 ${
-                  column.items.length > SPLIT_AT ? 'grid-cols-2' : 'grid-cols-1'
-                }`}
-              >
-                {column.items.map(item => {
-                  // A row naming the other site is an anchor: two origins, and
-                  // the router cannot reach across. Same tab, same furniture —
-                  // it is the same company one door along, not somewhere else.
-                  const Row = item.href ? 'a' : Link
-                  const link = item.href ? { href: item.href } : { to: item.to }
-                  return (
-                    <li key={item.to ?? item.href}>
-                      <Row {...link} className={DIRECTORY_LINK}>
-                        {item.label}
-                        <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
-                      </Row>
-                    </li>
-                  )
-                })}
-              </ul>
-            </nav>
-          ))}
+          {/*
+            The directory. Equal tracks carrying the one gap, so every column
+            line falls on the same rhythm, a row in one column sits level with
+            the row beside it, and the last column ends on the rail. One track
+            on a phone, two from `sm`, and one per directory column from `lg`,
+            so a long column has its second track from the step there are two
+            to give.
 
-          <div className="sm:col-span-2 lg:col-span-1">
-            <p className="section-label-sm mb-4 text-ink-faint">Hire Us</p>
-            <Magnet padding={50} magnetStrength={6}>
-              <Link to={START_LINK.to} className="btn btn-secondary group">
-                {START_LINK.label}
-                <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </Link>
-            </Magnet>
-            {/* "A plan and a price" is what a website quote is. This site
-                quotes work whose shape has to be agreed before it can be
-                priced, and says "scope" for that everywhere else it speaks. */}
-            <p className="mt-4 text-[13px] leading-relaxed text-ink-mute">
-              {IS_SECOND_SITE
-                ? 'Tell us what you need. A scope and a price come back at no charge.'
-                : 'Tell us what you need. A plan and a price come back at no charge.'}
-            </p>
+            `content-start` because the tracks are as tall as the longest of
+            them and the short ones would otherwise stretch their rows apart to
+            match.
+          */}
+          <div
+            style={{ '--dir-tracks': DIRECTORY_TRACKS }}
+            className="grid content-start gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[repeat(var(--dir-tracks),minmax(0,1fr))] xl:gap-x-10"
+          >
+            {DIRECTORY.map(column => {
+              // A column past the split takes two tracks and the gap between
+              // them is the grid's own, so its halves land on the same lines its
+              // neighbours are ruled by rather than a tighter set of their own.
+              const split = column.items.length > SPLIT_AT
+              return (
+                <nav
+                  key={column.head}
+                  aria-label={column.head}
+                  className={split ? 'sm:col-span-2' : undefined}
+                  style={split ? { '--rows': Math.ceil(column.items.length / 2) } : undefined}
+                >
+                  <p className="section-label-sm mb-4 text-ink-faint">{column.head}</p>
+                  <ul className={`grid gap-x-8 gap-y-2 xl:gap-x-10 ${split ? SPLIT_COLUMN : ''}`}>
+                    {column.items.map(item => {
+                      // A row naming the other site is an anchor: two origins,
+                      // and the router cannot reach across. Same tab, same
+                      // furniture — it is the same company one door along, not
+                      // somewhere else.
+                      const Row = item.href ? 'a' : Link
+                      const link = item.href ? { href: item.href } : { to: item.to }
+                      return (
+                        <li key={item.to ?? item.href}>
+                          <Row {...link} className={DIRECTORY_LINK}>
+                            {item.label}
+                            <ArrowUpRight className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+                          </Row>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                </nav>
+              )
+            })}
+
+            {/*
+              The one thing a reader came down here to do, on the line under
+              the columns it belongs to rather than in a column of its own. It
+              runs the width of the directory with the button on the rail, so
+              the corner the short columns leave open is the corner it fills.
+            */}
+            <div className="border-hair col-span-full flex flex-col gap-5 border-t pt-8 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
+              <div>
+                <p className="section-label-sm mb-2 text-ink-faint">Hire Us</p>
+                {/* "A plan and a price" is what a website quote is. This site
+                    quotes work whose shape has to be agreed before it can be
+                    priced, and says "scope" for that everywhere else it speaks. */}
+                <p className="max-w-xs text-[13px] leading-relaxed text-ink-mute">
+                  {IS_SECOND_SITE
+                    ? 'Tell us what you need. A scope and a price come back at no charge.'
+                    : 'Tell us what you need. A plan and a price come back at no charge.'}
+                </p>
+              </div>
+              <Magnet padding={50} magnetStrength={6}>
+                <Link to={START_LINK.to} className="btn btn-secondary group">
+                  {START_LINK.label}
+                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                </Link>
+              </Magnet>
+            </div>
           </div>
         </div>
 

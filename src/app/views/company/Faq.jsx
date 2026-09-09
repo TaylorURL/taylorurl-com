@@ -16,7 +16,7 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'What does a website cost?',
-        a: `Builds start at ${BUILD_PRICE}, paid once before the work begins. The monthly starts at ${MONTHLY_PRICE} and covers hosting and everything after launch. Most sites land there. Booking, ordering, a shop, and the tools behind them are built as part of the site rather than billed on top of it. What moves the price is how big the whole project is, and you agree to that figure before any work starts. Nothing is charged to get the plan and the price.`,
+        a: `Builds start at ${BUILD_PRICE}, paid once before the work begins. The monthly starts at ${MONTHLY_PRICE} and covers hosting and everything after launch. Most sites land there. Booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site rather than billed on top of it. What moves the price is how big the whole project is, and you agree to that figure before any work starts. Nothing is charged to get the plan and the price.`,
       },
       {
         q: 'Who do you build websites for?',
