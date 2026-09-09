@@ -220,17 +220,12 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
             >
               <div
                 className="nav-panel-columns"
-                style={{
-                  '--nav-panel-columns': held.columns.length,
-                  '--nav-panel-template': held.columnTemplate,
-                }}
+                style={{ '--nav-panel-columns': held.columns.length }}
               >
                 {held.columns.map(column => (
                   <div key={column.head} className="flex min-w-0 flex-col">
-                    <p className="nav-panel-head section-label-sm mb-3 border-b pb-2">
-                      {column.head}
-                    </p>
-                    <ul className="flex flex-col">
+                    <p className="nav-panel-head section-label-sm mb-4">{column.head}</p>
+                    <ul className="nav-panel-column-list flex flex-col">
                       {column.items.map(entry => {
                         // A row pointing off the site is an anchor rather than
                         // a route. Everything else about it is the row beside
@@ -244,31 +239,14 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                             }
                         return (
                           <li key={(entry.to ?? entry.href) + entry.label}>
-                            <Row
-                              {...link}
-                              onClick={onCloseAll}
-                              data-compact={entry.summary ? undefined : 'true'}
-                              className="nav-panel-item group/item"
-                            >
-                              {entry.mark && (
-                                <entry.mark className="nav-panel-mark mt-px h-5 w-5 shrink-0" />
+                            <Row {...link} onClick={onCloseAll} className="nav-panel-item">
+                              <span className="nav-panel-label">{entry.label}</span>
+                              {entry.href && (
+                                <ArrowUpRight
+                                  className="nav-panel-away h-3.5 w-3.5 shrink-0"
+                                  aria-hidden="true"
+                                />
                               )}
-                              <span className="flex min-w-0 flex-col gap-1">
-                                <span className="flex items-center gap-1.5 text-[14px] font-semibold leading-tight">
-                                  {entry.label}
-                                  {entry.href && (
-                                    <ArrowUpRight
-                                      className="h-3 w-3 shrink-0 opacity-60"
-                                      aria-hidden="true"
-                                    />
-                                  )}
-                                </span>
-                                {entry.summary && (
-                                  <span className="nav-panel-summary text-[12px] leading-snug">
-                                    {entry.summary}
-                                  </span>
-                                )}
-                              </span>
                             </Row>
                           </li>
                         )
@@ -293,52 +271,61 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                       {...featureLink}
                       onClick={onCloseAll}
                       data-tone={held.feature.tone}
-                      className="nav-panel-feature group/feature flex min-h-[44px] flex-col justify-center gap-2 rounded-[var(--r-card)] p-5"
+                      className="nav-panel-feature group/feature flex h-full flex-col rounded-[var(--r-card)] p-5"
                     >
                       {held.feature.mark && (
-                        <held.feature.mark className="nav-panel-mark h-7 w-7" />
+                        <held.feature.mark className="nav-panel-mark h-10 w-10" />
                       )}
-                      <span className="section-label-sm flex items-center gap-2">
-                        {held.feature.label}
-                        <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-[var(--nav-duration)] ease-out-soft group-hover/feature:-translate-y-0.5 group-hover/feature:translate-x-0.5" />
-                      </span>
-                      <span className="nav-panel-summary text-[13px] leading-snug">
-                        {held.feature.summary}
-                      </span>
-                      {/* The other listings the same business is reviewed on,
-                          as marks alone. The card already links to one of them
-                          and the column beside it links to every one by name,
-                          so a second set of links here would be the third way
-                          to the same four pages. What the row adds is the one
-                          thing the name does not: that the proof is held in
-                          several places, none of which is this site. */}
-                      {held.feature.marks?.length > 0 && (
-                        <span className="nav-panel-sources mt-1 flex items-center gap-3">
-                          {held.feature.marks.map(source => (
-                            <source.mark key={source.key} className="h-4 w-4" />
-                          ))}
-                          <span className="sr-only">
-                            Also reviewed on{' '}
-                            {held.feature.marks.map(source => source.label).join(', ')}
+                      {/* Everything the card says sits at its foot, so a rail
+                          the height of the columns beside it reads as one
+                          composition rather than as a card with a hole under
+                          it. The mark holds the top, the sentence and the way
+                          in hold the bottom, and the space between them is the
+                          card rather than what is left over. */}
+                      <span className="mt-auto flex flex-col gap-3 pt-8">
+                        {held.feature.shots && (
+                          <span className="grid grid-cols-3 gap-1.5">
+                            {held.feature.shots.map(shot => (
+                              <img
+                                key={shot.src}
+                                src={shot.src}
+                                alt=""
+                                width="1200"
+                                height="750"
+                                loading="lazy"
+                                decoding="async"
+                                className="nav-panel-shot block w-full"
+                              />
+                            ))}
                           </span>
+                        )}
+                        {/* The other listings the same business is reviewed on,
+                            as marks alone. The card already links to one of them
+                            and the column beside it links to every one by name,
+                            so a second set of links here would be the third way
+                            to the same four pages. What the row adds is the one
+                            thing the name does not: that the proof is held in
+                            several places, none of which is this site. */}
+                        {held.feature.marks?.length > 0 && (
+                          <span className="nav-panel-sources flex items-center gap-3">
+                            {held.feature.marks.map(source => (
+                              <source.mark key={source.key} className="h-4 w-4" />
+                            ))}
+                            <span className="sr-only">
+                              Also reviewed on{' '}
+                              {held.feature.marks.map(source => source.label).join(', ')}
+                            </span>
+                          </span>
+                        )}
+                        {/* The sentence is the card's headline rather than a
+                            note under a label, because the label is now the way
+                            in and says only where it goes. */}
+                        <span className="nav-panel-feature-head">{held.feature.summary}</span>
+                        <span className="nav-panel-cta">
+                          {held.feature.label}
+                          <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-[var(--nav-duration)] ease-out-soft group-hover/feature:-translate-y-0.5 group-hover/feature:translate-x-0.5" />
                         </span>
-                      )}
-                      {held.feature.shots && (
-                        <span className="mt-1 grid grid-cols-3 gap-1.5">
-                          {held.feature.shots.map(shot => (
-                            <img
-                              key={shot.src}
-                              src={shot.src}
-                              alt=""
-                              width="1200"
-                              height="750"
-                              loading="lazy"
-                              decoding="async"
-                              className="nav-panel-shot block w-full"
-                            />
-                          ))}
-                        </span>
-                      )}
+                      </span>
                     </FeatureRow>
                   )
                 })()}

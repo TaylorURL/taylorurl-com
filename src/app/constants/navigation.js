@@ -418,9 +418,6 @@ const STUDIO_NAV_GROUPS = [
   {
     key: 'reviews',
     label: 'Reviews',
-    // The middle column is names alone, so it takes about half the width of
-    // the two that carry a line under each name.
-    columnTemplate: 'minmax(0, 1.15fr) minmax(0, 0.7fr) minmax(0, 1.15fr)',
     columns: [
       reviewColumn('Read the Reviews', 'reads', true),
       reviewColumn('Leave a Review', 'writes', false),
@@ -472,9 +469,6 @@ const STUDIO_NAV_GROUPS = [
   {
     key: 'resources',
     label: 'Resources',
-    // The shelves are names alone and the column beside them carries a line
-    // under each row, so an equal track would strand the first in white space.
-    columnTemplate: 'minmax(0, 0.75fr) minmax(0, 1.25fr)',
     columns: [
       { head: 'Article Series', items: BLOG_SERIES_ENTRIES },
       {
