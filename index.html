@@ -598,7 +598,50 @@
             return held.slice()
           },
         }
+        // The attempt number this page hung on an address of its own, taken
+        // back off before the failure is filed under it.
+        //
+        // Asking for something a second time means asking at an address the
+        // browser holds no rejection against, so both retries on this site
+        // number a query rather than repeat a URL: `lazyWithRetry` for a chunk,
+        // the capture frames for a portfolio shot. The number is this
+        // document's own bookkeeping, it counts every retried address the page
+        // has spent rather than the attempt at this one, and it never repeats.
+        //
+        // Which makes it the worst thing that can be in a filed message. What
+        // is collected is grouped by what the message says, so an address
+        // carrying a number that has never been seen before is a fault that has
+        // never been seen before: one lost file arrives as several unrelated
+        // faults, none of them ever meets the first attempt's report, and a
+        // fault recurring for weeks is filed forever as a first sighting with
+        // no recurrence ever counted against it. A refused capture on the home
+        // page is six reports under three names, and a chunk a deploy has taken
+        // files a fresh one on every pass.
+        //
+        // So the marker comes off, and what travels is the address the build
+        // wrote - the same for the first attempt and the fourth, and the same
+        // again for the pass after them. Nothing stops being reported: the
+        // failures are all still sent, they are simply all still the one fault.
+        //
+        // This site's own addresses only. `retry` on somebody else's URL is
+        // their parameter and means whatever they say it does.
+        function settled(text) {
+          return String(text).replace(/https?:\/\/[^\s'"<>)]+/gi, function (address) {
+            if (address.indexOf('retry=') < 0) return address
+            try {
+              var parsed = new URL(address, location.href)
+              if (parsed.origin !== location.origin) return address
+              parsed.searchParams.delete('retry')
+              return parsed.href
+            } catch (ignored) {
+              return address
+            }
+          })
+        }
         function report(kind, message, stack) {
+          // Held raw, filed settled. The live console is being read by somebody
+          // asking which attempt this was, and that is exactly the detail the
+          // collector has to lose to see two attempts as one fault.
           hold(kind, message, stack)
           if (sent >= 10) return // a page stuck in an error loop stops at ten
           if (extensionOnly(stack)) return
@@ -608,8 +651,8 @@
               JSON.stringify({
                 site: site,
                 kind: kind,
-                message: String(message || 'Unknown error').slice(0, 1500),
-                stack: String(stack || '').slice(0, 4000),
+                message: settled(message || 'Unknown error').slice(0, 1500),
+                stack: settled(stack || '').slice(0, 4000),
                 url: location.href,
                 userAgent: navigator.userAgent,
               })

@@ -178,6 +178,119 @@ if (searching) {
   }
 }
 
+/* ----------------------------------------------------------------------- *
+ * That one lost file is one fault, however many times the page asked for it.
+ * ----------------------------------------------------------------------- */
+
+// Everything above makes the page ask again, and asking again on this site
+// means asking at a new address: the browser files a rejection against a URL
+// and hands the same one back forever, so a retry that repeats the address
+// sends nothing. `lazyWithRetry` numbers a `retry` query for a chunk and the
+// capture frames do the same for a portfolio shot.
+//
+// That number counts the retried addresses the whole document has spent, so it
+// differs on every attempt, differs again on the pass after them, and never
+// repeats. What collects these groups them by what the message says, so left in
+// the message it makes every attempt at one file a brand new fault: nothing
+// dedupes, nothing accumulates a recurrence, and a file that has been failing
+// for a week is filed every time as though it had never happened before. One
+// refused capture on the home page was six reports under three separate names.
+//
+// So the reporter takes its own marker off before filing, and the rest of the
+// address stands. Checked as behaviour rather than as wording: the function is
+// lifted out of the page and run against the strings that were really filed.
+const PAGE = readFileSync(path.join(ROOT, 'index.html'), 'utf8')
+
+function lift(name) {
+  const opens = PAGE.indexOf(`function ${name}(`)
+  if (opens === -1) return null
+  let depth = 0
+  for (let at = PAGE.indexOf('{', opens); at < PAGE.length; at += 1) {
+    if (PAGE[at] === '{') depth += 1
+    else if (PAGE[at] === '}') {
+      depth -= 1
+      if (depth === 0) return PAGE.slice(opens, at + 1)
+    }
+  }
+  return null
+}
+
+const settling = lift('settled')
+check(
+  Boolean(settling),
+  'the reporter no longer settles an address before filing it, so every retry files a fault of its own'
+)
+
+if (settling) {
+  const settled = new Function('location', `${settling}; return settled`)({
+    origin: 'https://www.taylorurl.com',
+    href: 'https://www.taylorurl.com/pricing',
+  })
+
+  // Every one of these is a real filed message, copied off the ticket it made.
+  for (const [said, want] of [
+    [
+      'TypeError: Failed to fetch dynamically imported module: https://www.taylorurl.com/assets/Pricing-CCU2B7e4.js?retry=4',
+      'TypeError: Failed to fetch dynamically imported module: https://www.taylorurl.com/assets/Pricing-CCU2B7e4.js',
+    ],
+    [
+      'TypeError: Failed to fetch dynamically imported module: https://www.taylorurl.com/assets/Aurora-DFW4dklT.js?retry=2',
+      'TypeError: Failed to fetch dynamically imported module: https://www.taylorurl.com/assets/Aurora-DFW4dklT.js',
+    ],
+    [
+      'Failed to load img: https://www.taylorurl.com/portfolio/baytowngokarts-com-desktop.webp?retry=3',
+      'Failed to load img: https://www.taylorurl.com/portfolio/baytowngokarts-com-desktop.webp',
+    ],
+    // The first attempt already asks at the address the build wrote, and it has
+    // to come through unchanged - it is the report every later one now joins.
+    [
+      'Failed to load img: https://www.taylorurl.com/portfolio/baytowngokarts-com-desktop.webp',
+      'Failed to load img: https://www.taylorurl.com/portfolio/baytowngokarts-com-desktop.webp',
+    ],
+  ]) {
+    check(
+      settled(said) === want,
+      `a filed report still carries an attempt number: ${settled(said)}`
+    )
+  }
+
+  // The marker is the only thing that comes off. A query the site put there for
+  // its own reasons is part of which file failed.
+  check(
+    settled('Failed to load img: https://www.taylorurl.com/a.webp?w=640&retry=2') ===
+      'Failed to load img: https://www.taylorurl.com/a.webp?w=640',
+    'settling an address takes the rest of its query with it'
+  )
+
+  // Somebody else's `retry` is somebody else's parameter. The capture frames
+  // fall through to a screenshot service on their last rung, and rewriting that
+  // service's address would file it under one it was never asked at.
+  check(
+    settled('No answer from https://image.thum.io/get/width/1280/x?retry=1') ===
+      'No answer from https://image.thum.io/get/width/1280/x?retry=1',
+    "settling reaches an address that is not this site's"
+  )
+
+  check(
+    settled('Assertion failed: retry=2 was never sent') ===
+      'Assertion failed: retry=2 was never sent',
+    'settling rewrites text that is not an address'
+  )
+}
+
+// Held raw and filed settled. Whoever reads the live console is asking which
+// attempt this was, and that is precisely the detail the collector has to lose
+// to see two attempts as one fault - so the raw message reaches `hold` first.
+const reporting = PAGE.slice(PAGE.indexOf('function report('), PAGE.indexOf('function flatten('))
+check(
+  /hold\(kind, message, stack\)/.test(reporting),
+  'the live console is now shown the settled message, so it can no longer say which attempt failed'
+)
+check(
+  /message: settled\(/.test(reporting) && /stack: settled\(/.test(reporting),
+  'a report is filed without settling its message and stack, so the attempt number is what it is grouped by'
+)
+
 if (failures.length) {
   console.error('check-chunk-recovery: failed')
   for (const failure of failures) console.error(`  ${failure}`)
