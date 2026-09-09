@@ -2,7 +2,6 @@ import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
-import { DRAFTS, SEAMS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { useTheme } from '@hooks/theme/useTheme'
 import Magnet from '@reactbits/Magnet/Magnet'
@@ -30,24 +29,10 @@ const MAGNET_PADDING = 80
  * @param {import('react').ReactNode} props.title - Heading content.
  * @param {string} props.description - Supporting line beside the button.
  * @param {string} [props.eyebrow] - Standing label above the heading.
- * @param {'plan' | 'ledger' | 'column' | 'node' | 'hatch' | 'iso' | 'quiet'}
- *   [props.draft] - What the closing band's field draws.
- * @param {'band' | 'foot' | 'hero' | 'card'} [props.seam] - How the field meets
- *   the band's own edges. It holds its foot alone by default: the top edge
- *   carries the accent rule and the aurora behind it, and the aurora is drawn
- *   under the field, so a head fade would pour the ground over its brightest
- *   part.
  * @param {'paper' | 'dark' | 'band'} [props.ground] - Which ground the band
  *   sits on.
  */
-export default function CtaSection({
-  title,
-  description,
-  eyebrow = 'Next',
-  ground = 'dark',
-  draft = 'quiet',
-  seam = 'foot',
-}) {
+export default function CtaSection({ title, description, eyebrow = 'Next', ground = 'dark' }) {
   const tone = GROUNDS[ground]
   // The aurora is drawn for a slab and nothing else. It is additive light, so
   // over the field it is a smear rather than a glow, and under the light
@@ -63,10 +48,6 @@ export default function CtaSection({
           <LazyAurora amplitude={1} blend={0.6} speed={0.6} />
         </div>
       )}
-      <div
-        className={`absolute inset-0 ${tone.grid} ${DRAFTS[draft]} ${SEAMS[seam]}`.trimEnd()}
-        aria-hidden="true"
-      />
       <div
         className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${slab ? 'via-accent/40' : 'via-accent/30'} to-transparent`}
         aria-hidden="true"

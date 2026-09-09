@@ -7,7 +7,6 @@ import Seo from '@components/Seo'
 import { TRADES } from '@data/towns-and-trades/trades'
 import { groupsWith, INDUSTRY_SLUGS } from '@data/towns-and-trades/industries'
 import { AREAS } from '@data/towns-and-trades/areas'
-import { draftAt, RINGS } from '@constants/drafting'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const DESCRIPTION =
@@ -54,7 +53,6 @@ export default function Industries() {
       />
 
       <PageHero
-        draft="column"
         eyebrow="Industries"
         title="Websites built around your trade."
         description={`${INDUSTRY_SLUGS.length} trades, each with a page of its own: what the site has to do, the software it runs beside, and the work already live nearby.`}
@@ -65,7 +63,6 @@ export default function Industries() {
           key={group.id}
           id={group.id}
           ground={groundAt(index)}
-          draft={draftAt(index, RINGS.survey)}
           eyebrow={group.name}
           title={`${group.name}.`}
           description={group.summary}
@@ -78,7 +75,6 @@ export default function Industries() {
       <RuledSection
         id="industries-towns"
         ground={townGround}
-        draft="node"
         eyebrow="Where"
         title="Towns these sites get built for."
         description="Every town has a page of its own carrying the work already live there and the trades it most often calls for."
@@ -96,7 +92,6 @@ export default function Industries() {
       </RuledSection>
 
       <CtaSection
-        draft="plan"
         ground={townGround === 'paper' ? 'dark' : 'paper'}
         eyebrow="Start"
         title={

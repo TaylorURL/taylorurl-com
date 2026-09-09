@@ -1,6 +1,4 @@
 import { m } from 'framer-motion'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { EASE, fadeInUpMount } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
@@ -29,11 +27,6 @@ const rise = delay => ({
 export default function HeroLines() {
   return (
     <section className="relative isolate flex min-h-[100svh] items-center overflow-hidden bg-bg pt-24 text-ink">
-      <div
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.plan} ${SEAMS.hero}`}
-        aria-hidden="true"
-      />
-
       <div className="container-rail relative pb-20">
         <m.p {...rise(0)} className="section-label-sm flex items-center gap-3 text-ink-mute">
           <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />

@@ -124,7 +124,6 @@ export default function BusinessEmail() {
         ]}
       />
       <PageHero
-        draft="ledger"
         eyebrow="Business Email"
         title="Mail that reads as the business."
         description="An address at your own domain instead of yourbusiness@gmail.com. Mailboxes, forwarding, aliases, and the move off whatever runs it today."
@@ -133,7 +132,6 @@ export default function BusinessEmail() {
       <ServiceSection
         id="covers"
         ground="paper"
-        draft="plan"
         eyebrow="What It Covers"
         title="What you get."
         lede="Set up, handed over working, and left in your name."
@@ -144,7 +142,6 @@ export default function BusinessEmail() {
       <ServiceSection
         id="providers"
         ground="band"
-        draft="column"
         eyebrow="Providers"
         title="Where your email lives now."
         lede="Whatever the answer is, we handle the move the same way."
@@ -155,7 +152,6 @@ export default function BusinessEmail() {
       <ServiceSection
         id="limits"
         ground="paper"
-        draft="hatch"
         eyebrow="What It Does Not"
         title="What it does not cover."
         lede="Everything the setup does not touch, listed before it comes up."
@@ -166,7 +162,6 @@ export default function BusinessEmail() {
       <ServiceSection
         id="terms"
         ground="band"
-        draft="ledger"
         eyebrow="Time and Cost"
         title="How long it takes, and what it runs."
       >
@@ -179,7 +174,6 @@ export default function BusinessEmail() {
       <ServiceSection
         id="more"
         ground="paper"
-        draft="plan"
         eyebrow="The Rest of It"
         title="Everything else on offer."
       >
@@ -191,7 +185,6 @@ export default function BusinessEmail() {
       </ServiceSection>
 
       <CtaBanner
-        draft="ledger"
         eyebrow="Let’s Talk"
         heading="Get the address"
         accentText="set up."

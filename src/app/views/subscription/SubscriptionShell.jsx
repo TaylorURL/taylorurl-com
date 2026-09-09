@@ -2,8 +2,6 @@ import { useEffect } from 'react'
 import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import Magnet from '@reactbits/Magnet/Magnet'
 import { fadeInUpMount } from '@constants/animations'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
@@ -20,15 +18,10 @@ import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
  * @param {string} props.eyebrow - the standing label above the heading
  * @param {string} props.heading
  * @param {string} [props.body] - one line of detail, omitted while working
- * @param {'plan' | 'hatch'} [props.draft] - what the panel's field draws. The
- *   shell answers for both outcomes of one transaction and they are otherwise
- *   the same page, so the drawing is what tells them apart: a confirmation is
- *   drawn on the plan, and a withdrawal on the section hatch that means the
- *   thing shown is closed.
  * @param {import('react').ReactNode} [props.children] - what the reader still
  *   has to do, set between the detail and the two ways onward
  */
-export default function SubscriptionShell({ eyebrow, heading, body, draft = 'plan', children }) {
+export default function SubscriptionShell({ eyebrow, heading, body, children }) {
   // The bar above reads the ground by sampling the page, and a view that
   // arrives in its own chunk lands after that reading was taken. This says so.
   useEffect(() => announceGroundChange(), [])
@@ -38,11 +31,6 @@ export default function SubscriptionShell({ eyebrow, heading, body, draft = 'pla
       data-ground="dark"
       className="relative flex min-h-[calc(100dvh-80px)] items-center overflow-hidden bg-bg pb-16 pt-32 text-ink sm:pb-20 sm:pt-44"
     >
-      <div
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS[draft]}`}
-        aria-hidden="true"
-      />
-
       <div className="container-rail-prose relative">
         <p className="section-label mb-6 text-accent">{eyebrow}</p>
 

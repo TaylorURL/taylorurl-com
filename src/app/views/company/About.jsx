@@ -1,7 +1,5 @@
 import { m } from 'framer-motion'
 import { Users, Monitor } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import CtaSection from '@components/conversion/CtaSection'
@@ -97,17 +95,12 @@ export default function About() {
         ]}
       />
       <PageHero
-        draft="plan"
         eyebrow={ABOUT.hero.eyebrow}
         title={ABOUT.hero.title}
         description={ABOUT.hero.description}
       />
 
       <section ref={storyRef} className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
             <m.div {...fadeInUp} className="flex flex-col gap-6">
@@ -173,7 +166,6 @@ export default function About() {
         data-ground="band"
         className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
       >
-        <div className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.iso}`} aria-hidden="true" />
         <div className="container-rail relative">
           <m.div
             {...fadeInUp}
@@ -226,10 +218,6 @@ export default function About() {
       </section>
 
       <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.column}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <m.div
             {...fadeInUp}
@@ -296,7 +284,6 @@ export default function About() {
           addressable rather than on a link to a route that is not built. */}
       {IS_SECOND_SITE ? (
         <CtaBanner
-          draft="quiet"
           eyebrow={ABOUT.closing.eyebrow}
           heading={ABOUT.closing.heading}
           accentText={ABOUT.closing.accentText}
@@ -306,7 +293,6 @@ export default function About() {
         />
       ) : (
         <CtaSection
-          draft="quiet"
           eyebrow={ABOUT.closing.eyebrow}
           title={
             <>

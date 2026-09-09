@@ -116,7 +116,7 @@ export default function Unsubscribe() {
         path="/unsubscribe"
         noIndex
       />
-      <SubscriptionShell draft="hatch" eyebrow={copy.eyebrow} heading={copy.heading} body={body}>
+      <SubscriptionShell eyebrow={copy.eyebrow} heading={copy.heading} body={body}>
         {state === 'missing' && <UnsubscribeForm onDone={() => setState('done')} />}
       </SubscriptionShell>
     </>

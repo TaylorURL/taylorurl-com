@@ -90,7 +90,7 @@ git config core.hooksPath .githooks
 | Script                           | Does                                                                                                                                                    |
 | :------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `npm run dev`                    | Start the Vite dev server.                                                                                                                              |
-| `npm run build`                  | Production build and static prerender of every route, then `postbuild` runs the drafting check and the internal-link check over what was written.       |
+| `npm run build`                  | Production build and static prerender of every route, then `postbuild` runs the internal-link check over what was written.                              |
 | `npm test`                       | Run the check suite: the scripts under `scripts/`, in the order `package.json` lists them.                                                              |
 | `npm run check:<name>`           | One check on its own. Most of the suite has a script of its own named after the file: `check:notify`, `check:site-key`, `check:traffic-ignore`…         |
 | `npm run capture:portfolio`      | Regenerate the portfolio preview images in `public/portfolio/`.                                                                                         |
@@ -284,7 +284,7 @@ taylorurl-com/
 │   ├── reviews/               The rating networks, and the marks they are drawn with
 │   ├── portfolio/             The two halves of the portfolio, and the shots behind them
 │   ├── free-tools/            The QR encoder, the logo cutout, the site audit and the presence check's pacing
-│   ├── design/                The drafting ground the pages are set on, and the two faces that set them
+│   ├── design/                The two faces the pages are set in
 │   ├── home/                  The shots the home page stands on
 │   └── repo/                  What the tree as a whole is held to — no customer data, no AI attribution, one time zone
 ├── vite/                      Build plugins (prerender, sitemap, feed, llms.txt, review schema, head order, inline script, site head, site static) + shared route table
@@ -317,7 +317,7 @@ taylorurl-com/
 │   │   │   ├── status/        The uptime board, the console's public section
 │   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
 │   │   ├── hooks/             console/ (eleven feeds, the state they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
-│   │   ├── constants/         navigation, seo, business-schema, drafting, animations, grounds, mesh, routes
+│   │   ├── constants/         navigation, seo, business-schema, animations, grounds, mesh, routes
 │   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, newsletter/, console/, supabase/, liveChat.js
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, how a site reading is worded, and the pacing of a wait nothing reports on
 │   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, and how a prospect's audit score reads

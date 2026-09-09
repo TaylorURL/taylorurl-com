@@ -15,7 +15,6 @@ import { groupForIndustry, INDUSTRY_SLUGS } from '@data/towns-and-trades/industr
 import { industryCopyFor } from '@data/towns-and-trades/industryDetail'
 import { AREAS } from '@data/towns-and-trades/areas'
 import { LOCAL_PORTFOLIO, portfolioProofFor } from '@data/portfolio'
-import { draftAt, RINGS } from '@constants/drafting'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 // How many client sites the work block holds before it stops reading as proof
@@ -121,7 +120,6 @@ export default function Industry() {
       />
 
       <PageHero
-        draft="column"
         eyebrow={`Industry · ${trade.name}`}
         title={copy.heroTitle}
         description={copy.heroDescription}
@@ -130,7 +128,6 @@ export default function Industry() {
       <RuledSection
         id="industry-needs"
         ground={groundAt(0)}
-        draft={draftAt(0, RINGS.build)}
         eyebrow="What the Site Does"
         title={copy.needsTitle}
         description={copy.needsDescription}
@@ -156,7 +153,6 @@ export default function Industry() {
       <RuledSection
         id="industry-build"
         ground={groundAt(1)}
-        draft={draftAt(1, RINGS.build)}
         eyebrow="What Gets Built"
         title={copy.buildTitle}
         description={copy.buildDescription}
@@ -168,7 +164,6 @@ export default function Industry() {
       <RuledSection
         id="industry-tools"
         ground={groundAt(2)}
-        draft={draftAt(2, RINGS.build)}
         eyebrow="Works Alongside"
         title={copy.toolsTitle}
         description={copy.toolsDescription}
@@ -180,7 +175,6 @@ export default function Industry() {
       <RuledSection
         id="industry-work"
         ground={groundAt(3)}
-        draft={draftAt(3, RINGS.build)}
         eyebrow="Live Work"
         title={copy.workTitle}
         description={copy.workDescription}
@@ -193,7 +187,6 @@ export default function Industry() {
         <RuledSection
           id="industry-related"
           ground={groundAt(4)}
-          draft={draftAt(4, RINGS.build)}
           eyebrow="Nearby Trades"
           title={`More under ${group.name.toLowerCase()}.`}
           description="Trades whose sites are judged on much the same things, each with a page of its own."
@@ -206,7 +199,6 @@ export default function Industry() {
       <RuledSection
         id="industry-towns"
         ground={townGround}
-        draft="node"
         eyebrow="Where"
         title={`${trade.name} sites, town by town.`}
         description={copy.townsDescription}
@@ -224,7 +216,6 @@ export default function Industry() {
       </RuledSection>
 
       <CtaSection
-        draft="plan"
         ground={townGround === 'paper' ? 'dark' : 'paper'}
         eyebrow="Start"
         title={

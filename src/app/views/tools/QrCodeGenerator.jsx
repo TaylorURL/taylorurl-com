@@ -417,7 +417,7 @@ export default function QrCodeGenerator({ tool }) {
     },
   ]
 
-  return <StepFlow steps={steps} atTop draft="node" label="QR code steps" />
+  return <StepFlow steps={steps} atTop label="QR code steps" />
 }
 
 /**

@@ -6,7 +6,6 @@ import { DeferredWaiting } from '../app-shell/Waiting'
 import Footer from './Footer'
 import ScrollProgress from './ScrollProgress'
 import BackToTop from './BackToTop'
-import { moduleFor } from '@constants/drafting'
 import { matchViewKeys } from '@constants/routes'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
 import { recordCall, recordPageView } from '@data/leads/conversion'
@@ -261,11 +260,7 @@ export default function Layout() {
       {!bare && <ScrollProgress />}
       {!bare && <Navigation />}
       <main id="main-content" ref={mainRef} tabIndex={-1}>
-        <PageTransition
-          routeKey={routeKey}
-          className="page-arrive"
-          style={moduleFor(location.pathname)}
-        >
+        <PageTransition routeKey={routeKey} className="page-arrive">
           {/* Each page waits inside its own transition rather than under one
               boundary above the chrome. A page whose code is still coming down
               then costs the page, not the bar and the footer with it, and the

@@ -35,16 +35,6 @@
  * the hairlines resolve to the field's own values and the section reads as
  * part of the page.
  *
- * `grid` is half the drawing and only half. It says which of the two grounds
- * the field is inked and faded against, and nothing about what is drawn on it:
- * a ground is a colour decision and a motif is a drawing one, and folding the
- * second into the first is what left five sections down a case study looking
- * like one section repeated. It has to name the colour its own `section` class
- * paints, and it does, because the two are written here together - a slab
- * restates the background it paints and deliberately leaves the page's paper
- * roles alone, so no single token stands for the ground on all four of these.
- * `@constants/drafting` holds the motifs.
- *
  * `shell`, `mesh` and `cell` build the ruled meshes the sections are laid out
  * on. Each cell draws its own top and left rule and the mesh is pulled a pixel
  * up and left inside a clipping shell, so the outer rules land on the shell's
@@ -61,7 +51,6 @@ const DARK_CLASSES = {
   section: 'border-hair bg-bg text-ink',
   rule: 'border-hair',
   ruleStrong: 'border-hair-strong',
-  grid: 'draft draft-on-slab opacity-35',
   shell: 'edge overflow-hidden bg-bg',
   mesh: '-ml-px -mt-px grid',
   cell: 'border-hair border-l border-t',
@@ -76,7 +65,6 @@ const PAPER_CLASSES = {
   section: 'border-hair-paper bg-paper',
   rule: 'border-hair-paper',
   ruleStrong: 'border-hair-paper-strong',
-  grid: 'draft draft-on-paper opacity-25',
   shell: 'edge overflow-hidden bg-paper',
   mesh: '-ml-px -mt-px grid',
   cell: 'border-hair-paper border-l border-t',

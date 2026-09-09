@@ -2,14 +2,11 @@ import { useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { m, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { ArrowLeft, ArrowUpRight, Calendar, Mail } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import Seo from '@components/Seo'
 import CtaSection from '@components/conversion/CtaSection'
 import { fadeInUpMount } from '@constants/animations'
 import { breadcrumbSchema, SITE_URL } from '@constants/seo'
 import { useNewsletterIssue } from '@hooks/reading/useNewsletterIssues'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import { AccentGradient } from '@reactbits/kit'
 import IssueBody from './IssueBody'
 import { issueDateIso, issueDateLong } from './lib/format'
@@ -76,9 +73,6 @@ function IssueHero({ children }) {
   })
   const rawOpacity = useTransform(scrollYProgress, [0, 0.85], [1, reduced ? 1 : 0.2])
   const opacity = useSpring(rawOpacity, { stiffness: 140, damping: 32, mass: 0.4 })
-  const { ref: gridRef, transform: gridTransform } = useScrollParallax({
-    range: [0, reduced ? 0 : -40],
-  })
 
   return (
     <section
@@ -86,12 +80,6 @@ function IssueHero({ children }) {
       data-ground="dark"
       className="relative overflow-hidden bg-bg pb-20 pt-32 text-ink sm:pb-28 sm:pt-44"
     >
-      <m.div
-        ref={gridRef}
-        style={{ transform: gridTransform }}
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.plan} ${SEAMS.hero}`}
-        aria-hidden="true"
-      />
       <m.div style={{ opacity }} className="container-rail-tight relative will-change-transform">
         <Link
           to="/notes"
@@ -120,10 +108,6 @@ function HeroSkeleton() {
 function IssuePanel({ label, headline, body }) {
   return (
     <section className="section-y relative overflow-hidden bg-paper">
-      <div
-        className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.hatch}`}
-        aria-hidden="true"
-      />
       <div className="container-rail-prose relative">
         <div className="panel-static p-10 sm:p-14">
           <p className="text-paper-faint section-label">{label}</p>
@@ -224,10 +208,6 @@ export default function NotesIssue() {
       </IssueHero>
 
       <article className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-prose relative">
           {issue ? (
             <IssueBody body={issue.body} />
@@ -242,7 +222,6 @@ export default function NotesIssue() {
       </article>
 
       <CtaSection
-        draft="quiet"
         title={
           <>
             Need help with <AccentGradient>your website</AccentGradient>?

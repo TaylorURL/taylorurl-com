@@ -2,7 +2,6 @@ import { m } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
-import { DRAFTS, SEAMS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { useTheme } from '@hooks/theme/useTheme'
 import Magnet from '@reactbits/Magnet/Magnet'
@@ -36,16 +35,8 @@ const MAGNET_PADDING = 80
  *   out, the band closes on one.
  * @param {string} [props.secondaryTo] - Where the second button goes.
  * @param {string} [props.eyebrow] - Standing label above the heading.
- * @param {'plan' | 'ledger' | 'column' | 'node' | 'hatch' | 'iso' | 'quiet'}
- *   [props.draft] - What the closing band's field draws.
- * @param {'band' | 'foot' | 'hero' | 'card'} [props.seam] - How the field meets
- *   the band's own edges. It holds its foot alone by default: the top edge
- *   carries the accent rule and the aurora behind it, and the aurora is drawn
- *   under the field, so a head fade would pour the ground over its brightest
- *   part.
  * @param {'paper' | 'dark' | 'band'} [props.ground] - Which ground the band
- *   sits on. A dark slab carries the aurora over the grid; paper carries the
- *   grid alone.
+ *   sits on. A dark slab carries the aurora.
  */
 export default function CtaBanner({
   heading,
@@ -57,8 +48,6 @@ export default function CtaBanner({
   secondaryTo,
   eyebrow = 'Next',
   ground = 'dark',
-  draft = 'quiet',
-  seam = 'foot',
 }) {
   const tone = GROUNDS[ground]
   // The aurora is drawn for a slab and nothing else. It is additive light, so
@@ -75,10 +64,6 @@ export default function CtaBanner({
           <LazyAurora amplitude={1} blend={0.6} speed={0.6} />
         </div>
       )}
-      <div
-        className={`absolute inset-0 ${tone.grid} ${DRAFTS[draft]} ${SEAMS[seam]}`.trimEnd()}
-        aria-hidden="true"
-      />
       <div
         className={`absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent ${slab ? 'via-accent/40' : 'via-accent/30'} to-transparent`}
         aria-hidden="true"

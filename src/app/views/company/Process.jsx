@@ -10,8 +10,6 @@ import {
   Globe,
   Paintbrush,
 } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
@@ -206,17 +204,12 @@ export default function Process() {
         ])}
       />
       <PageHero
-        draft="iso"
         eyebrow="Process"
         title="Most of the work is mine."
         description="Six steps, two to four weeks, one small team from the first call to launch, for shops around Baytown and Houston. Your part is a few answers and a yes when it looks right."
       />
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <m.div
             {...fadeInUp}
@@ -246,10 +239,6 @@ export default function Process() {
         data-ground="band"
         className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
       >
-        <div
-          className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.column}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative flex flex-col gap-12">
           <m.div
             {...fadeInUp}
@@ -302,7 +291,6 @@ export default function Process() {
       </section>
 
       <CtaBanner
-        draft="iso"
         heading="Two to four weeks"
         accentText="from here."
         description="Tell us what the business does and which customers you want. A plan and a price come back before any work starts."

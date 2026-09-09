@@ -1,6 +1,4 @@
 import { m } from 'framer-motion'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { EASE, fadeInUpMount } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
@@ -33,11 +31,6 @@ const HANDLES = ['-left-1 -top-1', '-right-1 -top-1', '-bottom-1 -left-1', '-bot
 export default function HeroArtboard() {
   return (
     <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden bg-bg pt-24">
-      <div
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.plan} ${SEAMS.hero}`}
-        aria-hidden="true"
-      />
-
       <div className="container-rail relative pb-16">
         <div className="relative">
           {/* The artboard's name tab, which is also the brand strip: the sheet
