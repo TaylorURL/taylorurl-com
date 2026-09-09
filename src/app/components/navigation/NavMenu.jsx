@@ -271,18 +271,34 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                       {...featureLink}
                       onClick={onCloseAll}
                       data-tone={held.feature.tone}
-                      className="nav-panel-feature group/feature flex h-full flex-col rounded-[var(--r-card)] p-5"
+                      className="nav-panel-feature group/feature relative flex flex-col overflow-hidden rounded-[var(--r-card)] p-6"
                     >
-                      {held.feature.mark && (
-                        <held.feature.mark className="nav-panel-mark h-10 w-10" />
-                      )}
-                      {/* Everything the card says sits at its foot, so a rail
-                          the height of the columns beside it reads as one
-                          composition rather than as a card with a hole under
-                          it. The mark holds the top, the sentence and the way
-                          in hold the bottom, and the space between them is the
-                          card rather than what is left over. */}
-                      <span className="mt-auto flex flex-col gap-3 pt-8">
+                      {/* The card is the height of what it says. It held the
+                          height of the columns beside it for one round, and
+                          the three things it carries cannot fill that: the
+                          words sat at the foot under a third of a metre of
+                          tint with nothing in it. Sized to its content it
+                          reads as one block and the rail below it is the
+                          panel's own ground, which needs no filling. */}
+                      <span className="relative flex flex-col gap-3">
+                        {/* The group's sign, above the sentence it belongs to
+                            rather than bled off a corner. Drawn at the card's
+                            scale it was a shape cropped by two edges, which
+                            reads as something that overflowed rather than
+                            something placed.
+
+                            A card that already opens with something of its own
+                            gets none: the captures below, or the row of the
+                            other listings, which is a line of marks doing this
+                            one's job four times over. */}
+                        {held.feature.mark &&
+                          !held.feature.shots &&
+                          !held.feature.marks?.length && (
+                            <held.feature.mark
+                              className="nav-panel-feature-mark"
+                              aria-hidden="true"
+                            />
+                          )}
                         {held.feature.shots && (
                           <span className="grid grid-cols-3 gap-1.5">
                             {held.feature.shots.map(shot => (
@@ -307,7 +323,7 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                             thing the name does not: that the proof is held in
                             several places, none of which is this site. */}
                         {held.feature.marks?.length > 0 && (
-                          <span className="nav-panel-sources flex items-center gap-3">
+                          <span className="nav-panel-sources flex items-center gap-3 pb-1">
                             {held.feature.marks.map(source => (
                               <source.mark key={source.key} className="h-4 w-4" />
                             ))}

@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { lazy, Suspense, useCallback, useEffect, useId, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useId, useRef, useState } from 'react'
 import { ArrowUpRight, Menu, Phone, X } from 'lucide-react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { PAGE_CHANGE_MS } from '@constants/animations'
@@ -23,6 +23,8 @@ import { announceGroundChange, useOnDarkBackground } from '@hooks/theme/useOnDar
 import { useScrolledPast } from '@hooks/scroll/useScrolledPast'
 import { useTheme } from '@hooks/theme/useTheme'
 import { SITE } from '../../../../lib/site/current.js'
+import QuietBoundary from '../app-shell/QuietBoundary'
+import { lazyWithRetry } from '@utils/lazyWithRetry'
 
 // Below this depth the bar is transparent; past it the shell takes its
 // surface, before the first line of content reaches the bar's underside.
@@ -38,7 +40,7 @@ const CLOSE_DELAY_MS = 180
 // somebody reaches for them rather than in the bundle every visitor is served.
 // NavUtility warms the same chunk when a pointer crosses the trigger, so by the
 // time the press lands it is usually already down.
-const SiteSearch = lazy(() => import('./SiteSearch'))
+const SiteSearch = lazyWithRetry(() => import('./SiteSearch'))
 
 function Wordmark({ invert = false }) {
   return (
@@ -325,6 +327,7 @@ export default function Navigation() {
           aria-label="Primary"
           data-ground={onDarkGround ? 'dark' : undefined}
           data-surfaced={surfaced}
+          data-expanded={openGroup !== null ? 'true' : undefined}
           className="nav-shell pointer-events-auto"
           onPointerEnter={event => event.pointerType !== 'touch' && clearHover()}
           onPointerLeave={event => event.pointerType !== 'touch' && openGroup && hoverClose()}
@@ -446,10 +449,19 @@ export default function Navigation() {
           while the chunk is on its way: the press that opens it is a keystroke,
           and a spinner that flashes for the length of one is more disturbance
           than the wait it reports. */}
+      {/* The panel is a piece of the bar rather than the page under it, so a
+          chunk it cannot fetch fails here instead of at the boundary above the
+          routes -- which answers for a page by reloading the document, and had
+          been reloading whatever the reader was in the middle of over a search
+          they had not opened yet. Closing on the way out puts the bar back the
+          way it was, so the press reads as a press that did nothing rather than
+          as a panel that opened empty. */}
       {searchOpen && (
-        <Suspense fallback={null}>
-          <SiteSearch onClose={() => setSearchOpen(false)} />
-        </Suspense>
+        <QuietBoundary onFail={() => setSearchOpen(false)}>
+          <Suspense fallback={null}>
+            <SiteSearch onClose={() => setSearchOpen(false)} />
+          </Suspense>
+        </QuietBoundary>
       )}
 
       <AnimatePresence>
