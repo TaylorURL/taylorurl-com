@@ -175,6 +175,16 @@ export default function prerenderPlugin() {
     async closeBundle() {
       if (SKIP_FLAG) return
 
+      // Rollup runs this hook whether or not the build wrote anything, and a
+      // build that died in transform or render never reached `writeBundle`.
+      // Reading `dist/index.html` then reads the *last* successful build's page,
+      // which `paintFirst` already rewrote - so its module entry is gone, the
+      // throw below fires, and that complaint about a head belonging to another
+      // build is what Vite reports in place of the error that actually stopped
+      // this one. The written bundle is the evidence there is something here to
+      // prerender; without it, the failure underneath is the one worth seeing.
+      if (!bundle) return
+
       const template = await readFile(join(outDir, 'index.html'), 'utf8')
       const { headInner, bodyTail } = parseTemplate(template)
       const routes = PRERENDER_ROUTES
