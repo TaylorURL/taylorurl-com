@@ -126,6 +126,26 @@ function snapshot() {
 }
 
 /**
+ * The same default, given to the render that adopts the prerendered markup.
+ *
+ * React hydrates by taking that markup as it stands rather than by comparing it
+ * to what the component would draw, so a first client render already holding the
+ * reader's setting leaves what the prerender wrote in place and nothing
+ * afterwards goes back for it. The setting is right, the document is right, and
+ * the markup between them is a visit old: the picker read Light under a dark
+ * palette and stayed there, because a store that already agrees with itself
+ * never publishes and so never re-renders anyone.
+ *
+ * A capture is safe from this - the ground picks between the pair in CSS - but
+ * every reader that decides in JavaScript needs the render after hydration, and
+ * answering the hydrating one with the prerender's own value is what produces
+ * it. This is the only reader of `SERVER_STATE` that runs in a browser.
+ */
+function prerendered() {
+  return SERVER_STATE
+}
+
+/**
  * Stamp a choice on the document and hand it to everyone reading.
  *
  * The stamp is unconditional and the publish is not. The page head sets the
@@ -197,7 +217,7 @@ let stamped = false
  *   setChoice: (next: 'light'|'dark'|'system') => void}}
  */
 export function useTheme() {
-  const { choice, resolved } = useSyncExternalStore(subscribe, snapshot, snapshot)
+  const { choice, resolved } = useSyncExternalStore(subscribe, snapshot, prerendered)
 
   useEffect(() => {
     if (stamped) return
