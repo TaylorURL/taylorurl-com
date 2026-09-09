@@ -8,7 +8,7 @@ import {
   portfolioPreviewSrc,
 } from '@data/portfolio'
 import { PROCESS_TIMELINE } from '@data/pages/home'
-import { useTheme } from '@hooks/theme/useTheme'
+import PaletteShot from '@components/mockups/PaletteShot'
 import { Card, Foot, Plane } from './CapabilityCard'
 
 /**
@@ -119,20 +119,16 @@ function Score({ project }) {
  * picture nobody can tell apart from the wide one.
  */
 function StatusBoardShot() {
-  const { resolved } = useTheme()
-  const shot = resolved === 'dark' ? '/home/status-board-dark' : '/home/status-board'
   return (
     <Plane className="px-8 pt-10 sm:px-10 sm:pt-12">
-      <img
-        src={`${shot}.webp`}
-        srcSet={`${shot}-768.webp 768w, ${shot}.webp 1200w`}
-        sizes="(min-width: 640px) 384px, 92vw"
+      <PaletteShot
+        base="/home/status-board"
+        narrow={768}
         alt="The status board, showing every site under care and its uptime"
-        width="1200"
-        height="750"
-        loading="lazy"
-        decoding="async"
-        className="plane-shot block w-[128%] max-w-none"
+        width={1200}
+        height={750}
+        sizes="(min-width: 640px) 384px, 92vw"
+        className="plane-shot w-[128%] max-w-none"
       />
     </Plane>
   )

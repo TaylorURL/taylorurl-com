@@ -4,8 +4,8 @@ import { HOW_IT_WORKS_STEPS } from '@data/pages/home'
 import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import { PORTFOLIO_PROJECTS, portfolioPreviewSrc } from '@data/portfolio'
 import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
-import { useTheme } from '@hooks/theme/useTheme'
 import { AccentGradient } from '@reactbits/kit'
+import PaletteShot from '@components/mockups/PaletteShot'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
 /**
@@ -49,19 +49,15 @@ const LAUNCHED = 'hollingsheadharbor.com'
  * is what regenerates them.
  */
 function PageShot({ shot, alt }) {
-  const { resolved } = useTheme()
-  const src = resolved === 'dark' ? `/home/${shot}-dark` : `/home/${shot}`
   return (
-    <img
-      src={`${src}.webp`}
-      srcSet={`${src}-760.webp 760w, ${src}.webp 1520w`}
-      sizes="(min-width: 1024px) 460px, 92vw"
+    <PaletteShot
+      base={`/home/${shot}`}
+      narrow={760}
       alt={alt}
-      width="1520"
-      height="950"
-      loading="lazy"
-      decoding="async"
-      className="plane-shot block w-[118%] max-w-none"
+      width={1520}
+      height={950}
+      sizes="(min-width: 1024px) 460px, 92vw"
+      className="plane-shot w-[118%] max-w-none"
     />
   )
 }
