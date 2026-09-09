@@ -42,12 +42,11 @@ export function NavSearchButton({ className, labelClass, markClass, shortcut = f
 /**
  * The account, as one segment rather than two links.
  *
- * Log In and Sign Up are plumbing: a reader needs them once and then never
- * again, and two words each carrying their own tap target sit at the end of a
- * bar that already ends in the action the page is for. Behind one mark they
- * cost the width of a mark, and the pair a signed-in reader wants instead -
- * their console and the way out - lands in the same place under the same
- * press.
+ * Logging in is plumbing: a reader needs it once and then never again, and a
+ * word carrying its own tap target sits at the end of a bar that already ends
+ * in the action the page is for. Behind one mark it costs the width of a mark,
+ * and the pair a signed-in reader wants instead - their console and the way out
+ * - lands in the same place under the same press.
  *
  * The mark is drawn whether or not the stored session has been read, so the
  * bar does not change width underneath a pointer on the way to it; only the
@@ -130,14 +129,9 @@ function NavAccount({ signedIn, firstName, checking, open, onToggle, onClose, on
                 </button>
               </>
             ) : (
-              <>
-                <Link className="nav-account-row" to="/login" onClick={onClose}>
-                  Log In
-                </Link>
-                <Link className="nav-account-row" to="/signup" onClick={onClose}>
-                  Sign Up
-                </Link>
-              </>
+              <Link className="nav-account-row" to="/login" onClick={onClose}>
+                Log In
+              </Link>
             )}
           </m.div>
         )}
@@ -188,10 +182,10 @@ export function NavUtility({
         <span className="hidden xl:inline">{COMPANY_PHONE}</span>
       </a>
       {/* Not drawn at all where there is nothing to sign in to, rather than
-          drawn and hidden: a mark that opens a menu offering Log In and Sign Up
-          is the bar making a claim, and the claim is contradicted by this
-          site's own privacy page. The segment goes with it, so the cluster ends
-          at the number instead of at a mark that does nothing. */}
+          drawn and hidden: a mark that opens a menu offering Log In is the bar
+          making a claim, and the claim is contradicted by this site's own
+          privacy page. The segment goes with it, so the cluster ends at the
+          number instead of at a mark that does nothing. */}
       {HAS_ACCOUNTS && (
         <NavAccount
           signedIn={signedIn}

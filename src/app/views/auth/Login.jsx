@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import ConsoleShell from '@components/account/ConsoleShell'
 import Seo from '@components/Seo'
 import Waiting from '@components/app-shell/Waiting'
@@ -28,7 +28,6 @@ export default function Login() {
   const [recovery, setRecovery] = useState(false)
   const toast = useToast()
   const location = useLocation()
-  const [query] = useSearchParams()
   // Whether a form has been on screen yet, which is what decides between
   // holding the one already there and drawing a placeholder in place of one
   // that never was.
@@ -51,16 +50,6 @@ export default function Login() {
   // Where the visitor was headed before being asked to sign in, so arriving at
   // a page and being sent back to it is one step rather than a fresh search.
   const next = location.state?.from || '/console'
-
-  // A buyer who reached this screen from the one after a payment came looking
-  // for an account they may not have. The way back has to carry the checkout,
-  // or the round trip costs them the address the build is waiting under - which
-  // is the whole failure that screen fills the field in to prevent.
-  const session_id = query.get('session_id')
-  const signupHref =
-    query.get('bought') === '1' && session_id
-      ? `/signup?bought=1&session_id=${encodeURIComponent(session_id)}`
-      : '/signup'
 
   // A session in hand that owes nothing is a sign-in that is over.
   const leaving = !checking && session && !mfaPending
@@ -185,7 +174,6 @@ export default function Login() {
         submitLabel="Log In"
         busyLabel="Signing In"
         onSubmit={() => signIn(email.trim(), password)}
-        alternative={{ to: signupHref, lead: 'No account yet?', label: 'Sign up' }}
       >
         <Field
           id="login-email"

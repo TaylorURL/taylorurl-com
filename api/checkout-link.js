@@ -11,9 +11,10 @@
  * and pointed at the same two places, because a build bought through a link in
  * an email has to become a project by exactly the route a build bought off the
  * pricing page does. The webhook is the only door a project comes through, the
- * signup screen reads the session back to name the address that paid, and
- * neither of them is told which of the two endpoints made the session. The
- * only difference either can see is metadata nothing branches on.
+ * screen after a payment reads the session back to name the address that paid
+ * and spends the key that signs the buyer in, and neither of them is told which
+ * of the two endpoints made the session. The only difference either can see is
+ * metadata nothing branches on.
  *
  * The prices come from `pricing.js` for the same reason they do there, and
  * with an extra edge: this endpoint can be told a different figure, so the
@@ -50,6 +51,7 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
+import { claimReturnUrl, mintClaim } from '../lib/stripe/claim.js'
 
 const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
@@ -153,6 +155,11 @@ export function quotedCents(value, { floor, ceiling, what }) {
  * without this the deposit recorded against the project would be whatever the
  * code guessed rather than what the card was charged.
  *
+ * The key that signs the buyer in is minted here rather than passed in, so a
+ * caller cannot open a checkout that a buyer comes back from with no way into
+ * the account it made. Each call mints its own, which is why the suite compares
+ * the two bodies with it normalised out rather than expecting one string.
+ *
  * @param {object} quote
  * @returns {URLSearchParams}
  */
@@ -167,6 +174,7 @@ export function linkFields({
   expiresAt,
 }) {
   const quoted = buildCents !== BUILD_PRICE_CENTS || monthlyCents !== MONTHLY_PRICE_CENTS
+  const claim = mintClaim()
   return form({
     mode: 'subscription',
     customer_email: email,
@@ -199,8 +207,9 @@ export function linkFields({
     'metadata[monthly_cents]': monthlyCents,
     'metadata[quoted_by]': quoted ? quotedBy : '',
     'metadata[quoted_at]': quoted ? quotedAt : '',
+    'metadata[claim]': claim.hash,
     expires_at: expiresAt,
-    success_url: `${SITE_URL}/signup?bought=1&session_id={CHECKOUT_SESSION_ID}`,
+    success_url: claimReturnUrl(SITE_URL, claim.token),
     cancel_url: `${SITE_URL}/pricing`,
   })
 }

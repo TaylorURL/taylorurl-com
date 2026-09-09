@@ -98,32 +98,6 @@ export function useSessionState() {
     return !cause
   }, [])
 
-  /**
-   * Create an account, and say which of the two things just happened.
-   *
-   * With confirmation switched off Supabase hands back a session and the
-   * screen is left; with it on there is no session and nothing visible occurs,
-   * because the next step is in an inbox. The caller cannot tell those apart
-   * from a bare true, and a signup that silently does nothing is the worst of
-   * the three outcomes to leave a person looking at.
-   *
-   * @returns {Promise<{ok: boolean, confirming: boolean}>}
-   */
-  const signUp = useCallback(async (email, password, fullName) => {
-    setBusy(true)
-    setError(null)
-    const { data, error: cause } = await supabase.auth.signUp({
-      email,
-      password,
-      // Read by the trigger that creates the profile row, so the name is on the
-      // account from its first moment rather than collected again afterwards.
-      options: { data: { full_name: fullName } },
-    })
-    if (cause) setError(faultMessage(cause, 'That account could not be created. Try again.'))
-    setBusy(false)
-    return { ok: !cause, confirming: !cause && !data?.session }
-  }, [])
-
   const signOut = useCallback(async () => {
     forgetRecovery()
     await supabase.auth.signOut()
@@ -204,7 +178,6 @@ export function useSessionState() {
     mfaPending: gate.mfaPending,
     mfaFactorId: gate.mfaFactorId,
     signIn,
-    signUp,
     signOut,
     signOutEverywhere,
     verifyMfa,
@@ -220,7 +193,6 @@ export function useSessionState() {
  *   checking: boolean, busy: boolean, error: string|null,
  *   mfaPending: boolean, mfaFactorId: string|null,
  *   signIn: (email: string, password: string) => Promise<boolean>,
- *   signUp: (email: string, password: string, fullName: string) => Promise<boolean>,
  *   signOut: () => Promise<void>,
  *   signOutEverywhere: () => Promise<string|null>,
  *   verifyMfa: (code: string) => Promise<boolean>,

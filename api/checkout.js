@@ -1,10 +1,16 @@
 /**
  * Opens a Stripe checkout for a website build and the care that runs it.
  *
- * Payment comes before the work and before the account. A buyer arrives here
- * with an address and nothing else, is sent to Stripe's own page to pay, and
- * picks a password afterwards; the project they paid for is waiting under that
- * address when they do. Nothing on this site ever holds a card number.
+ * Payment comes before the work, and the account comes with the payment. A
+ * buyer arrives here with an address and nothing else, is sent to Stripe's own
+ * page to pay, and comes back signed into an account made against the address
+ * the card was used with, with the project they paid for already on it. Nothing
+ * on this site ever holds a card number.
+ *
+ * What makes that safe rides out in the success address. `lib/stripe/claim.js`
+ * mints a one-use key as the session is opened; the token goes to the browser
+ * and only its hash is left on the session, so the session id - which is not a
+ * secret and never was - opens nothing on its own.
  *
  * One session carries both figures the pages print. The build is a one-time
  * line, which Stripe puts on the first invoice and on no other; the care is a
@@ -58,6 +64,7 @@ import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout
 import { callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { markLead } from '../lib/leads/record.js'
+import { claimReturnUrl, mintClaim } from '../lib/stripe/claim.js'
 
 const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
@@ -210,6 +217,11 @@ export default async function handler(request, response) {
   const brief = await storeBrief(briefRows(payload.brief), email)
   const campaign = payload.campaign && typeof payload.campaign === 'object' ? payload.campaign : {}
 
+  // The key that signs this buyer in when they come back. Minted per checkout
+  // and split across the redirect and the session: the browser is handed the
+  // token, Stripe is handed the hash, and neither half opens anything alone.
+  const claim = mintClaim()
+
   // The address answered on the configurator's first step is the address the
   // card is used with, so this is where a lead stops being one. Stamped before
   // Stripe is reached rather than after, because a buyer who opens the page and
@@ -274,10 +286,14 @@ export default async function handler(request, response) {
     // the payment lands. `form` drops an empty value, so a checkout opened
     // without a brief carries no key rather than an empty one.
     'metadata[brief_id]': brief || '',
-    // Stripe fills the template in on the way back. The session is what lets
-    // the signup screen name the address the payment was made with, which is
-    // the address the build is waiting under.
-    success_url: `${SITE_URL}/signup?bought=1&session_id={CHECKOUT_SESSION_ID}`,
+    // The hash of the key, and only the hash. What proves a browser was handed
+    // this redirect is the token it presents hashing to this; the value here
+    // opens nothing and is readable by nothing without the secret key anyway.
+    'metadata[claim]': claim.hash,
+    // Stripe fills the session template in on the way back. The address carries
+    // both halves of the arrival: the session, which names who paid and which
+    // build is waiting, and the key, which signs them into it.
+    success_url: claimReturnUrl(SITE_URL, claim.token),
     cancel_url: `${SITE_URL}/pricing`,
   })
 

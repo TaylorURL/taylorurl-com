@@ -428,11 +428,11 @@ const STUDIO_PRERENDER_ROUTES = [
   '/console/calls',
   '/console/payments',
   '/console/admin',
-  // Sign-in, sign-up, and the two halves of a password reset, prerendered for
-  // the same reason and kept out of the sitemap for the same one: reachable,
-  // noindex, and not pages to rank.
+  // Sign-in, the screen a paid checkout returns to, and the two halves of a
+  // password reset, prerendered for the same reason and kept out of the sitemap
+  // for the same one: reachable, noindex, and not pages to rank.
   '/login',
-  '/signup',
+  '/welcome',
   // The short checkout, handed to a buyer rather than found. Built for the
   // reason the screens above are built - nothing rewrites an unknown path to
   // the shell, so a URL typed off a phone has to answer on a direct load - and
