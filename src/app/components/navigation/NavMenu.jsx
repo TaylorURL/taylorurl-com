@@ -271,24 +271,34 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
                       {...featureLink}
                       onClick={onCloseAll}
                       data-tone={held.feature.tone}
-                      className="nav-panel-feature group/feature relative flex h-full flex-col overflow-hidden rounded-[var(--r-card)] p-6"
+                      className="nav-panel-feature group/feature relative flex flex-col overflow-hidden rounded-[var(--r-card)] p-6"
                     >
-                      {/* The group's own mark, drawn at the size of the card
-                          and bled off its corner rather than set at the top
-                          like a bullet. A rail the height of the columns has
-                          room the words do not need, and a 40px drawing alone
-                          in it read as something left behind; the same drawing
-                          at the card's own scale is what the card is made of.
-                          It is the sign the group already carries, so nothing
-                          here is invented to fill a space. */}
-                      {held.feature.mark && !held.feature.shots && (
-                        <held.feature.mark className="nav-panel-watermark" aria-hidden="true" />
-                      )}
-                      {/* Everything the card says sits at its foot, so a rail
-                          the height of the columns beside it reads as one
-                          composition rather than as a card with a hole under
-                          it. */}
-                      <span className="relative mt-auto flex flex-col gap-3">
+                      {/* The card is the height of what it says. It held the
+                          height of the columns beside it for one round, and
+                          the three things it carries cannot fill that: the
+                          words sat at the foot under a third of a metre of
+                          tint with nothing in it. Sized to its content it
+                          reads as one block and the rail below it is the
+                          panel's own ground, which needs no filling. */}
+                      <span className="relative flex flex-col gap-3">
+                        {/* The group's sign, above the sentence it belongs to
+                            rather than bled off a corner. Drawn at the card's
+                            scale it was a shape cropped by two edges, which
+                            reads as something that overflowed rather than
+                            something placed.
+
+                            A card that already opens with something of its own
+                            gets none: the captures below, or the row of the
+                            other listings, which is a line of marks doing this
+                            one's job four times over. */}
+                        {held.feature.mark &&
+                          !held.feature.shots &&
+                          !held.feature.marks?.length && (
+                            <held.feature.mark
+                              className="nav-panel-feature-mark"
+                              aria-hidden="true"
+                            />
+                          )}
                         {held.feature.shots && (
                           <span className="grid grid-cols-3 gap-1.5">
                             {held.feature.shots.map(shot => (
