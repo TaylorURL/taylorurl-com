@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Clock, Mail, MessageSquareOff, Phone, ReceiptText } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { fadeInUp } from '@constants/animations'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, START_LINK, SUPPORT_EMAIL } from '@constants/navigation'
 import Magnet from '@reactbits/Magnet/Magnet'
@@ -50,10 +48,6 @@ const REPLIES = IS_SECOND_SITE ? HOME.cta.replies : STUDIO_REPLIES
 export default function FinalCtaSection() {
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div
-        className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.quiet} ${SEAMS.foot}`}
-        aria-hidden="true"
-      />
       <div className="container-rail relative">
         <m.div
           {...fadeInUp}

@@ -1,7 +1,5 @@
 import { m } from 'framer-motion'
 import { ArrowUpRight, PencilLine } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import ReviewCarousel from '@components/reviews/ReviewCarousel'
 import ReviewStandingRail from '@components/reviews/ReviewStandingRail'
 import { reviewSourceFill, reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
@@ -30,10 +28,6 @@ export default function TestimonialsSection() {
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div
-        className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-        aria-hidden="true"
-      />
       <div className="container-rail relative flex flex-col gap-12 md:gap-16">
         <m.div {...fadeInUp}>
           <m.div

@@ -2,13 +2,10 @@ import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Check, ChevronDown, Clock, Mail, Phone } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import BbbSeal from '@components/reviews/BbbSeal'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/chrome/useToast'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import {
   COMPANY_PHONE,
   COMPANY_PHONE_HREF,
@@ -225,13 +222,6 @@ export default function Contact() {
   // prose and left free to wrap.
   const errorClass = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
 
-  // Scroll-driven backdrop on the "What's included" band — the blueprint grid
-  // drifts behind the static checklist as the band scrolls past, giving the
-  // dark section depth without touching the copy itself.
-  const { ref: includedRef, transform: includedGridTransform } = useScrollParallax({
-    range: [0, -70],
-  })
-
   return (
     <div>
       <Seo
@@ -252,17 +242,12 @@ export default function Contact() {
         ]}
       />
       <PageHero
-        draft="ledger"
         eyebrow={CONTACT.hero.eyebrow}
         title={CONTACT.hero.title}
         description={CONTACT.hero.description}
       />
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.column}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <div className="panel-static bg-hair-paper grid gap-px overflow-hidden lg:grid-cols-[1fr_1.4fr]">
             <m.aside {...slideInLeftMount} className="flex flex-col gap-10 bg-paper p-8 sm:p-12">
@@ -512,15 +497,9 @@ export default function Contact() {
       </section>
 
       <section
-        ref={includedRef}
         data-ground="band"
         className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
       >
-        <m.div
-          style={{ transform: includedGridTransform }}
-          className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <m.div
             {...fadeInUp}

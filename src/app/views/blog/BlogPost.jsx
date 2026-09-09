@@ -2,8 +2,6 @@ import { useMemo, useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowLeft } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
 import CtaBanner from '@components/conversion/CtaBanner'
@@ -219,10 +217,6 @@ function Article({ post }) {
       <Masthead post={post} series={series} words={frame.words} layout={frame.layout} />
 
       <article className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           {frame.railed ? (
             <div
@@ -279,7 +273,6 @@ function Article({ post }) {
       </article>
 
       <CtaBanner
-        draft="quiet"
         heading="Need help with"
         accentText="your website?"
         description="We build custom websites for local businesses from scratch and look after them once they are live. Tell us about yours, and a plan and a price come back before any work starts."

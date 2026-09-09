@@ -98,7 +98,6 @@ export default function Area() {
       />
 
       <PageHero
-        draft="node"
         eyebrow={`Service Area · ${area.name}`}
         title={`Websites for ${area.name} businesses.`}
         description={
@@ -110,7 +109,6 @@ export default function Area() {
       <RuledSection
         id="area-work"
         ground={groundFor('work')}
-        draft="iso"
         eyebrow="Live Work"
         title={
           profile?.work.title ||
@@ -129,7 +127,6 @@ export default function Area() {
         <RuledSection
           id="area-local"
           ground={notesGround}
-          draft="ledger"
           eyebrow="On the Ground"
           title={`What decides the search in ${area.name}.`}
           description="Who is looking, what they type, and what a site has to do here to be the one they call."
@@ -157,7 +154,6 @@ export default function Area() {
       <RuledSection
         id="area-trades"
         ground={tradesGround}
-        draft="plan"
         eyebrow="Trades"
         title={`Common work around ${area.name}.`}
         description="Each trade has a page of its own covering what the site has to do and the software it runs beside."
@@ -169,7 +165,6 @@ export default function Area() {
       <RuledSection
         id="area-services"
         ground={servicesGround}
-        draft="iso"
         eyebrow="What Gets Built"
         title="Four ways the work usually starts."
         description="A new site, a rebuild of the one you have, the tools that sit behind it, or looking after what is already running."
@@ -203,7 +198,6 @@ export default function Area() {
       </RuledSection>
 
       <CtaSection
-        draft="column"
         ground={servicesGround === 'paper' ? 'dark' : 'paper'}
         eyebrow="Start"
         title={

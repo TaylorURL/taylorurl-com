@@ -6,7 +6,6 @@ import CtaSection from '@components/conversion/CtaSection'
 import Mesh from '@components/mesh/Mesh'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
-import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { breadcrumbSchema } from '@constants/seo'
 import { TICK_MS } from '@app/tools/lib/progress'
@@ -300,14 +299,12 @@ export default function SpeedCheck() {
       />
 
       <PageHero
-        draft="node"
         eyebrow="Speed Check"
         title="How your site loads on a phone."
         description="Google measures the page on its own hardware and scores it out of a hundred. This runs that measurement against your address and shows what came back."
       />
 
       <section {...GROUND.attrs} className={`section-y relative overflow-hidden ${GROUND.section}`}>
-        <div className={`absolute inset-0 ${GROUND.grid} ${DRAFTS.ledger}`} aria-hidden="true" />
         <div className="container-rail relative">
           <CheckStage
             running={running}
@@ -422,7 +419,6 @@ export default function SpeedCheck() {
       </section>
 
       <CtaSection
-        draft="column"
         eyebrow="Next"
         title="The number tells you where to start."
         description="If the reading found something worth fixing, the fix is a build. Tell us what the site is for and get a plan and a price back before any work starts."

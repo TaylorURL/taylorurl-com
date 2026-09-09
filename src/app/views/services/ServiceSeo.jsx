@@ -119,7 +119,6 @@ export default function ServiceSeo() {
         ]}
       />
       <PageHero
-        draft="node"
         eyebrow="Getting Found"
         title="Getting found on Google, every month."
         description={`The search work sits inside the ${MONTHLY_PRICE} a month. There is no separate SEO bill, and no promise about where you land.`}
@@ -128,7 +127,6 @@ export default function ServiceSeo() {
       <ServiceSection
         id="covers"
         ground="paper"
-        draft="ledger"
         eyebrow="The Work"
         title="What actually gets done."
         lede="Most of it happens while the site is being built. The rest happens every month after."
@@ -139,7 +137,6 @@ export default function ServiceSeo() {
       <ServiceSection
         id="local"
         ground="band"
-        draft="node"
         eyebrow="Local Search"
         title="Found by the people nearest you."
         lede="A local business is searched for by town. The site has to answer in those terms."
@@ -157,7 +154,6 @@ export default function ServiceSeo() {
       <ServiceSection
         id="limits"
         ground="paper"
-        draft="hatch"
         eyebrow="What It Does Not"
         title="What it does not cover."
         lede="Anyone who leaves these four off the page is selling you something else."
@@ -168,7 +164,6 @@ export default function ServiceSeo() {
       <ServiceSection
         id="terms"
         ground="band"
-        draft="ledger"
         eyebrow="Time and Cost"
         title="How long it takes, and what it runs."
       >
@@ -181,7 +176,6 @@ export default function ServiceSeo() {
       <ServiceSection
         id="more"
         ground="paper"
-        draft="column"
         eyebrow="The Rest of It"
         title="Everything else on offer."
       >
@@ -193,7 +187,6 @@ export default function ServiceSeo() {
       </ServiceSection>
 
       <CtaBanner
-        draft="ledger"
         eyebrow="Let’s Talk"
         heading="Get found where"
         accentText="you work."

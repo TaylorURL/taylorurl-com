@@ -4,7 +4,6 @@ import { Link } from 'react-router-dom'
 import BbbSeal from '@components/reviews/BbbSeal'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
-import { DRAFTS } from '@constants/drafting'
 import { GROUNDS } from '@constants/grounds'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import { checkoutErrorMessage, openCheckout } from '@data/checkout/startCheckout'
@@ -237,14 +236,12 @@ export default function Payment() {
       />
 
       <PageHero
-        draft="node"
         eyebrow="Payment"
         title="Pay for your build."
         description="Three details, then Stripe's own page for the card. The build starts the moment it goes through."
       />
 
       <section {...GROUND.attrs} className={`section-y relative overflow-hidden ${GROUND.section}`}>
-        <div className={`absolute inset-0 ${GROUND.grid} ${DRAFTS.ledger}`} aria-hidden="true" />
         <div className="container-rail relative">
           <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
             <form onSubmit={submit} className="space-y-7" noValidate>

@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Calendar } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
@@ -11,7 +9,6 @@ import NewsletterSignup from '@components/conversion/NewsletterSignup'
 import { fadeInUp, fadeInUpMount, staggerChild } from '@constants/animations'
 import { breadcrumbSchema, SITE_URL } from '@constants/seo'
 import { useNewsletterIssues } from '@hooks/reading/useNewsletterIssues'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import { AccentGradient } from '@reactbits/kit'
 import { SignalMark } from './NotesArt'
@@ -21,20 +18,12 @@ const DESCRIPTION =
   'Short letters from a Baytown web designer on getting found on Google and turning visitors into paying customers, sent when there’s something worth saying.'
 
 function LatestIssue({ issue, index }) {
-  const { ref, transform: gridTransform } = useScrollParallax({ range: [0, -60] })
-
   return (
     <m.article
       {...fadeInUpMount}
-      ref={ref}
       data-ground="band"
       className="card-lift relative overflow-hidden bg-bg text-ink"
     >
-      <m.div
-        style={{ transform: gridTransform }}
-        className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.plan} ${SEAMS.card}`}
-        aria-hidden="true"
-      />
       <div className="relative grid gap-12 p-8 sm:p-12 lg:grid-cols-[1.4fr_1fr] lg:gap-16 lg:p-16">
         <div>
           <div className="section-label-sm mb-6 text-accent">
@@ -177,18 +166,9 @@ export default function Notes() {
         ]}
       />
 
-      <PageHero
-        draft="ledger"
-        eyebrow="Notes"
-        title="Letters from the workbench."
-        description={DESCRIPTION}
-      />
+      <PageHero eyebrow="Notes" title="Letters from the workbench." description={DESCRIPTION} />
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.plan}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           {/* Above the archive, because a reader who came to this page came for
               the letter itself, and the archive is what it has amounted to so
@@ -252,7 +232,6 @@ export default function Notes() {
       </section>
 
       <CtaSection
-        draft="ledger"
         title={
           <>
             Need help with <AccentGradient>your website</AccentGradient>?

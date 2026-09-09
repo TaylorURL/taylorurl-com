@@ -120,7 +120,6 @@ export default function Pricing() {
           and is met by somebody else's number has to work out whose page they
           are on before they can read the sentence. */}
       <PageHero
-        draft="node"
         eyebrow="Price"
         title={`${PRICE_PREFIX} ${BUILD_PRICE} to build it. ${PRICE_PREFIX} ${MONTHLY_PRICE} a month to run it.`}
         description="That is where a small business website starts, and what most of them cost. Web design, hosting, monthly maintenance, and the SEO work that gets you found on Google are all inside those two numbers."
@@ -131,7 +130,6 @@ export default function Pricing() {
       <ServiceSection
         id="included"
         ground="paper"
-        draft="iso"
         eyebrow="What You Get"
         title="Everything both figures cover."
         lede="Web design, web development, hosting, SEO, and the monthly maintenance behind all of it. Six groups, thirty-six lines, and not one of them is an extra."
@@ -150,7 +148,6 @@ export default function Pricing() {
       <ServiceSection
         id="tally"
         ground="band"
-        draft="ledger"
         eyebrow="The Comparison"
         title={`The same work, quoted at ${ELSEWHERE}.`}
         lede="A web design agency quotes the build, then bills a monthly retainer on top of it. Both sides carry a monthly, so the honest comparison is the whole run rather than the first invoice."
@@ -165,7 +162,6 @@ export default function Pricing() {
       <ServiceSection
         id="figures"
         ground="paper"
-        draft="column"
         eyebrow="The Figures"
         title="Two numbers, and that is where the price starts."
         lede="The build is paid once. The monthly covers everything the site needs after that, for as long as it runs."
@@ -176,7 +172,6 @@ export default function Pricing() {
       <ServiceSection
         id="questions"
         ground="band"
-        draft="plan"
         eyebrow="Questions"
         title="What people ask before they decide."
       >
@@ -187,7 +182,6 @@ export default function Pricing() {
       </ServiceSection>
 
       <CtaBanner
-        draft="column"
         eyebrow="Let’s Talk"
         heading="Know the price."
         accentText="Start the work."

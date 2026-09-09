@@ -1,6 +1,4 @@
 import { m } from 'framer-motion'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { EASE, fadeInUpMount } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
@@ -14,11 +12,6 @@ const rise = delay => ({
 export default function HeroSeam() {
   return (
     <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden bg-bg pt-24 text-ink">
-      <div
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.column} ${SEAMS.hero}`}
-        aria-hidden="true"
-      />
-
       <div className="container-rail relative grid items-center gap-14 pb-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
         <div>
           <m.p {...rise(0)} className="section-label-sm flex items-center gap-3 text-ink-mute">

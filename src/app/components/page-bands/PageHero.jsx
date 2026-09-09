@@ -1,13 +1,10 @@
 import { m, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
 import { useEffect, useRef } from 'react'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import BlurText from '@reactbits/BlurText/BlurText'
 import { LazyParticles } from '@reactbits/LazyBg'
 import { useThemeTokens } from '@hooks/theme/useThemeTokens'
 import { fadeInUpMount, settleIn } from '@constants/animations'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { SITE } from '../../../../lib/site/current.js'
 
 // How far apart the headline's words start, and how early the run is tripped.
@@ -19,28 +16,18 @@ const TITLE_MARGIN = '0px 0px 15% 0px'
 
 /**
  * Shared hero for every secondary view: a full-bleed dark slab under either
- * setting, a faint field, and scroll-driven parallax.
+ * setting, carrying the headline column and the particles behind it.
  *
- * The headline column rises and fades on the way past while the field drifts
- * slower behind it, which is what separates the two layers. Under a
- * reduced-motion setting both travel ranges collapse to zero and the headline
- * holds its opacity, so the slab arrives composed rather than assembling.
- *
- * The hero is on nineteen of the twenty-one secondary views, so what it draws
- * is the largest single thing separating one page from another. It takes the
- * motif as a prop for that reason, and holds the seam that suits a slab at the
- * top of a document: no fade at its head, because there is nothing above it,
- * and a deep one at its foot, because the drift carries the fade with it and
- * the fade has to have finished before the drift can expose the slab's edge.
+ * The headline column rises and fades on the way past. Under a reduced-motion
+ * setting its travel collapses to zero and it holds its opacity, so the slab
+ * arrives composed rather than assembling.
  *
  * @param {object} props
  * @param {import('react').ReactNode} props.title - Heading content.
  * @param {string} [props.description] - Supporting line under the heading.
  * @param {string} [props.eyebrow] - Standing label above the heading.
- * @param {'plan' | 'ledger' | 'column' | 'node' | 'hatch' | 'iso' | 'quiet'}
- *   [props.draft] - What the slab's field draws.
  */
-export default function PageHero({ title, description, eyebrow, draft = 'plan' }) {
+export default function PageHero({ title, description, eyebrow }) {
   // Canvas takes colour values, not CSS, so the accent steps are resolved first.
   const tone = useThemeTokens(['--accent', '--accent-hi', '--accent-pale'])
   const reduced = useReducedMotion()
@@ -55,22 +42,12 @@ export default function PageHero({ title, description, eyebrow, draft = 'plan' }
   const rawOpacity = useTransform(scrollYProgress, [0, 0.85], [1, reduced ? 1 : 0.2])
   const opacity = useSpring(rawOpacity, { stiffness: 140, damping: 32, mass: 0.4 })
 
-  const { ref: gridRef, transform: gridTransform } = useScrollParallax({
-    range: [0, reduced ? 0 : -40],
-  })
-
   return (
     <section
       ref={ref}
       data-ground="dark"
       className="relative isolate overflow-hidden bg-bg pb-20 pt-32 text-ink sm:pb-28 sm:pt-44"
     >
-      <m.div
-        ref={gridRef}
-        style={{ transform: gridTransform }}
-        className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS[draft]} ${SEAMS.hero}`}
-        aria-hidden="true"
-      />
       <div
         className="pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_top,black,transparent_75%)]"
         aria-hidden="true"

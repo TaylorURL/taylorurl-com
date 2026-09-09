@@ -75,7 +75,6 @@ export default function Areas() {
       />
 
       <PageHero
-        draft="node"
         eyebrow="Service Areas"
         title="Where these sites get built."
         description={`${AREAS.length} towns across Southeast Texas, each with a page carrying the work already live there and the trades it most often calls for.`}
@@ -84,7 +83,6 @@ export default function Areas() {
       <RuledSection
         id="areas-towns"
         ground="paper"
-        draft="plan"
         eyebrow="Towns"
         title="Towns on the list."
         description="Work runs from Baytown outward, up SH 146 into Liberty County, along the ship channel, out to Lake Houston, and down the bay to Galveston."
@@ -122,7 +120,6 @@ export default function Areas() {
       <RuledSection
         id="areas-work"
         ground="band"
-        draft="iso"
         eyebrow="Live Work"
         title="Sites running in these towns."
         description="Every one is live now, built for a business working the same stretch of Southeast Texas."
@@ -132,7 +129,6 @@ export default function Areas() {
       </RuledSection>
 
       <CtaSection
-        draft="column"
         ground="paper"
         eyebrow="Start"
         title={

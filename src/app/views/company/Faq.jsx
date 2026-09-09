@@ -1,8 +1,6 @@
 import { useState } from 'react'
 import { m, AnimatePresence } from 'framer-motion'
 import { Plus } from 'lucide-react'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
@@ -10,7 +8,6 @@ import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import { PORTFOLIO_AVERAGES } from '@data/portfolio'
 import { EASE, fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema } from '@constants/seo'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 
 const FAQ_CATEGORIES = [
@@ -143,13 +140,6 @@ function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIn
 export default function Faq() {
   const [openItems, setOpenItems] = useState({})
 
-  // Scroll-driven backdrop drift — the blueprint grid behind the FAQ stack
-  // moves at its own slow rate against the page scroll, adding parallax depth
-  // without scrubbing the question text the user is reading.
-  const { ref: faqSectionRef, transform: gridTransform } = useScrollParallax({
-    range: [0, -80],
-  })
-
   const toggleItem = key => {
     setOpenItems(prev => ({ ...prev, [key]: !prev[key] }))
   }
@@ -182,18 +172,12 @@ export default function Faq() {
         ]}
       />
       <PageHero
-        draft="node"
         eyebrow="FAQ"
         title="What owners ask before they hire us."
         description="Timelines, what it costs, who owns the site, and what happens after launch. If yours is not here, ask and get a straight answer."
       />
 
-      <section ref={faqSectionRef} className="section-y relative overflow-hidden bg-paper">
-        <m.div
-          style={{ transform: gridTransform }}
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
+      <section className="section-y relative overflow-hidden bg-paper">
         <div className="container-rail-tight relative">
           <div className="space-y-20">
             {FAQ_CATEGORIES.map((category, catIndex) => (
@@ -233,7 +217,6 @@ export default function Faq() {
       </section>
 
       <CtaBanner
-        draft="column"
         eyebrow="Next"
         heading="Still have"
         accentText="questions?"

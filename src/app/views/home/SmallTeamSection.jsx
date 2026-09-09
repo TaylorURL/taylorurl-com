@@ -1,8 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import { m } from 'framer-motion'
-import { DRAFTS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import { fadeInUp } from '@constants/animations'
 import { ABOUT } from '@data/pages/about'
 import { CLIENT_PROJECTS } from '@data/portfolio'
@@ -46,11 +44,6 @@ export default function SmallTeamSection() {
 
   return (
     <section className="section-y-lg border-hair-paper relative isolate overflow-x-clip border-t bg-paper">
-      <div
-        className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.quiet}`}
-        aria-hidden="true"
-      />
-
       <m.div {...fadeInUp} className="container-rail relative">
         {/* The claim on the left and the qualification on the right, so the
             headline keeps a measure it can be set at and the paragraph is not

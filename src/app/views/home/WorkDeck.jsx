@@ -136,9 +136,9 @@ export default function WorkDeck({ projects }) {
         `perspective(${PERSPECTIVE}px) translateZ(${-(away * DEPTH).toFixed(1)}px) ` +
         `rotateY(${(-off * TURN).toFixed(2)}deg) scale(${(1 - slots * SHRINK).toFixed(4)})`
       // A turned frame is shaded rather than faded. Dimming it with `opacity`
-      // makes the screenshot translucent, and the drafting grid behind the band
-      // then reads straight through a client's home page - which is a washed
-      // out card rather than one standing further from the light.
+      // makes the screenshot translucent, and the band behind it then reads
+      // straight through a client's home page - which is a washed out card
+      // rather than one standing further from the light.
       if (veil) veil.style.opacity = (away * DIM).toFixed(3)
       // The nearest frame has to be the one on top, or a turned neighbour laps
       // over the card the reader is looking at.

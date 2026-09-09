@@ -1,8 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowLeft, ArrowUpRight, Gauge, MapPin, Layers } from 'lucide-react'
-import { DRAFTS, SEAMS } from '@constants/drafting'
-import { GROUNDS } from '@constants/grounds'
 import Seo from '@components/Seo'
 import ClientTestimonialCard from '@components/reviews/ClientTestimonialCard'
 import CtaSection from '@components/conversion/CtaSection'
@@ -13,7 +11,6 @@ import { portfolioStudyBySlug } from '@data/portfolioStudies'
 import { reviewFor } from '@data/reputation/reviews'
 import { breadcrumbSchema, SITE_URL } from '@constants/seo'
 import { fadeInUp, fadeInUpMount, staggerChild } from '@constants/animations'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import { AccentGradient } from '@reactbits/kit'
 
 function kindLabel(kind) {
@@ -71,11 +68,6 @@ function ScoreFigure({ label, score }) {
 function Study({ project }) {
   const { study, pagespeed, slug } = project
 
-  // Scroll-driven hero, matching the article pages: the blueprint grid drifts
-  // slower than the headline column so the two layers separate. The hook
-  // collapses the range under reduced motion.
-  const { ref: gridRef, transform: gridTransform } = useScrollParallax({ range: [0, -40] })
-
   const studyUrl = `${SITE_URL}/portfolio/${slug}`
   const measured = formatMeasuredDate(pagespeed.measured)
   const review = reviewFor(project.displayUrl)
@@ -122,12 +114,6 @@ function Study({ project }) {
         data-ground="dark"
         className="relative overflow-hidden bg-bg pb-20 pt-32 text-ink sm:pb-28 sm:pt-44"
       >
-        <m.div
-          ref={gridRef}
-          style={{ transform: gridTransform }}
-          className={`absolute inset-0 ${GROUNDS.dark.grid} ${DRAFTS.iso} ${SEAMS.hero}`}
-          aria-hidden="true"
-        />
         <div className="container-rail relative">
           <m.div {...fadeInUpMount}>
             <div>
@@ -181,10 +167,6 @@ function Study({ project }) {
       </section>
 
       <section className="section-y relative overflow-hidden bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.plan}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <m.div {...fadeInUp} className="relative">
             <DesktopMockup project={project} priority />
@@ -196,10 +178,6 @@ function Study({ project }) {
       </section>
 
       <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <SectionHeading eyebrow="The Business" title="What the business does." />
           <div className="max-w-[68ch] space-y-6">
@@ -217,10 +195,6 @@ function Study({ project }) {
       </section>
 
       <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.column}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <SectionHeading eyebrow="The Site" title="What a visitor can do here." />
           <div className="grid gap-5 sm:grid-cols-2">
@@ -232,10 +206,6 @@ function Study({ project }) {
       </section>
 
       <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div
-          className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.iso}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <SectionHeading eyebrow="The Build" title="How it is put together." />
           <div className="grid gap-5 sm:grid-cols-2">
@@ -259,10 +229,6 @@ function Study({ project }) {
 
       {review && (
         <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-          <div
-            className={`absolute inset-0 ${GROUNDS.paper.grid} ${DRAFTS.ledger}`}
-            aria-hidden="true"
-          />
           <div className="container-rail-tight relative">
             <SectionHeading eyebrow="The Client" title="What the client said." />
             <div className="max-w-[680px]">
@@ -276,10 +242,6 @@ function Study({ project }) {
         data-ground="band"
         className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
       >
-        <div
-          className={`absolute inset-0 ${GROUNDS.band.grid} ${DRAFTS.node}`}
-          aria-hidden="true"
-        />
         <div className="container-rail-tight relative">
           <m.div {...fadeInUp} className="mb-10">
             <p className="section-label mb-5 text-accent">The Score</p>
@@ -305,7 +267,6 @@ function Study({ project }) {
       </section>
 
       <CtaSection
-        draft="quiet"
         eyebrow="Next: Your Site"
         title={
           <>
