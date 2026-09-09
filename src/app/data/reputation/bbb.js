@@ -48,6 +48,18 @@ export const BBB_SEAL_WIDTH = 384
 export const BBB_SEAL_HEIGHT = 137
 
 /**
+ * The corner BBB rounded the lockup to, in the file's own pixels.
+ *
+ * It is here rather than in the component for the reason the width and the
+ * height are: it is a measurement off the artwork, and a surface that seats the
+ * seal on a tile has to cut that tile to the same curve or the corner shows -
+ * white nubs outside the lockup where the tile is squarer, a clipped keyline
+ * where it is rounder. Scaled against `BBB_SEAL_WIDTH` it holds at whatever
+ * width the seal is drawn.
+ */
+export const BBB_SEAL_RADIUS = 9
+
+/**
  * Whether this business may call itself BBB Accredited.
  *
  * @returns {boolean} True while the seal BBB issues for it is held.
