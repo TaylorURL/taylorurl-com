@@ -110,7 +110,7 @@ export const BLOG_ARTICLES_4 = [
     slug: 'hvac-the-two-seasons-your-website-has-to-be-ready-for',
     title: 'HVAC: The Two Seasons Your Website Has to Be Ready For',
     excerpt:
-      'A dead air conditioner in July and a furnace tune-up in November are two different visitors wanting two different things from the same website. Here is how to build for both.',
+      'A dead air conditioner in July and a furnace tune-up in November want different things from one HVAC website. The homepage leads with the season it is in.',
     category: 'Tips for Owners',
     date: 'August 29, 2026',
     readTime: '6 min read',
@@ -241,9 +241,9 @@ export const BLOG_ARTICLES_4 = [
   },
   {
     slug: 'roofers-the-storm-week-your-website-either-handles-or-not',
-    title: 'Roofers: The Storm Week Your Website Either Handles or It Does Not',
+    title: 'Roofers: The Storm Week Your Website Has to Handle',
     excerpt:
-      'A hail line rolls through Baytown and by morning half the neighborhood is calling roofers. The site that answers first wins that week, and a roofer earns most of the year on weeks like it.',
+      'A hail line rolls through Baytown and by morning half the neighborhood is calling roofers. The roofing site that answers first wins the week.',
     category: 'Tips for Owners',
     date: 'August 30, 2026',
     readTime: '6 min read',
@@ -306,7 +306,7 @@ export const BLOG_ARTICLES_4 = [
     slug: 'why-your-site-is-fast-on-your-laptop-and-slow-on-a-phone',
     title: 'Why Your Site Is Fast on Your Laptop and Slow on a Phone',
     excerpt:
-      'You open the site on your laptop and it snaps up. Your customer taps it from a truck in Mont Belvieu and stares. Here is what changes between the two, and what you can do about it this week.',
+      'Your site snaps up on your laptop and stalls on a phone in a truck in Mont Belvieu. The phone has a tenth of the processor, and the images are the fix.',
     category: 'Site Speed',
     date: 'August 31, 2026',
     readTime: '6 min read',
@@ -387,9 +387,9 @@ export const BLOG_ARTICLES_4 = [
   },
   {
     slug: 'electricians-a-pricing-page-that-stops-tire-kicker-calls',
-    title: 'Electricians: A Pricing Page That Stops the Tire-Kicker Calls',
+    title: 'Electricians: A Pricing Page That Stops Tire-Kicker Calls',
     excerpt:
-      'An electrician does not have a lead problem, an electrician has a wrong-call problem. A pricing page does not price the jobs; it filters the calls, so the ones that come through are the ones you want.',
+      'An electrician does not have a lead problem, an electrician has a wrong-call problem. A pricing page does not price the jobs, it filters the calls.',
     category: 'Tips for Owners',
     date: 'September 1, 2026',
     readTime: '6 min read',

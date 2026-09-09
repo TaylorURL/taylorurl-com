@@ -26,7 +26,7 @@ const STUDIO_ABOUT = {
   seo: {
     title: 'About TaylorURL, Baytown Web Design Team',
     description:
-      'We are a small team of designers, developers, and local-search specialists in Baytown, TX, bringing customers to shops, trades, and small businesses across the Houston area.',
+      'A small team of designers, developers, and local-search specialists in Baytown, TX, bringing customers to shops, trades, and small businesses around Houston.',
   },
 
   hero: {

@@ -20,7 +20,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Who do you build websites for?',
-        a: 'Small businesses around Baytown and Houston. Live right now: a barber shop, a print shop, a fleeting service on the bay, an industrial scale company, a real estate agent, and a youth football league. If you serve a local area and most of your work comes from people near you, you are the kind of client we work with.',
+        a: 'Small businesses around Baytown and Houston. Live right now: a barber shop, a print shop, a barge fleeting yard on the bay, an industrial scale repair shop, a real estate agent, and a youth football league. If you serve a local area and most of your work comes from people near you, you are the kind of client we work with.',
       },
       {
         q: 'How long does a build take?',

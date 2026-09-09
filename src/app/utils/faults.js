@@ -48,7 +48,8 @@ const SLOW = 'That took too long to answer. Give it a moment and try again.'
 const SIGNED_OUT = 'You are not signed in any more. Sign in and try that again.'
 const NOT_ALLOWED = 'This account is not allowed to do that.'
 const TOO_FAST = 'That is being asked for too quickly. Wait a minute and try again.'
-const SERVER = 'The server had trouble with that. It is not something you did — try again shortly.'
+const SERVER =
+  'The server had trouble with that. It is not something you did, so try again shortly.'
 
 /**
  * The causes a person actually meets, and the sentence each one gets.

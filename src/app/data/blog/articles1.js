@@ -324,7 +324,7 @@ export const BLOG_ARTICLES_1 = [
     slug: 'what-mobile-first-actually-means',
     title: 'What "Mobile-First" Actually Means',
     excerpt:
-      'Not a shrunken desktop page. A page whose shape was settled by the worst conditions it will ever be opened in.',
+      'Mobile-first is not a shrunken desktop page. It means the page was shaped by the worst conditions it will ever be opened in: a phone on one bar.',
     category: 'Design',
     date: 'March 8, 2026',
     readTime: '5 min read',

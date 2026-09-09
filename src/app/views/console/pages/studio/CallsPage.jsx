@@ -333,7 +333,7 @@ function historyLine(row, you = null) {
       : row.last_call.called_by_name
         ? ` by ${row.last_call.called_by_name}`
         : ''
-  return `${nth}, last ${when(row.last_call.called_at)}${by} — ${outcome}.`
+  return `${nth}, last ${when(row.last_call.called_at)}${by}. ${outcome}.`
 }
 
 /** Where the business stands with the phone, and what that means in time. */
@@ -869,7 +869,7 @@ function Sheet({
       <dl className="grid grid-cols-2 gap-3">
         <Metric label="Reviews" value={reviews(row)} />
         <Metric
-          label="Its Trade’s Middle"
+          label="Its Trade's Middle"
           value={row.trade_median === null ? 'Too few' : fullCount(Math.round(row.trade_median))}
         />
         <Metric label="Instead Of A Site" value={presence(row)} />
@@ -2162,7 +2162,7 @@ export default function CallsPage() {
           <p className={`${MONO_LABEL} text-paper-faint`}>
             After a call the business rests and leaves this list until its gap is up: a day after no
             answer, three days after a voicemail, two after a gatekeeper, a week after speaking to
-            somebody. The gap lengthens each time a number goes unanswered — a day, three days, a
+            somebody. The gap lengthens each time a number goes unanswered: a day, three days, a
             week, a fortnight, then a month. A time you name yourself always wins.
           </p>
         </div>

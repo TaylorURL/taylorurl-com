@@ -205,7 +205,7 @@ export default function Process() {
       />
       <PageHero
         eyebrow="Process"
-        title="Most of the work is mine."
+        title="Most of the work is ours."
         description="Six steps, two to four weeks, one small team from the first call to launch, for shops around Baytown and Houston. Your part is a few answers and a yes when it looks right."
       />
 
@@ -223,7 +223,7 @@ export default function Process() {
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              Every step names your part and mine, so you know what lands on you and when.
+              Every step names your part and ours, so you know what lands on you and when.
             </p>
           </m.div>
 
