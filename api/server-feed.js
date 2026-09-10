@@ -23,6 +23,7 @@
 
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { methodsOr405, servedHereOr404 } from '../lib/http/guard.js'
+import { reach } from '../lib/http/reach.js'
 
 // Where the server publishes its own reading, and what it wants to see before
 // it answers. A deployment given neither refuses rather than guessing: the
@@ -37,18 +38,60 @@ const TOKEN = process.env.SERVER_FEED_TOKEN || ''
 const TIMEOUT_MS = 12000
 const ATTEMPTS = 2
 
+// The last reading that actually came off the machine, and when it did.
+//
+// The machine is reached by name, and the name is a subdomain of somebody
+// else's zone. That zone answers NXDOMAIN for it every so often - measured on
+// 2026-09-10 at eight refusals in twenty queries against one public resolver,
+// with a second resolver answering every time - and a negative answer is
+// cached against the whole resolver for the zone's SOA minimum, which is five
+// minutes. So a machine that is up, funnelled and answering in under a second
+// becomes unreachable from here in five-minute blocks, and the retry above is
+// no use against it: both attempts are the same lookup, microseconds apart,
+// inside the same cached refusal.
+//
+// `readFeed` answers that at the lookup, by asking a public resolver when the
+// platform's own says the name is not there. This is what is left when that
+// fails too - both resolvers unreachable, or a name that really has gone - and
+// it is kept because the failure it covers is the one that reads worst: a page
+// that says the machine is gone, about a machine that is answering.
+//
+// So the last good reading is held here and served through a failure. That is
+// not a stale answer dressed as a fresh one: every reading this endpoint has
+// ever returned carries the machine's own `updated_at`, the page reads its age
+// off that rather than off the success of the request, and it says across the
+// top of itself when the reading it is drawing is not current. A held reading
+// is exactly the case that was already built for - a read that lands on a feed
+// the machine has not rebuilt - and it arrives, correctly, looking like one.
+//
+// Fifteen minutes is the ceiling, which is the same figure the rest of the
+// fleet uses to decide this machine is not alive. Past it there is nothing
+// honest left to draw and the failure goes through.
+const HOLD_MS = 15 * 60 * 1000
+let held = null
+let heldAt = 0
+
 /** Which stage failed, in the words the log uses. */
 function describe(error) {
   if (error && error.status) return error.message
   if (error && error.name === 'AbortError') return 'the server timed out'
   if (error && error.name === 'SyntaxError') return 'the server sent malformed JSON'
+  // A socket fault arrives bare from `reach` and wrapped by `fetch`, and which
+  // code it carries is the whole diagnosis here. Read both, or the one line
+  // this failure ever writes says only that something did not work.
+  if (error && error.code) return `the server was unreachable (${error.code})`
   const cause = error && error.cause
   if (cause && cause.code) return `the server was unreachable (${cause.code})`
   return 'the server was unreachable'
 }
 
 async function readFeed() {
-  const upstream = await fetch(`${UPSTREAM}?t=${Date.now()}`, {
+  // `reach` rather than `fetch`, because the name this asks for is one the
+  // platform's own resolver intermittently says does not exist while every
+  // public resolver answers it. `lib/http/reach.js` asks the system first and
+  // a public resolver only when the system says the name is not there, so the
+  // day that resolver is right this is an ordinary request again.
+  const upstream = await reach(`${UPSTREAM}?t=${Date.now()}`, {
     signal: AbortSignal.timeout(TIMEOUT_MS),
     headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}` },
   })
@@ -80,6 +123,8 @@ export default async function handler(request, response) {
   for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
     try {
       const body = await readFeed()
+      held = body
+      heldAt = Date.now()
       // Never cached at any layer. The answer is one account's to read, and a
       // shared cache in front of it is a way to hand it to somebody else.
       response.setHeader('Cache-Control', 'private, no-store')
@@ -98,7 +143,16 @@ export default async function handler(request, response) {
   // and a refused token need telling apart when this is looked into, and none
   // of them is a difference to the person looking at the page: what reaches
   // them is that the reading is not current and that the page keeps asking.
-  console.error('server-feed: %s reading %s', describe(last), UPSTREAM, last)
+  const reason = describe(last)
+
+  if (held && Date.now() - heldAt < HOLD_MS) {
+    console.error('server-feed: %s reading %s, holding the last reading', reason, UPSTREAM, last)
+    response.setHeader('Cache-Control', 'private, no-store')
+    response.status(200).json(held)
+    return
+  }
+
+  console.error('server-feed: %s reading %s', reason, UPSTREAM, last)
   response
     .status(502)
     .json({ error: 'The server could not be reached just now. This page keeps trying.' })
