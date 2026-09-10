@@ -78,7 +78,7 @@ const DETAIL = {
     ],
     timeline:
       'Two to four weeks from the first call to launch day, in the six steps the process page sets out.',
-    running: `From ${BUILD_PRICE} to build, paid once before the work begins. Then from ${MONTHLY_PRICE} a month to host it, watch it, change it, and carry on the search work. A bigger build costs more, and you agree to that number before anything starts.`,
+    running: `From ${BUILD_PRICE} to build, paid once before the work begins. Then from ${MONTHLY_PRICE} a month to host it, watch it, change it, and carry on the search work. What moves the price is how big the whole project is, and you agree to that number before anything starts.`,
   },
   redesign: {
     mark: MarkRefit,
@@ -150,8 +150,8 @@ const DETAIL = {
   care: {
     mark: MarkGuard,
     eyebrow: 'After Launch',
-    description: `Hosting, backups, security, changes any time, and realtime error monitoring. The ${MONTHLY_PRICE} a month is what keeps the site online. No per-change fee.`,
-    lede: `What the ${MONTHLY_PRICE} a month pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.`,
+    description: `Hosting, backups, security, changes any time, and realtime error monitoring. The monthly, from ${MONTHLY_PRICE}, is what keeps the site online. No per-change fee.`,
+    lede: `What the monthly, from ${MONTHLY_PRICE}, pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.`,
     covers: [
       {
         title: 'Hosting and Backups',
@@ -174,7 +174,7 @@ const DETAIL = {
         body: 'Organic search work every month the site is under care. It does not stop at launch day.',
       },
       {
-        title: 'One Person to Call',
+        title: 'A Direct Line to the Team',
         body: 'You text the people who built it. No account manager, no support queue.',
       },
     ],
@@ -193,7 +193,7 @@ const DETAIL = {
       },
       {
         title: 'A Contract',
-        body: 'There is no annual term to sign. The monthly is not optional though: it is what keeps the site online, so it runs for as long as the site does.',
+        body: 'There is no annual term to sign, no notice period, and no cancellation fee. The monthly is not optional though: it is what keeps the site online, so stopping it takes the site offline at the end of the period you have paid for.',
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',

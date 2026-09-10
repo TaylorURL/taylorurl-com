@@ -670,7 +670,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
   return (
     <form onSubmit={submit} className="grid gap-3">
       <label className="grid gap-1.5">
-        <span className={`${MONO_LABEL} text-paper-faint`}>What The Call Came To</span>
+        <span className={`${MONO_LABEL} text-paper-faint`}>What the Call Came To</span>
         <select
           className={SELECT}
           value={outcome}
@@ -721,7 +721,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
       </label>
 
       <button type="submit" className={BUTTON} disabled={saving}>
-        {saving ? 'Recording' : 'Record The Call'}
+        {saving ? 'Recording' : 'Record the Call'}
       </button>
     </form>
   )
@@ -832,7 +832,7 @@ function Sheet({
         onClick={onHandbook}
       >
         <BookOpen aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-        What To Say
+        What to Say
       </button>
 
       <div className="grid gap-1">
@@ -872,7 +872,7 @@ function Sheet({
           label="Its Trade's Middle"
           value={row.trade_median === null ? 'Too few' : fullCount(Math.round(row.trade_median))}
         />
-        <Metric label="Instead Of A Site" value={presence(row)} />
+        <Metric label="Instead of a Site" value={presence(row)} />
         <Metric label="State" value={placeOf(row.place)?.label ?? 'Ready'} />
       </dl>
 
@@ -894,7 +894,7 @@ function Sheet({
       )}
 
       <div className="grid gap-2">
-        <p className={`${MONO_LABEL} text-paper-faint`}>Every Call To This Business</p>
+        <p className={`${MONO_LABEL} text-paper-faint`}>Every Call to This Business</p>
         {row.calls.length ? (
           <ul className="grid gap-2">
             {row.calls.map(call => (
@@ -985,7 +985,7 @@ function CallCard({ row, saving, recorded, holder, you, onQuick, onOpen, onSkip 
             Ringing them as well is the one thing this list exists to stop.
           </p>
           <button type="button" className={BUTTON} onClick={onSkip}>
-            Skip To The Next
+            Skip to the Next
           </button>
         </div>
       ) : (
@@ -1010,7 +1010,7 @@ function CallCard({ row, saving, recorded, holder, you, onQuick, onOpen, onSkip 
           label="Trade Middle"
           value={row.trade_median === null ? 'Too few' : fullCount(Math.round(row.trade_median))}
         />
-        <Metric label="Instead Of A Site" value={presence(row)} />
+        <Metric label="Instead of a Site" value={presence(row)} />
       </dl>
 
       <div className="grid gap-2">
@@ -1034,7 +1034,7 @@ function CallCard({ row, saving, recorded, holder, you, onQuick, onOpen, onSkip 
           ))}
         </div>
         <button type="button" className={QUIET} onClick={() => onOpen(row)}>
-          Open The Record To Add A Note Or A Time
+          Open the Record to Add a Note or a Time
         </button>
       </div>
     </div>
@@ -1439,7 +1439,7 @@ export default function CallsPage() {
         <BandHeading
           key={`band-${band}`}
           cols={columns.length}
-          title={band === 'due' ? 'Promised Back, And Due Now' : 'To Call, Best First'}
+          title={band === 'due' ? 'Promised Back, and Due Now' : 'To Call, Best First'}
           count={band === 'due' ? bands.due : bands.call}
           note={
             band === 'due'
@@ -1542,7 +1542,7 @@ export default function CallsPage() {
                 about the table, which is why it pulses and why it sits beside the
                 rest instead of somewhere on its own. */}
             <StatCard
-              label="On A Call"
+              label="On a Call"
               value={desk.loading ? '' : fullCount(desk.held.size)}
               caption="numbers somebody is on this minute"
               tone={desk.held.size ? 'accent' : 'plain'}
@@ -1598,7 +1598,7 @@ export default function CallsPage() {
               placeholder="Name, town or number"
               value={typed}
               onChange={event => setTyped(event.target.value)}
-              aria-label="Search The Call List"
+              aria-label="Search the Call List"
             />
             {view !== 'resting' && view !== 'finished' && (
               <>
@@ -1708,7 +1708,7 @@ export default function CallsPage() {
               aria-haspopup="dialog"
             >
               <SlidersHorizontal aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Set Up The List
+              Set Up the List
             </button>
           </div>
 
@@ -1774,7 +1774,7 @@ export default function CallsPage() {
               <PanelBody>
                 <div className="flex flex-wrap gap-2 px-5 py-2">
                   <button type="button" className={QUIET} onClick={holdBatch}>
-                    Take A Fresh Batch Of {take}
+                    Take a Fresh Batch of {take}
                   </button>
                   <button
                     type="button"
@@ -1924,7 +1924,7 @@ export default function CallsPage() {
               ) : (
                 <Maximize2 aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
               )}
-              {alone ? 'Bring The Rest Back' : 'Give It The Screen'}
+              {alone ? 'Bring the Rest Back' : 'Give It the Screen'}
             </button>
           }
         >
@@ -2065,7 +2065,7 @@ export default function CallsPage() {
           desk should not be handed the defaults again from a laptop. */}
       <SidePanel
         open={setupOpen}
-        title="Set Up The List"
+        title="Set Up the List"
         note="Set the list up the way you work it. Every change here saves to your account as you make it."
         onClose={() => setSetupOpen(false)}
       >

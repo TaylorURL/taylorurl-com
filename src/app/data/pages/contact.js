@@ -103,7 +103,7 @@ const STUDIO_CONTACT = {
     'Errors reported the moment they happen',
     'Fast pages, checked on Google’s own test',
     'Daily backups',
-    'Text and photo changes, no charge',
+    'Changes any time, no charge',
     'A small team that answers',
   ],
 }

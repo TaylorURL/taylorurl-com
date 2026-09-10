@@ -3,7 +3,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'what-makes-a-good-logo',
     title: 'What Makes a Good Logo (And Why Yours Might Need Work)',
     excerpt:
-      'Your logo is the first thing people notice about your brand. Four checks tell you whether yours is working.',
+      'Your logo is the first thing a customer sees, on your site, your Google listing, and your invoices. Four checks tell you whether yours is doing the work.',
     category: 'Design',
     date: 'October 8, 2025',
     readTime: '5 min read',
@@ -33,7 +33,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'how-to-get-more-google-reviews',
     title: 'How to Get More Google Reviews Without Being Annoying',
     excerpt:
-      'Google reviews are free and they move your ranking. Getting more of them without making it weird comes down to when you ask.',
+      'Google reviews are free and they move your ranking. Ask right after a job goes well, by text, with a short message and a link that opens the review box.',
     category: 'SEO',
     date: 'October 22, 2025',
     readTime: '5 min read',
@@ -67,14 +67,14 @@ export const BLOG_ARTICLES_3 = [
     slug: 'your-website-is-your-best-employee',
     title: 'Your Website Is Your Best Employee',
     excerpt:
-      'Your website works 24/7, never calls in sick, and talks to every potential customer. Are you treating it that way?',
+      'Your website never calls in sick and never goes home. What a good one owes you, what a stale one costs you, and how to tell which you have.',
     category: 'Business',
     date: 'November 5, 2025',
     readTime: '4 min read',
     content: [
       {
         type: 'p',
-        text: "Your website should be your best employee: the one who shows up every day, never complains, handles customer questions perfectly, and makes you look good. It's open 24 hours a day, 7 days a week, and it talks to way more people than anyone on your payroll.",
+        text: 'Your website should be your best employee: the one who shows up every day, never complains, and handles the same customer questions every time. It is open 24 hours a day, 7 days a week, and it talks to more people than anyone on your payroll.',
       },
       { type: 'h2', text: 'Why Is It the First Impression?' },
       {
@@ -84,7 +84,7 @@ export const BLOG_ARTICLES_3 = [
       { type: 'h2', text: 'What Should a Website Do for the Business?' },
       {
         type: 'p',
-        text: "A well-built website answers common questions so you don't have to. It shows off your work. It tells people exactly how to contact you or book a service. It builds trust with testimonials and real photos. It does what a great front-desk person would do, for every visitor at once, all day, every day.",
+        text: "A well-built website answers the common questions so you don't have to, shows the work you have done, and says plainly how to contact you or book a service. Testimonials and real photos build the trust behind all of it. That is the front-desk job, done for every visitor at once, all day and every day.",
       },
       { type: 'h2', text: 'How Do You Keep It Working?' },
       {
@@ -97,7 +97,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'why-fast-websites-make-more-money',
     title: 'Why Fast Websites Make More Money',
     excerpt:
-      'More than half of mobile visitors leave a page that takes longer than three seconds to load. Most of the fixes take an afternoon.',
+      'More than half of mobile visitors leave a page that takes longer than three seconds. What slows a site down, what a slow second costs, and how to check yours.',
     category: 'Site Speed',
     date: 'November 19, 2025',
     readTime: '5 min read',
@@ -123,7 +123,7 @@ export const BLOG_ARTICLES_3 = [
       },
       {
         type: 'p',
-        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, that's exactly the kind of thing we help with.",
+        text: "Run your site through Google PageSpeed Insights right now. If your score is below 70, you've got work to do. And if you're not sure what the results mean, send us the score and we will tell you what is behind it.",
       },
     ],
   },

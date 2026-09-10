@@ -2319,7 +2319,7 @@ function MailPanel({
               /* The reason is the window's and it is empty while the window is
                  open, which is the case in the last few minutes before closing:
                  open, but with the day's final run already behind it. */
-              `Nothing more goes out today${sending.reason ? `: ${sending.reason}` : ', the last run of the window has been'}. These are the order they are heard from in tomorrow.`
+              `Nothing more goes out today${sending.reason ? `: ${sending.reason}` : ', the last run that can deliver has already gone'}. These are the order they hear from the studio tomorrow.`
             ) : sending && !sending.open ? (
               `Nothing is going out right now: ${sending.reason}.`
             ) : (

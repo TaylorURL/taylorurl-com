@@ -41,7 +41,7 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'What does ongoing care include?',
-        a: 'Hosting, daily backups, security and software updates, and text or photo changes whenever you need them. If the site throws an error in a visitor’s browser, it reaches us as it happens rather than when somebody calls to tell us.',
+        a: 'Hosting, daily backups, security and software updates, changes whenever you need them, and the organic search work every month. If the site throws an error in a visitor’s browser, it reaches us as it happens rather than when somebody calls to tell us.',
       },
       {
         q: 'How is this different from working with an agency?',
@@ -70,7 +70,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'What if I need changes after launch?',
-        a: 'Text edits and photo swaps are part of the monthly. A new page or a new feature gets a price before any work starts, so nothing lands on an invoice you did not agree to.',
+        a: 'Text, photo, and page changes are part of the monthly. A new feature, like a booking system or a whole new section, gets a price before any work starts, so nothing lands on an invoice you did not agree to.',
       },
       {
         q: 'Do you only work with businesses in the Houston area?',

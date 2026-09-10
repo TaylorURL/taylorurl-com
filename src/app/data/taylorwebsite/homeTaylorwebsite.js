@@ -57,7 +57,7 @@ export const HOME = {
     eyebrow: 'TaylorURL LLC · Companies anywhere',
     headline: ['Software built.', 'Tracking fixed.'],
     headlineAccent: 'Outbound run.',
-    lede: 'One engineer does all three. A scope and a price in writing before any work starts, and a written account of what was done at the end.',
+    lede: 'The same small team does all three. A scope and a price in writing before any work starts, and a written account of what was done at the end.',
   },
 
   lines: {

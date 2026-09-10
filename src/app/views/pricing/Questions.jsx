@@ -7,11 +7,11 @@ import { GROUNDS } from '@constants/grounds'
  *
  * Every answer is in the document. Only the closed ones are marked `hidden`,
  * which takes them out of the reading order while leaving them in what a
- * crawler reads - and the same six pairs are published as FAQ markup by the
+ * crawler reads - and the same pairs are published as FAQ markup by the
  * page above, so a search result can carry an answer whether or not anybody
  * ever opens the row it sits in.
  *
- * Opening a row is what keeps six answers inside one screen. The mark turns
+ * Opening a row is what keeps the answers inside one screen. The mark turns
  * rather than swapping for a second glyph, so the control reads as one thing in
  * two states.
  *

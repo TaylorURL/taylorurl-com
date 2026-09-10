@@ -77,13 +77,13 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'This is run from Baytown, so a first meeting is a drive across town rather than a call. Tell us what the business needs and you get a reply within the hour, then a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'This is run from Baytown, so a first meeting is a drive across town rather than a call. Tell us what the business needs and you usually get a reply within the hour, then a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Houston: {
     client: 'delux-financial-solutions',
     lede: 'Twenty-six miles west on I-10, where the east side is the half of the city a Baytown studio reaches first: the ship channel terminals, the East End, and the strips along Navigation and Wayside. Websites for the businesses working that side of Houston.',
     search:
-      'Web design in Houston, TX for east-side businesses, from the ship channel to the East End. Custom sites by one developer. See Delux Financial Solutions, live.',
+      'Web design in Houston, TX for east-side businesses, from the ship channel to the East End. Custom sites from Baytown. See Delux Financial Solutions, live.',
     work: {
       title: 'Delux Financial Solutions books both kinds of appointment.',
       description:
@@ -100,7 +100,7 @@ const TOWN_PROFILES = {
       },
       {
         title: 'Half the street reads Spanish first',
-        body: 'More than half of the Greater East End is Latino, and Magnolia Park has been the center of Mexican Houston since the 1920s. A site in one language is open to half its market, and a bilingual one ranks for a second set of searches nobody local is competing for.',
+        body: 'More than half of the Greater East End is Latino, and Magnolia Park has been the center of Mexican Houston since the 1920s. A site in one language is open to half its market, and a bilingual one ranks for a second set of searches as well.',
       },
       {
         title: 'You are found standing on a platform',
@@ -108,7 +108,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and which part of Houston it trades in. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and which part of Houston it trades in. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Pasadena: {
     client: 'impressiva-printing',
@@ -139,7 +139,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business needs and whether it sells to the plants or to the street. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business needs and whether it sells to the plants or to the street. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   'Deer Park': {
     lede: 'Thirty-four thousand people with the ship channel on one side, SH 225 down the middle, and Center Street holding the civic half. Websites for the suppliers, the trades, and the shops serving both.',
@@ -169,7 +169,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and which of the plants it works for, if any. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and which of the plants it works for, if any. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   'La Porte': {
     lede: 'The fourth-largest city in Harris County, wrapped around Bayport, Battleground, and Barbours Cut, with Sylvan Beach on the other side of it. Websites for the businesses selling to a plant gate and the ones selling to a weekend.',
@@ -199,7 +199,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and whether the work is inside the fence line or out on the water. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and whether the work is inside the fence line or out on the water. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   'Mont Belvieu': {
     lede: 'Fourteen miles up SH 146 from Baytown, on the salt dome holding the largest store of natural gas liquids in the country. Websites for the contractors working the caverns and the trades following Eagle Drive out into Riceland.',
@@ -229,7 +229,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and whether it sells to the caverns or to the neighborhoods. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and whether it sells to the caverns or to the neighborhoods. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Galveston: {
     lede: 'An island of fifty-three thousand carrying a medical branch, a maritime academy, the only cruise homeport in Texas, and a beach season. Websites for the shops on the Strand, the trades along the Seawall, and the operators working the harbor.',
@@ -259,7 +259,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and whether the season carries it or the whole year does. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and whether the season carries it or the whole year does. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   'Texas City': {
     lede: 'The largest refinery in the country, a port with a railway of its own, and five miles of dike out into Galveston Bay. Websites for the contractors, the marine trades, and the shops inside Loop 197.',
@@ -289,7 +289,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and how much of it moves by rail or by water. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and how much of it moves by rail or by water. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Dayton: {
     client: 'dylan-jordan-real-estate',
@@ -316,11 +316,11 @@ const TOWN_PROFILES = {
       },
       {
         title: 'Growth arrives one subdivision at a time',
-        body: 'Dayton is taking new subdivisions faster than it is taking the trades that service them. A household three weeks into a new build has nobody to ask, so they search, call the first credible name, and that name keeps the work for years.',
+        body: 'Dayton is taking new subdivisions faster than it is taking the trades that service them. A household three weeks into a new build has nobody to ask, so they search, and the first credible name is the one they call.',
       },
     ],
     close:
-      'Tell us what the business needs and which of the towns around Dayton it works. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business needs and which of the towns around Dayton it works. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Huffman: {
     client: 'compound-scale-services',
@@ -351,7 +351,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and how far out from Huffman it travels. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and how far out from Huffman it travels. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Liberty: {
     client: 'faded-barber-shop',
@@ -382,7 +382,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does and whether its customers come off the square or off the highway. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does and whether its customers come off the square or off the highway. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Dickinson: {
     client: 'dickinson-bayou-fleeting',
@@ -413,7 +413,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business does, on the water or off it. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business does, on the water or off it. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
   Daisetta: {
     client: 'setx-football',
@@ -444,7 +444,7 @@ const TOWN_PROFILES = {
       },
     ],
     close:
-      'Tell us what the business needs and how far across Liberty County it reaches. You get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell us what the business needs and how far across Liberty County it reaches. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 }
 

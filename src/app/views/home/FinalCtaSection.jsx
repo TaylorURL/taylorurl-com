@@ -85,7 +85,7 @@ export default function FinalCtaSection() {
                   </h2>
                   <p className="max-w-[44ch] text-[16px] leading-relaxed text-[color:var(--plane-ink-soft)] sm:text-[17px]">
                     You tell us what the business does and which customers you want. Hosting,
-                    backups, monitoring, and the small changes after launch stay with us.
+                    backups, monitoring, and changes whenever you need them stay with us.
                   </p>
                 </>
               )}

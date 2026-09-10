@@ -65,7 +65,7 @@ export default function Tools() {
         ground="paper"
         eyebrow="The Tools"
         title="Pick the one you came for."
-        description="Every field starts on a sensible default, so pressing continue the whole way through still gets you a correct result."
+        description="Every option starts on a sensible default, so the only thing you have to supply is what you want the tool to work on."
         meta={`${TOOLS_INDEX.length} tools`}
       >
         <ToolCards tools={TOOLS} ground="paper" columns={{ base: 1, sm: 2 }} />
