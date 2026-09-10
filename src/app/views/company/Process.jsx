@@ -119,7 +119,7 @@ const TIMELINE_STEPS = PROCESS_TIMELINE.map((step, index) => ({
 // breaking the otherwise-static grid into something with a sense of momentum.
 function TimelineRow({ step, index }) {
   const Icon = step.icon
-  const { ref, transform } = useScrollParallax({ range: [50, -50] })
+  const { ref, transform } = useScrollParallax({ range: [30, -30] })
 
   return (
     <m.article

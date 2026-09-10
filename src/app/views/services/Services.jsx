@@ -258,7 +258,7 @@ function ServiceRow({ line, index }) {
   const row = ROWS[line.slug]
   const Mark = row.mark
   const isReversed = index % 2 === 1
-  const { ref, transform } = useScrollParallax({ range: [50, -50] })
+  const { ref, transform } = useScrollParallax({ range: [30, -30] })
 
   return (
     <m.div
