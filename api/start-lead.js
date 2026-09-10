@@ -35,6 +35,7 @@ import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
 import { recordLead, usableEmail } from '../lib/leads/record.js'
+import { SOURCES, keepLead } from '../lib/leads/spine.js'
 import { STEP_COUNT, fromPaymentPage } from '../lib/leads/paths.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
@@ -154,6 +155,24 @@ export default async function handler(request, response) {
 
   const lead = await recordLead(
     { email, trade, step, path: body.path, campaign, brief: body.brief },
+    wired.db
+  )
+
+  // The same person, written a second time where every door's leads are read
+  // together. `start_leads` keeps what the configurator knows about them - the
+  // step, the brief, the follow-up it owes - and this keeps the person, so the
+  // console can show them beside a lead who phoned or answered an ad.
+  await keepLead(
+    {
+      source: fromPaymentPage(body.path) ? SOURCES.payment : SOURCES.configurator,
+      ref: lead?.id,
+      email,
+      trade,
+      campaign,
+      brief: body.brief,
+      path: body.path,
+      step,
+    },
     wired.db
   )
 
