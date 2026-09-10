@@ -12,6 +12,7 @@ import {
   MarkPage,
   MarkPulse,
   MarkQuery,
+  MarkRack,
   MarkStack,
   MarkSteps,
   MarkTender,
@@ -64,9 +65,9 @@ import {
  * to sign in on clicking one. Settings is locked on the same terms: it is one
  * account's own arrangements, and there is nothing in it to read without one.
  *
- * Outreach, Builds, Payments and Admin are the other exceptions, and they are
- * the same kind: `admin` marks a section that is not in the menu at all unless
- * the account holds that role. A locked section is one this reader could open
+ * Server, Outreach, Builds, Payments and Admin are the other exceptions, and
+ * they are the same kind: `admin` marks a section that is not in the menu at
+ * all unless the account holds that role. A locked section is one this reader could open
  * by signing in, which is worth showing; a section for a role they will never
  * hold is not an invitation but a list of what somebody else can do, and the
  * endpoints behind them refuse any account that is not an admin, so listing
@@ -87,7 +88,8 @@ import {
  * That strip counts audience across the sites under care - who is on them now,
  * visitors, pageviews, sessions, session length and bounce - and a section
  * answering a different question puts its own figures there instead. Outreach
- * counts businesses being written to, which that strip does not measure.
+ * counts businesses being written to, and Server reads one machine that hosts
+ * none of the sites, neither of which that strip measures.
  *
  * `account: true` marks the section that answers for the account rather than
  * for anything happening on a site. It carries no traffic strip, for the same
@@ -159,6 +161,24 @@ export const SECTIONS = [
     meta: 'Live uptime for every site TaylorURL hosts and maintains: what is answering right now, any open issue, and the outages of the last thirty days.',
     public: true,
     duringBuild: true,
+  },
+  {
+    id: 'server',
+    mark: MarkRack,
+    group: 'Health',
+    path: 'server',
+    label: 'Server',
+    admin: true,
+    // The machine the studio runs, rather than one of the sites it serves.
+    // Picking a site over it narrows nothing, there is no window to put over a
+    // temperature, and the traffic strip counts an audience this section has
+    // none of.
+    account: true,
+    scope: false,
+    figures: false,
+    description: 'The machine behind the monitoring, and every routine on it.',
+    title: 'Sunday Server - Console',
+    meta: 'The Sunday Server, which runs everything visitor-facing that is not a site: how long it has been up, what it is carrying, and whether each of the routines on it is running, behind or stopped.',
   },
   {
     id: 'vitals',

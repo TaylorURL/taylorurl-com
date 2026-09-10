@@ -110,6 +110,15 @@ export const ROW_HEIGHT = {
   // either figure: after one, the placeholder is the size of the rows this
   // reader last saw, at the density they last read them at.
   callsTight: '38px',
+  // The Server section's routines: a routine's name over the sentence saying
+  // what it does, a badge over its cadence, and a relative time over the clock
+  // time in each of the last two columns - so every row is two lines and some
+  // are three where a description wraps. The mean over the whole table,
+  // measured in the work region a 1280px console gives it rather than at the
+  // viewport's own width, since the rail takes fifteen rems off it. Only a
+  // first visit reads it: after one, the placeholder is the size of the rows
+  // this reader last saw.
+  serverRoutine: '70px',
 }
 
 // The console's controls, held once. Nothing about a select or a button

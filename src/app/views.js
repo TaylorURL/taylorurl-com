@@ -80,6 +80,7 @@ const loaders = {
         ConsoleSources: () => import('@views/console/pages/traffic/SourcesPage'),
         ConsoleVisitors: () => import('@views/console/pages/traffic/VisitorsPage'),
         ConsoleVitals: () => import('@views/console/pages/health/VitalsPage'),
+        ConsoleServer: () => import('@views/console/pages/health/ServerPage'),
         ConsoleOutreach: () => import('@views/console/pages/email/OutreachPage'),
         ConsoleSettings: () => import('@views/console/pages/studio/SettingsPage'),
         ConsoleBuilds: () => import('@views/console/pages/studio/BuildsPage'),
