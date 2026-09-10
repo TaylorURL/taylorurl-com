@@ -90,13 +90,19 @@ for (const [half, part] of [
   carries(half, part, HOME, 'the address under the sign-off')
 }
 
-// A plain letter's envelope holds one image, and it is the square that says
-// whether the letter was opened. Anything else in there is a laid-out band
-// that has found its way back into a family that has no room for one.
+// A plain letter's envelope holds two images: the square that says whether the
+// letter was opened, and the signature it is signed with. Anything else in
+// there is a laid-out band that has found its way back into a family that has
+// no room for one.
 const images = [...outreach.html.matchAll(/<img[^>]*>/g)].map(match => match[0])
-const stray = images.filter(tag => !/width="1"/.test(tag))
+const stray = images.filter(tag => !/width="1"/.test(tag) && !/signature\.png/.test(tag))
 if (stray.length) {
   failures.push(`outreach HTML draws ${stray.length} image(s) beyond the open pixel`)
+}
+// The signature is what says who wrote the letter, so it has to say it with
+// the pictures turned off as well as on.
+if (!images.some(tag => /signature\.png/.test(tag) && tag.includes(`alt="${BIO_NAME},`))) {
+  failures.push('outreach HTML is unsigned, or signs with a picture that says nothing')
 }
 
 {
