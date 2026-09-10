@@ -17,12 +17,16 @@
 import {
   BOUNCE_ROLLS_BACK_OVER,
   BOUNCE_STEPS_UNDER,
-  DAILY_CAP_MAX,
   RAMP_MIN_SENDS,
 } from '../../../lib/outreach/sending/limits.js'
 import { decide, RAMP_CEILING, stepTo } from '../../../lib/outreach/sending/ramp.js'
 import { BOUNCE_DAYS } from '../../../lib/outreach/sending/bounces.js'
-import { localDay } from '../../../lib/outreach/sending/schedule.js'
+import { DELIVERS_A_DAY, localDay } from '../../../lib/outreach/sending/schedule.js'
+
+// How far up the sweep below goes. Nothing bounds the cap a person may set, so
+// this is a figure of the check's own: comfortably past what a day's runs can
+// carry, which is the point above which a larger cap changes nothing anyway.
+const SWEEP_TO = DELIVERS_A_DAY * 4
 
 const NOW = new Date('2026-08-29T12:00:00Z')
 const DAY_MS = 24 * 60 * 60 * 1000
@@ -165,19 +169,17 @@ for (const sent of [0, 13, RAMP_MIN_SENDS - 1]) {
   expect('a step yesterday does not block today', tomorrow.action, 'step')
 }
 
-// Neither ceiling can be stepped past, and the walk to the top has to actually
-// arrive rather than stalling one short of it.
+// The ceiling cannot be stepped past, and the walk to the top has to actually
+// arrive rather than stalling one short of it. The sweep runs far above the
+// ceiling because a person can set the cap anywhere, and a ramp that raised a
+// hand-set cap would be overruling them at whatever height they chose.
 {
   const clean = record({ sent: 500, bounced: 0 })
-  for (let cap = 0; cap <= DAILY_CAP_MAX; cap += 1) {
+  for (let cap = 0; cap <= SWEEP_TO; cap += 1) {
     const next = stepTo(cap)
     if (next > RAMP_CEILING) {
       failed += 1
       console.error(`cap ${cap} steps to ${next}, past the ${RAMP_CEILING} ceiling`)
-    }
-    if (next > DAILY_CAP_MAX) {
-      failed += 1
-      console.error(`cap ${cap} steps to ${next}, past the column's ${DAILY_CAP_MAX}`)
     }
     // A cap already past the ceiling was put there by hand and is left there:
     // the ramp declines to climb, and declining to climb is not a licence to
@@ -256,5 +258,6 @@ if (failed) {
 console.log(
   `the ramp steps under ${BOUNCE_STEPS_UNDER}%, holds to ${BOUNCE_ROLLS_BACK_OVER}%, rolls back\n` +
     `  over it, refuses a window under ${RAMP_MIN_SENDS} sends, ignores today and holds through\n` +
-    `  a Sunday, steps once a day, and cannot pass ${RAMP_CEILING} on its own or ${DAILY_CAP_MAX} at all`
+    `  a Sunday, steps once a day, and cannot pass ${RAMP_CEILING} on its own or raise a cap\n` +
+    `  set by hand anywhere up to ${SWEEP_TO}`
 )

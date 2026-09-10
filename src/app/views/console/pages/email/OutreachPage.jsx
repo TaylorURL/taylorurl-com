@@ -14,13 +14,13 @@ import {
 } from '@utils/outreachOpportunity'
 import {
   BOUNCE_STEPS_UNDER,
-  DAILY_CAP_MAX,
   FOLLOW_UP_DAYS,
   FOLLOW_UPS_PER_RUN,
   QUEUE_FLOOR,
   ROTATION_TARGET,
 } from '../../../../../../lib/outreach/sending/limits.js'
 import { ZONE } from '@lib/time/zone.js'
+import { DELIVERS_A_DAY } from '@lib/outreach/sending/schedule.js'
 import { SEGMENTS, segmentOf } from '@lib/outreach/segments.js'
 import { isYoung, youthOf } from '@lib/outreach/prospects/youth.js'
 import { ASKED_SOURCE } from '@lib/outreach/sending/rank.js'
@@ -450,10 +450,10 @@ const BADGE_TONE = {
   danger: 'bad',
 }
 
-// The endpoint holds both rules; the figures are here so a control can say
-// what it will take before a value it refuses is typed into it. The cap is the
-// day's, not one send run's, and the field offers the whole of it.
-const CAP_MAX = DAILY_CAP_MAX
+// The endpoint holds the rule; the figure is here so the control can say what it
+// will take before a value it refuses is typed into it. The daily cap has no
+// figure of its own any more - that field takes whatever whole number is typed
+// into it - so this is the town and trade lists alone.
 const LIST_MAX = 100
 
 /** A day and a clock time, for a stamp that is read rather than scanned. */
@@ -3477,7 +3477,6 @@ export default function OutreachPage() {
                       <input
                         type="number"
                         min="0"
-                        max={CAP_MAX}
                         step="1"
                         value={draft.daily_cap}
                         onChange={event => setEdited({ ...draft, daily_cap: event.target.value })}
@@ -3485,20 +3484,13 @@ export default function OutreachPage() {
                       />
                       <span className="text-paper-faint text-[12px] leading-relaxed">
                         The most first letters that go out in one day, counted from midnight
-                        Central. Up to {fullCount(CAP_MAX)}. The day is spaced out by this number,
-                        so a rise takes effect the next morning and a fall takes effect at once.
-                        Follow-ups are outside it.
+                        Central. There is no ceiling on it and it takes effect the moment it is
+                        saved. The day is spaced out by this number, so raising it partway through
+                        one leaves the morning's extra slots behind the clock and the runs left
+                        catch up on them. The runs inside the sending window carry{' '}
+                        {fullCount(DELIVERS_A_DAY)} between them at most. A number above that does
+                        not send more; the day ends short of it. Follow-ups are outside it.
                       </span>
-                      {/* The field holds the cap in force, which is the number
-                          the day is being spaced by. A raise taken while the
-                          window was open is not that number yet, and showing it
-                          in the field would say today is sending at it. */}
-                      {settings?.daily_cap_next != null && (
-                        <span className="text-[12px] leading-relaxed text-[color:var(--accent)]">
-                          {fullCount(settings.daily_cap_next)} a day starts tomorrow morning. Today
-                          keeps the {fullCount(settings.daily_cap ?? 0)} it was laid out for.
-                        </span>
-                      )}
                     </label>
 
                     <label className="grid gap-1.5">

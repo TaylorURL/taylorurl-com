@@ -9,6 +9,7 @@ import ScrollProgress from './ScrollProgress'
 import BackToTop from './BackToTop'
 import { matchViewKeys } from '@constants/routes'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
+import { useSmoothScroll } from '@hooks/scroll/useSmoothScroll'
 import { recordCall, recordPageView } from '@data/leads/conversion'
 import { counted } from '../../views/analytics/lib/counted.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
@@ -165,6 +166,10 @@ export default function Layout() {
   const bare = isConsole || isAuth
   const mainRef = useRef(null)
 
+  // The console and the sign-in screens hold scrollers of their own rather than
+  // scrolling as one page, so the glide is for the marketing pages alone.
+  useSmoothScroll(!bare)
+
   // Whether the served page has been adopted. The two deferred pieces at the
   // foot of this file wait on it.
   //
@@ -259,7 +264,11 @@ export default function Layout() {
     // A link carrying a fragment is asking for a place on the page rather than
     // the top of it, so it is left where it is.
     if (window.location.hash) return
-    window.scrollTo(0, 0)
+    // Instant, because the root is set to scroll smoothly so that a link to a
+    // place on a page travels there. A page change is not travel: the page a
+    // reader was on has already gone, and animating the way back up runs the
+    // whole of it past them on the way to a page they are already looking at.
+    window.scrollTo({ top: 0, behavior: 'instant' })
     // Without this a reader on the keyboard or a screen reader is left wherever
     // the last page's focus was, usually a link in the navigation, and has to
     // tab back down through the chrome to reach what they navigated to.

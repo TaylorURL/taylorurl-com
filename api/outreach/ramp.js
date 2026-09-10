@@ -49,31 +49,6 @@ export default async function handler(request, response) {
     work: async ({ db, settings, counts }) => {
       const record = await bounceRecord(db)
 
-      // A raise the console took while the window was open waits here for a day
-      // that can be laid out from its first slot. This job is the one that
-      // hands it over, because it runs at 12:00 UTC and the window opens at
-      // 13:00: the cap moves in the hour when no slot has been spent and none
-      // is owed, which is the only hour where changing the spacing is free.
-      //
-      // It happens before the reading below, so the day is judged on the cap it
-      // is about to send at rather than the one it has finished with. A missed
-      // run leaves the raise where it is and the next day takes it, which is
-      // the direction this should fail in.
-      const pending = settings.daily_cap_next ?? null
-      if (pending !== null) {
-        const { error } = await db
-          .from('outreach_settings')
-          .update({
-            daily_cap: pending,
-            daily_cap_next: null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', 1)
-        if (error) throw new Error(`the waiting cap could not be taken up: ${error.message}`)
-        settings.daily_cap = pending
-        settings.daily_cap_next = null
-      }
-
       const cap = settings.daily_cap ?? 0
 
       const verdict = decide({

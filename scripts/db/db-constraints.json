@@ -407,7 +407,7 @@
     {
       "table": "outreach_settings",
       "constraint": "outreach_settings_daily_cap_check",
-      "definition": "CHECK (((daily_cap >= 0) AND (daily_cap <= 150)))"
+      "definition": "CHECK ((daily_cap >= 0))"
     },
     {
       "table": "outreach_settings",
