@@ -309,8 +309,8 @@ export default function Footer() {
                     priced, and says "scope" for that everywhere else it speaks. */}
                 <p className="max-w-xs text-[13px] leading-relaxed text-ink-mute">
                   {IS_SECOND_SITE
-                    ? 'Tell us what you need. You get a scope and a price back at no charge.'
-                    : 'Tell us what you need. You get a plan and a price back at no charge.'}
+                    ? 'Tell us what you need and you get a scope and a price back, free.'
+                    : 'Tell us what you need and you get a plan and a price back, free.'}
                 </p>
               </div>
               <Magnet padding={50} magnetStrength={6}>
