@@ -34,6 +34,17 @@ const FIGURES = {
 // dresses its own, so the two tables answer the pointer and the keyboard alike.
 const SORT = `inline-flex cursor-pointer items-center gap-0.5 whitespace-nowrap transition-colors duration-150 ease-out-soft hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`
 
+// How the columns give way as the page narrows.
+//
+// Six columns in a phone's width is a table dragged sideways for every row,
+// and a reader who drags it loses the path they were reading on the way back.
+// What a page carried is the reason the section is open, so the path and its
+// views never leave; sessions is the next figure a reader wants and comes back
+// first; where a session began and how long it held somebody are the two the
+// rankings beside the table already answer, so they are the two to go.
+const FROM_SM = 'hidden sm:table-cell'
+const FROM_MD = 'hidden md:table-cell'
+
 /**
  * The pages read in the window, and how long each one held a reader.
  *
@@ -75,7 +86,11 @@ export default function PagesPage() {
 
   const pages = detail?.pages || []
   const peak = Math.max(1, ...pages.map(page => page.pageviews))
-  const cols = bulk ? 6 : 5
+  // The placeholder holds the same cells the head above it holds, at the same
+  // width, so a table drawn while it loads is the table that lands.
+  const cols = bulk
+    ? [CELL, CELL, CELL, `${CELL} ${FROM_SM}`, `${CELL} ${FROM_MD}`, `${CELL} ${FROM_MD}`]
+    : [CELL, CELL, `${CELL} ${FROM_SM}`, `${CELL} ${FROM_MD}`, `${CELL} ${FROM_MD}`]
 
   // Matched on what the row shows: the path, and across the account the site
   // as well, so typing a site's name finds its pages.
@@ -122,11 +137,11 @@ export default function PagesPage() {
       ? `${shown.length} of ${pages.length}`
       : `${pages.length} seen`
 
-  const heading = (key, label, width) => (
+  const heading = (key, label, width, from = '') => (
     <th
       scope="col"
       aria-sort={sort === key ? 'descending' : undefined}
-      className={`${TH} ${width} text-right`}
+      className={`${TH} ${width} ${from} text-right`}
     >
       <button
         type="button"
@@ -167,7 +182,7 @@ export default function PagesPage() {
         </div>
         <PanelBody>
           <table
-            className={`w-full ${bulk ? 'min-w-[700px]' : 'min-w-[560px]'} table-fixed border-collapse text-[13px]`}
+            className={`w-full ${bulk ? 'md:min-w-[700px]' : 'md:min-w-[560px]'} table-fixed border-collapse text-[13px]`}
             aria-busy={loading}
           >
             <thead>
@@ -181,9 +196,9 @@ export default function PagesPage() {
                   Page
                 </th>
                 {heading('pageviews', 'Views', bulk ? 'w-[13%]' : 'w-[17.5%]')}
-                {heading('sessions', 'Sessions', bulk ? 'w-[13%]' : 'w-[17.5%]')}
-                {heading('entries', 'Entries', bulk ? 'w-[13%]' : 'w-[17.5%]')}
-                {heading('avg_dwell_ms', 'Avg Time', bulk ? 'w-[13%]' : 'w-[17.5%]')}
+                {heading('sessions', 'Sessions', bulk ? 'w-[13%]' : 'w-[17.5%]', FROM_SM)}
+                {heading('entries', 'Entries', bulk ? 'w-[13%]' : 'w-[17.5%]', FROM_MD)}
+                {heading('avg_dwell_ms', 'Avg Time', bulk ? 'w-[13%]' : 'w-[17.5%]', FROM_MD)}
               </tr>
             </thead>
             <tbody ref={body}>
@@ -236,13 +251,19 @@ export default function PagesPage() {
                       <td className={`${CELL} text-right font-mono tabular-nums`}>
                         {fullCount(page.pageviews)}
                       </td>
-                      <td className={`${CELL} text-right font-mono tabular-nums text-paper-soft`}>
+                      <td
+                        className={`${CELL} ${FROM_SM} text-right font-mono tabular-nums text-paper-soft`}
+                      >
                         {fullCount(page.sessions)}
                       </td>
-                      <td className={`${CELL} text-right font-mono tabular-nums text-paper-soft`}>
+                      <td
+                        className={`${CELL} ${FROM_MD} text-right font-mono tabular-nums text-paper-soft`}
+                      >
                         {fullCount(page.entries)}
                       </td>
-                      <td className={`${CELL} text-right font-mono tabular-nums text-paper-soft`}>
+                      <td
+                        className={`${CELL} ${FROM_MD} text-right font-mono tabular-nums text-paper-soft`}
+                      >
                         {page.avg_dwell_ms ? duration(page.avg_dwell_ms) : '—'}
                       </td>
                     </tr>

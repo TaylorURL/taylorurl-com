@@ -27,6 +27,11 @@ const CHANNELS = [
   { key: 'direct', label: 'Direct', color: seriesColor(3) },
 ]
 
+// The column the campaign table drops in a phone's width, and the cells its
+// placeholder holds, so the table that loads is the table that lands.
+const FROM_SM = 'hidden sm:table-cell'
+const CAMPAIGN_CELLS = [CELL, `${CELL} ${FROM_SM}`, CELL, CELL]
+
 /** A channel's name against the colour it is drawn in. */
 function ChannelLabel({ name, color }) {
   return (
@@ -137,13 +142,17 @@ export default function SourcesPage() {
       <Panel title="Campaigns" aside="from utm tags" area="campaigns">
         {loading || campaigns.length ? (
           <PanelBody className="overflow-x-auto">
-            <table className="w-full min-w-[400px] table-fixed border-collapse text-[13px]">
+            <table className="w-full table-fixed border-collapse text-[13px] sm:min-w-[400px]">
               <thead>
                 <tr>
                   <th scope="col" className={`${TH} w-[30%]`}>
                     Source
                   </th>
-                  <th scope="col" className={`${TH} w-[26%]`}>
+                  {/* The medium is the one of the four a tagged link almost
+                      always spells the same way - cpc, email, social - so it
+                      is the one a phone can do without, and the source and the
+                      campaign beside it say which link this was. */}
+                  <th scope="col" className={`${TH} ${FROM_SM} w-[26%]`}>
                     Medium
                   </th>
                   <th scope="col" className={`${TH} w-[26%]`}>
@@ -155,7 +164,7 @@ export default function SourcesPage() {
                 </tr>
               </thead>
               <tbody>
-                {loading && <SkeletonRows cols={4} rows={4} />}
+                {loading && <SkeletonRows cols={CAMPAIGN_CELLS} rows={4} />}
                 {campaigns.map(row => (
                   <tr
                     key={`${row.source}-${row.medium}-${row.campaign}`}
@@ -164,7 +173,10 @@ export default function SourcesPage() {
                     <td className={CELL} title={row.source || undefined}>
                       <span className="block truncate">{row.source || '—'}</span>
                     </td>
-                    <td className={`${CELL} text-paper-soft`} title={row.medium || undefined}>
+                    <td
+                      className={`${CELL} ${FROM_SM} text-paper-soft`}
+                      title={row.medium || undefined}
+                    >
                       <span className="block truncate">{row.medium || '—'}</span>
                     </td>
                     <td className={`${CELL} text-paper-soft`} title={row.campaign || undefined}>

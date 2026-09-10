@@ -42,6 +42,12 @@ const FIGURES = {
 // column. Both step out there and come back once there is room for them.
 const FROM_MD = 'hidden md:table-cell'
 
+// One step narrower again. Four figures against a name in a phone's width left
+// the name a dozen characters, and the site a row is about is the one thing on
+// it that has to be readable - so a third figure waits as well, and what is
+// left is the site, what it carried, and who is on it now.
+const FROM_SM = 'hidden sm:table-cell'
+
 /**
  * The table's columns in order, each with its share of the width and, where
  * it gives way as the page narrows, the widths it is drawn at.
@@ -55,7 +61,7 @@ const COLUMNS = [
   { key: 'name', label: 'Site', width: 'w-[26%]' },
   { key: 'trend', label: 'Trend', width: 'w-[16%]', from: FROM_MD },
   { key: 'pageviews', width: 'w-[15%]' },
-  { key: 'visitors', width: 'w-[15%]' },
+  { key: 'visitors', width: 'w-[15%]', from: FROM_SM },
   { key: 'sessions', width: 'w-[14%]', from: FROM_MD },
   { key: 'live', width: 'w-[14%]' },
 ]
