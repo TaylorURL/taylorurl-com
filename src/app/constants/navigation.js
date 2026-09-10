@@ -489,7 +489,7 @@ const STUDIO_NAV_GROUPS = [
           {
             to: '/contact',
             label: 'Get in Touch',
-            summary: 'Say what the business needs. A reply usually comes within the hour.',
+            summary: 'Say what the business needs. You usually get a reply within the hour.',
             mark: MarkTalk,
           },
         ],

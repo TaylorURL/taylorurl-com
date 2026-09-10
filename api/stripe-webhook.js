@@ -53,6 +53,7 @@ import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
 import { markLead } from '../lib/leads/record.js'
+import { markLead as markSpineLead } from '../lib/leads/spine.js'
 import { openBuyerAccount } from '../lib/auth/buyer.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { SITE } from '../lib/site/current.js'
@@ -754,6 +755,7 @@ export default async function handler(request, response) {
   // than at the checkout because this is the delivery that means money moved,
   // and it is the one fact on the row worth being certain about.
   await markLead('bought', email, db)
+  await markSpineLead('bought', { email }, db)
 
   const brief = briefId(session)
   let carried = brief ? 'stuck' : null

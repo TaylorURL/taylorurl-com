@@ -228,7 +228,7 @@ export default function GooglePresenceCheck({ tool }) {
       eyebrow: 'Step Three',
       title: 'Have it put right.',
       description:
-        'The findings above travel with the message, so the reply comes from somebody who has already read them. A plan and a price come back before any work starts, and they cost nothing.',
+        'The findings above travel with the message, so the reply comes from somebody who has already read them. You get a plan and a price before any work starts, and both cost nothing.',
       answered: true,
       content: report ? (
         <ToolEnquiry

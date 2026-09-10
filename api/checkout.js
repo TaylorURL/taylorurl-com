@@ -64,6 +64,7 @@ import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout
 import { callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { markLead } from '../lib/leads/record.js'
+import { markLead as markSpineLead } from '../lib/leads/spine.js'
 import { claimReturnUrl, mintClaim } from '../lib/stripe/claim.js'
 
 const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'
@@ -228,6 +229,7 @@ export default async function handler(request, response) {
   // closes it has still reached the checkout, and that is the reading the
   // console is drawing.
   await markLead('checkout', email)
+  await markSpineLead('checkout', { email })
 
   const fields = form({
     mode: 'subscription',

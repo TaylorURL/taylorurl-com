@@ -117,7 +117,7 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
         <div>
           <p className="section-label-sm text-accent">Message Sent</p>
           <p className="text-[15px] text-ink-paper">
-            Thanks. A reply usually comes back within the hour.
+            Thanks. You usually get a reply within the hour.
           </p>
         </div>
       </div>

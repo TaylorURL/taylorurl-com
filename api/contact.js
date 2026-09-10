@@ -29,6 +29,7 @@ import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
 import { questionsFor } from '../lib/enquiry/questions.js'
 import { markLead } from '../lib/leads/record.js'
+import { SOURCES, keepLead, markLead as markSpineLead } from '../lib/leads/spine.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import {
   INK,
@@ -427,6 +428,25 @@ export default async function handler(request, response) {
   // say so. Nothing else on the site can tell them apart afterwards: the
   // attribution row deliberately holds no address.
   if (enquiry.form === 'start') await markLead('enquired', enquiry.email)
+
+  // Everybody who sends this form is a lead, whichever form it was. Until this
+  // was here the contact and tools forms recorded the campaign that produced
+  // the enquiry and threw the person away: the console counted an enquiry it
+  // could not name, and the only copy of who sent it was a message in an
+  // inbox. A deal was worked for a week out of that inbox and never appeared
+  // in the section built to show it.
+  await keepLead({
+    source: enquiry.form === 'tools' ? SOURCES.tools : SOURCES.contact,
+    email: enquiry.email,
+    name: enquiry.name,
+    phone: enquiry.phone,
+    business: enquiry.company,
+    trade: enquiry.projectType,
+    note: enquiry.message,
+    campaign: enquiry.campaign,
+    path: enquiry.path,
+  })
+  await markSpineLead('enquired', { email: enquiry.email })
 
   response.setHeader('Cache-Control', 'private, no-store')
   response.status(200).json({ ok: true })

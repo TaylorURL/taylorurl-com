@@ -45,7 +45,7 @@ const SECOND_SITE = {
     heading: 'Start with',
     accentText: 'a call.',
     description:
-      'Tell us what the work is and what it has to do when it is done. We read it and answer it ourselves, usually within the hour, and the scope and the price come back in writing before anything is charged.',
+      'Tell us what the work is and what it has to do when it is done. We read it and answer it ourselves, usually within the hour, and you get the scope and the price in writing before anything is charged.',
     secondary: null,
   },
 }
@@ -56,8 +56,8 @@ const CTA_SECONDARY = DOC.cta.secondary && serves(DOC.cta.secondary.to) ? DOC.ct
 
 /**
  * One service line's own page. The lines share a shape — what the work covers,
- * what it does not, how long it takes, what it costs — so they share a view and
- * differ only in the content `@data/serviceDetail` holds against their slug.
+ * how long it takes, what it costs — so they share a view and differ only in the
+ * content `@data/serviceDetail` holds against their slug.
  *
  * A slug no line carries reaches the 404 page. Only the lines this site sells
  * are prerendered, so this is the answer to a hand-typed address rather than to
@@ -116,16 +116,6 @@ export default function ServiceDetail() {
         lede="Everything below is part of the work. Nothing here is an upgrade."
       >
         <FactMesh items={page.covers} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="limits"
-        ground="band"
-        eyebrow="What It Does Not"
-        title="What it does not cover."
-        lede="You find this out now, not halfway through the work."
-      >
-        <FactMesh items={page.excludes} ground="band" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
 
       <ServiceSection id="terms" ground="paper" eyebrow="Time and Cost" title={DOC.termsTitle}>

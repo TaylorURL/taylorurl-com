@@ -39,7 +39,7 @@ const TIMELINE_DETAIL = [
   {
     icon: FileText,
     description:
-      'The plan comes back in writing: what gets built, what it costs, and the date it goes live. Nothing starts until the price and the plan both sit right with you.',
+      'We put the plan in writing: what gets built, what it costs, and the date it goes live. Nothing starts until the price and the plan both sit right with you.',
     client: ['Look the plan over', 'Ask any questions', 'Give the go-ahead when you’re ready'],
     taylorurl: [
       'Send a clear plan and price',
@@ -293,7 +293,7 @@ export default function Process() {
       <CtaBanner
         heading="Two to four weeks"
         accentText="from here."
-        description="Tell us what the business does and which customers you want. A plan and a price come back before any work starts."
+        description="Tell us what the business does and which customers you want. You get a plan and a price before any work starts."
         primaryLabel="Start a Project"
         primaryTo="/start"
       />

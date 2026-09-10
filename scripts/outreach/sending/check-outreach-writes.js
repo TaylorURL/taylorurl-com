@@ -118,7 +118,19 @@ function stubDb(plan) {
     return chain
   }
 
-  return { db: { from }, asked, writes }
+  // The client the pipeline is handed has functions on it as well as tables,
+  // and a reply now goes through one on its way to the lead record. A stub
+  // that only models `from` answers "db.rpc is not a function" the moment the
+  // code calls one, which reads as a fault in the code rather than a gap in
+  // the double.
+  const rpc = (name, args) => {
+    const key = `rpc:${name}`
+    asked.push(key)
+    writes.push({ key, payload: args ?? null })
+    return Promise.resolve(answerFor(key))
+  }
+
+  return { db: { from, rpc }, asked, writes }
 }
 
 /** A refusal shaped the way a Supabase client reports one. */
@@ -127,6 +139,9 @@ const refused = what => ({ data: null, error: { message: what } })
 // ── What the watch route is handed ───────────────────────────────────────
 
 const PROSPECT = { id: 'p1', email: 'owner@example.com', stage: 'contacted', replied_at: null }
+
+/** The lead row a carried reply lands on, as the merge function answers with one. */
+const LEAD_ID = 'l1'
 
 /** One inbound message, shaped the way the mailbox reader hands them over. */
 const inbound = (body, over = {}) => ({
@@ -287,6 +302,8 @@ check('watch counts a reply only once every one of its writes has landed', async
     'select:outreach_prospects': { data: [PROSPECT], error: null },
     'update:outreach_prospects': { error: null },
     'insert:outreach_messages': { error: null },
+    'rpc:lead_record': { data: { ok: true, lead_id: LEAD_ID, fresh: true }, error: null },
+    'update:leads': { error: null },
   })
 
   const counts = { examined: 0, changed: 0 }
@@ -298,6 +315,22 @@ check('watch counts a reply only once every one of its writes has landed', async
 
   same(answer.replies, 1, 'replies read')
   same(counts.changed, 1, 'rows counted as changed')
+})
+
+check('a person answering a cold letter becomes a lead', () => {
+  // The reply is what turns a name off a map into somebody worth following up,
+  // and it is the only thing that does. Read here because the failure is
+  // silent in both directions: a prospect who never replied appearing as a
+  // lead buries the ones who did, and a reply that never becomes one leaves
+  // the console showing nothing while somebody waits for an answer.
+  const text = readFileSync(join(ROOT, 'api/outreach/watch.js'), 'utf8')
+  same(text.includes('carryReply('), true, 'the reply is not carried to the lead record')
+  same(text.includes('SOURCES.outreachReply'), true, 'the door is not named')
+  same(
+    text.includes('if (!asked.optOut) {'),
+    true,
+    'somebody asking to be left alone must not become a lead'
+  )
 })
 
 // ── Send: the writes around the transport ────────────────────────────────

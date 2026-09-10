@@ -102,7 +102,7 @@ const DETAIL = {
     townsDescription:
       'Cooling season here runs March to October and the humidity load along the bay comes with it. Each town has a page and the trades it calls for most.',
     ctaDescription:
-      'Tell us how many trucks run in July and whether you sell plans. The plan and the price come back in writing before anything is built, and most sites are live in two to four weeks.',
+      'Tell us how many trucks run in July and whether you sell plans. You get the plan and the price in writing before anything is built, and most sites are live in two to four weeks.',
   },
 
   electrical: {
@@ -216,7 +216,7 @@ const DETAIL = {
     townsDescription:
       'Deed restrictions and fence heights change from one subdivision to the next out here, which is why a fence site has to know the town it is quoting in.',
     ctaDescription:
-      'Tell us what you build most of and how far you haul cedar. A plan and a price come back in writing, and you agree to both before we build anything.',
+      'Tell us what you build most of and how far you haul cedar. You get a plan and a price in writing, and you agree to both before we build anything.',
   },
 
   concrete: {
@@ -291,7 +291,7 @@ const DETAIL = {
     townsDescription:
       'St. Augustine, chinch bugs, and a nine-month growing season set the work here, and a crew that names the town it cuts in gets the yard next door.',
     ctaDescription:
-      'Tell us how many yards you cut a week and where they sit. A reply usually comes back within the hour, and the plan and the price are written down before the first page is built.',
+      'Tell us how many yards you cut a week and where they sit. You usually get a reply within the hour, and the plan and the price are written down before the first page is built.',
   },
 
   'pest-control': {
@@ -479,7 +479,7 @@ const DETAIL = {
     townsDescription:
       'The channel runs from Houston down to Galveston Bay and the work sits on both banks of it.',
     ctaDescription:
-      'Tell us what you push and where you fleet. A plan and a price come back in writing, and most sites are live in two to four weeks.',
+      'Tell us what you push and where you fleet. You get a plan and a price in writing, and most sites are live in two to four weeks.',
   },
 
   printing: {
@@ -554,7 +554,7 @@ const DETAIL = {
       'Faded Barber Shop in Liberty runs a booking site built here, with the walk-in day stated on the page instead of answered on the phone.',
     townsDescription: 'A shop draws from a few miles, so the page has to say the town out loud.',
     ctaDescription:
-      'Tell us how many chairs you run and which app you book on. A reply usually comes back within the hour, and you agree to the price before we start.',
+      'Tell us how many chairs you run and which app you book on. You usually get a reply within the hour, and you agree to the price before we start.',
   },
 
   'hair-salon': {
@@ -592,7 +592,7 @@ const DETAIL = {
     townsDescription:
       'Color clients drive further than a haircut does, so the page has to reach past the town it sits in.',
     ctaDescription:
-      'Tell us how many chairs you rent out and who books their own. The plan and the price come back in writing, and most sites are live in two to four weeks.',
+      'Tell us how many chairs you rent out and who books their own. You get the plan and the price in writing, and most sites are live in two to four weeks.',
   },
 
   fitness: {
@@ -668,7 +668,7 @@ const DETAIL = {
     townsDescription:
       'A practice draws from the towns it sits between rather than the one it is in.',
     ctaDescription:
-      'Tell us which plans you take and how many chairs you run. A written plan and price come back before anything is built, and most sites are live in two to four weeks.',
+      'Tell us which plans you take and how many chairs you run. You get a written plan and price before anything is built, and most sites are live in two to four weeks.',
   },
 
   chiropractor: {
@@ -742,7 +742,7 @@ const DETAIL = {
       'No law firm has hired us yet. The sites below are the nearest in shape, each one built and hosted from Baytown.',
     townsDescription: 'County lines decide where a case is filed, and clients search that way too.',
     ctaDescription:
-      'Tell us which practice areas you want more of. The plan and the price come back in writing, nothing starts until you approve them, and most sites are live inside a month.',
+      'Tell us which practice areas you want more of. You get the plan and the price in writing, nothing starts until you approve them, and most sites are live inside a month.',
   },
 
   accounting: {
@@ -780,7 +780,7 @@ const DETAIL = {
     townsDescription:
       'Small business clients stay close to their accountant and refer inside a town.',
     ctaDescription:
-      'Tell us the mix of tax, bookkeeping, and payroll you want more of. A reply usually comes within the hour, and the price is agreed before the first page is built.',
+      'Tell us the mix of tax, bookkeeping, and payroll you want more of. You usually get a reply within the hour, and the price is agreed before the first page is built.',
   },
 
   'real-estate': {
