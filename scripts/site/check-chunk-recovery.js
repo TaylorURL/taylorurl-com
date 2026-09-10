@@ -13,7 +13,7 @@
  * fault is read the file that answered it is long since deleted too, so this is
  * checked against how the code is written rather than against a live asset.
  *
- * Four ways it can go wrong, and each has already happened here:
+ * Five ways it can go wrong, and each has already happened here:
  *
  * A bare `lazy()` asks once. The module map records a failed URL forever and
  * keyed by URL, so nothing that asks for the same address again is asking
@@ -36,11 +36,20 @@
  * each document rather than anywhere under `src/app`. Bare, it left a reader a
  * finished page whose controls did nothing. `bootSource` is where it is written
  * now, and the last section here runs it.
+ *
+ * The fifth is not an import at all, which is how it kept its exemption while
+ * the other four were being closed one at a time. The stylesheet is a hashed
+ * file asked for exactly like the rest, and it had no retry, no boundary and no
+ * reload: Beasties leaves it deferred behind an `onload`, so a sheet that never
+ * arrives never switches on and nothing anywhere says so. #528 was that.
+ * `sheetSource` is the recovery and `sheetRecovery` is what attaches it, and
+ * the section after the boot runs both.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bootSource } from '../../vite/boot-source.js'
+import { SHEET_HANDLER, sheetRecovery, sheetSource } from '../../vite/sheet-source.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const APP = path.join(ROOT, 'src/app')
@@ -418,6 +427,173 @@ check(
   'the report drops what the engine said, which is the only account of why the bundle would not run'
 )
 
+/* ----------------------------------------------------------------------- *
+ * The sheet, which had no recovery of any kind.
+ * ----------------------------------------------------------------------- */
+
+// Every hashed file above has something behind it and the stylesheet had
+// nothing. Beasties writes the rules a route's markup needs into the head and
+// leaves the sheet on `media="print"` with an `onload` that switches it on, so
+// a sheet that does not arrive never switches, is never asked for again, and
+// reports a failure the page then does nothing about. #528 was that.
+//
+// What it costs is hidden on the route the inlined subset was computed for -
+// that markup is dressed by definition. The reader pays for it on the next
+// route, which is rendered against the previous one's subset, and on every
+// panel and dialog after that.
+//
+// Run rather than read, same as the boot: the recovery is an attribute the
+// browser calls, so the attribute is read back off the element and called.
+function sheetAttempts() {
+  const inserted = []
+  const timers = []
+  const removed = []
+  let reloads = 0
+  const head = {
+    insertBefore(node) {
+      inserted.push(node)
+      node.parentNode = head
+    },
+    removeChild(node) {
+      removed.push(node)
+    },
+  }
+  const element = () => ({
+    rel: '',
+    media: '',
+    href: '',
+    crossOrigin: '',
+    parentNode: head,
+    written: {},
+    getAttribute(name) {
+      return name in this.written ? this.written[name] : null
+    },
+    setAttribute(name, value) {
+      this.written[name] = String(value)
+    },
+    removeAttribute(name) {
+      delete this.written[name]
+    },
+  })
+  const stub = {
+    document: { createElement: element },
+    setTimeout: (run, wait) => timers.push({ run, wait }),
+    Number,
+    location: {
+      reload: () => {
+        reloads += 1
+      },
+    },
+    window: {},
+  }
+  const names = Object.keys(stub)
+  new Function(...names, sheetSource())(...names.map(name => stub[name]))
+
+  const first = element()
+  first.rel = 'stylesheet'
+  first.media = 'print'
+  first.crossOrigin = 'anonymous'
+  first.href = 'https://www.taylorurl.com/assets/index-TEST0000.css'
+
+  const asked = []
+  let link = first
+  let attempt = 0
+  // The sheet never lands, so this runs until the recovery itself gives up.
+  for (let guard = 0; guard < 8; guard += 1) {
+    stub.window[SHEET_HANDLER](link, attempt)
+    const timer = timers.shift()
+    if (!timer) break
+    timer.run()
+    const next = inserted[inserted.length - 1]
+    if (!next || next === link) break
+    asked.push({
+      href: next.href,
+      media: next.media,
+      rel: next.rel,
+      crossOrigin: next.crossOrigin,
+      onload: next.getAttribute('onload'),
+      wait: timer.wait,
+    })
+    const said = String(next.getAttribute('onerror') || '').match(
+      new RegExp(SHEET_HANDLER + '\\(this,(\\d+)\\)')
+    )
+    if (!said) break
+    link = next
+    attempt = Number(said[1])
+  }
+  return { asked, reloads, removed, served: first }
+}
+
+const sheet = sheetAttempts()
+check(
+  sheet.asked.length === 2,
+  `a sheet that did not arrive is asked for ${sheet.asked.length} more times rather than 2, so the reader keeps the inlined subset for the life of the page`
+)
+check(
+  sheet.asked.every(ask => ask.href.includes('retry=')),
+  'the sheet is asked again at the address that just failed, which is one the browser already has an answer for'
+)
+check(
+  new Set(sheet.asked.map(ask => ask.href)).size === sheet.asked.length,
+  'two attempts at the sheet share an address, so the second of them sends nothing'
+)
+check(
+  sheet.asked.every(ask => ask.media === 'print'),
+  'a retried sheet is asked for on a media query that matches, so it holds the paint the inlining exists to release'
+)
+check(
+  sheet.asked.every(ask => /media\s*=\s*'all'/.test(ask.onload || '')),
+  'a retried sheet that lands is never switched on, so the recovery fetches a file and applies none of it'
+)
+check(
+  sheet.asked.every(ask => ask.rel === 'stylesheet' && ask.crossOrigin === 'anonymous'),
+  'a retried sheet drops the attributes the first one carried, so it is fetched as something other than the sheet it replaces'
+)
+check(
+  sheet.asked.every((ask, index) => ask.wait === 350 * (index + 1)),
+  'the attempts at the sheet do not back off, so a server under load is asked three times in a moment'
+)
+check(
+  sheet.reloads === 0,
+  'a sheet that did not arrive reloads the document, which races the reload the boot already does for the deploy that deleted it'
+)
+// Rollup's preload helper appends a stylesheet it cannot already find at that
+// exact href. Take the served sheet out and it puts a second copy of the
+// address that just failed back, which fails again and rejects the chunk
+// import that asked for it - a sheet failing becomes a route failing.
+check(
+  !sheet.removed.includes(sheet.served),
+  'the sheet the document was served with is taken out of the head, so the bundle appends its own copy of the address that just failed and the chunk that asked for it rejects'
+)
+check(
+  sheet.served.getAttribute('onerror') === null,
+  'the served sheet is left holding the handler that already fired, so a second error on it starts the attempts over'
+)
+check(
+  sheet.removed.length === sheet.asked.length - 1,
+  'the attempts pile up in the head rather than each replacing the last'
+)
+
+// And the wiring, which is the half that can be correct and never reached. A
+// recovery nothing calls is the failure this file exists to make impossible.
+const BEASTIES_SHEET =
+  '<link rel="stylesheet" crossorigin href="/assets/index-TEST0000.css" media="print" onload="this.media=\'all\'">'
+const wired = sheetRecovery(
+  `<head><style>a{}</style>${BEASTIES_SHEET}<noscript>${'<link rel="stylesheet" crossorigin href="/assets/index-TEST0000.css">'}</noscript></head>`
+)
+check(
+  new RegExp(`onerror="${SHEET_HANDLER}\\(this,0\\)"`).test(wired),
+  'the sheet Beasties defers is written without a catch, so the recovery below it is never called'
+)
+check(
+  wired.indexOf(`window.${SHEET_HANDLER}=`) < wired.indexOf(`onerror="${SHEET_HANDLER}`),
+  'the handler is declared after the link that names it, so an early failure is a ReferenceError rather than a retry'
+)
+check(
+  (wired.match(/onerror=/g) || []).length === 1,
+  'the copy of the sheet inside <noscript> was given a catch too, which no script could ever run'
+)
+
 if (failures.length) {
   console.error('check-chunk-recovery: failed')
   for (const failure of failures) console.error(`  ${failure}`)
@@ -428,5 +604,6 @@ if (failures.length) {
 console.log(
   `check-chunk-recovery: ${checks} checks hold and ${read} lines across ${swept.length} files ` +
     'ask for every chunk through the retry, hold every warm-up, and fail a piece of chrome ' +
-    'without the page'
+    'without the page, and a sheet that did not arrive is asked for again rather than left ' +
+    'as the styling for the rest of the visit'
 )
