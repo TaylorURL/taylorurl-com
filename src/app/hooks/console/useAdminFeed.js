@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
+import { usePulse } from './usePulse'
 
 const ADMIN_PATH = '/api/console-admin'
+
+/** How often the document is read again: accounts sign up and sites land
+ * without this screen hearing about either. */
+const PULSE_MS = 30_000
 
 /** What a reader is told when the read behind the whole section does not land. */
 const NO_READ = 'The accounts and sites could not be read. Try again in a moment.'
@@ -73,6 +78,14 @@ export function useAdminFeed({ token, enabled }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // The same read again on a beat, held off while a change is in flight so
+  // the beat cannot race the re-read the change itself ends on.
+  usePulse(load, {
+    enabled: Boolean(token) && enabled,
+    intervalMs: PULSE_MS,
+    holdWhile: Boolean(acting),
+  })
 
   const act = useCallback(
     async (body, key) => {

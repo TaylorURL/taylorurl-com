@@ -282,9 +282,10 @@ export const SECTIONS = [
     // measure something else.
     account: true,
     scope: false,
-    description: 'Everyone who started a build, and how far each of them got.',
+    description:
+      'Everybody who raised a hand, whichever door they came through, and the desk they are answered from.',
     title: 'Leads - Console',
-    meta: 'Every address left on the first step of the configurator: the trade beside it, the screen they reached, where they arrived from, and whether they went on to enquire, open a checkout or pay.',
+    meta: 'Every lead the studio holds, read in one place: which door they came through, what they said, how far they got, and the record of every answer written to them from the console itself.',
   },
   {
     id: 'calls',
