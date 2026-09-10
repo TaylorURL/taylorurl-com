@@ -45,7 +45,7 @@ const SECOND_SITE = {
     heading: 'Start with',
     accentText: 'a call.',
     description:
-      'Tell us what the work is and what it has to do when it is done. We read it and answer it ourselves, usually within the hour, and the scope and the price come back in writing before anything is charged.',
+      'Tell us what the work is and what it has to do when it is done. We read it and answer it ourselves, usually within the hour, and we put the scope and the price in writing before anything is charged.',
     secondary: null,
   },
 }

@@ -123,7 +123,7 @@ export default function SaveSection({ summary, tradeName = '', email = '' }) {
             <div>
               <p className="section-label-sm text-accent">Brief Sent</p>
               <p className="text-[15px] text-ink-paper">
-                Thanks. A reply usually comes back within the hour.
+                Thanks. You usually get a reply within the hour.
               </p>
             </div>
           </div>

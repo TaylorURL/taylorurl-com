@@ -130,6 +130,6 @@ export const ABOUT_PAGE = {
     heading: 'Tell us about',
     accentText: 'the work.',
     description:
-      'A few sentences on what you need and what it has to do when it is done. A reply usually comes back within the hour: a straight answer on whether it is a fit, then a scope and a price.',
+      'A few sentences on what you need and what it has to do when it is done. You usually get a reply within the hour: a straight answer on whether it is a fit, then a scope and a price.',
   },
 }

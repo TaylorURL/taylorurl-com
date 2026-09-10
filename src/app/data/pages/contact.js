@@ -26,14 +26,14 @@ const STUDIO_CONTACT = {
   seo: {
     title: 'Contact the Baytown Team at TaylorURL',
     description:
-      'Tell a small Baytown web team what the business does and which customers you want. A reply usually comes within the hour, and a plan and a price before work.',
+      'Tell a small Baytown web team what the business does and which customers you want. You usually get a reply within the hour, and a plan and a price before work.',
   },
 
   hero: {
     eyebrow: 'Get in Touch',
     title: 'A plan and a price, before any work starts.',
     description:
-      'Tell us about your Baytown or Houston-area business and which customers you want walking in. The reply usually comes back within the hour, and nothing is charged to find out what it costs.',
+      'Tell us about your Baytown or Houston-area business and which customers you want walking in. You usually get a reply within the hour, and nothing is charged to find out what it costs.',
   },
 
   aside: {
@@ -69,7 +69,7 @@ const STUDIO_CONTACT = {
   form: {
     heading: 'Tell us about the business',
     confirmation:
-      'Thanks. A reply usually comes back within the hour, and a plan and a price before any work starts.',
+      'Thanks. You usually get a reply within the hour, and a plan and a price before any work starts.',
     submit: 'Get My Plan and Price',
     shortMessage: 'A sentence about the business is enough to start.',
     placeholders: {

@@ -85,7 +85,7 @@ export const HOME = {
       stage: 'You Start',
       title: 'Tell us what the work is',
       description:
-        'Send the form and say what you need built or fixed and what it has to do when it is done. A few sentences is plenty. A reply usually comes back within the hour.',
+        'Send the form and say what you need built or fixed and what it has to do when it is done. A few sentences is plenty. You usually get a reply within the hour.',
     },
     {
       step: '2',
@@ -108,7 +108,7 @@ export const HOME = {
     heading: 'Get a scope and a price',
     accentText: 'before you commit',
     description:
-      'Say what the work is and what it has to do when it is done. The reply usually comes back within the hour, and it costs nothing to find out whether it is a fit.',
+      'Say what the work is and what it has to do when it is done. You usually get a reply within the hour, and it costs nothing to find out whether it is a fit.',
     replies: [
       { Icon: Clock, label: 'Usually a reply within the hour' },
       { Icon: ReceiptText, label: 'A scope and a price before any work starts' },
