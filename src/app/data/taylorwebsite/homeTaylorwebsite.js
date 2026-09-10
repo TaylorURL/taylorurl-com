@@ -59,7 +59,7 @@ export const HOME = {
 
   lines: {
     heading: 'Three services, priced before you commit.',
-    tail: 'Each one names what it covers and what it costs.',
+    tail: 'Each one names what it covers and how long it takes.',
     cta: 'See What It Covers',
     rows: [
       { label: 'Price', key: 'price' },

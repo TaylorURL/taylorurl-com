@@ -66,7 +66,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Can I update content myself?',
-        a: 'On some sites, yes: they come with a simple editor for text and photos. On the rest, you text us the change and it goes live the same day, free. Either way, you are never sitting in a queue waiting to fix a price.',
+        a: 'On some sites, yes: they come with a simple editor for text and photos. On the rest, you text us the change and it goes live the same day at no charge. Either way, you are never sitting in a queue waiting to fix a price.',
       },
       {
         q: 'What if I need changes after launch?',
