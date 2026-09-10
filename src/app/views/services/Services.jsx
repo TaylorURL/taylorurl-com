@@ -233,7 +233,7 @@ const SECOND_SITE = {
     heading: 'Say which one',
     accentText: 'you need.',
     description:
-      'Tell us what the work is and what it has to do when it is done. We answer ourselves, usually within the hour, and we put the scope and the price in writing before anything starts.',
+      'Tell us what the work is and what it has to do when it is done. We answer ourselves, usually within the hour, and you get the scope and the price in writing before anything starts.',
     secondary: null,
   },
 }

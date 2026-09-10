@@ -358,7 +358,7 @@ export default function OnlineTools() {
         ground="paper"
         eyebrow="What Gets Wired In"
         title="Four systems, built into the site itself."
-        lede="Every one of them is part of the build rather than an upgrade sold on top of it. What each one connects to is named here, and what none of them do is named further down."
+        lede="Every one of them is part of the build rather than an upgrade sold on top of it. What each one connects to is named here."
       >
         <Foundation />
         <div className="divide-hair-paper border-hair-paper divide-y border-y">

@@ -74,7 +74,7 @@ export const ABOUT_PAGE = {
     eyebrow: 'How We Work',
     headingLine: 'What you get',
     accentText: 'on every job.',
-    lede: 'Three things that hold whichever of the three you buy, and whatever the work costs.',
+    lede: 'Three things that hold whichever service you buy, and whatever the work costs.',
   },
 
   processIntro: {

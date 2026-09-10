@@ -369,7 +369,7 @@ function Leads({ leads, loading, area, capped, onMark, saving }) {
       <PanelFoot>
         {capped
           ? 'The newest leads, up to the number one read carries. The figures above are counted over every row rather than over these.'
-          : 'Every door the studio takes a lead through writes here: the configurator and the payment page, the contact and tools forms, the speed check, the paid ads, a reply to cold outreach, and a phone call. Open a name to read what they said and to mark what has been done about them.'}
+          : 'Every door the studio takes a lead through writes here: the configurator and the payment page, the contact and tools forms, the speed check, the paid ads, a reply to cold outreach, and a phone call. Open a name to read what they said and to mark what you have done about them.'}
       </PanelFoot>
     </Panel>
   )
