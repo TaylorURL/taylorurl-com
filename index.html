@@ -478,6 +478,35 @@
           }
           return true
         }
+        // The frames underneath the reporter's own. A throw and an unhandled
+        // rejection arrive carrying a stack; a console call arrives carrying
+        // its arguments and nothing whatever about where it came from, so the
+        // test above was handed `undefined` on that path and answered false to
+        // all of it. An extension writing to `console.error` was therefore
+        // filed as a site fault on the one path the extension test could not
+        // reach - six tickets off a single page load on 2026-09-10, every one
+        // of them a userscript in the visitor's browser narrating itself in a
+        // language the site does not publish in.
+        //
+        // So the console wrappers capture a stack of their own, and this
+        // strips the frame that captured it. That frame is always the wrapper,
+        // which sits in this document and would put a site URL in front of the
+        // test every single time - the filter would stay inert with a stack in
+        // hand, which is worse than having none. It is found rather than
+        // counted from the top, because V8 heads a stack with the error itself
+        // and JSC starts straight in on the frames.
+        //
+        // What is left is the caller, and the question is the one the site
+        // already knows how to answer. Nothing the site logs can be lost here:
+        // its own code is served from this origin, never from an extension
+        // one, so a site frame survives the strip and reports as it always has.
+        function callerFrames(stack) {
+          var lines = String(stack || '').split('\n')
+          for (var i = 0; i < lines.length; i += 1) {
+            if (lines[i].indexOf('://') > -1) return lines.slice(i + 1).join('\n')
+          }
+          return ''
+        }
         // The site's tags fan out to endpoints the site never names. It writes
         // one script tag for Google's tag library and one for the Meta pixel,
         // and the vendor's script does the rest: the conversion beacon at
@@ -760,17 +789,33 @@
         // A library writing to these is addressing whoever maintains the site
         // rather than whoever is reading the page, so the message travels to the
         // collector instead of to the visitor's console.
+        //
+        // Each of these captures its stack where it stands rather than calling
+        // something to do it, because a helper would be the frame the strip
+        // takes and the wrapper would survive into the test.
         ;['error', 'warn', 'trace'].forEach(function (level) {
           var original = console[level]
           console[level] = function () {
-            report('console', flatten(arguments, 0))
+            var where
+            try {
+              throw new Error('reporter')
+            } catch (error) {
+              where = error.stack
+            }
+            report('console', flatten(arguments, 0), callerFrames(where))
             if (loud) original.apply(console, arguments)
           }
         })
         var originalAssert = console.assert
         console.assert = function (condition) {
           if (condition) return
-          report('console', 'Assertion failed: ' + flatten(arguments, 1))
+          var where
+          try {
+            throw new Error('reporter')
+          } catch (error) {
+            where = error.stack
+          }
+          report('console', 'Assertion failed: ' + flatten(arguments, 1), callerFrames(where))
           if (loud) originalAssert.apply(console, arguments)
         }
         if (window.fetch) {
