@@ -692,6 +692,29 @@ export default function ConsoleFrame() {
     return <Navigate to={briefSent ? '/console/project' : '/console/onboarding'} replace />
   }
 
+  // A section marked for an admin is shut to everybody else, not merely absent
+  // from their menu.
+  //
+  // `admin` was read by `menuSections` and nowhere else, which took the row out
+  // of the column and left the address open. Anybody with a login could type
+  // /console/server, or follow a link somebody had pasted, and get the studio's
+  // own machine drawn around them - the units on it named, its card and its
+  // temperature laid out - while the feed underneath refused every read. What
+  // was kept back was the figures; what was handed over was the section, which
+  // is most of what those pages say. The same address answers the same way for
+  // Outreach, Builds, Leads, Call List, Payments and Admin, because they carry
+  // the same mark for the same reason.
+  //
+  // The role rides in on the overview read, so this waits for that read to land
+  // rather than acting on an unknown role. Redirecting while it is unknown
+  // would throw an admin off their own section on every refresh, and an
+  // unreachable collector would do it on sections that were working. Until it
+  // lands the menu is already drawing as a client's, so the two agree.
+  const roleKnown = preview || Boolean(overview.data)
+  if (!publicOnly && roleKnown && role !== 'admin' && section?.admin) {
+    return <Navigate to="/console" replace />
+  }
+
   // The site in scope, and the name it goes by. Every section reads these to
   // decide which of its two readings to draw, so the whole console turns on one
   // value rather than each section working it out from the id again. A scope of

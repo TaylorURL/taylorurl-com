@@ -65,18 +65,25 @@ import {
  * to sign in on clicking one. Settings is locked on the same terms: it is one
  * account's own arrangements, and there is nothing in it to read without one.
  *
- * Server, Outreach, Builds, Payments and Admin are the other exceptions, and
- * they are the same kind: `admin` marks a section that is not in the menu at
- * all unless the account holds that role. A locked section is one this reader could open
- * by signing in, which is worth showing; a section for a role they will never
- * hold is not an invitation but a list of what somebody else can do, and the
- * endpoints behind them refuse any account that is not an admin, so listing
- * them to a client offers a door that answers only by refusing.
+ * Server, Outreach, Builds, Leads, Call List, Payments and Admin are the other
+ * exceptions, and they are the same kind: `admin` marks a section only an admin
+ * account may open. A locked section is one this reader could open by signing
+ * in, which is worth showing; a section for a role they will never hold is not
+ * an invitation but a list of what somebody else can do, and the endpoints
+ * behind them refuse any account that is not an admin, so listing them to a
+ * client offers a door that answers only by refusing.
  *
- * Neither mark is what keeps anything private. The collector verifies the
- * session on every request and answers by account, and the admin endpoints
- * refuse any account that is not an admin, so this only decides how the menu
- * reads.
+ * That mark takes the row out of the menu and shuts the address, and it has to
+ * do both. Read by the menu alone it left every one of those sections a URL
+ * away from anybody with a login: the endpoints refused the figures, and the
+ * section drew anyway, which on Server is the studio's own machine named and
+ * laid out in front of a client. So `ConsoleFrame` reads the mark a second
+ * time and sends a reader who is not an admin back to the Overview.
+ *
+ * Neither mark is the last word on it. The collector verifies the session on
+ * every request and answers by account, and the admin endpoints refuse any
+ * account that is not an admin, so nothing here is what keeps a figure back -
+ * this decides which sections a reader is offered and allowed to open.
  *
  * `menu: false` keeps a section out of the column while leaving it a section.
  * Settings is reached from the account panel at the head of the column, which is
