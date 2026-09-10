@@ -39,6 +39,18 @@
         "definition": "CHECK ((source = ANY (ARRAY['configurator'::text, 'payment'::text, 'contact'::text, 'tools'::text, 'speed-check'::text, 'ad'::text, 'outreach-reply'::text, 'call'::text])))"
       }
     },
+    "live_chat_messages": {
+      "role": {
+        "constraint": "live_chat_messages_role_check",
+        "allows": ["visitor", "assistant"],
+        "definition": "CHECK ((role = ANY (ARRAY['visitor'::text, 'assistant'::text])))"
+      },
+      "verdict": {
+        "constraint": "live_chat_messages_verdict_check",
+        "allows": ["clear", "watch", "refuse"],
+        "definition": "CHECK ((verdict = ANY (ARRAY['clear'::text, 'watch'::text, 'refuse'::text])))"
+      }
+    },
     "newsletter_issues": {
       "status": {
         "constraint": "newsletter_issues_status_check",
