@@ -40,7 +40,6 @@ import {
   SkeletonBar,
   SkeletonList,
   SkeletonRows,
-  StatCard,
   ViewNav,
 } from '../../ui'
 import {
@@ -53,6 +52,7 @@ import {
   TH_TIGHT as TH,
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
+import { Figures } from '../../Figures'
 import { fullCount, percent } from '../../../analytics/lib/format'
 
 /**
@@ -2825,6 +2825,113 @@ export default function OutreachPage() {
   // its standing figure under a cap larger than it is a floor the day walks
   // past, and the tile would read good on the morning the queue emptied.
   const queueFloor = queueFloorFor(cap)
+  /**
+   * The rotation, as records.
+   *
+   * Every figure on this strip is already measured out of something - a
+   * target, a floor, the day's cap, everybody ever written to - so the
+   * promoted one is drawn on that scale with the bar it answers to marked on
+   * it. A queue under its floor is the one thing here that needs a person, so
+   * it takes the lede on its own when it happens.
+   */
+  const outreachFigures = useMemo(() => {
+    const contacted = data?.contacted_ever ?? 0
+    const replied = data?.replied ?? 0
+    const short = queued === null ? 0 : Math.max(0, queueFloor - queued)
+
+    return [
+      {
+        key: 'rotation',
+        label: 'In Rotation',
+        gloss: 'Businesses hearing from the studio every month.',
+        value: `${fullCount(rotation)} / ${fullCount(ROTATION_TARGET)}`,
+        caption: `${fullCount(Math.max(0, ROTATION_TARGET - rotation))} short of the target`,
+        tone: rotation ? 'good' : 'plain',
+        loading,
+        facts: [
+          [fullCount(rotation), 'on the rotation'],
+          [fullCount(ROTATION_TARGET), 'the target'],
+          [fullCount(contacted), 'written to ever'],
+        ],
+        room: {
+          kind: 'progress',
+          at: rotation,
+          of: ROTATION_TARGET,
+          target: ROTATION_TARGET,
+          note: `${fullCount(rotation)} of a ${fullCount(ROTATION_TARGET)} rotation`,
+        },
+      },
+      {
+        key: 'queued',
+        label: 'Queued',
+        gloss: 'Waiting on a first letter.',
+        value: `${fullCount(queued)} / ${fullCount(queueFloor)}`,
+        caption: short ? `${fullCount(short)} under the floor` : 'above the floor',
+        tone: queued === null ? 'plain' : queued < queueFloor ? 'warn' : 'good',
+        urgent: queued !== null && queued < queueFloor,
+        loading: mailLoading,
+        facts: [
+          [fullCount(queued), 'in the line'],
+          [fullCount(queueFloor), 'the floor'],
+          [fullCount(cap), 'a day at most'],
+        ],
+        room: {
+          kind: 'progress',
+          at: queued || 0,
+          of: Math.max(queueFloor, queued || 0),
+          target: queueFloor,
+          note: short
+            ? `${fullCount(short)} short of the floor the day walks past`
+            : `${fullCount(queued)} waiting, floor of ${fullCount(queueFloor)}`,
+        },
+      },
+      {
+        key: 'today',
+        label: 'Contacted Today',
+        gloss: 'First letters sent since midnight.',
+        value: `${fullCount(today)} / ${fullCount(cap)}`,
+        caption: cap ? `${fullCount(Math.max(0, cap - today))} left in the day` : null,
+        tone: cap && today >= cap ? 'warn' : 'plain',
+        loading,
+        room: cap
+          ? {
+              kind: 'progress',
+              at: today,
+              of: cap,
+              target: cap,
+              note: `${fullCount(today)} of the day's ${fullCount(cap)}`,
+            }
+          : null,
+      },
+      {
+        key: 'replied',
+        label: 'Replied',
+        gloss: 'Wrote back to a letter.',
+        value: fullCount(replied),
+        caption: `of ${fullCount(contacted)} contacted`,
+        tone: replied ? 'good' : 'plain',
+        loading,
+        room: contacted
+          ? {
+              kind: 'progress',
+              at: replied,
+              of: contacted,
+              note: `${fullCount(replied)} of ${fullCount(contacted)} wrote back`,
+            }
+          : null,
+      },
+      {
+        key: 'rate',
+        label: 'Reply Rate',
+        gloss: 'Replies as a share of everybody ever written to.',
+        value: percent(data?.reply_rate),
+        caption: `${fullCount(replied)} of ${fullCount(contacted)}`,
+        tone: data?.reply_rate ? 'good' : 'plain',
+        loading,
+      },
+    ]
+  }, [cap, data, loading, mailLoading, queued, queueFloor, rotation, today])
+
   const sending = Boolean(settings?.sending_enabled)
   const sourcing = Boolean(settings?.sourcing_enabled)
 
@@ -3155,43 +3262,7 @@ export default function OutreachPage() {
       <Area area="stats">
         <ConsoleError>{error}</ConsoleError>
 
-        <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
-          <StatCard
-            label="In Rotation"
-            value={`${fullCount(rotation)} / ${fullCount(ROTATION_TARGET)}`}
-            caption="hearing from the studio monthly"
-            tone={rotation ? 'good' : 'plain'}
-            loading={loading}
-          />
-          <StatCard
-            label="Queued"
-            value={`${fullCount(queued)} / ${fullCount(queueFloor)}`}
-            caption="waiting on a first letter"
-            tone={queued === null ? 'plain' : queued < queueFloor ? 'warn' : 'good'}
-            loading={mailLoading}
-          />
-          <StatCard
-            label="Contacted Today"
-            value={`${fullCount(today)} / ${fullCount(cap)}`}
-            caption="first letters since midnight"
-            tone={cap && today >= cap ? 'warn' : 'plain'}
-            loading={loading}
-          />
-          <StatCard
-            label="Replied"
-            value={fullCount(data?.replied)}
-            caption={`of ${fullCount(data?.contacted_ever)} contacted`}
-            tone={data?.replied ? 'good' : 'plain'}
-            loading={loading}
-          />
-          <StatCard
-            label="Reply Rate"
-            value={percent(data?.reply_rate)}
-            caption="of all contacted"
-            tone={data?.reply_rate ? 'good' : 'plain'}
-            loading={loading}
-          />
-        </m.div>
+        <Figures figures={outreachFigures} pinned="rotation" busy={loading} />
       </Area>
 
       <Area area="views">

@@ -10,7 +10,7 @@ import {
   SlidersHorizontal,
   X,
 } from 'lucide-react'
-import { EASE, fadeInUp } from '@constants/animations'
+import { EASE } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
 import { useCallDesk } from '@hooks/console/useCallDesk'
@@ -64,7 +64,6 @@ import {
   ShareBar,
   SidePanel,
   SkeletonRows,
-  StatCard,
   ViewNav,
 } from '../../ui'
 import {
@@ -87,6 +86,7 @@ import {
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
+import { Figures } from '../../Figures'
 import { fullCount } from '../../../analytics/lib/format'
 import CallHandbook from './CallHandbook'
 import CallBoard from './CallBoard'
@@ -1173,7 +1173,103 @@ export default function CallsPage() {
   // existing while that happened, so they stay on screen and the head says the
   // list is a question behind.
   const rows = useMemo(() => shown?.rows || [], [shown])
-  const totals = shown?.totals || {}
+  const totals = useMemo(() => shown?.totals || {}, [shown])
+
+  /**
+   * The list, as records.
+   *
+   * They count every business on the list rather than the page in front of the
+   * caller, which is what the line above the strip has always said. The
+   * promoted figure is drawn against that list, so a number is read as a share
+   * of the work rather than as a bare count.
+   */
+  const callFigures = useMemo(() => {
+    const call = totals.call ?? 0
+    const due = totals.due ?? 0
+    const fresh = totals.fresh ?? 0
+    const ready = totals.ready ?? 0
+    const resting = totals.resting ?? 0
+    const booked = totals.booked ?? 0
+    const closed = totals.closed ?? 0
+    const held = desk.held.size
+    const list = call + resting + booked + closed
+    const share = (at, note) => (list ? { kind: 'progress', at, of: list, note } : null)
+
+    return [
+      {
+        key: 'call',
+        label: 'To Call',
+        gloss: 'Ready to ring right now, whatever the page in front of you shows.',
+        value: loading ? '' : fullCount(call),
+        caption: list ? `of ${fullCount(list)} on the list` : null,
+        loading,
+        facts: [
+          [fullCount(due), 'asked to be rung back'],
+          [fullCount(fresh), 'never tried'],
+          [fullCount(ready), 'rested and ready'],
+        ],
+        room: call
+          ? {
+              kind: 'parts',
+              parts: [
+                { key: 'due', label: 'Due back', value: due, text: fullCount(due), tone: 'accent' },
+                { key: 'fresh', label: 'Never called', value: fresh, text: fullCount(fresh) },
+                { label: 'Rested', value: ready, text: fullCount(ready) },
+              ].filter(part => part.value > 0),
+            }
+          : null,
+      },
+      {
+        key: 'due',
+        label: 'Due Back',
+        gloss: 'Asked to be rung back by a time that has passed.',
+        value: loading ? '' : fullCount(due),
+        caption: call ? `of ${fullCount(call)} ready to ring` : null,
+        tone: due ? 'accent' : 'plain',
+        loading,
+        room: share(due, `${fullCount(due)} of ${fullCount(list)} are owed a call back`),
+      },
+      {
+        key: 'fresh',
+        label: 'Never Called',
+        gloss: 'Nobody has tried this number.',
+        value: loading ? '' : fullCount(fresh),
+        caption: list ? `of ${fullCount(list)} on the list` : null,
+        loading,
+        room: share(fresh, `${fullCount(fresh)} of ${fullCount(list)} have never been tried`),
+      },
+      {
+        key: 'resting',
+        label: 'Resting',
+        gloss: 'Rung recently and waiting out the gap before the next try.',
+        value: loading ? '' : fullCount(resting),
+        caption: list ? `of ${fullCount(list)} on the list` : null,
+        loading,
+        room: share(resting, `${fullCount(resting)} of ${fullCount(list)} are waiting out a gap`),
+      },
+      {
+        key: 'held',
+        label: 'On a Call',
+        gloss: 'Numbers somebody has open this minute.',
+        value: desk.loading ? '' : fullCount(held),
+        caption: held ? 'somebody is on the phone' : 'nobody is on a call',
+        tone: held ? 'accent' : 'plain',
+        pulse: true,
+        loading: desk.loading,
+      },
+      {
+        key: 'booked',
+        label: 'Booked',
+        gloss: 'Came off the list as work.',
+        value: loading ? '' : fullCount(booked),
+        caption: list ? `of ${fullCount(list)} on the list` : null,
+        tone: 'good',
+        loading,
+        room: share(booked, `${fullCount(booked)} of ${fullCount(list)} became work`),
+      },
+    ]
+  }, [desk.held.size, desk.loading, loading, totals])
+
   const matchedTotals = shown?.matched_totals || {}
 
   // The lists the dropdowns offer and the pager's count of pages describe the
@@ -1512,51 +1608,7 @@ export default function CallsPage() {
             These count every business on the list, not the page in front of you.
           </p>
 
-          <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
-            <StatCard
-              label="To Call"
-              value={loading ? '' : fullCount(totals.call ?? 0)}
-              caption="ready to ring right now"
-              loading={loading}
-            />
-            <StatCard
-              label="Due Back"
-              value={loading ? '' : fullCount(totals.due ?? 0)}
-              caption="asked to be rung back by now"
-              tone={totals.due ? 'accent' : 'plain'}
-              loading={loading}
-            />
-            <StatCard
-              label="Never Called"
-              value={loading ? '' : fullCount(totals.fresh ?? 0)}
-              caption="nobody has tried this number"
-              loading={loading}
-            />
-            <StatCard
-              label="Resting"
-              value={loading ? '' : fullCount(totals.resting ?? 0)}
-              caption="rung recently, waiting out their gap"
-              loading={loading}
-            />
-            {/* The one figure on the strip that is about right now rather than
-                about the table, which is why it pulses and why it sits beside the
-                rest instead of somewhere on its own. */}
-            <StatCard
-              label="On a Call"
-              value={desk.loading ? '' : fullCount(desk.held.size)}
-              caption="numbers somebody is on this minute"
-              tone={desk.held.size ? 'accent' : 'plain'}
-              pulse
-              loading={desk.loading}
-            />
-            <StatCard
-              label="Booked"
-              value={loading ? '' : fullCount(totals.booked ?? 0)}
-              caption="came off the list as work"
-              tone="good"
-              loading={loading}
-            />
-          </m.div>
+          <Figures figures={callFigures} pinned="call" busy={loading} />
 
           <ViewNav
             views={CALL_VIEWS.map(one => ({

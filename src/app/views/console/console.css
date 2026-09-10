@@ -92,6 +92,11 @@
 .console-nav-group-head,
 .console-stat-label,
 .console-stat-caption,
+.figures-lede-label,
+.figures-lede-caption,
+.figures-tile-label,
+.figures-tile-caption,
+.figures-set,
 .console-segmented button,
 .console-foot-button,
 .console-brand-word,
@@ -911,10 +916,22 @@
 
 /* ── The work ─────────────────────────────────────────────────────────── */
 
-/* The strip fits the figures it was given. A fixed six-column track leaves two
-   dead cells on any section carrying four, and the status page carries two
-   strips at once, so the hole sat mid-page under a full row. auto-fit lets each
-   strip fill its own row whatever it holds. */
+/* THE FIGURE STRIP
+   -------------------------------------------------------------------------
+   One figure at reading size with the room to answer what it raises, and the
+   rest under it as tiles. The old strip put eight or ten figures at one weight
+   in one row, which is eight or ten things to decide between and no place for
+   the eye to land; it also sized each strip's columns for itself, so a page
+   carrying two strips drew one at six across and the other at four and the
+   two read as separate components stacked.
+
+   The count is not fixed anywhere in here. `--cols` is handed in by the
+   component, which picks it by dividing the tiles into rows rather than
+   filling a track and letting the remainder stretch. */
+/* The flat strip, for the pages whose figures are peers. The figure strip
+   below promotes one; a page with nothing to promote lays them in one row and
+   lets the row fit what it was given, since a fixed track leaves dead cells on
+   any section carrying fewer. */
 .console-stats {
   display: grid;
   gap: var(--console-gap);
@@ -930,8 +947,7 @@
 /* At the desk width the strip is one row whatever it holds. The section under
    it is laid out into the height the strip leaves, and a strip that wraps to
    two rows on a narrower desk takes a hundred pixels the section was counting
-   on. Six figures at the narrowest desk are a hundred and twenty pixels each,
-   which the tile's tighter inset below the wide breakpoint is for. */
+   on. */
 @media (min-width: 1024px) {
   .console-stats {
     grid-auto-flow: column;
@@ -992,6 +1008,428 @@
 .console-stat-caption {
   @apply truncate text-[12px];
   color: var(--paper-ink-faint);
+}
+
+.figures {
+  display: grid;
+  gap: calc(var(--console-gap) * 0.75);
+}
+
+.figures-note {
+  @apply text-[12px];
+  color: var(--paper-ink-faint);
+}
+
+/* ---- the promoted figure ---- */
+
+.figures-lede {
+  display: grid;
+  gap: 1.25rem;
+  grid-template-columns: minmax(0, 1fr);
+  padding: 0.9rem 1.15rem 1rem;
+  border-radius: var(--console-radius);
+  background-color: var(--console-card-bg);
+  box-shadow: var(--console-card-shadow);
+}
+
+/* The room only earns its column once there is space for it to be read in.
+   Below the desk width the chart sits under the figure instead. */
+@media (min-width: 900px) {
+  .figures-lede:not([data-room='none']) {
+    grid-template-columns: minmax(13rem, 19rem) minmax(0, 1fr);
+  }
+}
+
+/* With nothing to draw, the facts take the width rather than the card holding
+   a column of air where a chart would have been. */
+.figures-lede[data-room='none'] .figures-facts {
+  gap: 0.35rem 1.6rem;
+}
+
+.figures-lede-label {
+  @apply flex items-center gap-2 text-[13px];
+  color: var(--paper-ink-mute);
+}
+
+.figures-window {
+  @apply ml-auto font-mono text-[11px] tracking-[0.03em];
+  color: var(--paper-ink-ghost);
+}
+
+.figures-lede-value {
+  @apply min-h-[42px] text-[40px] font-semibold tabular-nums leading-none tracking-[-0.03em];
+  margin-top: 0.35rem;
+  color: var(--paper-ink);
+}
+
+.figures-lede-caption {
+  @apply mt-2 text-[13px];
+  color: var(--paper-ink-faint);
+}
+
+/* The second questions the figure raises, answered in place rather than behind
+   a link into a section. */
+.figures-facts {
+  @apply mt-3 flex flex-wrap gap-x-6 gap-y-1 pt-3;
+  border-top: 1px solid var(--paper-hairline);
+}
+
+.figures-facts li {
+  @apply flex min-w-0 flex-col text-[12px];
+  color: var(--paper-ink-faint);
+}
+
+.figures-facts b {
+  @apply text-[15px] font-semibold tabular-nums;
+  color: var(--paper-ink-soft);
+}
+
+/* ---- the rest, held quiet ---- */
+
+.figures-support {
+  display: grid;
+  gap: calc(var(--console-gap) * 0.75);
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr));
+}
+
+@media (max-width: 899px) {
+  .figures-support {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 599px) {
+  .figures-support {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.figures-set {
+  @apply flex items-baseline justify-between gap-4 pt-1 text-[11px] font-semibold uppercase tracking-[0.07em];
+  grid-column: 1 / -1;
+  margin-bottom: -0.35rem;
+  color: var(--paper-ink-faint);
+}
+
+.figures-set .figures-window {
+  @apply font-normal normal-case;
+}
+
+.figures-tile {
+  @apply block w-full min-w-0 cursor-pointer px-4 pb-3 pt-2.5 text-left;
+  border-radius: var(--console-radius);
+  background-color: var(--console-card-bg);
+  box-shadow: var(--console-card-shadow);
+  transition:
+    transform var(--nav-duration) var(--ease-out-soft),
+    box-shadow var(--nav-duration) var(--ease-out-soft);
+}
+
+.figures-tile:hover,
+.figures-tile:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: var(--console-card-shadow), var(--console-float-shadow);
+}
+
+.figures-tile-label {
+  @apply flex items-center gap-2 text-[12px];
+  color: var(--paper-ink-mute);
+}
+
+.figures-tile-value {
+  @apply mt-1 block min-h-[26px] text-[23px] font-semibold tabular-nums leading-none tracking-tight;
+  color: var(--paper-ink);
+}
+
+.figures-tile-caption {
+  @apply mt-1.5 block truncate text-[12px];
+  color: var(--paper-ink-faint);
+}
+
+/* A tile is a way in, and it says so only while it is being considered. */
+.figures-tile-open {
+  @apply block h-0 overflow-hidden text-[11px] opacity-0;
+  color: var(--accent);
+  transition:
+    height var(--nav-duration) var(--ease-out-soft),
+    opacity var(--nav-duration) var(--ease-out-soft),
+    margin-top var(--nav-duration) var(--ease-out-soft);
+}
+
+.figures-tile:hover .figures-tile-open,
+.figures-tile:focus-visible .figures-tile-open {
+  @apply mt-1.5 h-[14px] opacity-100;
+}
+
+/* ---- what the two shapes share ---- */
+
+.figures-dot {
+  @apply inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full;
+  background-color: var(--accent);
+}
+
+.figures-lede[data-tone='accent'] .figures-lede-value,
+.figures-tile[data-tone='accent'] .figures-tile-value {
+  color: var(--accent);
+}
+
+.figures-lede[data-tone='warn'] .figures-lede-value,
+.figures-tile[data-tone='warn'] .figures-tile-value {
+  color: var(--warn);
+}
+
+.figures-lede[data-tone='good'] .figures-lede-value,
+.figures-tile[data-tone='good'] .figures-tile-value {
+  color: var(--good);
+}
+
+.figures-lede[data-tone='danger'] .figures-lede-value,
+.figures-tile[data-tone='danger'] .figures-tile-value {
+  color: var(--danger-on-paper);
+}
+
+.figures-skeleton {
+  @apply block h-[0.8em] w-[2.5ch] animate-pulse rounded-[var(--r-tiny)];
+  background-color: color-mix(in srgb, var(--paper-ink-soft) 15%, transparent);
+}
+
+/* The definition a caption used to spend a line on, moved to where it is asked
+   for. It is read once and then costs nothing. */
+.figures-gloss {
+  @apply relative cursor-help underline decoration-dotted underline-offset-[3px];
+  text-decoration-color: var(--paper-ink-ghost);
+}
+
+.figures-gloss::after {
+  @apply pointer-events-none absolute bottom-[calc(100%+7px)] left-[-0.5rem] z-30 w-max max-w-[15rem] px-2 py-1.5 text-[12px] leading-tight no-underline opacity-0;
+  content: attr(data-gloss);
+  border-radius: var(--console-radius-sm);
+  background-color: var(--console-card-bg);
+  box-shadow: var(--console-card-shadow), var(--console-float-shadow);
+  color: var(--paper-ink-soft);
+  transform: translateY(3px);
+  transition:
+    opacity var(--nav-duration) var(--ease-out-soft),
+    transform var(--nav-duration) var(--ease-out-soft);
+}
+
+.figures-gloss:hover::after,
+.figures-gloss:focus-visible::after {
+  @apply opacity-100;
+  transform: none;
+}
+
+/* ---- the room: a history ---- */
+
+.figures-chart {
+  @apply relative flex min-w-0 flex-col justify-end;
+  color: var(--accent);
+}
+
+.figures-lede[data-tone='warn'] .figures-chart {
+  color: var(--warn);
+}
+
+.figures-lede[data-tone='danger'] .figures-chart {
+  color: var(--danger-on-paper);
+}
+
+.figures-chart svg {
+  @apply block h-[108px] w-full;
+}
+
+.figures-chart-area {
+  stroke: none;
+}
+
+.figures-chart-line {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.figures-chart-base {
+  stroke: var(--paper-hairline);
+}
+
+.figures-chart-guide {
+  stroke: var(--paper-hairline-strong);
+}
+
+.figures-chart-knot {
+  fill: var(--console-card-bg);
+  stroke: currentColor;
+  stroke-width: 1.6;
+}
+
+.figures-chart-ticks {
+  @apply mt-1 flex justify-between font-mono text-[10px] tracking-[0.03em];
+  color: var(--paper-ink-ghost);
+}
+
+.figures-chart-ticks span[data-on='yes'] {
+  color: var(--paper-ink-soft);
+}
+
+.figures-chart-readout {
+  @apply pointer-events-none absolute right-0 top-0 flex items-baseline gap-1.5 px-2 py-1 text-[12px] opacity-0;
+  border-radius: var(--r-tiny);
+  background-color: var(--paper);
+  box-shadow: var(--console-card-shadow);
+  color: var(--paper-ink-soft);
+  transition: opacity var(--nav-duration) var(--ease-out-soft);
+}
+
+.figures-chart-readout[data-shown='yes'] {
+  @apply opacity-100;
+}
+
+.figures-chart-readout b {
+  @apply font-semibold tabular-nums;
+  color: var(--paper-ink);
+}
+
+/* The chart is drawn on when the promoted figure changes and never on a read.
+   Every section re-reads on a timer, and a chart that grows from nothing on
+   each read is a chart that is never still long enough to be read - which is
+   the decision `chartKit`'s ANIMATE already holds for the recharts charts.
+   Promotion is something the reader did, so it is allowed one beat. */
+.figures-chart[data-motion='on'] .figures-chart-area {
+  animation: figures-wipe 420ms var(--ease-out-soft) both;
+}
+
+.figures-chart[data-motion='on'] .figures-chart-line {
+  animation: figures-draw 420ms var(--ease-out-soft) both;
+  stroke-dasharray: 1000;
+}
+
+@keyframes figures-wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes figures-draw {
+  from {
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* ---- the room: what a figure is made of ---- */
+
+.figures-parts {
+  @apply flex min-w-0 flex-col justify-end gap-3;
+}
+
+.figures-parts-bar {
+  @apply flex h-2 gap-[3px] overflow-hidden;
+}
+
+.figures-parts-bar span {
+  width: var(--share);
+  border-radius: 2px;
+  background-color: color-mix(in srgb, var(--paper-ink-soft) 18%, transparent);
+  transition: width var(--nav-duration) var(--ease-out-soft);
+}
+
+.figures-parts-bar span[data-tone='accent'] {
+  background-color: color-mix(in srgb, var(--accent) 45%, transparent);
+}
+
+.figures-parts-bar span[data-tone='good'] {
+  background-color: color-mix(in srgb, var(--good) 45%, transparent);
+}
+
+.figures-parts-bar span[data-tone='warn'] {
+  background-color: color-mix(in srgb, var(--warn) 45%, transparent);
+}
+
+.figures-parts-bar span[data-lit='yes'] {
+  background-color: var(--accent);
+}
+
+.figures-parts-key {
+  @apply flex flex-wrap gap-x-5 gap-y-1;
+}
+
+.figures-parts-key li {
+  @apply flex min-w-0 flex-col text-[12px];
+  color: var(--paper-ink-faint);
+}
+
+.figures-parts-key b {
+  @apply text-[14px] font-semibold tabular-nums;
+  color: var(--paper-ink-soft);
+}
+
+/* ---- the room: the thing it is measured out of ---- */
+
+.figures-progress {
+  @apply flex min-w-0 flex-col justify-end gap-3;
+}
+
+.figures-progress-bar {
+  @apply relative h-2;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--paper-ink-soft) 12%, transparent);
+}
+
+.figures-progress-fill {
+  @apply absolute bottom-0 left-0 top-0;
+  width: var(--to);
+  border-radius: 4px;
+  background-color: var(--accent);
+  transition: width var(--nav-duration) var(--ease-out-soft);
+}
+
+.figures-lede[data-tone='good'] .figures-progress-fill {
+  background-color: var(--good);
+}
+
+.figures-lede[data-tone='warn'] .figures-progress-fill {
+  background-color: var(--warn);
+}
+
+.figures-lede[data-tone='danger'] .figures-progress-fill {
+  background-color: var(--danger-on-paper);
+}
+
+/* The bar the figure is meant to clear, standing on the track rather than
+   named beside it. */
+.figures-progress-mark {
+  @apply absolute -bottom-1 -top-1 w-0.5;
+  left: var(--at);
+  margin-left: -1px;
+  border-radius: 1px;
+  background-color: var(--paper-ink-soft);
+}
+
+.figures-progress-note {
+  @apply text-[12px];
+  color: var(--paper-ink-faint);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .figures-tile,
+  .figures-tile-open,
+  .figures-gloss::after,
+  .figures-parts-bar span,
+  .figures-progress-fill {
+    transition-duration: var(--motion-off);
+  }
+
+  .figures-chart[data-motion='on'] .figures-chart-area,
+  .figures-chart[data-motion='on'] .figures-chart-line {
+    animation: none;
+  }
 }
 
 .console-card {
@@ -1697,6 +2135,8 @@
    a long figure has no space to wrap at, and a column that cannot break one
    puts it through the side of the card. */
 .console-stat-value,
+.figures-lede-value,
+.figures-tile-value,
 .console-card-head h2,
 .console-title h1 {
   overflow-wrap: anywhere;
@@ -1796,6 +2236,8 @@
    placeholder and never again; a real table row is matched by not carrying the
    aria-hidden its placeholder does. */
 .console-stat-value,
+.figures-lede-value,
+.figures-tile-value,
 .console-card tbody tr:not([aria-hidden='true']),
 .console-card ul li {
   animation: console-arrive 200ms var(--ease-out-soft) both;
@@ -1810,6 +2252,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   .console-stat-value,
+  .figures-lede-value,
+  .figures-tile-value,
   .console-card tbody tr:not([aria-hidden='true']),
   .console-card ul li {
     animation: none;
