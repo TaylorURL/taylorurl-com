@@ -2,6 +2,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import Beasties from 'beasties'
 import { createServer } from 'vite'
+import { bootSource } from './boot-source.js'
 import { PRERENDER_ROUTES } from './site-routes.js'
 
 const ROOT_PLACEHOLDER = '<div id="root"></div>'
@@ -131,7 +132,7 @@ function paintFirst(head) {
   if (!entry) throw new Error('prerender: the built head carries no module entry')
   const [tag, src] = entry
   const preload = `<link rel="modulepreload" crossorigin fetchpriority="low" href="${src}">`
-  const boot = `<script type="module">requestAnimationFrame(() => requestAnimationFrame(() => import(${JSON.stringify(src)})))</script>`
+  const boot = `<script type="module">${bootSource(src)}</script>`
   return head.replace(tag, `${preload}${boot}`)
 }
 
