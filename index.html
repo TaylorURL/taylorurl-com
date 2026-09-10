@@ -763,8 +763,26 @@
             fetch(endpoint, { method: 'POST', body: body, keepalive: true }).catch(function () {})
           }
         }
+        // How many times this document has been taken off the screen.
+        //
+        // `unloading` answers where the page is at the instant it is read, and
+        // that is the right question for the transport above and the wrong one
+        // for a failed request. A rejection is delivered when the page is
+        // running, never while it is frozen, so a request killed by the phone
+        // suspending the tab reports its failure only once the reader has come
+        // back - by which time `pageshow` has put the flag back to false and
+        // the teardown reads as an endpoint that would not answer.
+        //
+        // This counts the departures instead, so a request can be asked the
+        // question that actually decides it: was this document on screen for
+        // the whole of the request, or did it leave and return underneath it.
+        var departures = 0
+        function offscreen() {
+          return document.visibilityState === 'hidden'
+        }
         addEventListener('pagehide', function () {
           unloading = true
+          departures += 1
         })
         // And back again. A page frozen into the back/forward cache fired
         // `pagehide` and then did not go anywhere, so a document being shown
@@ -772,6 +790,16 @@
         // answer for, and both are read off this flag.
         addEventListener('pageshow', function () {
           unloading = false
+        })
+        // Backgrounding an iPhone is the same teardown without the same event.
+        // Locking the screen or switching apps hides the document and lets the
+        // system suspend the web view under it, which kills whatever was in
+        // flight; `pagehide` fires when the page is frozen or dismantled and
+        // not merely when it goes behind something. So the hide is counted too,
+        // and a request that spanned one is read the same way as a request that
+        // spanned a `pagehide`.
+        document.addEventListener('visibilitychange', function () {
+          if (offscreen()) departures += 1
         })
         // Everything swallowed stays readable on the page itself, so a live
         // console with the flag off still answers what happened.
@@ -1021,6 +1049,12 @@
             var target = typeof input === 'string' ? input : (input && input.url) || ''
             // Reports about the reporter's own request would loop, so the endpoint passes through unwrapped.
             if (target.indexOf(endpoint) === 0) return originalFetch.apply(window, arguments)
+            // Where the document stood when this request was asked for, read
+            // again against where it stands when the answer fails. Taken here
+            // rather than in the handler, because by then the reader is back
+            // and everything on screen says the page never went anywhere.
+            var leftBefore = departures
+            var askedAway = offscreen()
             return originalFetch.apply(window, arguments).then(
               function (response) {
                 if (response.status >= 500) {
@@ -1088,12 +1122,28 @@
                 // is not lost. A request whose whole purpose is to outlive the
                 // page cannot also be evidence the page is broken.
                 //
-                // `pagehide` is the signal that separates them, and it has
-                // always fired before any of this. A rejection after it is the
-                // reader leaving; there is no longer anybody on screen to tell,
-                // and nothing to fix. Held rather than reported, so the live
-                // console still shows it went.
-                if (unloading) {
+                // Leaving is the signal that separates them, and reading it off
+                // `unloading` alone missed two thirds of it. That flag is true
+                // only while the document is away, and a rejection cannot be
+                // delivered while the document is away: a frozen page runs no
+                // handlers, so the failure surfaces on the way back, after
+                // `pageshow` has already put the flag down. And a backgrounded
+                // phone hides the tab without firing `pagehide` at all, which
+                // is the state the call desk deliberately keeps working in -
+                // it goes on saying it is here while it holds a number, so a
+                // suspended web view kills its request and nothing else's.
+                // That is why one endpoint on this whole site kept arriving as
+                // a fault while it was answering every other request put to it.
+                //
+                // So the question is asked over the life of the request rather
+                // than at the end of it: a document that was away when this was
+                // asked for, or is away now, or left and came back in between,
+                // did not get an answer because it was not there to receive
+                // one. A request that began on screen, stayed on screen and
+                // failed anyway is a real failure and still reports. Held
+                // rather than reported, so the live console still shows it
+                // went.
+                if (unloading || askedAway || offscreen() || departures !== leftBefore) {
                   hold('aborted', 'Cancelled by leaving ' + target.split('?')[0], '')
                   throw error
                 }

@@ -59,13 +59,32 @@ if (!reporter) {
 
 /**
  * Stands the reporter up on its own and returns what it posts. Nothing here
- * offers a `Worker` or a `fetch`, so reports fall through to `sendBeacon`,
- * which is the one transport a test can read.
+ * offers a `Worker`, and the `fetch` it does offer never answers on its own, so
+ * reports fall through to `sendBeacon`, which is the one transport a test can
+ * read.
  */
 function collector(scriptTags, siteTags) {
   const posted = []
   const listeners = {}
+  const watching = {}
+  // Requests the page has asked for and the network has not yet done anything
+  // about. Held open deliberately: the fault this file guards against is
+  // decided by what happens to the document while a request is in flight, so a
+  // test has to be able to leave one there.
+  const inFlight = []
   const sandbox = {
+    Promise,
+    TypeError,
+    fetch(address) {
+      let settle
+      let fail
+      const answer = new Promise((resolve, reject) => {
+        settle = resolve
+        fail = reject
+      })
+      inFlight.push({ address, settle, fail })
+      return answer
+    },
     JSON,
     URL,
     Error,
@@ -88,7 +107,10 @@ function collector(scriptTags, siteTags) {
       ;(listeners[type] = listeners[type] || []).push(handler)
     },
     document: {
-      addEventListener() {},
+      visibilityState: 'visible',
+      addEventListener(type, handler) {
+        ;(watching[type] = watching[type] || []).push(handler)
+      },
       // What the page has fetched from elsewhere, which is what the reporter
       // reads to say where a muted throw could have come from.
       getElementsByTagName: () => scriptTags || [],
@@ -125,6 +147,51 @@ function collector(scriptTags, siteTags) {
     },
     held() {
       return sandbox.window.__reporter.replay()
+    },
+    /* The document going away and coming back, in the two shapes a phone does
+     * it in. Backgrounding hides the tab and may never fire `pagehide`;
+     * freezing the page into the back/forward cache fires both. */
+    hidden() {
+      sandbox.document.visibilityState = 'hidden'
+      for (const handler of watching.visibilitychange || []) handler({})
+    },
+    shown() {
+      sandbox.document.visibilityState = 'visible'
+      for (const handler of watching.visibilitychange || []) handler({})
+    },
+    frozen() {
+      sandbox.document.visibilityState = 'hidden'
+      for (const handler of watching.visibilitychange || []) handler({})
+      for (const handler of listeners.pagehide || []) handler({})
+    },
+    thawed() {
+      sandbox.document.visibilityState = 'visible'
+      for (const handler of listeners.pageshow || []) handler({})
+      for (const handler of watching.visibilitychange || []) handler({})
+    },
+    /**
+     * Asks for something through the page's own wrapped `fetch` and hands back
+     * the two ways the network can end it. Nothing is decided at the asking:
+     * a test hides the document, restores it, and only then fails the request,
+     * because that is the order the fault happens in on a phone.
+     */
+    asks(address) {
+      const answer = sandbox.window.fetch(address)
+      // The wrapper rethrows what it was handed, which is the site's own code
+      // catching it in a browser and this process's unhandled rejection here.
+      answer.catch(() => {})
+      const request = inFlight[inFlight.length - 1]
+      const drain = () => new Promise(resolve => setImmediate(resolve))
+      return {
+        loses() {
+          request.fail(new TypeError('Load failed'))
+          return drain()
+        },
+        answers(status) {
+          request.settle({ status })
+          return drain()
+        },
+      }
     },
   }
 }
@@ -369,6 +436,104 @@ check(
   unknown.posted.length === 1,
   'a page that recorded no tags of its own went quiet on a loader host anyway, so the filter ' +
     'is guessing where it has nothing to compare against'
+)
+
+/* ----------------------------------------------------------------------- *
+ * The request the phone took away.
+ * ----------------------------------------------------------------------- */
+
+// A request still in flight when the document is taken off the screen is torn
+// down by the system, and WebKit words that as a plain `TypeError: Load
+// failed` -- the same sentence an endpoint that will not answer produces. The
+// difference is not in the error, it is in where the document was while the
+// request was outstanding, and that has to be read across the life of the
+// request rather than at the end of it: a frozen page runs no handlers, so the
+// rejection lands on the way back, once everything on screen says the reader
+// never went anywhere.
+//
+// The call desk is where this concentrates, because it is the one feed on the
+// site that deliberately keeps working while the tab is hidden -- a caller who
+// tabs away to look up an address is still on the phone, so the console goes on
+// saying it holds the number. Every other feed stops when the tab does. That is
+// why one endpoint out of all of them kept being filed as unreachable while it
+// answered every request actually put to it: #455, #457 and #553 are all this.
+const DESK = '/api/calls-desk'
+
+// First the direction that matters most, and the reason none of the rest may
+// be written as a mute. A request asked for on screen, answered on screen and
+// failing there has a reader in front of it who just watched it fail.
+const watched = collector()
+await watched.asks(DESK).loses()
+check(
+  watched.posted.length === 1,
+  'a request that failed while the reader was looking at the page was not filed, so the ' +
+    'reporter has gone quiet on the failures somebody is actually sitting in front of'
+)
+check(
+  /Load failed fetching \/api\/calls-desk/.test((watched.posted[0] || {}).message || ''),
+  'a failed request was filed without saying what failed or where, which is the whole content ' +
+    'of a network report'
+)
+
+// The page frozen into the back/forward cache and brought back. `pagehide`
+// fired, `pageshow` put the flag down again, and only then was the failure
+// delivered -- the exact sequence that let this fault back through after it
+// was fixed.
+const cached = collector()
+const acrossFreeze = cached.asks(DESK)
+cached.frozen()
+cached.thawed()
+await acrossFreeze.loses()
+check(
+  cached.posted.length === 0,
+  'a request the browser tore down while the page was frozen was filed as an endpoint failing, ' +
+    'because the leaving flag was read after `pageshow` had already put it back down'
+)
+check(
+  cached.held().some(entry => entry.kind === 'aborted'),
+  'a request cancelled by leaving was dropped rather than held, so a live console can no longer ' +
+    'see that it went at all'
+)
+
+// And the same teardown without the event that used to be the whole test.
+// Locking an iPhone or switching apps hides the document and lets the system
+// suspend the web view under it; nothing is frozen and nothing is unloaded, so
+// `pagehide` never fires.
+const backgrounded = collector()
+const acrossHide = backgrounded.asks(DESK)
+backgrounded.hidden()
+backgrounded.shown()
+await acrossHide.loses()
+check(
+  backgrounded.posted.length === 0,
+  'a request killed by the phone suspending a hidden tab was filed as a fault, so every reader ' +
+    'who locks their screen mid-call opens a ticket against an endpoint that is answering'
+)
+
+// A request the page asked for while it was already away, which is what the
+// desk's beat does for as long as it is holding a number.
+const away = collector()
+away.hidden()
+const whileAway = away.asks(DESK)
+await whileAway.loses()
+check(
+  away.posted.length === 0,
+  'a request issued while the document was off screen was filed as a fault, so a console left ' +
+    'holding a number reports one every time the phone sleeps'
+)
+
+// The direction that keeps the guard honest. An endpoint that answers badly
+// has answered: the document was there to receive it, whatever it did in
+// between, and a 500 is the site breaking in a way no teardown explains.
+const answered = collector()
+const acrossTrip = answered.asks(DESK)
+answered.frozen()
+answered.thawed()
+await acrossTrip.answers(500)
+check(
+  answered.posted.length === 1,
+  'a server error was swallowed because the reader had switched tabs while it was being made, ' +
+    'so the guard has widened off transport failures and onto the site’s own faults'
 )
 
 if (failures.length) {
