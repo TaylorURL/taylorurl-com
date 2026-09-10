@@ -67,6 +67,27 @@
  * history of one that had been. Held while the attempts run and filed when they
  * are gone, the ticket means the thing its title says.
  *
+ * And asked for at a priority that will not be declined. `media="print"` is
+ * what makes the first request cheap: the browser is told the sheet is not
+ * needed for this medium and gives it the lowest priority it has. Every
+ * attempt after the first inherited that from the link it replaced, so the
+ * recovery for a reader who had already lost their styling was three further
+ * requests in exactly the class a client short of time or bandwidth drops
+ * first - the same reading the reporter applies to a hint, where being the
+ * first thing dropped when something has to give is what the priority is for.
+ * Measured in Chromium against this build, the sheet and all three of its
+ * retries went out at VeryLow, and the same file asked for as an ordinary
+ * stylesheet went out at VeryHigh. That is #555: the one VeryLow request on
+ * the page refused four times across six seconds while the file answered 200
+ * at each of those four addresses, to every other caller, throughout.
+ *
+ * `fetchpriority` is what raises it, and it is raised on the attempts alone.
+ * Taking `media="print"` off would raise it further, to VeryHigh, by making
+ * the attempt an ordinary stylesheet - and an ordinary stylesheet inserted
+ * into the head holds the paint until it settles, which is the cost the
+ * inlining exists to avoid and a worse thing to hand a reader whose page has
+ * already painted. High, and still deferred, is the whole of what is wanted.
+ *
  * Written as an attribute on the link rather than a listener attached beside
  * it. A `load` or `error` on a subresource is dispatched whenever the network
  * settles it, which can be before any script in the head has run; an attribute
@@ -109,6 +130,7 @@ if(link.crossOrigin)next.crossOrigin=link.crossOrigin
 next.media=link.media||'print'
 next.setAttribute('data-sheet',href)
 next.setAttribute('onload',"this.media='all'")
+next.setAttribute('fetchpriority','high')
 next.setAttribute('onerror',${JSON.stringify(SHEET_HANDLER + '(this,')}+attempt+')')
 next.href=href+(href.indexOf('?')<0?'?':'&')+'retry='+attempt
 if(!link.parentNode)return
