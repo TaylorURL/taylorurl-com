@@ -104,7 +104,7 @@ import {
   FOLLOW_UPS_PER_RUN,
   SEND_PER_RUN_MAX,
 } from '../../lib/outreach/sending/limits.js'
-import { dueBy } from '../../lib/outreach/sending/schedule.js'
+import { dueBy, localDay } from '../../lib/outreach/sending/schedule.js'
 import {
   candidates,
   dueFollowUps,
@@ -792,6 +792,27 @@ export async function work({ db, settings, counts }) {
 }
 
 /**
+ * The stretch of time a letter was written for, as the date and the half of
+ * the day in Texas.
+ *
+ * A draft carries the words the composer produced at the moment it was drafted,
+ * and two things go out of date between then and the run that sends it. The
+ * greeting names the half of the day, so a draft held past noon greets the
+ * wrong one. The letter itself is edited from time to time, so a draft held
+ * overnight carries copy the studio has since stopped using - and that one is
+ * silent, because nothing about an old letter reads as wrong on its own.
+ *
+ * Both are the same question asked once: was this written in the stretch of
+ * time it is going out in. The date catches the copy and the half catches the
+ * greeting, and a draft written in the same half of the same day is the only
+ * one that needs neither.
+ *
+ * @param {Date} at
+ * @returns {string} A key two moments share only inside one half of one day.
+ */
+const writtenFor = at => `${localDay(at).date}:${partOfDay(at)}`
+
+/**
  * The first letters a run owes: the day's cap spread across the window, sent
  * to the businesses at the head of the queue.
  */
@@ -908,20 +929,25 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
       continue
     }
 
-    // A plain letter greets the half of the day it arrives in, and that half is
-    // written into it when it is drafted. A draft the queue held past noon
-    // would go out saying good morning in the afternoon, which is the one line
-    // in the letter a reader can tell a machine wrote. So it is written again,
-    // under the letter it already names, on the run that is about to send it:
-    // the words are the words it was given and only the greeting moves. A run
-    // that is not sending leaves it alone, since the half it is eventually read
-    // in is not one this run knows.
+    // A draft is the words the composer produced on the day it was drafted, and
+    // the run that sends it may be a long way from that day. A draft held past
+    // noon greets the wrong half of the day, which is the one line in the letter
+    // a reader can tell a machine wrote. A draft held overnight is worse and
+    // quieter: the letter is edited from time to time, and the queue goes on
+    // sending the words it was drafted under until somebody reads one and
+    // notices the studio talking about itself the way it stopped talking about
+    // itself a week ago.
+    //
+    // So it is written again, under the letter it already names, on the run that
+    // is about to send it, unless it was drafted in the stretch of time it is
+    // going out in. A run that is not sending leaves it alone, since the moment
+    // it is eventually read in is not one this run knows.
     const dated = Boolean(
       held &&
       !stale &&
       sending &&
       under?.plain &&
-      partOfDay(new Date(held.created_at)) !== partOfDay(new Date())
+      writtenFor(new Date(held.created_at)) !== writtenFor(new Date())
     )
 
     // Verification comes before the capture and the draft, not just before the
