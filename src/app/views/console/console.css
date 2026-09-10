@@ -970,6 +970,38 @@
   }
 }
 
+/* The bar's own controls are drawn at thirty-six pixels, which is the figure
+   every chip and segment in the console is drawn to and the one that makes a
+   row of them read as a row. What a thumb has to hit is larger, so where the
+   pointer is coarse the reach is carried four pixels out on a pseudo-element
+   and the drawing does not move - the same trick the toggles and the row
+   controls already use.
+
+   Four pixels is the whole of the eight-pixel gap between two of them, split
+   down the middle, so the reaches meet and neither overlaps the other: there
+   is no dead strip between the search glyph and the theme control, and a tap
+   landing in it goes to whichever half it fell on. Above and below there is
+   the bar's own padding to spend, and spending it costs nothing because the
+   line under these controls carries no target of its own. */
+@media (pointer: coarse) {
+  .console-brand,
+  .console-drawer-toggle,
+  .console-search-open,
+  .console-icon-button,
+  .console-signin {
+    @apply relative;
+  }
+
+  .console-brand::before,
+  .console-drawer-toggle::before,
+  .console-search-open::before,
+  .console-icon-button::before,
+  .console-signin::before {
+    content: '';
+    @apply absolute -inset-1;
+  }
+}
+
 /* ── The phone's way into the column ──────────────────────────────────── */
 
 .console-drawer-toggle {
