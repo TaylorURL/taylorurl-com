@@ -135,9 +135,15 @@ function measuredLabel(measuredSince, windowDays) {
  * span; the two were one number once, and separating them is what let the
  * strip grow without the captions claiming a month of measurement that is not
  * there.
+ *
+ * It carries its unit rather than leaving each caption to add one, because
+ * three of the four that quote it read it straight into a sentence - "3 fixed
+ * in 30", "raised in 30" - and a bare number there is a figure with nothing to
+ * measure it in.
  */
 function windowSpan(windowDays) {
-  return Math.max(1, windowDays)
+  const days = Math.max(1, windowDays)
+  return `${days} ${days === 1 ? 'day' : 'days'}`
 }
 
 /**
@@ -574,7 +580,14 @@ export function StatusBoard({ feed, scope }) {
           feedDown || averageUptime === null
             ? []
             : [
-                [measured.replace('watched since ', ''), 'measured from'],
+                // Read off the feed rather than by stripping a prefix from the
+                // rendered label. `measuredLabel` only carries that prefix while
+                // the history is shorter than the window; past that it returns
+                // the window itself, and the strip printed "30-day history"
+                // under the words "measured from".
+                data?.measured_since
+                  ? [formatDay(new Date(data.measured_since)), 'measured from']
+                  : null,
                 worst && !watched
                   ? [
                       `${(worst.uptime_30d ?? 100).toFixed(2)}%`,
@@ -801,7 +814,7 @@ export function StatusBoard({ feed, scope }) {
 
         <Panel
           title="Recently Fixed"
-          aside={loading || feedDown ? '' : `last ${span} days`}
+          aside={loading || feedDown ? '' : `last ${span}`}
           busy={loading}
           className="min-h-0 lg:flex-1"
         >
