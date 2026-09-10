@@ -22,7 +22,8 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { contactIn, leaked, REFUSAL, screen } from '../../lib/live-chat/screen.js'
 import { LIMITS, overCeiling, retryAfter } from '../../lib/live-chat/limits.js'
-import { answering } from '../../api/live-chat.js'
+import { answering, why } from '../../api/live-chat.js'
+import { addressesFor } from '../../lib/http/reach.js'
 import { ASK_GAPS_MS, assistantUp } from '../../src/app/data/liveChat.js'
 
 // Nothing here is allowed to reach the network. An unstubbed path fails loudly
@@ -454,6 +455,112 @@ check(
   /no assistant/i.test(reports[0]) && /nothing behind it/i.test(reports[0]),
   'the report does not say what happened'
 )
+
+/* How the Funnel's name is resolved, and what happens when the platform cannot
+ * resolve it.
+ *
+ * This is the fault that took the widget off the site for a whole morning with
+ * the assistant up and answering the entire time. The name Tailscale publishes
+ * for the Pi is an ordinary public record - authoritative NOERROR, two
+ * addresses, resolved by Google, Cloudflare and every browser - and the
+ * resolver inside the deployed function answered ENOTFOUND for it while
+ * resolving the rest of the internet. `fetch` failed before a packet left, the
+ * probe read that as an assistant that is gone, and every page of the site
+ * dropped the chat.
+ *
+ * Nothing here can make somebody else's resolver correct, so the endpoint stops
+ * depending on it being correct: the system is still asked first, and a name it
+ * refuses is asked of a public resolver over ordinary HTTPS instead. What is
+ * checked is that the endpoint goes through that path at all - a refactor that
+ * puts a bare `fetch` back is the fault returning - and that the resolving
+ * itself reads an answer properly. */
+
+const endpoint = readFileSync(join(HERE, '../..', 'api/live-chat.js'), 'utf8')
+check(
+  /import \{ reach \} from '\.\.\/lib\/http\/reach\.js'/.test(endpoint),
+  'the endpoint no longer reaches the assistant through a resolver it can replace'
+)
+check(
+  !/\bawait fetch\(`\$\{AGENT_URL\}/.test(endpoint),
+  'a knock or a turn went back to a bare fetch, which a resolver can refuse'
+)
+
+// A `fetch failed` names nothing on its own. The reason underneath it is the
+// whole of what a person reading the log later has to go on, and dropping it is
+// what left this endpoint saying the same three words for hours.
+check(
+  why(Object.assign(new TypeError('fetch failed'), { cause: { code: 'ENOTFOUND' } })).includes(
+    'ENOTFOUND'
+  ),
+  'the log does not say why a request never left'
+)
+check(
+  why(Object.assign(new Error('gone'), { name: 'AbortError' })).includes('too long'),
+  'a request this side gave up on is not reported as the assistant being slow'
+)
+
+// The resolving itself. Nothing here reaches the network: the resolver is
+// stubbed, which is the same rule the rest of this file works under.
+const answerOf = rows => () => ({
+  ok: true,
+  json: () => Promise.resolve({ Status: 0, Answer: rows }),
+})
+
+// An A record is what a socket can dial. A CNAME beside it is part of the
+// chain and not an address, and handing one to a socket is a failure that
+// reads like the host being down.
+globalThis.fetch = () =>
+  Promise.resolve(
+    answerOf([
+      { name: 'a.example', type: 5, TTL: 300, data: 'ingress.example' },
+      { name: 'ingress.example', type: 1, TTL: 300, data: '203.0.113.10' },
+    ])()
+  )
+check(
+  JSON.stringify(await addressesFor('a.example')) === JSON.stringify(['203.0.113.10']),
+  'the chain in front of an address was handed to a socket as an address'
+)
+
+// One resolver being wrong about a name is the whole reason this path exists,
+// so a resolver that refuses is passed over rather than believed.
+let resolversAsked = 0
+globalThis.fetch = () => {
+  resolversAsked += 1
+  if (resolversAsked === 1) return Promise.resolve({ ok: false, json: () => Promise.resolve({}) })
+  return Promise.resolve(
+    answerOf([{ name: 'b.example', type: 1, TTL: 300, data: '203.0.113.11' }])()
+  )
+}
+check(
+  JSON.stringify(await addressesFor('b.example')) === JSON.stringify(['203.0.113.11']),
+  'a refused resolver was taken as the answer rather than passed over'
+)
+check(resolversAsked === 2, 'the second resolver was never asked')
+
+// A name nobody has is nothing, so the caller reports the lookup's own fault
+// rather than this file's opinion of it.
+globalThis.fetch = () => Promise.resolve(answerOf([])())
+check(
+  (await addressesFor('c.example')).length === 0,
+  'a name no resolver has came back with an address anyway'
+)
+
+// The answer is held for the record's own life, so a busy page load costs one
+// lookup rather than one per knock.
+let spentResolving = 0
+globalThis.fetch = () => {
+  spentResolving += 1
+  return Promise.resolve(
+    answerOf([{ name: 'd.example', type: 1, TTL: 300, data: '203.0.113.12' }])()
+  )
+}
+await addressesFor('d.example')
+await addressesFor('d.example')
+check(spentResolving === 1, 'an address already found was looked up again')
+
+globalThis.fetch = () => {
+  throw new Error('a check reached the network')
+}
 
 /* The sentence a refused visitor reads. */
 check(!/\bAI\b|bot|violat|abuse|attempt/i.test(REFUSAL), 'the refusal accuses the visitor')
