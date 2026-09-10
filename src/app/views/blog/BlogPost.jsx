@@ -212,7 +212,11 @@ function Article({ post }) {
 
       <Masthead post={post} series={series} words={frame.words} layout={frame.layout} />
 
-      <article className="section-y relative overflow-hidden bg-paper">
+      {/* clip, not hidden, on the one axis that needs it: hidden makes the
+          article a scroll container, and a sticky descendant can only travel
+          inside the nearest one, so the rail would ride the page instead of
+          holding at the top of the viewport. */}
+      <article className="section-y relative overflow-x-clip bg-paper">
         <div className="container-rail relative">
           {frame.railed ? (
             <div
