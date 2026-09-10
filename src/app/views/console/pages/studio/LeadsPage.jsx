@@ -586,7 +586,7 @@ function Composer({ open, lead, templates, sending, onSend, onClose }) {
               value={templateId}
               onChange={event => startFrom(event.target.value)}
             >
-              <option value="">A blank page</option>
+              <option value="">A Blank Page</option>
               {templates.map(draft => (
                 <option key={draft.id} value={draft.id}>
                   {draft.name}
@@ -656,7 +656,7 @@ function Drafts({ templates, loading, busy, onEdit, onNew, area }) {
       area={area}
       loading={loading}
       aside={`${templates.length} kept`}
-      note="What the composer offers beside every lead. A blank like {{first_name}} is filled from the lead as the draft is picked."
+      note="What the composer offers beside every lead. A blank like {{first_name}} fills itself from the lead as the draft is picked."
     >
       <PanelBody>
         <table className="console-table">
