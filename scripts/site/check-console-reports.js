@@ -62,7 +62,7 @@ if (!reporter) {
  * offers a `Worker` or a `fetch`, so reports fall through to `sendBeacon`,
  * which is the one transport a test can read.
  */
-function collector(scriptTags) {
+function collector(scriptTags, siteTags) {
   const posted = []
   const listeners = {}
   const sandbox = {
@@ -99,6 +99,9 @@ function collector(scriptTags) {
   }
   sandbox.window = sandbox
   sandbox.self = sandbox
+  // What the block above this one in the page recorded itself as having
+  // written. Left off, this is a page whose tags never got that far.
+  if (siteTags) sandbox.__siteTags = siteTags
   const context = vm.createContext(sandbox)
   new vm.Script(reporter, { filename: 'https://www.taylorurl.com/start' }).runInContext(context)
   return {
@@ -301,6 +304,71 @@ bare.rejects({ stack: 'TypeError: e.plan is undefined\n  at https://www.taylorur
 check(
   /e\.plan is undefined/.test((bare.posted[0] || {}).message || ''),
   'a rejection carrying only a stack stopped reporting what that stack said'
+)
+
+/* ----------------------------------------------------------------------- *
+ * The loader host that serves two different things.
+ * ----------------------------------------------------------------------- */
+
+// The page writes one script tag to `googletagmanager.com`, for its own
+// account. Google's library then loads a second container off the same host for
+// every other account configured on the page, at an address carrying the `cx`
+// and `gtm` chain parameters the page never writes. Blocked, that second one
+// arrives here looking exactly like the site's own loader failing -- same host,
+// same path -- and #549 was one of them, filed off `/unsubscribe` against a
+// site that was working.
+const SITE_TAGS = [
+  'https://www.googletagmanager.com/gtag/js?id=G-TEST',
+  'https://connect.facebook.net/en_US/fbevents.js',
+]
+function scriptFailure(address) {
+  return {
+    target: {
+      tagName: 'SCRIPT',
+      src: address,
+      hasAttribute: () => false,
+      getAttribute: () => null,
+    },
+  }
+}
+
+const chained = collector(TAG_SCRIPTS, SITE_TAGS)
+chained.throws(
+  scriptFailure('https://www.googletagmanager.com/gtag/js?id=AW-1841574&cx=c&gtm=4e69')
+)
+check(
+  chained.posted.length === 0,
+  'a container Google loaded off its own host was filed as a site fault, so a blocked ad tag ' +
+    'is opening tickets against a site nobody can fix them on'
+)
+check(
+  chained.held().some(entry => entry.kind === 'beacon'),
+  'a chained tag was dropped rather than held, so the live console can no longer see that the ' +
+    'vendor traffic is failing at all'
+)
+
+// The direction that matters more, and the reason this is answered from what
+// the page wrote rather than by muting the host. The tag the site writes itself
+// is the site's own wiring, and it reports.
+const ours = collector(TAG_SCRIPTS, SITE_TAGS)
+ours.throws(scriptFailure('https://www.googletagmanager.com/gtag/js?id=G-TEST'))
+check(
+  ours.posted.length === 1,
+  'the tag this page writes itself failed and nothing was filed, so the reporter has gone ' +
+    'quiet on the site’s own wiring on the host it matters most on'
+)
+
+// And with no list to answer from there is no answer, so the loud reading
+// stands. A page whose tag block never ran reports the host exactly as it did
+// before any of this.
+const unknown = collector(TAG_SCRIPTS)
+unknown.throws(
+  scriptFailure('https://www.googletagmanager.com/gtag/js?id=AW-1841574&cx=c&gtm=4e69')
+)
+check(
+  unknown.posted.length === 1,
+  'a page that recorded no tags of its own went quiet on a loader host anyway, so the filter ' +
+    'is guessing where it has nothing to compare against'
 )
 
 if (failures.length) {

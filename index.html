@@ -150,6 +150,12 @@
           { src: 'https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%', cors: true },
           { src: 'https://connect.facebook.net/en_US/fbevents.js', cors: false },
         ]
+        // The two addresses above, named where the fault reporter can read
+        // them. Each of these libraries goes on to fetch more from its own
+        // host, and this list is the only thing that separates a tag this page
+        // wrote from one the vendor chained off it.
+        window.__siteTags = []
+        for (var t = 0; t < tags.length; t += 1) window.__siteTags.push(tags[t].src)
         var nudges = ['pointerdown', 'keydown', 'touchstart', 'scroll']
         var SETTLE_MS = 10000
         var fetched = false
@@ -637,11 +643,12 @@
         // reply. Filed as faults they were nine separate tickets on
         // 2026-09-08, ruled out one at a time, against a site that was working.
         //
-        // The loaders are deliberately not in here. `googletagmanager.com` and
-        // `connect.facebook.net` are tags this page writes itself, so those
-        // failing is the site's own wiring and stays reported. Held either way,
-        // because a beacon that starts failing where it used to answer is worth
-        // being able to see from the live console.
+        // The loader hosts are deliberately not in here. The tag this page
+        // writes to `googletagmanager.com` and the one it writes to
+        // `connect.facebook.net` are the site's own wiring, and those failing
+        // stays reported. Held either way, because a beacon that starts failing
+        // where it used to answer is worth being able to see from the live
+        // console.
         var beaconHosts = [
           'doubleclick.net',
           'googleadservices.com',
@@ -663,6 +670,41 @@
           'google.com': ['/pagead', '/ccm', '/rmkt', '/ads', '/g/collect'],
           'facebook.com': ['/tr'],
         }
+        // A loader host serves two different things and only one of them is the
+        // site's. This page writes exactly one script tag to
+        // `googletagmanager.com`, for the account named in the tag; that
+        // library then loads a further container off the same host for every
+        // other account configured on the page, at an address carrying the
+        // `cx` and `gtm` chain parameters the page never writes. The second is
+        // the vendor fanning out, no different from the conversion beacon at
+        // doubleclick that follows it, and it is blocked by exactly the same
+        // filter lists. One of those container loads was filed as a resource
+        // fault on 2026-09-10, off `/unsubscribe`, against a site that was
+        // working and a tag library that had loaded.
+        //
+        // Which is which is not something the address can be read for: both are
+        // `/gtag/js` on the same host, differing only in an account id nothing
+        // here should have to recognise. So it is answered from what the page
+        // actually wrote, recorded by the block that writes it. No list means
+        // no answer, and the loud reading is the safe one - a failure of the
+        // site's own loader has to keep reporting, so an absent list reports
+        // everything rather than silencing the host.
+        function vendorChain(host, href) {
+          var written = window.__siteTags
+          if (!written || !written.length) return false
+          var ours = false
+          for (var i = 0; i < written.length; i += 1) {
+            if (written[i] === href) return false
+            var at
+            try {
+              at = new URL(written[i]).hostname.toLowerCase()
+            } catch (ignored) {
+              continue
+            }
+            if (at === host) ours = true
+          }
+          return ours
+        }
         function marketingBeacon(address) {
           var host, path
           try {
@@ -672,6 +714,7 @@
           } catch (ignored) {
             return false
           }
+          if (vendorChain(host, parsed.href)) return true
           for (var i = 0; i < beaconHosts.length; i += 1) {
             var domain = beaconHosts[i]
             if (host === domain || host.slice(-(domain.length + 1)) === '.' + domain) return true
