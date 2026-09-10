@@ -780,7 +780,18 @@ check('a draft written before the letters existed is drafted again under one', a
   ok(!given.payload.variant_id.endsWith('-holdout'), 'a drafted business was held out')
 })
 
-check('a draft written under a letter goes as it was written', async () => {
+// A draft written under a live letter, in the stretch of time it goes out in,
+// is the message somebody read and it leaves as they read it. Nothing is
+// composed for it and nothing on the row moves.
+//
+// That stretch is a half of a day rather than the life of the draft, and the
+// boundary is where it is for a reason a queue days deep makes plain. A draft
+// carries the words the composer produced when it was written, and the letter
+// is edited between one day and the next, so a draft held past its own day
+// goes out saying what the studio has stopped saying. The greeting gets that
+// wrong out loud and the copy gets it wrong quietly. The check under this one
+// is the second of those.
+check('a draft written under a letter, on the day it goes, goes as it was written', async () => {
   TRANSPORT.clear()
   const fresh = { ...CONTACTED, id: 'p9', stage: 'audited', variant_id: 'slow-site-intro' }
   const kept = {
@@ -792,7 +803,9 @@ check('a draft written under a letter goes as it was written', async () => {
     to_address: 'maria@example.com',
     status: 'drafted',
     variant_id: 'slow-site-intro',
-    created_at: '2026-08-28T17:00:00.000Z',
+    // Midday in Texas, an hour before the run, so the draft and the delivery
+    // fall in one half of one day.
+    created_at: '2026-08-29T17:00:00.000Z',
     sent_at: null,
   }
   const { db, writes } = stubDb({
@@ -818,6 +831,58 @@ check('a draft written under a letter goes as it was written', async () => {
     'a reviewed draft was written over'
   )
   same(TRANSPORT.sent[0]?.text, kept.body_text, 'the words handed to the transport')
+})
+
+check('a draft held past its own day is written again before it goes', async () => {
+  // The quiet half of the problem. Nothing about these words reads as wrong
+  // from here: the letter is live, the family is current, and the row looks
+  // like every other draft in the queue. Only the day it was written on says
+  // so, and a queue that takes days to reach its own drafts holds a great many
+  // of them. Under a rule that read the half of the day alone, a draft written
+  // yesterday afternoon and sent this afternoon went out as it stood, so an
+  // edit to the letter reached every business except the ones already waiting
+  // for it.
+  TRANSPORT.clear()
+  const fresh = { ...CONTACTED, id: 'p9', stage: 'audited', variant_id: 'slow-site-intro' }
+  const overnight = {
+    id: 'm8',
+    prospect_id: 'p9',
+    subject: 'Bayside Electrical scores 31 out of 100 on mobile',
+    body_text: 'the words as they stood a week ago',
+    body_html: '<p>the words as they stood a week ago</p>',
+    to_address: 'maria@example.com',
+    status: 'drafted',
+    variant_id: 'slow-site-intro',
+    // Yesterday, at the hour the run fires at, so the half of the day reads
+    // the same and the date is the whole of the difference.
+    created_at: '2026-08-28T18:00:00.000Z',
+    sent_at: null,
+  }
+  const { db, writes } = stubDb({
+    ...plan({ queue: [fresh] }),
+    'select:outreach_messages': [
+      { count: 0, error: null },
+      { data: [], error: null },
+      { data: [overnight], error: null },
+      { data: [], error: null },
+    ],
+  })
+
+  const answer = await atMidAfternoon(() =>
+    sendWork({ db, settings: SENDING, counts: { examined: 0, changed: 0 } })
+  )
+
+  same(answer.sent, 1, 'first letters sent')
+  same(inserted(writes).length, 0, 'message rows written afresh')
+  const rewritten = writes.find(
+    write => write.key === 'update:outreach_messages' && 'body_text' in (write.payload ?? {})
+  )
+  ok(rewritten, 'a draft written yesterday went out with yesterday’s words')
+  // The letter is live, so this is the same letter said again rather than a
+  // fresh pick. A business does not change letters because a day turned.
+  same(rewritten.payload.variant_id, overnight.variant_id, 'the letter written under')
+  ok(rewritten.payload.body_text !== overnight.body_text, 'the stored words were kept')
+  same(TRANSPORT.sent[0]?.text, rewritten.payload.body_text, 'the words handed to the transport')
 })
 
 check('a draft written under a retired family is written again before it goes', async () => {
