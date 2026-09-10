@@ -78,7 +78,6 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { countOf, readAll } from '../lib/db/rows.js'
 import { bounceRecord } from '../lib/outreach/sending/bounces.js'
-import { DAILY_CAP_MAX } from '../lib/outreach/sending/limits.js'
 import { hostOf } from '../lib/outreach/prospects/platforms.js'
 import {
   CANDIDATE_COLUMNS,
@@ -112,12 +111,7 @@ import { ranksAhead } from '../lib/outreach/sending/rank.js'
 import { storedShot } from '../lib/outreach/audit/shot.js'
 import { compose, deliverProof, sender } from './outreach/send.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
-import {
-  capAppliesNow,
-  dayStartsAt,
-  reachesMore,
-  slotsAt,
-} from '../lib/outreach/sending/schedule.js'
+import { dayStartsAt, reachesMore, slotsAt } from '../lib/outreach/sending/schedule.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { field, uuid } from '../lib/db/fields.js'
 import {
@@ -139,10 +133,6 @@ const PAGE_MAX = 400
 const SUMMARY_LIMIT = 10_000
 /** Runs kept per job, which is enough to see whether one is still going. */
 const RUNS_PER_JOB = 5
-// The highest daily cap the settings accept, which is the figure the column's
-// own check constraint holds. Refusing here rather than clamping is what keeps
-// the console from showing a number the database never took.
-const CAP_MAX = DAILY_CAP_MAX
 /** Entries one town or trade list may carry. */
 const LIST_MAX = 100
 // What a business added by hand may carry in each field. The columns are
@@ -251,7 +241,7 @@ const OUTBOX_COLUMNS =
 // The chain's own column, read with a message only once it is there to read.
 const withStep = (columns, ready) => (ready ? `${columns}, step` : columns)
 const SETTINGS_COLUMNS =
-  'id, sourcing_enabled, sending_enabled, daily_cap, daily_cap_next, towns, trades, from_name, ' +
+  'id, sourcing_enabled, sending_enabled, daily_cap, towns, trades, from_name, ' +
   'from_address, updated_at, ramp_enabled, ramp_floor, ramp_stepped_on, ramp_halted_at, ' +
   'ramp_halted_reason'
 // note is what a run says about itself where the counts cannot. The ramp holds
@@ -348,11 +338,19 @@ function flag(value) {
   return typeof value === 'boolean' ? value : undefined
 }
 
-/** A whole number of sends a day, inside the range the sender will honour. */
+/**
+ * A whole number of sends a day.
+ *
+ * There is no ceiling. What a mailbox can carry is a judgement about the
+ * receiving side rather than a fact this route knows, so it is taken in the
+ * console and this only checks the figure is a number of messages: a whole one,
+ * and not a negative. The integer check is what refuses the text and the
+ * fractions a number field will still hand over.
+ */
 function capOf(value) {
   if (value === undefined || value === null || value === '') return undefined
   const cap = Number(value)
-  if (!Number.isInteger(cap) || cap < 0 || cap > CAP_MAX) return null
+  if (!Number.isInteger(cap) || cap < 0) return null
   return cap
 }
 
@@ -907,7 +905,6 @@ async function mail(db) {
         reaches: reachesMore(),
       },
       cap,
-      cap_next: saved.daily_cap_next ?? null,
       sent_today: already,
       // What left today beyond the cap: the follow-ups, once the chain runs.
       follow_ups_today: ready ? Math.max(everySent - already, 0) : null,
@@ -1266,31 +1263,20 @@ async function saveSettings(db, body) {
 
   const cap = capOf(body.daily_cap)
   if (cap === null) {
-    return {
-      status: 400,
-      body: { error: `Set the daily cap to a whole number between 0 and ${CAP_MAX}.` },
-    }
+    return { status: 400, body: { error: 'Set the daily cap to a whole number of 0 or more.' } }
   }
-  // A cap is the spacing as much as the ceiling, because the day's slots are
-  // the window divided by it. Raising it once the window has opened relays the
-  // whole grid over a morning that has already been spent, and the slots that
-  // land behind the clock read as messages that are late - which the send job
-  // clears at the speed of a run rather than at the speed of the schedule. So a
-  // raise waits for a day that can be laid out from the start, and comes back
-  // out of daily_cap_next in api/outreach/ramp.js before the window opens.
+  // The cap lands on the day it is typed on, whichever direction it moves.
   //
-  // Every other case lands now. Lowering only ever spends the day sooner and is
-  // what somebody reaches for to slow sending down, and a raise before the
-  // window has opened is a plan for a day rather than a change to one.
-  if (cap !== undefined) {
-    const inForce = (await settings(db)).daily_cap ?? 0
-    if (capAppliesNow(inForce, cap)) {
-      patch.daily_cap = cap
-      patch.daily_cap_next = null
-    } else {
-      patch.daily_cap_next = cap
-    }
-  }
+  // A raise used to be held for the morning, because a cap is the spacing as
+  // much as the ceiling: the day's slots are the window divided by it, so
+  // raising it once the window has opened relays the whole grid over a morning
+  // already spent and the slots that land behind the clock come out at the
+  // speed of a run rather than at the speed of the schedule. That is a real
+  // effect and it is still what happens. It is not worth a field that refuses
+  // the number typed into it - somebody raising the cap at noon is asking for
+  // more mail today, and the catch-up is bounded by SEND_PER_RUN_MAX either
+  // way.
+  if (cap !== undefined) patch.daily_cap = cap
 
   for (const name of ['towns', 'trades']) {
     const entries = listOf(body[name])

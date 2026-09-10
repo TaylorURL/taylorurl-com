@@ -8,26 +8,36 @@
  * capacity lost to arithmetic, found only by counting.
  *
  * So the day is simulated at the cadence the cron actually fires, on both sides
- * of the daylight saving change, for every cap the console allows. A run sends
- * the difference between what is due and what has gone, bounded by what one
- * invocation can finish, which is exactly what `api/outreach/send.js` computes.
+ * of the daylight saving change. A run sends the difference between what is due
+ * and what has gone, bounded by what one invocation can finish, which is
+ * exactly what `api/outreach/send.js` computes.
  *
- * That bound is why the walk is the gate on the day's ceiling. The two figures
- * are independent — a day is spread over forty-one firings and a firing carries
- * a handful — and the arithmetic joining them is the schedule's. Raising either
- * past what the other can absorb ends the day short, and this is what counts
- * it.
+ * That bound is why the walk is the gate on the day's ceiling. Nothing caps the
+ * cap - a person sets it in the console at whatever figure they want - so the
+ * day's real limit is the one this counts: the runs inside the window times
+ * what a run carries, less the one run's worth the tail holds back. Above that
+ * the schedule lays out slots the runs never reach, and the day ends short with
+ * nothing reporting an error. So the walk asserts both halves: every cap up to
+ * that figure lands in full, and every cap above it stops there rather than
+ * running away.
  *
  *   npm run check:send-schedule
  */
 import {
-  capAppliesNow,
+  DELIVERS_A_DAY,
   dueBy,
   reachesMore,
   sendsOn,
 } from '../../../lib/outreach/sending/schedule.js'
-import { DAILY_CAP_MAX, SEND_PER_RUN_MAX } from '../../../lib/outreach/sending/limits.js'
+import { SEND_PER_RUN_MAX } from '../../../lib/outreach/sending/limits.js'
 import { sendWindow } from '../../../lib/outreach/sending/queue.js'
+
+// The largest cap a day finishes in full. The tail holds slots out of the last
+// stretch of the window, which costs the day the run that would have drained
+// them, so this sits one run's worth under what the runs could carry between
+// them. Derived rather than written down, so moving the window or the run's
+// ceiling moves it too.
+const FILLS = DELIVERS_A_DAY - SEND_PER_RUN_MAX
 
 // The cron fires at this cadence (every ten minutes), so a slot is only reached by a run at or
 // after it. Matching it here is what makes the walk a test of the real thing.
@@ -73,7 +83,7 @@ for (const { label, date } of DAYS) {
   // the zero rather than skipping the day is what makes a Sunday that starts
   // sending again a failure here instead of a Sunday morning somebody notices.
   const open = sendsOn(new Date(Date.UTC(date[0], date[1] - 1, date[2], 18)))
-  for (let cap = 1; cap <= DAILY_CAP_MAX; cap += 1) {
+  for (let cap = 1; cap <= FILLS; cap += 1) {
     const sent = walk(cap, date)
     const wanted = open ? cap : 0
     if (sent !== wanted) {
@@ -81,22 +91,41 @@ for (const { label, date } of DAYS) {
       console.error(`${label} cap ${cap}: delivered ${sent}, wanted ${wanted}`)
     }
   }
+
+  // Above that a day ends short, and what matters is that it ends short at the
+  // ceiling rather than anywhere else. A cap set past what the runs can carry
+  // is a person asking for more mail than the window holds, and the answer is a
+  // full day rather than an error - but a full day, not a burst past it.
+  if (!open) continue
+  for (const cap of [FILLS + 1, FILLS * 2, FILLS * 10]) {
+    const sent = walk(cap, date)
+    if (sent > DELIVERS_A_DAY) {
+      failed += 1
+      console.error(
+        `${label} cap ${cap}: delivered ${sent}, past the ${DELIVERS_A_DAY} a day holds`
+      )
+    }
+    if (sent < FILLS) {
+      failed += 1
+      console.error(`${label} cap ${cap}: delivered ${sent}, under the ${FILLS} a full day lands`)
+    }
+  }
 }
 
 /**
  * The same walk, with the cap moved partway through the day.
  *
- * `raiseAt` is the minute the console writes the larger figure at, and `defer`
- * is whether the write is held for tomorrow the way capAppliesNow says it
- * should be. Running the walk both ways is what puts a number on the difference
- * rather than asserting the rule against itself.
+ * A cap lands the moment it is saved, in either direction, so `raiseAt` is both
+ * the minute the console writes the figure at and the minute it starts
+ * governing. The walk is here to put a number on what that costs a day already
+ * underway rather than to assert the rule against itself.
  */
-function walkRaised(from, to, [year, month, day], raiseAt, defer) {
+function walkMoved(from, to, [year, month, day], movedAt) {
   let sent = 0
   let cap = from
   for (let minute = 0; minute < 24 * 60; minute += TICK_MINUTES) {
     const now = new Date(Date.UTC(year, month - 1, day, Math.floor(minute / 60), minute % 60))
-    if (minute === raiseAt) cap = defer && !capAppliesNow(cap, to, now) ? cap : to
+    if (minute === movedAt) cap = to
     if (!sendWindow(now).open) continue
     const owed = Math.max(Math.min(cap, dueBy(cap, now)) - sent, 0)
     sent += Math.min(owed, SEND_PER_RUN_MAX)
@@ -104,60 +133,56 @@ function walkRaised(from, to, [year, month, day], raiseAt, defer) {
   return sent
 }
 
-// The afternoon the raise lands in, in UTC minutes, which is 15:00 in Texas on
-// a summer day. Late enough that the denser grid puts most of its extra slots
-// behind the clock, which is the whole of the fault.
-const RAISE_AT = 20 * 60
-const RAISE_DAY = [2026, 8, 31]
+// The afternoon the move lands in, in UTC minutes, which is 15:00 in Texas on
+// a summer day. Late enough that a denser grid puts most of its extra slots
+// behind the clock, which is where the catch-up comes from.
+const MOVED_AT = 20 * 60
+const MOVE_DAY = [2026, 8, 31]
 
-// Held, the day delivers the cap it was laid out for and no more. This is the
-// assertion the fix exists for.
-const deferred = walkRaised(20, 40, RAISE_DAY, RAISE_AT, true)
-if (deferred !== 20) {
-  failed += 1
-  console.error(`cap raised 20 to 40 mid-afternoon and held: delivered ${deferred}, wanted 20`)
-}
-
-// Applied at once, the same day runs past it. The number is not the point; that
-// it is over the cap the morning was spaced by is, because every message above
-// twenty went out in the hour after the write rather than in a slot of its own.
-const applied = walkRaised(20, 40, RAISE_DAY, RAISE_AT, false)
-if (applied <= 20) {
+// A raise mid-afternoon sends more today than the morning was laid out for. The
+// slots above the old cap are already behind the clock by the time they appear,
+// so they come out at the speed of a run rather than at the speed of the
+// schedule, and the day still stops at the new cap.
+const raised = walkMoved(20, 40, MOVE_DAY, MOVED_AT)
+if (raised <= 20 || raised > 40) {
   failed += 1
   console.error(
-    `cap raised 20 to 40 mid-afternoon and applied at once: delivered ${applied}, which is not\n` +
-      '  the burst this is here to describe - check the walk still models the send job'
+    `cap raised 20 to 40 mid-afternoon: delivered ${raised}, wanted more than 20 and no more\n` +
+      '  than 40 - check the walk still models the send job'
   )
 }
 
-// Lowering is the direction somebody reaches for to slow sending down, so it
-// has to land on the day it is typed on.
-for (const at of [0, 13 * 60, 20 * 60]) {
-  const now = new Date(Date.UTC(RAISE_DAY[0], RAISE_DAY[1] - 1, RAISE_DAY[2], at / 60))
-  if (!capAppliesNow(20, 12, now)) {
-    failed += 1
-    console.error(`a cap lowered from 20 to 12 at ${at / 60}:00 UTC was held; it should land now`)
-  }
+// The catch-up is bounded by what a run carries, so the burst is a rate rather
+// than a dump: no run sends more than SEND_PER_RUN_MAX however far behind the
+// grid the clock has left it. Raising to a figure the day cannot reach at all
+// is the case that proves it.
+const far = walkMoved(20, FILLS * 4, MOVE_DAY, MOVED_AT)
+if (far > DELIVERS_A_DAY) {
+  failed += 1
+  console.error(
+    `cap raised 20 to ${FILLS * 4} mid-afternoon: delivered ${far}, past what a day holds`
+  )
 }
 
-// Before the window opens nothing has been spent, so a raise is a plan for the
-// day rather than a change to one and lands the same way.
-const dawn = new Date(Date.UTC(RAISE_DAY[0], RAISE_DAY[1] - 1, RAISE_DAY[2], 12))
-if (!capAppliesNow(20, 40, dawn)) {
+// Lowering mid-afternoon is the direction somebody reaches for to slow sending
+// down, and a day that had already passed the new figure stops where it is
+// rather than unsending anything.
+const lowered = walkMoved(40, 12, MOVE_DAY, MOVED_AT)
+if (lowered < 12) {
   failed += 1
-  console.error('a cap raised at 07:00 in Texas was held; nothing had gone out yet')
+  console.error(`cap lowered 40 to 12 mid-afternoon: delivered ${lowered}, under the 12 asked for`)
 }
 
 // The reach has to end before the window does, or the console offers a time no
 // run is left to keep. Walking the window minute by minute is what catches a
 // reach defined off the wrong end of it.
 for (let minute = 13 * 60; minute <= 22 * 60; minute += 1) {
-  const now = new Date(Date.UTC(RAISE_DAY[0], RAISE_DAY[1] - 1, RAISE_DAY[2], 0, minute))
+  const now = new Date(Date.UTC(MOVE_DAY[0], MOVE_DAY[1] - 1, MOVE_DAY[2], 0, minute))
   if (!reachesMore(now)) continue
   // A run at or after this moment, still inside the window, is what makes the
   // reach true. The cron fires on the quarter hour, so that is where to look.
   const next = Math.ceil(minute / TICK_MINUTES) * TICK_MINUTES
-  const run = new Date(Date.UTC(RAISE_DAY[0], RAISE_DAY[1] - 1, RAISE_DAY[2], 0, next))
+  const run = new Date(Date.UTC(MOVE_DAY[0], MOVE_DAY[1] - 1, MOVE_DAY[2], 0, next))
   if (!sendWindow(run).open) {
     failed += 1
     console.error(`reachesMore is true at ${minute} UTC minutes with no run left inside the window`)
@@ -177,8 +202,9 @@ if (failed) {
   process.exit(1)
 }
 console.log(
-  `every cap from 1 to ${DAILY_CAP_MAX} delivers in full at ${SEND_PER_RUN_MAX} a run, on both\n` +
-    '  sides of the clock change and on a Saturday, and a Sunday delivers nothing at all;\n' +
-    '  a cap raised mid-afternoon is held to the next day and delivers no more than it was\n' +
-    '  laid out for, a cap lowered lands at once, and the reach ends inside the window'
+  `every cap from 1 to ${FILLS} delivers in full at ${SEND_PER_RUN_MAX} a run, on both sides\n` +
+    '  of the clock change and on a Saturday, and a Sunday delivers nothing at all; a cap\n' +
+    `  above it ends the day at ${FILLS} rather than running past ${DELIVERS_A_DAY}; a cap\n` +
+    '  moved mid-afternoon lands on the same day in either direction without a run carrying\n' +
+    `  more than ${SEND_PER_RUN_MAX}, and the reach ends inside the window`
 )
