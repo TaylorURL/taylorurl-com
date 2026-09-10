@@ -1967,7 +1967,7 @@ export default function CallsPage() {
         >
           <Panel
             title="Calling"
-            note="Ring the number and press what the call came to. Say whether they were interested where it asks, or press past it, and the next business comes up on its own."
+            note="Ring the number and press what the call came to. Say whether they were interested where it asks, and the next business comes up on its own."
             loading={loading}
             aside={
               <span className={`${MONO_LABEL} text-paper-faint`}>
