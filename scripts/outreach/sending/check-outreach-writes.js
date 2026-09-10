@@ -462,6 +462,43 @@ check('a delivered message puts nobody on the mailing list', async () => {
   same(listed.length, 0, 'subscribers rows written for one delivered message')
 })
 
+// A draft is the words the composer produced on the day it was drafted, and
+// the queue holds drafts for as long as the cap takes to reach them. The
+// letter is edited between one day and the next, so a draft held overnight
+// goes out saying what the studio has stopped saying - and unlike the greeting
+// it gets wrong at the same time, nothing about it reads as wrong to anybody
+// watching the run. The rule that catches it used to compare the half of the
+// day alone, which a draft written yesterday afternoon and sent this afternoon
+// passes, so an edit reached nobody the queue was already holding.
+check('a draft held overnight is written again before it goes', async () => {
+  TRANSPORT.clear()
+  // Yesterday, at the same hour the run fires at, which is the pair the old
+  // rule could not tell apart.
+  const overnight = { ...DRAFTED, created_at: '2026-08-28T18:00:00.000Z' }
+  const rewritten = { ...overnight, body_text: 'written again', body_html: '<p>written again</p>' }
+  const { db, writes } = stubDb(
+    sendPlan({
+      'select:outreach_messages': [
+        { count: 0, error: null },
+        { data: [], error: null },
+        { data: [overnight], error: null },
+      ],
+      'update:outreach_messages': [{ data: rewritten, error: null }, { error: null }],
+    })
+  )
+
+  await atMidAfternoon(() =>
+    sendWork({ db, settings: SETTINGS, counts: { examined: 0, changed: 0 } })
+  )
+
+  const filed = writes.filter(write => write.key === 'update:outreach_messages')
+  const redraft = filed.find(write => write.payload?.body_text !== undefined)
+  ok(redraft, "a draft written yesterday went out with yesterday's words")
+  ok(redraft.payload.body_text !== overnight.body_text, 'the rewrite kept the stored words')
+  same(TRANSPORT.sent.length, 1, 'messages handed to the transport')
+  same(TRANSPORT.sent[0].text, rewritten.body_text, 'the words the transport was handed')
+})
+
 check('send fails the run when a delivered message cannot be marked sent', async () => {
   TRANSPORT.clear()
   const { db } = stubDb(sendPlan({ 'update:outreach_messages': refused('status write refused') }))
