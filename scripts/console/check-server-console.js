@@ -179,6 +179,31 @@ check('the age of the reading is judged, not the success of the request', () => 
   same(Boolean(stale && /builtAt/.test(stale[1])), true, 'staleness is measured from that moment')
 })
 
+check('the machine is looked up here rather than left to the platform to find', () => {
+  // The name is an ordinary public record that Google, Cloudflare and every
+  // browser resolve, and the resolver inside a deployed function answers
+  // ENOTFOUND for it while resolving everything else on the internet. Plain
+  // `fetch` has no way past that: it fails before a packet leaves, and every
+  // 502 this endpoint has ever logged was that lookup rather than the machine.
+  //
+  // `reach` asks the system resolver first and a public one only when the
+  // system says the name is not there, so this stays an ordinary request the
+  // day that resolver is right.
+  const endpoint = read(ENDPOINT)
+  const faults = []
+  if (!/from '\.\.\/lib\/http\/reach\.js'/.test(endpoint)) {
+    faults.push('the endpoint does not resolve the machine itself')
+  }
+  if (!/await reach\(/.test(endpoint)) faults.push('the read does not go through that lookup')
+  // The bare `fetch` is the regression: it reads as a smaller change than it
+  // is, and it puts the endpoint back on the resolver that cannot see the name.
+  if (/await fetch\(/.test(endpoint)) faults.push('a read still goes out on the platform resolver')
+  // A socket fault comes back bare rather than wrapped, so a reason read only
+  // off `cause` would log every one of these as nothing in particular.
+  if (!/error\.code/.test(endpoint)) faults.push('a bare socket fault is logged without its code')
+  report(faults)
+})
+
 check('a machine that cannot be looked up does not read as a machine that is gone', () => {
   // The address of the far end is a subdomain of a zone somebody else runs,
   // and that zone refuses to resolve it every so often. A refusal is cached
