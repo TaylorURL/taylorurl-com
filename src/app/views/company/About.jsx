@@ -19,6 +19,12 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 // works in, a globe for an offer that reaches anywhere.
 const PlaceIcon = ABOUT.place.icon
 
+// The values fill their rows exactly or the panel's own ground shows through
+// the shortfall as an empty cell, and the two sites do not carry the same
+// number of them.
+const VALUE_COLUMNS = ABOUT.values.length % 2 === 0 ? 'md:grid-cols-2' : 'md:grid-cols-3'
+const VALUE_COUNT = String(ABOUT.values.length).padStart(2, '0')
+
 /**
  * The one face on the site, at the foot of the story that explains it.
  *
@@ -183,7 +189,9 @@ export default function About() {
             </p>
           </m.div>
 
-          <div className="panel-static bg-hair mt-12 grid gap-px overflow-hidden md:grid-cols-2">
+          <div
+            className={`panel-static bg-hair mt-12 grid gap-px overflow-hidden ${VALUE_COLUMNS}`}
+          >
             {ABOUT.values.map((item, i) => {
               const Icon = item.icon
               return (
@@ -194,7 +202,7 @@ export default function About() {
                   >
                     <div className="flex items-baseline justify-between">
                       <span className="font-mono text-[10px] tabular-nums tracking-tight text-ink-faint">
-                        {String(i + 1).padStart(2, '0')} / 04
+                        {String(i + 1).padStart(2, '0')} / {VALUE_COUNT}
                       </span>
                       <Icon
                         className="h-5 w-5 text-ink transition-colors duration-200 ease-out-soft group-hover:text-accent"

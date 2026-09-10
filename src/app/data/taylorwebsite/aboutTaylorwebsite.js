@@ -10,7 +10,7 @@
  * `@data/portfolio`; these are written out, since a second site quoting the
  * studio's client scores would be borrowing proof it has not earned.
  */
-import { Code2, Globe, Headphones, Shield, Zap } from 'lucide-react'
+import { Code2, Globe, Headphones, Zap } from 'lucide-react'
 
 export const ABOUT_PAGE = {
   seo: {
@@ -68,19 +68,13 @@ export const ABOUT_PAGE = {
       description:
         'Both come back in writing after the first call, and neither moves once you have agreed to them unless you ask for something that was not in the scope.',
     },
-    {
-      icon: Shield,
-      title: 'What it does not cover is said first',
-      description:
-        'Every service page names the work that is not included. You find that out at the start rather than halfway through.',
-    },
   ],
 
   work: {
     eyebrow: 'How We Work',
     headingLine: 'What you get',
     accentText: 'on every job.',
-    lede: 'Four things that hold whichever of the three you buy, and whatever the work costs.',
+    lede: 'Three things that hold whichever of the three you buy, and whatever the work costs.',
   },
 
   processIntro: {
