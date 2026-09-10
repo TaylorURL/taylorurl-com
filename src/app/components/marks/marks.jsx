@@ -404,6 +404,18 @@ export function MarkTender(props) {
   )
 }
 
+/** The machine everything else runs on: two bays, each with its lamp lit. */
+export function MarkRack(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <rect x="3" y="4.5" width="18" height="6" />
+      <rect x="3" y="13.5" width="18" height="6" />
+      <path d="M6.5 7.5h1M6.5 16.5h1" />
+      <path d="M13 7.5h5M13 16.5h5" />
+    </svg>
+  )
+}
+
 /** The call list: a handset off its rest, and the line it is placed down. */
 export function MarkDial(props) {
   return (
