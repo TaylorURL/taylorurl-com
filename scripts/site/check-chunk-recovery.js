@@ -319,18 +319,33 @@ check(
 // document whose controls did nothing, with no notice and no way back.
 //
 // Run rather than read, with the loader swapped out, because what matters is
-// what the page does with each of the three failures rather than which words
-// the boot spells them with.
+// what the page does with each of the failures rather than which words the boot
+// spells them with.
+//
+// A `SyntaxError` off the entry is two of them. The engine is asked which, by
+// being handed the syntax the bundle is built out of, so `Function` is swapped
+// out here the same way the loader is: refusing it is a browser from before the
+// syntax, and compiling it is a browser this site targets holding a build that
+// is broken for everybody.
 const boot = bootSource('/assets/index-TEST0000.js')
 
-async function runBoot(answers, { session = {}, online = true } = {}) {
+async function runBoot(answers, { session = {}, online = true, understands = true } = {}) {
   const asked = []
+  const shown = []
   let reloads = 0
   const stub = {
     loader: address => {
       asked.push(address)
       const answer = answers[Math.min(asked.length - 1, answers.length - 1)]
       return answer ? Promise.reject(answer) : Promise.resolve({})
+    },
+    Function: source => {
+      if (!understands) throw new SyntaxError('Unexpected token ?')
+      return globalThis.Function(source)
+    },
+    document: {
+      createElement: () => ({ style: {}, textContent: '', setAttribute() {} }),
+      body: { appendChild: node => shown.push(node) },
     },
     requestAnimationFrame: run => run(),
     setTimeout: run => run(),
@@ -356,7 +371,7 @@ async function runBoot(answers, { session = {}, online = true } = {}) {
   // has finished: the wait between attempts is a stub that runs at once, so
   // nothing here is left in a real timer.
   await new Promise(resolve => setTimeout(resolve, 0))
-  return { asked, reloads, session }
+  return { asked, reloads, session, shown }
 }
 
 const filed = []
@@ -401,7 +416,12 @@ check(
   "a reader the browser knows is offline has a readable page swapped for the browser's network page"
 )
 
-const old = await runBoot([unparsable()])
+await new Promise(resolve => setTimeout(resolve, 0))
+const before = filed.length
+
+// The client #525 and #532 both came from: an engine years older than `?.`,
+// under a current browser's user-agent string it plainly was not.
+const old = await runBoot([unparsable()], { understands: false })
 check(
   old.asked.length === 1,
   'a bundle the engine cannot parse is asked for again, which parses no better and costs the reader the download twice over'
@@ -409,6 +429,28 @@ check(
 check(
   old.reloads === 0,
   'a bundle the engine cannot parse reloads the document, and that reload can never be the last one'
+)
+check(
+  old.shown.length === 1,
+  'a reader whose browser cannot run any build of this site is left on a document that answers nothing they press, and never told why'
+)
+check(
+  old.shown.length === 1 && /too old/.test(old.shown[0].textContent),
+  'the notice for a browser that cannot run the page does not say that is what happened'
+)
+await new Promise(resolve => setTimeout(resolve, 0))
+check(
+  filed.length === before,
+  'a browser the site has never supported is filed as a fault against the site, under a fresh fingerprint on every visit because the message is what groups them'
+)
+
+// The same error off an engine that understands the syntax perfectly well,
+// which is a build that shipped broken and is refused by every reader on the
+// site. Nothing about that is the reader's browser and it has to be loud.
+const broken = await runBoot([unparsable()])
+check(
+  broken.shown.length === 0,
+  'a build that shipped broken syntax tells every reader their browser is out of date'
 )
 
 await new Promise(resolve => setTimeout(resolve, 0))
