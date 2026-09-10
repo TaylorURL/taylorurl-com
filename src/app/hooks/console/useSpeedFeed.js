@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
+import { usePulse } from './usePulse'
 
 const SPEED_PATH = '/api/site-speed'
+
+/** How often the stored readings are read again. They move when the daily
+ * sweep files, so the beat is the console's slower one. */
+const PULSE_MS = 60_000
 
 /** What a reader is told when the stored readings do not arrive. */
 const NO_READ = 'The speed readings did not arrive. Try again in a moment.'
@@ -67,6 +72,15 @@ export function useSpeedFeed({ token, enabled }) {
   useEffect(() => {
     load()
   }, [load])
+
+  // The readings again on a beat: the daily sweep files new figures on its
+  // own schedule, and a measurement pressed in another window lands here too.
+  // Held while one is running, whose answer carries the whole table itself.
+  usePulse(load, {
+    enabled: Boolean(token) && enabled,
+    intervalMs: PULSE_MS,
+    holdWhile: Boolean(measuring),
+  })
 
   const measure = useCallback(
     async siteId => {

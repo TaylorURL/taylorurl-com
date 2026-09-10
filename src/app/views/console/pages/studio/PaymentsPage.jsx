@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react'
 import { m } from 'framer-motion'
-import { RotateCw } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
 import { usePaymentsFeed } from '@hooks/console/usePaymentsFeed'
@@ -306,7 +305,7 @@ function Payments({ payments, loading, area }) {
 export default function PaymentsPage() {
   const { session } = useSession()
   const token = session?.access_token ?? null
-  const { data, error, loading, reading, refresh } = usePaymentsFeed({
+  const { data, error, loading } = usePaymentsFeed({
     token,
     enabled: Boolean(token),
   })
@@ -383,22 +382,16 @@ export default function PaymentsPage() {
             onPick={go}
             label="Payments views"
           />
-          <div className="flex flex-wrap items-center gap-2">
-            {view === 'subscribers' && (
-              <button
-                type="button"
-                className={QUIET}
-                aria-pressed={troubledOnly}
-                onClick={() => setTroubledOnly(one => !one)}
-              >
-                {troubledOnly ? 'Show Everyone' : 'Only What Needs Attention'}
-              </button>
-            )}
-            <button type="button" className={QUIET} disabled={reading} onClick={refresh}>
-              <RotateCw aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-              {reading ? 'Reading' : 'Re-read'}
+          {view === 'subscribers' && (
+            <button
+              type="button"
+              className={QUIET}
+              aria-pressed={troubledOnly}
+              onClick={() => setTroubledOnly(one => !one)}
+            >
+              {troubledOnly ? 'Show Everyone' : 'Only What Needs Attention'}
             </button>
-          </div>
+          )}
         </div>
       </Area>
 

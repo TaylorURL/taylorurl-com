@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { answerFor, NOTHING_HELD } from './feedState'
+import { usePulse } from './usePulse'
 
 const OUTREACH_PATH = '/api/outreach-admin'
 const JOB_PATH = '/api/outreach'
@@ -20,6 +21,9 @@ const NO_RUN = 'That job could not be run. Try it again.'
 // row before it starts work, so a read taken during one carries the open row
 // and the table shows the job as running rather than as it stood before.
 const RUN_POLL_MS = 4000
+
+/** How often the board and the queue are read again while nothing runs. */
+const PULSE_MS = 30_000
 
 /**
  * The outreach board, one prospect's profile, the changes that can be made to
@@ -258,6 +262,22 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   // is what the interval hangs on: a second job starting joins a poll that is
   // already running rather than restarting it.
   const busy = running.length > 0
+
+  // The board and the queue again on a beat, for the hours nothing is being
+  // pressed: replies land in the watched mailbox and the schedule sends on its
+  // own, and both used to sit unseen until something on this page was touched.
+  // A running job already re-reads every few seconds, so the beat stands off
+  // while one is, and while any change is in flight.
+  usePulse(
+    async () => {
+      await Promise.all([load(), loadMail()])
+    },
+    {
+      enabled: Boolean(token) && enabled,
+      intervalMs: PULSE_MS,
+      holdWhile: Boolean(acting) || busy,
+    }
+  )
   useEffect(() => {
     if (!busy) return undefined
     const timer = setInterval(() => {

@@ -1,8 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
+import { usePulse } from './usePulse'
 
 const BUILDS_PATH = '/api/projects-admin'
+
+/** How often the record is read again: a build moves as it is worked, and a
+ * client answers a checklist from their own console without this one hearing. */
+const PULSE_MS = 30_000
 
 /** What a reader is told when one of the two reads does not land. */
 const NO_LIST = 'The builds could not be read. Try again in a moment.'
@@ -240,6 +245,18 @@ export function useBuildsFeed({ token, enabled }) {
       }
     },
     [token, open, readUpdates, toast]
+  )
+
+  // The record again on a beat: the list, and the open build's own reads with
+  // it, so the checklist and the updates move as the client answers them. It
+  // stands off while a change is in flight, which would otherwise race the
+  // re-read that change ends on.
+  usePulse(
+    async () => {
+      await load()
+      if (open) await readUpdates(open)
+    },
+    { enabled: Boolean(token) && enabled, intervalMs: PULSE_MS, holdWhile: Boolean(acting) }
   )
 
   return {
