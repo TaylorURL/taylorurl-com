@@ -29,7 +29,7 @@ import WorkDeck from './WorkDeck'
  * The depth is in `WorkDeck`, and it is a rotation rather than a decoration:
  * the frames stand on a rail that turns them as it carries them past, so the
  * one being read faces the reader square and its neighbours are edging away.
- * The rail advances itself, and holds still while a pointer is over it.
+ * The rail advances itself, and a reader cannot take hold of it.
  */
 export default function SmallTeamSection() {
   // The claim swells as its turn comes round; the deck under it does not. The
