@@ -1199,7 +1199,7 @@ export default function CallsPage() {
       {
         key: 'call',
         label: 'To Call',
-        gloss: 'Ready to ring right now, whatever the page in front of you shows.',
+        gloss: 'Ready to ring right now.',
         value: loading ? '' : fullCount(call),
         caption: list ? `of ${fullCount(list)} on the list` : null,
         loading,
@@ -1252,7 +1252,7 @@ export default function CallsPage() {
         label: 'On a Call',
         gloss: 'Numbers somebody has open this minute.',
         value: desk.loading ? '' : fullCount(held),
-        caption: held ? 'somebody is on the phone' : 'nobody is on a call',
+        caption: held ? 'somebody is on a call' : 'nobody is on a call',
         tone: held ? 'accent' : 'plain',
         pulse: true,
         loading: desk.loading,

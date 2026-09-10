@@ -1039,7 +1039,7 @@ export default function LeadsPage() {
         value: loading ? '' : String(dismissed),
         caption: all ? `of ${all} on the list` : null,
         loading,
-        room: all ? share(dismissed, `${dismissed} of ${all} were set aside`) : null,
+        room: all ? share(dismissed, `${dismissed} of ${all} were ruled out`) : null,
       },
     ]
   }, [loading, totals])
