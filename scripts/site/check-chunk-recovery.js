@@ -163,6 +163,37 @@ for (const [file, piece] of [
   }
 }
 
+// That a piece which gave up is offered again to a reader who does not move.
+//
+// Everything above this line makes the failure cost the reader nothing at the
+// moment it happens, and none of it decides how long the piece stays gone. That
+// was `LateChrome`, and for a while its whole answer was a page change - which
+// is a move the reader owes the page rather than a signal the page can wait
+// for. The retry underneath spends all three of its attempts inside eleven
+// hundred milliseconds, real outages last seconds, and a reader who stays on
+// the page they landed on therefore kept a corner with nothing in it for the
+// rest of their visit while the file answered every request nobody made. #542
+// was that, on the home page, off a client that lost four unrelated files
+// across three origins inside three seconds.
+//
+// Read rather than run, because what it is asking about is a timer, and a check
+// that ran it would be a check that waited for it.
+const renewing = swept.find(entry => entry.name === 'src/app/components/app-shell/LateChrome.jsx')
+if (renewing) {
+  check(
+    /setTimeout\(/.test(renewing.source),
+    'a piece of chrome that gave up is offered again only when the reader goes somewhere, so one that failed on the page they stay on is gone for the whole visit'
+  )
+  check(
+    /moved/.test(renewing.source) && /waited/.test(renewing.source),
+    'the renewal on a move and the renewal on a wait are counted off one budget, so the timer takes the pass the reader who does move would have had'
+  )
+  check(
+    /clearTimeout\(/.test(renewing.source),
+    'the wait before offering a piece again is never cleared, so a piece that has already come back is fetched a second time'
+  )
+}
+
 // The search is the only chunk on the site a reader asks for by name, and that
 // makes it the only one that owes them a sentence when it will not come.
 //
