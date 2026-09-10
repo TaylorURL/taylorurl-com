@@ -37,6 +37,31 @@
  * every browser the site targets has understood since 2020, off a client years
  * older than the syntax, and the bare import filed it with no sentence on it.
  *
+ * That last one is two different faults wearing one error, and which it is the
+ * page can settle for itself. A build that ships broken syntax is refused by
+ * every engine on earth and has to be filed the moment it reaches one. An
+ * engine from before the syntax refuses a build that is perfectly good, and
+ * will refuse every build this site ever ships, because es2022 is a decision
+ * `vite.config.js` states and defends. Filing the second is filing a fault
+ * against the site for a browser the site has already declined to support, and
+ * it files a fresh one on every visit: the message is the fingerprint, so the
+ * count that would show a reader what it is never accumulates. #525 and #532
+ * are one client class, seven hours and two data-centre addresses apart, and
+ * they arrived as two unrelated first sightings.
+ *
+ * So the entry's `SyntaxError` is put to the engine directly: compile the
+ * syntax the bundle is built out of, here, now. Refused, the engine cannot run
+ * any build of this site and the reader is told so - the one thing they were
+ * never given, on a document that is eighty readable links and twenty-eight
+ * controls that will not answer. Compiled, the engine is one this site targets
+ * and the fault is the deploy's, which is filed exactly as loudly as before.
+ *
+ * The probe is `Function` rather than a literal because a literal is read by
+ * the same parser as the file around it, and a boot that cannot parse itself
+ * never runs to report anything. A page whose policy refuses `Function` throws
+ * something other than a `SyntaxError`, which is not the engine failing to
+ * understand the syntax, so it is filed rather than blamed on the reader.
+ *
  * When none of that lands the failure is re-thrown rather than swallowed. It
  * still reaches the reporter, and it now arrives saying which of the three it
  * was instead of reading as whatever the engine happened to say.
@@ -47,6 +72,19 @@ var entry=${JSON.stringify(src)}
 var RELOADED='taylorurl.boot.reload'
 var attempts=0
 function parseFailure(error){return Boolean(error)&&error.name==='SyntaxError'}
+function tooOld(){
+try{Function('return {}?.a ?? 0');return false}
+catch(error){return Boolean(error)&&error.name==='SyntaxError'}
+}
+function notice(){
+try{
+var bar=document.createElement('div')
+bar.setAttribute('role','status')
+bar.style.cssText='position:fixed;left:0;right:0;top:0;z-index:2147483647;margin:0;padding:12px 16px;background:#111214;color:#ffffff;font:400 14px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;text-align:center'
+bar.textContent='This browser is too old to run this page. Its links still work. To use the buttons and forms, update it or open the page in a newer browser.'
+document.body.appendChild(bar)
+}catch(ignored){}
+}
 function start(address){
 return import(address).catch(function(error){
 if(parseFailure(error)||attempts>=2)throw error
@@ -67,6 +105,7 @@ function done(){try{sessionStorage.removeItem(RELOADED)}catch(ignored){}}
 requestAnimationFrame(function(){requestAnimationFrame(function(){
 start(entry).then(done,function(error){
 if(!parseFailure(error)&&navigator.onLine!==false&&once()){location.reload();return}
+if(parseFailure(error)&&tooOld()){notice();return}
 var said=(error&&error.message)||String(error)
 return Promise.reject(new Error('The page could not start: '+said))
 })
