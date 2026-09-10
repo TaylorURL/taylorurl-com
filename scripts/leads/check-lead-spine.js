@@ -28,6 +28,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { MOMENTS, SOURCES, SPINE, ownAddress, phoneDigits } from '../../lib/leads/spine.js'
+import { callMakesLead } from '../../lib/outreach/prospects/calls.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const read = path => readFileSync(join(ROOT, path), 'utf8')
@@ -122,6 +123,31 @@ check('the studio does not appear in its own lead list', () => {
   // any name ending in our own would read as the studio, and the studio would
   // stop seeing leads at every one of them.
   same(ownAddress('someone@taylorurl.com.example'), false, 'a domain that merely ends alike')
+})
+
+check('the call door only writes the calls that found somebody who wanted it', () => {
+  // The door that is not a form. Seven of the eight are somebody filling
+  // something in, so arriving at all is the whole of the qualification; the
+  // eighth is a caller working eight thousand cold names, where arriving means
+  // nothing and the caller's own answer means everything. Filed on having had
+  // a conversation, it put the owner who said no thanks and hung up in the
+  // lead list beside the one asking what it would cost.
+  const text = read('api/calls-admin.js')
+  same(
+    text.includes('callMakesLead('),
+    true,
+    'the call door writes a lead without reading the rule'
+  )
+  const gate = text.indexOf('callMakesLead(')
+  const write = text.indexOf('source: SOURCES.call')
+  same(gate < write, true, 'the call door writes the lead before it reads the rule')
+  // The rule is one function in one place, so the console and the endpoint
+  // cannot come to two answers about the same call.
+  same(
+    callMakesLead('spoke', true) && !callMakesLead('spoke', false),
+    true,
+    'the rule the call door reads does not turn on what the caller answered'
+  )
 })
 
 check('one person written two ways is one lead', () => {

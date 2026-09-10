@@ -47,10 +47,13 @@ import { PORTFOLIO_PROJECTS } from '../src/app/data/portfolio.js'
 import {
   ASSIGNED_STANDINGS,
   byCallOrder,
+  callMakesLead,
   callPlace,
+  interestIn,
   isCallable,
   matchesControls,
   medianOf,
+  outcomeAsksInterest,
   outcomeEnds,
   OUTCOME_IDS,
   ownerOf,
@@ -208,7 +211,7 @@ async function callsByProspect(db) {
     () =>
       db
         .from(CALLS)
-        .select('id, prospect_id, outcome, note, callback_at, called_at, called_by')
+        .select('id, prospect_id, outcome, note, interested, callback_at, called_at, called_by')
         .order('called_at', { ascending: false })
         .order('id', { ascending: false }),
     { max: SET_MAX * 4 }
@@ -553,6 +556,32 @@ function callbackAt(value) {
   return { at: when.toISOString() }
 }
 
+/**
+ * What the caller said about interest, checked against the outcome carrying it.
+ *
+ * Two refusals rather than a coercion, and both for the same reason: this one
+ * field is what decides whether the business turns up in the lead list, so a
+ * write that leaves it unsettled is a decision nobody made. An outcome that
+ * asks and was not answered is refused, the way a call back with no time on it
+ * is refused. An answer sent against an outcome that already settles interest
+ * is refused too - a Booked marked not interested is a form disagreeing with
+ * the button it was submitted under, and picking one of them would be a guess.
+ *
+ * @returns {{interested: boolean|null}|{error: string}}
+ */
+function interestFor(outcome, value) {
+  const asks = outcomeAsksInterest(outcome)
+  if (value === null || value === undefined || value === '') {
+    if (asks) return { error: 'Say whether they were interested.' }
+    return { interested: interestIn(outcome) }
+  }
+  if (typeof value !== 'boolean') return { error: 'Say whether they were interested.' }
+  if (!asks) {
+    return { error: 'That outcome already says whether they were interested.' }
+  }
+  return { interested: value }
+}
+
 /** One call recorded against one business. */
 async function record(db, body, account) {
   const prospectId = uuid(body.id)
@@ -578,6 +607,9 @@ async function record(db, body, account) {
     }
   }
 
+  const interest = interestFor(outcome, body.interested)
+  if (interest.error) return { status: 400, body: { error: interest.error } }
+
   // The row has to be one this list would actually have offered. Without this
   // an id copied from the outreach board would write a call against a business
   // that unsubscribed, which is the one thing the whole section must not do.
@@ -600,6 +632,7 @@ async function record(db, body, account) {
       prospect_id: prospectId,
       outcome,
       note: field(body.note, NOTE_MAX),
+      interested: interest.interested,
       callback_at: callback.at,
       called_by: account.userId,
     })
@@ -608,7 +641,7 @@ async function record(db, body, account) {
   if (written.error) return refusal(written.error, NOT_RECORDED)
 
   const took = await claim(db, prospectId, account.userId)
-  await carry(db, found.data, body, callback.at)
+  await carry(db, found.data, body, callback.at, interest.interested)
 
   return {
     status: 200,
@@ -617,25 +650,27 @@ async function record(db, body, account) {
 }
 
 /**
- * A business somebody actually spoke to, carried into the lead record.
+ * A business that wanted this, carried into the lead record.
  *
  * A cold prospect is not a lead. Eight thousand names off a map are a list to
  * work, and putting them in front of a person as leads would bury the handful
- * who asked for something. What changes that is a conversation: once somebody
- * has picked up and talked, they belong beside the people who filled in a form,
- * and the callback the caller booked is a date the studio owes them.
+ * who asked for something. What changes that is somebody wanting it, which is
+ * why the gate is the interest the caller recorded rather than the fact of a
+ * conversation having happened.
  *
- * So only the outcomes where a person spoke are carried, and the gatekeeper is
- * one of them, because a gatekeeper who takes a message or hands over a name is
- * how most of these start.
+ * Having talked to a person was the gate until 2026-09-10, and it was the wrong
+ * one in both directions. Every Spoke To Owner was filed as a lead, so the
+ * owner who said no thanks and hung up arrived beside the one asking what it
+ * would cost - five of the first nine had to be ruled out by hand - while
+ * Booked and Call Back, which are the two clearest yeses the phone produces,
+ * were carried nowhere at all.
  *
  * Failure here is swallowed. The call is already on the record and the caller
  * is owed their confirmation; a lead that missed its row is worth less than a
  * caller told their call did not save.
  */
-async function carry(db, prospect, body, callbackAt) {
-  const outcome = String(body.outcome ?? '')
-  if (outcome !== 'spoke' && outcome !== 'gatekeeper') return
+async function carry(db, prospect, body, callbackAt, interested) {
+  if (!callMakesLead(String(body.outcome ?? ''), interested)) return
 
   const lead = await keepLead(
     {

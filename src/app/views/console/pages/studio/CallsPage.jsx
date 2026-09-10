@@ -22,6 +22,7 @@ import {
   CALL_OUTCOMES,
   callTakesOwner,
   dialHref,
+  outcomeAsksInterest,
   outcomeNeedsCallback,
   outcomeOf,
   ownerOf,
@@ -104,7 +105,7 @@ import CallSetup from './CallSetup'
  * visibly do not have. Every one of them carries the phone number the same
  * search returned. This is the section that dials them.
  *
- * Five things this page has to do that a table of names does not.
+ * Six things this page has to do that a table of names does not.
  *
  * SAY WHY EACH BUSINESS IS HERE. The answer has been in the payload since the
  * first version and was never drawn: `skip_reason` is the enrichment job's own
@@ -139,6 +140,15 @@ import CallSetup from './CallSetup'
  * re-reads itself while somebody is watching - and every console says which
  * number it is on, which is drawn on the row, on the board above it, and as a
  * lock on the one control that would place the second call.
+ *
+ * SAY WHETHER THEY WANTED IT. Which is a different question from what the call
+ * came to, and only the person who made it can answer either. Spoke To Owner
+ * covers the owner who asked what it would cost and the owner who said no
+ * thanks and hung up, and the section next door reads that column to decide who
+ * is a lead - so it filed both, and half of the first afternoon's leads had to
+ * be ruled out by hand. The caller is asked outright now, on the two outcomes
+ * that leave the question open, and the answer is one keystroke because it sits
+ * between them and the next business.
  *
  * LET THE READER SET IT UP. Which columns, how tight the rows, what it is
  * narrowed to and which narrowings are worth keeping are all facts about the
@@ -642,14 +652,32 @@ function headClass(id) {
  * reads the business rather than reciting a default: what a second no-answer
  * buys is not what a fourth buys, and the ladder is the one part of this the
  * page cannot expect anybody to remember.
+ *
+ * The second control is the one that decides where the business goes next.
+ * Spoke To Owner covers the owner who asked what it would cost and the owner
+ * who said no thanks and hung up, and nothing else on this form can tell them
+ * apart - so the caller is asked outright, and only where the outcome leaves
+ * the question open. It has no answer set to begin with, because a default
+ * here is the page guessing at the one thing only the person on the call
+ * knows.
  */
 function RecordForm({ row, saving, onRecord, startOn }) {
   const [outcome, setOutcome] = useState(startOn ?? 'no_answer')
   const [note, setNote] = useState('')
   const [callback, setCallback] = useState('')
+  const [interest, setInterest] = useState('')
   const needsCallback = outcomeNeedsCallback(outcome)
+  const asksInterest = outcomeAsksInterest(outcome)
   const ends = Boolean(outcomeOf(outcome)?.ends)
   const wait = waitAfter(row, outcome)
+
+  const pick = value => {
+    setOutcome(value)
+    // The answer belongs to the outcome it was given against. Left standing, a
+    // caller who picks Spoke To Owner, answers it, then corrects the outcome to
+    // Gatekeeper files the first call's answer against the second.
+    setInterest('')
+  }
 
   const submit = async event => {
     event.preventDefault()
@@ -657,11 +685,13 @@ function RecordForm({ row, saving, onRecord, startOn }) {
       id: row.id,
       outcome,
       note,
+      interested: asksInterest ? interest === 'yes' : null,
       callback_at: callback && !ends ? new Date(callback).toISOString() : null,
     })
     if (saved) {
       setNote('')
       setCallback('')
+      setInterest('')
       setOutcome(startOn ?? 'no_answer')
     }
   }
@@ -670,11 +700,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
     <form onSubmit={submit} className="grid gap-3">
       <label className="grid gap-1.5">
         <span className={`${MONO_LABEL} text-paper-faint`}>What the Call Came To</span>
-        <select
-          className={SELECT}
-          value={outcome}
-          onChange={event => setOutcome(event.target.value)}
-        >
+        <select className={SELECT} value={outcome} onChange={event => pick(event.target.value)}>
           {TRACKS.map(track => (
             <optgroup key={track.id} label={track.label}>
               {CALL_OUTCOMES.filter(one => one.track === track.id).map(one => (
@@ -693,6 +719,26 @@ function RecordForm({ row, saving, onRecord, startOn }) {
               : `They rest ${saidHours(wait)}, then come back to the list.`}
         </span>
       </label>
+
+      {asksInterest && (
+        <label className="grid gap-1.5">
+          <span className={`${MONO_LABEL} text-paper-faint`}>Were They Interested</span>
+          <select
+            className={interest ? SELECT_ON : SELECT}
+            value={interest}
+            required
+            onChange={event => setInterest(event.target.value)}
+          >
+            <option value="">Say Which</option>
+            <option value="yes">Interested</option>
+            <option value="no">Not Interested</option>
+          </select>
+          <span className={`${MONO_LABEL} text-paper-faint`}>
+            Interested puts them in the lead list. Not interested leaves them on the call list and
+            nowhere else.
+          </span>
+        </label>
+      )}
 
       {!ends && (
         <label className="grid gap-1.5">
@@ -906,6 +952,17 @@ function Sheet({
                   <Badge tone={outcomeOf(call.outcome)?.tone ?? 'plain'}>
                     {outcomeOf(call.outcome)?.label ?? call.outcome}
                   </Badge>
+                  {/* What the caller heard about wanting it, which is the fact
+                      that decided whether this business is in the lead list.
+                      Only against the two outcomes that leave the question
+                      open: Booked beside Interested is one badge saying what
+                      the other already said, and a call from before this was
+                      asked has no answer to draw rather than a no. */}
+                  {outcomeAsksInterest(call.outcome) && typeof call.interested === 'boolean' && (
+                    <Badge tone={call.interested ? 'good' : 'plain'}>
+                      {call.interested ? 'Interested' : 'Not Interested'}
+                    </Badge>
+                  )}
                   <span className={`${MONO_LABEL} text-paper-faint`}>{when(call.called_at)}</span>
                   <span className={`${MONO_LABEL} text-paper-faint`}>·</span>
                   <span
@@ -943,8 +1000,27 @@ function Sheet({
  * The eight outcomes are on eight number keys. A caller with a phone in one
  * hand has one hand for the keyboard, and a dropdown plus a submit is four
  * actions for the outcome that happens most: nobody picks up.
+ *
+ * Two of the eight ask a second question before they are recorded, and it takes
+ * the card rather than sitting under the grid. A caller working a batch at one
+ * keystroke a business will not notice a control that was already on screen
+ * when they pressed the last one; a screen that changes under them is the only
+ * thing that reads as being asked. It is one more keystroke, `y` or `n`, and it
+ * is the keystroke that decides whether the business turns up in the lead list.
  */
-function CallCard({ row, saving, recorded, holder, you, onQuick, onOpen, onSkip }) {
+function CallCard({
+  row,
+  saving,
+  recorded,
+  asking,
+  holder,
+  you,
+  onQuick,
+  onAnswer,
+  onDrop,
+  onOpen,
+  onSkip,
+}) {
   const href = dialHref(row.phone)
 
   return (
@@ -1012,30 +1088,65 @@ function CallCard({ row, saving, recorded, holder, you, onQuick, onOpen, onSkip 
         <Metric label="Instead of a Site" value={presence(row)} />
       </dl>
 
-      <div className="grid gap-2">
-        <p className={`${MONO_LABEL} text-paper-faint`}>
-          {recorded || 'What did the call come to?'}
-        </p>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-          {CALL_OUTCOMES.map(outcome => (
+      {asking ? (
+        <div className="grid gap-2">
+          <p className="text-[15px] text-ink-paper">
+            {outcomeOf(asking)?.label}. Were they interested?
+          </p>
+          <div className="grid grid-cols-2 gap-2">
             <button
-              key={outcome.id}
               type="button"
-              className={QUIET}
+              className={`${BUTTON} min-h-[48px]`}
               disabled={saving}
-              onClick={() => onQuick(outcome.id)}
+              onClick={() => onAnswer(true)}
             >
-              <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">
-                {outcome.key}
-              </span>
-              {outcome.label}
+              <span className="mr-1 rounded-[var(--r-tiny)] border border-current px-1">Y</span>
+              Interested
             </button>
-          ))}
+            <button
+              type="button"
+              className={`${QUIET} min-h-[48px] justify-center`}
+              disabled={saving}
+              onClick={() => onAnswer(false)}
+            >
+              <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">N</span>
+              Not Interested
+            </button>
+          </div>
+          <p className={`${MONO_LABEL} text-paper-faint`}>
+            Interested puts them in the lead list. Not interested leaves them on the call list and
+            nowhere else.
+          </p>
+          <button type="button" className={QUIET} disabled={saving} onClick={onDrop}>
+            Back to the Outcomes
+          </button>
         </div>
-        <button type="button" className={QUIET} onClick={() => onOpen(row)}>
-          Open the Record to Add a Note or a Time
-        </button>
-      </div>
+      ) : (
+        <div className="grid gap-2">
+          <p className={`${MONO_LABEL} text-paper-faint`}>
+            {recorded || 'What did the call come to?'}
+          </p>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {CALL_OUTCOMES.map(outcome => (
+              <button
+                key={outcome.id}
+                type="button"
+                className={QUIET}
+                disabled={saving}
+                onClick={() => onQuick(outcome.id)}
+              >
+                <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">
+                  {outcome.key}
+                </span>
+                {outcome.label}
+              </button>
+            ))}
+          </div>
+          <button type="button" className={QUIET} onClick={() => onOpen(row)}>
+            Open the Record to Add a Note or a Time
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -1070,6 +1181,10 @@ export default function CallsPage() {
   const [batch, setBatch] = useState([])
   const [worked, setWorked] = useState({})
   const [at, setAt] = useState(0)
+  // The outcome a caller has pressed in Call Mode that is waiting on whether
+  // they were interested. Held rather than recorded, because that answer is
+  // what decides where the business goes next and there is no default for it.
+  const [asking, setAsking] = useState(null)
   const [keyOpen, setKeyOpen] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
   // Whether the list has the page to itself. Held for the sitting rather than
@@ -1285,7 +1400,22 @@ export default function CallsPage() {
         setRecorded(null)
         return
       }
-      const saved = await write({ id: current.id, outcome, note: '', callback_at: null })
+      // The two a key cannot finish either, for the other reason: the outcome
+      // does not say whether anybody wanted it, and that answer is what decides
+      // whether the business becomes a lead. The card asks, and the answer
+      // records both at once.
+      if (outcomeAsksInterest(outcome)) {
+        setAsking(outcome)
+        setRecorded(null)
+        return
+      }
+      const saved = await write({
+        id: current.id,
+        outcome,
+        note: '',
+        interested: null,
+        callback_at: null,
+      })
       if (saved) {
         setWorked(held => ({ ...held, [current.id]: outcome }))
         setAt(index => index + 1)
@@ -1295,13 +1425,55 @@ export default function CallsPage() {
     [current, write]
   )
 
+  /** The waiting outcome recorded, now that the caller has said which it was. */
+  const answer = useCallback(
+    async interested => {
+      if (!current || !asking) return
+      const saved = await write({
+        id: current.id,
+        outcome: asking,
+        note: '',
+        interested,
+        callback_at: null,
+      })
+      if (saved) {
+        setWorked(held => ({ ...held, [current.id]: asking }))
+        setAt(index => index + 1)
+        setAsking(null)
+        setRecorded(null)
+      }
+    },
+    [current, asking, write]
+  )
+
+  // A question is asked of one business. Moving off that business, leaving Call
+  // Mode or opening the record all drop it, because the answer belongs to the
+  // call that was just made rather than to the next one up.
+  useEffect(() => {
+    setAsking(null)
+  }, [view, current, openRow])
+
   // The eight outcomes on the eight number keys, ignored while a field has
-  // focus so typing a note never records a call.
+  // focus so typing a note never records a call. While one of them is waiting
+  // on whether they were interested the numbers stand down and `y` and `n`
+  // answer it, so the keyboard never records the outcome under the question.
   useEffect(() => {
     if (view !== 'calling' || !current || openRow) return undefined
     const onKey = event => {
       const tag = document.activeElement?.tagName
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      if (asking) {
+        if (event.key === 'Escape') {
+          event.preventDefault()
+          setAsking(null)
+          return
+        }
+        const said = event.key.toLowerCase()
+        if (said !== 'y' && said !== 'n') return
+        event.preventDefault()
+        answer(said === 'y')
+        return
+      }
       const outcome = CALL_OUTCOMES.find(one => one.key === event.key)
       if (!outcome) return
       event.preventDefault()
@@ -1309,7 +1481,7 @@ export default function CallsPage() {
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [view, current, openRow, quick])
+  }, [view, current, openRow, asking, quick, answer])
 
   const openBusiness = useCallback(row => {
     setOpenRow(row)
@@ -1785,7 +1957,7 @@ export default function CallsPage() {
         >
           <Panel
             title="Calling"
-            note="Ring the number, then press what the call came to and the next business comes up on its own."
+            note="Ring the number and press what the call came to. Say whether they were interested where it asks, and the next business comes up on its own."
             loading={loading}
             aside={
               <span className={`${MONO_LABEL} text-paper-faint`}>
@@ -1799,9 +1971,12 @@ export default function CallsPage() {
                   row={current}
                   saving={saving}
                   recorded={recorded}
+                  asking={asking}
                   holder={heldHere}
                   you={desk.you}
                   onQuick={quick}
+                  onAnswer={answer}
+                  onDrop={() => setAsking(null)}
                   onOpen={openBusiness}
                   onSkip={() => setAt(index => index + 1)}
                 />
