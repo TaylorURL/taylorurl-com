@@ -388,7 +388,7 @@ function Reading({ lead, team, messages, messagesError, saving, onMark, onCompos
             <input
               type="text"
               className={`${FIELD} w-48`}
-              placeholder="Why they are set aside"
+              placeholder="Why you are ruling them out"
               maxLength={200}
               value={because}
               onChange={event => setBecause(event.target.value)}
@@ -514,8 +514,8 @@ function Reading({ lead, team, messages, messagesError, saving, onMark, onCompos
         </div>
       </PanelBody>
       <PanelFoot>
-        A message sent from here goes to this lead alone, exactly as composed, and lands in the
-        record above alongside everything else that has happened to them.
+        A message you send from here goes to this lead alone, in the words you wrote, and the record
+        above keeps it alongside everything else that has happened to them.
       </PanelFoot>
     </Panel>
   )
@@ -596,8 +596,8 @@ function Composer({ open, lead, templates, sending, onSend, onClose }) {
           </label>
         ) : (
           <p className="text-[13px] leading-relaxed text-paper-soft">
-            No drafts are kept yet. The Settings view is where they are written, and this composer
-            offers each one with the lead's own details filled in.
+            No drafts yet. You write them in the Settings view, and this composer offers each one
+            with the lead's own details already in the blanks.
           </p>
         )}
         <label className="grid gap-1.5">
@@ -656,7 +656,7 @@ function Drafts({ templates, loading, busy, onEdit, onNew, area }) {
       area={area}
       loading={loading}
       aside={`${templates.length} kept`}
-      note="What the composer offers beside every lead. A blank like {{first_name}} fills itself from the lead as the draft is picked."
+      note="What the composer offers beside every lead. It fills a blank like {{first_name}} from the lead as you pick the draft."
     >
       <PanelBody>
         <table className="console-table">
@@ -712,7 +712,9 @@ function Drafts({ templates, loading, busy, onEdit, onNew, area }) {
         </table>
       </PanelBody>
       <PanelFoot>
-        <span>Every draft is offered beside every lead; there is no send without a person.</span>
+        <span>
+          The composer offers every draft beside every lead, and only a person can send one.
+        </span>
         <button type="button" className={QUIET} onClick={onNew}>
           <Plus aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
           New Draft
@@ -738,7 +740,7 @@ function Blanks({ area }) {
       </PanelBody>
       <PanelFoot>
         A blank the lead cannot fill stays standing in the composer, and the send refuses while one
-        does - so a draft can lean on a name without a message ever leaving without it.
+        does. So a draft can lean on a name, and nobody can send it to a lead who has not given one.
       </PanelFoot>
     </Panel>
   )
@@ -779,7 +781,7 @@ function DraftEditor({ open, draft, busy, onSave, onDelete, onClose }) {
       open={open}
       title={draft ? 'Edit the Draft' : 'A New Draft'}
       aside={draft?.name || ''}
-      note="Written once, offered beside every lead. Blanks like {{first_name}} fill themselves from whoever it is opened on."
+      note="Write it once and the composer offers it beside every lead. It fills blanks like {{first_name}} from whoever it opens on."
       onClose={onClose}
     >
       <form onSubmit={save} className="grid gap-4 px-5 py-4">
