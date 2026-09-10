@@ -62,8 +62,9 @@ if (!reporter) {
  * offers a `Worker` or a `fetch`, so reports fall through to `sendBeacon`,
  * which is the one transport a test can read.
  */
-function collector() {
+function collector(scriptTags) {
   const posted = []
+  const listeners = {}
   const sandbox = {
     JSON,
     URL,
@@ -73,6 +74,7 @@ function collector() {
       href: 'https://www.taylorurl.com/start',
       search: '',
       origin: 'https://www.taylorurl.com',
+      hostname: 'www.taylorurl.com',
     },
     navigator: {
       userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 26_6_1 like Mac OS X) Safari/604.1',
@@ -82,8 +84,15 @@ function collector() {
       },
     },
     localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
-    addEventListener() {},
-    document: { addEventListener() {} },
+    addEventListener(type, handler) {
+      ;(listeners[type] = listeners[type] || []).push(handler)
+    },
+    document: {
+      addEventListener() {},
+      // What the page has fetched from elsewhere, which is what the reporter
+      // reads to say where a muted throw could have come from.
+      getElementsByTagName: () => scriptTags || [],
+    },
     console: { error() {}, warn() {}, trace() {}, assert() {}, log() {} },
     setTimeout() {},
     clearTimeout() {},
@@ -98,6 +107,15 @@ function collector() {
     // is what puts that address into the frames the reporter reads.
     from(origin, body) {
       new vm.Script(body, { filename: origin }).runInContext(context)
+    },
+    // Hands the page's own `error` listener an event, which is the only way to
+    // ask what it does with one. Reading the source instead is how a filter
+    // gets to be documented, correct and never reached.
+    throws(event) {
+      for (const handler of listeners.error || []) handler({ preventDefault() {}, ...event })
+    },
+    held() {
+      return sandbox.window.__reporter.replay()
     },
   }
 }
@@ -147,6 +165,78 @@ check(
     'still reports without a stack'
 )
 
+/* ----------------------------------------------------------------------- *
+ * The throw the browser refuses to describe.
+ * ----------------------------------------------------------------------- */
+
+// A script from another origin, fetched without `crossorigin`, is muted when it
+// throws: "Script error.", no file, no line, no error object. There is nothing
+// in it to act on and there never will be, so it is held for a live console
+// rather than filed as a fault. #524 was one of these -- `/start`, opened from
+// an ad inside an Android in-app browser, reporting those two words and nothing
+// else.
+const TAG_SCRIPTS = [
+  { src: 'https://www.googletagmanager.com/gtag/js?id=G-TEST', crossOrigin: 'anonymous' },
+  { src: 'https://connect.facebook.net/en_US/fbevents.js', crossOrigin: null },
+  { src: 'https://www.taylorurl.com/assets/index-abcd1234.js', crossOrigin: 'anonymous' },
+]
+const MUTED = { message: 'Script error.', filename: '', lineno: 0, colno: 0, error: null }
+
+const opaque = collector(TAG_SCRIPTS)
+opaque.throws(MUTED)
+check(
+  opaque.posted.length === 0,
+  'a throw the browser refused to describe was filed as a fault, so the queue is carrying a ' +
+    'ticket whose message is two words and cannot ever carry more'
+)
+const heldOpaque = opaque.held().filter(entry => entry.kind === 'opaque')
+check(
+  heldOpaque.length === 1,
+  'a muted throw was dropped rather than held, so a live console can no longer see that ' +
+    'anything threw at all'
+)
+// The one script on the page that can still mute, named. Google's tag and the
+// site's own bundle both carry the attribute and so report in full.
+check(
+  /connect\.facebook\.net/.test((heldOpaque[0] || {}).message || ''),
+  'a muted throw was held without naming what the page fetched without CORS, which is the ' +
+    'only lead there is on one'
+)
+check(
+  !/googletagmanager|taylorurl\.com/.test((heldOpaque[0] || {}).message || ''),
+  'a script fetched with `crossorigin` was named as a suspect in a muted throw, so the ' +
+    'reporter is no longer reading the attribute that rules it out'
+)
+
+// And the direction that matters more. `muted` decides what never reaches the
+// collector, so an over-broad one is the reporter going silent on real faults --
+// the same failure this file already guards the console path against. An error
+// carrying a file is the site's and stays filed, whatever else is true of it.
+const real = collector(TAG_SCRIPTS)
+real.throws({
+  message: 'Uncaught TypeError: e.plan is undefined',
+  filename: 'https://www.taylorurl.com/assets/index-abcd1234.js',
+  lineno: 412,
+  colno: 9,
+  error: { stack: 'TypeError: e.plan is undefined\n  at https://www.taylorurl.com/assets/x.js:1' },
+})
+check(
+  real.posted.length === 1,
+  'an uncaught error naming its own file was not filed, so `muted` has widened onto the ' +
+    'site’s own faults and the reporter has gone quiet on them'
+)
+
+// A muted throw with no candidate on the page is an extension or an in-app
+// browser injecting one. Still not the site's, still held, and the empty list
+// is the finding rather than a gap in it.
+const injected = collector([])
+injected.throws(MUTED)
+check(
+  injected.posted.length === 0 && injected.held().some(entry => entry.kind === 'opaque'),
+  'a muted throw with nothing on the page to explain it was filed against the site, so an ' +
+    'injected script is being reported as this site breaking'
+)
+
 if (failures.length) {
   console.error('check-console-reports: failed')
   for (const failure of failures) console.error(`  ${failure}`)
@@ -156,6 +246,7 @@ if (failures.length) {
 
 console.log(
   `check-console-reports: ${checks} checks hold — the console path files with the frames it ` +
-    'came from, an extension writing to it is ruled the browser rather than the site, and ' +
-    'the output the site writes itself still reports'
+    'came from, an extension writing to it is ruled the browser rather than the site, a throw ' +
+    'the browser refused to describe is held rather than filed, and the output the site writes ' +
+    'itself still reports'
 )
