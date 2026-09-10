@@ -42,6 +42,7 @@ import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { readAll, tableMissing } from '../lib/db/rows.js'
 import { field, uuid } from '../lib/db/fields.js'
 import { sharesTrade } from '../lib/outreach/message.js'
+import { SOURCES, SPINE, keepLead } from '../lib/leads/spine.js'
 import { PORTFOLIO_PROJECTS } from '../src/app/data/portfolio.js'
 import {
   ASSIGNED_STANDINGS,
@@ -582,7 +583,9 @@ async function record(db, body, account) {
   // that unsubscribed, which is the one thing the whole section must not do.
   const found = await db
     .from(PROSPECTS)
-    .select('id, name, phone, site_kind, stage, business_status, assigned_to')
+    .select(
+      'id, name, phone, email, trade, town, website, site_kind, stage, business_status, assigned_to'
+    )
     .eq('id', prospectId)
     .maybeSingle()
   if (found.error) return refusal(found.error, NOT_RECORDED)
@@ -605,11 +608,64 @@ async function record(db, body, account) {
   if (written.error) return refusal(written.error, NOT_RECORDED)
 
   const took = await claim(db, prospectId, account.userId)
+  await carry(db, found.data, body, callback.at)
 
   return {
     status: 200,
     body: { ok: true, call: written.data?.id ?? null, assigned_to: took },
   }
+}
+
+/**
+ * A business somebody actually spoke to, carried into the lead record.
+ *
+ * A cold prospect is not a lead. Eight thousand names off a map are a list to
+ * work, and putting them in front of a person as leads would bury the handful
+ * who asked for something. What changes that is a conversation: once somebody
+ * has picked up and talked, they belong beside the people who filled in a form,
+ * and the callback the caller booked is a date the studio owes them.
+ *
+ * So only the outcomes where a person spoke are carried, and the gatekeeper is
+ * one of them, because a gatekeeper who takes a message or hands over a name is
+ * how most of these start.
+ *
+ * Failure here is swallowed. The call is already on the record and the caller
+ * is owed their confirmation; a lead that missed its row is worth less than a
+ * caller told their call did not save.
+ */
+async function carry(db, prospect, body, callbackAt) {
+  const outcome = String(body.outcome ?? '')
+  if (outcome !== 'spoke' && outcome !== 'gatekeeper') return
+
+  const lead = await keepLead(
+    {
+      source: SOURCES.call,
+      ref: prospect.id,
+      email: prospect.email,
+      phone: prospect.phone,
+      business: prospect.name,
+      trade: prospect.trade,
+      website: prospect.website,
+      town: prospect.town,
+      note: field(body.note, NOTE_MAX),
+    },
+    db
+  )
+  if (!lead) return
+
+  // Two facts the call settles that the merge deliberately will not touch: the
+  // studio has now spoken to this person, and it owes them a call back on the
+  // day the caller wrote down. Both are stamped rather than merged, because a
+  // later call moves the callback and the merge only ever fills blanks.
+  const { error } = await db
+    .from(SPINE)
+    .update({
+      contacted_at: new Date().toISOString(),
+      ...(callbackAt ? { due_at: callbackAt } : {}),
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', lead.id)
+  if (error) console.error('calls-admin: the lead was not stamped: %s', error.message)
 }
 
 /**

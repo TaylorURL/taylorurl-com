@@ -107,7 +107,21 @@ function stubDb(plan, onAsk = () => {}) {
     return chain
   }
 
-  return { db: { from }, asked, writes }
+  // The client carries functions as well as tables, and a carried reply goes
+  // through one on its way to the lead record. A double that models only
+  // `from` answers "db.rpc is not a function" the moment one is called, which
+  // reads as a fault in the pipeline rather than a gap in the double.
+  const rpc = (name, args) => {
+    const key = `rpc:${name}`
+    asked.push(key)
+    writes.push({ key, payload: args ?? null })
+    onAsk(key)
+    return Promise.resolve(
+      plan[key] ?? { data: { ok: true, lead_id: 'l1', fresh: true }, error: null }
+    )
+  }
+
+  return { db: { from, rpc }, asked, writes }
 }
 
 // ── The mail endpoint stand-in ───────────────────────────────────────────

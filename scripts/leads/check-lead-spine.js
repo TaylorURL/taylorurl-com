@@ -58,18 +58,18 @@ const DOORS = [
   ['tools', 'api/contact.js', 'SOURCES.tools'],
   ['speed-check', 'api/speed-check.js', 'SOURCES.speedCheck'],
   ['ad', 'api/ad-lead.js', 'SOURCES.ad'],
+  ['outreach-reply', 'api/outreach/watch.js', 'SOURCES.outreachReply'],
+  ['call', 'api/calls-admin.js', 'SOURCES.call'],
 ]
 
 check('every door the constant names is one this file accounts for', () => {
-  // `outreach-reply` and `call` are written by the outreach pipeline and the
-  // call desk rather than by a site endpoint, and they reach the spine through
-  // the backfill and the desk's own writes. They are named here so that adding
-  // a door to `SOURCES` and forgetting to wire it still fails.
+  // The point of asserting this rather than deriving the list: a door added to
+  // `SOURCES` and never wired writes nothing, and nothing is exactly what a
+  // derived list would find and pass over.
   const wired = new Set(DOORS.map(([source]) => source))
-  const offline = new Set(['outreach-reply', 'call'])
   for (const source of Object.values(SOURCES)) {
     same(
-      wired.has(source) || offline.has(source),
+      wired.has(source),
       true,
       `the door "${source}" is named in SOURCES but nothing here writes it`
     )
@@ -114,11 +114,14 @@ check('a moment is stamped by whoever watches it happen', () => {
 check('the studio does not appear in its own lead list', () => {
   // Somebody typing their own address into their own form is testing it, and a
   // list that is mostly the person reading it is a list that stops being read.
-  same(ownAddress('trenton@taylorurl.com'), true, 'the studio address is the studio')
-  same(ownAddress('trenton@baytownwebdevelopment.com'), true, 'the sending domain is the studio')
+  same(ownAddress('someone@taylorurl.com'), true, 'the studio address is the studio')
+  same(ownAddress('someone@baytownwebdevelopment.com'), true, 'the sending domain is the studio')
   same(ownAddress('mail.taylorurl.com'), false, 'a domain without an address is not one')
-  same(ownAddress('someone@gmail.com'), false, 'a stranger is not the studio')
-  same(ownAddress('someone@nottaylorurl.com'), false, 'a domain that merely ends alike is not ours')
+  same(ownAddress('someone@example.com'), false, 'a stranger is not the studio')
+  // The dot in front of the domain is what stops this being ours. Without it
+  // any name ending in our own would read as the studio, and the studio would
+  // stop seeing leads at every one of them.
+  same(ownAddress('someone@taylorurl.com.example'), false, 'a domain that merely ends alike')
 })
 
 check('one person written two ways is one lead', () => {
