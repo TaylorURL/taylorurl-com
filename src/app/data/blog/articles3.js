@@ -67,7 +67,7 @@ export const BLOG_ARTICLES_3 = [
     slug: 'your-website-is-your-best-employee',
     title: 'Your Website Is Your Best Employee',
     excerpt:
-      'Your website works around the clock, never calls in sick, and talks to more people than anyone on your payroll. What it owes you, and how to keep it working.',
+      'Your website never calls in sick and never goes home. What a good one owes you, what a stale one costs you, and how to tell which you have.',
     category: 'Business',
     date: 'November 5, 2025',
     readTime: '4 min read',

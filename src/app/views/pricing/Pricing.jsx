@@ -51,7 +51,7 @@ const QUESTIONS = [
   },
   {
     q: 'Are there setup fees or extras?',
-    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site. The two figures are where the price starts, what moves it is how big the whole project is, and you agree to that number before anything starts. What sits outside them is named up front: Google or Microsoft bill for each mailbox, any ad budget is yours to spend, and buying and running the campaigns is quoted on its own.',
+    a: 'No setup fee, and nothing on the site is billed on top: booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site. The two figures are where the price starts, what moves it is how big the whole project is, and you agree to that number before anything starts. What sits outside them is named up front: your logo and your photographs come from you, Google or Microsoft bill for each mailbox, your point of sale and accounting software stay yours to pay for, and what you spend with Meta or Google is billed by them. Buying and running the campaigns is separate work with its own price.',
   },
   {
     q: `Is the ${MONTHLY_PRICE} a month optional?`,

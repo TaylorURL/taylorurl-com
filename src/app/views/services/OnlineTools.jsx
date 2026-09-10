@@ -52,7 +52,7 @@ const STAGES = [
   },
   {
     when: 'Six Months In',
-    body: 'The retargeting audience holds six months of real visitors. The ad platforms have a conversion history to read. The sending domain has been sending clean mail long enough that more of it reaches an inbox instead of a spam folder.',
+    body: 'The retargeting audience holds six months of real visitors. The ad platforms have a conversion history to read. The sending domain has been sending clean mail long enough that Gmail and Outlook let it carry more.',
   },
   {
     when: 'The Day You Advertise',
@@ -345,7 +345,7 @@ export default function OnlineTools() {
       />
       <PageHero
         eyebrow="What Runs Underneath"
-        title="Booking, payment, and tracking go in with the site."
+        title="Booking, ordering, and tracking go in with the site."
         description="Booking, ordering, and payment at the front. Ad tracking, conversion events, a sending domain, and monitoring underneath. All of it goes in during the build, so none of it has to be retrofitted the day you decide to use it."
       />
 
@@ -354,7 +354,7 @@ export default function OnlineTools() {
         ground="band"
         eyebrow="Why It Goes In Early"
         title="Worth more in year two than it was at launch."
-        lede="A website is at its newest the week it goes live, and nothing about it gets better on its own from there. What holds the value is the machinery underneath, and every piece of it is worth more the longer it has already been running."
+        lede="A website is at its newest the week it goes live, and the pages themselves lose ground from there. What holds the value is the machinery underneath them, and every piece of it is worth more the longer it has already been running."
       >
         <div className="panel-static bg-hair grid gap-px overflow-hidden lg:grid-cols-3">
           {STAGES.map((stage, index) => (

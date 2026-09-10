@@ -193,7 +193,7 @@ const DETAIL = {
       },
       {
         title: 'A Contract',
-        body: 'There is no annual term to sign, no notice period, and no cancellation fee. The monthly is not optional though: it is what keeps the site online, so it runs for as long as the site does. Stop it and the site stays online to the end of the period you have paid for, then comes offline.',
+        body: 'There is no annual term to sign, no notice period, and no cancellation fee. The monthly is not optional though: it is what keeps the site online, so stopping it takes the site offline at the end of the period you have paid for.',
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',

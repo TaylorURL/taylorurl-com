@@ -62,7 +62,7 @@ export const BLOG_SERIES = [
     name: 'Trade Playbooks',
     tagline: 'One trade at a time',
     description:
-      'What a website has to do for one trade at a time: the pages it needs, the questions it answers, and the jobs it books. Plumbers, HVAC, roofers, electricians.',
+      'What a website has to do for one trade at a time: the pages it needs, the questions it answers, and the jobs it books. Plumbers, roofers, electricians, HVAC contractors.',
     mark: 'trade',
   },
 ]
