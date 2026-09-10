@@ -593,6 +593,7 @@ function sheetAttempts() {
       rel: next.rel,
       crossOrigin: next.crossOrigin,
       onload: next.getAttribute('onload'),
+      fetchPriority: next.getAttribute('fetchpriority'),
       wait: timer.wait,
     })
     const said = String(next.getAttribute('onerror') || '').match(
@@ -629,6 +630,16 @@ check(
 check(
   sheet.asked.every(ask => ask.rel === 'stylesheet' && ask.crossOrigin === 'anonymous'),
   'a retried sheet drops the attributes the first one carried, so it is fetched as something other than the sheet it replaces'
+)
+// The media query that keeps the attempt off the paint also asks for it at the
+// lowest priority the browser has, and an attempt inherits that from the link
+// it replaces. So the recovery for a reader who has already lost the sheet went
+// out three more times in the one class a client short of time or bandwidth
+// declines first, which is #555. Raised on the attempts and not on the sheet
+// the document was served with, which is deferred on purpose.
+check(
+  sheet.asked.every(ask => ask.fetchPriority === 'high'),
+  'a retried sheet is asked for at the priority the first attempt was declined at, so the recovery is three more requests in the class a client short of time drops first'
 )
 // Two quick and one late, and the last one is the whole point: the outages this
 // sees last two or three seconds, so a ladder that finishes in eleven hundred
