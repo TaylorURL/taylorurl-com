@@ -853,6 +853,34 @@
           }
           return tokens > 0
         }
+        // A stylesheet that has somewhere left to go.
+        //
+        // Every recovery on this site reports after it has given up. The boot
+        // rejects once its retries and its reload are spent, a route chunk
+        // reports on its last attempt, and what reaches the collector in both
+        // cases is a file the reader genuinely did not get. The sheet reported
+        // the other way round: this listener runs in the capture phase, which is
+        // ahead of the `onerror` attribute that starts the retries, so the first
+        // dropped request filed a ticket and the retry that fixed it half a
+        // second later filed nothing to say so. A reader who saw the whole page,
+        // dressed, off the second attempt was indistinguishable from a reader
+        // left on the inlined subset. #543 was that ticket, on a sheet that was
+        // on the server and answering the entire time.
+        //
+        // So a link the sheet recovery is holding is kept on the page and not
+        // filed, and `sheetSource` throws when its attempts run out - which
+        // arrives here as an uncaught error naming the sheet, on the reader who
+        // actually lost it. Held, so a live console still shows every attempt.
+        //
+        // The recovery is inline in the head and cannot fail to arrive, but if
+        // it is somehow not there, nothing is going to retry and nothing is
+        // going to file, so the sheet reports for itself as it always did.
+        function recovering(target) {
+          if (!target || target.tagName !== 'LINK') return false
+          if (typeof window.__sheetLost !== 'function') return false
+          if (target.hasAttribute('data-sheet')) return true
+          return String(target.getAttribute('onerror') || '').indexOf('__sheetLost') === 0
+        }
         // Capture phase, because element load failures fire error events that do not bubble.
         window.addEventListener(
           'error',
@@ -874,6 +902,8 @@
                   hold('hint', 'Declined ' + address.split('?')[0], '')
                 } else if (marketingBeacon(address)) {
                   hold('beacon', 'No answer from ' + address.split('?')[0], '')
+                } else if (recovering(event.target)) {
+                  hold('recovering', 'Asking again for ' + address, '')
                 } else {
                   report(
                     'resource',

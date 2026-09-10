@@ -29,8 +29,22 @@
  * So the sheet is asked again, at a `retry` address for the same reason the
  * boot uses one - a link that failed is a URL the browser has an answer for,
  * and the reporter strips the marker in `settled` so the attempts stay one
- * fault rather than three tickets. Twice, backing off, and then it stops: the
- * reader keeps the subset they already had and the report has been filed.
+ * fault rather than three tickets.
+ *
+ * Twice quickly, and then once more on a wait, and the two are counted apart.
+ * The quick pair is for a request that was dropped and lands on the next ask;
+ * they are spent 350ms and 700ms after the first failure, so the whole of them
+ * is over inside eleven hundred milliseconds. The failures this actually sees
+ * last two or three seconds - a laptop changing networks, a phone leaving a
+ * lift, a proxy that refuses for a moment - and a recovery that finishes in one
+ * second is a recovery spent entirely inside the outage. Served this build and
+ * refused for three seconds, all three of those attempts went while the file
+ * was still refusing, the file answered a second and a half later, and nobody
+ * asked it again: the reader sat on 397 of the stylesheet's rules for the life
+ * of the page with the sheet on the server the whole time. So there is a third
+ * attempt five seconds out, which is the same reading `LateChrome` was given
+ * for the chunk and the same interval, and it is what carries the recovery past
+ * the outage rather than into it.
  *
  * It does not reload the document. A sheet a deploy has deleted is gone from
  * every address, and the file that would replace it is named only in a newer
@@ -41,6 +55,17 @@
  * nothing and can happen again. The retry is what answers the failure this
  * actually sees: a sheet that is still on the server, still answering, and did
  * not arrive this once.
+ *
+ * The fault is filed here, when the ladder is spent, rather than by the
+ * reporter when the first request fails. Every other recovery on the site
+ * reports that way round - `bootSource` rejects only after its retries and its
+ * reload, `lazyWithRetry` reports on the last attempt - and the sheet was the
+ * one that reported at attempt zero, before its own recovery had run. A sheet
+ * that failed once and arrived on the retry left the reader fully dressed and
+ * filed a ticket that read exactly like a stylesheet nobody could load, which
+ * is what #543 was: a fault against a page that was never broken, carrying the
+ * history of one that had been. Held while the attempts run and filed when they
+ * are gone, the ticket means the thing its title says.
  *
  * Written as an attribute on the link rather than a listener attached beside
  * it. A `load` or `error` on a subresource is dispatched whenever the network
@@ -74,6 +99,8 @@ const DEFERRED_SHEET = /<link\b(?=[^>]*\brel="stylesheet")(?=[^>]*\bmedia="print
 export function sheetSource() {
   return `(function(){
 var ATTEMPTS=2
+var WAITS=1
+var WAIT_MS=5000
 function swap(link,attempt){
 var href=link.getAttribute('data-sheet')||link.href
 var next=document.createElement('link')
@@ -89,10 +116,17 @@ link.parentNode.insertBefore(next,link.nextSibling)
 if(link.getAttribute('data-sheet'))link.parentNode.removeChild(link)
 else link.removeAttribute('onerror')
 }
+function lost(link){
+var href=link.getAttribute('data-sheet')||link.href
+setTimeout(function(){
+throw new Error('The page could not load its stylesheet: '+href)
+})
+}
 window.${SHEET_HANDLER}=function(link,attempt){
 var made=Number(attempt||0)+1
-if(!link||made>ATTEMPTS)return
-setTimeout(function(){swap(link,made)},350*made)
+if(!link)return
+if(made>ATTEMPTS+WAITS){lost(link);return}
+setTimeout(function(){swap(link,made)},made>ATTEMPTS?WAIT_MS:350*made)
 }
 })()`
 }

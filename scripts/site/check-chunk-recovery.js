@@ -569,6 +569,9 @@ function sheetAttempts() {
   first.href = 'https://www.taylorurl.com/assets/index-TEST0000.css'
 
   const asked = []
+  // What the recovery throws when its attempts are gone, which is how the sheet
+  // reaches the collector now that the reporter holds it while they run.
+  let filed = null
   let link = first
   let attempt = 0
   // The sheet never lands, so this runs until the recovery itself gives up.
@@ -576,7 +579,12 @@ function sheetAttempts() {
     stub.window[SHEET_HANDLER](link, attempt)
     const timer = timers.shift()
     if (!timer) break
-    timer.run()
+    try {
+      timer.run()
+    } catch (thrown) {
+      filed = thrown
+      break
+    }
     const next = inserted[inserted.length - 1]
     if (!next || next === link) break
     asked.push({
@@ -594,13 +602,13 @@ function sheetAttempts() {
     link = next
     attempt = Number(said[1])
   }
-  return { asked, reloads, removed, served: first }
+  return { asked, filed, reloads, removed, served: first }
 }
 
 const sheet = sheetAttempts()
 check(
-  sheet.asked.length === 2,
-  `a sheet that did not arrive is asked for ${sheet.asked.length} more times rather than 2, so the reader keeps the inlined subset for the life of the page`
+  sheet.asked.length === 3,
+  `a sheet that did not arrive is asked for ${sheet.asked.length} more times rather than 3, so the reader keeps the inlined subset for the life of the page`
 )
 check(
   sheet.asked.every(ask => ask.href.includes('retry=')),
@@ -622,13 +630,31 @@ check(
   sheet.asked.every(ask => ask.rel === 'stylesheet' && ask.crossOrigin === 'anonymous'),
   'a retried sheet drops the attributes the first one carried, so it is fetched as something other than the sheet it replaces'
 )
+// Two quick and one late, and the last one is the whole point: the outages this
+// sees last two or three seconds, so a ladder that finishes in eleven hundred
+// milliseconds is a ladder spent inside the outage. Same reading and same
+// interval `LateChrome` carries for the chunk.
 check(
-  sheet.asked.every((ask, index) => ask.wait === 350 * (index + 1)),
-  'the attempts at the sheet do not back off, so a server under load is asked three times in a moment'
+  sheet.asked.length === 3 && sheet.asked[0].wait === 350 && sheet.asked[1].wait === 700,
+  'the quick attempts at the sheet do not back off, so a server under load is asked twice in a moment'
+)
+check(
+  sheet.asked.length === 3 && sheet.asked[2].wait === 5000,
+  'every attempt at the sheet is spent inside the first second, so an outage lasting two or three leaves the reader on the inlined subset with the file answering again and nobody asking'
 )
 check(
   sheet.reloads === 0,
   'a sheet that did not arrive reloads the document, which races the reload the boot already does for the deploy that deleted it'
+)
+// The reporter holds a sheet under recovery rather than filing it, so the fault
+// has to be filed from here or it is never filed at all.
+check(
+  sheet.filed instanceof Error && /stylesheet/i.test(sheet.filed.message),
+  'a sheet the recovery gave up on files nothing, and the reporter is holding it, so a reader left on the inlined subset reaches nobody'
+)
+check(
+  sheet.filed instanceof Error && !/retry=/.test(sheet.filed.message),
+  'the sheet is filed under the attempt address rather than the one the build wrote, so every attempt is its own fault and no recurrence is ever counted'
 )
 // Rollup's preload helper appends a stylesheet it cannot already find at that
 // exact href. Take the served sheet out and it puts a second copy of the
@@ -665,6 +691,22 @@ check(
 check(
   (wired.match(/onerror=/g) || []).length === 1,
   'the copy of the sheet inside <noscript> was given a catch too, which no script could ever run'
+)
+
+// And the reporter's half of it. The capture listener runs ahead of the
+// `onerror` attribute, so unless it recognises a link the recovery is holding,
+// the first dropped request files a ticket and the retry that fixes it half a
+// second later files nothing to say so. #543 was exactly that ticket. The
+// handler's name is written in two files and they have to agree, because a
+// listener testing for a name nothing carries silently goes back to filing
+// attempt zero.
+check(
+  /function recovering\(/.test(PAGE) && PAGE.includes(`hold('recovering'`),
+  'the reporter files a stylesheet on its first failure, before the recovery below it has run, so a sheet that arrived on the retry is filed as one the reader never got'
+)
+check(
+  PAGE.includes(SHEET_HANDLER),
+  `the reporter does not name ${SHEET_HANDLER}, so it cannot tell a sheet under recovery from one with nothing behind it`
 )
 
 if (failures.length) {

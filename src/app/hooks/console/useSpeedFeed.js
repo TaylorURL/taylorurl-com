@@ -5,6 +5,27 @@ import { usePulse } from './usePulse'
 
 const SPEED_PATH = '/api/site-speed'
 
+/**
+ * The two readings a site carries, asked for one request at a time.
+ *
+ * PageSpeed loads the page on its own hardware and regularly takes sixty to
+ * ninety seconds for a single strategy. Asked for both at once - which is what
+ * the endpoint does when nothing names one - the two run back to back inside a
+ * single call, and a pair that are each merely slow rather than stuck add up
+ * past the runtime's wall clock. The worker is killed where it stands, so
+ * nothing is thrown and nothing is logged; the endpoint in front of it sees a
+ * 5xx from an upstream that stopped existing and answers 502. #545 was that,
+ * on a request that had been running 128 seconds, against a service whose
+ * longest successful run all day was 98.
+ *
+ * Split, each request holds one measurement and is bounded by the endpoint's
+ * own ninety-second ceiling with room to spare. Nothing else changes: the
+ * figures are written per strategy at the far end either way, so two requests
+ * store exactly what one did. The nightly sweep was moved to one strategy per
+ * call for this reason and the console kept asking for both.
+ */
+const STRATEGIES = ['mobile', 'desktop']
+
 /** How often the stored readings are read again. They move when the daily
  * sweep files, so the beat is the console's slower one. */
 const PULSE_MS = 60_000
@@ -19,10 +40,11 @@ const NO_MEASURE = 'That measurement could not be finished. Try that site again.
  * The stored PageSpeed readings, and the way to take a new one.
  *
  * Reading is cheap and measuring is not: a measurement runs two real page loads
- * on Google's hardware and takes the better part of a minute, which is why it
- * happens on request rather than on arrival. `measuring` holds the site a run
- * is in flight for, so one row can show its own wait while the rest of the
- * table stays readable.
+ * on Google's hardware and takes the better part of a minute each, which is why
+ * it happens on request rather than on arrival, and why the two go as separate
+ * requests. `measuring` holds the site a run is in flight for, so one row can
+ * show its own wait while the rest of the table stays readable, and it holds it
+ * across both.
  *
  * That difference decides where a failure goes as well. Readings that never
  * arrive leave the table with nothing in it, so they are held in `error` and
@@ -87,24 +109,37 @@ export function useSpeedFeed({ token, enabled }) {
       if (!token) return false
       setMeasuring(siteId)
       try {
-        const response = await fetch(SPEED_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ site_id: siteId }),
-        })
-        const payload = await response.json().catch(() => ({}))
-        if (!alive.current) return false
-        if (!response.ok) {
-          // A run travels through a proxy to Google and back, so what comes
-          // out of it is written by whichever of the three refused - which is
-          // exactly the case the door is for.
-          toast(faultFromResponse(response, payload, NO_MEASURE), 'error')
-          return false
+        // One strategy per request, and the row stays busy across both.
+        let table = null
+        for (const strategy of STRATEGIES) {
+          const response = await fetch(SPEED_PATH, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ site_id: siteId, strategy }),
+          })
+          const payload = await response.json().catch(() => ({}))
+          if (!alive.current) return false
+          if (!response.ok) {
+            // A run travels through a proxy to Google and back, so what comes
+            // out of it is written by whichever of the three refused - which is
+            // exactly the case the door is for.
+            //
+            // Whatever landed before it stays on screen. The reading that did
+            // arrive is stored and true, and leaving the row on its old figure
+            // would say the whole run was lost when half of it was.
+            if (table) {
+              setData(table)
+              setError(null)
+            }
+            toast(faultFromResponse(response, payload, NO_MEASURE), 'error')
+            return false
+          }
+          table = payload
         }
         // A run answers with the whole table, so what is on screen after one
         // is what just came back. A banner held from a read that did not land
         // would be standing over readings that have arrived.
-        setData(payload)
+        setData(table)
         setError(null)
         return true
       } catch (cause) {
