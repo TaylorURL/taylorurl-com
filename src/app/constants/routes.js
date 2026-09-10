@@ -136,6 +136,7 @@ const ALL_ROUTES = [
       { key: 'ConsoleSources', path: 'sources' },
       { key: 'ConsoleVisitors', path: 'visitors' },
       { key: 'ConsoleVitals', path: 'vitals' },
+      { key: 'ConsoleServer', path: 'server' },
       { key: 'ConsoleOutreach', path: 'outreach' },
       { key: 'ConsoleSettings', path: 'settings' },
       { key: 'ConsoleBuilds', path: 'builds' },

@@ -421,6 +421,7 @@ const STUDIO_PRERENDER_ROUTES = [
   '/console/sources',
   '/console/visitors',
   '/console/vitals',
+  '/console/server',
   '/console/outreach',
   '/console/settings',
   '/console/builds',

@@ -23,6 +23,22 @@
         "definition": "CHECK ((kind = ANY (ARRAY['silo'::text, 'interceptor'::text, 'radar'::text, 'dome'::text])))"
       }
     },
+    "leads": {
+      "source": {
+        "constraint": "leads_source_check",
+        "allows": [
+          "configurator",
+          "payment",
+          "contact",
+          "tools",
+          "speed-check",
+          "ad",
+          "outreach-reply",
+          "call"
+        ],
+        "definition": "CHECK ((source = ANY (ARRAY['configurator'::text, 'payment'::text, 'contact'::text, 'tools'::text, 'speed-check'::text, 'ad'::text, 'outreach-reply'::text, 'call'::text])))"
+      }
+    },
     "newsletter_issues": {
       "status": {
         "constraint": "newsletter_issues_status_check",
@@ -394,6 +410,31 @@
     }
   },
   "unread": [
+    {
+      "table": "lead_messages",
+      "constraint": "lead_messages_body_check",
+      "definition": "CHECK (((char_length(body) >= 1) AND (char_length(body) <= 5000)))"
+    },
+    {
+      "table": "lead_messages",
+      "constraint": "lead_messages_subject_check",
+      "definition": "CHECK (((char_length(subject) >= 1) AND (char_length(subject) <= 200)))"
+    },
+    {
+      "table": "lead_templates",
+      "constraint": "lead_templates_body_check",
+      "definition": "CHECK (((char_length(body) >= 1) AND (char_length(body) <= 5000)))"
+    },
+    {
+      "table": "lead_templates",
+      "constraint": "lead_templates_name_check",
+      "definition": "CHECK (((char_length(name) >= 1) AND (char_length(name) <= 80)))"
+    },
+    {
+      "table": "lead_templates",
+      "constraint": "lead_templates_subject_check",
+      "definition": "CHECK (((char_length(subject) >= 1) AND (char_length(subject) <= 200)))"
+    },
     {
       "table": "outreach_call_presence",
       "constraint": "outreach_call_presence_phone_has_a_start",
