@@ -1,6 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { m } from 'framer-motion'
-import { fadeInUp } from '@constants/animations'
 import {
   Area,
   Badge,
@@ -11,8 +9,8 @@ import {
   PanelFoot,
   SkeletonBar,
   SkeletonRows,
-  StatCard,
 } from '../console/ui'
+import { Figures } from '../console/Figures'
 import { CELL_TIGHT, MONO_LABEL, ROW_HEIGHT, TH_TIGHT } from '../console/lib/tokens'
 import { recalledRows, rememberRows } from '../console/lib/rowMemory'
 import { bareDomain, displayDomain } from '@utils/domains'
@@ -137,9 +135,15 @@ function measuredLabel(measuredSince, windowDays) {
  * span; the two were one number once, and separating them is what let the
  * strip grow without the captions claiming a month of measurement that is not
  * there.
+ *
+ * It carries its unit rather than leaving each caption to add one, because
+ * three of the four that quote it read it straight into a sentence - "3 fixed
+ * in 30", "raised in 30" - and a bare number there is a figure with nothing to
+ * measure it in.
  */
 function windowSpan(windowDays) {
-  return Math.max(1, windowDays)
+  const days = Math.max(1, windowDays)
+  return `${days} ${days === 1 ? 'day' : 'days'}`
 }
 
 /**
@@ -390,7 +394,10 @@ export function StatusBoard({ feed, scope }) {
     return names
   }, [watched])
 
-  const sites = scope ? (watched ? [watched] : []) : data?.sites || []
+  const sites = useMemo(
+    () => (scope ? (watched ? [watched] : []) : data?.sites || []),
+    [scope, watched, data]
+  )
   const incidents = useMemo(() => {
     const all = data?.incidents || []
     if (!aliases) return all
@@ -450,6 +457,178 @@ export function StatusBoard({ feed, scope }) {
   // down. Drawing the empty board over it would say the opposite.
   const unwatched = Boolean(scope) && !watched && !loading && Boolean(data)
 
+  /**
+   * The board's figures, as records.
+   *
+   * Whatever is wrong takes the lede on its own: a site that has stopped
+   * answering, or an issue nobody has fixed. On a clean board the count of
+   * sites answering holds it, which is the one figure a reader opens this page
+   * to see. Every caption is a second fact rather than a definition of the
+   * label above it - the definitions sit on the labels.
+   */
+  const boardFigures = useMemo(() => {
+    const down = Math.max(0, sites.length - upCount)
+    const troubled = sites.filter(one => one.status === 'degraded').length
+    const worst = sites.length
+      ? sites.reduce((low, one) => ((one.uptime_30d ?? 100) < (low.uptime_30d ?? 100) ? one : low))
+      : null
+    const measured = measuredLabel(data?.measured_since, windowDays)
+    const outages = data?.outages_30d ?? 0
+    const oldest = openIncidents.length ? openIncidents[openIncidents.length - 1] : null
+
+    const answering = state
+      ? {
+          key: 'up',
+          label: 'Answering',
+          gloss: 'Whether the site answered the check made from outside, just now.',
+          value: feedDown ? '—' : state.label,
+          caption: feedDown ? 'the monitor is not answering' : measured,
+          tone: feedDown ? 'plain' : state.card,
+          urgent: !feedDown && watched.status === 'outage',
+        }
+      : {
+          key: 'up',
+          label: 'Sites Up',
+          gloss: 'Sites answering the check made from outside, right now.',
+          value: feedDown ? '—' : `${upCount}/${sites.length}`,
+          caption: feedDown
+            ? 'the monitor is not answering'
+            : down
+              ? `${down} not answering`
+              : `all ${sites.length} answering`,
+          tone: feedDown || !down ? 'plain' : 'danger',
+          urgent: !feedDown && down > 0,
+          facts: feedDown
+            ? []
+            : [
+                [String(sites.length), sites.length === 1 ? 'site watched' : 'sites watched'],
+                down ? [String(down), 'not answering'] : null,
+                troubled ? [String(troubled), 'answering with an issue'] : null,
+              ].filter(Boolean),
+          room:
+            feedDown || !sites.length
+              ? null
+              : {
+                  kind: 'parts',
+                  parts: [
+                    {
+                      key: 'up',
+                      label: 'Answering',
+                      value: upCount,
+                      text: String(upCount),
+                      tone: 'good',
+                    },
+                    down
+                      ? { label: 'Not answering', value: down, text: String(down), tone: 'warn' }
+                      : null,
+                  ].filter(Boolean),
+                },
+        }
+
+    return [
+      answering,
+      {
+        key: 'issues',
+        label: 'Open Issues',
+        gloss: 'Filed by the error reporter and not yet fixed.',
+        value: feedDown ? '—' : String(openIncidents.length),
+        caption: feedDown
+          ? 'the monitor is not answering'
+          : oldest
+            ? `oldest raised ${humanizeDuration(Date.now() - new Date(oldest.opened_at))} ago`
+            : `${readings.fixed} fixed in ${span}`,
+        tone: !feedDown && openIncidents.length ? 'warn' : 'plain',
+        urgent: !feedDown && openIncidents.length > 0,
+        facts: feedDown
+          ? []
+          : [
+              [String(readings.opened), `raised in ${span}`],
+              [String(readings.fixed), 'fixed'],
+              readings.typicalFix === null
+                ? null
+                : [humanizeDuration(readings.typicalFix), 'typical fix'],
+            ].filter(Boolean),
+        room:
+          feedDown || !readings.opened
+            ? null
+            : {
+                kind: 'parts',
+                parts: [
+                  {
+                    key: 'issues',
+                    label: 'Still open',
+                    value: Math.max(0, readings.opened - readings.fixed),
+                    text: String(Math.max(0, readings.opened - readings.fixed)),
+                    tone: 'warn',
+                  },
+                  {
+                    label: 'Fixed',
+                    value: readings.fixed,
+                    text: String(readings.fixed),
+                    tone: 'good',
+                  },
+                ],
+              },
+      },
+      {
+        key: 'uptime',
+        label: 'Uptime',
+        gloss: 'The share of checks made from outside that got an answer.',
+        value: averageUptime === null ? '—' : `${averageUptime.toFixed(2)}%`,
+        caption: watched ? measured : `across ${sites.length} sites · ${measured}`,
+        facts:
+          feedDown || averageUptime === null
+            ? []
+            : [
+                // Read off the feed rather than by stripping a prefix from the
+                // rendered label. `measuredLabel` only carries that prefix while
+                // the history is shorter than the window; past that it returns
+                // the window itself, and the strip printed "30-day history"
+                // under the words "measured from".
+                data?.measured_since
+                  ? [formatDay(new Date(data.measured_since)), 'measured from']
+                  : null,
+                worst && !watched
+                  ? [
+                      `${(worst.uptime_30d ?? 100).toFixed(2)}%`,
+                      `lowest, ${worst.name || worst.site}`,
+                    ]
+                  : null,
+              ].filter(Boolean),
+      },
+      watched
+        ? {
+            key: 'reported',
+            label: 'Reported',
+            gloss: 'Issues raised against this site inside the window.',
+            value: data ? String(incidents.length) : '—',
+            caption: `${span} · ${readings.fixed} fixed`,
+            tone: incidents.length ? 'warn' : 'plain',
+          }
+        : {
+            key: 'outages',
+            label: 'Outages',
+            gloss: 'A run of failed checks from outside, start to recovery.',
+            value: data ? String(outages) : '—',
+            caption: `stopped answering · ${measured}`,
+            tone: outages ? 'danger' : 'plain',
+          },
+    ]
+  }, [
+    averageUptime,
+    data,
+    feedDown,
+    incidents.length,
+    openIncidents,
+    readings,
+    sites,
+    span,
+    state,
+    upCount,
+    watched,
+    windowDays,
+  ])
+
   // Measured once the real rows are on screen, for the next visit's placeholder.
   useEffect(() => {
     if (loading) return
@@ -478,62 +657,7 @@ export function StatusBoard({ feed, scope }) {
       rows="auto minmax(0,1fr)"
     >
       <Area area="figures">
-        <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
-          {state ? (
-            <StatCard
-              label="Answering"
-              value={feedDown ? '—' : state.label}
-              caption="checked from outside"
-              loading={loading}
-              tone={feedDown ? 'plain' : state.card}
-            />
-          ) : (
-            <StatCard
-              label="Sites Up"
-              value={feedDown ? '—' : `${upCount}/${sites.length}`}
-              caption="answering right now"
-              loading={loading}
-              tone={feedDown || upCount === sites.length ? 'plain' : 'danger'}
-            />
-          )}
-          <StatCard
-            label="Open Issues"
-            value={feedDown ? '—' : String(openIncidents.length)}
-            caption="not fixed yet"
-            loading={loading}
-            tone={!feedDown && openIncidents.length ? 'warn' : 'plain'}
-          />
-          <StatCard
-            label="Uptime"
-            value={averageUptime === null ? '—' : `${averageUptime.toFixed(2)}%`}
-            caption={
-              watched
-                ? measuredLabel(data?.measured_since, windowDays)
-                : `all sites · ${measuredLabel(data?.measured_since, windowDays)}`
-            }
-            loading={loading}
-          />
-          {/* The outage count the monitor publishes is the portfolio's, and it
-              answers for no single site. Over one site the window's own reports
-              are the figure the feed can stand behind. */}
-          {watched ? (
-            <StatCard
-              label="Reported"
-              value={data ? String(incidents.length) : '—'}
-              caption={`issues raised · last ${span} days`}
-              loading={loading}
-              tone={incidents.length ? 'warn' : 'plain'}
-            />
-          ) : (
-            <StatCard
-              label="Outages"
-              value={data ? String(data.outages_30d ?? 0) : '—'}
-              caption={`stopped answering · ${measuredLabel(data?.measured_since, windowDays)}`}
-              loading={loading}
-              tone={data?.outages_30d ? 'danger' : 'plain'}
-            />
-          )}
-        </m.div>
+        <Figures figures={boardFigures} pinned="up" busy={loading} />
       </Area>
 
       <Panel
@@ -690,7 +814,7 @@ export function StatusBoard({ feed, scope }) {
 
         <Panel
           title="Recently Fixed"
-          aside={loading || feedDown ? '' : `last ${span} days`}
+          aside={loading || feedDown ? '' : `last ${span}`}
           busy={loading}
           className="min-h-0 lg:flex-1"
         >

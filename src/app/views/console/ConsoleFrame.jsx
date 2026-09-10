@@ -3,7 +3,7 @@ import { Navigate, Outlet, useLocation } from 'react-router-dom'
 import { m } from 'framer-motion'
 import Seo from '@components/Seo'
 import { breadcrumbSchema } from '@constants/seo'
-import { fadeInUp, settleIn } from '@constants/animations'
+import { settleIn } from '@constants/animations'
 import ConsoleShell from '@components/account/ConsoleShell'
 import PageTransition from '@components/chrome/PageTransition'
 import Waiting from '@components/app-shell/Waiting'
@@ -28,10 +28,18 @@ import { menuSections, SECTIONS, sectionHref } from './lib/sections'
 import ProjectChecklist from './intake/ProjectChecklist'
 import PreviewStrip from './shell/PreviewStrip'
 import { currentProject, inOnboarding } from './lib/stages'
-import { Panel, StatCard } from './ui'
+import { Panel } from './ui'
+import { Figures } from './Figures'
 import { ShortcutSheet } from './shell/shortcuts'
 import { useConsoleShortcuts } from './lib/useConsoleShortcuts'
-import { compactCount, duration, percent } from '../analytics/lib/format'
+import {
+  bucketLabel,
+  bucketTitle,
+  compactCount,
+  duration,
+  fullCount,
+  percent,
+} from '../analytics/lib/format'
 import { withCountedPages } from '../analytics/lib/counted'
 
 // Live figures move on their own; the windowed ones only move as hits land in
@@ -488,6 +496,162 @@ export default function ConsoleFrame() {
   // code step on anything else.
   const publicOnly = !session || mfaPending
 
+  // The buckets behind the window, which is what gives the promoted figure
+  // something to draw. Two of the six have one - the collector counts
+  // pageviews and sessions per bucket and nothing else - so the other four
+  // fill the room with what they are made of instead, or leave it empty.
+  const windowLabel = days === 1 ? 'last 24 hours' : `last ${days} days`
+  const series = useMemo(
+    () => detail?.series || overview.data?.series || [],
+    [detail, overview.data]
+  )
+  const grain = detail?.grain || overview.data?.grain || 'day'
+
+  /**
+   * The strip above every section, as records.
+   *
+   * Every caption here is a second fact rather than a definition of the label
+   * above it. The definitions have not gone: they sit on the label, where a
+   * reader who wants one asks for it once instead of being handed it on every
+   * read for the life of the account.
+   */
+  const trafficFigures = useMemo(() => {
+    const drawn = key =>
+      series.length > 1
+        ? {
+            kind: 'series',
+            points: series.map(point => ({
+              at: bucketLabel(point.bucket, grain),
+              value: point[key] || 0,
+              text: fullCount(point[key] || 0),
+            })),
+          }
+        : null
+
+    const visitors = totals?.visitors || 0
+    const fresh = Math.min(totals?.new_visitors || 0, visitors)
+    const back = Math.max(0, visitors - fresh)
+    const sessions = totals?.sessions || 0
+    const pageviews = totals?.pageviews || 0
+    const bounced = Math.round((sessions * (totals?.bounce_rate || 0)) / 100)
+    const stayed = Math.max(0, sessions - bounced)
+    const perVisitor = visitors ? pageviews / visitors : 0
+    const perSession = sessions ? pageviews / sessions : 0
+    const busiest = series.length
+      ? series.reduce((top, point) => (point.pageviews > top.pageviews ? point : top))
+      : null
+
+    return [
+      {
+        key: 'live',
+        label: 'Online Now',
+        gloss: 'Anybody whose last hit landed inside the window.',
+        value: String(liveNow),
+        caption: `last ${liveWindowMinutes} minutes`,
+        window: `last ${liveWindowMinutes} minutes`,
+        tone: liveNow > 0 ? 'accent' : 'plain',
+        pulse: liveNow > 0,
+        loading: live.loading,
+      },
+      {
+        key: 'visitors',
+        label: 'Visitors',
+        gloss: 'People, counted once each however often they came back.',
+        value: compactCount(visitors),
+        caption: `${compactCount(fresh)} first time`,
+        window: windowLabel,
+        loading,
+        facts: [
+          [compactCount(fresh), 'first time'],
+          [compactCount(back), 'came back'],
+          perVisitor ? [perVisitor.toFixed(1), 'pages each'] : null,
+        ].filter(Boolean),
+        room: visitors
+          ? {
+              kind: 'parts',
+              parts: [
+                {
+                  key: 'visitors',
+                  label: 'First time',
+                  value: fresh,
+                  text: compactCount(fresh),
+                  tone: 'accent',
+                },
+                { label: 'Came back', value: back, text: compactCount(back) },
+              ],
+            }
+          : null,
+      },
+      {
+        key: 'pageviews',
+        label: 'Pageviews',
+        gloss: 'Every page loaded, repeats inside one visit included.',
+        value: compactCount(pageviews),
+        caption: perVisitor ? `${perVisitor.toFixed(1)} per visitor` : null,
+        window: windowLabel,
+        loading,
+        facts: [
+          perVisitor ? [perVisitor.toFixed(1), 'per visitor'] : null,
+          perSession ? [perSession.toFixed(1), 'per session'] : null,
+          busiest ? [bucketTitle(busiest.bucket, grain), 'busiest'] : null,
+        ].filter(Boolean),
+        room: drawn('pageviews'),
+      },
+      {
+        key: 'sessions',
+        label: 'Sessions',
+        gloss: 'A visit, not a person. One person coming back twice is two.',
+        value: compactCount(sessions),
+        caption: perSession ? `${perSession.toFixed(1)} pages each` : null,
+        window: windowLabel,
+        loading,
+        facts: [
+          perSession ? [perSession.toFixed(1), 'pages each'] : null,
+          [compactCount(bounced), 'left on the first page'],
+          [duration(totals?.avg_session_ms), 'average length'],
+        ].filter(Boolean),
+        room: drawn('sessions'),
+      },
+      {
+        key: 'avg',
+        label: 'Avg Session',
+        gloss: 'First hit to last, averaged across every session in the window.',
+        value: duration(totals?.avg_session_ms),
+        caption: sessions ? `across ${compactCount(sessions)} sessions` : null,
+        window: windowLabel,
+        loading,
+      },
+      {
+        key: 'bounce',
+        label: 'Bounce',
+        gloss: 'The share of sessions that left after one page.',
+        value: percent(totals?.bounce_rate),
+        caption: sessions ? `${compactCount(bounced)} of ${compactCount(sessions)}` : null,
+        window: windowLabel,
+        loading,
+        facts: [
+          [compactCount(bounced), 'left on the first page'],
+          [compactCount(stayed), 'opened another'],
+        ],
+        room: sessions
+          ? {
+              kind: 'parts',
+              parts: [
+                {
+                  key: 'bounce',
+                  label: 'Left after one',
+                  value: bounced,
+                  text: compactCount(bounced),
+                  tone: 'warn',
+                },
+                { label: 'Opened another', value: stayed, text: compactCount(stayed) },
+              ],
+            }
+          : null,
+      },
+    ]
+  }, [grain, live.loading, liveNow, liveWindowMinutes, loading, series, totals, windowLabel])
+
   // Status never waits on the session. It needs none, and the wait is what a
   // crawler and a first paint would otherwise both get instead of the board.
   if (sessionWait.blocked && !onStatus) {
@@ -552,7 +716,6 @@ export default function ConsoleFrame() {
     : shownScope.length
       ? `${shownScope.length} of ${shownSites.length} Sites`
       : 'All Sites'
-  const windowLabel = days === 1 ? 'last 24 hours' : `last ${days} days`
 
   // The sites the console is showing, which is the scope where one is set and
   // every site where none is. Sections draw their per-site lists from this, so
@@ -715,46 +878,11 @@ export default function ConsoleFrame() {
                   </p>
                 </Panel>
               ) : (
-                <m.div {...fadeInUp} className="console-stats" aria-busy={loading || live.loading}>
-                  <StatCard
-                    label="Online Now"
-                    value={String(liveNow)}
-                    caption={`last ${liveWindowMinutes} minutes`}
-                    tone={liveNow > 0 ? 'accent' : 'plain'}
-                    pulse={liveNow > 0}
-                    loading={live.loading}
-                  />
-                  <StatCard
-                    label="Visitors"
-                    value={compactCount(totals?.visitors)}
-                    caption={`${compactCount(totals?.new_visitors)} first time`}
-                    loading={loading}
-                  />
-                  <StatCard
-                    label="Pageviews"
-                    value={compactCount(totals?.pageviews)}
-                    caption={windowLabel}
-                    loading={loading}
-                  />
-                  <StatCard
-                    label="Sessions"
-                    value={compactCount(totals?.sessions)}
-                    caption="visits, not people"
-                    loading={loading}
-                  />
-                  <StatCard
-                    label="Avg Session"
-                    value={duration(totals?.avg_session_ms)}
-                    caption="first hit to last"
-                    loading={loading}
-                  />
-                  <StatCard
-                    label="Bounce"
-                    value={percent(totals?.bounce_rate)}
-                    caption="left after one page"
-                    loading={loading}
-                  />
-                </m.div>
+                <Figures
+                  figures={trafficFigures}
+                  pinned="visitors"
+                  busy={loading || live.loading}
+                />
               )}
 
               {/* The column, the bar and the figures above stay put; only the

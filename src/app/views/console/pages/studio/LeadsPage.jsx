@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { m } from 'framer-motion'
 import { Check, Pencil, Plus, Send, X } from 'lucide-react'
-import { fadeInUp } from '@constants/animations'
 import { faultMessage } from '@utils/faults'
 import { useSession } from '@hooks/session/useSession'
 import { useToast } from '@hooks/chrome/useToast'
@@ -30,9 +28,9 @@ import {
   SidePanel,
   SkeletonList,
   SkeletonRows,
-  StatCard,
   ViewNav,
 } from '../../ui'
+import { Figures } from '../../Figures'
 import { useView } from '../../lib/views'
 import {
   BUTTON,
@@ -891,7 +889,7 @@ export default function LeadsPage() {
   const [editing, setEditing] = useState(null)
 
   const leads = useMemo(() => data?.leads || [], [data])
-  const totals = data?.totals || {}
+  const totals = useMemo(() => data?.totals || {}, [data])
   const templates = useMemo(() => data?.templates || [], [data])
   const team = useMemo(() => data?.team || [], [data])
 
@@ -944,6 +942,108 @@ export default function LeadsPage() {
     setComposing(false)
   }, [openId])
 
+  /**
+   * The doors, as records.
+   *
+   * Every figure here is a share of the same list, so the promoted one is
+   * drawn against the whole rather than left as a bare count: four leads
+   * waiting means one thing against forty and another against four hundred.
+   */
+  const leadFigures = useMemo(() => {
+    const all = totals.all ?? 0
+    const waiting = totals.waiting ?? 0
+    const enquired = totals.enquired ?? 0
+    const bought = totals.bought ?? 0
+    const dismissed = totals.dismissed ?? 0
+    const untouched = Math.max(0, all - waiting - enquired - bought - dismissed)
+    const share = (at, note) => ({ kind: 'progress', at, of: all, note })
+
+    return [
+      {
+        key: 'waiting',
+        label: 'Waiting',
+        gloss: 'Nobody has answered them, or the date they were promised has passed.',
+        value: loading ? '' : String(waiting),
+        caption: all ? `of ${all} on the list` : null,
+        tone: waiting ? 'warn' : 'plain',
+        loading,
+        room: all ? share(waiting, `${waiting} of ${all} are waiting on somebody here`) : null,
+      },
+      {
+        key: 'all',
+        label: 'Leads',
+        gloss: 'Everybody who has ever raised a hand, through any door.',
+        value: loading ? '' : String(all),
+        caption: bought ? `${bought} became work` : null,
+        loading,
+        facts: [
+          [String(enquired), 'asked for something'],
+          [String(bought), 'bought a build'],
+          [String(dismissed), 'ruled out'],
+        ],
+        room: all
+          ? {
+              kind: 'parts',
+              parts: [
+                {
+                  key: 'waiting',
+                  label: 'Waiting',
+                  value: waiting,
+                  text: String(waiting),
+                  tone: 'warn',
+                },
+                {
+                  key: 'enquired',
+                  label: 'Enquired',
+                  value: enquired,
+                  text: String(enquired),
+                  tone: 'accent',
+                },
+                {
+                  key: 'bought',
+                  label: 'Bought',
+                  value: bought,
+                  text: String(bought),
+                  tone: 'good',
+                },
+                { key: 'dismissed', label: 'Ruled out', value: dismissed, text: String(dismissed) },
+                { label: 'Untouched', value: untouched, text: String(untouched) },
+              ].filter(part => part.value > 0),
+            }
+          : null,
+      },
+      {
+        key: 'enquired',
+        label: 'Enquired',
+        gloss: 'Asked for something in writing.',
+        value: loading ? '' : String(enquired),
+        caption: all ? `of ${all} on the list` : null,
+        tone: enquired ? 'accent' : 'plain',
+        loading,
+        room: all ? share(enquired, `${enquired} of ${all} asked for something`) : null,
+      },
+      {
+        key: 'bought',
+        label: 'Bought',
+        gloss: 'Paid for a build.',
+        value: loading ? '' : String(bought),
+        caption: all ? `of ${all} on the list` : null,
+        tone: bought ? 'good' : 'plain',
+        loading,
+        room: all ? share(bought, `${bought} of ${all} became work`) : null,
+      },
+      {
+        key: 'dismissed',
+        label: 'Ruled Out',
+        gloss: 'Looked at and set aside.',
+        value: loading ? '' : String(dismissed),
+        caption: all ? `of ${all} on the list` : null,
+        loading,
+        room: all ? share(dismissed, `${dismissed} of ${all} were ruled out`) : null,
+      },
+    ]
+  }, [loading, totals])
+
   // A refusal with nothing behind it is the whole answer, so it stands in
   // place of the desk rather than above an empty one.
   if (error && !data) return <SectionNotice>{error}</SectionNotice>
@@ -955,41 +1055,7 @@ export default function LeadsPage() {
       <Area area="stats">
         <ConsoleError>{error}</ConsoleError>
 
-        <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
-          <StatCard
-            label="Waiting"
-            value={loading ? '' : String(totals.waiting ?? 0)}
-            caption="nobody has answered, or the date has passed"
-            tone="warn"
-            loading={loading}
-          />
-          <StatCard
-            label="Leads"
-            value={loading ? '' : String(totals.all ?? 0)}
-            caption="everybody who has ever raised a hand"
-            loading={loading}
-          />
-          <StatCard
-            label="Enquired"
-            value={loading ? '' : String(totals.enquired ?? 0)}
-            caption="asked for something in writing"
-            tone="accent"
-            loading={loading}
-          />
-          <StatCard
-            label="Bought"
-            value={loading ? '' : String(totals.bought ?? 0)}
-            caption="paid for a build"
-            tone="good"
-            loading={loading}
-          />
-          <StatCard
-            label="Ruled Out"
-            value={loading ? '' : String(totals.dismissed ?? 0)}
-            caption="looked at and set aside"
-            loading={loading}
-          />
-        </m.div>
+        <Figures figures={leadFigures} pinned="all" busy={loading} />
       </Area>
 
       <Area area="views">

@@ -7,7 +7,7 @@ import { faultMessage } from '@utils/faults'
 import { MONO_LABEL, ROW_HEIGHT } from './lib/tokens'
 
 /**
- * The console's shared furniture: the card, the figure, the placeholder rows,
+ * The console's shared furniture: the card, the placeholder rows,
  * the empty row, the share bar, the ranked list, the side panel a section's
  * controls fold into, and the notice a section shows when it has nothing to
  * show.
@@ -17,6 +17,10 @@ import { MONO_LABEL, ROW_HEIGHT } from './lib/tokens'
  * one raised surface, a ruled head carrying a name and one line of context, and
  * whatever the section puts inside it. Nothing in a section draws its own
  * border.
+ *
+ * The strip of figures every section opens with is not in here. It is one
+ * component with a rule of its own about which figure is promoted, which is
+ * more than furniture, and it lives in `Figures.jsx`.
  */
 
 export function Panel({
@@ -251,6 +255,24 @@ export function SidePanel({
   )
 }
 
+/**
+ * Placeholder rows in the shape of the ones replacing them: same cell count,
+ * same row height, same column alignment, so nothing shifts when the figures
+ * arrive. Hidden from screen readers, which have nothing to read here.
+ *
+ * A table whose columns give way as the page narrows hands its cells' classes
+ * in a list rather than a count, because a placeholder holding cells the head
+ * above it has dropped is a table drawn one width while it loads and another
+ * once the rows land - which is the shift this exists to prevent.
+ */
+/**
+ * One figure on its own, for a page whose strip is a plain row of them.
+ *
+ * The figure strip in `Figures.jsx` promotes one figure and holds the rest
+ * behind it, which is what a section with a lede figure wants. A page whose
+ * figures are peers - no one of them the reason the page is open - reads
+ * better as a flat row, and this is that row's card.
+ */
 export function StatCard({ label, value, caption, tone = 'plain', pulse, loading }) {
   return (
     <div className="console-stat" data-tone={tone}>
@@ -272,16 +294,6 @@ export function StatCard({ label, value, caption, tone = 'plain', pulse, loading
   )
 }
 
-/**
- * Placeholder rows in the shape of the ones replacing them: same cell count,
- * same row height, same column alignment, so nothing shifts when the figures
- * arrive. Hidden from screen readers, which have nothing to read here.
- *
- * A table whose columns give way as the page narrows hands its cells' classes
- * in a list rather than a count, because a placeholder holding cells the head
- * above it has dropped is a table drawn one width while it loads and another
- * once the rows land - which is the shift this exists to prevent.
- */
 export function SkeletonRows({ cols, rows, height = ROW_HEIGHT.plain, lastHeight = height }) {
   const cells = Array.isArray(cols) ? cols : Array.from({ length: cols }, () => 'px-5')
   return Array.from({ length: rows }).map((_, row) => (
