@@ -461,6 +461,38 @@
           }
           return parts.join(', ')
         }
+        // What an engine puts in `stack`, which is not the same thing twice.
+        // V8 heads the property with `name: message` and the frames follow it,
+        // so filing the stack files the sentence as well. WebKit writes the
+        // frames alone - `@https://taylorurl.com/services:101:32` and nothing
+        // else - so on every Safari and every iPhone, filing the stack files an
+        // address and no account of what happened at it.
+        //
+        // #529 was that: an unhandled rejection off Applebot whose entire
+        // reported content was one frame, over an Error the boot had built a
+        // sentence for. It names which of the three failures it was and repeats
+        // what the engine said, the ticket title is drawn from the message, and
+        // the queue got `@taylor.website`. Nothing announces it either, because
+        // the same fault off Chrome arrives complete - the reporter looks
+        // correct on the machine it is read on and is empty on half the traffic.
+        //
+        // Only the head is missing, so only the head is put back, and only when
+        // the stack has not already got one.
+        function headed(value) {
+          var stack = String(value.stack)
+          var name = ''
+          var message = ''
+          try {
+            name = value.name === null || value.name === undefined ? '' : String(value.name)
+          } catch (ignored) {}
+          try {
+            message =
+              value.message === null || value.message === undefined ? '' : String(value.message)
+          } catch (ignored) {}
+          var head = name && message ? name + ': ' + message : name || message
+          if (!head || stack.indexOf(head) === 0) return stack
+          return head + '\n' + stack
+        }
         // Turns any thrown or logged value into text a person can act on. The
         // type name is always kept, so the worst case is a report naming what
         // arrived rather than one that says nothing at all.
@@ -469,7 +501,7 @@
           if (value === undefined) return 'undefined'
           if (typeof value === 'function') return 'function ' + (value.name || 'anonymous')
           if (typeof value !== 'object') return String(value)
-          if (value.stack) return String(value.stack)
+          if (value.stack) return headed(value)
           // A rejection or error event wraps the failure one level down.
           if (value.reason && value.reason !== value) return describe(value.reason)
           if (value.error && value.error !== value) return describe(value.error)

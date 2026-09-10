@@ -114,6 +114,12 @@ function collector(scriptTags) {
     throws(event) {
       for (const handler of listeners.error || []) handler({ preventDefault() {}, ...event })
     },
+    // The other door into the collector, and the one a boot that never started
+    // comes through.
+    rejects(reason) {
+      for (const handler of listeners.unhandledrejection || [])
+        handler({ preventDefault() {}, reason })
+    },
     held() {
       return sandbox.window.__reporter.replay()
     },
@@ -235,6 +241,66 @@ check(
   injected.posted.length === 0 && injected.held().some(entry => entry.kind === 'opaque'),
   'a muted throw with nothing on the page to explain it was filed against the site, so an ' +
     'injected script is being reported as this site breaking'
+)
+
+/* ----------------------------------------------------------------------- *
+ * The stack that carries no sentence.
+ * ----------------------------------------------------------------------- */
+
+// `stack` is not the same property on both engines. V8 heads it with
+// `name: message` and puts the frames underneath, so filing the stack files the
+// sentence too. WebKit writes the frames alone, so filing the stack on every
+// Safari and every iPhone files an address and no account of what happened at
+// it -- and the ticket title is drawn from the message.
+//
+// #529 was one of these: an unhandled rejection off Applebot whose entire
+// reported content was `@https://taylor.website/services:101:32`, over the
+// Error below. The boot builds that sentence deliberately, to say which of its
+// three failures this was and to repeat what the engine said, and all of it was
+// dropped on the way to the queue.
+//
+// It reads correct from a desk, which is the reason it stood: the same fault
+// off Chrome arrives complete, so the reporter looks right on the machine
+// anybody would check it on and is empty on half the traffic.
+const WEBKIT_FRAME = '@https://www.taylorurl.com/start:101:32'
+const webkit = collector()
+webkit.rejects({
+  name: 'Error',
+  message: 'The page could not start: TypeError: Failed to fetch dynamically imported module',
+  stack: WEBKIT_FRAME,
+})
+check(
+  webkit.posted.length === 1,
+  'an unhandled rejection was not filed at all, so the reporter has gone quiet on the one path ' +
+    'a boot that never started reports through'
+)
+check(
+  /could not start/.test((webkit.posted[0] || {}).message || ''),
+  'a rejection off WebKit was filed with its frames and without its message, so the ticket ' +
+    'names a line and cannot say what went wrong at it'
+)
+check(
+  ((webkit.posted[0] || {}).stack || '').includes(WEBKIT_FRAME),
+  'a rejection was filed without the frame it came from, so nobody reading it can open the line'
+)
+
+// And the engine that already said it. V8 puts the message at the head of the
+// stack itself, so a head added there regardless would file it twice over.
+const chrome = collector()
+chrome.rejects(new Error('The page could not start: TypeError: Failed to fetch'))
+check(
+  (String((chrome.posted[0] || {}).message || '').match(/could not start/g) || []).length === 1,
+  'a rejection off V8 is filed with its message twice, because a head was put back on a stack ' +
+    'that already carried one'
+)
+
+// A thrown value with a stack and nothing else on it is most of what arrives
+// from a minified bundle, and it still reports exactly as it did.
+const bare = collector()
+bare.rejects({ stack: 'TypeError: e.plan is undefined\n  at https://www.taylorurl.com/a.js:1' })
+check(
+  /e\.plan is undefined/.test((bare.posted[0] || {}).message || ''),
+  'a rejection carrying only a stack stopped reporting what that stack said'
 )
 
 if (failures.length) {

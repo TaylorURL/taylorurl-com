@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import Beasties from 'beasties'
 import { createServer } from 'vite'
 import { bootSource } from './boot-source.js'
+import { sheetRecovery } from './sheet-source.js'
 import { PRERENDER_ROUTES } from './site-routes.js'
 
 const ROOT_PLACEHOLDER = '<div id="root"></div>'
@@ -211,7 +212,9 @@ export default function prerenderPlugin() {
             BODY_CLOSE_TAG,
             `${bodyTail}${BODY_CLOSE_TAG}`
           )
-          const document = (await inline.process(rendered)).replace(CONTAINER_STAMP, '')
+          const document = sheetRecovery(
+            (await inline.process(rendered)).replace(CONTAINER_STAMP, '')
+          )
           const filePath = outputPathFor(outDir, route)
           await mkdir(dirname(filePath), { recursive: true })
           await writeFile(filePath, `<!doctype html>\n${document}\n`, 'utf8')
