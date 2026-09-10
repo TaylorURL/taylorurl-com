@@ -13,7 +13,7 @@
  * fault is read the file that answered it is long since deleted too, so this is
  * checked against how the code is written rather than against a live asset.
  *
- * Three ways it can go wrong, and each has already happened here:
+ * Four ways it can go wrong, and each has already happened here:
  *
  * A bare `lazy()` asks once. The module map records a failed URL forever and
  * keyed by URL, so nothing that asks for the same address again is asking
@@ -30,10 +30,17 @@
  * it, and both could throw away a page that had loaded -- mid-form on the sign
  * up flow -- over a file that decorates it. `QuietBoundary` is where a piece
  * that is not the page fails.
+ *
+ * And the boot itself, which is the import every one of those hangs off and the
+ * one this sweep could not see: it is written by the prerender into the head of
+ * each document rather than anywhere under `src/app`. Bare, it left a reader a
+ * finished page whose controls did nothing. `bootSource` is where it is written
+ * now, and the last section here runs it.
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { bootSource } from '../../vite/boot-source.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const APP = path.join(ROOT, 'src/app')
@@ -289,6 +296,126 @@ check(
 check(
   /message: settled\(/.test(reporting) && /stack: settled\(/.test(reporting),
   'a report is filed without settling its message and stack, so the attempt number is what it is grouped by'
+)
+
+/* ----------------------------------------------------------------------- *
+ * The import that is the whole application.
+ * ----------------------------------------------------------------------- */
+
+// Everything above sweeps `src/app`, and the most exposed `import()` on this
+// site is not in it. The prerendered document boots the bundle from an inline
+// module in its head, and for as long as that was written bare it was the one
+// rule here that nothing enforced - a rejection nobody held, over the file
+// every other chunk on the site hangs off. What a reader got was a finished
+// document whose controls did nothing, with no notice and no way back.
+//
+// Run rather than read, with the loader swapped out, because what matters is
+// what the page does with each of the three failures rather than which words
+// the boot spells them with.
+const boot = bootSource('/assets/index-TEST0000.js')
+
+async function runBoot(answers, { session = {}, online = true } = {}) {
+  const asked = []
+  let reloads = 0
+  const stub = {
+    loader: address => {
+      asked.push(address)
+      const answer = answers[Math.min(asked.length - 1, answers.length - 1)]
+      return answer ? Promise.reject(answer) : Promise.resolve({})
+    },
+    requestAnimationFrame: run => run(),
+    setTimeout: run => run(),
+    sessionStorage: {
+      getItem: key => (key in session ? session[key] : null),
+      setItem: (key, value) => {
+        session[key] = String(value)
+      },
+      removeItem: key => {
+        delete session[key]
+      },
+    },
+    location: {
+      reload: () => {
+        reloads += 1
+      },
+    },
+    navigator: { onLine: online },
+  }
+  const names = Object.keys(stub)
+  new Function(...names, boot.replace(/\bimport\(/g, 'loader('))(...names.map(name => stub[name]))
+  // A macrotask boundary, which is where every microtask the chain is made of
+  // has finished: the wait between attempts is a stub that runs at once, so
+  // nothing here is left in a real timer.
+  await new Promise(resolve => setTimeout(resolve, 0))
+  return { asked, reloads, session }
+}
+
+const filed = []
+const collect = reason => filed.push(reason)
+process.on('unhandledRejection', collect)
+
+const refused = () => new TypeError('Failed to fetch dynamically imported module')
+// A token every browser this site targets has understood since 2020, arriving
+// off a client years older than the syntax. This is #525, and it is the one
+// failure a second address and a fresh document both answer identically.
+const unparsable = () => new SyntaxError('Unexpected token ?')
+
+const straight = await runBoot([null])
+check(straight.asked.length === 1, 'a bundle that answers first time is asked for more than once')
+check(straight.reloads === 0, 'a bundle that answered reloads the document underneath the reader')
+
+const flaky = await runBoot([refused(), refused(), null])
+check(flaky.asked.length === 3, 'a fetch that did not land is given up on rather than asked again')
+check(
+  new Set(flaky.asked).size === 3,
+  'the boot asks again at an address the module map already holds a rejection for, so it sends nothing'
+)
+check(
+  flaky.asked.slice(1).every(address => address.includes('retry=')),
+  'the boot asks again without the marker the reporter strips, so every attempt files a fault of its own'
+)
+check(flaky.reloads === 0, 'a bundle that arrived on a later attempt still reloads the document')
+
+const deleted = await runBoot([refused()])
+check(
+  deleted.reloads === 1,
+  'a chunk a deploy has deleted leaves the reader on a document that does nothing when it is pressed'
+)
+const again = await runBoot([refused()], { session: deleted.session })
+check(
+  again.reloads === 0,
+  'a document that comes back identical is reloaded again, which is a loop rather than a recovery'
+)
+const offline = await runBoot([refused()], { online: false })
+check(
+  offline.reloads === 0,
+  "a reader the browser knows is offline has a readable page swapped for the browser's network page"
+)
+
+const old = await runBoot([unparsable()])
+check(
+  old.asked.length === 1,
+  'a bundle the engine cannot parse is asked for again, which parses no better and costs the reader the download twice over'
+)
+check(
+  old.reloads === 0,
+  'a bundle the engine cannot parse reloads the document, and that reload can never be the last one'
+)
+
+await new Promise(resolve => setTimeout(resolve, 0))
+process.off('unhandledRejection', collect)
+
+check(
+  filed.length === 3,
+  `a boot that never started was swallowed rather than reported: ${filed.length} of 3 reached the reporter`
+)
+check(
+  filed.every(reason => /could not start/.test(String(reason && reason.message))),
+  'a boot that never started is filed as whatever the engine happened to say rather than as the page not starting'
+)
+check(
+  filed.some(reason => /Unexpected token/.test(String(reason && reason.message))),
+  'the report drops what the engine said, which is the only account of why the bundle would not run'
 )
 
 if (failures.length) {
