@@ -9,6 +9,16 @@ import { SiteIcon } from '../../SiteIcon'
 
 const REMEMBERED = 'taylorurl_console_who_is_on'
 
+// How the columns give way as the card narrows.
+//
+// The row answers for one person, and the two halves of that answer are what
+// they are reading and how long they have been at it. Where they are and what
+// sent them are the two that wait: both are counted in their own cards
+// elsewhere in the section, where a phone reads them without dragging a table
+// sideways to do it.
+const FROM_SM = 'hidden sm:table-cell'
+const FROM_MD = 'hidden md:table-cell'
+
 /**
  * Everybody on the sites right now, one row each.
  *
@@ -69,7 +79,11 @@ export default function WhoIsOn({ area }) {
   const shown = [...rows].sort((a, b) => new Date(b.started_at) - new Date(a.started_at))
 
   const now = useSecond(shown.length > 0)
-  const cols = bulk ? 5 : 4
+  // The placeholder holds the cells the head above it holds, at the widths it
+  // holds them, so the table that loads is the table that lands.
+  const cols = bulk
+    ? [CELL, CELL, `${CELL} ${FROM_MD}`, `${CELL} ${FROM_SM}`, CELL_END]
+    : [CELL, `${CELL} ${FROM_MD}`, `${CELL} ${FROM_SM}`, CELL_END]
   const skeleton = recalledRows(REMEMBERED, 4, ROW_HEIGHT.plain)
 
   useEffect(() => {
@@ -80,7 +94,7 @@ export default function WhoIsOn({ area }) {
     <Panel area={area} title="Who Is On Now" aside={`${liveNow} reading`} loading={live.loading}>
       <PanelBody>
         <table
-          className={`w-full ${bulk ? 'min-w-[620px]' : 'min-w-[520px]'} table-fixed border-collapse text-[13px]`}
+          className={`w-full ${bulk ? 'md:min-w-[620px]' : 'md:min-w-[520px]'} table-fixed border-collapse text-[13px]`}
           aria-busy={live.loading}
         >
           <thead>
@@ -93,10 +107,10 @@ export default function WhoIsOn({ area }) {
               <th scope="col" className={`${TH} ${bulk ? 'w-[24%]' : 'w-[32%]'}`}>
                 Page
               </th>
-              <th scope="col" className={`${TH} ${bulk ? 'w-[22%]' : 'w-[26%]'}`}>
+              <th scope="col" className={`${TH} ${FROM_MD} ${bulk ? 'w-[22%]' : 'w-[26%]'}`}>
                 Came From
               </th>
-              <th scope="col" className={`${TH} ${bulk ? 'w-[20%]' : 'w-[24%]'}`}>
+              <th scope="col" className={`${TH} ${FROM_SM} ${bulk ? 'w-[20%]' : 'w-[24%]'}`}>
                 Where
               </th>
               <th scope="col" className={`${TH_END} ${bulk ? 'w-[14%]' : 'w-[18%]'}`}>
@@ -137,7 +151,7 @@ export default function WhoIsOn({ area }) {
                   {/* What sent them, and the campaign underneath where a
                       tagged link carried them - which is the rest of the same
                       answer rather than a second one. */}
-                  <td className={CELL}>
+                  <td className={`${CELL} ${FROM_MD}`}>
                     <span className="block truncate">{sourceLabel(one.source)}</span>
                     {one.campaign && (
                       <span
@@ -148,7 +162,7 @@ export default function WhoIsOn({ area }) {
                       </span>
                     )}
                   </td>
-                  <td className={`${CELL} text-paper-soft`}>
+                  <td className={`${CELL} ${FROM_SM} text-paper-soft`}>
                     <span className="block truncate">
                       {[one.city, one.country].filter(Boolean).join(', ') || 'Unknown'}
                     </span>

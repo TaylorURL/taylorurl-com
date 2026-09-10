@@ -78,8 +78,15 @@ const STALE_AFTER_MS = 5 * 60_000
 // placeholder rows stand where the readings are about to land.
 const ROWS_KEY = 'taylorurl_console_server_rows'
 
+// The column the table drops in a phone's width, where four of them - two of
+// which are a clock time under a relative one - leave the routine's own name a
+// column of about fifty pixels. When it will run next is the one a glance can
+// do without: the state beside it already carries the cadence, which is the
+// same answer said as a rule rather than as a time.
+const FROM_SM = 'hidden sm:table-cell'
+
 // The cells of the table in the order its head declares them.
-const ROUTINE_CELLS = [CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, CELL_TIGHT]
+const ROUTINE_CELLS = [CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, `${CELL_TIGHT} ${FROM_SM}`]
 
 /** A clock that ticks, so "3 min ago" does not sit there saying "just now". */
 function useNow(intervalMs) {
@@ -214,19 +221,23 @@ function RoutineTable({ routines, loading, now, placeholder }) {
       note="Everything scheduled to run on the server, whether it is running, and when it last did."
     >
       <PanelBody className="overflow-x-auto">
-        <table className="console-table min-w-[42rem] text-[13px]" aria-busy={loading}>
+        {/* The widths are declared from the width they were measured at. On a
+            phone the three columns left share the table equally instead, since
+            a state held to seven rems and a time to nine leaves the name of the
+            routine less room than either of them. */}
+        <table className="console-table text-[13px] sm:min-w-[42rem]" aria-busy={loading}>
           <thead>
             <tr>
               <th scope="col" className={TH_TIGHT}>
                 Routine
               </th>
-              <th scope="col" className={`${TH_TIGHT} w-[7rem]`}>
+              <th scope="col" className={`${TH_TIGHT} sm:w-[7rem]`}>
                 State
               </th>
-              <th scope="col" className={`${TH_TIGHT} w-[9rem]`}>
+              <th scope="col" className={`${TH_TIGHT} sm:w-[9rem]`}>
                 Last Run
               </th>
-              <th scope="col" className={`${TH_TIGHT} w-[9rem]`}>
+              <th scope="col" className={`${TH_TIGHT} ${FROM_SM} sm:w-[9rem]`}>
                 Next Run
               </th>
             </tr>
@@ -267,7 +278,9 @@ function RoutineTable({ routines, loading, now, placeholder }) {
                       <span className="mt-0.5 block text-[11px]">{when(routine.last_run)}</span>
                     )}
                   </td>
-                  <td className={`${CELL_TIGHT} ${MONO_LABEL} text-paper-faint align-top`}>
+                  <td
+                    className={`${CELL_TIGHT} ${FROM_SM} ${MONO_LABEL} text-paper-faint align-top`}
+                  >
                     {/* A routine on a schedule the machine keeps outside its
                         own timers has no next fire to report, and the cadence
                         beside its state is the whole of the answer. A service

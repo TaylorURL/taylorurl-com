@@ -711,14 +711,23 @@ export function StatusBoard({ feed, scope }) {
                           mark is looked up on the first domain it answers on,
                           which is what the icon set is keyed by. */}
                       <SiteIcon host={apexOf(site)} name={site.name} />
-                      <span className="truncate text-ink-paper">{site.name}</span>
-                      {/* The host earns its place on the line rather than a
-                          second one under the name: it is what tells two sites
-                          of a similar name apart, and it is read once. A site
-                          on more than one host names them all, with the list in
-                          the title where the line runs out of room. */}
-                      <span className="text-paper-faint truncate" title={hosts.join(', ')}>
-                        {hosts.join(' · ')}
+                      {/* The host earns its place beside the name rather than a
+                          second line under it: it is what tells two sites of a
+                          similar name apart, and it is read once. A site on more
+                          than one host names them all, with the list in the
+                          title where the line runs out of room.
+
+                          On a phone there is no line to earn. A name, a list of
+                          hosts and an uptime figure sharing 375 pixels leave the
+                          name twenty of them, which is the one thing on the row
+                          that has to survive - so below the width where all
+                          three fit, the host drops under the name and each gets
+                          a line of its own. */}
+                      <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2.5">
+                        <span className="truncate text-ink-paper">{site.name}</span>
+                        <span className="text-paper-faint truncate" title={hosts.join(', ')}>
+                          {hosts.join(' · ')}
+                        </span>
                       </span>
                       <span className="text-paper-faint ml-auto flex-shrink-0 whitespace-nowrap">
                         {site.uptime_30d?.toFixed(2)}% uptime

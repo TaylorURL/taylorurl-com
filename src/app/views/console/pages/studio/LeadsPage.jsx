@@ -629,10 +629,15 @@ function Composer({ open, lead, templates, sending, onSend, onClose }) {
           </p>
         )}
         {fault && <p className={`${MONO_LABEL} text-[color:var(--warn)]`}>{fault}</p>}
-        <div className="flex items-center gap-2">
-          <button type="submit" disabled={!ready} className={BUTTON}>
-            <Send className="h-3.5 w-3.5" strokeWidth={2} aria-hidden="true" />
-            {sending ? 'Sending' : `Send to ${lead.email}`}
+        {/* The send names the address it is going to, which on a phone is
+            wider than the panel holding it. The pair wraps onto two lines and
+            the address gives way inside its own control, so the control is
+            still a control rather than something to be dragged sideways to
+            read the end of. */}
+        <div className="flex flex-wrap items-center gap-2">
+          <button type="submit" disabled={!ready} className={`${BUTTON} max-w-full`}>
+            <Send className="h-3.5 w-3.5 flex-shrink-0" strokeWidth={2} aria-hidden="true" />
+            <span className="truncate">{sending ? 'Sending' : `Send to ${lead.email}`}</span>
           </button>
           <button type="button" className={QUIET} onClick={onClose}>
             Keep the Draft Unsent

@@ -204,7 +204,15 @@ function EstateTable({ title, sites, loading, measuring, measure, device, onDevi
   return (
     <Panel title={title} aside={chosen.conditions} busy={loading} area="reading">
       <PanelBody className="overflow-x-auto">
-        <table className="console-table min-w-[47rem] text-[13px]" aria-busy={loading}>
+        {/* Five columns of Lighthouse scores against a site's name is wider
+            than a phone whatever is done to the headings, so the table keeps
+            its width and moves inside its own card. The site stays put while
+            it does: dragged out to the last column, a row with no name on it
+            is four numbers belonging to nobody. */}
+        <table
+          className="console-table console-table-stick min-w-[47rem] text-[13px]"
+          aria-busy={loading}
+        >
           <thead>
             <tr>
               <th scope="col" className={TH_TIGHT}>
@@ -316,7 +324,11 @@ function SiteReading({ name, site, siteId, loading, measuring, measure }) {
       area="reading"
     >
       <PanelBody className="overflow-x-auto">
-        <table className="console-table min-w-[30rem] text-[13px]" aria-busy={loading}>
+        {/* Three columns fit a phone once they stop being held to the measure
+            a desk gives them: the reading's name wraps onto a second line and
+            the two devices keep their figures side by side, which is the whole
+            point of the pair. */}
+        <table className="console-table text-[13px] sm:min-w-[30rem]" aria-busy={loading}>
           <thead>
             <tr>
               <th scope="col" className={`${TH_TIGHT} w-[34%]`}>

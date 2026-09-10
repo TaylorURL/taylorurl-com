@@ -186,6 +186,16 @@
   flex-direction: column;
   gap: var(--console-gap);
   overflow-y: auto;
+  /* The region scrolls one way only. Anything wider than a phone - a table of
+     ten columns, a chart drawn to a measure - scrolls inside its own card,
+     where the head above it stays put and the card beside it does not move. A
+     region that scrolls sideways as well drags the whole page off its left
+     edge, and it does not take a table to start it: an absolutely positioned
+     tooltip resting a few pixels past a tile counts toward the region's scroll
+     width whether or not anything can see it, which is what put a scrollbar
+     under a phone's figure strip. Above the desk width the region is already
+     hidden on both axes, so this is the same rule stated where it was missing. */
+  overflow-x: hidden;
   overscroll-behavior: contain;
   /* The inset is the bar's, so a card's left edge falls under the heading
      above it. The foot is deeper than the head because the last card wants
@@ -438,6 +448,19 @@
   padding-inline: 0;
 }
 
+/* On a phone the column is the whole of the navigation and every section is
+   reached by a thumb, so the rows take the height the console's own controls
+   are drawn to rather than the tighter one a pointer can afford. */
+@media (pointer: coarse) {
+  .console-nav-item {
+    @apply min-h-[44px];
+  }
+
+  .console-foot-button {
+    @apply min-h-[44px];
+  }
+}
+
 .console-nav-mark {
   @apply flex h-[18px] w-[18px] flex-shrink-0 items-center justify-center;
   color: var(--paper-ink-faint);
@@ -584,8 +607,13 @@
   @apply flex min-w-0 items-baseline gap-1.5;
 }
 
+/* A step down on a phone, where the name shares its line with the way out of
+   the console and the longest of them - System Status, which is what a
+   signed-out visitor is looking at - came a dozen pixels short of fitting.
+   Which screen this is has to survive: the type gives way before the name
+   does. */
 .console-title h1 {
-  @apply min-w-0 truncate text-[19px] font-semibold tracking-tight;
+  @apply min-w-0 truncate text-[17px] font-semibold tracking-tight sm:text-[19px];
   color: var(--paper-ink);
 }
 
@@ -742,6 +770,16 @@
   transform: scale(0.97);
 }
 
+/* A segmented control is two or three targets touching each other, so the one
+   a finger lands on is decided by a few pixels. Where the pointer is coarse
+   each takes the height the bar's own chips take on a phone, which is the
+   figure the rest of the console's touch targets are drawn to. */
+@media (pointer: coarse) {
+  .console-segmented button {
+    height: 2.25rem;
+  }
+}
+
 /* ── The views inside a section ───────────────────────────────────────── */
 
 /* A row of tabs on the card's own ground, with the open one lifted onto a
@@ -882,12 +920,32 @@
     --console-bar-h: 5.5rem;
   }
 
+  /* Two rows is what it is drawn for and two rows is what it almost always
+     takes. A third - a long section name against a signed-out reader's way in
+     - used to run out through the bar's own edge, because the height was a
+     figure rather than a floor. Stated as a floor it holds the two-row bar at
+     exactly the height it had and lets the rare third row push the work down
+     instead of printing over it. */
+  .console-topbar {
+    height: auto;
+    min-height: var(--console-bar-h);
+    padding-block: 0.5rem;
+  }
+
   .console-topbar-inner {
     @apply flex-wrap gap-x-2 gap-y-2;
   }
 
   .console-context {
     @apply flex-wrap gap-x-2;
+  }
+
+  /* The name gives way on the line rather than dropping off it. A wrapped
+     flex item is placed by its full width before anything is allowed to
+     shrink, so a heading that would have fitted once narrowed went to a line
+     of its own and took a row of the bar with it. */
+  .console-title {
+    @apply min-w-0 flex-1;
   }
 
   .console-narrowers {
@@ -898,6 +956,17 @@
      belonging to the heading beside it. */
   .console-tools {
     @apply self-start;
+  }
+}
+
+/* Narrower again than any phone still sold, and giving way on the line stops
+   being enough: the longest name comes back as five letters and an ellipsis.
+   There the name takes a line of its own rather than being cut, and the bar
+   grows the row to hold it - which it can, now that its height is a floor. A
+   short name still shares the line, because it fits. */
+@media (max-width: 359px) {
+  .console-title {
+    @apply flex-none;
   }
 }
 
@@ -1146,6 +1215,18 @@
   color: var(--paper-ink-faint);
 }
 
+/* Two tiles to a row on a phone is a caption in half a phone's width, and one
+   line of that is four words of a sentence that answers what the figure above
+   it means. It takes two lines there instead. Two rather than as many as it
+   likes, so a tile carrying a long caption is still the height of the tile
+   beside it. */
+@media (max-width: 599px) {
+  .figures-tile-caption {
+    @apply line-clamp-2 whitespace-normal;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* A tile is a way in, and it says so only while it is being considered. */
 .figures-tile-open {
   @apply block h-0 overflow-hidden text-[11px] opacity-0;
@@ -1217,6 +1298,30 @@
 .figures-gloss:focus-visible::after {
   @apply opacity-100;
   transform: none;
+}
+
+/* Below the desk width there is no room beside a figure for a card to float
+   into. A fifteen-rem tooltip hanging off a ten-rem tile ends up past the edge
+   of the screen, and the region does not scroll sideways to reach it. So it
+   takes the width of the figure it explains and wraps inside it: the label
+   becomes what it is measured against, and the term above it goes back to
+   being ordinary text in the line. */
+@media (max-width: 1023px) {
+  .figures-lede-label,
+  .figures-tile-label {
+    position: relative;
+  }
+
+  .figures-gloss {
+    position: static;
+  }
+
+  .figures-gloss::after {
+    left: 0;
+    right: 0;
+    width: auto;
+    max-width: none;
+  }
 }
 
 /* ---- the room: a history ---- */
@@ -1444,8 +1549,13 @@
   border-bottom: 1px solid var(--paper-hairline);
 }
 
+/* The name holds one line wherever a line is long enough to hold it. On a
+   phone it is not: a card called "Everything Written to You" set on one line at
+   375px runs out through the side of a card that clips it, and half the name
+   is gone. There it wraps instead, which costs a row of the head and keeps the
+   whole name. */
 .console-card-head h2 {
-  @apply whitespace-nowrap text-[15px] font-semibold tracking-tight;
+  @apply text-[15px] font-semibold tracking-tight sm:whitespace-nowrap;
   color: var(--paper-ink);
 }
 
@@ -1541,9 +1651,14 @@
   color: var(--paper-ink-mute);
 }
 
+/* A value here is whatever the machine reported - a kernel string, a board
+   name, a domain - and some of them carry no space to break at. In a card the
+   width of a phone one of those runs out through the side, so the pair is told
+   it may break inside a word rather than not at all. */
 .console-metric dd {
-  @apply flex items-baseline gap-2 text-right text-[13px] font-medium;
+  @apply flex min-w-0 items-baseline gap-2 text-right text-[13px] font-medium;
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
   color: var(--paper-ink);
 }
 
@@ -1681,6 +1796,51 @@
 .console-table th:last-child,
 .console-table td:last-child {
   padding-right: 1.25rem;
+}
+
+/* The one column that stays put in a table that has to be dragged sideways.
+
+   A few tables in here are genuinely wider than a phone - four Lighthouse
+   scores against a site is five columns of figures whose headings are longer
+   than the figures under them - and those scroll inside their own card rather
+   than pushing the page along with them. What that costs is the name of the
+   row: drag far enough to read the last column and the site it belongs to has
+   gone off the left edge. Held there, the first column is the row's own label
+   the whole way across.
+
+   It carries the card's ground, because the cells passing underneath would
+   otherwise show straight through it, and it sits above them without sitting
+   above the head, which is stuck to the top of the card on the same terms. The
+   corner where the two meet answers to both. */
+.console-table-stick th:first-child,
+.console-table-stick td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: var(--z-sticky);
+  background-color: var(--console-card-bg);
+}
+
+/* The rules the table would have drawn, drawn by the cell instead. A collapsed
+   border belongs to the table rather than to the cell it runs along, and a
+   cell lifted onto a layer of its own takes its background with it and leaves
+   the border behind - so the held column loses the line between one row and
+   the next. Restating it as an inset shadow puts it back in the same place, at
+   the same weight, and costs nothing where the border does come through. */
+.console-table-stick thead th:first-child {
+  z-index: calc(var(--z-sticky) + 1);
+  box-shadow: inset 0 -1px 0 var(--paper-hairline);
+}
+
+.console-table-stick tbody td:first-child {
+  box-shadow: inset 0 1px 0 var(--paper-hairline);
+}
+
+/* The edge that says the column is held rather than simply first. */
+.console-table-stick th:first-child::after,
+.console-table-stick td:first-child::after {
+  content: '';
+  @apply pointer-events-none absolute inset-y-0 right-0 w-px;
+  background-color: var(--paper-hairline);
 }
 
 /* The side column carries one short summary against a record that runs for
@@ -2269,15 +2429,43 @@
    affordance at the width a field would have taken, and the panel it opens has
    the room. */
 
+/* On a phone it is the glyph alone. The console's one way to reach any section
+   or any site from wherever the reader is standing used to come off the bar
+   below 640px, which left a phone with the drawer and nothing else - and left
+   a signed-in reader looking at an empty right-hand group, since the theme
+   control and the way in are a signed-out reader's. A field's worth of clothes
+   does not fit there, so what survives is the part that is pressed. */
 .console-search-open {
-  @apply hidden flex-shrink-0 items-center gap-2 text-[13px] transition-[background-color,box-shadow,color] duration-150 ease-out-soft sm:flex;
-  width: 11rem;
+  @apply flex flex-shrink-0 items-center justify-center gap-2 text-[13px] transition-[background-color,box-shadow,color] duration-150 ease-out-soft;
+  width: 2.25rem;
   height: 2.25rem;
-  padding-inline: 0.625rem;
   border-radius: var(--console-radius-sm);
   background-color: var(--paper-field);
   box-shadow: inset 0 0 0 1px var(--paper-hairline-strong);
   color: var(--paper-ink-faint);
+}
+
+/* The word and the key it answers to are what a field looks like, and they
+   appear at the width that has room for one. */
+.console-search-open span,
+.console-search-open kbd {
+  @apply hidden;
+}
+
+@media (min-width: 640px) {
+  .console-search-open {
+    @apply justify-start;
+    width: 11rem;
+    padding-inline: 0.625rem;
+  }
+
+  .console-search-open span {
+    @apply block;
+  }
+
+  .console-search-open kbd {
+    @apply block;
+  }
 }
 
 /* It steps down with the rest of the group, and takes the room a wide screen
@@ -2577,6 +2765,16 @@
   background-color: var(--paper-ink-faint);
 }
 
+/* The pill is eighteen pixels tall because that is what a switch looks like
+   beside a line of text. What a thumb has to hit is larger than that, so the
+   reach is carried out over the row's own padding on a pseudo-element and
+   nothing on the screen moves for it. The same trick the console's row
+   controls and the account screens already use. */
+.console-toggle::before {
+  content: '';
+  @apply absolute -inset-x-1.5 -inset-y-3;
+}
+
 .console-toggle:hover {
   border-color: var(--accent);
 }
@@ -2712,10 +2910,19 @@
    that can be on at the same time as its neighbours, rather than as one more
    part of a row that behaves as a choice between them. */
 .console-scope-box {
-  @apply flex h-[18px] w-[18px] flex-shrink-0 cursor-pointer items-center justify-center rounded-[var(--r-tiny)] border transition-colors duration-150 ease-out-soft;
+  @apply relative flex h-[18px] w-[18px] flex-shrink-0 cursor-pointer items-center justify-center rounded-[var(--r-tiny)] border transition-colors duration-150 ease-out-soft;
   border-color: var(--paper-hairline-strong);
   background-color: var(--paper-field);
   color: transparent;
+}
+
+/* The box and the row around it answer two different questions, and the box is
+   eighteen pixels of the row's forty-four. A finger aiming at the box and
+   missing it does not do nothing - it replaces the whole scope with this one
+   site - so the reach around the drawing is opened to the row's own height. */
+.console-scope-box::before {
+  content: '';
+  @apply absolute -inset-x-2 -inset-y-3;
 }
 
 .console-scope-box svg {
@@ -2771,6 +2978,27 @@
 
 .console-track-step:last-child::before {
   @apply right-1/2;
+}
+
+/* Six stages do not fit a phone in one row, and wrapped by the flex box they
+   fell three and three with the rule still drawn as though the row went on -
+   a line running off the left of the fourth stage towards nothing. Three to a
+   row on purpose instead, with the rule stopped at the dot at each end of each
+   row, so both rows read as a run of stages rather than as one run cut in
+   half. */
+@media (max-width: 639px) {
+  .console-track {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .console-track-step:nth-child(3n + 1)::before {
+    @apply left-1/2 right-0;
+  }
+
+  .console-track-step:nth-child(3n)::before {
+    @apply left-0 right-1/2;
+  }
 }
 
 .console-track-dot {
@@ -2993,11 +3221,20 @@
   color: var(--paper-ink);
 }
 
+/* Drawn as a word at twelve pixels, which is about fifteen tall, and it takes
+   a file back off a list. The drawing stays what it is and the reach around it
+   opens to what a thumb needs, carried on a pseudo-element so the row it sits
+   in does not change height for it. */
 .console-ask-remove {
-  @apply ml-auto flex-shrink-0 cursor-pointer text-[12px];
+  @apply relative ml-auto flex-shrink-0 cursor-pointer text-[12px];
   color: var(--paper-ink-faint);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+.console-ask-remove::before {
+  content: '';
+  @apply absolute -inset-x-2 -inset-y-3;
 }
 
 .console-ask-remove:hover {
@@ -3082,10 +3319,17 @@
 }
 
 .console-dock-go {
-  @apply ml-auto flex-shrink-0 text-[12px] font-medium;
+  @apply relative ml-auto flex-shrink-0 text-[12px] font-medium;
   color: var(--accent);
   text-decoration: underline;
   text-underline-offset: 2px;
+}
+
+/* The same reach the other inline controls in here carry, for the same
+   reason: the word is twelve pixels tall and a thumb is not. */
+.console-dock-go::before {
+  content: '';
+  @apply absolute -inset-x-2 -inset-y-3;
 }
 
 .console-dock-item[data-done='true'] .console-dock-go {
