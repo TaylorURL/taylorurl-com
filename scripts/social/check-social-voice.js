@@ -1,5 +1,5 @@
 /**
- * Holds everything this account can publish to the two rules in `voice.js`.
+ * Holds everything this account can publish to the three rules in `voice.js`.
  *
  * The studio is more than one person, and a post written as "I build" says
  * otherwise to every reader who meets it. The other checks in this folder
@@ -9,18 +9,26 @@
  *
  * A scheduled post is out of reach the moment it publishes, and the queue runs
  * unattended five days a week, so the wording is checked on the pull request
- * rather than in the account. The strings held here are every string a run can
- * publish without a person writing it: the card alt text Buffer requires, and
- * the frame an article's own announcement is composed inside. What a person
+ * rather than in the account. The price is checked twice over: here, and again
+ * in `social.js post`, which is the one gate a post the routine composed passes
+ * through before Buffer holds it. The strings held here are every string a run
+ * can publish without a person writing it: the card alt text Buffer requires,
+ * and the frame an article's own announcement is composed inside. What a person
  * writes by hand is theirs to get right, and the routine's own prompt carries
- * the same two rules for the posts it composes.
+ * the same three rules for the posts it composes.
  *
  *   npm run check:social-voice
  */
 import { CADENCE } from '../../lib/social/buffer.js'
 import { CARDS } from '../../lib/social/cards.js'
 import { articleUrl, hasCopy, postText } from '../../lib/social/announce.js'
-import { MAX_SENTENCES, firstPerson, sentenceCount } from '../../lib/social/voice.js'
+import {
+  MAX_SENTENCES,
+  firstPerson,
+  misquotedPrices,
+  sentenceCount,
+} from '../../lib/social/voice.js'
+import { BUILD_PRICE, MONTHLY_PRICE } from '../../src/app/data/checkout/pricing.js'
 
 // The same article the post checks compose against, so a failure here and a
 // failure there are about the same post rather than about two different ones.
@@ -40,12 +48,18 @@ function check(what, ok) {
   if (!ok) failures.push(what)
 }
 
-/** A post held to both rules at once, named by where it came from. */
+/** A post held to all three rules at once, named by where it came from. */
 function holds(where, text) {
   const found = firstPerson(text)
   check(`${where}: written as one person, on ${found.join(', ')}`, found.length === 0)
   const count = sentenceCount(text)
   check(`${where}: ${count} sentences, and the ceiling is ${MAX_SENTENCES}`, count <= MAX_SENTENCES)
+  const stale = misquotedPrices(text)
+  check(
+    `${where}: quotes ${stale.map(one => one.found).join(', ')}, and the site publishes ` +
+      stale.map(one => one.published).join(', '),
+    stale.length === 0
+  )
 }
 
 // The rule itself, before anything is measured against it. A counter that
@@ -72,6 +86,39 @@ function holds(where, text) {
     firstPerson('A one-person studio.').length === 1
   )
   check('ordinary copy is left alone', firstPerson('We build the websites.').length === 0)
+
+  // The price rule, against the figures the site actually publishes rather
+  // than against a number typed here, so this block cannot be the thing that
+  // remembers an old price.
+  check(
+    'a stale monthly is caught',
+    misquotedPrices('Everything included, for $99 a month.')[0]?.published === MONTHLY_PRICE
+  )
+  check(
+    'the monthly the site publishes is left alone',
+    misquotedPrices(`Everything included, from ${MONTHLY_PRICE} a month.`).length === 0
+  )
+  check(
+    'a stale build is caught',
+    misquotedPrices('A site is $1,500 up front.')[0]?.published === BUILD_PRICE
+  )
+  check(
+    'the build the site publishes is left alone',
+    misquotedPrices(`A site is from ${BUILD_PRICE} up front.`).length === 0
+  )
+  check(
+    'a figure written without its comma still matches',
+    misquotedPrices(`A site is $${BUILD_PRICE.replace(/[$,]/g, '')} up front.`).length === 0
+  )
+  check('the shorthand month is read as a month', misquotedPrices('$99/mo, all in.').length === 1)
+  check(
+    'a figure that is no price claim of ours is left alone',
+    misquotedPrices('Two and a half hours of racing for $49.99 a person.').length === 0
+  )
+  check(
+    'the band the pricing page compares against is left alone',
+    misquotedPrices('Studios quote $150 to $500 a month for the same care.').length === 0
+  )
 }
 
 // Every card's alt text. Buffer requires one on every image, so this is copy
@@ -131,4 +178,7 @@ if (failures.length) {
   process.exit(1)
 }
 
-console.log(`social voice: ${checks} checks, ${CARDS.length} cards, ceiling ${MAX_SENTENCES}`)
+console.log(
+  `social voice: ${checks} checks, ${CARDS.length} cards, ceiling ${MAX_SENTENCES}, ` +
+    `price ${BUILD_PRICE} and ${MONTHLY_PRICE}`
+)

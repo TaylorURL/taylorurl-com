@@ -35,6 +35,7 @@ import {
 import { CARDS, assetFor, card, landingFor, leastRecentlyUsed } from '../../lib/social/cards.js'
 import { announce } from '../../lib/social/announce.js'
 import { summary, watch } from '../../lib/social/watch.js'
+import { misquotedPrices } from '../../lib/social/voice.js'
 
 const CREDENTIAL = 'buffer-personal-key-taylorurl'
 
@@ -277,6 +278,23 @@ async function main() {
     if (!file) throw new Error('post needs --text-file')
     const text = readFileSync(file, 'utf8').trim()
     if (!text) throw new Error(`${file} is empty`)
+
+    // The price, before the post is anywhere. Every other rule about the words
+    // is held by whoever writes them and by the routine's own prompt, and a
+    // ceiling or a pronoun broken in a post is a post that reads badly. A price
+    // broken in a post is a figure a reader acts on, and it is out of reach the
+    // moment it publishes, so this one is refused here rather than trusted to
+    // the writer - which is what happened to a Business Profile post carrying
+    // an old monthly that no page on the site had said for a week.
+    const stale = misquotedPrices(text)
+    if (stale.length) {
+      throw new Error(
+        `${file} states a price the site does not publish: ` +
+          stale
+            .map(one => `${one.found} ${one.term}, and the site says ${one.published}`)
+            .join('; ')
+      )
+    }
 
     const draft = process.argv.includes('--draft')
     const at = flag('--at')
