@@ -735,7 +735,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
           </select>
           <span className={`${MONO_LABEL} text-paper-faint`}>
             Interested puts them in the lead list. Not interested leaves them on the call list and
-            nowhere else.
+            off the lead list.
           </span>
         </label>
       )}
@@ -1115,7 +1115,7 @@ function CallCard({
           </div>
           <p className={`${MONO_LABEL} text-paper-faint`}>
             Interested puts them in the lead list. Not interested leaves them on the call list and
-            nowhere else.
+            off the lead list.
           </p>
           <button type="button" className={QUIET} disabled={saving} onClick={onDrop}>
             Back to the Outcomes
