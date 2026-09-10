@@ -86,7 +86,6 @@ import {
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
-import { Figures } from '../../Figures'
 import { fullCount } from '../../../analytics/lib/format'
 import CallHandbook from './CallHandbook'
 import CallBoard from './CallBoard'
@@ -1175,101 +1174,6 @@ export default function CallsPage() {
   const rows = useMemo(() => shown?.rows || [], [shown])
   const totals = useMemo(() => shown?.totals || {}, [shown])
 
-  /**
-   * The list, as records.
-   *
-   * They count every business on the list rather than the page in front of the
-   * caller, which is what the line above the strip has always said. The
-   * promoted figure is drawn against that list, so a number is read as a share
-   * of the work rather than as a bare count.
-   */
-  const callFigures = useMemo(() => {
-    const call = totals.call ?? 0
-    const due = totals.due ?? 0
-    const fresh = totals.fresh ?? 0
-    const ready = totals.ready ?? 0
-    const resting = totals.resting ?? 0
-    const booked = totals.booked ?? 0
-    const closed = totals.closed ?? 0
-    const held = desk.held.size
-    const list = call + resting + booked + closed
-    const share = (at, note) => (list ? { kind: 'progress', at, of: list, note } : null)
-
-    return [
-      {
-        key: 'call',
-        label: 'To Call',
-        gloss: 'Ready to ring right now.',
-        value: loading ? '' : fullCount(call),
-        caption: list ? `of ${fullCount(list)} on the list` : null,
-        loading,
-        facts: [
-          [fullCount(due), 'asked to be rung back'],
-          [fullCount(fresh), 'never tried'],
-          [fullCount(ready), 'rested and ready'],
-        ],
-        room: call
-          ? {
-              kind: 'parts',
-              parts: [
-                { key: 'due', label: 'Due back', value: due, text: fullCount(due), tone: 'accent' },
-                { key: 'fresh', label: 'Never called', value: fresh, text: fullCount(fresh) },
-                { label: 'Rested', value: ready, text: fullCount(ready) },
-              ].filter(part => part.value > 0),
-            }
-          : null,
-      },
-      {
-        key: 'due',
-        label: 'Due Back',
-        gloss: 'Asked to be rung back by a time that has passed.',
-        value: loading ? '' : fullCount(due),
-        caption: call ? `of ${fullCount(call)} ready to ring` : null,
-        tone: due ? 'accent' : 'plain',
-        loading,
-        room: share(due, `${fullCount(due)} of ${fullCount(list)} are owed a call back`),
-      },
-      {
-        key: 'fresh',
-        label: 'Never Called',
-        gloss: 'Nobody has tried this number.',
-        value: loading ? '' : fullCount(fresh),
-        caption: list ? `of ${fullCount(list)} on the list` : null,
-        loading,
-        room: share(fresh, `${fullCount(fresh)} of ${fullCount(list)} have never been tried`),
-      },
-      {
-        key: 'resting',
-        label: 'Resting',
-        gloss: 'Rung recently and waiting out the gap before the next try.',
-        value: loading ? '' : fullCount(resting),
-        caption: list ? `of ${fullCount(list)} on the list` : null,
-        loading,
-        room: share(resting, `${fullCount(resting)} of ${fullCount(list)} are waiting out a gap`),
-      },
-      {
-        key: 'held',
-        label: 'On a Call',
-        gloss: 'Numbers somebody has open this minute.',
-        value: desk.loading ? '' : fullCount(held),
-        caption: held ? 'somebody is on a call' : 'nobody is on a call',
-        tone: held ? 'accent' : 'plain',
-        pulse: true,
-        loading: desk.loading,
-      },
-      {
-        key: 'booked',
-        label: 'Booked',
-        gloss: 'Came off the list as work.',
-        value: loading ? '' : fullCount(booked),
-        caption: list ? `of ${fullCount(list)} on the list` : null,
-        tone: 'good',
-        loading,
-        room: share(booked, `${fullCount(booked)} of ${fullCount(list)} became work`),
-      },
-    ]
-  }, [desk.held.size, desk.loading, loading, totals])
-
   const matchedTotals = shown?.matched_totals || {}
 
   // The lists the dropdowns offer and the pager's count of pages describe the
@@ -1576,12 +1480,11 @@ export default function CallsPage() {
         </div>
       )}
 
-      {/* Everything the list is read against: what the whole set counts to,
-          which view is open, who is on a number, and what the list is narrowed
-          by. It folds away as one block so the table below it can have the
-          screen, and the block carries the gap between itself and the table
-          inside its own height - so a fold that closes leaves nothing behind
-          it, not even the air it stood in.
+      {/* Everything the list is read against: which view is open, who is on a
+          number, and what the list is narrowed by. It folds away as one block
+          so the table below it can have the screen, and the block carries the
+          gap between itself and the table inside its own height - so a fold
+          that closes leaves nothing behind it, not even the air it stood in.
 
           Nothing in here is reachable while it is closed. A search field and
           six dropdowns clipped to no height are still on the tab order, and a
@@ -1601,15 +1504,6 @@ export default function CallsPage() {
         inert={alone}
       >
         <div ref={fold} className="flex flex-col gap-4 pb-4">
-          {/* What the six figures are counting, said once above them. A strip
-              of totals is the one thing on the page a reader is most likely to
-              take for the page they are looking at. */}
-          <p className={`${MONO_LABEL} text-paper-soft`}>
-            These count every business on the list, not the page in front of you.
-          </p>
-
-          <Figures figures={callFigures} pinned="call" busy={loading} />
-
           <ViewNav
             views={CALL_VIEWS.map(one => ({
               ...one,
