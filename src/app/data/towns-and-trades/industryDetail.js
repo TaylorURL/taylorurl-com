@@ -366,7 +366,7 @@ const DETAIL = {
     townsDescription:
       'Facilities along 146 and the interstate draw from the towns beside them rather than from a radius on a map.',
     ctaDescription:
-      'Tell us how many units you run and which sizes sit empty. You usually get a reply within the hour and a written price before any work, and most sites are live inside a month.',
+      'Tell us how many units you run and which sizes sit empty. You usually get a reply within the hour, a written price before any work, and most sites are live inside a month.',
   },
 
   'auto-repair': {

@@ -54,11 +54,11 @@ const STUDY_BODIES = {
         body: 'Mixers, tractors, trailers, equipment, and pickup trucks, each with a verification status, service tracking, and a change-history timeline that keeps every edit.',
       },
       {
-        title: 'An operator, from onboarding to separation',
+        title: 'Every operator, from hire to last day',
         body: 'The operator lifecycle from onboarding through training, active duty, light duty, and separation, alongside manager profiles and role-based access.',
       },
       {
-        title: 'Plant figures that roll up across regions',
+        title: 'Plant efficiency, scored and reported',
         body: 'Plant efficiency scoring, live dashboards, and weekly role-based reports across regions, with charts, maps, and export to Excel and PDF.',
       },
     ],

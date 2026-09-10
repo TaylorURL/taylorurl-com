@@ -76,7 +76,7 @@ const STUDIO_ROWS = {
     features: [
       'Online booking, ordering, and quote forms',
       'Checkout through Stripe, Square, or PayPal',
-      'Meta Pixel and Google Ads tracking, in before you advertise',
+      'Meta Pixel and Google Ads tracking, wired in before you advertise',
       'Your own sending domain, so the mail reaches an inbox',
     ],
     mockup: 'analytics',

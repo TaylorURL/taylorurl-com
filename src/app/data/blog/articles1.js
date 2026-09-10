@@ -190,7 +190,7 @@ export const BLOG_ARTICLES_1 = [
     slug: 'why-nobodys-filling-out-your-contact-form',
     title: "Why Nobody's Filling Out Your Contact Form",
     excerpt:
-      'The longest form we have ever built is also the one people finish. Length was never what was killing yours: friction is, and most of it is not the fields.',
+      'The longest form we have ever built is also the one people finish. What empties a form is friction, not length, and most of the friction is on a phone.',
     category: 'Design',
     date: 'January 25, 2026',
     readTime: '5 min read',
@@ -316,7 +316,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'How Do You Know If It Is Working?' },
       {
         type: 'p',
-        text: 'You would not hire a salesperson and never check the numbers. Track the traffic, look at which pages get visited, see where people leave. A contact page with 100 views and no submissions is telling you something. A website is a tool to measure, maintain, and improve, which is most of what the monthly care on ours is for.',
+        text: 'You would not hire a salesperson and never check the numbers. Track the traffic, look at which pages get visited, see where people leave. A contact page with 100 views and no submissions is telling you something. A website is a tool to measure, maintain, and improve, which is most of what the monthly care on our sites is for.',
       },
     ],
   },

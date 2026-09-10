@@ -133,7 +133,7 @@ const DETAIL = {
       },
     ],
     timeline: 'A week or two, depending on how many places the trail is broken.',
-    running: `From ${TRACKING_FEE}, paid once before the work begins. What moves the price is how many places the trail is broken, and you agree to that number before anything starts. There is no monthly attached to it.`,
+    running: `From ${TRACKING_FEE}, paid once before the work begins. What moves the price is how much of the tracking has to be rebuilt, and you agree to that number before anything starts. There is no monthly attached to it.`,
   },
   outbound: {
     mark: MarkReach,
