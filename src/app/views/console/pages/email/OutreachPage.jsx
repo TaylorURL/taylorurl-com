@@ -16,7 +16,7 @@ import {
   BOUNCE_STEPS_UNDER,
   FOLLOW_UP_DAYS,
   FOLLOW_UPS_PER_RUN,
-  QUEUE_FLOOR,
+  queueFloorFor,
   ROTATION_TARGET,
 } from '../../../../../../lib/outreach/sending/limits.js'
 import { ZONE } from '@lib/time/zone.js'
@@ -71,9 +71,12 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  * they reply or take themselves off, so the two figures that say whether it is
  * working are how many businesses are on that rotation and how many are queued
  * to join it. Both are drawn against a target - ROTATION_TARGET and
- * QUEUE_FLOOR in lib/outreach/sending/limits.js - because either one alone is a number
- * with nothing to be read against, and the queue falling under its floor is
- * the single reading that says the pipeline has stopped feeding the rotation.
+ * queueFloorFor in lib/outreach/sending/limits.js - because either one alone is a
+ * number with nothing to be read against, and the queue falling under its floor
+ * is the single reading that says the pipeline has stopped feeding the
+ * rotation. The floor is the cap's own two days once the cap is set high
+ * enough to need them, so raising the cap raises what the queue is read
+ * against and the reading keeps meaning what it meant at the old figure.
  *
  * Nothing here splits, weights or holds anybody back. There was a time when
  * each segment drew a first letter from several by their shares, kept a share
@@ -2818,6 +2821,10 @@ export default function OutreachPage() {
   // since it is the length of the line the sender works rather than a stage.
   const rotation = data?.rotation ?? 0
   const queued = mail?.next_total ?? null
+  // What the queue is read against, which moves with the cap. A floor left at
+  // its standing figure under a cap larger than it is a floor the day walks
+  // past, and the tile would read good on the morning the queue emptied.
+  const queueFloor = queueFloorFor(cap)
   const sending = Boolean(settings?.sending_enabled)
   const sourcing = Boolean(settings?.sourcing_enabled)
 
@@ -3158,9 +3165,9 @@ export default function OutreachPage() {
           />
           <StatCard
             label="Queued"
-            value={`${fullCount(queued)} / ${fullCount(QUEUE_FLOOR)}`}
+            value={`${fullCount(queued)} / ${fullCount(queueFloor)}`}
             caption="waiting on a first letter"
-            tone={queued === null ? 'plain' : queued < QUEUE_FLOOR ? 'warn' : 'good'}
+            tone={queued === null ? 'plain' : queued < queueFloor ? 'warn' : 'good'}
             loading={mailLoading}
           />
           <StatCard
