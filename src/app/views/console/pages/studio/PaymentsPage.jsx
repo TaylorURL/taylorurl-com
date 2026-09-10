@@ -1,6 +1,4 @@
 import { useMemo, useState } from 'react'
-import { m } from 'framer-motion'
-import { fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
 import { usePaymentsFeed } from '@hooks/console/usePaymentsFeed'
 import { formatInstant } from '@lib/time/zone.js'
@@ -15,9 +13,9 @@ import {
   PanelFoot,
   SectionNotice,
   SkeletonRows,
-  StatCard,
   ViewNav,
 } from '../../ui'
+import { Figures } from '../../Figures'
 import { useView } from '../../lib/views'
 import { CELL_TIGHT, MONO_LABEL, QUIET, TH_TIGHT } from '../../lib/tokens'
 
@@ -313,8 +311,178 @@ export default function PaymentsPage() {
   const [troubledOnly, setTroubledOnly] = useState(false)
 
   const clients = useMemo(() => data?.clients || [], [data])
-  const payments = data?.payments || []
-  const totals = data?.totals || {}
+  const payments = useMemo(() => data?.payments || [], [data])
+  const totals = useMemo(() => data?.totals || {}, [data])
+
+  /**
+   * The account, as records.
+   *
+   * What is collected has a history and draws it; the rest are shares of
+   * something - clients of clients, money owed against money taken - and are
+   * drawn against that instead. A figure with neither says so by leaving the
+   * room empty rather than by inventing one.
+   */
+  const paymentFigures = useMemo(() => {
+    const monthly = totals.monthlyCents ?? 0
+    const paying = totals.paying ?? 0
+    const held = totals.clients ?? 0
+    const collected = totals.collectedCents ?? 0
+    const open = totals.openCents ?? 0
+    const troubled = totals.troubled ?? 0
+
+    // Every month with money in it, newest last, so the run reads left to
+    // right the way the rest of the console's charts do.
+    const months = new Map()
+    for (const one of payments) {
+      if (one.status !== 'paid' || !one.at) continue
+      const when = new Date(one.at * 1000)
+      const key = `${when.getFullYear()}-${String(when.getMonth() + 1).padStart(2, '0')}`
+      months.set(key, (months.get(key) || 0) + (one.cents || 0))
+    }
+    const run = [...months.entries()]
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-12)
+      .map(([key, cents]) => ({
+        // The key is a calendar month rather than an instant, so it is read and
+        // written in the same fixed zone. Left to the machine's own, a builder
+        // running in UTC renders local midnight as the evening before and the
+        // bar comes out labelled with the previous month.
+        at: new Date(`${key}-01T00:00:00Z`).toLocaleDateString('en-US', {
+          timeZone: 'UTC',
+          month: 'short',
+        }),
+        value: cents,
+        text: money(cents, { cents: false }),
+      }))
+
+    const top = [...clients]
+      .filter(one => one.monthlyCents > 0)
+      .sort((a, b) => b.monthlyCents - a.monthlyCents)
+    const lead = top.slice(0, 4)
+    const tail = top.slice(4).reduce((sum, one) => sum + one.monthlyCents, 0)
+    const owed = clients.filter(one => one.openCents > 0).length
+
+    return [
+      {
+        key: 'monthly',
+        label: 'Monthly Recurring',
+        gloss: 'Every yearly fee counted as a twelfth of itself.',
+        value: money(monthly, { cents: false }),
+        caption: paying ? `${paying} on a live arrangement` : null,
+        tone: 'good',
+        loading,
+        facts: [
+          [String(paying), paying === 1 ? 'paying client' : 'paying clients'],
+          paying
+            ? [money(Math.round(monthly / paying), { cents: false }), 'each, on average']
+            : null,
+          [money(monthly * 12, { cents: false }), 'a year at this rate'],
+        ].filter(Boolean),
+        room: lead.length
+          ? {
+              kind: 'parts',
+              parts: [
+                ...lead.map(one => ({
+                  label: one.business || one.name,
+                  value: one.monthlyCents,
+                  text: money(one.monthlyCents, { cents: false }),
+                  tone: 'good',
+                })),
+                tail
+                  ? {
+                      label: `${top.length - lead.length} others`,
+                      value: tail,
+                      text: money(tail, { cents: false }),
+                    }
+                  : null,
+              ].filter(Boolean),
+            }
+          : null,
+      },
+      {
+        key: 'paying',
+        label: 'Paying',
+        gloss: 'Clients on a live arrangement, against every client on file.',
+        value: loading ? '' : `${paying} / ${held}`,
+        caption: held ? `${Math.max(0, held - paying)} with nothing recurring` : null,
+        loading,
+        room: held
+          ? {
+              kind: 'progress',
+              at: paying,
+              of: held,
+              note: `${paying} of ${held} pay every month`,
+            }
+          : null,
+      },
+      {
+        key: 'collected',
+        label: 'Collected',
+        gloss: 'Everything Stripe has received, all time.',
+        value: money(collected, { cents: false }),
+        caption: run.length ? `${run.length} months with money in them` : null,
+        loading,
+        facts: run.length
+          ? [
+              [run[run.length - 1].text, 'this month'],
+              [money(Math.round(collected / run.length), { cents: false }), 'a month, on average'],
+            ]
+          : [],
+        room: run.length > 1 ? { kind: 'series', points: run } : null,
+      },
+      {
+        key: 'open',
+        label: 'Outstanding',
+        gloss: 'Billed and not yet paid.',
+        value: money(open, { cents: false }),
+        caption: owed ? `${owed} ${owed === 1 ? 'client owes' : 'clients owe'}` : 'nothing is owed',
+        tone: open ? 'warn' : 'plain',
+        loading,
+        room:
+          open || collected
+            ? {
+                kind: 'parts',
+                parts: [
+                  {
+                    key: 'open',
+                    label: 'Outstanding',
+                    value: open,
+                    text: money(open, { cents: false }),
+                    tone: 'warn',
+                  },
+                  {
+                    key: 'collected',
+                    label: 'Collected',
+                    value: collected,
+                    text: money(collected, { cents: false }),
+                    tone: 'good',
+                  },
+                ],
+              }
+            : null,
+      },
+      {
+        key: 'troubled',
+        label: 'Needs Attention',
+        gloss: 'Arrangements with something wrong on them.',
+        value: loading ? '' : String(troubled),
+        caption: held ? `of ${held} arrangements` : null,
+        tone: troubled ? 'warn' : 'good',
+        urgent: troubled > 0,
+        loading,
+        room: held
+          ? {
+              kind: 'progress',
+              at: troubled,
+              of: held,
+              note: troubled
+                ? `${troubled} of ${held} arrangements want looking at`
+                : `all ${held} arrangements are in order`,
+            }
+          : null,
+      },
+    ]
+  }, [clients, loading, payments, totals])
 
   const shown = troubledOnly ? clients.filter(one => one.troubles.length) : clients
 
@@ -334,41 +502,7 @@ export default function PaymentsPage() {
           </SectionNotice>
         )}
 
-        <m.div {...fadeInUp} className="console-stats" aria-busy={loading}>
-          <StatCard
-            label="Monthly Recurring"
-            value={money(totals.monthlyCents, { cents: false })}
-            caption="every yearly fee counted as a twelfth"
-            tone="good"
-            loading={loading}
-          />
-          <StatCard
-            label="Paying"
-            value={loading ? '' : `${totals.paying ?? 0} / ${totals.clients ?? 0}`}
-            caption="clients on a live arrangement"
-            loading={loading}
-          />
-          <StatCard
-            label="Collected"
-            value={money(totals.collectedCents, { cents: false })}
-            caption="everything received, all time"
-            loading={loading}
-          />
-          <StatCard
-            label="Outstanding"
-            value={money(totals.openCents, { cents: false })}
-            caption="billed and not yet paid"
-            tone={totals.openCents ? 'warn' : 'plain'}
-            loading={loading}
-          />
-          <StatCard
-            label="Needs Attention"
-            value={loading ? '' : String(totals.troubled ?? 0)}
-            caption="arrangements with something wrong"
-            tone={totals.troubled ? 'warn' : 'good'}
-            loading={loading}
-          />
-        </m.div>
+        <Figures figures={paymentFigures} pinned="monthly" busy={loading} />
       </Area>
 
       <Area area="views">
