@@ -124,9 +124,31 @@
         fbq('track', 'PageView')
       })()
       ;(function () {
+        // Google's tag is asked for in CORS mode. Meta's cannot be.
+        //
+        // A throw inside a script from another origin is muted unless that
+        // script was fetched with `crossorigin`: the browser replaces the
+        // message with "Script error.", blanks the file, zeroes the line and
+        // withholds the error object. Fetched with it, the same throw arrives
+        // whole, and that is the difference between a report naming a file and
+        // one naming nothing at all.
+        //
+        // It is set per tag rather than on both, because the attribute is not
+        // free - a script fetched in CORS mode whose reply carries no
+        // `Access-Control-Allow-Origin` is blocked outright. Asked with an
+        // `Origin` header, `googletagmanager.com/gtag/js` reflects the origin
+        // back and loads; `connect.facebook.net/en_US/fbevents.js` sends no
+        // such header at all and is refused. Both checked in a browser against
+        // the live vendors on 2026-09-10.
+        //
+        // So setting it on Meta's would take the pixel off the site, and it
+        // would go the worst way there is: the tag never arrives, nothing
+        // throws, and an account recording no events reads exactly like an
+        // audience nobody reached. Whoever tidies this into one flag later will
+        // find that out from the ads account weeks afterwards.
         var tags = [
-          'https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
-          'https://connect.facebook.net/en_US/fbevents.js',
+          { src: 'https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%', cors: true },
+          { src: 'https://connect.facebook.net/en_US/fbevents.js', cors: false },
         ]
         var nudges = ['pointerdown', 'keydown', 'touchstart', 'scroll']
         var SETTLE_MS = 10000
@@ -138,7 +160,8 @@
           for (var j = 0; j < tags.length; j += 1) {
             var tag = document.createElement('script')
             tag.async = true
-            tag.src = tags[j]
+            if (tags[j].cors) tag.crossOrigin = 'anonymous'
+            tag.src = tags[j].src
             document.head.appendChild(tag)
           }
         }
@@ -478,6 +501,66 @@
           }
           return true
         }
+        // What the browser hands over when it has decided not to say. A throw
+        // inside a script from another origin that was not fetched in CORS mode
+        // is muted: the message becomes "Script error.", the file is blank, the
+        // line and column are zero and there is no error object. So there is no
+        // message to group on, no file to open and no stack to read - and there
+        // never will be, because the muting is the browser's policy rather than
+        // a detail this page dropped.
+        //
+        // Nothing this site serves can arrive that way. Its own bundle is
+        // same-origin and the build marks it `crossorigin` besides, the
+        // analytics tracker carries the attribute, and Google's tag is asked for
+        // with it above, so all three report what they throw in full. What is
+        // left able to mute is Meta's pixel, which no attribute can unmute
+        // because its reply carries no CORS header, and whatever an extension or
+        // an in-app browser's host has injected. None of those three is the
+        // site's code and none of them is fixable here.
+        //
+        // Filed, it is a ticket with nothing in it: #524 came off `/start` on
+        // 2026-09-10, opened from an ad inside an Android in-app browser, and
+        // said "Script error." and not one thing more. Nor does it ever
+        // accumulate into something clearer - every recurrence is the identical
+        // empty message, so it groups with itself forever and reads as one fault
+        // nobody has diagnosed rather than as a class of thing that cannot be.
+        //
+        // So it is held instead, and told what the page had loaded from
+        // elsewhere without the attribute, which is the most that can honestly
+        // be said about it. A live console still shows that something threw.
+        function muted(event) {
+          return (
+            (!event.message || event.message === 'Script error.') &&
+            !event.filename &&
+            !event.lineno &&
+            !event.error
+          )
+        }
+        // The scripts on the page a mute could have come from: another origin,
+        // and no `crossorigin` on them to unmute it. Naming the hosts is worth
+        // more than naming none, and an empty list is itself the answer - it
+        // means nothing on the page accounts for the throw, so something
+        // injected it and left.
+        //
+        // Google's host can appear in this list even though the tag above is
+        // asked for with the attribute, and that is not a bug in either. The
+        // tag's own code appends further scripts once it runs, this page does
+        // not write those tags and cannot put an attribute on them, and they
+        // mute exactly like anything else. So setting it above buys the tag
+        // script itself rather than everything that arrives behind it.
+        function opaqueHosts() {
+          var hosts = []
+          try {
+            var found = document.getElementsByTagName('script')
+            for (var i = 0; i < found.length; i += 1) {
+              if (!found[i].src || found[i].crossOrigin) continue
+              var host = new URL(found[i].src, location.href).hostname
+              if (host === location.hostname) continue
+              if (hosts.indexOf(host) < 0) hosts.push(host)
+            }
+          } catch (ignored) {}
+          return hosts
+        }
         // The frames underneath the reporter's own. A throw and an unhandled
         // rejection arrive carrying a stack; a console call arrives carrying
         // its arguments and nothing whatever about where it came from, so the
@@ -765,6 +848,15 @@
                     'Failed to load ' + event.target.tagName.toLowerCase() + ': ' + address
                   )
                 }
+              } else if (muted(event)) {
+                var hosts = opaqueHosts()
+                hold(
+                  'opaque',
+                  'A script from another origin threw and the browser withheld it. ' +
+                    (hosts.length
+                      ? 'Cross-origin scripts on the page carrying no CORS: ' + hosts.join(', ')
+                      : 'No script on the page accounts for it.')
+                )
               } else {
                 report(
                   'uncaught',
