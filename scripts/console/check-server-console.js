@@ -179,6 +179,43 @@ check('the age of the reading is judged, not the success of the request', () => 
   same(Boolean(stale && /builtAt/.test(stale[1])), true, 'staleness is measured from that moment')
 })
 
+check('a machine that cannot be looked up does not read as a machine that is gone', () => {
+  // The address of the far end is a subdomain of a zone somebody else runs,
+  // and that zone refuses to resolve it every so often. A refusal is cached
+  // against the caller for the zone's SOA minimum - five minutes - so both
+  // attempts below it are the same lookup inside the same cached refusal, and
+  // for those five minutes a machine that is up and answering in under a
+  // second cannot be reached from here at all.
+  //
+  // The reading this side already has is still the truthful answer to the
+  // question the page asks, and it arrives carrying the moment the machine
+  // built it, which is what the page judges it by. So it is served, and the
+  // page draws it and says how old it is - the case above this one.
+  const endpoint = read(ENDPOINT)
+  const faults = []
+
+  const kept = endpoint.indexOf('held = body')
+  const reads = endpoint.indexOf('await readFeed()')
+  if (kept < 0) faults.push('no reading is kept')
+  else if (!(reads > -1 && reads < kept)) {
+    faults.push('a reading is kept before it has been read, so a failure would be held as one')
+  }
+
+  const serves = endpoint.indexOf('response.status(200).json(held)')
+  const gives = endpoint.indexOf('.status(502)')
+  if (serves < 0) faults.push('a failed read is not answered with the reading this side holds')
+  else if (!(gives > -1 && serves < gives)) {
+    faults.push('the failure is answered before the held reading is offered')
+  }
+
+  // Bounded, or a machine that has genuinely gone away is drawn forever off a
+  // reading nothing will ever replace.
+  if (!/HOLD_MS/.test(endpoint)) faults.push('the reading is held without a limit')
+  if (gives < 0) faults.push('there is no failure left for a machine that is really gone')
+
+  report(faults)
+})
+
 check('a failed read leaves the last reading standing', () => {
   // Every figure here measures a machine that may have gone away, and blanking
   // the page on one failed read turns a two-second blip in a home connection
