@@ -3488,9 +3488,8 @@ export default function OutreachPage() {
                         saved. The day is spaced out by this number, so raising it partway through
                         one leaves the morning's extra slots behind the clock and the runs left
                         catch up on them. The runs inside the sending window carry{' '}
-                        {fullCount(DELIVERS_A_DAY)} between them at most, so a number above that is
-                        a day that ends short rather than a day that sends more. Follow-ups are
-                        outside it.
+                        {fullCount(DELIVERS_A_DAY)} between them at most. A number above that does
+                        not send more; the day ends short of it. Follow-ups are outside it.
                       </span>
                     </label>
 
