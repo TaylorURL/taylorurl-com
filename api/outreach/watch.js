@@ -308,13 +308,18 @@ export async function readableBody(structure, fetchPart) {
 /**
  * Whether a message reads as something a person sat down and wrote.
  *
- * Two readings, because either one alone lets the other's traffic through. The
+ * Three readings, because each one alone lets the others' traffic through. The
  * address covers the senders that name themselves - a `noreply`, a `dmarc`, a
  * billing desk - and the headers cover the ones that do not but declare
  * themselves on the way out, which is what `Auto-Submitted` and `Precedence`
- * are for. A sender doing neither is taken at face value and carried, since
- * the cost of reading one message that turns out to be a robot is a great deal
- * lower than the cost of dropping one that turns out to be a customer.
+ * are for. The body covers the ticket desk, which declares itself in neither
+ * place and writes from an ordinary `help@` or `support@` box: a letter sent
+ * to a directory listing or a franchise's support address comes back as a
+ * receipt with a ticket number on it, and that is the same noise a DMARC
+ * report is. A sender doing none of the three is taken at face value and
+ * carried, since the cost of reading one message that turns out to be a robot
+ * is a great deal lower than the cost of dropping one that turns out to be a
+ * customer.
  *
  * @param {object} message One message as the mailbox handed it over.
  * @returns {boolean}
@@ -323,7 +328,8 @@ function writtenByAPerson(message) {
   const from = addressOf(message.envelope?.from?.[0]?.address)
   if (!from) return false
   if (MACHINE_SENDER.test(from.split('@')[0])) return false
-  return !AUTOMATED_HEADER.test(message.headerText || '')
+  if (AUTOMATED_HEADER.test(message.headerText || '')) return false
+  return !readAutoReply(message.envelope?.subject, message.body).auto
 }
 
 function looksLikeBounce(message) {
@@ -809,9 +815,8 @@ export async function work({ db, counts, read = readMailbox }) {
       ? { auto: false, phrase: null }
       : readAutoReply(subject, message.body)
 
-    // A machine's answer is filed against the business and forwarded, so the
-    // reply is not lost, and leaves the standing exactly as it was: the
-    // business is still waiting on its next letter, because it is.
+    // A machine's answer leaves the standing exactly as it was: the business
+    // is still waiting on its next letter, because it is.
     if (!machine.auto) {
       const stage = await db
         .from('outreach_prospects')
@@ -875,7 +880,14 @@ export async function work({ db, counts, read = readMailbox }) {
     // over before the reply is stored is a reply that can be answered and then
     // lost. After it, the worst a refusal costs is a message the console still
     // holds.
-    if (tally.forwarded < FORWARD_LIMIT) {
+    //
+    // A machine's answer is filed and goes no further. There is nobody at the
+    // other end of it and nothing in it to answer - a ticket number, a
+    // delimiter line, a footer naming the desk that sent it - and an inbox
+    // filling up with those every hour stops being read, which is the failure
+    // the carrying exists to prevent rather than to cause. The row keeps it and
+    // the console shows it.
+    if (!machine.auto && tally.forwarded < FORWARD_LIMIT) {
       if (await forward({ from, subject, body: message.body }, prospect)) tally.forwarded += 1
     }
 
