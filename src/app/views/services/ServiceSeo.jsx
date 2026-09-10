@@ -56,25 +56,6 @@ const LOCAL = [
   },
 ]
 
-const NOT_INCLUDED = [
-  {
-    title: 'Paid Ads',
-    body: 'This is organic search. Google Ads and social ads are quoted as their own work, and the tracking under them goes in with the build.',
-  },
-  {
-    title: 'A Promised Position',
-    body: 'Nobody can promise a spot on page one. Anyone who does is guessing with your money.',
-  },
-  {
-    title: 'Bought Links',
-    body: 'No paid links and no directory schemes. Google penalizes the sites that buy them.',
-  },
-  {
-    title: 'Reviews',
-    body: 'Reviews come from your customers. Nothing here writes them, buys them, or removes them.',
-  },
-]
-
 const TERMS = [
   {
     title: 'How Long It Takes',
@@ -149,16 +130,6 @@ export default function ServiceSeo() {
             </span>
           ))}
         </div>
-      </ServiceSection>
-
-      <ServiceSection
-        id="limits"
-        ground="paper"
-        eyebrow="What It Does Not"
-        title="What it does not cover."
-        lede="Anyone who leaves these four off the page is selling you something else."
-      >
-        <FactMesh items={NOT_INCLUDED} ground="paper" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
 
       <ServiceSection

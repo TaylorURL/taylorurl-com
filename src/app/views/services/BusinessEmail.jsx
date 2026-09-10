@@ -62,25 +62,6 @@ const PROVIDERS = [
   },
 ]
 
-const NOT_INCLUDED = [
-  {
-    title: 'The Provider’s Fee',
-    body: 'Google and Microsoft charge per mailbox, per month, billed to you at their own rate.',
-  },
-  {
-    title: 'Access to Your Mail',
-    body: 'The account is in the business’s name and handed over. Nothing here keeps a way into the mailboxes.',
-  },
-  {
-    title: 'Bulk Sending',
-    body: 'Newsletters and campaigns belong on a sending service. Firing them from a mailbox is what gets a domain blocked.',
-  },
-  {
-    title: 'Phone and Texting',
-    body: 'Numbers, voicemail, and business texting are separate systems and are not set up here.',
-  },
-]
-
 const TERMS = [
   {
     title: 'How Long It Takes',
@@ -147,16 +128,6 @@ export default function BusinessEmail() {
         lede="Whatever the answer is, we handle the move the same way."
       >
         <FactMesh items={PROVIDERS} ground="band" columns={{ base: 1, sm: 2, lg: 4 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="limits"
-        ground="paper"
-        eyebrow="What It Does Not"
-        title="What it does not cover."
-        lede="Everything the setup does not touch, listed before it comes up."
-      >
-        <FactMesh items={NOT_INCLUDED} ground="paper" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
 
       <ServiceSection

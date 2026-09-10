@@ -22,13 +22,13 @@ import SectionLink from './SectionLink'
 /**
  * The one service line that is not the shared service shape.
  *
- * The other three lines answer four questions - what the work covers, what it
- * leaves out, how long it takes, what it runs - and `ServiceDetail` renders all
- * three from the content held against their slug. This one answers a fifth
- * question that none of them ask: why the machinery under a site is built in at
- * the start rather than sold as a second project later. That argument is the
- * page, and it needs sections the shared view has no shape for, so this line
- * takes a view of its own the way business email and the search work do.
+ * The other three lines answer three questions - what the work covers, how long
+ * it takes, what it runs - and `ServiceDetail` renders all three from the
+ * content held against their slug. This one answers a fourth question that none
+ * of them ask: why the machinery under a site is built in at the start rather
+ * than sold as a second project later. That argument is the page, and it needs
+ * sections the shared view has no shape for, so this line takes a view of its
+ * own the way business email and the search work do.
  *
  * `@data/serviceDetail` still holds the line's name, summary and mark, because
  * a card, a menu row and the sitemap all read them there and none of them
@@ -166,33 +166,6 @@ const PLATFORMS = [
 // software a shop already pays for rather than about an advertising account.
 const PLATFORM_NOTE =
   'Product names and marks belong to their owners. Naming one here is not a partnership, an endorsement, or an official integration, and what each of them charges is billed by them.'
-
-const NOT_INCLUDED = [
-  {
-    title: 'Ad Spend',
-    body: 'The build puts the tracking in and leaves it running. What you spend with Meta or Google is billed by them, and buying and running the campaigns is separate work with its own price.',
-  },
-  {
-    title: 'Replacing What You Run',
-    body: 'The tools sit beside Jobber or Housecall Pro. You keep running whatever you run now, and nothing here asks you to move off it.',
-  },
-  {
-    title: 'Holding Card Numbers',
-    body: 'Payments run through Stripe, Square, or PayPal. Card details never sit on the site, and nothing here stores them.',
-  },
-  {
-    title: 'A Bought List',
-    body: 'Outbound goes to companies picked one at a time. Nothing here sends to a list somebody sold us, because sending to one is the quickest way there is to burn a sending domain.',
-  },
-  {
-    title: 'A Promised Number',
-    body: 'Tracking tells you what a campaign did. Nobody can tell you in advance what it will do, and anyone quoting you a return is guessing at it.',
-  },
-  {
-    title: 'A Phone App',
-    body: 'All of it is built for the browser, which is what your customers already have open.',
-  },
-]
 
 const TERMS = [
   {
@@ -403,16 +376,6 @@ export default function OnlineTools() {
         lede="Each of them is opened in your business’s name, set up inside your own account, and left there. Nothing here holds a site hostage to an account somebody else owns."
       >
         <ToolMesh tools={PLATFORMS} ground="band" note={PLATFORM_NOTE} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="limits"
-        ground="paper"
-        eyebrow="What It Does Not"
-        title="What it does not cover."
-        lede="You find this out now, not halfway through the work."
-      >
-        <FactMesh items={NOT_INCLUDED} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
       </ServiceSection>
 
       <ServiceSection

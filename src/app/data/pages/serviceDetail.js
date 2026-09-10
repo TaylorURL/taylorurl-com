@@ -22,7 +22,6 @@ import { BUILD_PRICE, MONTHLY_PRICE, PRICE_OFFERS } from '@data/checkout/pricing
  *              characters a result shows.
  * - `lede`     The paragraph under the title on the page itself.
  * - `covers`   What the work includes.
- * - `excludes` What it does not, named rather than left to be discovered.
  * - `timeline` How long it takes.
  * - `running`  What it costs to run, in the two figures every service shares.
  * - `beside`   One page of this service's own, shown beside the price and the
@@ -62,20 +61,6 @@ const DETAIL = {
         body: 'Photos, hours, prices, and contact details all in, so the site is finished when it goes live.',
       },
     ],
-    excludes: [
-      {
-        title: 'Logo Design',
-        body: 'The site is built around the logo you have. If there isn’t one yet, we can point you at people who draw them.',
-      },
-      {
-        title: 'Photography',
-        body: 'Photos of the shop, the crew, and the work come from you.',
-      },
-      {
-        title: 'Paid Ads',
-        body: 'The tracking a campaign runs on goes in with the build. Buying the ads and running the campaigns is separate work with its own price, and the search work in the monthly is organic.',
-      },
-    ],
     timeline:
       'Two to four weeks from the first call to launch day, in the six steps the process page sets out.',
     running: `From ${BUILD_PRICE} to build, paid once before the work begins. Then from ${MONTHLY_PRICE} a month to host it, watch it, change it, and carry on the search work. What moves the price is how big the whole project is, and you agree to that number before anything starts.`,
@@ -112,24 +97,6 @@ const DETAIL = {
         body: 'Domain, hosting, and mail records moved on a date you pick, with the old site up until the new one answers.',
       },
     ],
-    excludes: [
-      {
-        title: 'Patching the Old Platform',
-        body: 'A rebuild leaves WordPress, Wix, and Squarespace behind. There is no theme editing or plugin work here.',
-      },
-      {
-        title: 'A Promised Position',
-        body: 'A rebuild fixes what was holding the site back. No one can promise a spot on page one, and anyone who does is guessing.',
-      },
-      {
-        title: 'Logo Design and Photography',
-        body: 'Both come from you, the same as on a new build.',
-      },
-      {
-        title: 'Keeping a Page That Isn’t Working',
-        body: 'Pages nobody reads come out. You see the list before anything goes.',
-      },
-    ],
     timeline: 'Two to four weeks. A redesign takes about as long as a new site, because it is one.',
     running: `From ${BUILD_PRICE} to rebuild, paid once before the work begins, then from ${MONTHLY_PRICE} a month to run it. The same two figures as a new build.`,
   },
@@ -140,9 +107,8 @@ const DETAIL = {
    * beside the layout they were written for, the way business email and the
    * search work hold theirs. What stays here is what every other surface reads:
    * the mark a card and a menu row draw, and - through `SERVICE_LINES` - the
-   * name, the summary and the path. A second copy of the page's own covers and
-   * limits would sit here rendering nowhere and drift from the page inside a
-   * release.
+   * name, the summary and the path. A second copy of the page's own covers
+   * would sit here rendering nowhere and drift from the page inside a release.
    */
   'online-tools': {
     mark: MarkPanel,
@@ -176,24 +142,6 @@ const DETAIL = {
       {
         title: 'A Direct Line to the Team',
         body: 'You text the people who built it. No account manager, no support queue.',
-      },
-    ],
-    excludes: [
-      {
-        title: 'New Features',
-        body: 'A new booking system or a whole new section is its own work, quoted before it starts. Text, photo, and page changes are not.',
-      },
-      {
-        title: 'Your Other Software',
-        body: 'The plan covers the website. It does not cover the point of sale, the accounting software, or the phone system.',
-      },
-      {
-        title: 'Ad Spend',
-        body: 'The monthly buys no advertising and runs no campaigns. It keeps the tracking under them working, and the search work in it is organic.',
-      },
-      {
-        title: 'A Contract',
-        body: 'There is no annual term to sign, no notice period, and no cancellation fee. The monthly is not optional though: it is what keeps the site online, so stopping it takes the site offline at the end of the period you have paid for.',
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',

@@ -13,27 +13,6 @@ import {
 
 const PAPER = GROUNDS.paper
 
-// What the two figures do not stretch to. Each one is work somebody has to pay
-// for, so it is named here rather than raised after a plan is agreed.
-const NOT_INCLUDED = [
-  {
-    title: 'Logo Design and Photography',
-    body: 'Both come from you. If neither exists yet, we can point you at the people who do that work.',
-  },
-  {
-    title: 'Paid Ads (Google and Facebook)',
-    body: 'No ad budget is spent here, and buying and running the campaigns is separate work with its own price. The tracking those campaigns run on is part of the build, and the search work in the monthly is organic.',
-  },
-  {
-    title: 'Mailbox Fees',
-    body: 'Business email is set up and moved across here. Google or Microsoft bills you for each mailbox at their own rate.',
-  },
-  {
-    title: 'Your Other Software',
-    body: 'The point of sale, the accounting, and the phone system stay yours to pay for. The site talks to them; it does not replace them.',
-  },
-]
-
 // How money actually changes hands, in the order it happens.
 const HOW_PAYING_WORKS = [
   {
@@ -54,9 +33,8 @@ const HOW_PAYING_WORKS = [
   },
 ]
 
-// The three things somebody reads after the figures, in the order they ask
-// them: what the second number buys, what neither number covers, and how the
-// money actually moves.
+// The two things somebody reads after the figures, in the order they ask them:
+// what the second number buys, and how the money actually moves.
 const LEAVES = [
   {
     key: 'covers',
@@ -64,25 +42,23 @@ const LEAVES = [
     items: MONTHLY_COVERS,
     foot: QUOTED_SEPARATELY,
   },
-  { key: 'excluded', label: 'Not Included', items: NOT_INCLUDED, foot: null },
   { key: 'paying', label: 'How Paying Works', items: HOW_PAYING_WORKS, foot: null },
 ]
 
-// Four to a row at the top breakpoint, which divides all three leaves exactly.
+// Four to a row at the top breakpoint, which divides both leaves exactly.
 const COLUMNS = { base: 1, sm: 2, lg: 4 }
 
 /**
- * The figures, and the three things a reader asks straight after them.
+ * The figures, and the two things a reader asks straight after them.
  *
  * It is at the foot of the page because the sheet above it is the argument and
- * this is the conclusion, and it is one object rather than three sections
- * because a reader who has arrived here has already decided to look and does
- * not need three more headings to scroll past.
+ * this is the conclusion, and it is one object rather than two sections because
+ * a reader who has arrived here has already decided to look and does not need
+ * two more headings to scroll past.
  *
- * The three leaves are all in the document. A leaf that is not open is marked
- * `hidden`, which takes it out of the reading order without taking it out of
- * what a crawler and an assistant read - and what is not covered is exactly the
- * half of a price page people arrive looking for.
+ * Both leaves are in the document. A leaf that is not open is marked `hidden`,
+ * which takes it out of the reading order without taking it out of what a
+ * crawler and an assistant read.
  *
  * It closes on the two ways forward. The band at the foot of the page carries
  * them too, but a reader who has just read the price and decided has a whole

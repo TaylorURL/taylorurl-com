@@ -13,15 +13,14 @@ import { Card, Plane } from './CapabilityCard'
  * artefact.
  *
  * So each card carries the thing a company actually has to know before it can
- * decide: what the line costs, how long it runs, and the part of the job it
- * does not cover. The last of those is the one an agency leaves out, which is
- * why it is on the card rather than three pages in.
+ * decide: what the line costs and how long it runs. Both are on the card rather
+ * than three pages in.
  *
  * Every row is read off the service line's own record, so a price agreed on the
  * service page cannot be quoted differently here.
  */
 
-/** The three terms, set as a schedule on the card's lit plane. */
+/** The two terms, set as a schedule on the card's lit plane. */
 function Terms({ line }) {
   return (
     <Plane className="p-8 sm:p-10">

@@ -55,20 +55,6 @@ const DETAIL = {
         body: 'React, Node, Postgres, and functions on Vercel and Supabase. The repository and the accounts are in your name, so another engineer can pick it up after us.',
       },
     ],
-    excludes: [
-      {
-        title: 'Marketing Websites',
-        body: 'A public site that sells for you is a different job and not this one. This is the software behind it.',
-      },
-      {
-        title: 'Phone Apps',
-        body: 'Everything is built for the browser, which opens on a phone the same as on a computer. Nothing here goes in the App Store or the Play Store.',
-      },
-      {
-        title: 'A Standing Contract',
-        body: 'There is no retainer and no monthly fee. Work after handover is quoted on its own, and you can take it to somebody else.',
-      },
-    ],
     timeline:
       'A small integration or automation takes a week or two, and a full application six to twelve weeks. The date is agreed in writing before any work starts.',
     running:
@@ -103,20 +89,6 @@ const DETAIL = {
       {
         title: 'A Written Account',
         body: 'What was broken, what it was reporting instead, and what changed. It comes with the fix, not in place of it.',
-      },
-    ],
-    excludes: [
-      {
-        title: 'Running the Campaigns',
-        body: 'Budgets, bids, and keywords stay with whoever handles them now. This fixes the numbers those decisions are made on.',
-      },
-      {
-        title: 'Fixing the Old Numbers',
-        body: 'The months already reported stay wrong. Tracking fixed this week gives you a clean record from this week on, and nothing recovers what came before.',
-      },
-      {
-        title: 'Replacing Your Booking Software',
-        body: 'The fix works with the scheduling tool you already use. You keep running whatever you run now.',
       },
     ],
     offers: [
@@ -164,20 +136,6 @@ const DETAIL = {
       {
         title: 'Replies Handled',
         body: 'Replies are read and answered, follow-ups go out on schedule, and the ones that go quiet get picked up again. Anyone who wants to talk is handed to you with the whole thread attached.',
-      },
-    ],
-    excludes: [
-      {
-        title: 'Closing the Sale',
-        body: 'Interested replies come to you. The call, the proposal, and the deal are yours to run.',
-      },
-      {
-        title: 'Calls, LinkedIn, and Ads',
-        body: 'This is email. Cold calling, LinkedIn messages, and paid ads are not run here.',
-      },
-      {
-        title: 'A Promised Number of Meetings',
-        body: 'How many messages go out, whether they arrive, and what they say are what we control. No one can promise a count of booked calls, and anyone who does is guessing.',
       },
     ],
     offers: [

@@ -2,8 +2,8 @@ import Mesh from '@components/mesh/Mesh'
 import { GROUNDS } from '@constants/grounds'
 
 /**
- * A ruled mesh of headed facts: what a service covers, what it leaves out, what
- * it costs to run.
+ * A ruled mesh of headed facts: what a service covers, and what it costs to
+ * run.
  *
  * @param {object} props
  * @param {{ title: string, body: string }[]} props.items - The cells, in order.
