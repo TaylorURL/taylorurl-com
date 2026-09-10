@@ -23,6 +23,7 @@
 
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { methodsOr405, servedHereOr404 } from '../lib/http/guard.js'
+import { reach } from '../lib/http/reach.js'
 
 // Where the server publishes its own reading, and what it wants to see before
 // it answers. A deployment given neither refuses rather than guessing: the
@@ -45,13 +46,15 @@ const ATTEMPTS = 2
 // with a second resolver answering every time - and a negative answer is
 // cached against the whole resolver for the zone's SOA minimum, which is five
 // minutes. So a machine that is up, funnelled and answering in under a second
-// becomes unreachable from here in five-minute blocks, and neither attempt
-// below can do anything about it: they are the same lookup, microseconds
-// apart, inside the same cached refusal.
+// becomes unreachable from here in five-minute blocks, and the retry above is
+// no use against it: both attempts are the same lookup, microseconds apart,
+// inside the same cached refusal.
 //
-// Nothing in this repository can make that name resolve. What it can do is
-// stop a lookup nobody owns from being the difference between a page that
-// reads the machine and a page that says the machine is gone.
+// `readFeed` answers that at the lookup, by asking a public resolver when the
+// platform's own says the name is not there. This is what is left when that
+// fails too - both resolvers unreachable, or a name that really has gone - and
+// it is kept because the failure it covers is the one that reads worst: a page
+// that says the machine is gone, about a machine that is answering.
 //
 // So the last good reading is held here and served through a failure. That is
 // not a stale answer dressed as a fresh one: every reading this endpoint has
@@ -73,13 +76,22 @@ function describe(error) {
   if (error && error.status) return error.message
   if (error && error.name === 'AbortError') return 'the server timed out'
   if (error && error.name === 'SyntaxError') return 'the server sent malformed JSON'
+  // A socket fault arrives bare from `reach` and wrapped by `fetch`, and which
+  // code it carries is the whole diagnosis here. Read both, or the one line
+  // this failure ever writes says only that something did not work.
+  if (error && error.code) return `the server was unreachable (${error.code})`
   const cause = error && error.cause
   if (cause && cause.code) return `the server was unreachable (${cause.code})`
   return 'the server was unreachable'
 }
 
 async function readFeed() {
-  const upstream = await fetch(`${UPSTREAM}?t=${Date.now()}`, {
+  // `reach` rather than `fetch`, because the name this asks for is one the
+  // platform's own resolver intermittently says does not exist while every
+  // public resolver answers it. `lib/http/reach.js` asks the system first and
+  // a public resolver only when the system says the name is not there, so the
+  // day that resolver is right this is an ordinary request again.
+  const upstream = await reach(`${UPSTREAM}?t=${Date.now()}`, {
     signal: AbortSignal.timeout(TIMEOUT_MS),
     headers: { Accept: 'application/json', Authorization: `Bearer ${TOKEN}` },
   })
