@@ -12,11 +12,10 @@
  * read.
  *
  * There is one message and every business gets it. It is an introduction: who
- * is writing, the two things he is best at, the number to ring him on, and a
- * plain statement that one of these arrives a month until the reader says
- * stop. It makes no claim about the reader's own site, quotes no reading and
- * carries no capture, so nothing about a business has to be known before it
- * can be written to.
+ * is writing, what they do, where they do it, a promise that nothing else is
+ * coming, and the studio's own signature under it. It makes no claim about the
+ * reader's own site, quotes no reading and carries no capture, so nothing
+ * about a business has to be known before it can be written to.
  *
  * That is why the queue is as wide as it is. A business with no site of its
  * own, one whose site scored ninety-six, and one nothing has managed to
@@ -123,6 +122,7 @@ import {
 import {
   OUTREACH_ORIGIN,
   homeUrl,
+  partOfDay,
   renderHtml,
   renderPlainHtml,
   renderPlainText,
@@ -257,10 +257,12 @@ export function unsubscribeUrl(token) {
  * @param {object|null} [variant] The variant to open with. The sender picks
  *   one with a roll and passes it; left out, the first live variant that fits
  *   is taken, which is what a preview and a check want.
- * @param {{prior?: {subject: string}|null}} [context] What a letter after the
- *   first is handed: the first letter it follows, so it can thread under it.
- *   The client work the message shows is added here, so a letter that points
- *   at it says the same thing the pictures under it show.
+ * @param {{prior?: {subject: string}|null, at?: Date}} [context] What a letter
+ *   after the first is handed: the first letter it follows, so it can thread
+ *   under it. The client work the message shows is added here, so a letter
+ *   that points at it says the same thing the pictures under it show. `at` is
+ *   the moment the letter is written for, which is what its greeting reads the
+ *   half of the day off; a caller that names none is writing for now.
  * @returns {{ subject: string, text: string, html: string, variant: string }}
  *   The message, and the id of the variant it was written under.
  * @throws {Error} When no variant fits the prospect, since a message with no
@@ -319,13 +321,17 @@ export function compose(
     const message = {
       subject: opener.subject,
       greeting: firstNameOf(prospect.email),
+      // The half of the day the greeting says, fixed when the letter is
+      // written. A draft the queue holds past noon is written again before it
+      // goes, so the word and the hour it lands in never disagree.
+      at: context.at ?? new Date(),
       paragraphs: opener.paragraphs,
       track,
-      // The studio's address goes under the name, and nothing else does. That
-      // signature is the whole of what a cold letter offers, and it is a place
-      // to look rather than an invitation: the number is left out, because a
-      // number under a cold letter is a call to action and this letter makes
-      // none. The unsubscribe rides along because it is owed.
+      // The studio's own signature goes under the letter, and the studio's own
+      // address is what it links to. It is a place to look rather than an
+      // invitation: nothing in the letter asks the reader to ring or to reply,
+      // and the number the signature carries is there the way a number on a
+      // business card is. The unsubscribe rides along because it is owed.
       contact: { unsubscribe: contact.unsubscribe, site: homeUrl(track) },
     }
     return {
@@ -902,6 +908,22 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
       continue
     }
 
+    // A plain letter greets the half of the day it arrives in, and that half is
+    // written into it when it is drafted. A draft the queue held past noon
+    // would go out saying good morning in the afternoon, which is the one line
+    // in the letter a reader can tell a machine wrote. So it is written again,
+    // under the letter it already names, on the run that is about to send it:
+    // the words are the words it was given and only the greeting moves. A run
+    // that is not sending leaves it alone, since the half it is eventually read
+    // in is not one this run knows.
+    const dated = Boolean(
+      held &&
+      !stale &&
+      sending &&
+      under?.plain &&
+      partOfDay(new Date(held.created_at)) !== partOfDay(new Date())
+    )
+
     // Verification comes before the capture and the draft, not just before the
     // transport. A dead address is dead whether or not the switches are open,
     // and drafting for one spends a screenshot and a composition on a message
@@ -935,8 +957,12 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
     // sends, and a capture that cannot be taken leaves the message without one
     // rather than with a frame that will not fill.
     const shot = await warmShot(db, prospect, variant)
-    const message = stale
-      ? await redraft(db, held, prospect, from, shot, variant, { ready, step: 1 })
+    // The letter a draft already in hand is written again under: a fresh pick
+    // where the one it named has been retired, and the one it named where only
+    // its greeting has gone out of date.
+    const rewriting = stale ? variant : dated ? under : null
+    const message = rewriting
+      ? await redraft(db, held, prospect, from, shot, rewriting, { ready, step: 1 })
       : (held ?? (await draft(db, prospect, from, shot, variant, { ready, step: 1 })))
 
     if (!sending) {

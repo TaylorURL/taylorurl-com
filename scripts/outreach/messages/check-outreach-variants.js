@@ -477,18 +477,25 @@ for (const entry of VARIANTS) {
         'the plain half has no unsubscribe link'
       )
 
-      // A plain letter carries the way off the list and one square that says
-      // whether it was opened, and nothing else. No button, no cards, no
-      // capture, no bio, and no picture but that square: the whole point of
-      // the family is a message that looks like one a person typed, and every
-      // one of those would give it away.
+      // A plain letter carries the way off the list, the square that says
+      // whether it was opened, and the signature it is signed with. Nothing
+      // else. No button, no cards, no capture, no bio: the whole point of the
+      // family is a message that looks like one a person typed, and every one
+      // of those would give it away. The signature is the exception because it
+      // is what a typed note ends with, and it is held to the studio's own
+      // file so a letter cannot quietly start drawing something else.
       if (entry.plain) {
         same(
           (message.html.match(/<img/g) || []).length,
-          1,
-          'a plain letter carries a picture besides the open square'
+          2,
+          'a plain letter carries a picture besides the open square and the signature'
         )
         ok(message.html.includes(`/api/outreach/open?t=${TRACK}`), 'no open square')
+        ok(message.html.includes('/images/email/signature.png'), 'a plain letter is unsigned')
+        ok(
+          message.html.includes(`alt="${BIO_NAME}, TaylorURL"`),
+          'the signature says nothing with the pictures turned off'
+        )
         ok(!message.html.includes('/start?'), 'a plain letter carries the button')
         ok(!message.text.includes('/start?'), 'the plain half carries the button')
         ok(!message.html.includes('Trustpilot'), 'a plain letter carries the badge')
@@ -504,6 +511,45 @@ for (const entry of VARIANTS) {
     }
   )
 }
+
+// A plain letter greets the half of the day it lands in, read in Central,
+// where every business written to keeps its hours. A letter saying good
+// morning at four in the afternoon is the one line in it a reader can tell a
+// machine wrote, so both halves are held to the moment the letter was written
+// for rather than to the zone the composer happened to run in.
+check('a plain letter greets the half of the day it is written for', () => {
+  const entry = VARIANTS.find(one => one.plain && one.status === 'live')
+  ok(entry, 'no live plain letter to greet with')
+  const named = { ...suited(entry), email: 'danny@example.com' }
+  // Nine thirty and half past three in Central, on a date either side of which
+  // the offset is the same, so the check reads the hour and not the calendar.
+  const halves = [
+    ['2026-09-10T14:30:00Z', 'morning'],
+    ['2026-09-10T20:30:00Z', 'afternoon'],
+  ]
+  for (const [at, half] of halves) {
+    const message = compose(named, SHOT, TRACK, entry, { ...CONTEXT, at: new Date(at) })
+    for (const [which, body] of [
+      ['laid-out', message.html],
+      ['plain', message.text],
+    ]) {
+      ok(
+        body.includes(`Good ${half}, Danny,`),
+        `the ${which} half does not greet the ${half}: ${entry.id}`
+      )
+    }
+  }
+
+  // An address that opens on nothing this pipeline reads as a name is greeted
+  // by the half of the day alone, which is how a person writes when they do
+  // not know who they are writing to.
+  const unnamed = { ...suited(entry), email: 'info@example.com' }
+  const message = compose(unnamed, SHOT, TRACK, entry, {
+    ...CONTEXT,
+    at: new Date('2026-09-10T14:30:00Z'),
+  })
+  ok(message.text.startsWith('Good morning,\n'), 'an unnamed address is greeted with a name')
+})
 
 // ── Run them ────────────────────────────────────────────────────────────
 
