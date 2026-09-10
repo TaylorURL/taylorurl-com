@@ -125,13 +125,12 @@ check('the studio does not appear in its own lead list', () => {
   same(ownAddress('someone@taylorurl.com.example'), false, 'a domain that merely ends alike')
 })
 
-check('the call door only writes the calls that found somebody who wanted it', () => {
+check('the call door only writes the calls that reached somebody', () => {
   // The door that is not a form. Seven of the eight are somebody filling
   // something in, so arriving at all is the whole of the qualification; the
-  // eighth is a caller working eight thousand cold names, where arriving means
-  // nothing and the caller's own answer means everything. Filed on having had
-  // a conversation, it put the owner who said no thanks and hung up in the
-  // lead list beside the one asking what it would cost.
+  // eighth is a caller working eight thousand cold names, where a number that
+  // rang out is not a lead and the caller's own no is what takes a business
+  // back out of the list.
   const text = read('api/calls-admin.js')
   same(
     text.includes('callMakesLead('),
@@ -142,11 +141,13 @@ check('the call door only writes the calls that found somebody who wanted it', (
   const write = text.indexOf('source: SOURCES.call')
   same(gate < write, true, 'the call door writes the lead before it reads the rule')
   // The rule is one function in one place, so the console and the endpoint
-  // cannot come to two answers about the same call.
+  // cannot come to two answers about the same call. All three ways a
+  // conversation comes back are read here, because the middle one - the caller
+  // who never got to ask - is the one a yes-only gate loses.
   same(
-    callMakesLead('spoke', true) && !callMakesLead('spoke', false),
+    callMakesLead('spoke', true) && callMakesLead('spoke') && !callMakesLead('spoke', false),
     true,
-    'the rule the call door reads does not turn on what the caller answered'
+    'the rule the call door reads does not read all three ways a call comes back'
   )
 })
 

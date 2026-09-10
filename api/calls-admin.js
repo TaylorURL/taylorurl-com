@@ -559,12 +559,15 @@ function callbackAt(value) {
 /**
  * What the caller said about interest, checked against the outcome carrying it.
  *
- * Two refusals rather than a coercion, and both for the same reason: this one
- * field is what decides whether the business turns up in the lead list, so a
- * write that leaves it unsettled is a decision nobody made. An outcome that
- * asks and was not answered is refused, the way a call back with no time on it
- * is refused. An answer sent against an outcome that already settles interest
- * is refused too - a Booked marked not interested is a form disagreeing with
+ * An outcome that asks and was not answered is stored unanswered rather than
+ * refused. The question is one the call may never have got to - a desk that
+ * took a message, an owner who had a bay up on the lift - and a form that will
+ * not save until somebody picks a side buys its tidy column by making the
+ * caller guess. Unanswered still reaches the lead list; only a no takes a
+ * business out of it.
+ *
+ * The one refusal left is an answer sent against an outcome that already
+ * settles interest. A Booked marked not interested is a form disagreeing with
  * the button it was submitted under, and picking one of them would be a guess.
  *
  * @returns {{interested: boolean|null}|{error: string}}
@@ -572,10 +575,10 @@ function callbackAt(value) {
 function interestFor(outcome, value) {
   const asks = outcomeAsksInterest(outcome)
   if (value === null || value === undefined || value === '') {
-    if (asks) return { error: 'Say whether they were interested.' }
-    return { interested: interestIn(outcome) }
+    return { interested: asks ? null : interestIn(outcome) }
   }
-  if (typeof value !== 'boolean') return { error: 'Say whether they were interested.' }
+  if (typeof value !== 'boolean')
+    return { error: 'Say whether they were interested, or leave it unsaid.' }
   if (!asks) {
     return { error: 'That outcome already says whether they were interested.' }
   }
@@ -654,16 +657,15 @@ async function record(db, body, account) {
  *
  * A cold prospect is not a lead. Eight thousand names off a map are a list to
  * work, and putting them in front of a person as leads would bury the handful
- * who asked for something. What changes that is somebody wanting it, which is
- * why the gate is the interest the caller recorded rather than the fact of a
- * conversation having happened.
+ * who asked for something. What changes that is a call that reached somebody,
+ * which is why a number that rang out carries nothing here and Booked, Call
+ * Back and a conversation all do.
  *
- * Having talked to a person was the gate until 2026-09-10, and it was the wrong
- * one in both directions. Every Spoke To Owner was filed as a lead, so the
- * owner who said no thanks and hung up arrived beside the one asking what it
- * would cost - five of the first nine had to be ruled out by hand - while
- * Booked and Call Back, which are the two clearest yeses the phone produces,
- * were carried nowhere at all.
+ * The gate reads the interest the caller recorded only to take a business back
+ * out. Requiring that answer to get in was tried and put right the same day:
+ * the question does not always come up on the call, and the calls it went
+ * unanswered on were the ones that vanished - a conversation held, a note
+ * written, and nothing in front of anybody afterwards.
  *
  * Failure here is swallowed. The call is already on the record and the caller
  * is owed their confirmation; a lead that missed its row is worth less than a

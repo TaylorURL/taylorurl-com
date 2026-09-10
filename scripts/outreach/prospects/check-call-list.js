@@ -725,8 +725,9 @@ check('an outcome that asks takes the answer the caller gave it', () => {
   for (const id of ['spoke', 'gatekeeper']) {
     same(interestIn(id, true), true, `${id} lost a yes`)
     same(interestIn(id, false), false, `${id} lost a no`)
-    // Unanswered is not a no. It is the write the endpoint refuses, and a
-    // reading that quietly turned it into a refusal would let it through.
+    // Unanswered is not a no. The question does not always come up on the
+    // call, and a reading that turned silence into a refusal would drop those
+    // conversations out of the lead list without anybody having said so.
     same(interestIn(id, null), null, `${id} read an unanswered call as a refusal`)
     same(interestIn(id), null, `${id} read a missing answer as a refusal`)
   }
@@ -739,22 +740,25 @@ check('an outcome that answers for itself ignores an answer sent against it', ()
   same(interestIn('not_interested', true), false, 'a posted yes overrode the word itself')
 })
 
-check('only the calls that found somebody who wanted it become leads', () => {
-  // The failure this is here for is the one that already happened. Every
-  // conversation was filed as a lead, so the owner who said no thanks and hung
-  // up arrived beside the one asking what it would cost, and Booked and Call
-  // Back - the two clearest yeses the phone produces - were carried nowhere.
+check('the calls that reached somebody become leads unless they said no', () => {
+  // Both halves of the rule, and each is a failure that has happened. Filing
+  // every call as a lead buried the handful who asked for something under
+  // eight thousand names off a map. Filing only the answered yeses lost the
+  // conversations the question never came up on, which is most of them.
   ok(callMakesLead('booked'), 'a booking did not become a lead')
   ok(callMakesLead('callback'), 'a time somebody named did not become a lead')
   ok(callMakesLead('spoke', true), 'an owner who wanted it did not become a lead')
   ok(callMakesLead('gatekeeper', true), 'a gatekeeper who handed over a name did not become a lead')
+  ok(callMakesLead('spoke'), 'a conversation nobody answered for was dropped')
+  ok(callMakesLead('gatekeeper'), 'a desk nobody answered for was dropped')
 
   ok(!callMakesLead('spoke', false), 'an owner who said no became a lead')
   ok(!callMakesLead('gatekeeper', false), 'a desk that turned the call away became a lead')
-  ok(!callMakesLead('spoke'), 'a conversation nobody answered for became a lead')
-  ok(!callMakesLead('gatekeeper'), 'a conversation nobody answered for became a lead')
   ok(!callMakesLead('not_interested'), 'a refusal became a lead')
+  // A phone that rang out reached nobody who could have wanted anything, so no
+  // answer sent against one puts it in front of a person as a lead.
   for (const id of ['no_answer', 'voicemail', 'wrong_number']) {
+    ok(!callMakesLead(id), `${id} became a lead having reached nobody`)
     ok(!callMakesLead(id, true), `${id} became a lead on an answer nobody could have given`)
   }
   ok(!callMakesLead('sold', true), 'an id nothing offers became a lead')
