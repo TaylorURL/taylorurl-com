@@ -448,7 +448,7 @@ export default function OnlineTools() {
         eyebrow="Let’s Talk"
         heading="Have it all"
         accentText="wired in."
-        description="Tell us what the business runs on now and what you want to be able to turn on later. The plan and the price come back before any work starts."
+        description="Tell us what the business runs on now and what you want to be able to turn on later. You get the plan and the price before any work starts."
         primaryLabel={START_LINK.label}
         primaryTo={START_LINK.to}
         secondaryLabel="See the Price"

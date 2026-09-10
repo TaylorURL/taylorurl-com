@@ -238,7 +238,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'What Happens After They Press Send?' },
       {
         type: 'p',
-        text: 'A box under the word "Contact" is not a reason to type anything. "Send this and I will come back within one business day with a quote" is. Set an expectation you can keep, then keep it, and the box stops being empty. Ours says a reply usually comes back within the hour.',
+        text: 'A box under the word "Contact" is not a reason to type anything. "Send this and I will come back within one business day with a quote" is. Set an expectation you can keep, then keep it, and the box stops being empty. Ours says you usually get a reply within the hour.',
       },
     ],
   },

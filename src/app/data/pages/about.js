@@ -118,7 +118,7 @@ const STUDIO_ABOUT = {
       num: '02',
       title: 'We plan it out',
       description:
-        'A written plan comes back with the price on it. Nothing gets built until you tell us the plan is right.',
+        'You get a written plan with the price on it. Nothing gets built until you tell us the plan is right.',
       you: 'Look it over and give feedback',
       me: 'Send a plan and a price in writing',
     },
@@ -148,7 +148,7 @@ const STUDIO_ABOUT = {
     heading: 'Tell us about',
     accentText: 'the business',
     description:
-      'A few sentences on what you do and who you want walking in. A reply usually comes back within the hour: a straight answer on fit, then a plan and a price.',
+      'A few sentences on what you do and who you want walking in. You usually get a reply within the hour: a straight answer on fit, then a plan and a price.',
   },
 }
 

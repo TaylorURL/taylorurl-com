@@ -21,14 +21,14 @@ export const CONTACT_PAGE = {
   seo: {
     title: 'Contact a Software Engineer',
     description:
-      'Tell us what the work is and what it has to do. A reply usually comes within the hour, and a scope and a price in writing before anything starts.',
+      'Tell us what the work is and what it has to do. You usually get a reply within the hour, and a scope and a price in writing before anything starts.',
   },
 
   hero: {
     eyebrow: 'Get in Touch',
     title: 'A scope and a price, before any work starts.',
     description:
-      'Tell us what you need built, what your tracking is getting wrong, or who you want to reach. The reply usually comes back within the hour, and nothing is charged to find out what it costs.',
+      'Tell us what you need built, what your tracking is getting wrong, or who you want to reach. You usually get a reply within the hour, and nothing is charged to find out what it costs.',
   },
 
   aside: {
@@ -64,7 +64,7 @@ export const CONTACT_PAGE = {
   form: {
     heading: 'Tell us about the work',
     confirmation:
-      'Thanks. A reply usually comes back within the hour, and a scope and a price before any work starts.',
+      'Thanks. You usually get a reply within the hour, and a scope and a price before any work starts.',
     submit: 'Get a Scope and a Price',
     shortMessage: 'A sentence about what you need is enough to start.',
     placeholders: {

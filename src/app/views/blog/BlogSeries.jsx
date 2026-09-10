@@ -148,7 +148,7 @@ export default function BlogSeries() {
       <CtaBanner
         heading="Want this done on"
         accentText="your site?"
-        description="Tell us what the site does now and what it should do. We usually reply within the hour, and a plan and a price come back before any work starts."
+        description="Tell us what the site does now and what it should do. We usually reply within the hour, and you get a plan and a price before any work starts."
         primaryLabel="Get a Plan and a Price"
         primaryTo="/contact"
       />
