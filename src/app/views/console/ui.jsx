@@ -315,10 +315,23 @@ export function SkeletonRows({ cols, rows, height = ROW_HEIGHT.plain, lastHeight
   ))
 }
 
+/**
+ * The one row a table draws when it has none of its own.
+ *
+ * It takes the same `cols` the placeholder above it takes, and for the same
+ * reason: a table whose columns give way as the page narrows describes them as
+ * a list of classes rather than as a count, and both shapes have to reach the
+ * same table. A count spans that many columns; a list spans as many as it
+ * holds. Spanning more columns than the head has drawn is harmless either way,
+ * since the row is one sentence across whatever is there.
+ */
 export function EmptyRow({ cols, children }) {
   return (
     <tr className="border-hair-paper border-t">
-      <td colSpan={cols} className="px-5 py-10 text-center text-[13px] text-paper-soft">
+      <td
+        colSpan={Array.isArray(cols) ? cols.length : cols}
+        className="px-5 py-10 text-center text-[13px] text-paper-soft"
+      >
         {children}
       </td>
     </tr>

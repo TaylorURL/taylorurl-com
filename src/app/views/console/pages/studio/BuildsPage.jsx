@@ -26,6 +26,11 @@ import { BUTTON, CELL, FIELD, MONO_LABEL, QUIET, SELECT, TH } from '../../lib/to
 import { STAGES, stageOf, stageRank } from '../../lib/stages'
 import { ZONE } from '@lib/time/zone.js'
 
+// The column the record drops in a phone's width, and the cells its
+// placeholder holds, so the table that loads is the table that lands.
+const FROM_SM = 'hidden sm:table-cell'
+const BUILD_CELLS = [CELL, CELL, CELL, `${CELL} ${FROM_SM}`]
+
 /**
  * The side of a build the client never sees: moving it along, and writing to
  * the person waiting on it.
@@ -595,29 +600,33 @@ export default function BuildsPage() {
       {view === 'builds' ? (
         <Panel title="Builds" aside={`${rows.length} in the record`} loading={loading} area="work">
           <PanelBody className="overflow-x-auto">
+            {/* The measures are the ones a desk gives the table. In a phone's
+                width the three columns left share it equally instead, and the
+                site the build will become steps out: it is the same business
+                the first column already names, said as a domain. */}
             <table
-              className="w-full min-w-[560px] table-fixed border-collapse text-[13px]"
+              className="w-full table-fixed border-collapse text-[13px] sm:min-w-[560px]"
               aria-busy={loading}
             >
               <thead>
                 <tr>
-                  <th scope="col" className={`${TH} w-[13rem]`}>
+                  <th scope="col" className={`${TH} sm:w-[13rem]`}>
                     Build
                   </th>
-                  <th scope="col" className={`${TH} w-[10rem]`}>
+                  <th scope="col" className={`${TH} sm:w-[10rem]`}>
                     Stage
                   </th>
                   <th scope="col" className={TH}>
                     Waiting On
                   </th>
-                  <th scope="col" className={`${TH} w-[11rem]`}>
+                  <th scope="col" className={`${TH} ${FROM_SM} sm:w-[11rem]`}>
                     Site
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <SkeletonRows cols={4} rows={4} />
+                  <SkeletonRows cols={BUILD_CELLS} rows={4} />
                 ) : rows.length ? (
                   rows.map(project => {
                     const key = `build:${project.project_id}`
@@ -688,7 +697,7 @@ export default function BuildsPage() {
                             <span className={`${MONO_LABEL} text-paper-faint`}>Nothing</span>
                           )}
                         </td>
-                        <td className={CELL}>
+                        <td className={`${CELL} ${FROM_SM}`}>
                           <SiteControl
                             project={project}
                             sites={sites}
