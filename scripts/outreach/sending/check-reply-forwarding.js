@@ -623,6 +623,114 @@ check('a person who says stop under an automatic subject is still heard', async 
   ok(asked.includes('upsert:suppression'), 'somebody who asked to stop was not suppressed')
 })
 
+check('a machine\u2019s answer is filed and not carried', async () => {
+  const { go, asked, writes } = run([
+    underSubject(
+      'Baytown Plumbing scores 31 out of 100 on mobile',
+      'Out of the office until Monday.'
+    ),
+  ])
+  const sent = await withMail(accepted, go)
+
+  same(sent.length, 0, 'notices handed over')
+  ok(asked.includes('insert:outreach_messages'), 'the answer is not recorded either')
+  const stored = writes.find(write => write.key === 'insert:outreach_messages')?.payload ?? {}
+  same(stored.intent, 'auto_reply', 'what the stored row says the answer was')
+})
+
+// ── The desks that answer under Re: ───────────────────────────────────
+
+/**
+ * The receipt a ticket desk sends the moment a letter reaches it.
+ *
+ * This is the real one, off a letter written to a directory listing whose
+ * contact address turned out to be a help desk. It arrives under "Re:" like a
+ * person's answer, from an ordinary help box, with no header declaring itself,
+ * and the words in it are a ticket number and a promise that somebody will
+ * read it one day. Read as a reply it ends the chain, moves the business to
+ * answered, puts a notice nobody can act on in the inbox and puts the same
+ * line in the morning report.
+ */
+const DESK_RECEIPT = [
+  '##- Please type your reply above this line -##',
+  '',
+  'Thanks for reaching out to us for some help with MapQuest.com. Give us a bit',
+  'to see how to help. Someone will be in touch with you soon.',
+  '',
+  'Regards,',
+  'Your MapQuest Help Team',
+  '',
+  "Here's a summary of your request #3201820:",
+  '--------------------------------',
+  'This email is a service from MapQuest Consumer Support. [W6Z946-4NX5R]',
+].join('\n')
+
+check('a ticket desk answering under Re: is read as a machine', async () => {
+  const { go, asked, writes } = run([underSubject('Re:', DESK_RECEIPT)])
+  await withMail(accepted, go)
+
+  ok(!asked.includes('update:outreach_prospects'), 'a ticket receipt moved the standing')
+  const stored = writes.find(write => write.key === 'insert:outreach_messages')?.payload ?? {}
+  same(stored.intent, 'auto_reply', 'what the stored row says the answer was')
+  ok(stored.intent_phrase, 'the row carries no phrase for why it was read as one')
+})
+
+check('a ticket desk receipt is not carried into the inbox', async () => {
+  const { go } = run([underSubject('Re:', DESK_RECEIPT)])
+  const sent = await withMail(accepted, go)
+  same(sent.length, 0, 'notices handed over')
+})
+
+check('an unmatched ticket desk receipt is not carried either', async () => {
+  // Nothing to file it against changes what happens to the row, not what the
+  // message is. A help desk writing from help@ passes both the older readings.
+  const { go } = run([
+    inbound(DESK_RECEIPT, {
+      envelope: {
+        messageId: '<desk-1@example.com>',
+        subject: 'Re:',
+        from: [{ address: 'help@mapquest.example.com' }],
+        to: [{ address: 'studio@example.com' }],
+        date: '2026-08-29T15:00:00.000Z',
+      },
+    }),
+  ])
+  const sent = await withMail(accepted, go)
+  same(sent.length, 0, 'notices handed over')
+})
+
+check('an agent writing through the same desk is carried', async () => {
+  // The delimiter and the footer ride on an agent's own answer too, so the
+  // furniture cannot be the whole test. What the desk's receipt has and this
+  // has not is that it says nothing but that it arrived.
+  const agent = [
+    '##- Please type your reply above this line -##',
+    '',
+    'We looked at the site and the slow part is the photo gallery on the front',
+    'page. Call me Tuesday and we can go through it.',
+    '',
+    'This email is a service from MapQuest Consumer Support. [W6Z946-4NX5R]',
+  ].join('\n')
+
+  const { go, asked } = run([underSubject('Re: your website', agent)])
+  const sent = await withMail(accepted, go)
+
+  same(sent.length, 1, 'notices handed over')
+  ok(asked.includes('update:outreach_prospects'), 'a person did not move the standing')
+})
+
+check('a person who says stop through a desk is still heard', async () => {
+  // The opt-out reading runs in front of the desk reading too.
+  const { go, asked } = run([
+    underSubject(
+      'Re:',
+      `##- Please type your reply above this line -##\n\nPlease remove me from your list.`
+    ),
+  ])
+  await withMail(accepted, go)
+  ok(asked.includes('upsert:suppression'), 'somebody who asked to stop was not suppressed')
+})
+
 let failed = 0
 for (const [name, runCase] of cases) {
   try {
