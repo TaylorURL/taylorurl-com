@@ -2,22 +2,28 @@
  * Proves the Server section is wired, shut to everybody but an admin, and
  * still speaking the same language as the machine it reads.
  *
- * Three faults, and the third is the one particular to this section.
+ * Four faults, and the last is the one particular to this section.
  *
  * The first is the one every console section has: it is registered in four
  * files and three of them fail quietly. The menu offers a row that routes
  * nowhere, or the route answers and the menu never shows it, or a direct load
  * is a 404 because nothing prerendered the shell.
  *
- * The second is the door. This feed names the units running on the studio's
- * own machine, how full its card is and what it is, which is nobody's business
- * but the studio's - and unlike every other admin endpoint on this site the
- * far end knows nothing about accounts, so nothing behind this proxy will
- * refuse a request it lets through. The role check here is the whole of the
- * door, and a session check standing in for it would open the feed to every
- * client with a login.
+ * The second is the door on the feed. It names the units running on the
+ * studio's own machine, how full its card is and what it is, which is nobody's
+ * business but the studio's - and unlike every other admin endpoint on this
+ * site the far end knows nothing about accounts, so nothing behind this proxy
+ * will refuse a request it lets through. The role check there is the whole of
+ * that door, and a session check standing in for it would open the feed to
+ * every client with a login.
  *
- * The third is that the reading is built in another repository. The server
+ * The third is the door on the section, which is a different door and was
+ * missing for as long as the section existed. Marking it admin-only took the
+ * row out of the menu and left the address open, so a client who typed it got
+ * the machine drawn around them - named, tiled and tabled - over a feed
+ * refusing every read. A refused figure is not a refused page.
+ *
+ * The fourth is that the reading is built in another repository. The server
  * decides what states a routine can be in and this page decides what each one
  * looks like, and the two drift with nothing to say so: a state the page has
  * no entry for is drawn as whatever its fallback happens to be, so a stopped
@@ -53,6 +59,7 @@ const ENDPOINT = 'api/server-feed.js'
 const PAGE = 'src/app/views/console/pages/health/ServerPage.jsx'
 const HOOK = 'src/app/hooks/console/useServerFeed.js'
 const SECTIONS = 'src/app/views/console/lib/sections.js'
+const FRAME = 'src/app/views/console/ConsoleFrame.jsx'
 
 /**
  * The states the server sends, which are the states the page has to draw.
@@ -89,6 +96,27 @@ check('the section is admin-only, and offers no scope, window or traffic strip',
   same(/scope: false/.test(body), true, 'no site in scope')
   same(/account: true/.test(body), true, 'answers for the account, not a site')
   same(/figures: false/.test(body), true, 'no traffic strip')
+})
+
+check('a reader who is not an admin cannot open the section by typing its address', () => {
+  // The mark above takes the row out of the menu. Read there and nowhere else
+  // it leaves /console/server open to anybody with a login: the feed refuses
+  // every read, and the section draws anyway - the machine named, its tiles and
+  // its table laid out - which is the studio's own hardware described to a
+  // client. The frame reads the same mark and sends them back.
+  const frame = read(FRAME)
+  const faults = []
+  const guard = frame.match(/if \([^\n]*section\?\.admin[^\n]*\) \{\n\s*return <Navigate[^\n]*\n/)
+  if (!guard) faults.push(`${FRAME} does not turn a non-admin away from an admin section`)
+  else {
+    if (!/role !== 'admin'/.test(guard[0])) faults.push('the guard does not test the role')
+    if (!/replace/.test(guard[0])) faults.push('the guard leaves the refused address in history')
+  }
+  // The role arrives with the overview read, so a guard that fired before it
+  // landed would throw an admin off their own section on every refresh - which
+  // is how a gate like this gets taken back out again.
+  if (!/const roleKnown = /.test(frame)) faults.push('the guard does not wait for the role')
+  report(faults)
 })
 
 check('the endpoint asks for the admin role rather than for a session', () => {
