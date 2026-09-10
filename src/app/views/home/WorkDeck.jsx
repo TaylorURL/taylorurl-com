@@ -40,7 +40,7 @@ import { DesktopMockup } from '@components/mockups/DevicePreview'
  */
 
 /** How long a frame holds at the front before the rail moves itself on. */
-const DWELL_MS = 4600
+const DWELL_MS = 2900
 
 /** How long the rail takes to travel from one frame to the next. */
 const GLIDE_MS = 520
