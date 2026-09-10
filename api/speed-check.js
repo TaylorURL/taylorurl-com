@@ -49,6 +49,7 @@ import { ensureShot } from '../lib/outreach/audit/shot.js'
 import { suppressed } from '../lib/outreach/sending/queue.js'
 import { bridge } from '../lib/outreach/prospects/bridge.js'
 import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
+import { SOURCES, keepLead } from '../lib/leads/spine.js'
 import { sendNotice, notice } from '../lib/mail/notice.js'
 import {
   DAY_MS,
@@ -377,6 +378,20 @@ export default async function handler(request, response) {
     response.status(503).json({ error: 'The check is not available right now.' })
     return
   }
+
+  // Somebody who typed their address in to have their own site measured is
+  // asking about their own site, which is the warmest question this business
+  // gets asked. The reading was being kept and the person asking was not.
+  await keepLead(
+    {
+      source: SOURCES.speedCheck,
+      ref: row.id,
+      email,
+      website: url.toString(),
+      note: `Ran a speed check on ${host}`,
+    },
+    db
+  )
 
   // Everything that could refuse the request has answered, so the status is
   // settled and the rest of the answer can be written as it happens.

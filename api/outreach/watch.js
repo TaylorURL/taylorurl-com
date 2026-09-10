@@ -70,6 +70,7 @@ import { ImapFlow } from 'imapflow'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { field } from '../../lib/db/fields.js'
 import { readAutoReply, readOptOut } from '../../lib/outreach/sending/replies.js'
+import { SOURCES, SPINE, keepLead } from '../../lib/leads/spine.js'
 import { sendNotice, notice } from '../../lib/mail/notice.js'
 
 const IMAP_HOST = process.env.OUTREACH_IMAP_HOST || 'imap.gmail.com'
@@ -430,6 +431,51 @@ async function prospectsFor(db, emails) {
     .in('email', emails)
   if (error) throw new Error(error.message)
   return new Map(data.map(row => [addressOf(row.email), row]))
+}
+
+/** How much of a reply is kept beside the lead, as something to read at a glance. */
+const REPLY_EXCERPT = 400
+
+/**
+ * A cold prospect who wrote back, carried into the lead record.
+ *
+ * A prospect is not a lead. Eight thousand addresses off a map are a list to
+ * work, and putting them in the console as leads would bury the handful who
+ * actually asked for something. Writing back is what changes that, which is
+ * why this runs here rather than when the letter goes out.
+ *
+ * Only a person's reply reaches this. The auto-responders and the opt-outs are
+ * both ruled out by the caller, and the difference matters in opposite
+ * directions: a mailbox saying "thank you for contacting us" is not a lead,
+ * and somebody saying "stop" is the one reply that must never become a row on
+ * a list of people to follow up.
+ *
+ * Failure is swallowed. The reply is already filed against the prospect and
+ * the pipeline has more mail to read; a lead that missed its row is not worth
+ * ending a run over.
+ */
+async function carryReply(db, prospect, message, now) {
+  const lead = await keepLead(
+    {
+      source: SOURCES.outreachReply,
+      ref: prospect.id,
+      email: prospect.email,
+      business: prospect.name,
+      website: prospect.website,
+      note: field(String(message.body ?? '').replace(/\s+/g, ' '), REPLY_EXCERPT),
+    },
+    db
+  )
+  if (!lead) return
+
+  // Two facts the reply settles that the merge will not touch: they have
+  // written back, and the studio had already written to them to provoke it.
+  const { error } = await db
+    .from(SPINE)
+    .update({ replied_at: now, contacted_at: now, updated_at: now })
+    .eq('id', lead.id)
+    .is('replied_at', null)
+  if (error) console.error('watch: the reply was not carried to the lead: %s', error.message)
 }
 
 /** Messages a run reconciles clicks and enquiries for, newest first. */
@@ -826,6 +872,15 @@ export async function work({ db, counts, read = readMailbox }) {
         })
         .eq('id', prospect.id)
       if (stage.error) throw new Error(stage.error.message)
+
+      // A person who typed a reply to a cold letter has raised a hand, which
+      // is the same thing the forms and the ads record. The machines are
+      // already excluded above, and so is anybody asking to be left alone: an
+      // opt-out is a reply, and it is the one reply that must never turn into
+      // a row on a list of people to follow up.
+      if (!asked.optOut) {
+        await carryReply(db, prospect, message, now)
+      }
     }
 
     if (asked.optOut) {
