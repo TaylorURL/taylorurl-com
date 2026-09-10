@@ -23,6 +23,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { reach } from '../lib/http/reach.js'
 import { createHash } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
@@ -157,7 +158,7 @@ async function ask({ message, session }) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), AGENT_TIMEOUT_MS)
   try {
-    const upstream = await fetch(`${AGENT_URL}/reply`, {
+    const upstream = await reach(`${AGENT_URL}/reply`, {
       method: 'POST',
       signal: controller.signal,
       headers: {
@@ -200,6 +201,28 @@ export function answering(status) {
 }
 
 /**
+ * Why a knock or a turn did not arrive, in words that name the stage.
+ *
+ * `fetch` reports every way a request can fail to leave as the same sentence,
+ * `fetch failed`, and hangs the reason underneath it. That sentence is what
+ * this endpoint logged while the assistant was unreachable, and it is true of a
+ * refused connection, a name that would not resolve and a host that never
+ * answered alike -- so the log said the same thing for hours and named none of
+ * them. The reason underneath is the whole of what a person reading this later
+ * needs, so it is read out rather than dropped.
+ *
+ * @param {Error} cause
+ * @returns {string}
+ */
+export function why(cause) {
+  if (cause?.name === 'AbortError') return 'the assistant took too long to answer'
+  const under = cause?.cause
+  if (under?.code) return `${cause.message} (${under.code})`
+  if (cause?.code) return `${cause.message} (${cause.code})`
+  return cause?.message || 'unknown'
+}
+
+/**
  * One knock on the door a turn goes through.
  *
  * It knocks there rather than on the health route beside it, because the
@@ -218,7 +241,7 @@ async function knock() {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), REACH_TIMEOUT_MS)
   try {
-    const upstream = await fetch(`${AGENT_URL}/reply`, {
+    const upstream = await reach(`${AGENT_URL}/reply`, {
       method: 'POST',
       signal: controller.signal,
       headers: {
@@ -258,7 +281,7 @@ async function reachable() {
     try {
       return await knock()
     } catch (cause) {
-      console.error('live-chat: probing: %s', cause.message)
+      console.error('live-chat: probing: %s', why(cause))
     }
     // Far enough from the last attempt not to land in the same bad moment, and
     // short enough to stay inside the page load that is waiting on the answer.
@@ -450,7 +473,7 @@ export default async function handler(request, response) {
   try {
     answer = await ask({ message, session: asked })
   } catch (cause) {
-    fault = cause.message
+    fault = why(cause)
     console.error('live-chat: upstream: %s', fault)
   }
 
