@@ -653,13 +653,13 @@ function headClass(id) {
  * buys is not what a fourth buys, and the ladder is the one part of this the
  * page cannot expect anybody to remember.
  *
- * The second control is the one that decides where the business goes next.
+ * The second control is the one that keeps a business out of the lead list.
  * Spoke To Owner covers the owner who asked what it would cost and the owner
  * who said no thanks and hung up, and nothing else on this form can tell them
  * apart - so the caller is asked outright, and only where the outcome leaves
- * the question open. It has no answer set to begin with, because a default
- * here is the page guessing at the one thing only the person on the call
- * knows.
+ * the question open. It starts unanswered and saves unanswered, because a
+ * default here is the page guessing at the one thing only the person on the
+ * call knows, and a question the call never got to is not a refusal.
  */
 function RecordForm({ row, saving, onRecord, startOn }) {
   const [outcome, setOutcome] = useState(startOn ?? 'no_answer')
@@ -685,7 +685,7 @@ function RecordForm({ row, saving, onRecord, startOn }) {
       id: row.id,
       outcome,
       note,
-      interested: asksInterest ? interest === 'yes' : null,
+      interested: asksInterest && interest ? interest === 'yes' : null,
       callback_at: callback && !ends ? new Date(callback).toISOString() : null,
     })
     if (saved) {
@@ -726,16 +726,15 @@ function RecordForm({ row, saving, onRecord, startOn }) {
           <select
             className={interest ? SELECT_ON : SELECT}
             value={interest}
-            required
             onChange={event => setInterest(event.target.value)}
           >
-            <option value="">Say Which</option>
+            <option value="">They Did Not Say</option>
             <option value="yes">Interested</option>
             <option value="no">Not Interested</option>
           </select>
           <span className={`${MONO_LABEL} text-paper-faint`}>
-            Interested puts them in the lead list. Not interested leaves them on the call list and
-            off the lead list.
+            Not interested leaves them on the call list and off the lead list. Anything else puts
+            them in the lead list.
           </span>
         </label>
       )}
@@ -1005,8 +1004,9 @@ function Sheet({
  * the card rather than sitting under the grid. A caller working a batch at one
  * keystroke a business will not notice a control that was already on screen
  * when they pressed the last one; a screen that changes under them is the only
- * thing that reads as being asked. It is one more keystroke, `y` or `n`, and it
- * is the keystroke that decides whether the business turns up in the lead list.
+ * thing that reads as being asked. It is one more keystroke - `y`, `n`, or `s`
+ * where the call never got to the question - and `n` is the one that keeps the
+ * business out of the lead list.
  */
 function CallCard({
   row,
@@ -1112,10 +1112,19 @@ function CallCard({
               <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">N</span>
               Not Interested
             </button>
+            <button
+              type="button"
+              className={`${QUIET} col-span-2 min-h-[48px] justify-center`}
+              disabled={saving}
+              onClick={() => onAnswer(null)}
+            >
+              <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">S</span>
+              They Did Not Say
+            </button>
           </div>
           <p className={`${MONO_LABEL} text-paper-faint`}>
-            Interested puts them in the lead list. Not interested leaves them on the call list and
-            off the lead list.
+            Not interested leaves them on the call list and off the lead list. Anything else puts
+            them in the lead list.
           </p>
           <button type="button" className={QUIET} disabled={saving} onClick={onDrop}>
             Back to the Outcomes
@@ -1182,8 +1191,9 @@ export default function CallsPage() {
   const [worked, setWorked] = useState({})
   const [at, setAt] = useState(0)
   // The outcome a caller has pressed in Call Mode that is waiting on whether
-  // they were interested. Held rather than recorded, because that answer is
-  // what decides where the business goes next and there is no default for it.
+  // they were interested. Held rather than recorded, because the answer belongs
+  // to the call that was just made and the page has no way to guess it - but a
+  // key gets past it unanswered, so the question never holds up the next number.
   const [asking, setAsking] = useState(null)
   const [keyOpen, setKeyOpen] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
@@ -1400,10 +1410,10 @@ export default function CallsPage() {
         setRecorded(null)
         return
       }
-      // The two a key cannot finish either, for the other reason: the outcome
-      // does not say whether anybody wanted it, and that answer is what decides
-      // whether the business becomes a lead. The card asks, and the answer
-      // records both at once.
+      // The two a key cannot finish on its own, for the other reason: the
+      // outcome does not say whether anybody wanted it, and a no is what keeps
+      // the business out of the lead list. The card asks, and whichever of the
+      // three answers comes back records the outcome with it.
       if (outcomeAsksInterest(outcome)) {
         setAsking(outcome)
         setRecorded(null)
@@ -1455,7 +1465,7 @@ export default function CallsPage() {
 
   // The eight outcomes on the eight number keys, ignored while a field has
   // focus so typing a note never records a call. While one of them is waiting
-  // on whether they were interested the numbers stand down and `y` and `n`
+  // on whether they were interested the numbers stand down and `y`, `n` and `s`
   // answer it, so the keyboard never records the outcome under the question.
   useEffect(() => {
     if (view !== 'calling' || !current || openRow) return undefined
@@ -1469,9 +1479,9 @@ export default function CallsPage() {
           return
         }
         const said = event.key.toLowerCase()
-        if (said !== 'y' && said !== 'n') return
+        if (said !== 'y' && said !== 'n' && said !== 's') return
         event.preventDefault()
-        answer(said === 'y')
+        answer(said === 's' ? null : said === 'y')
         return
       }
       const outcome = CALL_OUTCOMES.find(one => one.key === event.key)
@@ -1957,7 +1967,7 @@ export default function CallsPage() {
         >
           <Panel
             title="Calling"
-            note="Ring the number and press what the call came to. Say whether they were interested where it asks, and the next business comes up on its own."
+            note="Ring the number and press what the call came to. Say whether they were interested where it asks, or press past it, and the next business comes up on its own."
             loading={loading}
             aside={
               <span className={`${MONO_LABEL} text-paper-faint`}>
