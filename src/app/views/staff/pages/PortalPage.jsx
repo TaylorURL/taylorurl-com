@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import StaffScreen from '../StaffScreen'
 import { useStaff } from '../lib/context'
+import { usePointerLight } from '../lib/surface'
 
 /**
  * Where a representative starts the day.
@@ -14,9 +15,14 @@ import { useStaff } from '../lib/context'
  * is one of the four rather than a link in a corner - a representative is asked
  * about the pricing page on the phone and needs it the same way they need the
  * script.
+ *
+ * The four are the largest panes of the surface's material, so each one carries
+ * the light the pointer is holding over it. That is one listener on the grid
+ * rather than four tiles each watching for a pointer they mostly do not have.
  */
 export default function PortalPage() {
   const { name, signOut } = useStaff()
+  const lit = usePointerLight('.staff-tile')
 
   return (
     <StaffScreen title="Staff Portal">
@@ -25,7 +31,7 @@ export default function PortalPage() {
         <p className="staff-mute">Pick up where the list left off.</p>
       </div>
 
-      <div className="staff-tiles">
+      <div className="staff-tiles" ref={lit.ref}>
         <Link className="staff-tile" to="/staff/calls" data-lead="true">
           <b>Call Center</b>
           <p>The next number, the business behind it, and every call placed to it so far.</p>

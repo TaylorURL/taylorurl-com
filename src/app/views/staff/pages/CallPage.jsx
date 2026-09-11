@@ -36,6 +36,11 @@ const FILTERS = Object.freeze({ view: 'list', take: 50 })
  * a form to fill in rather than a call to make, and the height they take is
  * height the script wanted.
  *
+ * The four blocks that describe the business are keyed on it, so moving to the
+ * next number draws them as a card that arrived rather than as four fields whose
+ * text changed under the eye. The refresher below them is not keyed: a
+ * representative who opened the script wants it open on the next call too.
+ *
  * Where the caller is in the list is held as a trail of businesses rather than
  * an index into the rows, because the rows re-rank under it: a business that has
  * just been called leaves the callable list within the second, and an index
@@ -275,7 +280,7 @@ export default function CallPage() {
         </div>
       ) : (
         <>
-          <div className="staff-biz">
+          <div className="staff-biz" key={`${current.id}-who`}>
             <h2>{current.name}</h2>
             <p>
               {[current.trade, current.town].filter(Boolean).join(' in ') || 'Trade not on file'}
@@ -289,11 +294,11 @@ export default function CallPage() {
             </div>
           </div>
 
-          <a className="staff-number" href={dialHref(current.phone)}>
+          <a className="staff-number" href={dialHref(current.phone)} key={`${current.id}-dial`}>
             {current.phone}
           </a>
 
-          <dl className="staff-pairs">
+          <dl className="staff-pairs" key={`${current.id}-facts`}>
             <div>
               <dt>Address</dt>
               <dd>{current.address || 'Not on file'}</dd>
@@ -325,7 +330,7 @@ export default function CallPage() {
             </div>
           </dl>
 
-          <div className="staff-part">
+          <div className="staff-part" key={`${current.id}-record`}>
             <h3>The Record</h3>
             {current.calls?.length ? (
               <dl className="staff-record">
