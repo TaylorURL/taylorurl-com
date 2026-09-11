@@ -92,6 +92,44 @@ if (!guard) {
   for (const identifier of ['gclid', 'gbraid', 'wbraid']) {
     has('the paid-arrival bypass', guard, identifier)
   }
+  // And the two that say an ad was clicked without naming the click. An
+  // identifier is what auto-tagging writes; a click arriving without one still
+  // carries the surface it came from and the campaign that paid for it, and it
+  // is every bit as much the visitor this bypass exists for. #558 was a reader
+  // on `/start` off campaign 24232381850 carrying `gad_source=5` and no
+  // identifier, read as organic traffic and made to wait ten seconds while the
+  // address holding all of it was replaced under them.
+  for (const marker of ['gad_source', 'gad_campaignid']) {
+    has('the paid-arrival bypass', guard, marker)
+  }
+}
+
+// Read the test the head actually ships rather than a copy of it, so a bypass
+// narrowed later fails here instead of passing against a pattern this file
+// keeps its own copy of.
+const bypass = (() => {
+  const found = page.match(/\/\[\?&\]\(([^)]*)\)=\/\.test\(location\.search\)/)
+  return found ? new RegExp(`[?&](${found[1]})=`) : null
+})()
+if (!bypass) {
+  fail('the built head no longer tests the address for the parameters an ad click carries')
+} else {
+  // The address on #558, which the test this replaces read as organic.
+  is(
+    'the bypass on the arrival #558 reported',
+    bypass.test('?gad_source=5&gad_campaignid=24232381850'),
+    true
+  )
+  // Nothing it names is a parameter an unpaid visit carries, which is what
+  // makes widening it free: a reader arriving from a search result, a link or a
+  // newsletter still waits, so the window a performance rating is taken from is
+  // untouched.
+  is(
+    'the bypass on an arrival nobody paid for',
+    bypass.test('?utm_source=newsletter&utm_medium=email'),
+    false
+  )
+  is('the bypass on a bare address', bypass.test(''), false)
 }
 
 // -- Every action names the account that minted it ----------------------------
