@@ -504,14 +504,35 @@ function tagLoader() {
   // A reader's first touch is what fetches them on a page carrying no click
   // identifier, and a scroll counts, so this is the ordinary arrival.
   for (const handler of listeners.pointerdown || []) handler({})
+  const settled = new Set()
   return {
     filed,
     written: sandbox.__siteTags,
     fetched: appended.map(node => node.src),
+    // The oldest ask to that host nobody has answered yet. A tag refused for
+    // its CORS mode is asked for a second time, so a host can have two requests
+    // outstanding and answering the first one again would say nothing about the
+    // one actually in flight.
     answer(host, arrived) {
-      const node = appended.find(each => each.src.includes(host))
-      if (!node) throw new Error(`the page wrote no tag to ${host}`)
+      const node = appended.find(each => each.src.includes(host) && !settled.has(each))
+      if (!node) throw new Error(`the page wrote no unanswered tag to ${host}`)
+      settled.add(node)
       node.on[arrived ? 'load' : 'error']({})
+      return node
+    },
+    // The second ask, which exists only where the first was refused. A change
+    // that stops asking twice leaves nothing here to answer, and that has to
+    // reach the check describing it rather than throw out of the suite three
+    // checks earlier.
+    again(host, arrived) {
+      const node = appended.find(each => each.src.includes(host) && !settled.has(each))
+      if (!node) return false
+      settled.add(node)
+      node.on[arrived ? 'load' : 'error']({})
+      return true
+    },
+    asks(host) {
+      return appended.filter(each => each.src.includes(host))
     },
   }
 }
@@ -531,6 +552,7 @@ check(
 // reader's connection, and it is the shape #558 arrived in nine times.
 const blocked = tagLoader()
 blocked.answer('googletagmanager.com', false)
+blocked.again('googletagmanager.com', false)
 blocked.answer('connect.facebook.net', false)
 check(
   blocked.filed.length === 0,
@@ -543,6 +565,7 @@ check(
 const missing = tagLoader()
 missing.answer('connect.facebook.net', true)
 missing.answer('googletagmanager.com', false)
+missing.again('googletagmanager.com', false)
 check(
   missing.filed.length === 1 &&
     missing.filed[0].kind === 'resource' &&
@@ -554,8 +577,9 @@ check(
 // by the message, so a wording of its own here files one fault under two names
 // and starts its history over on every deploy.
 check(
-  missing.filed[0].message ===
-    'Failed to load script: https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
+  missing.filed[0] &&
+    missing.filed[0].message ===
+      'Failed to load script: https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
   'the loader files a failed tag in words the reporter does not use, so the same fault arrives at ' +
     'the collector under a second name and neither one ever counts a recurrence'
 )
@@ -575,10 +599,66 @@ check(
 // something, the first one failing means nothing either way.
 const waiting = tagLoader()
 waiting.answer('googletagmanager.com', false)
+waiting.again('googletagmanager.com', false)
 check(
   waiting.filed.length === 0,
   'a failed tag was filed before the other had answered, so the rule is decided on the half of ' +
     'the evidence that cannot decide it'
+)
+
+/* ----------------------------------------------------------------------- *
+ * The half a blocker takes and the half it leaves.
+ * ----------------------------------------------------------------------- */
+
+// #563, and the reason #558's rule did not hold. Only Google's tag is asked for
+// in CORS mode, so anything answering on a vendor's behalf - a blocker's stub, a
+// proxy notice, an antivirus re-signing the reply - is refused on that tag and
+// loads on Meta's. One down, one arrived: the rule above reads that as a real
+// absence, and this reader files it on every visit.
+//
+// The second ask is what separates a refused CORS mode from a missing library,
+// and a tag that arrives on it is a tag this reader gets to keep.
+const substituted = tagLoader()
+substituted.answer('googletagmanager.com', false)
+substituted.again('googletagmanager.com', true)
+substituted.answer('connect.facebook.net', true)
+check(
+  substituted.filed.length === 0,
+  'the analytics tag was refused for its CORS mode, arrived on the plain ask and was filed anyway, ' +
+    'so a reader whose proxy or blocker answers for one vendor opens a ticket every time they visit'
+)
+
+// And it has to be a different request, or it is the same refusal twice and the
+// tag stays lost on exactly the readers this is for.
+const asks = substituted.asks('googletagmanager.com')
+check(
+  asks.length === 2 && asks[0].crossOrigin === 'anonymous' && asks[1].crossOrigin === null,
+  'the tag is asked for a second time in the same CORS mode that was just refused, so the ask ' +
+    'cannot tell a refused mode from a missing library and recovers nobody'
+)
+
+// Meta's tag is not asked for in CORS mode, so it has nothing to fall back to
+// and must not be fetched twice.
+const pixelOnce = tagLoader()
+pixelOnce.answer('connect.facebook.net', false)
+check(
+  pixelOnce.asks('connect.facebook.net').length === 1,
+  'the pixel is fetched a second time after it fails, so a tag that was never asked for in CORS ' +
+    'mode pays for a retry that can only repeat its own failure'
+)
+
+// The library genuinely gone still reports, which is the whole reason this host
+// was ever left reportable. Neither ask arrives, and the pixel does.
+const reallyGone = tagLoader()
+reallyGone.answer('connect.facebook.net', true)
+reallyGone.answer('googletagmanager.com', false)
+reallyGone.again('googletagmanager.com', false)
+check(
+  reallyGone.filed.length === 1 &&
+    reallyGone.filed[0].message ===
+      'Failed to load script: https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
+  'the analytics tag failed on both asks while the pixel arrived and nothing was filed, so the ' +
+    'second ask has silenced the one report on this host that was ever worth having'
 )
 
 /* ----------------------------------------------------------------------- *
