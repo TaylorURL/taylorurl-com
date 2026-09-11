@@ -262,12 +262,18 @@ export default function WorkDeck({ projects }) {
                   drags them behind the scroll, and on the seam - where every
                   frame shifts a whole set at once - a transition is the thing
                   that would make the lift show. */}
+              {/* No frame on this rail is a priority capture. The band sits
+                  under a hero that stands a whole screen tall, so the front
+                  frame is never on the first screen, and React turns an eager
+                  capture into a `<link rel="preload" as="image">` carrying
+                  fetchpriority high in the served head. That put fifty-two
+                  kilobytes of a screenshot nobody has scrolled to yet in front
+                  of the fonts and the stylesheet the first screen is actually
+                  waiting on. Left lazy, the browser still fetches it early
+                  enough that the frame is there when the rail is reached - it
+                  just stops asking for it first. */}
               <div className="relative origin-left will-change-transform">
-                <DesktopMockup
-                  project={project}
-                  index={index}
-                  priority={set === 0 && index === 0}
-                />
+                <DesktopMockup project={project} index={index} />
                 <span
                   data-veil
                   aria-hidden="true"
