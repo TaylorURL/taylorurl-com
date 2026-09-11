@@ -36,7 +36,7 @@ export default function PortalPage() {
         </Link>
         <Link className="staff-tile" to="/staff/resources">
           <b>Resources Center</b>
-          <p>The script, the questions that come back down the phone, and the answers to them.</p>
+          <p>The script, the questions owners ask, and the answers you give them.</p>
         </Link>
         <Link className="staff-tile" to="/">
           <b>Main Site</b>

@@ -200,7 +200,7 @@ export default function CallPage() {
         <p className="staff-foot-note">
           {picked
             ? asksLength && !hours
-              ? 'No length picked. They come back on the list tomorrow.'
+              ? 'You have not picked a length. They come back on the list tomorrow.'
               : next
                 ? `Next up is ${next.name}.`
                 : 'That is the last one on the list.'
@@ -257,7 +257,7 @@ export default function CallPage() {
             {feed.loading
               ? 'Reading the list'
               : feed.error
-                ? 'The list will not read'
+                ? 'This screen cannot read the list'
                 : 'The list is spent'}
           </h2>
           <p>
@@ -296,7 +296,7 @@ export default function CallPage() {
           <dl className="staff-pairs">
             <div>
               <dt>Address</dt>
-              <dd>{current.address || '—'}</dd>
+              <dd>{current.address || 'Not on file'}</dd>
             </div>
             <div>
               <dt>Reviews</dt>
@@ -308,7 +308,7 @@ export default function CallPage() {
             </div>
             <div>
               <dt>Site</dt>
-              <dd>{current.website ? 'Social page only' : 'None'}</dd>
+              <dd>{current.site_kind === 'social' ? 'Social page only' : 'None'}</dd>
             </div>
             <div>
               {/* A time the owner named is a different fact from a rest running
@@ -334,13 +334,13 @@ export default function CallPage() {
                     <dt>{callDay(call.called_at)}</dt>
                     <dd>
                       {callLine(call)}
-                      {call.note ? ` — ${call.note}` : ''}
+                      {call.note ? `. ${call.note}` : ''}
                     </dd>
                   </div>
                 ))}
               </dl>
             ) : (
-              <p className="staff-read">Nobody has rung this one yet. You are the first call.</p>
+              <p className="staff-read">Nobody has rung this one yet. Yours is the first call.</p>
             )}
           </div>
 
@@ -359,7 +359,7 @@ export default function CallPage() {
           {marked && (
             <div className="staff-answers">
               <div className="staff-part">
-                <h3>What The Call Came To</h3>
+                <h3>What the Call Came To</h3>
                 <div className="staff-tags-grid">
                   {CALL_OUTCOMES.map(one => (
                     <button
