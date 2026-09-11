@@ -3,6 +3,26 @@ import { lazy } from 'react'
 const DEFAULT_RETRIES = 2
 const DEFAULT_DELAY_MS = 350
 
+// And one more attempt, long after the quick pair is spent.
+//
+// The two above are for a request that was dropped and lands on the next ask,
+// and they are over inside eleven hundred milliseconds. The failures this
+// actually sees last two or three seconds - an edge that has not got the new
+// build yet, a phone changing networks, a proxy refusing for a moment - so a
+// ladder that finishes in one second is a ladder spent entirely inside the
+// outage. Measured against the built site with this chunk refused for three
+// seconds and served from then on: three attempts gone by 1,534ms, the document
+// reloaded at 1,628ms, three more gone by 2,951ms, and the reader left on the
+// boundary's error screen from there - with the file answering every request
+// from 3,000ms and nothing left to ask. That is #561.
+//
+// The stylesheet and the chrome were each given the same rung for the same
+// reading (`vite/sheet-source.js`, `LateChrome`), and the route's own chunk was
+// the one that never got it. Five seconds is past what these outages measure
+// and short enough that the reader is still on the page.
+const DEFAULT_WAITS = 1
+const WAIT_MS = 5000
+
 const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // How many retried addresses this page has already spent. Counted for the whole
@@ -82,14 +102,15 @@ export function warm(factory) {
  *
  * Each attempt asks for the chunk at an address carrying its own attempt number,
  * for the reason given above `refetch`: asking for the same one again is not
- * asking again. Between attempts we wait a short, widening delay. If every
- * attempt fails the rejection is re-thrown so the surrounding boundary can take
- * over — by then the likely cause is a chunk that no longer exists (a superseded
- * deploy), which no address recovers.
+ * asking again. The quick pair backs off 350ms and 700ms, and a last one waits
+ * `WAIT_MS` so that the ladder reaches past the outage rather than into it. If
+ * every attempt fails the rejection is re-thrown so the surrounding boundary can
+ * take over — by then the likely cause is a chunk that no longer exists (a
+ * superseded deploy), which no address recovers and only a newer document does.
  *
  * @param {() => Promise<{ default: React.ComponentType }>} factory - Dynamic
  *   import returning a module with a default-exported component.
- * @param {{ retries?: number, delayMs?: number, after?: unknown }} [options] -
+ * @param {{ retries?: number, delayMs?: number, waits?: number, waitMs?: number, after?: unknown }} [options] -
  *   `after` is what an earlier pass at this same piece died of. Given one, the
  *   plain address is skipped: it is the address that already failed, and the
  *   module map will hand back that failure without sending anything.
@@ -97,11 +118,18 @@ export function warm(factory) {
  */
 export function lazyWithRetry(
   factory,
-  { retries = DEFAULT_RETRIES, delayMs = DEFAULT_DELAY_MS, after = null } = {}
+  {
+    retries = DEFAULT_RETRIES,
+    delayMs = DEFAULT_DELAY_MS,
+    waits = DEFAULT_WAITS,
+    waitMs = WAIT_MS,
+    after = null,
+  } = {}
 ) {
   return lazy(async () => {
     let lastError = after
-    for (let attempt = 0; attempt <= retries; attempt++) {
+    const last = retries + waits
+    for (let attempt = 0; attempt <= last; attempt++) {
       try {
         // The first attempt is the factory itself, so a chunk that loads
         // normally - which is all of them, nearly all of the time - is asked
@@ -114,7 +142,9 @@ export function lazyWithRetry(
         return await again
       } catch (error) {
         lastError = error
-        if (attempt < retries) await wait(delayMs * (attempt + 1))
+        // The quick pair widens; everything past it is the long wait, which is
+        // the one that reaches the far side of the outage.
+        if (attempt < last) await wait(attempt < retries ? delayMs * (attempt + 1) : waitMs)
       }
     }
     throw lastError
