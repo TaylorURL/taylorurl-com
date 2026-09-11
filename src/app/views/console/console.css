@@ -1622,6 +1622,92 @@
   color: var(--paper-ink-mute);
 }
 
+/* THE CALL THREAD
+   Every call placed to one business, drawn as a column with the call about to
+   be placed as its last entry. The line down the left is what makes three
+   calls one conversation rather than three rows.
+
+   The line is ink at the ghost step rather than the hairline the cards are
+   ruled with. A hairline is the right weight for a rule between two rows; this
+   one is followed down a screen with the eye, and at the hairline's alpha it
+   is gone at arm's length. Ghost is the console's own decoration step, which is
+   what a connector is. */
+.console-spine {
+  @apply grid list-none p-0;
+}
+
+.console-spine-entry {
+  @apply relative grid gap-2 py-4 pl-6;
+}
+
+.console-spine-entry::before,
+.console-spine-gap::before {
+  content: '';
+  @apply absolute left-[5px] w-px;
+  background-color: var(--paper-ink-ghost);
+}
+
+.console-spine-entry::before {
+  @apply inset-y-0;
+}
+
+/* The thread starts at its first mark and ends at its last. A line running on
+   past either reads as a call nobody has drawn yet. */
+.console-spine-entry:first-child::before {
+  @apply bottom-0 top-5;
+}
+
+.console-spine-entry:last-child::before {
+  @apply bottom-auto top-0 h-5;
+}
+
+/* The mark, with the card's own ground ringed around it so the line passes
+   behind it rather than into it. */
+.console-spine-entry::after {
+  content: '';
+  @apply absolute left-0 top-[15px] h-[11px] w-[11px] rounded-full;
+  background-color: var(--paper-ink-mute);
+  box-shadow: 0 0 0 3px var(--console-card-bg);
+}
+
+/* The call being placed. It carries the accent because it is the one entry
+   that is an instruction rather than a record. */
+.console-spine-entry[data-now='true'] {
+  @apply rounded-[var(--console-radius-sm)] pr-4;
+  background-color: var(--wash-accent);
+}
+
+.console-spine-entry[data-now='true']::after {
+  background-color: var(--accent-fill);
+}
+
+/* What sat between two calls, drawn in the space it sat in. */
+.console-spine-gap {
+  @apply relative py-0 pl-6 text-[12px] font-medium;
+  color: var(--paper-ink-faint);
+}
+
+.console-spine-gap::before {
+  @apply -inset-y-0.5;
+}
+
+/* The lines to read out, inside the entry for the call being placed. On its
+   own ground rather than the wash, so the words a caller reads aloud sit on a
+   surface instead of in a tint. */
+.console-say {
+  @apply grid overflow-hidden rounded-[var(--console-radius-sm)];
+  background-color: var(--console-card-bg);
+  box-shadow: inset 0 0 0 1px var(--paper-hairline);
+}
+
+.console-say-line {
+  @apply grid gap-0.5 px-4 py-3;
+}
+
+.console-say-line + .console-say-line {
+  border-top: 1px solid var(--paper-hairline);
+}
+
 /* One state, in a word. The tint carries the reading and the word confirms it,
    so neither is doing the work alone - which is what keeps it legible to a
    reader who cannot separate the two colours. */

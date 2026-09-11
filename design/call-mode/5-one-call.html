@@ -86,7 +86,7 @@
         color: var(--paper-ink-mute);
       }
 
-      .shift-figures b {
+      .shift-figures strong {
         font-weight: 600;
         color: var(--paper-ink);
       }
@@ -97,6 +97,16 @@
 
       /* ── The batch strip ───────────────────────────────────────────────── */
 
+      /* The strip is a reading rather than a control.
+         It was a row of buttons once, one per business, and a thumb needs
+         forty-four pixels: at twenty-five marks that is a strip eleven hundred
+         pixels wide, which is the list this was drawn to replace. Widening the
+         gap satisfies the rule and loses the argument.
+         A ten pixel dot among twenty-five is not a control anybody can aim at
+         either - nothing on it says which business it is - so the honest fix is
+         that it never was one. The marks say how far through the batch the
+         sitting is; the way to a particular business is the batch list, which
+         is what the other four screens draw. */
       .marks {
         display: flex;
         flex-wrap: wrap;
@@ -105,31 +115,10 @@
       }
 
       .mark {
-        position: relative;
         width: 10px;
         height: 10px;
-        padding: 0;
         border: 1px solid var(--paper-ink-ghost);
         border-radius: 50%;
-        background-color: transparent;
-        cursor: pointer;
-        transition:
-          background-color 150ms var(--ease-out-soft),
-          border-color 150ms var(--ease-out-soft),
-          transform 150ms var(--ease-out-soft);
-      }
-
-      /* The reach stays the forty-four pixels a thumb needs while the drawing
-         stays a ten pixel dot, carried out over the strip's own gap by a
-         pseudo-element. The same trick the console's own row control uses. */
-      .mark::before {
-        content: '';
-        position: absolute;
-        inset: -17px;
-      }
-
-      .mark:hover {
-        border-color: var(--accent);
       }
 
       .mark[data-state='worked'] {
@@ -142,14 +131,23 @@
         background-color: var(--good);
       }
 
-      .mark[aria-current='true'] {
+      .mark[data-state='now'] {
         border-color: var(--accent);
         background-color: var(--accent-fill);
         transform: scale(1.4);
       }
 
+      /* The strip and its heading sit on one line, with the count at the end
+         of it. The dots say how far through; the count says it in words, for
+         a reader who is not counting eleven pixel circles. */
+      .strip-of {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-2) var(--s-3);
+      }
+
       .marks-note {
-        margin-left: var(--s-2);
         font-size: 12px;
         font-weight: 500;
         color: var(--paper-ink-faint);
@@ -160,13 +158,7 @@
       .call {
         display: grid;
         gap: var(--s-5);
-        padding: var(--s-6) var(--s-5);
-      }
-
-      @media (min-width: 768px) {
-        .call {
-          padding: var(--s-8) var(--s-10);
-        }
+        padding: var(--s-4) var(--s-5);
       }
 
       .who {
@@ -239,7 +231,7 @@
         color: var(--paper-ink);
       }
 
-      .last p b {
+      .last p strong {
         font-weight: 600;
       }
 
@@ -269,12 +261,6 @@
         border-top: 1px solid var(--paper-hairline);
       }
 
-      @media (min-width: 768px) {
-        .keys {
-          padding-inline: var(--s-10);
-        }
-      }
-
       .key-grid {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -299,7 +285,7 @@
       .score {
         display: grid;
         gap: var(--s-4);
-        padding: var(--s-5);
+        padding: var(--s-4) var(--s-5);
       }
 
       .score-rows {
@@ -357,7 +343,7 @@
           The least that can be on screen while a phone is ringing. The shift is a rule across the
           top and the batch is a strip of marks, so the card holds a name, one sentence about the
           last call, three lines to say and the keys. The figures come back in full where the batch
-          runs out, which is where somebody actually stops to read them.
+          runs out, which is where somebody stops to read them.
         </p>
       </header>
 
@@ -370,144 +356,43 @@
             <span class="shift-seg" data-met="no"><b style="width: 50%"></b></span>
           </div>
           <ul class="shift-figures">
-            <li><b>23</b> of 40 calls</li>
-            <li><b>5</b> of 8 owners reached</li>
-            <li><b>1</b> of 2 plans booked</li>
-            <li>Finishing at <b>4:40 PM</b></li>
+            <li><strong>23</strong> of 40 calls</li>
+            <li><strong>5</strong> of 8 owners reached</li>
+            <li><strong>1</strong> of 2 plans booked</li>
+            <li>Finishing at <strong>4:40 PM</strong></li>
           </ul>
         </section>
 
-        <section class="marks" aria-label="The batch">
-          <button
-            type="button"
-            class="mark"
-            data-state="worked"
-            aria-label="Hollis Roofing, left voicemail"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            data-state="worked"
-            aria-label="Marsh Electric, no answer"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            data-state="booked"
-            aria-label="Dominguez Auto Glass, booked"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            data-state="worked"
-            aria-label="Keller Septic, gatekeeper"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            data-state="worked"
-            aria-label="San Jacinto Awning, no answer"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            data-state="worked"
-            aria-label="Gulf Coast Doors, not interested"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            data-state="worked"
-            aria-label="Baytown Mower, left voicemail"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-current="true"
-            aria-label="Rivera Fence and Gate, calling now"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Bayou Bend Plumbing, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Cedar Bayou Small Engine, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Trinity Bay Tree Service, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Pelican Pools and Patio, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Ramirez Upholstery, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Highlands Glass Works, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Old River Cabinetry, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Barbers Hill Tire, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Chambers County Dozer, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Lone Oak Pest Control, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Wallisville Feed and Supply, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Beach City Welding, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Eagle Drive Collision, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Turner Land Clearing, not yet called"
-          ></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Goose Creek Locksmith, not yet called"
-          ></button>
-          <button type="button" class="mark" aria-label="McNair Concrete, not yet called"></button>
-          <button
-            type="button"
-            class="mark"
-            aria-label="Sjolander Sheet Metal, not yet called"
-          ></button>
-          <span class="marks-note">7 worked, 18 to go</span>
+        <section class="strip-of" aria-labelledby="batch-head">
+          <h2 id="batch-head" class="label">The Batch</h2>
+          <ol class="marks">
+            <li class="mark" data-state="worked"></li>
+            <li class="mark" data-state="worked"></li>
+            <li class="mark" data-state="booked"></li>
+            <li class="mark" data-state="worked"></li>
+            <li class="mark" data-state="worked"></li>
+            <li class="mark" data-state="worked"></li>
+            <li class="mark" data-state="worked"></li>
+            <li class="mark" data-state="now"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+            <li class="mark"></li>
+          </ol>
+          <p class="marks-note">7 worked, 18 to go. One is booked.</p>
         </section>
 
         <section class="card" aria-labelledby="calling-head">
@@ -527,8 +412,8 @@
             <div class="last">
               <span class="badge" data-tone="accent">Third Call</span>
               <p>
-                Dylan got the desk on Sep 2 and was told to ask for <b>Marisol</b> after two. It is
-                2:40.
+                Dylan got the desk on Sep 2 and was told to ask for <strong>Marisol</strong> after
+                two. It is 2:40.
               </p>
               <button type="button" class="quiet">Read The Other Two</button>
             </div>
@@ -577,9 +462,7 @@
         <section class="card" aria-labelledby="score-head">
           <header class="card-head">
             <h2 id="score-head">When The Batch Runs Out</h2>
-            <p class="card-note">
-              The same card at the end of the twenty-five, which is the state under it.
-            </p>
+            <p class="card-note">The same card at the end of the twenty-five.</p>
           </header>
           <div class="score">
             <dl class="score-rows">

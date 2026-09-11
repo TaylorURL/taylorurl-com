@@ -81,7 +81,7 @@ function refusal(error, said) {
 async function readPrefs(db, userId) {
   const { data, error } = await db
     .from(PREFS)
-    .select('columns, density, take, sort, filters, views')
+    .select('columns, density, take, sort, filters, views, goals')
     .eq('user_id', userId)
     .maybeSingle()
   if (error) throw error

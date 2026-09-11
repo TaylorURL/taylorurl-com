@@ -20,13 +20,12 @@ Four things it does not do, and every mockup here has to do all four:
 
 - **A number to aim at.** The page counts what is left, which is four thousand
   today and four thousand tomorrow. A caller cannot have a good morning against
-  a figure like that, so none of them ever does.
-- **A reason to keep going.** Pace, said as the clock time the shift finishes
-  at. Nobody converts calls a minute in their head with a phone against their
-  ear.
+  a figure like that.
+- **A reason to keep going.** Pace, said as a clock time rather than a rate.
+  Nobody converts calls a minute in their head with a phone against their ear.
 - **Words to say.** `handbook.js` already composes an opener out of the row on
-  screen, and it is reached through a search field in an overlay three columns
-  away from the business it was written about.
+  screen. The only way to that opener is a search field in an overlay three
+  columns away from the business it was written about.
 - **The calls before this one.** `ATTEMPT_HOURS` rings a business at a day,
   three days, a week, a fortnight and a month, so most businesses are rung four
   or five times. All of that reaches the caller as one clause, and who to ask

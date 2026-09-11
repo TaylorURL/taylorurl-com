@@ -295,6 +295,10 @@ textarea {
 }
 
 .brief-back {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  min-height: var(--control-h);
   font-size: 13px;
   font-weight: 500;
   text-decoration: none;
@@ -452,8 +456,18 @@ textarea {
   border: 1px solid var(--paper-hairline-strong);
   border-radius: var(--r-control);
   background-color: var(--paper-field);
-  font-size: 13px;
+  /* Sixteen is the floor iOS reads: a field under it is zoomed into on focus,
+     and the page is left scaled up with the rest of the screen off the side.
+     The console sets thirteen, which is right on a desk and is put back for a
+     pointer that cannot trigger the zoom in the first place. */
+  font-size: 16px;
   transition: border-color 150ms var(--ease-out-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .field {
+    font-size: 13px;
+  }
 }
 
 .field::placeholder {
@@ -468,6 +482,15 @@ textarea.field {
   min-height: 88px;
   line-height: 1.6;
   resize: vertical;
+}
+
+/* A field under 16px makes iOS Safari zoom the viewport on focus, which on a
+   call is a jump at the worst moment. The console's optical 13px comes back
+   wherever there is a real pointer and no such zoom. */
+@media (hover: hover) and (pointer: fine) {
+  .field {
+    font-size: 13px;
+  }
 }
 
 /* The key cap in front of an outcome. A caller works this screen with one
