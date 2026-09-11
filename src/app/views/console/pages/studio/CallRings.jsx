@@ -89,7 +89,7 @@ function Ring({ label, had, want, met, share }) {
 function paceLine(shift, now) {
   if (!shift) return ''
   const left = callsLeft(shift)
-  if (!left) return `That is ${shift.goals.calls} placed. You met it.`
+  if (!left) return `That is ${shift.placed} placed. You met it.`
   if (!shift.placed) return `${left} calls to place. The first one starts the clock.`
   if (shift.placed < 2) return `${left} calls left. One call is not a rate yet.`
   const at = finishAt(shift, now)
