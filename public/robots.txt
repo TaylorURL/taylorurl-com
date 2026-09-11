@@ -3,6 +3,7 @@ Allow: /
 # site:console
 Allow: /console/status
 Disallow: /console
+Disallow: /staff
 Disallow: /login
 Disallow: /welcome
 Disallow: /forgot-password
@@ -22,6 +23,7 @@ Allow: /
 # site:console
 Allow: /console/status
 Disallow: /console
+Disallow: /staff
 Disallow: /login
 Disallow: /welcome
 Disallow: /forgot-password

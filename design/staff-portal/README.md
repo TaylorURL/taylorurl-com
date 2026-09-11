@@ -3,6 +3,12 @@
 Five mockups of `taylorurl.com/staff` and the three surfaces behind it, drawn on
 the site's own tokens.
 
+**The direction below is built.** `/staff` is a real route now: gated on an
+account, wired to the same call list the console's own calling screen reads, and
+it lives under `src/app/views/staff/`. These drawings are kept as the argument
+the build came out of, not as the thing that ships. Where one of them disagrees
+with the route, the route is right.
+
 ```
 http://localhost:5173/design/staff-portal/index.html
 ```

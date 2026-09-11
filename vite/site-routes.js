@@ -429,6 +429,15 @@ const STUDIO_PRERENDER_ROUTES = [
   '/console/calls',
   '/console/payments',
   '/console/admin',
+  // The representatives' portal and its three surfaces, built for the reason
+  // the console's sections are built - nothing rewrites an unknown path to the
+  // shell, so a representative opening /staff/calls from a phone's home screen
+  // has to get an answer on a direct load - and out of the sitemap for the
+  // reason they are: noindex, disallowed in robots.txt, and behind an account.
+  '/staff',
+  '/staff/calls',
+  '/staff/management',
+  '/staff/resources',
   // Sign-in, the screen a paid checkout returns to, and the two halves of a
   // password reset, prerendered for the same reason and kept out of the sitemap
   // for the same one: reachable, noindex, and not pages to rank.
