@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useSurfaced } from './lib/surface'
 
 /**
  * One staff screen: a head that is read, a column that scrolls, a foot that is
@@ -13,6 +14,11 @@ import { Link } from 'react-router-dom'
  * The head is never a control that ends anything. It holds where you are and
  * the way back, because the head is where a hand rests.
  *
+ * The two bars are panes of the surface's own material, so the head says how far
+ * it is held above the column by what it casts onto it - which is the one thing
+ * it can only know from where the column is. `useSurfaced` writes that to the
+ * head directly rather than through a render.
+ *
  * The document's head is the frame's, not this one's. It has to be written for a
  * visit that never reaches a screen at all - a crawler, or a direct load before
  * the session is read back - and `lib/heads.js` is where the four of them live.
@@ -22,9 +28,11 @@ import { Link } from 'react-router-dom'
  *   children: React.ReactNode}} props
  */
 export default function StaffScreen({ title, back, aside, foot, children }) {
+  const surfaced = useSurfaced()
+
   return (
     <div className="staff">
-      <header className="staff-head">
+      <header className="staff-head" ref={surfaced.head} data-surfaced="false">
         <div className="staff-pad staff-head-row">
           <b>{title}</b>
           {aside}
@@ -35,7 +43,7 @@ export default function StaffScreen({ title, back, aside, foot, children }) {
           )}
         </div>
       </header>
-      <div className="staff-scroll">
+      <div className="staff-scroll" ref={surfaced.scroll}>
         <div className="staff-pad staff-stack">{children}</div>
       </div>
       {foot && (
