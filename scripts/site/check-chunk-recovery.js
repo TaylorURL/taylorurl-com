@@ -194,6 +194,38 @@ if (renewing) {
   )
 }
 
+// And the same rung on the route's own chunk, which was the last one without it.
+//
+// The sheet has it and `LateChrome` has it, and both were given it off the same
+// reading: the quick pair is over in eleven hundred milliseconds and the
+// failures this sees last two or three seconds, so a ladder that ends there ends
+// inside the outage. The route was the one that kept the short ladder, and it is
+// the worst place to keep it - a piece of chrome that gives up costs a corner,
+// and a route that gives up costs the page. Measured against the built site with
+// the home chunk refused for three seconds: three attempts by 1,534ms, the
+// boundary's reload at 1,628ms, three more by 2,951ms, and the reader on "this
+// page didn't load correctly" from there while the file answered from 3,000ms
+// with nothing left to ask it. #561 was that.
+//
+// Read rather than run, for the reason the renewal above is: what it is asking
+// about is a timer, and a check that ran it would be a check that waited for it.
+const laddering = swept.find(entry => entry.name === RETRY)
+if (laddering) {
+  const waiting = /const WAIT_MS = (\d+)/.exec(laddering.source)
+  check(
+    Boolean(waiting),
+    'the route chunk asks three times inside eleven hundred milliseconds and stops, so a reader who lost it to an outage lasting two or three seconds is on the error screen with the file answering'
+  )
+  check(
+    Boolean(waiting) && Number(waiting[1]) >= 3000,
+    `the route chunk's last attempt is ${waiting ? waiting[1] : '?'}ms out, which is still inside what these outages measure`
+  )
+  check(
+    /waits/.test(laddering.source) && /await wait\(.*waitMs/.test(laddering.source),
+    'the long wait is declared and never spent, so the ladder still ends where the quick pair does'
+  )
+}
+
 // The search is the only chunk on the site a reader asks for by name, and that
 // makes it the only one that owes them a sentence when it will not come.
 //
