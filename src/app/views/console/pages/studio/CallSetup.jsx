@@ -9,7 +9,52 @@ import {
   filterChips,
   sameNarrowing,
 } from '@lib/outreach/prospects/callPrefs.js'
+import { GOAL_CEILING, GOAL_FLOOR, SHIFT_GOALS } from '@lib/outreach/prospects/callShift.js'
 import { BUTTON, CHIP, FIELD, MONO_LABEL, QUIET } from '../../lib/tokens'
+
+/**
+ * One of the three figures a shift is worked to.
+ *
+ * The only control on this panel that is typed rather than pressed, and typing
+ * is why it holds its own draft. Every other control here writes on the change
+ * and the panel redraws from what came back, which is right for a checkbox and
+ * wrong for a number: clearing forty to type sixty passes through an empty
+ * field, an empty field is not a figure, and a figure that is not a figure is
+ * the studio's own - so the field would snap to forty under the cursor.
+ *
+ * So the draft is what is on screen while the field is being typed in, and the
+ * figure is written when the field is left. A number outside the two bounds is
+ * pulled back to them on the way out rather than refused, because a caller who
+ * typed 1000 meant a big number and not a refusal.
+ */
+function GoalField({ one, had, onSet }) {
+  const [draft, setDraft] = useState(null)
+  const leave = () => {
+    setDraft(null)
+    const figure = Number.parseInt(String(draft ?? ''), 10)
+    if (!Number.isFinite(figure)) return
+    const held = Math.min(GOAL_CEILING, Math.max(GOAL_FLOOR, figure))
+    if (held !== had) onSet(held)
+  }
+  return (
+    <label className="grid gap-1.5">
+      <span className={`${MONO_LABEL} text-paper-faint`}>{one.label}</span>
+      <input
+        type="number"
+        inputMode="numeric"
+        className={FIELD}
+        min={GOAL_FLOOR}
+        max={GOAL_CEILING}
+        value={draft ?? had ?? ''}
+        onChange={event => setDraft(event.target.value)}
+        onBlur={leave}
+        onKeyDown={event => {
+          if (event.key === 'Enter') event.currentTarget.blur()
+        }}
+      />
+    </label>
+  )
+}
 
 /**
  * The list set up the way one person wants to read it, kept on their account.
@@ -138,6 +183,30 @@ export default function CallSetup({
         <p className="text-[13px] text-paper-soft">
           The same figure both ways: how many rows a page of the list holds, and how many businesses
           Call Mode takes at a time.
+        </p>
+      </section>
+
+      {/* The three figures the rings in Call Mode are drawn against.
+          They sit here rather than in a dialog of their own because a goal is a
+          fact about the person working the list, which is what every other
+          control on this panel is, and because somebody setting up how they
+          read the list is the same person deciding what a day of it looks
+          like. */}
+      <section className="grid gap-2">
+        <h3 className={`${MONO_LABEL} text-paper-faint`}>Your Shift</h3>
+        <div className="grid gap-2 sm:grid-cols-3">
+          {SHIFT_GOALS.map(one => (
+            <GoalField
+              key={one.id}
+              one={one}
+              had={prefs.goals?.[one.id]}
+              onSet={figure => onChange({ goals: { ...prefs.goals, [one.id]: figure } })}
+            />
+          ))}
+        </div>
+        <p className="text-[13px] text-paper-soft">
+          What a day on the phone comes to. Call Mode counts today's calls against these three and
+          says what time you meet the calls figure at the rate the day has gone.
         </p>
       </section>
 
