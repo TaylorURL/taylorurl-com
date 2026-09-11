@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en" data-mockup="script-first">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Call Mode: Script First - TaylorURL Console Mockup</title>
+    <link rel="stylesheet" href="./console.css" />
+    <style>
+      /*
+       * SCRIPT FIRST
+       *
+       * The words are the screen. Everything else is a strip around them.
+       *
+       * A caller with a phone against their ear is reading out loud to a
+       * stranger, and the thing they need is the next sentence at a size they
+       * can find again after looking away. Today that sentence is behind a
+       * search field in a handbook overlay, three columns from the business it
+       * is about. Here the facts compress into one line under the name and the
+       * script takes the rest of the card at reading size.
+       *
+       * Only the beat being said is set in full. The beats behind it collapse
+       * to their label, which is how a caller on their fortieth call actually
+       * reads this - by the labels, not the words - and the beats ahead stay
+       * shut so the eye has one place to be.
+       *
+       * The outcomes never scroll away. They are the one thing a call ends on,
+       * and hunting for them while somebody is still on the line is what puts
+       * a call in the wrong row.
+       */
+
+      .stack {
+        display: grid;
+        gap: var(--s-4);
+      }
+
+      /* ── The goal strip ────────────────────────────────────────────────── */
+
+      /* Three figures and a clock, set on one line. The shift belongs at the
+         top of the screen and nowhere near the words being read out. */
+      .strip {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-3) var(--s-5);
+        padding: var(--s-3) var(--s-5);
+        border-radius: var(--r-card);
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow);
+      }
+
+      .strip-goal {
+        display: flex;
+        align-items: baseline;
+        gap: var(--s-2);
+      }
+
+      .strip-goal dt {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--paper-ink-faint);
+      }
+
+      .strip-goal dd {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--paper-ink);
+      }
+
+      .strip-goal dd small {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--paper-ink-faint);
+      }
+
+      .strip-rule {
+        flex: 1 1 6rem;
+        height: 4px;
+        min-width: 4rem;
+        border-radius: var(--r-tiny);
+        background-color: var(--wash-paper-strong);
+        overflow: hidden;
+      }
+
+      .strip-rule span {
+        display: block;
+        height: 100%;
+        border-radius: var(--r-tiny);
+        background-color: var(--accent-fill);
+      }
+
+      .strip-when {
+        font-size: 13px;
+        color: var(--paper-ink-soft);
+      }
+
+      .strip-when b {
+        font-weight: 600;
+        color: var(--paper-ink);
+      }
+
+      /* ── The business line ─────────────────────────────────────────────── */
+
+      .who {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4) var(--s-5);
+        border-bottom: 1px solid var(--paper-hairline);
+      }
+
+      @media (min-width: 768px) {
+        .who {
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: var(--s-5);
+        }
+      }
+
+      .who h3 {
+        font-size: 22px;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        color: var(--paper-ink);
+      }
+
+      .who-facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-1) var(--s-3);
+        margin-top: 2px;
+        font-size: 13px;
+        color: var(--paper-ink-mute);
+      }
+
+      /* The separator hangs off the fact in front of it rather than the one
+         behind it. Either way it is a character that can end up alone on a
+         wrapped line, and a dot left at the end of a line reads as "there is
+         more", which is true. The same dot at the start of the next line reads
+         as a bullet nobody meant. */
+      .who-facts span:not(:last-child)::after {
+        content: '·';
+        margin-left: var(--s-3);
+        color: var(--paper-ink-ghost);
+      }
+
+      .dial {
+        min-height: 52px;
+        font-size: 17px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      /* ── The thread ────────────────────────────────────────────────────── */
+
+      /* One sentence, because a caller about to read a script needs to know
+         which script it is and nothing more. The rest of the history is a
+         press away and is not read on the way into a call. */
+      .thread {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-2) var(--s-3);
+        padding: var(--s-3) var(--s-5);
+        border-bottom: 1px solid var(--paper-hairline);
+        background-color: var(--wash-accent);
+      }
+
+      .thread p {
+        flex: 1 1 20rem;
+        min-width: 0;
+        font-size: 14px;
+        line-height: 1.55;
+        color: var(--paper-ink);
+      }
+
+      .thread p b {
+        font-weight: 600;
+      }
+
+      /* ── The script ────────────────────────────────────────────────────── */
+
+      .script {
+        padding: var(--s-2) 0 var(--s-5);
+      }
+
+      .beat {
+        display: grid;
+        gap: var(--s-1);
+        padding: var(--s-3) var(--s-5);
+        border-left: 2px solid transparent;
+      }
+
+      .beat p {
+        max-width: var(--measure);
+      }
+
+      /* A beat already said. The label is the whole of it: a caller forty calls
+         in navigates by the labels, and the sentence behind one is only wanted
+         when the call has gone back a step. */
+      .beat[data-state='said'] .beat-say {
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--paper-ink-faint);
+      }
+
+      /* The beat being said. Set at the size a line is found again at after
+         looking away from the screen. */
+      .beat[data-state='now'] {
+        border-left-color: var(--accent);
+        background-color: var(--wash-accent);
+      }
+
+      .beat[data-state='now'] .beat-say {
+        font-size: 19px;
+        line-height: 1.55;
+        letter-spacing: -0.005em;
+        color: var(--paper-ink);
+      }
+
+      .beat[data-state='next'] .beat-say {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--paper-ink-soft);
+      }
+
+      .beat-label {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2);
+      }
+
+      /* ── The drawer ────────────────────────────────────────────────────── */
+
+      /* What to say back, under the script rather than beside it. Shut until
+         somebody has actually been pushed back on, which is most calls and not
+         all of them. */
+      .drawer {
+        margin: 0 var(--s-5);
+        border: 1px solid var(--paper-hairline);
+        border-radius: var(--r-control);
+        overflow: hidden;
+      }
+
+      .drawer-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-3);
+        width: 100%;
+        padding: var(--s-3) var(--s-4);
+        border: 0;
+        background-color: var(--wash-paper);
+        cursor: pointer;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--paper-ink);
+      }
+
+      .drawer-rows {
+        display: grid;
+      }
+
+      .drawer-row {
+        display: grid;
+        gap: 2px;
+        padding: var(--s-3) var(--s-4);
+        border-top: 1px solid var(--paper-hairline);
+      }
+
+      .drawer-row p:last-child {
+        max-width: var(--measure);
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--paper-ink);
+      }
+
+      /* ── The outcome bar ───────────────────────────────────────────────── */
+
+      .bar {
+        position: sticky;
+        bottom: 0;
+        z-index: var(--z-sticky);
+        display: grid;
+        gap: var(--s-2);
+        padding: var(--s-3) var(--s-5);
+        padding-bottom: calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
+        border-top: 1px solid var(--paper-hairline);
+        background-color: var(--card-bg);
+      }
+
+      .bar-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--s-2);
+      }
+
+      @media (min-width: 640px) {
+        .bar-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      @media (min-width: 1024px) {
+        .bar-grid {
+          grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+      }
+
+      .bar-grid .quiet {
+        flex-direction: column;
+        gap: 2px;
+        padding-block: 6px;
+        line-height: 1.3;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <a class="brief-back" href="./index.html">Back To The Five</a>
+        <h1>Two: Script First</h1>
+        <p>
+          The words take the card and everything else compresses around them. The beat being said is
+          set large, the beats behind it fall back to their labels, and the outcomes stay pinned to
+          the foot so a call never ends by hunting for the button. The shift is one strip above the
+          business, and the follow-up is one sentence.
+        </p>
+      </header>
+
+      <main class="stack">
+        <dl class="strip">
+          <div class="strip-goal">
+            <dt>Calls</dt>
+            <dd>23 <small>of 40</small></dd>
+          </div>
+          <div class="strip-rule" role="presentation"><span style="width: 58%"></span></div>
+          <div class="strip-goal">
+            <dt>Owners Reached</dt>
+            <dd>5 <small>of 8</small></dd>
+          </div>
+          <div class="strip-goal">
+            <dt>Plans Booked</dt>
+            <dd>1 <small>of 2</small></dd>
+          </div>
+          <p class="strip-when">Seventeen left. At this rate you finish at <b>4:40 PM</b>.</p>
+        </dl>
+
+        <section class="card" aria-labelledby="calling-head">
+          <header class="card-head">
+            <h2 id="calling-head">Calling</h2>
+            <p class="mono">18 to go</p>
+          </header>
+
+          <div class="who">
+            <div>
+              <h3>Rivera Fence &amp; Gate</h3>
+              <p class="who-facts">
+                <span>Fencing contractor</span><span>Mont Belvieu</span
+                ><span>61 reviews at 4.8</span><span>Trade middle 17</span
+                ><span>Facebook page, no site</span>
+              </p>
+            </div>
+            <a class="btn dial" href="tel:+12815760148">Call (281) 576-0148</a>
+          </div>
+
+          <div class="thread">
+            <span class="badge" data-tone="accent">Call 3</span>
+            <p>
+              Dylan was held at the desk on Sep 2. Ask for <b>Marisol</b>, who is back at the yard
+              after two.
+            </p>
+            <button type="button" class="quiet">Read All Three</button>
+          </div>
+
+          <div class="card-body">
+            <div class="script">
+              <div class="beat" data-state="said">
+                <p class="beat-label label">Get To The Owner</p>
+                <p class="beat-say">Hi, is Marisol around? I spoke to someone here last week.</p>
+              </div>
+              <div class="beat" data-state="said">
+                <p class="beat-label label">Who Is Calling</p>
+                <p class="beat-say">
+                  This is Trenton with TaylorURL, we build websites for businesses around Baytown
+                  and Houston. I am not selling anything over the phone, I rang about something on
+                  your Google listing.
+                </p>
+              </div>
+              <div class="beat" data-state="now">
+                <p class="beat-label">
+                  <span class="label ink-accent">Why You Called</span>
+                  <span class="badge" data-tone="accent">Saying Now</span>
+                </p>
+                <p class="beat-say">
+                  I looked you up on Google and the website on your listing is your Facebook page.
+                  They decide who sees it, and if that account goes tomorrow there is nothing of
+                  yours left online.
+                </p>
+              </div>
+              <div class="beat" data-state="next">
+                <p class="beat-label label">What Their Trade Says</p>
+                <p class="beat-say">
+                  You have 61 reviews and the middle for fencing listings around here is about 17,
+                  so you are well ahead of the shops you compete with. The ones with a website are
+                  still getting found ahead of you.
+                </p>
+              </div>
+              <div class="beat" data-state="next">
+                <p class="beat-label label">Work To Name</p>
+                <p class="beat-say">
+                  We built Bayside Ironworks, right there by you. Have a look at it while we talk.
+                </p>
+              </div>
+              <div class="beat" data-state="next">
+                <p class="beat-label label">The Ask</p>
+                <p class="beat-say">
+                  I would like to put you a plan together for what your site would say and what it
+                  would cost, for free, with the number agreed before anything starts. Have you got
+                  ten minutes this week?
+                </p>
+              </div>
+            </div>
+
+            <section class="drawer" aria-labelledby="drawer-head">
+              <button type="button" class="drawer-head" id="drawer-head" aria-expanded="true">
+                When They Push Back
+                <span class="label">Type A Word They Said</span>
+              </button>
+              <div class="drawer-rows">
+                <div class="drawer-row">
+                  <p class="label">We already have a Facebook page</p>
+                  <p>
+                    You do, and it is doing work for you. The difference is that Facebook decides
+                    who sees it and Google will not rank it as yours. A site is the one address
+                    nobody can take off you.
+                  </p>
+                </div>
+                <div class="drawer-row">
+                  <p class="label">How much</p>
+                  <p>
+                    A thousand to build it and two hundred and fifty a month after that, which
+                    covers the hosting, the changes and somebody answering the phone when something
+                    breaks. The number is agreed before anything starts.
+                  </p>
+                </div>
+                <div class="drawer-row">
+                  <p class="label">Send me something</p>
+                  <p>
+                    I can, and I would rather put ten minutes into what your site would actually say
+                    first, so what I send you is about your yard rather than about us.
+                  </p>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div class="bar">
+            <p class="label">What did the call come to?</p>
+            <div class="bar-grid">
+              <button type="button" class="quiet"><span class="key">1</span>No Answer</button>
+              <button type="button" class="quiet"><span class="key">2</span>Voicemail</button>
+              <button type="button" class="quiet"><span class="key">3</span>Gatekeeper</button>
+              <button type="button" class="quiet"><span class="key">4</span>Spoke To Owner</button>
+              <button type="button" class="quiet"><span class="key">5</span>Call Back</button>
+              <button type="button" class="quiet"><span class="key">6</span>Booked</button>
+              <button type="button" class="quiet"><span class="key">7</span>Not Interested</button>
+              <button type="button" class="quiet"><span class="key">8</span>Wrong Number</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

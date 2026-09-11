@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="en" data-mockup="the-coach">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Call Mode: The Coach - TaylorURL Console Mockup</title>
+    <link rel="stylesheet" href="./console.css" />
+    <style>
+      /*
+       * THE COACH
+       *
+       * A second column that follows the call rather than sitting still.
+       *
+       * The handbook has five parts and a caller is only ever in one of them.
+       * Searching it means knowing the word to type, which is a thing to work
+       * out while somebody is waiting on the line. So the column is a rail
+       * with three states and the caller moves it with one press: what to open
+       * with, what to say back, how to close.
+       *
+       * The promise is the other half of the follow-up story. A business rung
+       * three times because nobody picked up and a business rung because the
+       * owner asked to be rung are different calls with different first
+       * sentences, and the ladder tells them apart already - `promiseOf` reads
+       * a named time out of the history and `callPlace` returns Due Back. This
+       * is that fact drawn where it changes what gets said.
+       *
+       * The board at the top counts the shift by the hour, because a caller
+       * who is behind wants to know which hour they lost rather than that they
+       * are behind.
+       */
+
+      .stack {
+        display: grid;
+        gap: var(--s-4);
+      }
+
+      /* ── The board ─────────────────────────────────────────────────────── */
+
+      .board {
+        display: grid;
+        gap: var(--s-5);
+        padding: var(--s-4) var(--s-5);
+      }
+
+      @media (min-width: 900px) {
+        .board {
+          grid-template-columns: auto minmax(0, 1fr);
+          align-items: end;
+        }
+      }
+
+      .counters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-5);
+      }
+
+      .counter {
+        display: grid;
+        gap: 2px;
+      }
+
+      .counter dd {
+        margin: 0;
+        display: flex;
+        align-items: baseline;
+        gap: 4px;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        color: var(--paper-ink);
+      }
+
+      .counter dd span {
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--paper-ink-faint);
+      }
+
+      .counter[data-met='yes'] dd {
+        color: var(--good);
+      }
+
+      /* The hours, as bars the height of what each one came to. Drawn against
+         the hourly figure the shift needs rather than against the best hour,
+         so a short bar means behind rather than merely smaller. */
+      .hours {
+        display: grid;
+        gap: var(--s-2);
+      }
+
+      /* A grid rather than a row of flex items. In a flex column the bar and
+         the hour under it compete for the same 54 pixels, so every bar gets
+         shrunk toward the same height and the plot stops being a reading. Two
+         grid rows give the bar a track of its own to take a share of. */
+      .hours-plot {
+        display: grid;
+        grid-auto-flow: column;
+        grid-auto-columns: minmax(0, 1fr);
+        gap: var(--s-2);
+      }
+
+      .hour {
+        display: grid;
+        grid-template-rows: 54px auto;
+        gap: 4px;
+        justify-items: center;
+      }
+
+      /* The track every bar is measured against, so a short hour reads as
+         short rather than merely as small. The bar sits in the same cell. */
+      .hour::before {
+        content: '';
+        grid-row: 1;
+        grid-column: 1;
+        width: 100%;
+        height: 100%;
+        border-radius: var(--r-tiny);
+        background-color: var(--wash-paper);
+      }
+
+      .hour b {
+        grid-row: 1;
+        grid-column: 1;
+        display: block;
+        align-self: end;
+        width: 100%;
+        border-radius: var(--r-tiny);
+        background-color: var(--accent-fill);
+      }
+
+      /* An hour that came in under what the shift needs from an hour. Ink
+         rather than the accent, because the accent is what a reader is being
+         sent to and a lost hour is not something to act on now. */
+      .hour[data-short='yes'] b {
+        background-color: var(--paper-ink-ghost);
+      }
+
+      .hour[data-now='yes'] b {
+        background-color: var(--accent-hi);
+      }
+
+      /* An hour that has not happened yet is the empty track. */
+      .hour[data-state='ahead'] b {
+        display: none;
+      }
+
+      .hour span {
+        font-size: 11px;
+        font-weight: 500;
+        white-space: nowrap;
+        color: var(--paper-ink-faint);
+      }
+
+      .hours-note {
+        font-size: 13px;
+        color: var(--paper-ink-soft);
+      }
+
+      .hours-note b {
+        font-weight: 600;
+        color: var(--paper-ink);
+      }
+
+      /* ── The two-up ────────────────────────────────────────────────────── */
+
+      .two-up {
+        display: grid;
+        gap: var(--s-4);
+        align-items: start;
+      }
+
+      @media (min-width: 1024px) {
+        .two-up {
+          grid-template-columns: minmax(0, 1fr) 22rem;
+          align-items: stretch;
+        }
+      }
+
+      @media (min-width: 1280px) {
+        .two-up {
+          grid-template-columns: minmax(0, 1fr) 26rem;
+        }
+      }
+
+      /* ── The promise ───────────────────────────────────────────────────── */
+
+      /* A time somebody named is the strongest thing on the screen and it is
+         the one thing that expires, so it is the first block in the card and
+         it carries the accent on its own edge. */
+      .promise {
+        display: grid;
+        gap: var(--s-2);
+        padding: var(--s-4) var(--s-5);
+        border-bottom: 1px solid var(--paper-hairline);
+        background-color: var(--wash-accent);
+      }
+
+      .promise-head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-2) var(--s-3);
+      }
+
+      .promise-head h3 {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--accent);
+      }
+
+      .promise p {
+        max-width: var(--measure);
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--paper-ink);
+      }
+
+      .who {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4) var(--s-5);
+      }
+
+      @media (min-width: 640px) {
+        .who {
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: var(--s-5);
+        }
+      }
+
+      .who h3 {
+        font-size: 21px;
+        line-height: 1.25;
+        letter-spacing: -0.02em;
+        color: var(--paper-ink);
+      }
+
+      .who-facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-1) var(--s-3);
+        margin-top: 2px;
+        font-size: 13px;
+        color: var(--paper-ink-mute);
+      }
+
+      /* The separator hangs off the fact in front of it rather than the one
+         behind it. Either way it is a character that can end up alone on a
+         wrapped line, and a dot left at the end of a line reads as "there is
+         more", which is true. The same dot at the start of the next line reads
+         as a bullet nobody meant. */
+      .who-facts span:not(:last-child)::after {
+        content: '·';
+        margin-left: var(--s-3);
+        color: var(--paper-ink-ghost);
+      }
+
+      .dial {
+        min-height: 52px;
+        font-size: 17px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      /* ── The history, folded ───────────────────────────────────────────── */
+
+      .past {
+        margin: 0 var(--s-5) var(--s-4);
+        border: 1px solid var(--paper-hairline);
+        border-radius: var(--r-control);
+      }
+
+      /* A flex summary loses the browser's own disclosure marker, so the fold
+         has to draw one. A caret rather than a triangle, which is the mark the
+         console's own foldable rows carry. */
+      .past summary {
+        display: flex;
+        align-items: center;
+        gap: var(--s-3);
+        padding: var(--s-3) var(--s-4);
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--paper-ink);
+        list-style: none;
+      }
+
+      .past summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .past summary svg {
+        flex-shrink: 0;
+        transition: transform 150ms var(--ease-out-soft);
+      }
+
+      .past[open] summary svg {
+        transform: rotate(180deg);
+      }
+
+      .past summary .label {
+        margin-left: auto;
+        text-align: right;
+      }
+
+      .past-row {
+        display: grid;
+        gap: 2px;
+        padding: var(--s-3) var(--s-4);
+        border-top: 1px solid var(--paper-hairline);
+      }
+
+      .past-row p:last-child {
+        max-width: var(--measure);
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--paper-ink);
+      }
+
+      /* ── The outcomes ──────────────────────────────────────────────────── */
+
+      .outcomes {
+        display: grid;
+        gap: var(--s-2);
+        padding: var(--s-4) var(--s-5);
+        border-top: 1px solid var(--paper-hairline);
+      }
+
+      .outcome-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--s-2);
+      }
+
+      @media (min-width: 640px) {
+        .outcome-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      .outcome-grid .quiet {
+        justify-content: flex-start;
+      }
+
+      /* ── The rail ──────────────────────────────────────────────────────── */
+
+      .stages {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--s-2);
+        padding: var(--s-3) var(--s-5);
+        border-bottom: 1px solid var(--paper-hairline);
+      }
+
+      .stages .quiet {
+        min-height: 36px;
+        justify-content: center;
+        text-align: center;
+        line-height: 1.3;
+      }
+
+      .rail-line {
+        display: grid;
+        gap: 2px;
+        padding: var(--s-3) var(--s-5);
+        border-bottom: 1px solid var(--paper-hairline);
+      }
+
+      .rail-line p:last-child {
+        max-width: var(--measure);
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--paper-ink);
+      }
+
+      .rail-search {
+        padding: var(--s-3) var(--s-5);
+        border-bottom: 1px solid var(--paper-hairline);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <a class="brief-back" href="./index.html">Back To The Five</a>
+        <h1>Four: The Coach</h1>
+        <p>
+          A rail down the right that follows the call: what to open with, what to say back, how to
+          close. The board at the top counts the shift by the hour, so being behind names the hour
+          it happened in. This one shows the other half of the follow-up model, a time the owner
+          named herself, because that call opens on a different sentence than a third try at a
+          number nobody picks up.
+        </p>
+      </header>
+
+      <main class="stack">
+        <section class="card" aria-labelledby="board-head">
+          <header class="card-head">
+            <h2 id="board-head">This Shift</h2>
+            <p class="mono">9:04 AM to 5:00 PM</p>
+          </header>
+          <div class="board">
+            <dl class="counters">
+              <div class="counter" data-met="no">
+                <dt class="label">Calls Placed</dt>
+                <dd>23 <span>of 40</span></dd>
+              </div>
+              <div class="counter" data-met="no">
+                <dt class="label">Owners Reached</dt>
+                <dd>5 <span>of 8</span></dd>
+              </div>
+              <div class="counter" data-met="no">
+                <dt class="label">Plans Booked</dt>
+                <dd>1 <span>of 2</span></dd>
+              </div>
+            </dl>
+            <div class="hours">
+              <div class="hours-plot" role="presentation">
+                <div class="hour" data-short="no">
+                  <b style="height: 72%"></b>
+                  <span>9</span>
+                </div>
+                <div class="hour" data-short="no">
+                  <b style="height: 90%"></b>
+                  <span>10</span>
+                </div>
+                <div class="hour" data-short="yes">
+                  <b style="height: 27%"></b>
+                  <span>11</span>
+                </div>
+                <div class="hour" data-short="yes">
+                  <b style="height: 18%"></b>
+                  <span>12</span>
+                </div>
+                <div class="hour" data-short="no">
+                  <b style="height: 81%"></b>
+                  <span>1</span>
+                </div>
+                <div class="hour" data-short="no" data-now="yes">
+                  <b style="height: 54%"></b>
+                  <span>2</span>
+                </div>
+                <div class="hour" data-state="ahead">
+                  <b></b>
+                  <span>3</span>
+                </div>
+                <div class="hour" data-state="ahead">
+                  <b></b>
+                  <span>4</span>
+                </div>
+              </div>
+              <p class="hours-note">
+                Eleven and twelve went to two long conversations. Seventeen calls left and
+                <b>two hours twenty</b> to place them in.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div class="two-up">
+          <section class="card" aria-labelledby="calling-head">
+            <header class="card-head">
+              <h2 id="calling-head">Calling</h2>
+              <p class="mono">18 to go</p>
+            </header>
+
+            <div class="promise">
+              <div class="promise-head">
+                <h3>Marisol Asked For This Call</h3>
+                <span class="badge" data-tone="accent">Due 2:15 PM</span>
+                <span class="badge" data-tone="warn">25 Minutes Late</span>
+              </div>
+              <p>
+                On Sep 2 she told Dylan to ring back this afternoon, after two, once she is off
+                site. Open with that rather than with who you are.
+              </p>
+            </div>
+
+            <div class="card-body">
+              <div class="who">
+                <div>
+                  <h3>Rivera Fence &amp; Gate</h3>
+                  <p class="who-facts">
+                    <span>Fencing contractor</span><span>Mont Belvieu</span
+                    ><span>61 reviews at 4.8</span><span>Trade middle 17</span
+                    ><span>Facebook page, no site</span>
+                  </p>
+                </div>
+                <a class="btn dial" href="tel:+12815760148">Call (281) 576-0148</a>
+              </div>
+
+              <details class="past">
+                <summary>
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.75"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="m6 9 6 6 6-6" />
+                  </svg>
+                  Two Calls Before This One
+                  <span class="label">Dylan holds this business</span>
+                </summary>
+                <div class="past-row">
+                  <p class="label">Sep 2, 10:40 AM &middot; Dylan &middot; Call Back</p>
+                  <p>
+                    Got Marisol on the second try. She runs the yard with her brother, does fencing
+                    and gates for builders out of Mont Belvieu. Says people find them by word of
+                    mouth and she knows the Facebook page is not enough. Ring back after two on a
+                    weekday.
+                  </p>
+                </div>
+                <div class="past-row">
+                  <p class="label">Aug 26, 9:12 AM &middot; you &middot; No Answer</p>
+                  <p>Rang through to nothing. No machine on the line.</p>
+                </div>
+              </details>
+            </div>
+
+            <div class="outcomes">
+              <p class="label">What did the call come to?</p>
+              <div class="outcome-grid">
+                <button type="button" class="quiet"><span class="key">1</span>No Answer</button>
+                <button type="button" class="quiet">
+                  <span class="key">2</span>Left Voicemail
+                </button>
+                <button type="button" class="quiet"><span class="key">3</span>Gatekeeper</button>
+                <button type="button" class="quiet">
+                  <span class="key">4</span>Spoke To Owner
+                </button>
+                <button type="button" class="quiet"><span class="key">5</span>Call Back</button>
+                <button type="button" class="quiet"><span class="key">6</span>Booked</button>
+                <button type="button" class="quiet">
+                  <span class="key">7</span>Not Interested
+                </button>
+                <button type="button" class="quiet"><span class="key">8</span>Wrong Number</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="card" aria-labelledby="rail-head">
+            <header class="card-head">
+              <h2 id="rail-head">What To Say</h2>
+              <p class="card-note">Moves with the call. Nothing here is searched for.</p>
+            </header>
+
+            <div class="stages">
+              <button type="button" class="quiet" aria-pressed="true">Opening</button>
+              <button type="button" class="quiet" aria-pressed="false">They Pushed Back</button>
+              <button type="button" class="quiet" aria-pressed="false">Closing</button>
+            </div>
+
+            <div class="card-body">
+              <div class="rail-line">
+                <p class="label">Because She Asked You To Call</p>
+                <p>
+                  Hi Marisol, it is Trenton with TaylorURL. You told my colleague to try you after
+                  two, so here I am.
+                </p>
+              </div>
+              <div class="rail-line">
+                <p class="label">Why You Called</p>
+                <p>
+                  The website on your Google listing is your Facebook page. Facebook decides who
+                  sees it, and if that account goes tomorrow there is nothing of yours left online.
+                </p>
+              </div>
+              <div class="rail-line">
+                <p class="label">What Their Trade Says</p>
+                <p>
+                  You have 61 reviews and the middle for fencing around here is about 17, so you are
+                  well ahead of the shops you compete with. The ones with a website are still
+                  getting found ahead of you.
+                </p>
+              </div>
+              <div class="rail-line">
+                <p class="label">Work To Name</p>
+                <p>
+                  We built Bayside Ironworks, right there by you. Have a look at it while we talk.
+                </p>
+              </div>
+              <div class="rail-line">
+                <p class="label">The Ask</p>
+                <p>
+                  I would like to put you a plan together for what your site would say and what it
+                  would cost, for free, with the number agreed before anything starts. Have you got
+                  ten minutes this week?
+                </p>
+              </div>
+              <div class="rail-search">
+                <label class="label" for="rail-find">Jump To A Word She Said</label>
+                <input
+                  class="field"
+                  id="rail-find"
+                  type="search"
+                  autocomplete="off"
+                  placeholder="facebook, cost, my nephew"
+                  style="margin-top: 6px"
+                />
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

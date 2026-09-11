@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Call Mode: Five Mockups - TaylorURL Console</title>
+    <link rel="stylesheet" href="./console.css" />
+    <style>
+      /*
+       * The five, with what each one argues.
+       *
+       * They answer the same four questions and disagree about which of them
+       * takes the middle of the screen, so the list has to say what each one
+       * puts first. A row of five names with no argument attached is five
+       * links nobody can choose between.
+       */
+
+      .frame {
+        max-width: 1040px;
+      }
+
+      .ask {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4) var(--s-5);
+      }
+
+      .ask-rows {
+        display: grid;
+        gap: var(--s-3);
+      }
+
+      @media (min-width: 768px) {
+        .ask-rows {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      .ask-row {
+        display: grid;
+        gap: var(--s-1);
+      }
+
+      .ask-row p:last-child {
+        font-size: 13px;
+        line-height: 1.6;
+        color: var(--paper-ink-soft);
+      }
+
+      .five {
+        display: grid;
+        gap: var(--s-3);
+      }
+
+      @media (min-width: 768px) {
+        .five {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+
+      .one {
+        display: grid;
+        align-content: start;
+        gap: var(--s-2);
+        padding: var(--s-4) var(--s-5);
+        border-radius: var(--r-card);
+        background-color: var(--card-bg);
+        box-shadow: var(--card-shadow);
+        text-decoration: none;
+        color: inherit;
+        transition:
+          box-shadow 150ms var(--ease-out-soft),
+          transform 150ms var(--ease-out-soft);
+      }
+
+      .one:hover {
+        box-shadow: var(--card-shadow), var(--float-shadow);
+        transform: translateY(-1px);
+      }
+
+      .one h2 {
+        font-size: 17px;
+        line-height: 1.3;
+        letter-spacing: -0.015em;
+        color: var(--paper-ink);
+      }
+
+      .one p {
+        max-width: var(--measure);
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--paper-ink-mute);
+      }
+
+      .one-takes {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-1);
+        margin-top: var(--s-1);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <h1>Call Mode, Five Ways</h1>
+        <p>
+          Five mockups of the calling screen in the TaylorURL console, drawn in the console's own
+          ink. Each answers the same four questions and each disagrees about which of them belongs
+          in the middle of the screen. They are flat HTML and nothing on them is wired to anything.
+        </p>
+      </header>
+
+      <main class="frame" style="padding: 0">
+        <section class="card ask" aria-labelledby="ask-head" style="margin-bottom: var(--s-4)">
+          <h2 id="ask-head" class="label">What All Five Have To Answer</h2>
+          <div class="ask-rows">
+            <div class="ask-row">
+              <p class="label">A Number To Aim At</p>
+              <p>
+                Call Mode counts nothing but what is left, which is four thousand today and four
+                thousand tomorrow. A caller cannot have a good morning against a figure like that.
+              </p>
+            </div>
+            <div class="ask-row">
+              <p class="label">A Reason To Keep Going</p>
+              <p>
+                Pace, said as a clock time rather than a rate. Nobody converts calls a minute in
+                their head while a phone is ringing.
+              </p>
+            </div>
+            <div class="ask-row">
+              <p class="label">Words To Say</p>
+              <p>
+                The handbook is a search field in an overlay three columns from the business it is
+                about. The opening line belongs on the card.
+              </p>
+            </div>
+            <div class="ask-row">
+              <p class="label">The Calls Before This One</p>
+              <p>
+                Most businesses are rung four or five times. Today that reaches the caller as one
+                clause, and who to ask for is in a note nobody opens mid-call.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <div class="five">
+          <a class="one" href="./1-the-shift.html">
+            <h2>One: The Shift</h2>
+            <p>
+              A rail across the top holding three figures the caller agreed to before picking up the
+              phone. The follow-up sits above the business name, where it is read before an opener
+              is composed.
+            </p>
+            <span class="one-takes">
+              <span class="badge" data-tone="accent">Goals Take The Top</span>
+              <span class="badge">Script In Full</span>
+            </span>
+          </a>
+
+          <a class="one" href="./2-script-first.html">
+            <h2>Two: Script First</h2>
+            <p>
+              The words take the card. The beat being said is set large, the beats behind it fall
+              back to their labels, and the outcomes stay pinned to the foot so a call never ends by
+              hunting for a button.
+            </p>
+            <span class="one-takes">
+              <span class="badge" data-tone="accent">Script Takes The Middle</span>
+              <span class="badge">Outcomes Pinned</span>
+            </span>
+          </a>
+
+          <a class="one" href="./3-the-record.html">
+            <h2>Three: The Record</h2>
+            <p>
+              Every call to this business drawn as a column, with the one about to be placed as the
+              last entry in it, still empty. The wait the ladder bought is written into the gap
+              between two entries.
+            </p>
+            <span class="one-takes">
+              <span class="badge" data-tone="accent">History Takes The Middle</span>
+              <span class="badge">Goals As Rings</span>
+            </span>
+          </a>
+
+          <a class="one" href="./4-the-coach.html">
+            <h2>Four: The Coach</h2>
+            <p>
+              A rail down the right that follows the call rather than sitting still. The board
+              counts the shift by the hour, so being behind names the hour it happened in. Shows the
+              call a business asked for.
+            </p>
+            <span class="one-takes">
+              <span class="badge" data-tone="accent">Answers Take A Column</span>
+              <span class="badge">Hour By Hour</span>
+            </span>
+          </a>
+
+          <a class="one" href="./5-one-call.html">
+            <h2>Five: One Call</h2>
+            <p>
+              The least that can be on screen while a phone is ringing. The shift is a rule, the
+              batch is a strip of marks, and the figures come back in full where the batch runs out.
+            </p>
+            <span class="one-takes">
+              <span class="badge" data-tone="accent">The Business Takes It All</span>
+              <span class="badge">Scorecard At The End</span>
+            </span>
+          </a>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en" data-mockup="one-call">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Call Mode: One Call - TaylorURL Console Mockup</title>
+    <link rel="stylesheet" href="./console.css" />
+    <style>
+      /*
+       * ONE CALL
+       *
+       * The least that can be on the screen while somebody is on the phone.
+       *
+       * The other four add. This one takes away, on the argument that a caller
+       * looks at this screen for about four seconds between picking up and
+       * starting to talk, and everything on it that is not read in those four
+       * seconds is in the way of what is. So: who they are, what happened last
+       * time in one sentence, three lines to say, and the keys.
+       *
+       * The batch is a strip of marks rather than a list. Twenty-five names
+       * down the side is twenty-five things to read and the only one that
+       * matters is how many are left, which a strip says at a glance and a
+       * list makes you count.
+       *
+       * The shift is a single rule across the top of the screen and a card at
+       * the end of the batch. A number that is not moving does not need to be
+       * on screen while the call is happening; it needs to be there when the
+       * caller stops and asks how the morning went.
+       */
+
+      body {
+        display: grid;
+        place-items: start center;
+      }
+
+      .frame {
+        width: 100%;
+        max-width: 960px;
+      }
+
+      .stack {
+        display: grid;
+        gap: var(--s-4);
+      }
+
+      /* ── The shift rule ────────────────────────────────────────────────── */
+
+      /* One rule, three segments, and the figures under it. Not a card: the
+         shift is the ground the calls happen on rather than another thing to
+         read. */
+      .shift {
+        display: grid;
+        gap: var(--s-2);
+      }
+
+      .shift-track {
+        display: flex;
+        gap: 3px;
+        height: 6px;
+      }
+
+      .shift-seg {
+        flex: 1 1 0;
+        border-radius: var(--r-tiny);
+        background-color: var(--wash-paper-strong);
+        overflow: hidden;
+      }
+
+      .shift-seg b {
+        display: block;
+        height: 100%;
+        border-radius: var(--r-tiny);
+        background-color: var(--accent-fill);
+      }
+
+      .shift-seg[data-met='yes'] b {
+        background-color: var(--good);
+      }
+
+      .shift-figures {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2) var(--s-5);
+        font-size: 13px;
+        color: var(--paper-ink-mute);
+      }
+
+      .shift-figures b {
+        font-weight: 600;
+        color: var(--paper-ink);
+      }
+
+      .shift-figures li:last-child {
+        margin-left: auto;
+      }
+
+      /* ── The batch strip ───────────────────────────────────────────────── */
+
+      .marks {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .mark {
+        position: relative;
+        width: 10px;
+        height: 10px;
+        padding: 0;
+        border: 1px solid var(--paper-ink-ghost);
+        border-radius: 50%;
+        background-color: transparent;
+        cursor: pointer;
+        transition:
+          background-color 150ms var(--ease-out-soft),
+          border-color 150ms var(--ease-out-soft),
+          transform 150ms var(--ease-out-soft);
+      }
+
+      /* The reach stays the forty-four pixels a thumb needs while the drawing
+         stays a ten pixel dot, carried out over the strip's own gap by a
+         pseudo-element. The same trick the console's own row control uses. */
+      .mark::before {
+        content: '';
+        position: absolute;
+        inset: -17px;
+      }
+
+      .mark:hover {
+        border-color: var(--accent);
+      }
+
+      .mark[data-state='worked'] {
+        border-color: transparent;
+        background-color: var(--paper-ink-ghost);
+      }
+
+      .mark[data-state='booked'] {
+        border-color: transparent;
+        background-color: var(--good);
+      }
+
+      .mark[aria-current='true'] {
+        border-color: var(--accent);
+        background-color: var(--accent-fill);
+        transform: scale(1.4);
+      }
+
+      .marks-note {
+        margin-left: var(--s-2);
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--paper-ink-faint);
+      }
+
+      /* ── The call ──────────────────────────────────────────────────────── */
+
+      .call {
+        display: grid;
+        gap: var(--s-5);
+        padding: var(--s-6) var(--s-5);
+      }
+
+      @media (min-width: 768px) {
+        .call {
+          padding: var(--s-8) var(--s-10);
+        }
+      }
+
+      .who {
+        display: grid;
+        gap: var(--s-3);
+      }
+
+      @media (min-width: 640px) {
+        .who {
+          grid-template-columns: minmax(0, 1fr) auto;
+          align-items: center;
+          gap: var(--s-5);
+        }
+      }
+
+      /* The one thing set at display size, so it tightens as it grows the way
+         every other display step on the site does. */
+      .who h3 {
+        font-size: 28px;
+        line-height: 1.2;
+        font-weight: 600;
+        letter-spacing: -0.025em;
+        color: var(--paper-ink);
+      }
+
+      .who-facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-1) var(--s-3);
+        margin-top: var(--s-1);
+        font-size: 13px;
+        color: var(--paper-ink-mute);
+      }
+
+      /* The separator hangs off the fact in front of it rather than the one
+         behind it. Either way it is a character that can end up alone on a
+         wrapped line, and a dot left at the end of a line reads as "there is
+         more", which is true. The same dot at the start of the next line reads
+         as a bullet nobody meant. */
+      .who-facts span:not(:last-child)::after {
+        content: '·';
+        margin-left: var(--s-3);
+        color: var(--paper-ink-ghost);
+      }
+
+      .dial {
+        min-height: 56px;
+        font-size: 18px;
+        font-weight: 500;
+        text-decoration: none;
+        white-space: nowrap;
+      }
+
+      /* The follow-up, as one sentence in the ink of the page rather than in a
+         box. A caller reads it because it is the only sentence there. */
+      .last {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        gap: var(--s-2) var(--s-3);
+        padding-left: var(--s-3);
+        border-left: 2px solid var(--accent);
+      }
+
+      .last p {
+        flex: 1 1 18rem;
+        max-width: var(--measure);
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--paper-ink);
+      }
+
+      .last p b {
+        font-weight: 600;
+      }
+
+      .say {
+        display: grid;
+        gap: var(--s-4);
+      }
+
+      .say-line {
+        display: grid;
+        gap: var(--s-1);
+      }
+
+      .say-line p:last-child {
+        max-width: var(--measure);
+        font-size: 17px;
+        line-height: 1.6;
+        color: var(--paper-ink);
+      }
+
+      /* ── The keys ──────────────────────────────────────────────────────── */
+
+      .keys {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4) var(--s-5);
+        border-top: 1px solid var(--paper-hairline);
+      }
+
+      @media (min-width: 768px) {
+        .keys {
+          padding-inline: var(--s-10);
+        }
+      }
+
+      .key-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: var(--s-2);
+      }
+
+      @media (min-width: 640px) {
+        .key-grid {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      .key-grid .quiet {
+        justify-content: flex-start;
+      }
+
+      /* ── The scorecard ─────────────────────────────────────────────────── */
+
+      /* What the batch came to, drawn where the batch runs out. It is the
+         answer to the question a caller stops and asks, and it is the only
+         place a figure is worth more than the call in front of it. */
+      .score {
+        display: grid;
+        gap: var(--s-4);
+        padding: var(--s-5);
+      }
+
+      .score-rows {
+        display: grid;
+      }
+
+      .score-row {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--s-4);
+        padding: 10px 0;
+        border-top: 1px solid var(--paper-hairline);
+        font-size: 14px;
+      }
+
+      .score-row:first-child {
+        border-top: 0;
+      }
+
+      .score-row dt {
+        color: var(--paper-ink-mute);
+      }
+
+      .score-row dd {
+        margin: 0;
+        font-weight: 600;
+        color: var(--paper-ink);
+      }
+
+      .score-row[data-met='yes'] dd {
+        color: var(--good);
+      }
+
+      .score-note {
+        max-width: var(--measure);
+        font-size: 14px;
+        line-height: 1.6;
+        color: var(--paper-ink-soft);
+      }
+
+      .score-acts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-2);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <a class="brief-back" href="./index.html">Back To The Five</a>
+        <h1>Five: One Call</h1>
+        <p>
+          The least that can be on screen while a phone is ringing. The shift is a rule across the
+          top and the batch is a strip of marks, so the card holds a name, one sentence about the
+          last call, three lines to say and the keys. The figures come back in full where the batch
+          runs out, which is where somebody actually stops to read them.
+        </p>
+      </header>
+
+      <main class="stack">
+        <section class="shift" aria-labelledby="shift-head">
+          <h2 id="shift-head" class="label">This Shift</h2>
+          <div class="shift-track" role="presentation">
+            <span class="shift-seg" data-met="no"><b style="width: 58%"></b></span>
+            <span class="shift-seg" data-met="no"><b style="width: 63%"></b></span>
+            <span class="shift-seg" data-met="no"><b style="width: 50%"></b></span>
+          </div>
+          <ul class="shift-figures">
+            <li><b>23</b> of 40 calls</li>
+            <li><b>5</b> of 8 owners reached</li>
+            <li><b>1</b> of 2 plans booked</li>
+            <li>Finishing at <b>4:40 PM</b></li>
+          </ul>
+        </section>
+
+        <section class="marks" aria-label="The batch">
+          <button
+            type="button"
+            class="mark"
+            data-state="worked"
+            aria-label="Hollis Roofing, left voicemail"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            data-state="worked"
+            aria-label="Marsh Electric, no answer"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            data-state="booked"
+            aria-label="Dominguez Auto Glass, booked"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            data-state="worked"
+            aria-label="Keller Septic, gatekeeper"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            data-state="worked"
+            aria-label="San Jacinto Awning, no answer"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            data-state="worked"
+            aria-label="Gulf Coast Doors, not interested"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            data-state="worked"
+            aria-label="Baytown Mower, left voicemail"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-current="true"
+            aria-label="Rivera Fence and Gate, calling now"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Bayou Bend Plumbing, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Cedar Bayou Small Engine, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Trinity Bay Tree Service, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Pelican Pools and Patio, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Ramirez Upholstery, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Highlands Glass Works, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Old River Cabinetry, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Barbers Hill Tire, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Chambers County Dozer, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Lone Oak Pest Control, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Wallisville Feed and Supply, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Beach City Welding, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Eagle Drive Collision, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Turner Land Clearing, not yet called"
+          ></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Goose Creek Locksmith, not yet called"
+          ></button>
+          <button type="button" class="mark" aria-label="McNair Concrete, not yet called"></button>
+          <button
+            type="button"
+            class="mark"
+            aria-label="Sjolander Sheet Metal, not yet called"
+          ></button>
+          <span class="marks-note">7 worked, 18 to go</span>
+        </section>
+
+        <section class="card" aria-labelledby="calling-head">
+          <h2 id="calling-head" class="label" style="padding: var(--s-4) var(--s-5) 0">Calling</h2>
+          <div class="call">
+            <div class="who">
+              <div>
+                <h3>Rivera Fence &amp; Gate</h3>
+                <p class="who-facts">
+                  <span>Fencing contractor</span><span>Mont Belvieu</span
+                  ><span>61 reviews against a middle of 17</span><span>Facebook page, no site</span>
+                </p>
+              </div>
+              <a class="btn dial" href="tel:+12815760148">Call (281) 576-0148</a>
+            </div>
+
+            <div class="last">
+              <span class="badge" data-tone="accent">Third Call</span>
+              <p>
+                Dylan got the desk on Sep 2 and was told to ask for <b>Marisol</b> after two. It is
+                2:40.
+              </p>
+              <button type="button" class="quiet">Read The Other Two</button>
+            </div>
+
+            <div class="say">
+              <div class="say-line">
+                <p class="label">Open With</p>
+                <p>Hi, is Marisol around? I spoke to someone here last week.</p>
+              </div>
+              <div class="say-line">
+                <p class="label">Why You Called</p>
+                <p>
+                  Trenton with TaylorURL. The website on your Google listing is your Facebook page,
+                  and you have 61 reviews against a middle of 17 for fencing around here. People are
+                  looking for you and landing nowhere.
+                </p>
+              </div>
+              <div class="say-line">
+                <p class="label">Ask For</p>
+                <p>
+                  Ten minutes this week to put you a plan together for what the site would say and
+                  what it would cost, for free, with the number agreed before anything starts.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="keys">
+            <p class="label">What did the call come to?</p>
+            <div class="key-grid">
+              <button type="button" class="quiet"><span class="key">1</span>No Answer</button>
+              <button type="button" class="quiet"><span class="key">2</span>Left Voicemail</button>
+              <button type="button" class="quiet"><span class="key">3</span>Gatekeeper</button>
+              <button type="button" class="quiet"><span class="key">4</span>Spoke To Owner</button>
+              <button type="button" class="quiet"><span class="key">5</span>Call Back</button>
+              <button type="button" class="quiet"><span class="key">6</span>Booked</button>
+              <button type="button" class="quiet"><span class="key">7</span>Not Interested</button>
+              <button type="button" class="quiet"><span class="key">8</span>Wrong Number</button>
+            </div>
+            <p class="label">
+              A number records the call and brings up the next. N adds a note first.
+            </p>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="score-head">
+          <header class="card-head">
+            <h2 id="score-head">When The Batch Runs Out</h2>
+            <p class="card-note">
+              The same card at the end of the twenty-five, which is the state under it.
+            </p>
+          </header>
+          <div class="score">
+            <dl class="score-rows">
+              <div class="score-row" data-met="yes">
+                <dt>Calls Placed</dt>
+                <dd>41 of 40</dd>
+              </div>
+              <div class="score-row" data-met="yes">
+                <dt>Owners Reached</dt>
+                <dd>9 of 8</dd>
+              </div>
+              <div class="score-row" data-met="no">
+                <dt>Plans Booked</dt>
+                <dd>1 of 2</dd>
+              </div>
+              <div class="score-row" data-met="no">
+                <dt>Coming Back To You</dt>
+                <dd>6 businesses</dd>
+              </div>
+            </dl>
+            <p class="score-note">
+              Six of today's calls named a time to ring back. The earliest is Bayou Bend Plumbing on
+              Friday at 9:30, and they will be at the top of the list that morning without anybody
+              putting them there.
+            </p>
+            <div class="score-acts">
+              <button type="button" class="btn">Take Another Batch Of 25</button>
+              <button type="button" class="quiet">Close The Shift</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
