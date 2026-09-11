@@ -205,6 +205,58 @@
             settle(src, arrived)
           }
         }
+        // A tag asked for in CORS mode has a second way to fail that has nothing
+        // to do with whether the host answered.
+        //
+        // Only Google's is asked for that way - the comment at the top of this
+        // block says why, and it is still right - and the browser holds a CORS
+        // reply to a standard no reader controls: no `Access-Control-Allow-Origin`
+        // naming this origin and the script is refused, whatever the body was.
+        // Meta's tag is not asked for in CORS mode, so nothing is checked and
+        // nothing can be refused on it.
+        //
+        // Anything that answers on the vendor's behalf therefore takes the two
+        // tags down separately: a blocker that swaps in its own stub, a filtering
+        // proxy returning its notice, an inspecting antivirus re-signing the
+        // reply. The stub loads for Meta and is refused for Google, off one
+        // substitution, in one instant, for one reader - and that is the exact
+        // shape the rule above reads as a real absence. Google's own reply is
+        // never the cause: `gtag/js` reflects whatever origin asks, checked from
+        // here against every domain this site answers on.
+        //
+        // So #558's rule was sound and was handed an asymmetry it could not see
+        // past. Both hosts refused together is a blocker and holds; this reader's
+        // blocker did not refuse both, so it filed - and it would file again on
+        // every visit, which is why this fingerprint keeps coming back against a
+        // site that is working.
+        //
+        // Asking again without CORS is what separates the two, and it is worth
+        // more than the verdict. A tag refused for its CORS mode alone is a tag
+        // this reader can have: it arrives on the second ask, runs, and measures
+        // them. Until now it was simply lost, and lost silently, on every reader
+        // behind a proxy or an antivirus doing this - readers who block nothing
+        // and were never meant to go unmeasured. What the second ask costs is one
+        // request, only ever on a tag that already failed.
+        //
+        // The tag itself is unchanged by how it was fetched. CORS buys the
+        // reporter a whole error out of a throw inside the library rather than a
+        // blanked "Script error.", and on this second ask that detail is what has
+        // already been taken away - so it is the fidelity of a report that is
+        // given up here, never the measurement.
+        function plainly(tag) {
+          return function () {
+            fetchTag(tag, false)
+          }
+        }
+        function fetchTag(tag, cors) {
+          var node = document.createElement('script')
+          node.async = true
+          if (cors) node.crossOrigin = 'anonymous'
+          node.src = tag.src
+          node.addEventListener('load', answers(tag.src, true))
+          node.addEventListener('error', cors ? plainly(tag) : answers(tag.src, false))
+          document.head.appendChild(node)
+        }
         var nudges = ['pointerdown', 'keydown', 'touchstart', 'scroll']
         var SETTLE_MS = 10000
         var fetched = false
@@ -212,15 +264,7 @@
           if (fetched) return
           fetched = true
           for (var i = 0; i < nudges.length; i += 1) removeEventListener(nudges[i], fetchTags, true)
-          for (var j = 0; j < tags.length; j += 1) {
-            var tag = document.createElement('script')
-            tag.async = true
-            if (tags[j].cors) tag.crossOrigin = 'anonymous'
-            tag.src = tags[j].src
-            tag.addEventListener('load', answers(tags[j].src, true))
-            tag.addEventListener('error', answers(tags[j].src, false))
-            document.head.appendChild(tag)
-          }
+          for (var j = 0; j < tags.length; j += 1) fetchTag(tags[j], tags[j].cors)
         }
         // A visitor's first touch fetches them - and a scroll counts, so anybody
         // reading rather than glancing has already tripped it. Otherwise they
