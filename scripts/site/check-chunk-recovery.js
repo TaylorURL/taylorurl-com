@@ -392,7 +392,10 @@ check(
 // is broken for everybody.
 const boot = bootSource('/assets/index-TEST0000.js')
 
-async function runBoot(answers, { session = {}, online = true, understands = true } = {}) {
+async function runBoot(
+  answers,
+  { session = {}, online = true, understands = true, storage = true } = {}
+) {
   const asked = []
   const shown = []
   let reloads = 0
@@ -412,15 +415,30 @@ async function runBoot(answers, { session = {}, online = true, understands = tru
     },
     requestAnimationFrame: run => run(),
     setTimeout: run => run(),
-    sessionStorage: {
-      getItem: key => (key in session ? session[key] : null),
-      setItem: (key, value) => {
-        session[key] = String(value)
-      },
-      removeItem: key => {
-        delete session[key]
-      },
-    },
+    // A browser that will not give an inline module storage throws on every
+    // one of these rather than answering empty, which takes the reload away
+    // without ever saying so.
+    sessionStorage: storage
+      ? {
+          getItem: key => (key in session ? session[key] : null),
+          setItem: (key, value) => {
+            session[key] = String(value)
+          },
+          removeItem: key => {
+            delete session[key]
+          },
+        }
+      : {
+          getItem: () => {
+            throw new Error('storage refused')
+          },
+          setItem: () => {
+            throw new Error('storage refused')
+          },
+          removeItem: () => {
+            throw new Error('storage refused')
+          },
+        },
     location: {
       reload: () => {
         reloads += 1
@@ -468,15 +486,48 @@ check(
   deleted.reloads === 1,
   'a chunk a deploy has deleted leaves the reader on a document that does nothing when it is pressed'
 )
+check(
+  deleted.asked.length === 3,
+  'the reload for a chunk a deploy deleted waits behind an attempt at an address that can never answer'
+)
 const again = await runBoot([refused()], { session: deleted.session })
 check(
   again.reloads === 0,
   'a document that comes back identical is reloaded again, which is a loop rather than a recovery'
 )
+// The quick pair is spent in eleven hundred milliseconds and the outages this
+// meets last two or three seconds, so with the reload gone there has to be
+// something on the far side of one. #562 was the gap: three asks by 1,069ms,
+// no reload to be had, and the file answering from three seconds with nothing
+// left to ask it.
+check(
+  again.asked.length === 4,
+  'once the reload is spent the boot stops asking inside the outage it is waiting out'
+)
+check(
+  again.shown.length === 1 && /did not finish loading/.test(again.shown[0].textContent),
+  'a reader whose page never started is left on a finished document that answers nothing they press, and never told why'
+)
 const offline = await runBoot([refused()], { online: false })
 check(
   offline.reloads === 0,
   "a reader the browser knows is offline has a readable page swapped for the browser's network page"
+)
+check(
+  offline.asked.length === 4,
+  'a reader who was offline for a moment is never asked again once they are back'
+)
+// A browser that refuses the boot storage never gets the reload at all, and
+// `once` reports that the same way it reports one already spent. The report on
+// #562 came off `/start` from a crawler, which is exactly that client.
+const unstored = await runBoot([refused()], { storage: false })
+check(
+  unstored.reloads === 0,
+  'a boot that cannot record a reload reloads anyway, which is a loop no guard can stop'
+)
+check(
+  unstored.asked.length === 4,
+  'a browser that refuses the boot storage loses the reload and the late attempt both, so nothing recovers it'
 )
 
 await new Promise(resolve => setTimeout(resolve, 0))
@@ -520,8 +571,8 @@ await new Promise(resolve => setTimeout(resolve, 0))
 process.off('unhandledRejection', collect)
 
 check(
-  filed.length === 3,
-  `a boot that never started was swallowed rather than reported: ${filed.length} of 3 reached the reporter`
+  filed.length === 4,
+  `a boot that never started was swallowed rather than reported: ${filed.length} of 4 reached the reporter`
 )
 check(
   filed.every(reason => /could not start/.test(String(reason && reason.message))),
