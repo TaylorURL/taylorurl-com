@@ -105,16 +105,47 @@
   --r-control: 6px;
   --r-tiny: 4px;
   --control-h: 44px;
+  /* The dial. One control on the screen is pressed with a thumb in the middle
+     of a call, and it is the only one that earns a height of its own. */
+  --control-h-dial: 52px;
 
-  /* The 4px spacing scale everything below steps on. */
+  /* The 4px spacing scale everything below steps on.
+
+     The half-steps are on it rather than beside it, because the console's own
+     controls are built on them - a badge is 2px by 6px, a button 14px inside,
+     a field 6px by 10px - and a value typed into a rule because it looked
+     right is the thing a scale exists to stop, whether or not it happens to
+     be even. */
+  --s-h: 2px;
   --s-1: 4px;
+  --s-1h: 6px;
   --s-2: 8px;
+  --s-2h: 10px;
   --s-3: 12px;
+  --s-3h: 14px;
   --s-4: 16px;
   --s-5: 20px;
   --s-6: 24px;
   --s-8: 32px;
   --s-10: 40px;
+
+  /* The type scale. Nine steps, and nothing between them.
+
+     Five mockups drawn from one system have to set a business name at the same
+     size or they are five systems, and the difference between a 21px heading
+     and a 22px one is the kind of thing nobody sees and everybody feels. The
+     steps are close together at reading size, where a screen sets dozens of
+     lines and one step has to be a real difference, and far apart above it,
+     where a size is chosen once. */
+  --t-1: 11px;
+  --t-2: 12px;
+  --t-3: 13px;
+  --t-4: 14px;
+  --t-5: 15px;
+  --t-6: 17px;
+  --t-7: 20px;
+  --t-8: 24px;
+  --t-9: 28px;
 
   /* The reading measure. A line of script is read out loud to a stranger, and
      losing your place happens in front of them. */
@@ -203,12 +234,24 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Clip rather than hidden: hidden on the root turns every descendant into a
+     scroll container and kills position: sticky with it. */
+  overflow-x: clip;
+  /* The grey flash Android paints over a tapped link belongs to the platform
+     and not to this. The press states below are what answers a tap. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background-color: var(--wash-accent-strong);
+  color: var(--paper-ink);
 }
 
 body {
   margin: 0;
   padding: var(--s-4);
   min-height: 100dvh;
+  overflow-x: clip;
   background-color: var(--paper);
   color: var(--paper-ink);
   font-family: 'Geist', 'Geist Fallback', system-ui, sans-serif;
@@ -228,8 +271,16 @@ h2,
 h3,
 h4 {
   margin: 0;
+  min-width: 0;
   font-weight: 600;
   letter-spacing: -0.01em;
+  /* A heading breaks where the line is even rather than where it runs out, so
+     no headline strands one word under the rest of itself. */
+  text-wrap: balance;
+  /* And a trade name with no space in it breaks rather than running off the
+     side of the card it is in. Business names arrive as they were typed into
+     a Google listing. */
+  overflow-wrap: anywhere;
 }
 
 p,
@@ -238,6 +289,10 @@ ol,
 dl,
 figure {
   margin: 0;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 ul,
@@ -283,14 +338,16 @@ textarea {
 }
 
 .brief h1 {
-  font-size: 22px;
+  font-size: var(--t-7);
   line-height: 1.25;
   letter-spacing: -0.02em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .brief p {
   max-width: var(--measure);
-  font-size: 14px;
+  font-size: var(--t-4);
   color: var(--paper-ink-mute);
 }
 
@@ -298,8 +355,9 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-self: start;
+  touch-action: manipulation;
   min-height: var(--control-h);
-  font-size: 13px;
+  font-size: var(--t-3);
   font-weight: 500;
   text-decoration: none;
 }
@@ -308,10 +366,23 @@ textarea {
   text-decoration: underline;
 }
 
+.brief-back:active {
+  color: var(--accent-hi);
+}
+
+.brief-back:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-tiny);
+}
+
 /* ── The console's card ─────────────────────────────────────────────────── */
 
 .card {
   display: flex;
+  /* No gap on purpose: a card is bands, and each band is ruled off from the
+     one above it. A gap here would break every rule in the card. */
+  gap: 0;
   min-width: 0;
   flex-direction: column;
   overflow: hidden;
@@ -331,18 +402,20 @@ textarea {
 }
 
 .card-head h2 {
-  font-size: 15px;
+  font-size: var(--t-5);
   color: var(--paper-ink);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .card-head > p {
-  font-size: 13px;
+  font-size: var(--t-3);
   color: var(--paper-ink-mute);
 }
 
 .card-note {
   flex-basis: 100%;
-  font-size: 13px;
+  font-size: var(--t-3);
   color: var(--paper-ink-mute);
 }
 
@@ -362,7 +435,7 @@ textarea {
    capitals. A screen sets dozens of these and capitals at 10px are decoded
    before they are read. */
 .label {
-  font-size: 12px;
+  font-size: var(--t-2);
   font-weight: 500;
   line-height: 1.45;
   color: var(--paper-ink-faint);
@@ -373,12 +446,12 @@ textarea {
 }
 
 .body-13 {
-  font-size: 13px;
+  font-size: var(--t-3);
   line-height: 1.6;
 }
 
 .body-14 {
-  font-size: 14px;
+  font-size: var(--t-4);
   line-height: 1.6;
 }
 
@@ -402,11 +475,13 @@ textarea {
   min-height: var(--control-h);
   cursor: pointer;
   touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
   border-radius: var(--r-control);
-  font-size: 12px;
+  font-size: var(--t-2);
   font-weight: 500;
   transition:
     background-color 150ms var(--ease-out-soft),
@@ -417,28 +492,44 @@ textarea {
 
 .btn {
   border: 0;
-  padding-inline: 14px;
+  padding-inline: var(--s-3h);
   background-color: var(--accent-fill);
   color: var(--on-accent);
 }
 
-.btn:hover {
+.btn:hover:enabled {
   background-color: var(--accent-fill-hi);
 }
 
-.btn:active,
-.quiet:active {
+.btn:active:enabled,
+.quiet:active:enabled {
   transform: scale(0.98);
 }
 
+/* A control that cannot be pressed says so, and never reaches a hover or a
+   press: the two states above are answered to :enabled rather than undone
+   here, because a faded button that still lifts under the cursor reads as one
+   that is merely slow. */
+.btn:focus-visible,
+.quiet:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.btn:disabled,
+.quiet:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .quiet {
-  padding-inline: 10px;
+  padding-inline: var(--s-2h);
   border: 1px solid var(--paper-hairline);
   background-color: transparent;
   color: var(--paper-ink-faint);
 }
 
-.quiet:hover {
+.quiet:hover:enabled {
   border-color: var(--accent);
   color: var(--accent);
 }
@@ -452,7 +543,7 @@ textarea {
 .field {
   width: 100%;
   min-height: var(--control-h);
-  padding: 6px 10px;
+  padding: var(--s-1h) var(--s-2h);
   border: 1px solid var(--paper-hairline-strong);
   border-radius: var(--r-control);
   background-color: var(--paper-field);
@@ -466,7 +557,7 @@ textarea {
 
 @media (hover: hover) and (pointer: fine) {
   .field {
-    font-size: 13px;
+    font-size: var(--t-3);
   }
 }
 
@@ -478,32 +569,43 @@ textarea {
   border-color: var(--accent);
 }
 
+.field:disabled {
+  cursor: not-allowed;
+  background-color: var(--wash-paper);
+  color: var(--paper-ink-faint);
+}
+
+/* The browser paints its own pale yellow over a field it filled, and keeps it
+   through hover and focus. An inset shadow the size of the field is the only
+   way to put the design's own ground back, since the background itself is not
+   the page's to set once autofill has taken it. */
+input:-webkit-autofill,
+select:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--paper-ink);
+  -webkit-box-shadow: inset 0 0 0 1000px var(--paper-field);
+  caret-color: var(--paper-ink);
+}
+
 textarea.field {
   min-height: 88px;
   line-height: 1.6;
   resize: vertical;
 }
 
-/* A field under 16px makes iOS Safari zoom the viewport on focus, which on a
-   call is a jump at the worst moment. The console's optical 13px comes back
-   wherever there is a real pointer and no such zoom. */
-@media (hover: hover) and (pointer: fine) {
-  .field {
-    font-size: 13px;
-  }
-}
-
 /* The key cap in front of an outcome. A caller works this screen with one
    hand, so every outcome says the key that fires it. */
 .key {
   display: inline-flex;
+  user-select: none;
+  -webkit-user-select: none;
   min-width: 18px;
   justify-content: center;
-  padding-inline: 4px;
+  padding-inline: var(--s-1);
   border: 1px solid var(--paper-hairline-strong);
   border-radius: var(--r-tiny);
   font-family: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
-  font-size: 11px;
+  font-size: var(--t-1);
   color: var(--paper-ink-faint);
 }
 
@@ -513,11 +615,11 @@ textarea.field {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-1h);
   white-space: nowrap;
   border-radius: var(--r-tiny);
-  padding: 2px 6px;
-  font-size: 11px;
+  padding: var(--s-h) var(--s-1h);
+  font-size: var(--t-1);
   font-weight: 600;
   background-color: var(--wash-paper-strong);
   color: var(--paper-ink-mute);

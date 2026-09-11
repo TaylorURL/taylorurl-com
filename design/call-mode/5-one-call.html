@@ -31,6 +31,7 @@
 
       body {
         display: grid;
+        gap: var(--s-4);
         place-items: start center;
       }
 
@@ -56,7 +57,7 @@
 
       .shift-track {
         display: flex;
-        gap: 3px;
+        gap: var(--s-1);
         height: 6px;
       }
 
@@ -82,7 +83,7 @@
         display: flex;
         flex-wrap: wrap;
         gap: var(--s-2) var(--s-5);
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink-mute);
       }
 
@@ -111,7 +112,7 @@
         display: flex;
         flex-wrap: wrap;
         align-items: center;
-        gap: 5px;
+        gap: var(--s-1);
       }
 
       .mark {
@@ -148,7 +149,7 @@
       }
 
       .marks-note {
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
@@ -177,19 +178,26 @@
       /* The one thing set at display size, so it tightens as it grows the way
          every other display step on the site does. */
       .who h3 {
-        font-size: 28px;
+        font-size: var(--t-9);
         line-height: 1.2;
         font-weight: 600;
         letter-spacing: -0.025em;
         color: var(--paper-ink);
       }
 
+      /* The name and the facts under it are one thing, so the space between
+         them belongs to the pair rather than to the facts. A stack spaced by a
+         child's own margin loses that space the day the child is not there. */
+      .who-name {
+        display: grid;
+        gap: var(--s-1);
+      }
+
       .who-facts {
         display: flex;
         flex-wrap: wrap;
         gap: var(--s-1) var(--s-3);
-        margin-top: var(--s-1);
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink-mute);
       }
 
@@ -205,8 +213,8 @@
       }
 
       .dial {
-        min-height: 56px;
-        font-size: 18px;
+        min-height: var(--control-h-dial);
+        font-size: var(--t-6);
         font-weight: 500;
         text-decoration: none;
         white-space: nowrap;
@@ -226,7 +234,7 @@
       .last p {
         flex: 1 1 18rem;
         max-width: var(--measure);
-        font-size: 15px;
+        font-size: var(--t-5);
         line-height: 1.6;
         color: var(--paper-ink);
       }
@@ -247,7 +255,7 @@
 
       .say-line p:last-child {
         max-width: var(--measure);
-        font-size: 17px;
+        font-size: var(--t-6);
         line-height: 1.6;
         color: var(--paper-ink);
       }
@@ -290,6 +298,9 @@
 
       .score-rows {
         display: grid;
+        /* No gap on purpose: each row is ruled off from the one above it, and
+           a gap would leave the rule floating between them. */
+        gap: 0;
       }
 
       .score-row {
@@ -297,9 +308,9 @@
         align-items: baseline;
         justify-content: space-between;
         gap: var(--s-4);
-        padding: 10px 0;
+        padding: var(--s-2h) 0;
         border-top: 1px solid var(--paper-hairline);
-        font-size: 14px;
+        font-size: var(--t-4);
       }
 
       .score-row:first-child {
@@ -322,7 +333,7 @@
 
       .score-note {
         max-width: var(--measure);
-        font-size: 14px;
+        font-size: var(--t-4);
         line-height: 1.6;
         color: var(--paper-ink-soft);
       }
@@ -399,7 +410,7 @@
           <h2 id="calling-head" class="label" style="padding: var(--s-4) var(--s-5) 0">Calling</h2>
           <div class="call">
             <div class="who">
-              <div>
+              <div class="who-name">
                 <h3>Rivera Fence &amp; Gate</h3>
                 <p class="who-facts">
                   <span>Fencing contractor</span><span>Mont Belvieu</span

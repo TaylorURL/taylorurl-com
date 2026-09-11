@@ -58,3 +58,11 @@ prospect's number in a public repository.
 `[data-theme='console']`, on purpose: these files have to keep rendering after
 the build moves on, and a mockup that quietly restyles itself under a token
 change is a mockup nobody can point at.
+
+Two things in it are the mockups' own rather than the console's. The spacing
+scale carries the half-steps the console's controls are actually built on - a
+badge is 2px by 6px, a field 6px by 10px - because a number typed into a rule
+because it looked right is the thing a scale exists to stop, whether or not it
+happens to be even. And the nine-step type scale exists because five designs
+drawn from one system have to set a business name at the same size or they are
+five systems.

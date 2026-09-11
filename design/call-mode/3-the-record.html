@@ -82,20 +82,20 @@
       }
 
       .ring-figure strong {
-        font-size: 15px;
+        font-size: var(--t-5);
         font-weight: 600;
         color: var(--paper-ink);
       }
 
       .ring-figure span {
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
 
       .rings-when {
         flex: 1 1 14rem;
-        font-size: 13px;
+        font-size: var(--t-3);
         text-align: left;
         color: var(--paper-ink-soft);
       }
@@ -128,18 +128,25 @@
       }
 
       .who h3 {
-        font-size: 21px;
+        font-size: var(--t-7);
         line-height: 1.25;
         letter-spacing: -0.02em;
         color: var(--paper-ink);
+      }
+
+      /* The name and the facts under it are one thing, so the space between
+         them belongs to the pair rather than to the facts. A stack spaced by a
+         child's own margin loses that space the day the child is not there. */
+      .who-name {
+        display: grid;
+        gap: var(--s-1);
       }
 
       .who-facts {
         display: flex;
         flex-wrap: wrap;
         gap: var(--s-1) var(--s-3);
-        margin-top: 2px;
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink-mute);
       }
 
@@ -155,8 +162,8 @@
       }
 
       .dial {
-        min-height: 52px;
-        font-size: 17px;
+        min-height: var(--control-h-dial);
+        font-size: var(--t-6);
         font-weight: 500;
         text-decoration: none;
         white-space: nowrap;
@@ -165,6 +172,14 @@
       /* ── The spine ─────────────────────────────────────────────────────── */
 
       .spine {
+        /* The mark on the thread, and the line it sits over. One measurement
+           rather than three numbers: the line is a hairline centred under the
+           mark, so it is the mark's radius less half the line, and the mark
+           sits that far above the middle of the entry's first line. Written
+           once so they cannot drift apart. */
+        --spine-mark: 11px;
+        --spine-line: calc((var(--spine-mark) - 1px) / 2);
+
         display: grid;
         gap: 0;
         padding: 0 var(--s-5) var(--s-5);
@@ -189,7 +204,7 @@
       .entry::before {
         content: '';
         position: absolute;
-        left: 5px;
+        left: var(--spine-line);
         top: 0;
         bottom: 0;
         width: 1px;
@@ -211,9 +226,9 @@
         content: '';
         position: absolute;
         left: 0;
-        top: calc(var(--s-5) - 5px);
-        width: 11px;
-        height: 11px;
+        top: calc(var(--s-5) - var(--spine-line));
+        width: var(--spine-mark);
+        height: var(--spine-mark);
         border-radius: 50%;
         background-color: var(--paper-ink-mute);
         box-shadow: 0 0 0 3px var(--card-bg);
@@ -238,20 +253,20 @@
       }
 
       .entry-head h4 {
-        font-size: 13px;
+        font-size: var(--t-3);
         font-weight: 600;
         color: var(--paper-ink);
       }
 
       .entry-said {
         max-width: var(--measure);
-        font-size: 14px;
+        font-size: var(--t-4);
         line-height: 1.6;
         color: var(--paper-ink);
       }
 
       .entry-meta {
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
@@ -262,7 +277,7 @@
       .gap {
         position: relative;
         padding: 0 0 0 var(--s-6);
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
@@ -270,9 +285,9 @@
       .gap::before {
         content: '';
         position: absolute;
-        left: 5px;
-        top: -2px;
-        bottom: -2px;
+        left: var(--spine-line);
+        top: calc(var(--s-h) * -1);
+        bottom: calc(var(--s-h) * -1);
         width: 1px;
         background-color: var(--paper-ink-ghost);
       }
@@ -289,7 +304,7 @@
         flex-wrap: wrap;
         align-items: center;
         gap: var(--s-2);
-        font-size: 15px;
+        font-size: var(--t-5);
         font-weight: 500;
         color: var(--paper-ink);
       }
@@ -305,12 +320,12 @@
 
       .say-line {
         display: grid;
-        gap: 2px;
+        gap: var(--s-1);
       }
 
       .say-line p:last-child {
         max-width: var(--measure);
-        font-size: 15px;
+        font-size: var(--t-5);
         line-height: 1.6;
         color: var(--paper-ink);
       }
@@ -351,11 +366,23 @@
         background-color: transparent;
         text-align: left;
         cursor: pointer;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
         transition: background-color 150ms var(--ease-out-soft);
       }
 
       .batch-row:hover {
         background-color: var(--row-hover);
+      }
+
+      .batch-row:active {
+        background-color: var(--wash-paper-strong);
+      }
+
+      .batch-row:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
       }
 
       .batch-row[aria-current='true'] {
@@ -368,13 +395,13 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink);
       }
 
       .batch-sub {
         display: block;
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
@@ -536,7 +563,7 @@
 
             <div class="card-body">
               <div class="who">
-                <div>
+                <div class="who-name">
                   <h3>Rivera Fence &amp; Gate</h3>
                   <p class="who-facts">
                     <span>Fencing contractor</span><span>Mont Belvieu</span

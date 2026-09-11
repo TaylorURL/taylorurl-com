@@ -54,15 +54,15 @@
 
       .goal {
         display: grid;
-        gap: 6px;
+        gap: var(--s-1h);
         min-width: 0;
       }
 
       .goal-figure {
         display: flex;
         align-items: baseline;
-        gap: 4px;
-        font-size: 26px;
+        gap: var(--s-1);
+        font-size: var(--t-8);
         font-weight: 600;
         line-height: 1.1;
         letter-spacing: -0.02em;
@@ -70,7 +70,7 @@
       }
 
       .goal-figure span {
-        font-size: 14px;
+        font-size: var(--t-4);
         font-weight: 500;
         letter-spacing: 0;
         color: var(--paper-ink-faint);
@@ -99,7 +99,7 @@
 
       .pace {
         display: grid;
-        gap: 6px;
+        gap: var(--s-1h);
         justify-items: start;
       }
 
@@ -111,7 +111,7 @@
       }
 
       .pace-line {
-        font-size: 14px;
+        font-size: var(--t-4);
         color: var(--paper-ink-soft);
       }
 
@@ -141,11 +141,23 @@
         background-color: transparent;
         text-align: left;
         cursor: pointer;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
         transition: background-color 150ms var(--ease-out-soft);
       }
 
       .batch-row:hover {
         background-color: var(--row-hover);
+      }
+
+      .batch-row:active {
+        background-color: var(--wash-paper-strong);
+      }
+
+      .batch-row:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: -2px;
       }
 
       .batch-row[aria-current='true'] {
@@ -159,7 +171,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink);
       }
 
@@ -168,7 +180,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
@@ -203,7 +215,7 @@
       }
 
       .thread-head h3 {
-        font-size: 13px;
+        font-size: var(--t-3);
         font-weight: 600;
         color: var(--accent);
       }
@@ -221,28 +233,28 @@
 
       .thread dt {
         flex: 0 0 5.5rem;
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
 
       .thread dd {
         margin: 0;
-        font-size: 13px;
+        font-size: var(--t-3);
         line-height: 1.6;
         color: var(--paper-ink);
       }
 
       .name h3 {
-        font-size: 20px;
+        font-size: var(--t-7);
         line-height: 1.3;
         letter-spacing: -0.015em;
         color: var(--paper-ink);
       }
 
       .dial {
-        min-height: 56px;
-        font-size: 18px;
+        min-height: var(--control-h-dial);
+        font-size: var(--t-6);
         font-weight: 500;
         letter-spacing: 0.01em;
         text-decoration: none;
@@ -250,6 +262,9 @@
 
       .facts {
         display: grid;
+        /* No gap on purpose: the cells are divided by their own rules, and a
+           gap would break each rule into pieces. */
+        gap: 0;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         border-top: 1px solid var(--paper-hairline);
         border-bottom: 1px solid var(--paper-hairline);
@@ -263,19 +278,19 @@
 
       .fact {
         display: grid;
-        gap: 2px;
+        gap: var(--s-1);
         padding: var(--s-3) 0;
       }
 
       .fact dt {
-        font-size: 12px;
+        font-size: var(--t-2);
         font-weight: 500;
         color: var(--paper-ink-faint);
       }
 
       .fact dd {
         margin: 0;
-        font-size: 14px;
+        font-size: var(--t-4);
         font-weight: 500;
         color: var(--paper-ink);
       }
@@ -284,6 +299,9 @@
 
       .script {
         display: grid;
+        /* No gap on purpose: each beat is ruled off from the one above it, and
+           a gap would leave the rule floating between them. */
+        gap: 0;
         border: 1px solid var(--paper-hairline);
         border-radius: var(--r-control);
         overflow: hidden;
@@ -300,19 +318,19 @@
       }
 
       .script-head h4 {
-        font-size: 13px;
+        font-size: var(--t-3);
       }
 
       .beat {
         display: grid;
-        gap: 2px;
+        gap: var(--s-1);
         padding: var(--s-3) var(--s-4);
         border-top: 1px solid var(--paper-hairline);
       }
 
       .beat p {
         max-width: var(--measure);
-        font-size: 15px;
+        font-size: var(--t-5);
         line-height: 1.65;
         color: var(--paper-ink);
       }

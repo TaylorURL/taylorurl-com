@@ -58,15 +58,15 @@
 
       .counter {
         display: grid;
-        gap: 2px;
+        gap: var(--s-1);
       }
 
       .counter dd {
         margin: 0;
         display: flex;
         align-items: baseline;
-        gap: 4px;
-        font-size: 24px;
+        gap: var(--s-1);
+        font-size: var(--t-8);
         font-weight: 600;
         line-height: 1.15;
         letter-spacing: -0.02em;
@@ -74,7 +74,7 @@
       }
 
       .counter dd span {
-        font-size: 13px;
+        font-size: var(--t-3);
         font-weight: 500;
         letter-spacing: 0;
         color: var(--paper-ink-faint);
@@ -106,7 +106,7 @@
       .hour {
         display: grid;
         grid-template-rows: 54px auto;
-        gap: 4px;
+        gap: var(--s-1);
         justify-items: center;
       }
 
@@ -149,14 +149,14 @@
       }
 
       .hour span {
-        font-size: 11px;
+        font-size: var(--t-1);
         font-weight: 500;
         white-space: nowrap;
         color: var(--paper-ink-faint);
       }
 
       .hours-note {
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink-soft);
       }
 
@@ -207,14 +207,14 @@
       }
 
       .promise-head h3 {
-        font-size: 15px;
+        font-size: var(--t-5);
         font-weight: 600;
         color: var(--accent);
       }
 
       .promise p {
         max-width: var(--measure);
-        font-size: 14px;
+        font-size: var(--t-4);
         line-height: 1.6;
         color: var(--paper-ink);
       }
@@ -234,18 +234,25 @@
       }
 
       .who h3 {
-        font-size: 21px;
+        font-size: var(--t-7);
         line-height: 1.25;
         letter-spacing: -0.02em;
         color: var(--paper-ink);
+      }
+
+      /* The name and the facts under it are one thing, so the space between
+         them belongs to the pair rather than to the facts. A stack spaced by a
+         child's own margin loses that space the day the child is not there. */
+      .who-name {
+        display: grid;
+        gap: var(--s-1);
       }
 
       .who-facts {
         display: flex;
         flex-wrap: wrap;
         gap: var(--s-1) var(--s-3);
-        margin-top: 2px;
-        font-size: 13px;
+        font-size: var(--t-3);
         color: var(--paper-ink-mute);
       }
 
@@ -261,8 +268,8 @@
       }
 
       .dial {
-        min-height: 52px;
-        font-size: 17px;
+        min-height: var(--control-h-dial);
+        font-size: var(--t-6);
         font-weight: 500;
         text-decoration: none;
         white-space: nowrap;
@@ -285,7 +292,7 @@
         gap: var(--s-3);
         padding: var(--s-3) var(--s-4);
         cursor: pointer;
-        font-size: 13px;
+        font-size: var(--t-3);
         font-weight: 600;
         color: var(--paper-ink);
         list-style: none;
@@ -311,14 +318,14 @@
 
       .past-row {
         display: grid;
-        gap: 2px;
+        gap: var(--s-1);
         padding: var(--s-3) var(--s-4);
         border-top: 1px solid var(--paper-hairline);
       }
 
       .past-row p:last-child {
         max-width: var(--measure);
-        font-size: 14px;
+        font-size: var(--t-4);
         line-height: 1.6;
         color: var(--paper-ink);
       }
@@ -366,19 +373,21 @@
 
       .rail-line {
         display: grid;
-        gap: 2px;
+        gap: var(--s-1);
         padding: var(--s-3) var(--s-5);
         border-bottom: 1px solid var(--paper-hairline);
       }
 
       .rail-line p:last-child {
         max-width: var(--measure);
-        font-size: 15px;
+        font-size: var(--t-5);
         line-height: 1.6;
         color: var(--paper-ink);
       }
 
       .rail-search {
+        display: grid;
+        gap: var(--s-1h);
         padding: var(--s-3) var(--s-5);
         border-bottom: 1px solid var(--paper-hairline);
       }
@@ -483,7 +492,7 @@
 
             <div class="card-body">
               <div class="who">
-                <div>
+                <div class="who-name">
                   <h3>Rivera Fence &amp; Gate</h3>
                   <p class="who-facts">
                     <span>Fencing contractor</span><span>Mont Belvieu</span
@@ -606,7 +615,6 @@
                   type="search"
                   autocomplete="off"
                   placeholder="facebook, cost, my nephew"
-                  style="margin-top: 6px"
                 />
               </div>
             </div>
