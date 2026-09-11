@@ -1633,6 +1633,16 @@
    is gone at arm's length. Ghost is the console's own decoration step, which is
    what a connector is. */
 .console-spine {
+  /* The thread's geometry is one measurement rather than four numbers. The
+     mark is a dot on the left edge; the line is a hairline centred under it,
+     which is the mark's radius less half the line; and the height they are
+     both read from is where the mark sits against the first line of an entry.
+     Written once, because a dot and a line that disagree by a pixel is the
+     kind of thing nobody sees and everybody feels. */
+  --spine-mark: 11px;
+  --spine-line: calc((var(--spine-mark) - 1px) / 2);
+  --spine-centre: 20px;
+
   @apply grid list-none p-0;
 }
 
@@ -1643,7 +1653,8 @@
 .console-spine-entry::before,
 .console-spine-gap::before {
   content: '';
-  @apply absolute left-[5px] w-px;
+  @apply absolute w-px;
+  left: var(--spine-line);
   background-color: var(--paper-ink-ghost);
 }
 
@@ -1654,18 +1665,23 @@
 /* The thread starts at its first mark and ends at its last. A line running on
    past either reads as a call nobody has drawn yet. */
 .console-spine-entry:first-child::before {
-  @apply bottom-0 top-5;
+  @apply bottom-0;
+  top: var(--spine-centre);
 }
 
 .console-spine-entry:last-child::before {
-  @apply bottom-auto top-0 h-5;
+  @apply bottom-auto top-0;
+  height: var(--spine-centre);
 }
 
 /* The mark, with the card's own ground ringed around it so the line passes
    behind it rather than into it. */
 .console-spine-entry::after {
   content: '';
-  @apply absolute left-0 top-[15px] h-[11px] w-[11px] rounded-full;
+  @apply absolute left-0 rounded-full;
+  top: calc(var(--spine-centre) - var(--spine-line));
+  width: var(--spine-mark);
+  height: var(--spine-mark);
   background-color: var(--paper-ink-mute);
   box-shadow: 0 0 0 3px var(--console-card-bg);
 }
