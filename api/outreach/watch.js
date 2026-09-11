@@ -35,18 +35,27 @@
  * billing, Search Console - arrives in exactly that shape and would fill the
  * inbox this exists to keep worth reading.
  *
+ * An unmatched message that is carried is recorded for it, with no prospect on
+ * the row, because the row is the whole of what a later run recognises a
+ * message by. Carried and not recorded, it is carried again on every run for
+ * as long as it sits inside the lookback - the same reply, once an hour, to
+ * somebody who answered it the first time, which is the inbox filling up that
+ * the carrying is careful about everywhere else.
+ *
  * What it reads: OUTREACH_SMTP_USER and OUTREACH_SMTP_PASSWORD, over the IMAP
  * host and port beside them, RESEND_API_KEY for the notices, and
  * `outreach_prospects` matched by address.
  *
- * What it writes: an inbound `outreach_messages` row for each reply and each
- * hard bounce. A reply asking for no further contact moves its prospect to
- * 'unsubscribed', writes the address into `public.suppression` with the reason
- * 'unsubscribed', and records the phrase it was read from on the message row.
- * Any other reply moves its prospect to 'replied'. A hard bounce moves it to
- * 'bounced' and writes the address into the same table with the reason
- * 'bounced'. Both suppressions keep every other list off the address too, and
- * neither stage is one any job walks a prospect back out of.
+ * What it writes: an inbound `outreach_messages` row for each reply, each hard
+ * bounce, and each unmatched message it carries. A reply asking for no further
+ * contact moves its prospect to 'unsubscribed', writes the address into
+ * `public.suppression` with the reason 'unsubscribed', and records the phrase
+ * it was read from on the message row. Any other reply moves its prospect to
+ * 'replied'. A hard bounce moves it to 'bounced' and writes the address into
+ * the same table with the reason 'bounced'. Both suppressions keep every other
+ * list off the address too, and neither stage is one any job walks a prospect
+ * back out of. The unmatched row carries no prospect and no stage, since there
+ * is nothing on this side to move.
  *
  * The inbound row is written last of the group, after the stage, the
  * suppression and the list standing. That row is what a later run recognises
@@ -832,7 +841,36 @@ export async function work({ db, counts, read = readMailbox }) {
       // administrative post arrives as is the same shape, so only the messages
       // that read as written by somebody are carried.
       if (tally.forwarded < FORWARD_LIMIT && writtenByAPerson(message)) {
-        if (await forward({ from, subject, body: message.body }, null)) tally.forwarded += 1
+        if (await forward({ from, subject, body: message.body }, null)) {
+          tally.forwarded += 1
+
+          // After the notice, and for the opposite reason the matched reply
+          // writes its row before one. There is no stage and no suppression
+          // here, so the row carries nothing but the fact that the message has
+          // been handed over - and that fact is the only thing a later run
+          // recognises it by. Without it the same message is carried again
+          // every hour it stays inside the lookback, to somebody who answered
+          // it the first time. Written after, a refused notice leaves the
+          // message unrecorded and the next run carries it properly.
+          //
+          // It holds no prospect because it has none. That is what the message
+          // is rather than a gap in the row, and it is what keeps these out of
+          // every view the console draws, all of which read a prospect's own
+          // messages or the outbound side.
+          const filed = await db.from('outreach_messages').insert({
+            prospect_id: null,
+            direction: 'inbound',
+            subject,
+            body_text: field(message.body, BODY_LIMIT),
+            from_address: from,
+            to_address: to,
+            status: 'received',
+            provider_id: providerId,
+            sent_at: arrived,
+          })
+          if (filed.error) throw new Error(filed.error.message)
+          counts.changed += 1
+        }
       }
       tally.ignored += 1
       continue
