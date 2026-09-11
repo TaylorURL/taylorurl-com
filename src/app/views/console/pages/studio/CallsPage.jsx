@@ -20,10 +20,11 @@ import {
   ASSIGNED_MINE,
   ASSIGNED_NOBODY,
   CALL_OUTCOMES,
+  defaultCallbackAt,
   dialHref,
   outcomeAsksInterest,
-  outcomeNeedsCallback,
   outcomeOf,
+  outcomeTakesCallback,
   ownerOf,
   placeOf,
   SCORE_PEAK,
@@ -629,6 +630,22 @@ function headClass(id) {
 }
 
 /**
+ * The time a recorded call rings back at: the one the caller typed, the
+ * default where the outcome expects a time and nobody typed one, and none at
+ * all where the outcome takes the business off the list.
+ *
+ * The default is here rather than on the endpoint alone, because the line the
+ * caller reads back names the time that was filed. Left to the endpoint the
+ * console would have nothing to name, and a call back would be the one outcome
+ * that records without saying when the business is next in front of anybody.
+ */
+function ringBackFor(outcome, chosen = '') {
+  if (outcomeOf(outcome)?.ends) return null
+  if (chosen) return new Date(chosen).toISOString()
+  return outcomeTakesCallback(outcome) ? defaultCallbackAt().toISOString() : null
+}
+
+/**
  * The form that records one call, used in the side panel and in Call Mode
  * alike.
  *
@@ -647,12 +664,12 @@ function headClass(id) {
  * default here is the page guessing at the one thing only the person on the
  * call knows, and a question the call never got to is not a refusal.
  */
-function RecordForm({ row, saving, onRecord, startOn }) {
-  const [outcome, setOutcome] = useState(startOn ?? 'no_answer')
+function RecordForm({ row, saving, onRecord }) {
+  const [outcome, setOutcome] = useState('no_answer')
   const [note, setNote] = useState('')
   const [callback, setCallback] = useState('')
   const [interest, setInterest] = useState('')
-  const needsCallback = outcomeNeedsCallback(outcome)
+  const takesCallback = outcomeTakesCallback(outcome)
   const asksInterest = outcomeAsksInterest(outcome)
   const ends = Boolean(outcomeOf(outcome)?.ends)
   const wait = waitAfter(row, outcome)
@@ -672,13 +689,13 @@ function RecordForm({ row, saving, onRecord, startOn }) {
       outcome,
       note,
       interested: asksInterest && interest ? interest === 'yes' : null,
-      callback_at: callback && !ends ? new Date(callback).toISOString() : null,
+      callback_at: ringBackFor(outcome, callback),
     })
     if (saved) {
       setNote('')
       setCallback('')
       setInterest('')
-      setOutcome(startOn ?? 'no_answer')
+      setOutcome('no_answer')
     }
   }
 
@@ -700,8 +717,8 @@ function RecordForm({ row, saving, onRecord, startOn }) {
         <span className={`${MONO_LABEL} text-paper-faint`}>
           {ends
             ? 'Takes them off the list. They can still be opened and recorded against.'
-            : needsCallback
-              ? 'They come back at the time you name, ahead of everything else.'
+            : takesCallback
+              ? 'They come back at the time you name, ahead of everything else. Leave it blank and they come back tomorrow.'
               : `They rest ${saidHours(wait)}, then come back to the list.`}
         </span>
       </label>
@@ -728,13 +745,12 @@ function RecordForm({ row, saving, onRecord, startOn }) {
       {!ends && (
         <label className="grid gap-1.5">
           <span className={`${MONO_LABEL} text-paper-faint`}>
-            {needsCallback ? 'Ring Them Back At' : 'Or Defer Them To'}
+            {takesCallback ? 'Ring Them Back At' : 'Or Defer Them To'}
           </span>
           <input
             type="datetime-local"
             className={FIELD}
             value={callback}
-            required={needsCallback}
             onChange={event => setCallback(event.target.value)}
           />
         </label>
@@ -809,18 +825,7 @@ function Owner({ row, people, you, saving, onHand }) {
 }
 
 /** Everything known about one business, and the form that adds to it. */
-function Sheet({
-  row,
-  saving,
-  recorded,
-  onRecord,
-  startOn,
-  onHandbook,
-  holder,
-  people,
-  you,
-  onHand,
-}) {
+function Sheet({ row, saving, recorded, onRecord, onHandbook, holder, people, you, onHand }) {
   const href = dialHref(row.phone)
 
   return (
@@ -920,7 +925,7 @@ function Sheet({
       {recorded ? (
         <p className="text-[13px] text-ink-paper">{recorded}</p>
       ) : (
-        <RecordForm row={row} saving={saving} onRecord={onRecord} startOn={startOn} />
+        <RecordForm row={row} saving={saving} onRecord={onRecord} />
       )}
 
       <div className="grid gap-2">
@@ -995,7 +1000,6 @@ export default function CallsPage() {
   const [page, setPage] = useState(1)
 
   const [openRow, setOpenRow] = useState(null)
-  const [asked, setAsked] = useState(null)
   const [recorded, setRecorded] = useState(null)
   // Only read on a screen too narrow to carry the handbook beside the record.
   // Where there is room for both, the stylesheet shows it whatever this says.
@@ -1213,20 +1217,16 @@ export default function CallsPage() {
   const quick = useCallback(
     async outcome => {
       if (!current) return
-      // A call back is the one outcome a key cannot finish, because it has a
-      // time on it. The record opens already set to it rather than back at No
-      // Answer, so the caller names the time rather than choosing again the
-      // outcome they have just chosen.
-      if (outcomeNeedsCallback(outcome)) {
-        setOpenRow(current)
-        setAsked(outcome)
-        setRecorded(null)
-        return
-      }
-      // The two a key cannot finish on its own, for the other reason: the
-      // outcome does not say whether anybody wanted it, and a no is what keeps
-      // the business out of the lead list. The card asks, and whichever of the
-      // three answers comes back records the outcome with it.
+      // A call back finishes on its key like every other outcome, at the
+      // default day out. The key used to open the record instead, because the
+      // time was required, which put a form in front of a caller mid-batch for
+      // the one outcome that means somebody wants to hear from them again. The
+      // record is still a button below, for the caller who was given a time.
+      //
+      // The two a key cannot finish on its own: the outcome does not say
+      // whether anybody wanted it, and a no is what keeps the business out of
+      // the lead list. The card asks, and whichever of the three answers comes
+      // back records the outcome with it.
       if (outcomeAsksInterest(outcome)) {
         setAsking(outcome)
         setRecorded(null)
@@ -1237,7 +1237,7 @@ export default function CallsPage() {
         outcome,
         note: '',
         interested: null,
-        callback_at: null,
+        callback_at: ringBackFor(outcome),
       })
       if (saved) {
         setWorked(held => ({ ...held, [current.id]: outcome }))
@@ -1308,14 +1308,12 @@ export default function CallsPage() {
 
   const openBusiness = useCallback(row => {
     setOpenRow(row)
-    setAsked(null)
     setRecorded(null)
     setHandbook(false)
   }, [])
 
   const closeBusiness = useCallback(() => {
     setOpenRow(null)
-    setAsked(null)
     setRecorded(null)
     setHandbook(false)
   }, [])
@@ -1331,7 +1329,6 @@ export default function CallsPage() {
         setWorked(held => ({ ...held, [current.id]: call.outcome }))
         setAt(index => index + 1)
         setOpenRow(null)
-        setAsked(null)
       }
       return saved
     },
@@ -2014,7 +2011,6 @@ export default function CallsPage() {
             you={desk.you}
             onHand={handOver}
             onRecord={writeFromSheet}
-            startOn={asked}
             onHandbook={() => setHandbook(true)}
           />
         )}

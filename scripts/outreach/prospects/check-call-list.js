@@ -38,6 +38,7 @@ import { fileURLToPath } from 'node:url'
 import {
   ATTEMPT_HOURS,
   BUSY_FLOOR,
+  CALLBACK_DEFAULT_HOURS,
   CALL_OUTCOMES,
   OUTCOME_FLOOR_HOURS,
   OUTCOME_IDS,
@@ -54,6 +55,7 @@ import {
   callPlace,
   callRank,
   countAtBand,
+  defaultCallbackAt,
   dialHref,
   isCallable,
   matchesControls,
@@ -61,7 +63,7 @@ import {
   medianOf,
   outcomeAsksInterest,
   outcomeEnds,
-  outcomeNeedsCallback,
+  outcomeTakesCallback,
   placeCalls,
   presenceOf,
   promiseOf,
@@ -674,16 +676,34 @@ check('the outcomes that end a business are the ones that should', () => {
   }
 })
 
-check('a call back is the one outcome that has to name a time', () => {
-  ok(outcomeNeedsCallback('callback'), 'a call back was accepted with no time on it')
+check('a call back is the one outcome that carries a time to ring back', () => {
+  ok(outcomeTakesCallback('callback'), 'a call back carried no time at all')
   for (const id of OUTCOME_IDS.filter(one => one !== 'callback')) {
-    ok(!outcomeNeedsCallback(id), `${id} was made to name a callback time`)
+    ok(!outcomeTakesCallback(id), `${id} was made to carry a callback time`)
   }
+})
+
+check('a call back nobody timed is filed a day out rather than refused', () => {
+  // The console and the endpoint both fill this, and what it has to produce is
+  // a promise the list reads like any other. A default that landed in the past
+  // or that the ladder outranked would be the call back nobody typed a time on
+  // going quietly missing, which is the failure the refusal was there to stop.
+  const filed = defaultCallbackAt(now)
+  same(
+    filed.getTime() - now.getTime(),
+    CALLBACK_DEFAULT_HOURS * 3_600_000,
+    'how far out an untimed call back lands'
+  )
+  const untimed = listed({
+    calls: [call({ outcome: 'callback', called_at: off(-1), callback_at: filed.toISOString() })],
+  })
+  same(callPlace(untimed, now), 'promised', 'where an untimed call back sits')
+  same(readyAt(untimed, now).toISOString(), filed.toISOString(), 'when it comes back')
 })
 
 check('an id nothing offers is not an outcome', () => {
   ok(!outcomeEnds('sold'), 'an unknown id ended a business')
-  ok(!outcomeNeedsCallback(''), 'an empty id demanded a callback')
+  ok(!outcomeTakesCallback(''), 'an empty id carried a callback')
 })
 
 // ── Who becomes a lead ──────────────────────────────────────────────────
