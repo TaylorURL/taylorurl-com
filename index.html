@@ -156,6 +156,55 @@
         // wrote from one the vendor chained off it.
         window.__siteTags = []
         for (var t = 0; t < tags.length; t += 1) window.__siteTags.push(tags[t].src)
+        // What became of each of them. The reporter holds every failure on these
+        // two addresses and files none of them itself, because one of them read
+        // alone cannot say which of two entirely different things happened. This
+        // is where that is decided, once both have answered.
+        //
+        // Two vendors, two CDNs, nothing in common between them but the reader.
+        // One failing while the other arrives is a real absence and files: a
+        // library that stopped being served, an address this page got wrong, a
+        // policy here refusing one host. Both failing together is not something
+        // this site can cause or fix - no deploy takes Google and Meta down in
+        // the same instant - and it is the everyday shape of a content blocker,
+        // which carries both hosts on one filter list, or of a connection that
+        // has gone.
+        //
+        // #549 quietened the containers Google chains off its own host and left
+        // the tag this page writes reporting, on the grounds that the loader is
+        // the site's own wiring. That is still right and it still reports. What
+        // it could not see from one address is that a blocker does not read
+        // addresses, it reads hosts: the chained container and the loader are
+        // refused in the same instant off the same list, so the half left loud
+        // went on filing the same reader's blocker under a different URL. #558
+        // was nine of those in ten hours, off `/start`, against a page that was
+        // working and a checkout that was taking payments.
+        //
+        // What it files is worded exactly as the reporter's own resource branch
+        // words it. The collector groups by the message, so a wording of its own
+        // here would split one fault into two and start its history over.
+        var answered = {}
+        function settle(src, arrived) {
+          answered[src] = arrived
+          var lost = []
+          for (var k = 0; k < tags.length; k += 1) {
+            if (!(tags[k].src in answered)) return
+            if (!answered[tags[k].src]) lost.push(tags[k].src)
+          }
+          if (lost.length === tags.length) return
+          for (var m = 0; m < lost.length; m += 1) {
+            if (window.__reporter && window.__reporter.file)
+              window.__reporter.file('resource', 'Failed to load script: ' + lost[m])
+          }
+        }
+        // Each tag's own address, held against the moment it answers. Read off
+        // the loop variable instead, every handler would report whichever tag
+        // the loop stopped on.
+        function answers(src, arrived) {
+          return function () {
+            settle(src, arrived)
+          }
+        }
         var nudges = ['pointerdown', 'keydown', 'touchstart', 'scroll']
         var SETTLE_MS = 10000
         var fetched = false
@@ -168,6 +217,8 @@
             tag.async = true
             if (tags[j].cors) tag.crossOrigin = 'anonymous'
             tag.src = tags[j].src
+            tag.addEventListener('load', answers(tags[j].src, true))
+            tag.addEventListener('error', answers(tags[j].src, false))
             document.head.appendChild(tag)
           }
         }
@@ -705,6 +756,32 @@
           }
           return ours
         }
+        // The complement of `vendorChain`: an address this page wrote itself,
+        // exactly as it wrote it.
+        //
+        // These are held here rather than filed, and the verdict on one is made
+        // by the block that wrote it, which is the only place that can see what
+        // became of the other. A failure read here on its own cannot tell a
+        // library that has stopped being served from a reader who refuses the
+        // host, and #558 is what happens when it guesses: nine tickets in ten
+        // hours naming a file that answers on every fetch from here.
+        //
+        // With no list recorded there is nothing to match and this answers no,
+        // so a page whose tag block never ran files the host exactly as it did
+        // before any of this - the same reason `vendorChain` reads that case
+        // loud.
+        function siteTag(address) {
+          var written = window.__siteTags
+          if (!written || !written.length) return false
+          var href
+          try {
+            href = new URL(String(address || ''), location.href).href
+          } catch (ignored) {
+            return false
+          }
+          for (var i = 0; i < written.length; i += 1) if (written[i] === href) return true
+          return false
+        }
         function marketingBeacon(address) {
           var host, path
           try {
@@ -811,6 +888,13 @@
           held: held,
           replay: function () {
             return held.slice()
+          },
+          // The one way into the collector from outside this block, and it
+          // exists for one caller. The tag loader holds both its addresses until
+          // both have answered and files through here, because the verdict on
+          // either of them is a fact about the other.
+          file: function (kind, message) {
+            report(kind, message, '')
           },
         }
         // The attempt number this page hung on an address of its own, taken
@@ -973,6 +1057,8 @@
                   hold('hint', 'Declined ' + address.split('?')[0], '')
                 } else if (marketingBeacon(address)) {
                   hold('beacon', 'No answer from ' + address.split('?')[0], '')
+                } else if (siteTag(address)) {
+                  hold('tag', 'No answer from ' + address.split('?')[0], '')
                 } else if (recovering(event.target)) {
                   hold('recovering', 'Asking again for ' + address, '')
                 } else {

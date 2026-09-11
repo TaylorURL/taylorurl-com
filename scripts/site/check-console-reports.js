@@ -414,15 +414,22 @@ check(
     'vendor traffic is failing at all'
 )
 
-// The direction that matters more, and the reason this is answered from what
-// the page wrote rather than by muting the host. The tag the site writes itself
-// is the site's own wiring, and it reports.
+// The tag the site writes itself is the site's own wiring, and it still
+// reports - but not from here. One failure read on its own cannot tell a
+// library that stopped being served from a reader who refuses the host, so this
+// listener holds it and the block that wrote the tag decides, once it knows
+// what became of the other one. The two checks below are that verdict.
 const ours = collector(TAG_SCRIPTS, SITE_TAGS)
 ours.throws(scriptFailure('https://www.googletagmanager.com/gtag/js?id=G-TEST'))
 check(
-  ours.posted.length === 1,
-  'the tag this page writes itself failed and nothing was filed, so the reporter has gone ' +
-    'quiet on the site’s own wiring on the host it matters most on'
+  ours.posted.length === 0,
+  'the site’s own tag was filed the moment it failed, so the reader who blocks the host is ' +
+    'opening a ticket again before anything has looked at what the other vendor did'
+)
+check(
+  ours.held().some(entry => entry.kind === 'tag'),
+  'the site’s own tag failed and was dropped rather than held, so a live console can no longer ' +
+    'see that the page’s own wiring is failing at all'
 )
 
 // And with no list to answer from there is no answer, so the loud reading
@@ -436,6 +443,142 @@ check(
   unknown.posted.length === 1,
   'a page that recorded no tags of its own went quiet on a loader host anyway, so the filter ' +
     'is guessing where it has nothing to compare against'
+)
+
+/* ----------------------------------------------------------------------- *
+ * Which of the two things a failed tag was.
+ * ----------------------------------------------------------------------- */
+
+// The verdict itself, asked of the block that actually writes the tags. Reading
+// the reporter alone would only ever show these failures being held, which is
+// half the rule and the harmless half -- a change that stopped filing the real
+// absence would pass every check above this line while the site quietly lost
+// the one report on this host that was ever worth having.
+const loader = scripts.find(source => source.includes('__siteTags = []'))
+if (!loader) {
+  console.error('check-console-reports: failed')
+  console.error('  the page no longer carries the block that writes its tags')
+  process.exit(1)
+}
+
+/**
+ * Stands the tag block up, fetches its tags, and hands back a way to answer
+ * each one. Nothing here is a browser: `document.head` collects the script
+ * elements the block appends, and answering one runs the handler the block hung
+ * on it.
+ */
+function tagLoader() {
+  const filed = []
+  const appended = []
+  const listeners = {}
+  const sandbox = {
+    Date,
+    URL,
+    setTimeout() {},
+    addEventListener(type, handler) {
+      ;(listeners[type] = listeners[type] || []).push(handler)
+    },
+    removeEventListener() {},
+    location: { search: '' },
+    document: {
+      createElement() {
+        const node = { async: false, src: '', crossOrigin: null, on: {} }
+        node.addEventListener = (type, handler) => {
+          node.on[type] = handler
+        }
+        return node
+      },
+      head: { appendChild: node => appended.push(node) },
+    },
+  }
+  sandbox.window = sandbox
+  // The reporter block runs after this one in the page and is long since up by
+  // the time a tag settles, so the door it opens is here from the start.
+  sandbox.__reporter = {
+    file(kind, message) {
+      filed.push({ kind, message })
+    },
+  }
+  const context = vm.createContext(sandbox)
+  new vm.Script(loader, { filename: 'https://www.taylorurl.com/start' }).runInContext(context)
+  // A reader's first touch is what fetches them on a page carrying no click
+  // identifier, and a scroll counts, so this is the ordinary arrival.
+  for (const handler of listeners.pointerdown || []) handler({})
+  return {
+    filed,
+    written: sandbox.__siteTags,
+    fetched: appended.map(node => node.src),
+    answer(host, arrived) {
+      const node = appended.find(each => each.src.includes(host))
+      if (!node) throw new Error(`the page wrote no tag to ${host}`)
+      node.on[arrived ? 'load' : 'error']({})
+    },
+  }
+}
+
+// The rule below reads one tag's failure against the other's answer, so it has
+// nothing to read at all on a page that writes one tag. A future that drops the
+// pixel has to decide what this host reports on its own before it goes.
+const wrote = tagLoader()
+check(
+  wrote.fetched.length === 2 && wrote.written.length === 2,
+  'the page no longer fetches two tags from two vendors, so one failure has nothing to be read ' +
+    'against and every reader running a blocker files a ticket again'
+)
+
+// Both vendors refused in the same instant. Nothing this site does reaches
+// Google's CDN and Meta's at once, so this is the reader's blocker or the
+// reader's connection, and it is the shape #558 arrived in nine times.
+const blocked = tagLoader()
+blocked.answer('googletagmanager.com', false)
+blocked.answer('connect.facebook.net', false)
+check(
+  blocked.filed.length === 0,
+  'both vendors failed together and a ticket was filed anyway, so every reader running a content ' +
+    'blocker is opening one against a site nobody can fix it on'
+)
+
+// One gone while the other arrived. That is a real absence on a connection that
+// was working, and it is the report this host is worth having.
+const missing = tagLoader()
+missing.answer('connect.facebook.net', true)
+missing.answer('googletagmanager.com', false)
+check(
+  missing.filed.length === 1 &&
+    missing.filed[0].kind === 'resource' &&
+    missing.filed[0].message.includes('googletagmanager.com'),
+  'the analytics tag stopped arriving on a connection that was otherwise fine and nothing was ' +
+    'filed, so the site has gone silent on its own wiring instead of quieter'
+)
+// Worded as the reporter's own resource branch words it. The collector groups
+// by the message, so a wording of its own here files one fault under two names
+// and starts its history over on every deploy.
+check(
+  missing.filed[0].message ===
+    'Failed to load script: https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
+  'the loader files a failed tag in words the reporter does not use, so the same fault arrives at ' +
+    'the collector under a second name and neither one ever counts a recurrence'
+)
+
+// The other direction, which is the same rule and the tag that pays for the ad
+// account rather than the property.
+const noPixel = tagLoader()
+noPixel.answer('googletagmanager.com', true)
+noPixel.answer('connect.facebook.net', false)
+check(
+  noPixel.filed.length === 1 && noPixel.filed[0].message.includes('connect.facebook.net'),
+  'the pixel stopped arriving while Google’s tag loaded and nothing was filed, so an audience ' +
+    'nobody is reaching reads exactly like an audience nobody clicked'
+)
+
+// A verdict is never reached on one answer. Until the second tag has said
+// something, the first one failing means nothing either way.
+const waiting = tagLoader()
+waiting.answer('googletagmanager.com', false)
+check(
+  waiting.filed.length === 0,
+  'a failed tag was filed before the other had answered, so the rule is decided on the half of ' +
+    'the evidence that cannot decide it'
 )
 
 /* ----------------------------------------------------------------------- *
