@@ -718,7 +718,7 @@ function RecordForm({ row, saving, onRecord }) {
           {ends
             ? 'Takes them off the list. They can still be opened and recorded against.'
             : takesCallback
-              ? 'They come back at the time you name, ahead of everything else. Leave it blank and they come back tomorrow.'
+              ? 'They come back at the time you name, ahead of everything else.'
               : `They rest ${saidHours(wait)}, then come back to the list.`}
         </span>
       </label>
@@ -753,6 +753,11 @@ function RecordForm({ row, saving, onRecord }) {
             value={callback}
             onChange={event => setCallback(event.target.value)}
           />
+          {takesCallback && (
+            <span className={`${MONO_LABEL} text-paper-faint`}>
+              Leave it blank and they come back tomorrow.
+            </span>
+          )}
         </label>
       )}
 
