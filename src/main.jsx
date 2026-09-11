@@ -5,6 +5,7 @@ import './index.css'
 import Providers from './app/Providers'
 import App from './app/App'
 import { resolveArrival, views } from './app/views'
+import { onCaughtError } from './app/utils/caughtErrors'
 
 // Read before the router mounts. The address the browser opened is the only
 // one carrying the campaign tags, and the first navigation replaces it.
@@ -21,6 +22,10 @@ rememberCampaign(window.location.search)
 // by the loading state, then drawn again. So the route's own module is asked
 // for first and the root starts with it in hand; everything else stays lazy,
 // because every later route is reached from a page already on screen.
+// An error a boundary catches is announced by the root, and the announcement is
+// what files it. Given here rather than left to React so that a piece with its
+// own recovery can report its own failure when that recovery is spent instead
+// of the moment it starts: see `app/utils/caughtErrors`.
 resolveArrival(window.location.pathname).then(arrival =>
   hydrateRoot(
     document.getElementById('root'),
@@ -28,6 +33,7 @@ resolveArrival(window.location.pathname).then(arrival =>
       <BrowserRouter>
         <App views={{ ...views, ...arrival }} />
       </BrowserRouter>
-    </Providers>
+    </Providers>,
+    { onCaughtError }
   )
 )

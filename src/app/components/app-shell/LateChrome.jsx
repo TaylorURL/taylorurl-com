@@ -1,6 +1,7 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import QuietBoundary from './QuietBoundary'
+import { claimCaught } from '@utils/caughtErrors'
 import { lazyWithRetry } from '@utils/lazyWithRetry'
 
 // How many times a piece that failed is built again from scratch on a move.
@@ -121,6 +122,12 @@ export default function LateChrome({
 
   const failed = useCallback(
     error => {
+      // Claimed before anything else, because the alternative is that this
+      // failure has already been filed. React announces an error the moment a
+      // boundary catches it, the reporter in the page head is listening, and a
+      // piece that is about to be offered again would have had a ticket raised
+      // against it while the offer was still to come.
+      claimCaught(error)
       cause.current = error
       setGave(pathname)
     },
@@ -138,6 +145,27 @@ export default function LateChrome({
   // a count that lets a second timer arm behind the first.
   const spent = useRef({ moved: 0, waited: 0 })
 
+  // Whether the failure has been reported, which happens once and at the end.
+  //
+  // Every pass this component runs is a pass against a piece that has already
+  // failed once, so the failure is not news until there is nothing left to try:
+  // a reader whose second pass succeeds has the assistant in the corner, and a
+  // ticket raised at the first pass says the file behind it could not be
+  // fetched. That was #564, filed against a page that recovered in twelve
+  // seconds and put the launcher on screen. Reported here, when the ladder is
+  // spent, it means what its title says - which is the reading the stylesheet
+  // was given for #543, and the one the assistant's own probe is held to in
+  // `data/liveChat.js`.
+  const told = useRef(false)
+  const tell = useCallback(() => {
+    if (told.current) return
+    told.current = true
+    // The door the reporter opened for code that has something to say to
+    // whoever maintains the site, and the same one `data/liveChat.js` uses.
+    // Nothing is written to a reader's console; the wrapper swallows it.
+    console.error(cause.current)
+  }, [])
+
   useEffect(() => {
     if (gave === null) return
 
@@ -148,7 +176,10 @@ export default function LateChrome({
 
     // The reader has gone somewhere since the piece gave up.
     if (gave !== pathname) {
-      if (spent.current.moved >= renewals) return
+      if (spent.current.moved >= renewals) {
+        tell()
+        return
+      }
       spent.current.moved += 1
       renew()
       return
@@ -158,13 +189,16 @@ export default function LateChrome({
     // this effect's own cleanup, which runs on the navigation that would have
     // renewed it anyway and on the unmount that ends the question - so a piece
     // that has already come back is never fetched a second time.
-    if (spent.current.waited >= waits) return
+    if (spent.current.waited >= waits) {
+      tell()
+      return
+    }
     const timer = setTimeout(() => {
       spent.current.waited += 1
       renew()
     }, waitMs)
     return () => clearTimeout(timer)
-  }, [pathname, gave, renewals, waits, waitMs])
+  }, [pathname, gave, renewals, waits, waitMs, tell])
 
   return (
     <QuietBoundary key={attempt} onFail={failed}>
