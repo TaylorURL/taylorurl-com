@@ -718,7 +718,7 @@ function RecordForm({ row, saving, onRecord }) {
           {ends
             ? 'Takes them off the list. They can still be opened and recorded against.'
             : takesCallback
-              ? 'They come back at the time you name, ahead of everything else. Leave it blank and that is tomorrow.'
+              ? 'They come back at the time you name, ahead of everything else. Leave it blank and they come back tomorrow.'
               : `They rest ${saidHours(wait)}, then come back to the list.`}
         </span>
       </label>
