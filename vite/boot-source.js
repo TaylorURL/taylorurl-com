@@ -65,23 +65,58 @@
  * When none of that lands the failure is re-thrown rather than swallowed. It
  * still reaches the reporter, and it now arrives saying which of the three it
  * was instead of reading as whatever the engine happened to say.
+ *
+ * And one more ask, on the far side of the reload rather than beside it.
+ *
+ * The quick pair is for a request that was dropped and lands on the next one,
+ * and the whole of it is over inside eleven hundred milliseconds. The outages
+ * this actually meets last two or three seconds - an edge that has not got the
+ * new build yet, a phone changing networks, a proxy refusing for a moment - so
+ * a ladder that finishes in one second is a ladder spent entirely inside the
+ * outage. `lazyWithRetry` and the stylesheet were each given a rung five
+ * seconds out for exactly that reading, and the entry was the last one asking
+ * three times in a second.
+ *
+ * It goes after the reload and not before it, which is the whole of the
+ * placement. A chunk a deploy has deleted is gone from every address, so five
+ * seconds spent asking is five seconds of a reader sitting on dead controls
+ * while the one recovery that works waits its turn. The reload comes first and
+ * comes at once. The rung is for the case where it is not available at all -
+ * spent on this tab already, refused by a browser that will not give the boot
+ * storage, or useless to a reader the browser knows is offline - and there the
+ * asking is not delaying anything, because there is nothing else left.
+ *
+ * #562 was that gap: three asks gone by 1,069ms, no reload to be had, and the
+ * file answering from three seconds with nothing left to ask it.
+ *
+ * Spent, the reader is told. A boot that never landed leaves the finished
+ * document this file opens by describing - eighty links that answer and
+ * twenty-eight controls that do not - and until now the only reader ever given
+ * a sentence about it was the one on a browser too old to run the bundle.
+ * Everybody else got the same dead page with nothing said, which is the state
+ * the notice exists for. A build that shipped broken syntax is still told
+ * nothing here, because the sentence would be a guess: the page is not coming
+ * back on a reload and the reader's browser is not the reason.
  */
 export function bootSource(src) {
   return `(function(){
 var entry=${JSON.stringify(src)}
 var RELOADED='taylorurl.boot.reload'
+var WAIT_MS=5000
+var TOO_OLD='This browser is too old to run this page. Its links still work. To use the buttons and forms, update it or open the page in a newer browser.'
+var STALLED='This page did not finish loading. Its links still work. To use the buttons and forms, reload the page.'
 var attempts=0
 function parseFailure(error){return Boolean(error)&&error.name==='SyntaxError'}
 function tooOld(){
 try{Function('return {}?.a ?? 0');return false}
 catch(error){return Boolean(error)&&error.name==='SyntaxError'}
 }
-function notice(){
+function notice(words){
 try{
 var bar=document.createElement('div')
 bar.setAttribute('role','status')
 bar.style.cssText='position:fixed;left:0;right:0;top:0;z-index:2147483647;margin:0;padding:12px 16px;background:#111214;color:#ffffff;font:400 14px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif;text-align:center'
-bar.textContent='This browser is too old to run this page. Its links still work. To use the buttons and forms, update it or open the page in a newer browser.'
+bar.textContent=words
 document.body.appendChild(bar)
 }catch(ignored){}
 }
@@ -102,12 +137,21 @@ return true
 }catch(ignored){return false}
 }
 function done(){try{sessionStorage.removeItem(RELOADED)}catch(ignored){}}
-requestAnimationFrame(function(){requestAnimationFrame(function(){
-start(entry).then(done,function(error){
-if(!parseFailure(error)&&navigator.onLine!==false&&once()){location.reload();return}
-if(parseFailure(error)&&tooOld()){notice();return}
+function lost(error){
+if(parseFailure(error)){if(tooOld()){notice(TOO_OLD);return}}
+else notice(STALLED)
 var said=(error&&error.message)||String(error)
 return Promise.reject(new Error('The page could not start: '+said))
+}
+requestAnimationFrame(function(){requestAnimationFrame(function(){
+start(entry).then(done,function(error){
+if(parseFailure(error))return lost(error)
+if(navigator.onLine!==false&&once()){location.reload();return}
+attempts+=1
+var late=entry+'?retry='+attempts
+return new Promise(function(resolve){setTimeout(resolve,WAIT_MS)}).then(function(){
+return start(late).then(done,lost)
+})
 })
 })})
 })()`
