@@ -17,54 +17,64 @@
  *           screens, so the control that ends a call is in the same place on the
  *           sixtieth call as on the first.
  *
- * A desktop is not a wider phone and it is not a second design. It is the same
- * three parts with the column held at a reading measure and the head and foot
- * run full width, which is what a desktop actually buys: a longer line of script
- * without the controls moving.
+ * Every colour is a site token. The steps, the type scale, the radii and the
+ * material below are this surface's own and are declared in the scope below
+ * rather than in the shared sheet: the rest of the site spaces and sizes with
+ * utilities, and a scale in `src/index.css` would be tokens every page carries
+ * for the four that use them.
  *
- * Every colour, radius and shadow is a site token. The steps, the type sizes and
- * the material below are the exception and they are declared in the scope below
- * rather than in the shared sheet, because they are this surface's own: the rest
- * of the site spaces and sizes with utilities, and a twelve-step scale in
- * `src/index.css` would be twelve tokens every page carries for the four that
- * use them.
+ * ── THE MATERIAL ─────────────────────────────────────────────────────────
  *
- * ── THE MATERIAL ──────────────────────────────────────────────────────────
+ * Everything raised here is one material: a pane of glass over a lit field. It
+ * is three things at once and it is not glass unless all three are there.
  *
- * Everything raised on this surface is one material: a pane of glass over a lit
- * ground. It is three things at once and it is not glass unless all three are
- * there.
- *
- *   THE GROUND  a field of soft accent light, fixed to the viewport and drifting
- *               slowly across it. Without it the blur has nothing to blur and a
- *               translucent pane is indistinguishable from a flat one, which is
- *               the whole reason frosted panels over a plain sheet read as grey
- *               boxes.
+ *   THE FIELD   accent light, in blooms large enough to read as light in a room
+ *               rather than as a tint on a sheet. It is fixed to the viewport
+ *               and drifts across it, so the panes over it refract a different
+ *               part of it at every scroll position. Without it the blur has
+ *               nothing to blur and a translucent pane is indistinguishable
+ *               from a flat one, which is why frosted panels over a plain sheet
+ *               read as grey boxes.
  *   THE BODY    a translucent ground and a blur that also lifts saturation, so
- *               the light behind a pane comes through it bent and warmed rather
- *               than merely dimmed.
- *   THE EDGE    a bright line along the top and a shade along the bottom. This
- *               is the one that does the work: a pane reads as a solid object
- *               with a thickness because its upper edge catches the light in the
- *               room and its lower edge does not.
+ *               what is behind a pane comes through it bent and brightened
+ *               rather than merely dimmed.
+ *   THE EDGE    light gathered at the upper corner a pane faces the room with,
+ *               falling off before the middle, over a hairline ring. This is
+ *               the one that does the work: a pane reads as an object with a
+ *               thickness because its upper edge catches the light and its
+ *               lower edge does not.
  *
- * The pane is used on the things that are objects - the bars, the tiles, the
- * number, the figures, the people at the desk. It is not used on the eight
+ * The pane is on the things that are objects - the window, the bars, the tiles,
+ * the number, the figures, the people at the desk. It is not on the eight
  * outcome tags: a blur costs a composited layer each and buys nothing at the
  * size of a chip, so those take the ground and the edge and skip the blur.
  *
- * Motion follows the same rule. Nothing here loops except the ground itself, at
- * a minute a pass and low enough in contrast to sit behind somebody for a whole
- * shift. Everything else moves once, because it arrived or because it was
- * pressed. Asked for less of it, the document stills the lot at the token and
- * the block at the foot of this sheet holds the two states it cannot reach.
+ * ── THE TWO SIZES ────────────────────────────────────────────────────────
+ *
+ * A desktop is not a wider phone. The parts are the same and so is every
+ * control, but what the bigger screen is actually for is standing the work on
+ * something: the window lifts off the field, the field is visible around it,
+ * and the type takes the size a person reading at arm's length wants. A phone
+ * has no room to stand anything on anything, so the window is the screen and
+ * the field shows through the panes instead of around them.
+ *
+ * ── MOTION ───────────────────────────────────────────────────────────────
+ *
+ * Nothing loops but the field, at a minute a pass and low enough in contrast to
+ * sit behind somebody for a whole shift. Everything else moves once, because it
+ * arrived or because it was pressed. Asked for less of it, the document stills
+ * the lot at the token and the block at the foot of this sheet holds the two
+ * states it cannot reach.
  */
 
 .staff {
-  /* The one value the two sizes disagree about. Everything else is written
-     against it, so the phone and the desktop cannot drift into two layouts. */
+  /* The reading measure, and the room around it. Everything else is written
+     against these, so the two sizes cannot drift into two layouts. */
   --staff-measure: 21rem;
   --staff-pad: var(--s-4);
+  /* Prose stops here whatever the measure is. A line of script run to the full
+     width of a desktop column is a line nobody can follow back to its start. */
+  --staff-prose: 40rem;
 
   --s-h: 2px;
   --s-1: 4px;
@@ -77,6 +87,7 @@
   --s-5: 20px;
   --s-6: 24px;
   --s-8: 32px;
+  --s-10: 40px;
 
   --t-1: 11px;
   --t-2: 12px;
@@ -86,82 +97,87 @@
   --t-6: 20px;
   --t-7: 24px;
   --t-8: 30px;
+  --t-9: 38px;
 
   /* The number and the control that ends a call are pressed with a thumb while
      the other hand holds a handset, so they get a taller target than the rest. */
   --control-h-dial: 56px;
 
+  /* Three radii of this surface's own, over the site's four. A corner is a scale
+     reading and this material turns a longer one than the page does: glass has a
+     thickness, and an 8px corner on a pane the size of a tile reads as a card
+     with a picture of glass on it. The site's own control and tiny steps are
+     left alone, because a chip and a bar are the same size here as anywhere. */
+  --pane-round: 14px;
+  --pane-round-sm: 10px;
+  --pane-round-lg: 20px;
+
   /* THE PANE, at its light values. The dark setting below restates the whole set
-     against a near-black ground, where every one of them inverts: the body goes
-     from white over paper to white light over black, and the edge from a bright
-     line to a faint one. */
-  --pane: rgb(255 255 255 / 0.78);
+     against a near-black ground, where every one of them turns over: the body
+     goes from white held high to light held at a few percent, and the edge from
+     a bright line to a faint one. */
+  --pane: rgb(255 255 255 / 0.76);
   --pane-hi: rgb(255 255 255 / 0.95);
-  --pane-bar: rgb(255 255 255 / 0.72);
+  --pane-bar: rgb(255 255 255 / 0.62);
   /* A well is the opposite of a pane: cut into the surface rather than standing
      on it, so it takes the ink rather than the light and its edge runs the other
      way up. */
-  --pane-well: rgb(10 10 10 / 0.045);
-  --pane-ring: rgb(10 10 10 / 0.09);
-  --pane-ring-hi: rgb(10 10 10 / 0.16);
-  /* The light along an upper edge, and the shade along the lower one. */
-  --pane-spec: rgb(255 255 255 / 1);
-  --pane-spec-soft: rgb(255 255 255 / 0.55);
-  --pane-shade: rgb(10 10 10 / 0.045);
-  /* The light itself, lying along the top of a pane and falling away before the
-     middle of it. It is one recipe rather than a gradient retyped per pane,
-     because the light in a room comes from one place and five panes lit from
-     five angles is five rooms. */
-  --pane-sheen: linear-gradient(180deg, var(--pane-spec-soft) 0%, transparent 44%);
-  /* The same light over a lit control, where the ground is the accent rather
-     than the page and the highlight is white whatever the setting is. It falls
-     off by the middle rather than crossing the whole face: a light that reaches
-     the bottom edge is the colour of the thing changing, and the brand blue is
-     not two blues. */
-  --lit-sheen: linear-gradient(180deg, rgb(255 255 255 / 0.24) 0%, rgb(255 255 255 / 0) 46%);
-  --lit-fill: linear-gradient(
-    180deg,
-    var(--accent-fill) 0%,
-    color-mix(in srgb, var(--accent-fill-hi) 75%, var(--accent-fill)) 100%
-  );
-  --pane-blur: 18px;
-  --pane-blur-bar: 24px;
-  --pane-sat: 1.7;
-  /* What a pane casts, and what it casts once it is under the pointer. Both are
-     stated here rather than taken from the site's --raise, because a raise is
-     cut for an opaque card on paper and a pane is neither. */
-  --pane-cast: 0 1px 2px rgb(10 10 10 / 0.05), 0 12px 28px -14px rgb(16 30 66 / 0.2);
-  --pane-cast-hi: 0 2px 8px rgb(10 10 10 / 0.07), 0 22px 48px -18px rgb(16 30 66 / 0.3);
+  --pane-well: rgb(16 30 66 / 0.05);
+  --pane-ring: rgb(16 30 66 / 0.1);
+  --pane-ring-hi: rgb(16 30 66 / 0.18);
+  --pane-spec: rgb(255 255 255 / 0.95);
+  --pane-spec-soft: rgb(255 255 255 / 0.65);
+  --pane-shade: rgb(16 30 66 / 0.06);
+  /* The light gathered in the corner a pane faces the room with. One recipe
+     rather than a gradient retyped per pane, because the light in a room comes
+     from one place and five panes lit from five angles is five rooms. */
+  --pane-sheen: radial-gradient(120% 78% at 6% -12%, var(--pane-spec-soft) 0%, transparent 44%);
+  --pane-blur: 22px;
+  --pane-blur-bar: 30px;
+  --pane-sat: 1.9;
+  /* What a pane casts, and what it casts under the pointer. Stated here rather
+     than taken from the site's --raise, because a raise is cut for an opaque
+     card on paper and a pane is neither. */
+  --pane-cast: 0 1px 2px rgb(16 30 66 / 0.06), 0 14px 32px -16px rgb(16 30 66 / 0.26);
+  --pane-cast-hi: 0 2px 8px rgb(16 30 66 / 0.08), 0 26px 56px -20px rgb(16 30 66 / 0.36);
+  /* What the window casts, which is a whole surface held off a field rather
+     than a card held off a page. */
+  --pane-cast-window:
+    0 2px 6px rgb(16 30 66 / 0.06), 0 24px 56px -24px rgb(16 30 66 / 0.3),
+    0 60px 120px -60px rgb(16 30 66 / 0.4);
   /* The accent as light rather than as ink: what a lit control throws onto the
      surface under it. */
-  --pane-glow: rgb(43 100 240 / 0.34);
-  --pane-glow-soft: rgb(43 100 240 / 0.16);
+  --pane-glow: rgb(43 100 240 / 0.4);
+  --pane-glow-soft: rgb(43 100 240 / 0.18);
 
-  /* THE GROUND - three blooms of accent light, at the alphas a light sheet takes.
-     They are positioned in the field rather than on any element, so the panes
-     over them refract a different part of it at every scroll position. */
-  --bloom-1: rgb(47 107 255 / 0.07);
-  --bloom-2: rgb(47 107 255 / 0.05);
-  --bloom-3: rgb(47 107 255 / 0.035);
+  /* THE FIELD. Blooms rather than a tint: the light has to vary across the
+     surface or a blur over it returns the same colour everywhere it is placed. */
+  --field:
+    radial-gradient(62% 48% at 12% 4%, rgb(47 107 255 / 0.28) 0%, transparent 62%),
+    radial-gradient(54% 44% at 90% 24%, rgb(47 107 255 / 0.2) 0%, transparent 64%),
+    radial-gradient(72% 52% at 46% 104%, rgb(47 107 255 / 0.18) 0%, transparent 60%);
+  /* The sheet under the blooms. It is pulled well off the page's own warm grey,
+     and that is the whole of what makes glass read on a light setting: a white
+     pane on a white sheet is a white box, and no amount of blur or edge will
+     say otherwise. The field has to be a different colour from the thing
+     standing on it. */
+  --field-base: color-mix(in srgb, var(--accent) 11%, var(--paper));
 
   /* The three speeds. A control answers a press, a pane answers the pointer, and
      a thing that arrived takes the longest of them because it travelled. */
   --beat-press: 120ms;
   --beat-move: 220ms;
-  --beat-enter: 420ms;
-  /* The curve a press snaps back on, which is tighter than the site's own
-     ease-out: a control that eases back into place reads as slow to release. */
+  --beat-enter: 460ms;
+  /* The curve a press snaps back on, tighter than the site's own ease-out: a
+     control that eases back into place reads as slow to release. */
   --ease-press: cubic-bezier(0.34, 1.4, 0.64, 1);
 
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  /* The small viewport unit, so the foot is above the phone browser's own bar
-     rather than behind it. */
-  height: 100svh;
-  overflow: hidden;
   position: relative;
   isolation: isolate;
-  background-color: var(--paper);
+  display: grid;
+  height: 100svh;
+  overflow: hidden;
+  background-color: var(--field-base);
   color: var(--paper-ink);
   /* The half of the surface the stylesheet cannot reach: the column's own
      scrollbar, the corner a textarea is dragged by, the cross that empties the
@@ -173,56 +189,52 @@
 }
 
 /* The dark setting takes the same three parts and turns each of them over. The
-   body is light held at a few percent rather than white held at most of the way;
-   the edge is a faint line rather than a bright one, because full white along
-   the top of a near-black pane is a drawn border rather than a caught
-   reflection; and the cast is black, which is the only thing left that still
-   darkens a ground this dark. */
+   body is light held at a few percent rather than white held high; the edge is a
+   faint line rather than a bright one, because full white along the top of a
+   near-black pane is a drawn border and not a caught reflection; and the cast is
+   black, the only thing left that still darkens a ground this dark. The field
+   goes the other way and gets brighter, because on a near-black sheet the light
+   is the only thing there is to see. */
 :root[data-theme='dark'] .staff {
-  --pane: rgb(255 255 255 / 0.055);
-  --pane-hi: rgb(255 255 255 / 0.1);
-  --pane-bar: rgb(16 18 22 / 0.68);
-  --pane-well: rgb(0 0 0 / 0.3);
+  --pane: rgb(255 255 255 / 0.06);
+  --pane-hi: rgb(255 255 255 / 0.11);
+  --pane-bar: rgb(255 255 255 / 0.045);
+  --pane-well: rgb(0 0 0 / 0.32);
   --pane-ring: rgb(255 255 255 / 0.1);
-  --pane-ring-hi: rgb(255 255 255 / 0.2);
-  --pane-spec: rgb(255 255 255 / 0.16);
-  --pane-spec-soft: rgb(255 255 255 / 0.07);
-  --pane-shade: rgb(0 0 0 / 0.32);
-  --pane-cast: 0 1px 2px rgb(0 0 0 / 0.4), 0 12px 28px -14px rgb(0 0 0 / 0.7);
-  --pane-cast-hi: 0 2px 6px rgb(0 0 0 / 0.5), 0 20px 44px -18px rgb(0 0 0 / 0.85);
-  --pane-glow: rgb(61 118 255 / 0.45);
-  --pane-glow-soft: rgb(61 118 255 / 0.22);
-  --bloom-1: rgb(61 118 255 / 0.2);
-  --bloom-2: rgb(61 118 255 / 0.13);
-  --bloom-3: rgb(61 118 255 / 0.1);
+  --pane-ring-hi: rgb(255 255 255 / 0.22);
+  --pane-spec: rgb(255 255 255 / 0.24);
+  --pane-spec-soft: rgb(255 255 255 / 0.1);
+  --pane-shade: rgb(0 0 0 / 0.34);
+  --pane-cast: 0 1px 2px rgb(0 0 0 / 0.5), 0 16px 34px -16px rgb(0 0 0 / 0.8);
+  --pane-cast-hi: 0 2px 8px rgb(0 0 0 / 0.55), 0 28px 60px -22px rgb(0 0 0 / 0.9);
+  --pane-cast-window:
+    0 2px 6px rgb(0 0 0 / 0.5), 0 30px 70px -30px rgb(0 0 0 / 0.85),
+    0 70px 140px -70px rgb(0 0 0 / 0.9);
+  --pane-glow: rgb(61 118 255 / 0.55);
+  --pane-glow-soft: rgb(61 118 255 / 0.26);
+  --field:
+    radial-gradient(60% 46% at 12% 2%, rgb(61 118 255 / 0.34) 0%, transparent 62%),
+    radial-gradient(52% 42% at 92% 22%, rgb(43 100 240 / 0.22) 0%, transparent 64%),
+    radial-gradient(74% 54% at 44% 106%, rgb(61 118 255 / 0.18) 0%, transparent 60%);
+  --field-base: #07080b;
 
   color-scheme: dark;
 }
 
-@media (min-width: 768px) {
-  .staff {
-    --staff-measure: 46rem;
-    --staff-pad: var(--s-6);
-  }
-}
-
-/* The lit ground. It is fixed to the viewport rather than to the column, so the
-   column travels across it and the panes over it show a different part of the
-   light at every scroll position, which is the parallax that says the panes are
-   above the page rather than printed on it.
+/* The lit field. Fixed to the viewport rather than to the column, so the column
+   travels across it and the panes over it show a different part of the light at
+   every scroll position, which is the parallax that says the panes are above the
+   page rather than printed on it.
 
    A negative layer index puts it over the surface's own ground and under
-   everything in the column, which is where light belongs. */
+   everything in the window, which is where light belongs. */
 .staff::before {
   content: '';
   position: fixed;
   inset: -25%;
   z-index: -1;
   pointer-events: none;
-  background-image:
-    radial-gradient(38% 32% at 18% 12%, var(--bloom-1) 0%, transparent 68%),
-    radial-gradient(44% 36% at 88% 34%, var(--bloom-2) 0%, transparent 70%),
-    radial-gradient(52% 40% at 48% 96%, var(--bloom-3) 0%, transparent 72%);
+  background-image: var(--field);
   animation: staff-drift 64s var(--ease-in-out-soft) infinite;
 }
 
@@ -232,7 +244,60 @@
     transform: translate3d(0, 0, 0) scale(1);
   }
   50% {
-    transform: translate3d(-2.5%, 2%, 0) scale(1.07);
+    transform: translate3d(-3%, 2.5%, 0) scale(1.09);
+  }
+}
+
+/* ── The window ──────────────────────────────────────────────────────────── */
+
+/* On a phone it is the screen, and the field shows through the panes rather than
+   around them. It takes no ground of its own there for exactly that reason: a
+   ground here would be one more sheet between the light and the glass over it. */
+.staff-window {
+  position: relative;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .staff {
+    --staff-measure: 58rem;
+    --staff-pad: var(--s-8);
+
+    padding: var(--s-6);
+    place-items: center;
+  }
+
+  /* A pane the size of the work, standing on the field with the light visible
+     around it. Everything inside it is the same three parts in the same order;
+     what the width buys is the standing, not a second arrangement. */
+  .staff-window {
+    width: min(100%, 76rem);
+    height: 100%;
+    border-radius: var(--pane-round-lg);
+    overflow: hidden;
+    background-color: var(--pane-bar);
+    backdrop-filter: blur(var(--pane-blur-bar)) saturate(var(--pane-sat));
+    -webkit-backdrop-filter: blur(var(--pane-blur-bar)) saturate(var(--pane-sat));
+    box-shadow:
+      inset 0 1px 0 var(--pane-spec),
+      0 0 0 1px var(--pane-ring),
+      var(--pane-cast-window);
+    animation: staff-window-in 620ms var(--ease-out-soft) both;
+  }
+}
+
+@keyframes staff-window-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.994);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
@@ -259,9 +324,21 @@
   -webkit-backdrop-filter: blur(var(--pane-blur-bar)) saturate(var(--pane-sat));
   /* Nothing under it yet, so it casts nothing. What it casts once the column has
      moved beneath it is the rule below. */
-  box-shadow: 0 1px 0 var(--pane-spec-soft);
+  box-shadow: inset 0 1px 0 var(--pane-spec);
   transition: box-shadow var(--beat-move) var(--ease-out-soft);
   animation: staff-head-in var(--beat-enter) var(--ease-out-soft) both;
+}
+
+@media (min-width: 1024px) {
+  .staff-head {
+    padding-top: var(--s-5);
+    padding-bottom: var(--s-5);
+    /* Inside the window the bar is already on the window's own ground, so it
+       adds only the light it catches and the rule under it. */
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 /* A bar only throws a shadow onto something. Until the column has scrolled there
@@ -271,14 +348,14 @@
    moves. */
 .staff-head[data-surfaced='true'] {
   box-shadow:
-    0 1px 0 var(--pane-spec-soft),
-    0 10px 26px -18px rgb(10 10 10 / 0.5);
+    inset 0 1px 0 var(--pane-spec),
+    0 14px 30px -22px rgb(16 30 66 / 0.55);
 }
 
 :root[data-theme='dark'] .staff-head[data-surfaced='true'] {
   box-shadow:
-    0 1px 0 var(--pane-spec-soft),
-    0 12px 30px -18px rgb(0 0 0 / 0.9);
+    inset 0 1px 0 var(--pane-spec),
+    0 16px 34px -22px rgb(0 0 0 / 0.95);
 }
 
 .staff-head-row {
@@ -300,7 +377,14 @@
 
 @media (min-width: 768px) {
   .staff-head-row b {
-    font-size: var(--t-4);
+    font-size: var(--t-5);
+  }
+}
+
+@media (min-width: 1024px) {
+  .staff-head-row b {
+    font-size: var(--t-6);
+    letter-spacing: -0.02em;
   }
 }
 
@@ -315,9 +399,7 @@
   text-decoration: none;
   color: var(--accent);
   touch-action: manipulation;
-  transition:
-    opacity var(--beat-move) var(--ease-out-soft),
-    transform var(--beat-move) var(--ease-out-soft);
+  transition: transform var(--beat-move) var(--ease-out-soft);
 }
 
 /* The way back leads with the direction it goes, drawn rather than spelled so
@@ -344,6 +426,31 @@
   transform: translateX(-1px);
 }
 
+@media (min-width: 1024px) {
+  /* At this width the way back is a chip rather than a line of blue text: the
+     head is deep enough that a bare link floats in it, and the chip is the same
+     glass every other control on the surface is made of. */
+  .staff-back {
+    min-height: 38px;
+    padding-inline: var(--s-3h);
+    border: 1px solid var(--pane-ring);
+    border-radius: var(--pane-round-sm);
+    background-color: var(--pane);
+    box-shadow: inset 0 1px 0 var(--pane-spec);
+    font-size: var(--t-3);
+    transition:
+      background-color var(--beat-move) var(--ease-out-soft),
+      border-color var(--beat-move) var(--ease-out-soft),
+      transform var(--beat-move) var(--ease-out-soft);
+  }
+
+  .staff-back:hover {
+    border-color: var(--accent);
+    background-color: var(--pane-hi);
+    text-decoration: none;
+  }
+}
+
 /* ── The scroll ─────────────────────────────────────────────────────────── */
 
 .staff-scroll {
@@ -355,9 +462,18 @@
   padding: var(--s-4) var(--staff-pad) var(--s-6);
 }
 
-@media (min-width: 768px) {
+@media (min-width: 1024px) {
   .staff-scroll {
-    padding-top: var(--s-5);
+    padding-top: var(--s-8);
+    padding-bottom: var(--s-10);
+    /* A screen with less in it than the window is tall sits in the middle of it
+       rather than clinging to the top with a field of empty glass underneath -
+       the portal is four links and a greeting, and at this height that is a
+       third of the window. `safe` is what keeps that from cutting the top off
+       anything taller: a column that overflows goes back to starting at the top,
+       where the first line is reachable. */
+    display: grid;
+    align-content: safe center;
   }
 }
 
@@ -365,6 +481,12 @@
   display: grid;
   align-content: start;
   gap: var(--s-4);
+}
+
+@media (min-width: 1024px) {
+  .staff-stack {
+    gap: var(--s-6);
+  }
 }
 
 /* Every block in the column arrives from just under where it settles, one after
@@ -381,25 +503,25 @@
 }
 
 .staff-stack > :nth-child(2) {
-  animation-delay: 35ms;
+  animation-delay: 40ms;
 }
 
 .staff-stack > :nth-child(3) {
-  animation-delay: 70ms;
+  animation-delay: 80ms;
 }
 
 .staff-stack > :nth-child(4) {
-  animation-delay: 105ms;
+  animation-delay: 120ms;
 }
 
 .staff-stack > :nth-child(n + 5) {
-  animation-delay: 140ms;
+  animation-delay: 160ms;
 }
 
 @keyframes staff-rise {
   from {
     opacity: 0;
-    transform: translate3d(0, 10px, 0);
+    transform: translate3d(0, 12px, 0);
   }
   to {
     opacity: 1;
@@ -444,14 +566,24 @@
      the light; the cast goes up, onto the column it is held over. */
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    0 -10px 26px -18px rgb(10 10 10 / 0.4);
+    0 -14px 30px -22px rgb(16 30 66 / 0.45);
   animation: staff-foot-in var(--beat-enter) var(--ease-out-soft) both;
 }
 
 :root[data-theme='dark'] .staff-foot {
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    0 -12px 30px -18px rgb(0 0 0 / 0.9);
+    0 -16px 34px -22px rgb(0 0 0 / 0.95);
+}
+
+@media (min-width: 1024px) {
+  .staff-foot {
+    padding-top: var(--s-5);
+    padding-bottom: var(--s-5);
+    background-color: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 }
 
 .staff-foot-stack {
@@ -512,10 +644,17 @@
   display: grid;
   gap: var(--s-2h);
   padding-top: var(--s-3h);
-  background-image: linear-gradient(90deg, var(--pane-ring-hi), transparent 88%);
+  background-image: linear-gradient(90deg, var(--pane-ring-hi), transparent 90%);
   background-repeat: no-repeat;
   background-size: 100% 1px;
   background-position: 0 0;
+}
+
+@media (min-width: 1024px) {
+  .staff-part {
+    gap: var(--s-3);
+    padding-top: var(--s-5);
+  }
 }
 
 .staff-part > h3 {
@@ -523,19 +662,39 @@
   font-weight: 600;
 }
 
+/* A control closing a section is stretched to the column on a phone, where the
+   column is a thumb wide and a full-width target is the right one. At a desktop
+   width that same rule is an eight-hundred-pixel Sign Out, so it takes the width
+   of what it says instead. */
+@media (min-width: 768px) {
+  .staff-part > .staff-btn,
+  .staff-part > .staff-quiet {
+    justify-self: start;
+  }
+}
+
+@media (min-width: 1024px) {
+  .staff-part > h3 {
+    font-size: var(--t-5);
+    letter-spacing: -0.01em;
+  }
+}
+
 .staff-label {
   font-size: var(--t-1);
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-faint);
 }
 
 .staff-mute {
+  max-width: var(--staff-prose);
   color: var(--ink-mute);
 }
 
 .staff-read {
+  max-width: var(--staff-prose);
   font-size: var(--t-4);
   line-height: 1.65;
   color: var(--ink-soft);
@@ -551,7 +710,7 @@
 .staff-biz h2 {
   font-size: var(--t-7);
   font-weight: 600;
-  line-height: 1.12;
+  line-height: 1.1;
   letter-spacing: -0.03em;
 }
 
@@ -561,24 +720,37 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .staff-biz h2 {
+    font-size: var(--t-9);
+    letter-spacing: -0.035em;
+  }
+}
+
 .staff-biz p {
   font-size: var(--t-3);
   color: var(--ink-mute);
+}
+
+@media (min-width: 1024px) {
+  .staff-biz p {
+    font-size: var(--t-4);
+  }
 }
 
 .staff-marks {
   display: flex;
   flex-wrap: wrap;
   gap: var(--s-1h);
-  margin-top: var(--s-1);
+  margin-top: var(--s-2);
 }
 
 /* The number. A control-sized link near the top, because it is pressed once at
    the start of the call - the foot belongs to what is pressed at the end.
 
-   It is the one pane on the surface that is lit from inside: the accent is in
-   its ground rather than only in its ink, so the thing a representative reaches
-   for first is the brightest thing on the screen. */
+   It is the one pane on the surface lit from inside: the accent is in its ground
+   rather than only in its ink, so the thing a representative reaches for first
+   is the brightest thing on the screen. */
 .staff-number {
   position: relative;
   overflow: hidden;
@@ -587,16 +759,15 @@
   justify-content: center;
   gap: var(--s-2h);
   min-height: var(--control-h-dial);
-  border-radius: var(--r-card);
+  border-radius: var(--pane-round);
   background-color: var(--wash-accent);
   background-image: var(--pane-sheen);
   backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   -webkit-backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
-    0 0 0 1px var(--pane-ring),
-    0 8px 22px -14px var(--pane-glow);
+    0 0 0 1px var(--pane-glow-soft),
+    0 10px 26px -14px var(--pane-glow);
   color: var(--accent);
   font-size: var(--t-6);
   font-weight: 600;
@@ -608,6 +779,13 @@
     background-color var(--beat-move) var(--ease-out-soft),
     box-shadow var(--beat-move) var(--ease-out-soft),
     transform var(--beat-press) var(--ease-press);
+}
+
+@media (min-width: 1024px) {
+  .staff-number {
+    min-height: 76px;
+    font-size: var(--t-8);
+  }
 }
 
 /* The light that runs across it when the pointer arrives. It is parked off the
@@ -627,9 +805,8 @@
   background-color: var(--wash-accent-strong);
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
-    0 0 0 1px var(--pane-glow-soft),
-    0 14px 30px -14px var(--pane-glow);
+    0 0 0 1px var(--pane-glow),
+    0 18px 38px -14px var(--pane-glow);
 }
 
 .staff-number:hover::after {
@@ -637,12 +814,12 @@
 }
 
 .staff-number:active {
-  transform: scale(0.985);
+  transform: scale(0.99);
 }
 
 @keyframes staff-sweep {
   from {
-    opacity: 0.55;
+    opacity: 0.6;
     transform: translate3d(-100%, 0, 0);
   }
   to {
@@ -654,8 +831,7 @@
 /* ── Pairs ──────────────────────────────────────────────────────────────── */
 
 /* A fact and its value. One per line on a phone; two columns of them once there
-   is room, which is the only thing on any screen that reflows between the two
-   sizes. */
+   is room, which is the only thing on any screen that reflows between sizes. */
 
 .staff-pairs {
   display: grid;
@@ -669,12 +845,27 @@
   }
 }
 
+@media (min-width: 1024px) {
+  .staff-pairs {
+    gap: var(--s-3);
+    column-gap: var(--s-10);
+  }
+}
+
 .staff-pairs > div {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: var(--s-3);
   font-size: var(--t-3);
+}
+
+@media (min-width: 1024px) {
+  .staff-pairs > div {
+    padding-bottom: var(--s-2h);
+    border-bottom: 1px solid var(--pane-ring);
+    font-size: var(--t-4);
+  }
 }
 
 .staff-pairs dt {
@@ -708,6 +899,13 @@
   font-size: var(--t-4);
   font-weight: 500;
   transition: color var(--beat-move) var(--ease-out-soft);
+}
+
+@media (min-width: 1024px) {
+  .staff-fold summary,
+  .staff-topic summary {
+    font-size: var(--t-5);
+  }
 }
 
 .staff-fold summary {
@@ -760,7 +958,7 @@
 
 .staff-fold[open] > .staff-fold-body,
 .staff-topic[open] > .staff-topic-body {
-  animation: staff-unfold 300ms var(--ease-out-soft) both;
+  animation: staff-unfold 320ms var(--ease-out-soft) both;
 }
 
 @keyframes staff-unfold {
@@ -780,6 +978,7 @@
 }
 
 .staff-beat p:last-child {
+  max-width: var(--staff-prose);
   font-size: var(--t-4);
   line-height: 1.65;
   color: var(--ink-soft);
@@ -797,6 +996,12 @@
   gap: var(--s-4);
 }
 
+@media (min-width: 1024px) {
+  .staff-answers {
+    gap: var(--s-6);
+  }
+}
+
 .staff-tags {
   display: flex;
   flex-wrap: wrap;
@@ -811,7 +1016,7 @@
 
 @media (min-width: 768px) {
   .staff-tags-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -823,7 +1028,7 @@
 
 @media (min-width: 768px) {
   .staff-tags-grid .staff-tag {
-    min-height: var(--control-h);
+    min-height: 52px;
   }
 }
 
@@ -842,32 +1047,37 @@
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  border-radius: var(--r-control);
+  border-radius: var(--pane-round-sm);
   font-size: var(--t-3);
   font-weight: 500;
   text-decoration: none;
   transition:
     background-color var(--beat-move) var(--ease-out-soft),
-    background-image var(--beat-move) var(--ease-out-soft),
     border-color var(--beat-move) var(--ease-out-soft),
     box-shadow var(--beat-move) var(--ease-out-soft),
     color var(--beat-move) var(--ease-out-soft),
     transform var(--beat-press) var(--ease-press);
 }
 
-/* The one filled control, and the only surface on the page the accent is a
-   ground rather than an ink. It is lit from the top: the gradient and the inset
+/* The one filled control, and the only surface here the accent is a ground
+   rather than an ink. It is lit from the top: the band of white and the inset
    line are the same light every pane catches, over a colour rather than over
    glass. */
 .staff-btn {
   border: 0;
-  padding-inline: var(--s-4);
+  padding-inline: var(--s-5);
   background-color: var(--accent-fill);
-  background-image: var(--lit-sheen), var(--lit-fill);
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.26) 0%, rgb(255 255 255 / 0) 46%),
+    linear-gradient(
+      180deg,
+      var(--accent-fill) 0%,
+      color-mix(in srgb, var(--accent-fill-hi) 75%, var(--accent-fill)) 100%
+    );
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.3),
-    0 1px 2px rgb(16 30 66 / 0.18),
-    0 10px 22px -10px var(--pane-glow);
+    inset 0 1px 0 rgb(255 255 255 / 0.32),
+    0 1px 2px rgb(16 30 66 / 0.2),
+    0 12px 26px -10px var(--pane-glow);
   color: var(--on-accent);
 }
 
@@ -879,7 +1089,7 @@
   background-image: linear-gradient(
     100deg,
     transparent 30%,
-    rgb(255 255 255 / 0.42) 50%,
+    rgb(255 255 255 / 0.45) 50%,
     transparent 70%
   );
   opacity: 0;
@@ -890,9 +1100,9 @@
 a.staff-btn:hover {
   background-color: var(--accent-fill-hi);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.34),
-    0 2px 4px rgb(16 30 66 / 0.2),
-    0 16px 30px -10px var(--pane-glow);
+    inset 0 1px 0 rgb(255 255 255 / 0.36),
+    0 2px 4px rgb(16 30 66 / 0.22),
+    0 20px 38px -10px var(--pane-glow);
 }
 
 .staff-btn:hover:enabled::after,
@@ -906,13 +1116,13 @@ a.staff-btn:hover::after {
 .staff-btn:active:enabled,
 a.staff-btn:active,
 .staff-quiet:active:enabled {
-  transform: scale(0.975);
+  transform: scale(0.98);
 }
 
 .staff-btn:disabled,
 .staff-quiet:disabled {
   cursor: not-allowed;
-  opacity: 0.45;
+  opacity: 0.4;
   box-shadow: none;
 }
 
@@ -921,12 +1131,11 @@ a.staff-btn:active,
    enough behind it for a blur to say anything, and there are eight of them on
    the screen at once. */
 .staff-quiet {
-  padding-inline: var(--s-3);
+  padding-inline: var(--s-4);
   border: 1px solid var(--pane-ring);
   background-color: var(--pane);
-  box-shadow:
-    inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade);
+  background-image: var(--pane-sheen);
+  box-shadow: inset 0 1px 0 var(--pane-spec);
   color: var(--ink-soft);
 }
 
@@ -936,18 +1145,17 @@ a.staff-quiet:hover {
   background-color: var(--pane-hi);
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
-    0 6px 16px -10px var(--pane-glow);
+    0 8px 20px -12px var(--pane-glow);
   color: var(--accent);
 }
 
 .staff-input {
   width: 100%;
   min-height: var(--control-h);
-  padding: var(--s-2) var(--s-3);
+  padding: var(--s-2h) var(--s-3h);
   border: 1px solid var(--pane-ring);
-  border-radius: var(--r-control);
-  background-color: var(--paper-field);
+  border-radius: var(--pane-round-sm);
+  background-color: var(--pane-well);
   color: var(--ink);
   /* Sixteen is the floor iOS reads: a field under it is zoomed into on focus and
      the page is left scaled up with the rest of the screen off the side. A
@@ -964,7 +1172,13 @@ a.staff-quiet:hover {
 
 @media (hover: hover) and (pointer: fine) {
   .staff-input {
-    font-size: var(--t-3);
+    font-size: var(--t-4);
+  }
+}
+
+@media (min-width: 1024px) {
+  .staff-input {
+    min-height: 52px;
   }
 }
 
@@ -981,7 +1195,7 @@ a.staff-quiet:hover {
 }
 
 textarea.staff-input {
-  min-height: 84px;
+  min-height: 96px;
   line-height: 1.6;
   resize: vertical;
 }
@@ -999,8 +1213,7 @@ textarea.staff-input {
   padding-inline: var(--s-1);
   border: 1px solid var(--pane-ring);
   border-radius: var(--r-tiny);
-  background-color: var(--pane);
-  box-shadow: inset 0 1px 0 var(--pane-spec);
+  background-color: var(--pane-well);
   font-family: 'Geist Mono', ui-monospace, monospace;
   font-size: var(--t-1);
   line-height: 1.5;
@@ -1024,13 +1237,14 @@ textarea.staff-input {
   align-items: center;
   gap: var(--s-1h);
   white-space: nowrap;
-  border-radius: var(--r-tiny);
-  padding: var(--s-h) var(--s-1h);
+  border-radius: 999px;
+  padding: var(--s-1) var(--s-2h);
   font-size: var(--t-1);
   font-weight: 600;
-  background-color: var(--wash-paper-strong);
+  letter-spacing: 0.01em;
+  background-color: var(--pane);
   box-shadow:
-    inset 0 1px 0 var(--pane-spec-soft),
+    inset 0 1px 0 var(--pane-spec),
     0 0 0 1px var(--pane-ring);
   color: var(--ink-mute);
 }
@@ -1038,7 +1252,7 @@ textarea.staff-input {
 .staff-badge[data-tone='accent'] {
   background-color: var(--wash-accent);
   box-shadow:
-    inset 0 1px 0 var(--pane-spec-soft),
+    inset 0 1px 0 var(--pane-spec),
     0 0 0 1px var(--pane-glow-soft);
   color: var(--accent);
 }
@@ -1046,7 +1260,7 @@ textarea.staff-input {
 .staff-badge[data-tone='good'] {
   background-color: var(--good-wash);
   box-shadow:
-    inset 0 1px 0 var(--pane-spec-soft),
+    inset 0 1px 0 var(--pane-spec),
     0 0 0 1px var(--good-edge);
   color: var(--good-on-paper);
 }
@@ -1054,7 +1268,7 @@ textarea.staff-input {
 .staff-badge[data-tone='warn'] {
   background-color: var(--warn-wash);
   box-shadow:
-    inset 0 1px 0 var(--pane-spec-soft),
+    inset 0 1px 0 var(--pane-spec),
     0 0 0 1px var(--warn-edge);
   color: var(--warn-on-paper);
 }
@@ -1062,7 +1276,7 @@ textarea.staff-input {
 .staff-badge[data-tone='bad'] {
   background-color: var(--danger-wash);
   box-shadow:
-    inset 0 1px 0 var(--pane-spec-soft),
+    inset 0 1px 0 var(--pane-spec),
     0 0 0 1px var(--danger-edge);
   color: var(--danger-on-paper);
 }
@@ -1084,6 +1298,14 @@ textarea.staff-input {
   align-items: baseline;
 }
 
+@media (min-width: 1024px) {
+  .staff-record > div {
+    grid-template-columns: 6rem minmax(0, 1fr);
+    padding-bottom: var(--s-2h);
+    border-bottom: 1px solid var(--pane-ring);
+  }
+}
+
 .staff-record dt {
   font-size: var(--t-2);
   font-weight: 500;
@@ -1092,9 +1314,17 @@ textarea.staff-input {
 }
 
 .staff-record dd {
+  max-width: var(--staff-prose);
   font-size: var(--t-3);
   line-height: 1.6;
   color: var(--ink-soft);
+}
+
+@media (min-width: 1024px) {
+  .staff-record dt,
+  .staff-record dd {
+    font-size: var(--t-4);
+  }
 }
 
 /* ── The tags ───────────────────────────────────────────────────────────── */
@@ -1108,13 +1338,12 @@ textarea.staff-input {
   align-items: center;
   gap: var(--s-2);
   min-height: var(--control-h);
-  padding-inline: var(--s-3);
+  padding-inline: var(--s-3h);
   border: 1px solid var(--pane-ring);
-  border-radius: var(--r-control);
+  border-radius: var(--pane-round-sm);
   background-color: var(--pane);
-  box-shadow:
-    inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade);
+  background-image: var(--pane-sheen);
+  box-shadow: inset 0 1px 0 var(--pane-spec);
   color: var(--ink-soft);
   font-size: var(--t-3);
   font-weight: 500;
@@ -1130,6 +1359,12 @@ textarea.staff-input {
     transform var(--beat-press) var(--ease-press);
 }
 
+@media (min-width: 1024px) {
+  .staff-tag {
+    font-size: var(--t-4);
+  }
+}
+
 .staff-tag:hover:enabled {
   border-color: var(--accent);
   background-color: var(--pane-hi);
@@ -1142,18 +1377,18 @@ textarea.staff-input {
 }
 
 .staff-tag:active:enabled {
-  transform: scale(0.97);
+  transform: scale(0.975);
 }
 
-/* A tag being picked is the one decision on this screen that is worth seeing
-   happen, so the ring blooms out of it once rather than simply being there. The
-   keyframe is declared on the pressed state alone, which is what makes it play
-   at the press and not at every repaint. */
+/* A tag being picked is the one decision on this screen worth seeing happen, so
+   the ring blooms out of it once rather than simply being there. The keyframe is
+   declared on the pressed state alone, which is what makes it play at the press
+   and not at every repaint. */
 .staff-tag[aria-pressed='true'] {
   border-color: var(--accent);
   background-color: var(--wash-accent);
   color: var(--accent);
-  animation: staff-pick 320ms var(--ease-out-soft);
+  animation: staff-pick 340ms var(--ease-out-soft);
 }
 
 .staff-tag[data-tone='good'][aria-pressed='true'] {
@@ -1172,14 +1407,12 @@ textarea.staff-input {
   from {
     box-shadow:
       inset 0 1px 0 var(--pane-spec),
-      inset 0 -1px 0 var(--pane-shade),
       0 0 0 0 var(--pane-glow);
   }
   to {
     box-shadow:
       inset 0 1px 0 var(--pane-spec),
-      inset 0 -1px 0 var(--pane-shade),
-      0 0 0 7px transparent;
+      0 0 0 8px transparent;
   }
 }
 
@@ -1193,17 +1426,24 @@ textarea.staff-input {
 .staff-range {
   display: grid;
   gap: var(--s-2h);
-  padding: var(--s-3) var(--s-3h);
-  border-radius: var(--r-control);
+  padding: var(--s-3h) var(--s-4);
+  border-radius: var(--pane-round);
   background-color: var(--pane-well);
   box-shadow: inset 0 1px 2px var(--pane-shade);
-  animation: staff-unfold 280ms var(--ease-out-soft) both;
+  animation: staff-unfold 300ms var(--ease-out-soft) both;
 }
 
 .staff-range .staff-tag {
-  min-height: 36px;
-  padding-inline: var(--s-2h);
+  min-height: 38px;
+  padding-inline: var(--s-3);
   font-size: var(--t-2);
+}
+
+@media (min-width: 1024px) {
+  .staff-range .staff-tag {
+    min-height: 42px;
+    font-size: var(--t-3);
+  }
 }
 
 /* ── Management ─────────────────────────────────────────────────────────── */
@@ -1214,6 +1454,12 @@ textarea.staff-input {
   gap: var(--s-2);
 }
 
+@media (min-width: 1024px) {
+  .staff-figures {
+    gap: var(--s-4);
+  }
+}
+
 .staff-figure {
   display: grid;
   /* Figure, label, bar. The label takes the slack so the three bars sit on one
@@ -1222,17 +1468,23 @@ textarea.staff-input {
   grid-template-rows: auto 1fr auto;
   gap: var(--s-1h);
   padding: var(--s-3);
-  border-radius: var(--r-card);
+  border-radius: var(--pane-round);
   background-color: var(--pane);
   background-image: var(--pane-sheen);
   backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   -webkit-backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
     0 0 0 1px var(--pane-ring),
     var(--pane-cast);
   text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .staff-figure {
+    gap: var(--s-2h);
+    padding: var(--s-5) var(--s-4);
+  }
 }
 
 /* The figure and its label sit together; only the bar under them is spaced off. */
@@ -1268,9 +1520,25 @@ textarea.staff-input {
   }
 }
 
+@media (min-width: 1024px) {
+  .staff-figure dd {
+    font-size: var(--t-9);
+  }
+
+  .staff-figure dd span {
+    font-size: var(--t-3);
+  }
+}
+
 .staff-figure dt {
   font-size: var(--t-1);
   color: var(--ink-faint);
+}
+
+@media (min-width: 1024px) {
+  .staff-figure dt {
+    font-size: var(--t-3);
+  }
 }
 
 /* A groove cut into the tile, and a reading lying in it. */
@@ -1288,20 +1556,20 @@ textarea.staff-input {
   border-radius: 999px;
   background-color: var(--accent);
   background-image: linear-gradient(90deg, var(--accent) 0%, var(--accent-hi) 100%);
-  box-shadow: 0 0 10px -2px var(--pane-glow);
+  box-shadow: 0 0 12px -2px var(--pane-glow);
   /* The reading fills in from its own left rather than appearing at its length,
      which is the one figure on this screen that reads better as an arrival than
      as a number. Transform rather than width, so it is drawn on the compositor
      and the three of them cannot jitter against each other. */
   transform-origin: left center;
-  animation: staff-fill 760ms var(--ease-out-soft) both;
-  animation-delay: 120ms;
+  animation: staff-fill 800ms var(--ease-out-soft) both;
+  animation-delay: 140ms;
 }
 
 .staff-track span[data-behind='true'] {
   background-color: var(--warn);
   background-image: linear-gradient(90deg, var(--warn) 0%, var(--warn-fill) 100%);
-  box-shadow: 0 0 10px -2px rgb(245 158 11 / 0.4);
+  box-shadow: 0 0 12px -2px rgb(245 158 11 / 0.45);
 }
 
 @keyframes staff-fill {
@@ -1313,9 +1581,9 @@ textarea.staff-input {
   }
 }
 
-/* A bar is a reading, and a reading run to 46rem is a stripe. It stays the
-   length it is on the phone, where it was the width of the column and the right
-   size to judge by eye. */
+/* A bar is a reading, and a reading run the width of a desktop column is a
+   stripe. It stays the length it is on the phone, where it was the width of the
+   column and the right size to judge by eye. */
 @media (min-width: 768px) {
   .staff-track {
     max-width: 22rem;
@@ -1332,14 +1600,13 @@ textarea.staff-input {
   display: grid;
   gap: var(--s-2);
   padding: var(--s-3h) var(--s-4);
-  border-radius: var(--r-card);
+  border-radius: var(--pane-round);
   background-color: var(--pane);
   background-image: var(--pane-sheen);
   backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   -webkit-backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
     0 0 0 1px var(--pane-ring),
     var(--pane-cast);
   transition:
@@ -1347,13 +1614,18 @@ textarea.staff-input {
     transform var(--beat-move) var(--ease-out-soft);
 }
 
+@media (min-width: 1024px) {
+  .staff-person {
+    padding: var(--s-4) var(--s-5);
+  }
+}
+
 .staff-person:hover {
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
     0 0 0 1px var(--pane-ring-hi),
     var(--pane-cast-hi);
-  transform: translateY(-1px);
+  transform: translateY(-2px);
 }
 
 .staff-person-top {
@@ -1366,6 +1638,12 @@ textarea.staff-input {
 .staff-person-top b {
   font-size: var(--t-4);
   font-weight: 600;
+}
+
+@media (min-width: 1024px) {
+  .staff-person-top b {
+    font-size: var(--t-5);
+  }
 }
 
 .staff-person-figure {
@@ -1404,13 +1682,27 @@ textarea.staff-input {
   min-height: 52px;
 }
 
+@media (min-width: 1024px) {
+  .staff-topic summary {
+    min-height: 68px;
+  }
+}
+
 .staff-topic-body {
   display: grid;
   gap: var(--s-3);
   padding-bottom: var(--s-3h);
 }
 
+@media (min-width: 1024px) {
+  .staff-topic-body {
+    gap: var(--s-4);
+    padding-bottom: var(--s-6);
+  }
+}
+
 .staff-topic-body p {
+  max-width: var(--staff-prose);
   font-size: var(--t-4);
   line-height: 1.65;
   color: var(--ink-soft);
@@ -1421,10 +1713,17 @@ textarea.staff-input {
   font-weight: 600;
 }
 
+@media (min-width: 1024px) {
+  .staff-topic-body h4 {
+    font-size: var(--t-4);
+  }
+}
+
 /* What to do after saying it, which is an instruction to the caller rather than
    a line they read out. Set smaller and lighter so the two do not run together
    into one paragraph somebody says the whole of down the phone. */
 .staff-aside {
+  max-width: var(--staff-prose);
   font-size: var(--t-3);
   line-height: 1.55;
   color: var(--ink-faint);
@@ -1447,6 +1746,7 @@ textarea.staff-input {
   display: grid;
   grid-template-columns: 1.25rem minmax(0, 1fr);
   gap: var(--s-2h);
+  max-width: var(--staff-prose);
   font-size: var(--t-4);
   line-height: 1.6;
   color: var(--ink-soft);
@@ -1479,6 +1779,17 @@ textarea.staff-input {
   }
 }
 
+@media (min-width: 1024px) {
+  .staff-greet h2 {
+    font-size: var(--t-9);
+    letter-spacing: -0.035em;
+  }
+
+  .staff-greet p {
+    font-size: var(--t-5);
+  }
+}
+
 .staff-tiles {
   display: grid;
   gap: var(--s-2h);
@@ -1487,6 +1798,12 @@ textarea.staff-input {
 @media (min-width: 768px) {
   .staff-tiles {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .staff-tiles {
+    gap: var(--s-4);
   }
 }
 
@@ -1503,17 +1820,16 @@ textarea.staff-input {
   overflow: hidden;
   display: grid;
   align-content: center;
-  gap: var(--s-1);
+  gap: var(--s-1h);
   min-height: 6.5rem;
   padding: var(--s-4);
-  border-radius: var(--r-card);
+  border-radius: var(--pane-round);
   background-color: var(--pane);
   background-image: var(--pane-sheen);
   backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   -webkit-backdrop-filter: blur(var(--pane-blur)) saturate(var(--pane-sat));
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
     0 0 0 1px var(--pane-ring),
     var(--pane-cast);
   color: inherit;
@@ -1525,13 +1841,22 @@ textarea.staff-input {
     transform var(--beat-move) var(--ease-out-soft);
 }
 
+@media (min-width: 1024px) {
+  .staff-tile {
+    gap: var(--s-2);
+    min-height: 10rem;
+    padding: var(--s-6);
+    border-radius: var(--pane-round-lg);
+  }
+}
+
 .staff-tile::before {
   content: '';
   position: absolute;
   inset: 0;
   pointer-events: none;
   background-image: radial-gradient(
-    13rem 10rem at var(--lit-x) var(--lit-y),
+    14rem 11rem at var(--lit-x) var(--lit-y),
     var(--pane-glow),
     transparent 68%
   );
@@ -1547,14 +1872,13 @@ textarea.staff-input {
   background-color: var(--pane-hi);
   box-shadow:
     inset 0 1px 0 var(--pane-spec),
-    inset 0 -1px 0 var(--pane-shade),
     0 0 0 1px var(--pane-ring-hi),
     var(--pane-cast-hi);
-  transform: translateY(-2px);
+  transform: translateY(-3px);
 }
 
 .staff-tile:active {
-  transform: translateY(0) scale(0.993);
+  transform: translateY(0) scale(0.995);
   transition-duration: var(--beat-press);
 }
 
@@ -1564,10 +1888,25 @@ textarea.staff-input {
   letter-spacing: -0.02em;
 }
 
+@media (min-width: 1024px) {
+  .staff-tile b {
+    font-size: var(--t-7);
+    letter-spacing: -0.03em;
+  }
+}
+
 .staff-tile p {
   font-size: var(--t-3);
   line-height: 1.5;
   color: var(--ink-mute);
+}
+
+@media (min-width: 1024px) {
+  .staff-tile p {
+    max-width: 26rem;
+    font-size: var(--t-4);
+    line-height: 1.55;
+  }
 }
 
 /* The one a representative opens every morning, lit from inside the way the
@@ -1576,22 +1915,28 @@ textarea.staff-input {
    kind of object. */
 .staff-tile[data-lead='true'] {
   background-color: var(--accent-fill);
-  background-image: var(--lit-sheen), var(--lit-fill);
+  background-image:
+    linear-gradient(180deg, rgb(255 255 255 / 0.2) 0%, rgb(255 255 255 / 0) 42%),
+    linear-gradient(
+      168deg,
+      var(--accent-fill) 0%,
+      color-mix(in srgb, var(--accent-fill-hi) 80%, var(--accent-fill)) 100%
+    );
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.32),
-    0 1px 2px rgb(16 30 66 / 0.18),
-    0 14px 30px -14px var(--pane-glow);
+    inset 0 1px 0 rgb(255 255 255 / 0.34),
+    0 1px 2px rgb(16 30 66 / 0.2),
+    0 22px 46px -18px var(--pane-glow);
   color: var(--on-accent);
 }
 
 .staff-tile[data-lead='true'] p {
-  color: rgb(255 255 255 / 0.82);
+  color: rgb(255 255 255 / 0.84);
 }
 
 .staff-tile[data-lead='true']::before {
   background-image: radial-gradient(
-    13rem 10rem at var(--lit-x) var(--lit-y),
-    rgb(255 255 255 / 0.22),
+    14rem 11rem at var(--lit-x) var(--lit-y),
+    rgb(255 255 255 / 0.26),
     transparent 68%
   );
 }
@@ -1599,9 +1944,9 @@ textarea.staff-input {
 .staff-tile[data-lead='true']:hover {
   background-color: var(--accent-fill-hi);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.36),
-    0 2px 4px rgb(16 30 66 / 0.2),
-    0 22px 44px -16px var(--pane-glow);
+    inset 0 1px 0 rgb(255 255 255 / 0.38),
+    0 2px 4px rgb(16 30 66 / 0.22),
+    0 32px 62px -20px var(--pane-glow);
 }
 
 /* ── The end of the list ────────────────────────────────────────────────── */
@@ -1621,14 +1966,21 @@ textarea.staff-input {
   text-align: center;
 }
 
+@media (min-width: 1024px) {
+  .staff-spent {
+    gap: var(--s-5);
+    min-height: 26rem;
+  }
+}
+
 /* A bloom behind the one sentence on an otherwise empty screen, so the screen
    reads as a place the day arrived at rather than as a page that failed to
    load. */
 .staff-spent::before {
   content: '';
   position: absolute;
-  inset: 12% 0 auto;
-  height: 14rem;
+  inset: 8% 0 auto;
+  height: 18rem;
   pointer-events: none;
   background-image: radial-gradient(50% 50% at 50% 50%, var(--pane-glow-soft), transparent 70%);
 }
@@ -1643,19 +1995,31 @@ textarea.staff-input {
   letter-spacing: -0.025em;
 }
 
+@media (min-width: 1024px) {
+  .staff-spent h2 {
+    font-size: var(--t-9);
+    letter-spacing: -0.035em;
+  }
+}
+
 .staff-spent p {
-  max-width: 26rem;
+  max-width: 30rem;
   font-size: var(--t-4);
   line-height: 1.6;
   color: var(--ink-mute);
 }
 
-/* Focus is the one thing every control here owes, and it is written once
-   against the controls rather than repeated per rule and forgotten on the
-   seventh. It is an outline rather than a ring in the shadow, because every
-   raised thing here already spends its shadow on the material - and a focus
-   drawn in the same property the pane is drawn in is a focus that disappears
-   the first time a pane is restyled. */
+@media (min-width: 1024px) {
+  .staff-spent p {
+    font-size: var(--t-5);
+  }
+}
+
+/* Focus is the one thing every control here owes, and it is written once against
+   the controls rather than repeated per rule and forgotten on the seventh. It is
+   an outline rather than a ring in the shadow, because every raised thing here
+   already spends its shadow on the material, and a focus drawn in the same
+   property the pane is drawn in disappears the first time a pane is restyled. */
 .staff a:focus-visible,
 .staff button:focus-visible,
 .staff summary:focus-visible,
@@ -1676,13 +2040,13 @@ textarea.staff-input {
 /*
  * Everything above moves because something happened. Asked for less of it, the
  * document stills every animation and every transition on the page at the token,
- * the ground's own drift included, so none of that is restated here.
+ * the field's own drift included, so none of that is restated here.
  *
  * What a duration of nought does not settle is a transform that was only ever
  * carried by the transition: with the transition gone the lift is still applied,
- * so a tile jumps two pixels the instant a pointer crosses it rather than rising
- * into them. That is the version of the motion nobody asked for, so the raised
- * states hold their place and say what they are with the light instead.
+ * so a tile jumps three pixels the instant a pointer crosses it rather than
+ * rising into them. That is the version of the motion nobody asked for, so the
+ * raised states hold their place and say what they are with the light instead.
  */
 @media (prefers-reduced-motion: reduce) {
   .staff-tile:hover,
