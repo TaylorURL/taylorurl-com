@@ -206,7 +206,7 @@ export default function CallSetup({
         </div>
         <p className="text-[13px] text-paper-soft">
           What a day on the phone comes to. Call Mode counts today's calls against these three and
-          says what time the calls figure is met at the rate the day has gone.
+          says what time you meet the calls figure at the rate the day has gone.
         </p>
       </section>
 

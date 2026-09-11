@@ -1794,7 +1794,7 @@ export default function CallsPage() {
               being the only one on the screen. */}
           <Panel
             title="Calling"
-            note="Read down to This Call, ring the number and press what it came to. Say whether they were interested where it asks, and the next business comes up on its own."
+            note="Read down to the call you are placing, ring the number and press what it came to. Say whether they were interested where it asks, and the next business comes up on its own."
             loading={loading}
             aside={
               <span className={`${MONO_LABEL} text-paper-faint`}>

@@ -73,7 +73,7 @@ function saidHours(hours) {
 /** A run of days between two calls, said the same way. */
 function saidDays(ms) {
   const days = Math.round(ms / 86_400_000)
-  if (days <= 0) return 'The same day'
+  if (days <= 0) return 'Less than a day'
   if (days === 1) return 'One day'
   if (days === 7) return 'A week'
   if (days === 14) return 'A fortnight'
