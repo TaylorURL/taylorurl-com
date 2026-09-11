@@ -93,13 +93,13 @@ function wireCall(app) {
     // refusing - and a screen that refuses here gets a made-up length typed into
     // it, which is worse than the shortest one.
     if (answerIn(standing) === 'needs-time' && !answerIn(length)) {
-      note.textContent = 'No length picked. They go back on a list in two weeks.'
+      note.textContent = 'No length picked. We ring them again in two weeks.'
       return
     }
     const following = businesses[at + 1]
     note.textContent = following
       ? `Next up is ${following.dataset.business}.`
-      : 'That is the last one on today’s list.'
+      : "That is the last one on today's list."
   }
 
   /** Show one business and put the call back to the start of itself. */
