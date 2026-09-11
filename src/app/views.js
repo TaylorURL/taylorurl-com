@@ -89,6 +89,15 @@ const loaders = {
         ConsolePayments: () => import('@views/console/pages/studio/PaymentsPage'),
         ConsoleAdmin: () => import('@views/console/pages/studio/AdminPage'),
         ConsoleStatus: () => import('@views/console/pages/health/StatusPage'),
+        // The representatives' portal and the three surfaces behind it. Gated
+        // with the console above rather than beside it, because what both
+        // families need is an account, and a build with no accounts carries no
+        // import() for either.
+        Staff: () => import('@views/staff/Staff'),
+        StaffPortal: () => import('@views/staff/pages/PortalPage'),
+        StaffCalls: () => import('@views/staff/pages/CallPage'),
+        StaffManagement: () => import('@views/staff/pages/ManagementPage'),
+        StaffResources: () => import('@views/staff/pages/ResourcesPage'),
         Login: () => import('@views/auth/Login'),
         Welcome: () => import('@views/auth/Welcome'),
         ForgotPassword: () => import('@views/auth/ForgotPassword'),

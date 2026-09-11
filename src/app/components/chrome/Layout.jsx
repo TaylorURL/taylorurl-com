@@ -88,7 +88,13 @@ function GroundSignal() {
  * @param {string} pathname
  */
 function pageKeyFor(pathname) {
-  return matchViewKeys(pathname).includes('Console') ? '/console' : pathname
+  const views = matchViewKeys(pathname)
+  if (views.includes('Console')) return '/console'
+  // The representatives' portal the same way. Its four surfaces are one screen
+  // somebody moves around inside with a handset in the other hand, and a page
+  // transition between them would fade the call they are on.
+  if (views.includes('Staff')) return '/staff'
+  return pathname
 }
 
 /**
@@ -163,7 +169,12 @@ export default function Layout() {
   // wordmark beside that one and offers a reader on the log-in page a link to
   // the log-in page.
   const isAuth = views.includes('Login') || views.includes('Welcome')
-  const bare = isConsole || isAuth
+  // The representatives' portal carries its own, and for a stronger reason than
+  // the console: it is three parts one viewport tall, and the part holding the
+  // control that ends a call is pinned to the bottom of the screen. A marketing
+  // footer under that is a page that scrolls the foot away mid-call.
+  const isStaff = views.includes('Staff')
+  const bare = isConsole || isAuth || isStaff
   const mainRef = useRef(null)
 
   // The console and the sign-in screens hold scrollers of their own rather than
