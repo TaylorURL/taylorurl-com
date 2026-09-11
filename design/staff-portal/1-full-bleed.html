@@ -1,0 +1,1140 @@
+<!doctype html>
+<html lang="en" data-mockup="full-bleed">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Staff System: Full Bleed - TaylorURL Mockup</title>
+    <link rel="stylesheet" href="./staff.css" />
+    <style>
+      /*
+       * FULL BLEED
+       *
+       * Four screens, each one the whole window, each one doing a single job and
+       * carrying no furniture belonging to the other three.
+       *
+       * The argument is that a portal with four destinations is four products
+       * that happen to share a login, not one product with four tabs. A
+       * representative spends the whole day on one of them. A manager spends the
+       * whole day on another. Nobody moves between them often enough to pay for
+       * a rail down the side of every screen, and the rail costs the call screen
+       * the one thing it needs most, which is width.
+       *
+       * So there is no persistent chrome. Every screen has a single line at the
+       * top with the name of the place and the way back to the portal, and the
+       * rest of the window is the work. A screen that does one thing can set that
+       * thing at a size somebody reads across a desk, which is the whole point:
+       * the number is 38px because it gets read into a handset, and the script is
+       * at reading measure because it gets read out loud to a stranger.
+       */
+
+      /* ── The window every screen is drawn inside ────────────────────────── */
+
+      .screen {
+        display: grid;
+        min-height: 34rem;
+      }
+
+      /* The one line of chrome. The place, and the way out of it. Nothing else
+         is on it, because anything else on it is on all four screens. */
+      .top {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2) var(--s-4);
+        padding: var(--s-3h) var(--s-6);
+        border-bottom: 1px solid var(--hairline);
+        background-color: var(--surface-1);
+      }
+
+      .top-where {
+        display: flex;
+        align-items: baseline;
+        gap: var(--s-2h);
+        min-width: 0;
+      }
+
+      .top-where b {
+        font-size: var(--t-4);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+      }
+
+      .top-where span {
+        font-size: var(--t-2);
+        color: var(--ink-ghost);
+      }
+
+      .top-out {
+        display: inline-flex;
+        align-items: center;
+        min-height: var(--control-h);
+        font-size: var(--t-3);
+        font-weight: 500;
+        text-decoration: none;
+        touch-action: manipulation;
+      }
+
+      .top-out:hover {
+        text-decoration: underline;
+      }
+
+      /* ── 01 The portal ─────────────────────────────────────────────────── */
+
+      /* Four panels, floor to ceiling, no card edges between them. A portal
+         where the destinations are cards is a portal that reads as a dashboard
+         and gets scanned; four full-height panels read as four doors and get
+         chosen from. */
+
+      .portal {
+        display: grid;
+        align-content: center;
+        gap: var(--s-10);
+        padding: var(--s-12) var(--s-6);
+      }
+
+      .portal-mark {
+        display: grid;
+        gap: var(--s-1);
+        justify-items: center;
+        text-align: center;
+      }
+
+      .portal-mark h3 {
+        font-size: var(--t-7);
+        letter-spacing: -0.03em;
+      }
+
+      .doors {
+        display: grid;
+        gap: 1px;
+        overflow: hidden;
+        border-radius: var(--r-feature);
+        background-color: var(--hairline);
+        box-shadow: var(--edge);
+      }
+
+      @media (min-width: 900px) {
+        .doors {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+      }
+
+      .door {
+        display: grid;
+        align-content: start;
+        gap: var(--s-2);
+        min-height: 15rem;
+        padding: var(--s-6) var(--s-5);
+        background-color: var(--surface-1);
+        color: inherit;
+        text-decoration: none;
+        touch-action: manipulation;
+        transition: background-color 180ms var(--ease-out-soft);
+      }
+
+      .door:hover {
+        background-color: var(--wash);
+      }
+
+      .door-no {
+        font-family: 'Geist Mono', ui-monospace, monospace;
+        font-size: var(--t-1);
+        color: var(--ink-ghost);
+      }
+
+      .door h4 {
+        font-size: var(--t-6);
+        line-height: 1.2;
+      }
+
+      .door p {
+        font-size: var(--t-3);
+        line-height: 1.6;
+        color: var(--ink-mute);
+      }
+
+      /* What the door knows. The call centre knows how many calls are left and
+         the others do not pretend to, so three of these carry nothing and the
+         space under them is left empty rather than filled. */
+      .door-now {
+        margin-top: auto;
+        padding-top: var(--s-3);
+        border-top: 1px solid var(--hairline);
+        font-size: var(--t-3);
+        font-weight: 500;
+        color: var(--accent);
+      }
+
+      /* The door a representative opens takes the accent bar. The other three
+         are for people who open them once a day. */
+      .door[data-lead='true'] {
+        box-shadow: inset 3px 0 0 var(--accent);
+      }
+
+      @media (min-width: 900px) {
+        .door[data-lead='true'] {
+          box-shadow: inset 0 3px 0 var(--accent);
+        }
+      }
+
+      /* ── 02 The call ───────────────────────────────────────────────────── */
+
+      /* The window split in two and nothing else on it. Left is the business and
+         the number. Right is what to say. Both are full height, so neither
+         scrolls the other away mid-call. */
+
+      .call {
+        display: grid;
+      }
+
+      @media (min-width: 1024px) {
+        .call {
+          grid-template-columns: minmax(0, 1fr) 25rem;
+        }
+      }
+
+      .call-left {
+        display: grid;
+        align-content: start;
+        gap: var(--s-5);
+        padding: var(--s-8) var(--s-6);
+      }
+
+      @media (min-width: 1024px) {
+        .call-left {
+          border-right: 1px solid var(--hairline);
+        }
+      }
+
+      .biz h3 {
+        font-size: var(--t-9);
+        line-height: 1.05;
+        letter-spacing: -0.035em;
+      }
+
+      .biz p {
+        margin-top: var(--s-1h);
+        font-size: var(--t-4);
+        color: var(--ink-mute);
+      }
+
+      .dial-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-3);
+      }
+
+      .dial-row .dial {
+        flex: 1 1 16rem;
+      }
+
+      .facts {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+        gap: var(--s-4);
+        padding: var(--s-4) 0;
+        border-top: 1px solid var(--hairline);
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .fact dt {
+        font-size: var(--t-2);
+        font-weight: 500;
+        color: var(--ink-faint);
+      }
+
+      .fact dd {
+        font-size: var(--t-5);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+      }
+
+      .history h4 {
+        margin-bottom: var(--s-2h);
+        font-size: var(--t-4);
+      }
+
+      /* ── The bar the call ends on ──────────────────────────────────────── */
+
+      .ending {
+        display: grid;
+        gap: var(--s-3);
+        margin-top: auto;
+        padding-top: var(--s-5);
+        border-top: 1px solid var(--hairline);
+      }
+
+      .ending-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-2h);
+      }
+
+      .ending-row .btn {
+        min-height: var(--control-h-dial);
+        padding-inline: var(--s-6);
+        font-size: var(--t-4);
+      }
+
+      .ending-row .quiet {
+        margin-left: auto;
+      }
+
+      /* ── The right half: what to say ──────────────────────────────────── */
+
+      .says {
+        display: grid;
+        align-content: start;
+        gap: var(--s-5);
+        padding: var(--s-8) var(--s-6);
+        background-color: var(--surface-1);
+      }
+
+      .beat {
+        display: grid;
+        gap: var(--s-1);
+        max-width: var(--width-reading);
+      }
+
+      .beat p {
+        font-size: var(--t-4);
+        line-height: 1.65;
+        color: var(--ink-soft);
+      }
+
+      .refresher {
+        display: grid;
+        gap: var(--s-2h);
+        padding-top: var(--s-4);
+        border-top: 1px solid var(--hairline);
+      }
+
+      /* ── 03 Management ─────────────────────────────────────────────────── */
+
+      /* One table and nothing else. A manager looks at this for ninety seconds
+         at eleven and again at four, and every chart on it is ninety seconds
+         spent on something that is not a name. */
+
+      .manage {
+        display: grid;
+        align-content: start;
+        gap: var(--s-6);
+        padding: var(--s-8) var(--s-6);
+      }
+
+      .totals {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+        gap: var(--s-6);
+      }
+
+      .total dt {
+        font-size: var(--t-2);
+        font-weight: 500;
+        color: var(--ink-faint);
+      }
+
+      .total dd {
+        display: flex;
+        align-items: baseline;
+        gap: var(--s-1h);
+        font-size: var(--t-8);
+        font-weight: 600;
+        line-height: 1.1;
+        letter-spacing: -0.03em;
+      }
+
+      .total dd span {
+        font-size: var(--t-3);
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--ink-faint);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th {
+        padding: 0 var(--s-3) var(--s-2h) 0;
+        border-bottom: 1px solid var(--hairline);
+        text-align: left;
+        font-size: var(--t-2);
+        font-weight: 500;
+        color: var(--ink-faint);
+      }
+
+      td {
+        padding: var(--s-3h) var(--s-3) var(--s-3h) 0;
+        border-bottom: 1px solid var(--hairline);
+        font-size: var(--t-3);
+        vertical-align: baseline;
+      }
+
+      td:first-child {
+        font-size: var(--t-4);
+        font-weight: 500;
+      }
+
+      th:last-child,
+      td:last-child {
+        padding-right: 0;
+        text-align: right;
+      }
+
+      .who {
+        display: grid;
+        gap: 0;
+      }
+
+      .who span {
+        font-size: var(--t-2);
+        color: var(--ink-faint);
+      }
+
+      /* The one thing a manager is here to do rather than read. Set apart from
+         the table, because an action inside a row of figures is a link nobody
+         sees. */
+      .needs {
+        display: grid;
+        gap: var(--s-3);
+        padding: var(--s-4) var(--s-5);
+        border-radius: var(--r-card);
+        background-color: var(--wash);
+      }
+
+      .needs-row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--s-3);
+        font-size: var(--t-3);
+      }
+
+      .needs-row .quiet {
+        margin-left: auto;
+      }
+
+      /* ── 04 Resources ──────────────────────────────────────────────────── */
+
+      /* One column of prose at a reading measure, with its contents down the
+         side. It is a document rather than an app, because everything in it is
+         read start to finish once and then searched forever after. */
+
+      .resources {
+        display: grid;
+        gap: var(--s-8);
+        padding: var(--s-8) var(--s-6);
+      }
+
+      @media (min-width: 1024px) {
+        .resources {
+          grid-template-columns: 15rem minmax(0, 1fr);
+          gap: var(--s-10);
+        }
+      }
+
+      .contents {
+        display: grid;
+        align-content: start;
+        gap: var(--s-1);
+      }
+
+      @media (min-width: 1024px) {
+        .contents {
+          position: sticky;
+          top: var(--s-5);
+        }
+      }
+
+      .contents a {
+        display: flex;
+        align-items: center;
+        min-height: 34px;
+        padding-inline: var(--s-2h);
+        border-radius: var(--r-control);
+        font-size: var(--t-3);
+        font-weight: 500;
+        color: var(--ink-soft);
+        text-decoration: none;
+        touch-action: manipulation;
+      }
+
+      .contents a:hover {
+        background-color: var(--wash);
+        color: var(--ink);
+      }
+
+      .contents a[aria-current='true'] {
+        background-color: var(--wash-accent);
+        color: var(--accent);
+      }
+
+      .reading {
+        display: grid;
+        gap: var(--s-6);
+        max-width: var(--width-reading);
+      }
+
+      .reading h3 {
+        font-size: var(--t-7);
+        letter-spacing: -0.025em;
+      }
+
+      .reading h4 {
+        font-size: var(--t-5);
+      }
+
+      .reading p {
+        font-size: var(--t-4);
+        line-height: 1.7;
+        color: var(--ink-soft);
+      }
+
+      .piece {
+        display: grid;
+        gap: var(--s-2h);
+      }
+
+      /* A step in a procedure. Numbered down the side rather than inline,
+         because somebody following one of these has a finger on the step they
+         are at. */
+      .steps {
+        display: grid;
+        gap: var(--s-3);
+        counter-reset: step;
+      }
+
+      .steps li {
+        display: grid;
+        grid-template-columns: 1.5rem minmax(0, 1fr);
+        gap: var(--s-3);
+        font-size: var(--t-4);
+        line-height: 1.65;
+        color: var(--ink-soft);
+        counter-increment: step;
+      }
+
+      .steps li::before {
+        content: counter(step);
+        font-family: 'Geist Mono', ui-monospace, monospace;
+        font-size: var(--t-2);
+        color: var(--ink-ghost);
+      }
+
+      .pushback {
+        display: grid;
+        gap: 0;
+        border-top: 1px solid var(--hairline);
+      }
+
+      .pushback > div {
+        display: grid;
+        gap: var(--s-1);
+        padding: var(--s-3h) 0;
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .pushback dt {
+        font-size: var(--t-4);
+        font-weight: 600;
+      }
+
+      .pushback dd {
+        font-size: var(--t-4);
+        line-height: 1.65;
+        color: var(--ink-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <a class="brief-back" href="./index.html">All five systems</a>
+        <h1>Full Bleed</h1>
+        <p>
+          Four screens that share a login and nothing else. No rail, no tabs, no chrome carried
+          between them, because nobody moves between these four often enough to pay for it on every
+          screen. What each one buys with the space is size: the number is read into a handset and
+          the script is read out loud to a stranger.
+        </p>
+      </header>
+
+      <!-- ── 01 Portal ────────────────────────────────────────────────── -->
+      <section class="surface" id="portal">
+        <header class="surface-head">
+          <h2>Portal <b>01</b></h2>
+          <p>
+            Four doors, floor to ceiling. Only one of them knows a number, and the other three leave
+            that space empty rather than inventing one.
+          </p>
+        </header>
+
+        <div class="screen">
+          <div class="top">
+            <span class="top-where"><b>TaylorURL Staff</b> <span>taylorurl.com/staff</span></span>
+            <a class="top-out" href="#">Sign Out</a>
+          </div>
+          <div class="portal">
+            <div class="portal-mark">
+              <h3>Good afternoon, Dylan</h3>
+              <p class="t-15 mute">Friday, September 11</p>
+            </div>
+            <nav class="doors" aria-label="Staff destinations">
+              <a class="door" href="#call" data-lead="true">
+                <span class="door-no">01</span>
+                <h4>Call Center</h4>
+                <p>The next business to ring, what to say to them, and what happened last time.</p>
+                <p class="door-now">34 left today</p>
+              </a>
+              <a class="door" href="#manage">
+                <span class="door-no">02</span>
+                <h4>Management Center</h4>
+                <p>Who is on shift, what they have done today, and the lists they are working.</p>
+              </a>
+              <a class="door" href="#resources">
+                <span class="door-no">03</span>
+                <h4>Resources Center</h4>
+                <p>The script, the prices, the answers to pushback and the written procedures.</p>
+              </a>
+              <a class="door" href="#">
+                <span class="door-no">04</span>
+                <h4>Main Site</h4>
+                <p>
+                  taylorurl.com as a visitor sees it, which is what you are describing on a call.
+                </p>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 02 Call ──────────────────────────────────────────────────── -->
+      <section class="surface" id="call">
+        <header class="surface-head">
+          <h2>Call Center <b>02</b></h2>
+          <p>
+            The business and the number on the left, the words on the right, both full height so
+            neither scrolls the other away. Back and Next stay shut until the call is marked.
+          </p>
+        </header>
+
+        <div class="screen">
+          <div class="top">
+            <span class="top-where"><b>Call Center</b> <span>27 of 60 &middot; 34 left</span></span>
+            <a class="top-out" href="#portal">Back to Portal</a>
+          </div>
+          <div class="call">
+            <div class="call-left">
+              <div class="biz">
+                <h3>Gulf Coast Overhead Doors</h3>
+                <p>Garage door contractor &middot; Deer Park &middot; 4120 Center St, TX 77536</p>
+              </div>
+
+              <div class="dial-row">
+                <a class="btn dial" href="tel:+12815550142">(281) 555-0142</a>
+                <span class="badge" data-tone="accent">Third call</span>
+                <span class="badge">Ask for Ray</span>
+              </div>
+
+              <dl class="facts">
+                <div class="fact">
+                  <dt>Reviews</dt>
+                  <dd>74 at 4.8</dd>
+                </div>
+                <div class="fact">
+                  <dt>Trade middle</dt>
+                  <dd>21</dd>
+                </div>
+                <div class="fact">
+                  <dt>Instead of a site</dt>
+                  <dd>Facebook</dd>
+                </div>
+                <div class="fact">
+                  <dt>Best time</dt>
+                  <dd>After 2 PM</dd>
+                </div>
+              </dl>
+
+              <div class="history">
+                <h4>Every call to this business</h4>
+                <dl class="record">
+                  <div>
+                    <dt>Sep 2</dt>
+                    <dd>
+                      Pedro reached the front desk. Owner is Ray, out on installs every morning,
+                      back at the shop after two.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Aug 26</dt>
+                    <dd>Rang at 9:12 and nobody picked up.</dd>
+                  </div>
+                </dl>
+                <p class="t-13 mute" style="margin-top: var(--s-2h)">
+                  It is 2:40 now, so Ray should be back.
+                </p>
+              </div>
+
+              <div class="ending">
+                <div class="ending-row">
+                  <button type="button" class="btn">Mark This Called</button>
+                  <button type="button" class="quiet" disabled>Back to Last</button>
+                  <button type="button" class="quiet" disabled>Next Business</button>
+                </div>
+                <p class="t-13 faint">Back and Next open once this call is marked.</p>
+
+                <div class="pending" aria-hidden="true">
+                  <p class="label" style="margin-bottom: var(--s-2)">And the business is</p>
+                  <div class="tags">
+                    <button type="button" class="tag" data-tone="good">Yes</button>
+                    <button type="button" class="tag">Maybe</button>
+                    <button type="button" class="tag">Needs Time</button>
+                    <button type="button" class="tag">Price Issue</button>
+                    <button type="button" class="tag" data-tone="bad">No</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="says" aria-label="What to say">
+              <div class="beat">
+                <p class="label">Get to the owner</p>
+                <p>Hi, is Ray around? I spoke to someone here last week.</p>
+              </div>
+              <div class="beat">
+                <p class="label">Who is calling</p>
+                <p>
+                  This is Dylan with TaylorURL. We build websites for businesses around Deer Park
+                  and Houston. I am not selling anything over the phone, I rang about something on
+                  your Google listing.
+                </p>
+              </div>
+              <div class="beat">
+                <p class="label">Why you called</p>
+                <p>
+                  The website on your listing is your Facebook page. They decide who sees it, and if
+                  that account goes tomorrow there is nothing of yours left online.
+                </p>
+              </div>
+              <div class="beat">
+                <p class="label">What their trade says</p>
+                <p>
+                  You have 74 reviews and the middle for garage door listings around here is about
+                  21, so you are well ahead of the shops you compete with. The ones with a website
+                  are still getting found ahead of you.
+                </p>
+              </div>
+              <div class="beat">
+                <p class="label">The ask</p>
+                <p>
+                  I would like to put you a plan together for what your site would say and what it
+                  would cost, for free, with the number agreed before anything starts. Have you got
+                  ten minutes this week?
+                </p>
+              </div>
+
+              <div class="refresher">
+                <p class="label">Refresher</p>
+                <dl class="record">
+                  <div>
+                    <dt>Build</dt>
+                    <dd>From $1,000. The number is agreed before any work starts.</dd>
+                  </div>
+                  <div>
+                    <dt>Monthly</dt>
+                    <dd>From $250. Hosting, edits, the domain and the monitoring.</dd>
+                  </div>
+                  <div>
+                    <dt>Domain</dt>
+                    <dd>Theirs, in their name, whatever happens to us.</dd>
+                  </div>
+                  <div>
+                    <dt>Build time</dt>
+                    <dd>Two to three weeks from the day the words are settled.</dd>
+                  </div>
+                </dl>
+                <a class="t-13" href="#resources">The whole handbook in Resources</a>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <header class="surface-head" style="border-top: 0; padding-top: 0">
+          <h2>Call Center, marked <b>02b</b></h2>
+          <p>
+            The same screen once the handset is down. The words fall away, the two questions take
+            their place, and Needs Time is the only tag that opens anything.
+          </p>
+        </header>
+
+        <div class="screen">
+          <div class="top">
+            <span class="top-where"
+              ><b>Call Center</b> <span>Called 2:41 PM &middot; 3m 20s</span></span
+            >
+            <a class="top-out" href="#portal">Back to Portal</a>
+          </div>
+          <div class="call" style="grid-template-columns: minmax(0, 1fr)">
+            <div class="call-left" style="border-right: 0">
+              <div class="biz">
+                <h3>Gulf Coast Overhead Doors</h3>
+                <p>Garage door contractor &middot; Deer Park &middot; Third call</p>
+              </div>
+
+              <div>
+                <p class="label" style="margin-bottom: var(--s-2)">What the call came to</p>
+                <div class="tags">
+                  <button type="button" class="tag" aria-pressed="false">
+                    <span class="key">1</span> No Answer
+                  </button>
+                  <button type="button" class="tag" aria-pressed="false">
+                    <span class="key">2</span> Left Voicemail
+                  </button>
+                  <button type="button" class="tag" aria-pressed="false">
+                    <span class="key">3</span> Gatekeeper
+                  </button>
+                  <button type="button" class="tag" aria-pressed="true">
+                    <span class="key">4</span> Spoke to Owner
+                  </button>
+                  <button type="button" class="tag" data-tone="good" aria-pressed="false">
+                    <span class="key">5</span> Booked
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <p class="label" style="margin-bottom: var(--s-2)">And the business is</p>
+                <div class="tags">
+                  <button type="button" class="tag" data-tone="good" aria-pressed="false">
+                    <span class="key">Y</span> Yes
+                  </button>
+                  <button type="button" class="tag" aria-pressed="false">
+                    <span class="key">M</span> Maybe
+                  </button>
+                  <button type="button" class="tag" aria-pressed="true">
+                    <span class="key">T</span> Needs Time
+                  </button>
+                  <button type="button" class="tag" aria-pressed="false">
+                    <span class="key">P</span> Price Issue
+                  </button>
+                  <button type="button" class="tag" data-tone="bad" aria-pressed="false">
+                    <span class="key">N</span> No
+                  </button>
+                </div>
+                <div class="range" style="margin-top: var(--s-3); max-width: 34rem">
+                  <p class="label">How long. Four lengths is as fine as this goes.</p>
+                  <div class="tags">
+                    <button type="button" class="tag" aria-pressed="false">2 weeks</button>
+                    <button type="button" class="tag" aria-pressed="false">1 month</button>
+                    <button type="button" class="tag" aria-pressed="true">3 months</button>
+                    <button type="button" class="tag" aria-pressed="false">After the season</button>
+                  </div>
+                  <p class="t-13 mute">
+                    Three months puts Ray back on a list in December, under your name.
+                  </p>
+                </div>
+              </div>
+
+              <div style="display: grid; gap: var(--s-2); max-width: 42rem">
+                <label class="label" for="note-1">One line for whoever rings next</label>
+                <textarea class="input" id="note-1">
+Storm season runs him flat out through November. Ring in December, ask for Ray direct rather than the desk.</textarea>
+              </div>
+
+              <div class="ending">
+                <div class="ending-row">
+                  <button type="button" class="btn">Next Business</button>
+                  <button type="button" class="quiet">Back to Last</button>
+                </div>
+                <p class="t-13 faint">Next up is Bayside Turf &amp; Irrigation, La Porte.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 03 Management ────────────────────────────────────────────── -->
+      <section class="surface" id="manage">
+        <header class="surface-head">
+          <h2>Management Center <b>03</b></h2>
+          <p>
+            One table of people and four figures over it. A manager reads this for ninety seconds at
+            eleven and again at four, and every chart on it is ninety seconds not spent on a name.
+          </p>
+        </header>
+
+        <div class="screen">
+          <div class="top">
+            <span class="top-where"
+              ><b>Management Center</b> <span>Friday, September 11</span></span
+            >
+            <a class="top-out" href="#portal">Back to Portal</a>
+          </div>
+          <div class="manage">
+            <dl class="totals">
+              <div class="total">
+                <dt>Calls today</dt>
+                <dd>214 <span>of 300</span></dd>
+              </div>
+              <div class="total">
+                <dt>Owners reached</dt>
+                <dd>31</dd>
+              </div>
+              <div class="total">
+                <dt>Booked</dt>
+                <dd>4</dd>
+              </div>
+              <div class="total">
+                <dt>On shift</dt>
+                <dd>3 <span>of 3</span></dd>
+              </div>
+            </dl>
+
+            <table>
+              <caption class="label" style="text-align: left; padding-bottom: var(--s-3)">
+                Everybody on the phones right now
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Who</th>
+                  <th scope="col">List</th>
+                  <th scope="col">Calls</th>
+                  <th scope="col">Reached</th>
+                  <th scope="col">Booked</th>
+                  <th scope="col">Pace</th>
+                  <th scope="col">On</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>
+                    <span class="who">Dylan Jordan<span>Since 8:55 AM</span></span>
+                  </td>
+                  <td class="mute">Deer Park, garage doors</td>
+                  <td>26 of 60</td>
+                  <td>5</td>
+                  <td>1</td>
+                  <td class="mute">Finishes 4:40</td>
+                  <td><span class="badge" data-tone="accent">Gulf Coast Overhead</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="who">Pedro Miranda<span>Since 9:02 AM</span></span>
+                  </td>
+                  <td class="mute">La Porte, landscaping</td>
+                  <td>31 of 60</td>
+                  <td>7</td>
+                  <td>2</td>
+                  <td class="mute">Finishes 4:05</td>
+                  <td><span class="badge" data-tone="accent">Bayside Turf</span></td>
+                </tr>
+                <tr>
+                  <td>
+                    <span class="who">Alex Reyes<span>Since 9:40 AM</span></span>
+                  </td>
+                  <td class="mute">Baytown, roofing</td>
+                  <td>18 of 60</td>
+                  <td>3</td>
+                  <td>1</td>
+                  <td class="mute">Finishes past 5</td>
+                  <td><span class="badge">On a break</span></td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="needs">
+              <p class="label">What needs you</p>
+              <div class="needs-row">
+                <span>
+                  Alex is 14 calls behind the pace that finishes the list, and the shift has 2h 20m
+                  left.
+                </span>
+                <button type="button" class="quiet">Move 20 to Pedro</button>
+              </div>
+              <div class="needs-row">
+                <span>
+                  9 businesses came back Price Issue this week. All nine were quoted above the
+                  floor.
+                </span>
+                <button type="button" class="quiet">Read the Nine</button>
+              </div>
+              <div class="needs-row">
+                <span
+                  >Deer Park garage doors runs out in 34 calls. Nothing is queued behind it.</span
+                >
+                <button type="button" class="quiet">Build the Next List</button>
+              </div>
+            </div>
+
+            <table>
+              <caption class="label" style="text-align: left; padding-bottom: var(--s-3)">
+                What came back today
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Tag</th>
+                  <th scope="col">Today</th>
+                  <th scope="col">This week</th>
+                  <th scope="col">What happens next</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Yes</td>
+                  <td>4</td>
+                  <td>11</td>
+                  <td class="mute">Trenton sends the plan and the price the same day</td>
+                </tr>
+                <tr>
+                  <td>Maybe</td>
+                  <td>7</td>
+                  <td>26</td>
+                  <td class="mute">Back on a list in two weeks</td>
+                </tr>
+                <tr>
+                  <td>Needs Time</td>
+                  <td>5</td>
+                  <td>19</td>
+                  <td class="mute">Back on a list at the length the caller set</td>
+                </tr>
+                <tr>
+                  <td>Price Issue</td>
+                  <td>3</td>
+                  <td>9</td>
+                  <td class="mute">You read these before anyone rings back</td>
+                </tr>
+                <tr>
+                  <td>No</td>
+                  <td>12</td>
+                  <td>44</td>
+                  <td class="mute">Off the list for good</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── 04 Resources ─────────────────────────────────────────────── -->
+      <section class="surface" id="resources">
+        <header class="surface-head">
+          <h2>Resources Center <b>04</b></h2>
+          <p>
+            A document rather than an app. Everything in it is read start to finish in the first
+            week and searched forever after, so it is one column at a reading measure with its
+            contents down the side.
+          </p>
+        </header>
+
+        <div class="screen">
+          <div class="top">
+            <span class="top-where"><b>Resources Center</b> <span>Updated September 9</span></span>
+            <a class="top-out" href="#portal">Back to Portal</a>
+          </div>
+          <div class="resources">
+            <nav class="contents" aria-label="Contents">
+              <a href="#" aria-current="true">Opening the Call</a>
+              <a href="#">Questions They Ask</a>
+              <a href="#">When They Push Back</a>
+              <a href="#">The Facts</a>
+              <a href="#">Closing the Call</a>
+              <a href="#">Procedures</a>
+              <a href="#">Who to Escalate To</a>
+            </nav>
+
+            <div class="reading">
+              <div class="piece">
+                <h3>Opening the call</h3>
+                <p>
+                  The person answering a shop's phone is not the person who buys a website. A caller
+                  who opens with the pitch has spent it on somebody who cannot say yes, so the first
+                  line asks for the owner and nothing else.
+                </p>
+              </div>
+
+              <div class="piece">
+                <h4>The four beats, in order</h4>
+                <ol class="steps">
+                  <li>Ask for the owner by name. If you do not have a name, ask who owns it.</li>
+                  <li>
+                    Say who you are and where you are calling from, then say you are not selling
+                    anything over the phone. That sentence buys the next twenty seconds.
+                  </li>
+                  <li>
+                    Say what is wrong with their listing. Be specific about what you saw, because
+                    that is what proves you looked them up rather than bought a list.
+                  </li>
+                  <li>
+                    Ask for ten minutes this week. A day and a time, never soon and never sometime.
+                  </li>
+                </ol>
+              </div>
+
+              <div class="piece">
+                <h4>When they push back</h4>
+                <dl class="pushback">
+                  <div>
+                    <dt>We already have a Facebook page.</dt>
+                    <dd>
+                      That is where most of your customers found you, and it is the one thing you do
+                      not own. A site is the part nobody can take down.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>How much is it.</dt>
+                    <dd>
+                      From $1,000 to build and from $250 a month after. The number is agreed before
+                      any work starts, so there is nothing to find out later.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>Send me something.</dt>
+                    <dd>
+                      I can, and I would rather take ten minutes first so what I send is about your
+                      shop rather than a brochure. What does Tuesday look like?
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>I am too busy for new work.</dt>
+                    <dd>
+                      Then you are the one this is worth least to today and most to in February. It
+                      costs nothing to have it ready before the quiet stretch.
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div class="piece">
+                <h4>Procedure: an owner says yes on the call</h4>
+                <ol class="steps">
+                  <li>Mark the call Booked and tag the business Yes before you hang up.</li>
+                  <li>
+                    Get the email address and read it back to them letter by letter. A wrong address
+                    is a booking that never happened.
+                  </li>
+                  <li>Put the day and the time in the note. Not a range, and not this week.</li>
+                  <li>Trenton sends the plan and the price the same day.</li>
+                </ol>
+              </div>
+
+              <div class="piece">
+                <h4>Procedure: somebody asks to never be called again</h4>
+                <ol class="steps">
+                  <li>Say you will take them off now, and mean it. Do not ask why.</li>
+                  <li>Tag the business No. That takes it off every list for good.</li>
+                  <li>Write what they said in the note, in their words.</li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

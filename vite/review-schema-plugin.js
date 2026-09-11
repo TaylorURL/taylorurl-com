@@ -65,7 +65,28 @@ export default function reviewSchemaPlugin() {
     name: 'taylorurl-review-schema',
     transformIndexHtml: {
       order: 'pre',
-      handler: withBusinessRating,
+      // Scoped to the app's own entry, because the throw above is an assertion
+      // about that one file and the hook is handed every HTML document the dev
+      // server serves. The flat mockups under `design/` are HTML and carry no
+      // business node, correctly - they are drawings of a screen rather than
+      // pages of the site - and an assertion about index.html firing on them
+      // takes down a documented dev URL for a fault that is not one.
+      handler: (html, ctx) => (isEntry(ctx) ? withBusinessRating(html) : html),
     },
   }
+}
+
+/**
+ * Whether this is the HTML the site is actually served from.
+ *
+ * A build hands the hook its entry and nothing else, so the path is the entry's
+ * and the absent context is the same answer. A dev server hands it whatever was
+ * asked for.
+ *
+ * @param {{ path?: string }} [ctx] What the hook was called with.
+ * @returns {boolean} True for the app entry.
+ */
+function isEntry(ctx) {
+  const path = ctx?.path
+  return !path || path === '/' || path === '/index.html'
 }
