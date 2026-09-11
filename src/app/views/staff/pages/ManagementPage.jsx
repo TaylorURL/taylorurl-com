@@ -102,11 +102,17 @@ export default function ManagementPage() {
           </div>
           <div>
             <dt>Goal Met By</dt>
-            <dd>{finish ? callMoment(finish.toISOString()) : '—'}</dd>
+            <dd>
+              {finish
+                ? callMoment(finish.toISOString())
+                : shift.met.calls
+                  ? 'Met'
+                  : 'Too early to say'}
+            </dd>
           </div>
           <div>
-            <dt>Ready To Call</dt>
-            <dd>{totals ? totals.call : '—'}</dd>
+            <dt>Ready to Call</dt>
+            <dd>{totals ? totals.call : 'Reading'}</dd>
           </div>
           <div>
             <dt>Soonest Back</dt>
@@ -114,8 +120,8 @@ export default function ManagementPage() {
           </div>
         </dl>
         <p className="staff-read">
-          The figures above are yours alone. They are set in the console by whoever set your shift,
-          so a figure that looks wrong is a conversation rather than a setting on this screen.
+          The figures above are yours alone. Whoever set your shift sets them in the console, not
+          here, so ask them if one of them looks wrong.
         </p>
       </div>
 
@@ -129,13 +135,13 @@ export default function ManagementPage() {
               <div className="staff-person-top">
                 <b>{row.user_id === userId ? 'You' : callerName(row)}</b>
                 <span className="staff-badge" data-tone={row.business ? 'accent' : 'plain'}>
-                  {row.business ? 'On A Call' : 'At The Desk'}
+                  {row.business ? 'On a Call' : 'At the Desk'}
                 </span>
               </div>
               <p className="staff-read">
                 {row.business
                   ? `${row.business.name}${row.business.town ? `, ${row.business.town}` : ''}${
-                      row.on_phone_since ? ` — ${saidSince(row.on_phone_since)}` : ''
+                      row.on_phone_since ? ` (${saidSince(row.on_phone_since)})` : ''
                     }`
                   : 'Nothing held.'}
               </p>
@@ -148,7 +154,7 @@ export default function ManagementPage() {
 
       <div className="staff-part">
         <Link className="staff-btn" to="/staff/calls">
-          Back To Calling
+          Back to Calling
         </Link>
       </div>
     </StaffScreen>

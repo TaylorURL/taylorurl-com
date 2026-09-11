@@ -57,7 +57,7 @@ export default function ResourcesPage() {
   return (
     <StaffScreen title="Resources Center" back={{ to: '/staff', label: 'Portal' }}>
       <label className="staff-greet" htmlFor="staff-handbook-search">
-        <span className="staff-label">Search The Handbook</span>
+        <span className="staff-label">Search the Handbook</span>
         <input
           id="staff-handbook-search"
           className="staff-input"
@@ -72,8 +72,8 @@ export default function ResourcesPage() {
         <div className="staff-spent">
           <h2>Nothing here answers that</h2>
           <p>
-            Try the word that was actually said to you. Failing that, the questions page on the main
-            site is longer than this one.
+            Try the word you heard on the phone. Failing that, the questions page on the main site
+            is longer than this one.
           </p>
         </div>
       ) : (
@@ -159,7 +159,7 @@ export default function ResourcesPage() {
 
           {found.send.length > 0 && (
             <details className="staff-topic" open={open}>
-              <summary>Pages To Send Them</summary>
+              <summary>Pages to Send Them</summary>
               <div className="staff-topic-body">
                 {found.send.map(place => (
                   <div key={place.id}>
@@ -177,7 +177,7 @@ export default function ResourcesPage() {
 
       <div className="staff-part">
         <Link className="staff-btn" to="/staff/calls">
-          Back To Calling
+          Back to Calling
         </Link>
       </div>
     </StaffScreen>
