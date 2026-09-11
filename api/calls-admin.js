@@ -49,6 +49,7 @@ import {
   byCallOrder,
   callMakesLead,
   callPlace,
+  defaultCallbackAt,
   interestIn,
   isCallable,
   matchesControls,
@@ -607,9 +608,13 @@ async function record(db, body, account) {
 
   const callback = callbackAt(body.callback_at)
   if (callback.error) return { status: 400, body: { error: callback.error } }
-  if (outcome === 'callback' && !callback.at) {
-    return { status: 400, body: { error: 'A call back needs the time to ring them back at.' } }
-  }
+  // A call back nobody put a clock on is filed a day out rather than refused.
+  // The refusal was the endpoint asking the caller for a fact the call did not
+  // produce: plenty of them end at "try me again" and nothing more, and the
+  // only ways past a required field are a time somebody invented or an outcome
+  // that is not what happened.
+  const ringBack =
+    outcome === 'callback' && !callback.at ? defaultCallbackAt().toISOString() : callback.at
   // A business that is off the list does not come back to one, so an ending
   // outcome may not carry a time. Without this a mis-keyed Booked with a
   // callback still on the form would file a promise nothing will ever read.
@@ -646,7 +651,7 @@ async function record(db, body, account) {
       outcome,
       note: field(body.note, NOTE_MAX),
       interested: interest.interested,
-      callback_at: callback.at,
+      callback_at: ringBack,
       called_by: account.userId,
     })
     .select('id')
@@ -654,7 +659,7 @@ async function record(db, body, account) {
   if (written.error) return refusal(written.error, NOT_RECORDED)
 
   const took = await claim(db, prospectId, account.userId)
-  await carry(db, found.data, body, callback.at, interest.interested)
+  await carry(db, found.data, body, ringBack, interest.interested)
 
   return {
     status: 200,
