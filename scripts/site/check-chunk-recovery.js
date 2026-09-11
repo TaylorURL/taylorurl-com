@@ -194,6 +194,39 @@ if (renewing) {
   )
 }
 
+// That a piece which came back does not file a fault saying it never did.
+//
+// The section above makes the reader whole and says nothing about what gets
+// reported, and those turned out to be two questions with two different
+// answers. React announces an error the instant a boundary catches it, by
+// writing it to `console.error`; the reporter in the page head wraps that
+// method; so the first pass failing was filed before the second pass had run.
+// Measured against the built site with the assistant's chunk refused for twelve
+// seconds and served from then on, the launcher was on screen at 12.2 seconds
+// and the fault had gone to the collector at 6.8. #542 fixed the recovery and
+// the recovery works - #564 is the same page, recovered, reporting itself
+// anyway, which reads from the queue exactly like a chunk nobody could load.
+//
+// Two halves and neither is any use alone. The root has to take the
+// announcement off React, or every claim is made after the ticket is already
+// filed; and the piece has to claim its own failure, or the announcement files
+// it on sight the way it always did.
+const rooting = readFileSync(path.join(ROOT, 'src/main.jsx'), 'utf8')
+check(
+  /onCaughtError/.test(rooting),
+  'the root leaves a caught error for React to announce, so a piece with a recovery above it files a fault before the recovery has run'
+)
+if (renewing) {
+  check(
+    /claimCaught\(/.test(renewing.source),
+    'a piece that is about to be offered again does not claim the failure, so it is filed at the first pass rather than when the attempts are spent'
+  )
+  check(
+    /console\.error\(/.test(renewing.source),
+    'nothing reports the piece that never came back, so a reader left without it leaves no ticket at all'
+  )
+}
+
 // And the same rung on the route's own chunk, which was the last one without it.
 //
 // The sheet has it and `LateChrome` has it, and both were given it off the same
