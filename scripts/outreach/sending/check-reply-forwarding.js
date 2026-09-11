@@ -8,15 +8,18 @@
  * which is the failure these cases exist to catch, because it reports success
  * the whole time it is losing work.
  *
- * Five things are asked of the carrying. It happens for every message a person
+ * Six things are asked of the carrying. It happens for every message a person
  * wrote, including the ones the pipeline cannot match to a prospect, since an
  * owner answering from their own address arrives with nothing to file it
- * against and is still a lead. It never happens for a bounce, which is a
- * machine reporting a failure the run already acts on. It is aimed at the
- * studio and answers the sender, so replying to the notice reaches the
- * business rather than the mailbox. It is allowed to fail on its own: the row
- * is the record, so a mail provider having a bad morning must cost the notice
- * and never the reply or the run.
+ * against and is still a lead. It happens once for each of them: the reader
+ * runs every hour over a week of mail, and a message carried without a row to
+ * recognise it by is carried again on every one of those runs, which puts the
+ * same reply in front of somebody who answered it the first time. It never
+ * happens for a bounce, which is a machine reporting a failure the run already
+ * acts on. It is aimed at the studio and answers the sender, so replying to
+ * the notice reaches the business rather than the mailbox. It is allowed to
+ * fail on its own: the row is the record, so a mail provider having a bad
+ * morning must cost the notice and never the reply or the run.
  *
  * And it carries no robots. The mailbox is a working account, so its own
  * administrative post arrives in the same shape an unmatched lead does, and an
@@ -241,8 +244,9 @@ check('the notice goes to the studio and answers the business', async () => {
   ok(notice.text.includes('Interested, call me Tuesday'), 'the message itself is carried')
 })
 
-check('a message no prospect carries is still put in front of somebody', async () => {
-  const stranger = inbound('This is Dave from the plumbing place, ring me', {
+/** A message from somebody the pipeline holds no prospect for. */
+const stranger = () =>
+  inbound('This is Dave from the plumbing place, ring me', {
     envelope: {
       messageId: '<reply-2@example.com>',
       subject: 'website',
@@ -252,14 +256,51 @@ check('a message no prospect carries is still put in front of somebody', async (
     },
   })
 
-  const { asked, go } = run([stranger])
+check('a message no prospect carries is still put in front of somebody', async () => {
+  const { writes, go } = run([stranger()])
   const [notice] = await withMail(accepted, go)
 
   same(notice.reply_to, 'dave@somewhere-else.example.com', 'the address an answer would reach')
   same(notice.to[0], INBOX, 'where the notice was addressed')
+
+  const stored = writes.find(write => write.key === 'insert:outreach_messages')?.payload ?? {}
+  same(stored.prospect_id, null, 'the prospect on a row that has none')
+  same(stored.provider_id, '<reply-2@example.com>', 'the id a later run would know it by')
+  same(stored.from_address, 'dave@somewhere-else.example.com', 'the address on the row')
+})
+
+check('an unmatched message is carried once rather than once an hour', async () => {
+  // The row is what a later run recognises a message by, and a carried message
+  // with no row is a message the next run finds again. The reader runs every
+  // hour over a week of mail, so one missing row is the same notice about the
+  // same reply in the inbox every hour for a week - which is what this holds
+  // the second run to not doing.
+  const { writes, go } = run([stranger()])
+  const sent = await withMail(accepted, async () => {
+    await go()
+    const filed = writes.find(write => write.key === 'insert:outreach_messages')?.payload ?? {}
+    // The second run reads the mailbox unchanged and the table as the first
+    // run left it.
+    const { go: again } = run([stranger()], {
+      'select:outreach_messages': { data: [{ provider_id: filed.provider_id }], error: null },
+    })
+    await again()
+  })
+
+  same(sent.length, 1, 'notices handed over across two runs over the same mailbox')
+})
+
+check('a refused notice leaves an unmatched message to the next run', async () => {
+  // Nothing else is written for one of these, so the row means the notice went
+  // and nothing else. Written over a refusal it would be the one message the
+  // mailbox holds that nobody is ever told about.
+  const { asked, go } = run([stranger()])
+  const sent = await withMail(rejected, go)
+
+  same(sent.length, 1, 'attempts made')
   ok(
     !asked.includes('insert:outreach_messages'),
-    'an unmatched message is carried without being filed against a prospect it has none of'
+    'a message nobody was told about was recorded as handled'
   )
 })
 
