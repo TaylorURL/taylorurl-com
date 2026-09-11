@@ -1,0 +1,1031 @@
+/* nav: none */
+/* panel: t1-head-scroll-foot */
+
+/*
+ * The representatives' surface, beside the screens it dresses.
+ *
+ * It sits here rather than in the site sheet for the reason the console's does:
+ * this is a surface of its own, not a page. Three parts, one viewport tall, and
+ * only the middle one scrolls. None of that is wanted on a marketing page, and a
+ * rule for it in the shared sheet is a rule every page carries and four pages
+ * use.
+ *
+ *   HEAD    read only. Where you are, and the way back. Never a control that
+ *           ends anything, because the head is where a hand rests.
+ *   SCROLL  everything read. One column, one scroll, no side-by-side.
+ *   FOOT    everything pressed. It does not scroll and it does not move between
+ *           screens, so the control that ends a call is in the same place on the
+ *           sixtieth call as on the first.
+ *
+ * A desktop is not a wider phone and it is not a second design. It is the same
+ * three parts with the column held at a reading measure and the head and foot
+ * run full width, which is what a desktop actually buys: a longer line of script
+ * without the controls moving.
+ *
+ * Every colour, radius and shadow is a site token. The steps and the type sizes
+ * are the exception and they are declared in the scope below rather than in the
+ * shared sheet, because they are this surface's own: the rest of the site spaces
+ * and sizes with utilities, and a twelve-step scale in `src/index.css` would be
+ * twelve tokens every page carries for the four that use them.
+ */
+
+.staff {
+  /* The one value the two sizes disagree about. Everything else is written
+     against it, so the phone and the desktop cannot drift into two layouts. */
+  --staff-measure: 21rem;
+  --staff-pad: var(--s-4);
+
+  --s-h: 2px;
+  --s-1: 4px;
+  --s-1h: 6px;
+  --s-2: 8px;
+  --s-2h: 10px;
+  --s-3: 12px;
+  --s-3h: 14px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-8: 32px;
+
+  --t-1: 11px;
+  --t-2: 12px;
+  --t-3: 13px;
+  --t-4: 15px;
+  --t-5: 17px;
+  --t-6: 20px;
+  --t-7: 24px;
+  --t-8: 30px;
+
+  /* The number and the control that ends a call are pressed with a thumb while
+     the other hand holds a handset, so they get a taller target than the rest. */
+  --control-h-dial: 56px;
+
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  /* The small viewport unit, so the foot is above the phone browser's own bar
+     rather than behind it. */
+  height: 100svh;
+  overflow: hidden;
+  background-color: var(--paper);
+  color: var(--paper-ink);
+}
+
+@media (min-width: 768px) {
+  .staff {
+    --staff-measure: 46rem;
+    --staff-pad: var(--s-6);
+  }
+}
+
+/* The measure. Everything in the head, the scroll and the foot sits inside one
+   of these, which is what keeps the column and the controls on the same axis
+   when the window is wider than the column. */
+.staff-pad {
+  width: 100%;
+  max-width: var(--staff-measure);
+  margin: 0 auto;
+}
+
+/* ── The head ───────────────────────────────────────────────────────────── */
+
+.staff-head {
+  padding: var(--s-3) var(--staff-pad);
+  /* The notch and the rounded corners on a phone held in one hand. */
+  padding-top: calc(var(--s-3) + env(safe-area-inset-top));
+  border-bottom: 1px solid var(--hairline);
+  background-color: var(--surface-1);
+}
+
+.staff-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.staff-head-row b {
+  min-width: 0;
+  font-size: var(--t-3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .staff-head-row b {
+    font-size: var(--t-4);
+  }
+}
+
+.staff-back {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-1h);
+  min-height: 32px;
+  font-size: var(--t-2);
+  font-weight: 500;
+  text-decoration: none;
+  color: var(--accent);
+  touch-action: manipulation;
+}
+
+.staff-back:hover {
+  text-decoration: underline;
+}
+
+/* ── The scroll ─────────────────────────────────────────────────────────── */
+
+.staff-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: var(--s-4) var(--staff-pad) var(--s-6);
+}
+
+@media (min-width: 768px) {
+  .staff-scroll {
+    padding-top: var(--s-5);
+  }
+}
+
+.staff-stack {
+  display: grid;
+  align-content: start;
+  gap: var(--s-4);
+}
+
+/* ── The foot ───────────────────────────────────────────────────────────── */
+
+.staff-foot {
+  padding: var(--s-3) var(--staff-pad) var(--s-4);
+  padding-bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--hairline);
+  background-color: var(--surface-1);
+}
+
+.staff-foot-stack {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.staff-foot .staff-btn,
+.staff-foot .staff-quiet {
+  min-height: var(--control-h-dial);
+  font-size: var(--t-4);
+}
+
+.staff-foot-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+}
+
+/* On a desktop the two that move sit beside the one that marks rather than
+   under it, because a pointer does not need the target a thumb does and a bar
+   three rows deep wastes the height a longer script wants. */
+@media (min-width: 768px) {
+  .staff-foot-stack {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: var(--s-2h);
+  }
+
+  .staff-foot-pair {
+    display: contents;
+  }
+}
+
+.staff-foot-note {
+  font-size: var(--t-2);
+  line-height: 1.45;
+  color: var(--ink-faint);
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .staff-foot-note {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}
+
+/* ── Sections inside the scroll ─────────────────────────────────────────── */
+
+/* A titled block with a rule over it. There are no cards inside the column: a
+   card inside a column this narrow is two edges and 32px of padding buying
+   nothing, and on the desktop it would be the same card at twice the width. */
+
+.staff-part {
+  display: grid;
+  gap: var(--s-2h);
+  padding-top: var(--s-3h);
+  border-top: 1px solid var(--hairline);
+}
+
+.staff-part > h3 {
+  font-size: var(--t-4);
+  font-weight: 600;
+}
+
+.staff-label {
+  font-size: var(--t-1);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.staff-mute {
+  color: var(--ink-mute);
+}
+
+.staff-read {
+  font-size: var(--t-4);
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+/* ── The business ───────────────────────────────────────────────────────── */
+
+.staff-biz {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.staff-biz h2 {
+  font-size: var(--t-7);
+  font-weight: 600;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 768px) {
+  .staff-biz h2 {
+    font-size: var(--t-8);
+  }
+}
+
+.staff-biz p {
+  font-size: var(--t-3);
+  color: var(--ink-mute);
+}
+
+.staff-marks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1h);
+  margin-top: var(--s-1);
+}
+
+/* The number. A control-sized link near the top, because it is pressed once at
+   the start of the call - the foot belongs to what is pressed at the end. */
+.staff-number {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2h);
+  min-height: var(--control-h-dial);
+  border-radius: var(--r-card);
+  background-color: var(--wash-accent);
+  color: var(--accent);
+  font-size: var(--t-6);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-decoration: none;
+  font-variant-numeric: tabular-nums;
+  touch-action: manipulation;
+  transition: background-color 150ms var(--ease-out-soft);
+}
+
+.staff-number:hover {
+  background-color: var(--wash-accent-strong);
+}
+
+.staff-number:active {
+  transform: scale(0.995);
+}
+
+/* ── Pairs ──────────────────────────────────────────────────────────────── */
+
+/* A fact and its value. One per line on a phone; two columns of them once there
+   is room, which is the only thing on any screen that reflows between the two
+   sizes. */
+
+.staff-pairs {
+  display: grid;
+  gap: var(--s-2);
+}
+
+@media (min-width: 768px) {
+  .staff-pairs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-8);
+  }
+}
+
+.staff-pairs > div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  font-size: var(--t-3);
+}
+
+.staff-pairs dt {
+  color: var(--ink-faint);
+}
+
+.staff-pairs dd {
+  font-weight: 500;
+  text-align: right;
+}
+
+/* ── Folded reading ─────────────────────────────────────────────────────── */
+
+/* The script is open on a first call and closed after that, because a
+   representative reads it once in the first week and after that wants the two
+   lines they forget. */
+
+.staff-fold {
+  border-top: 1px solid var(--hairline);
+}
+
+.staff-fold summary,
+.staff-topic summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  cursor: pointer;
+  touch-action: manipulation;
+  list-style: none;
+  font-size: var(--t-4);
+  font-weight: 500;
+}
+
+.staff-fold summary {
+  min-height: var(--control-h);
+}
+
+.staff-fold summary::-webkit-details-marker,
+.staff-topic summary::-webkit-details-marker {
+  display: none;
+}
+
+.staff-fold summary::after,
+.staff-topic summary::after {
+  content: '+';
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--t-4);
+  color: var(--ink-faint);
+}
+
+.staff-fold[open] summary::after,
+.staff-topic[open] summary::after {
+  content: '\2212';
+}
+
+.staff-fold-body {
+  display: grid;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3);
+}
+
+.staff-beat {
+  display: grid;
+  gap: var(--s-h);
+}
+
+.staff-beat p:last-child {
+  font-size: var(--t-4);
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+/* ── The two questions ──────────────────────────────────────────────────── */
+
+/* Not drawn at all until the call is marked. Not dimmed and not disabled: a
+   screen that shows six greyed buttons before a call reads as a form to fill in
+   rather than a call to make, and the height they take is height the script
+   wanted. */
+
+.staff-answers {
+  display: grid;
+  gap: var(--s-4);
+}
+
+.staff-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.staff-tags-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-2);
+}
+
+@media (min-width: 768px) {
+  .staff-tags-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.staff-tags-grid .staff-tag {
+  justify-content: center;
+  min-height: 48px;
+  text-align: center;
+}
+
+@media (min-width: 768px) {
+  .staff-tags-grid .staff-tag {
+    min-height: var(--control-h);
+  }
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+
+.staff-btn,
+.staff-quiet {
+  display: inline-flex;
+  min-height: var(--control-h);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border-radius: var(--r-control);
+  font-size: var(--t-3);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 150ms var(--ease-out-soft),
+    border-color 150ms var(--ease-out-soft),
+    color 150ms var(--ease-out-soft),
+    transform 150ms var(--ease-out-soft);
+}
+
+.staff-btn {
+  border: 0;
+  padding-inline: var(--s-4);
+  background-color: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.staff-btn:hover:enabled {
+  background-color: var(--accent-fill-hi);
+}
+
+/* A control that cannot be pressed says so, and never reaches a hover or a
+   press: a faded button that still lifts under the cursor reads as one that is
+   merely slow. */
+.staff-btn:active:enabled,
+.staff-quiet:active:enabled {
+  transform: scale(0.985);
+}
+
+.staff-btn:disabled,
+.staff-quiet:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.staff-quiet {
+  padding-inline: var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  background-color: transparent;
+  color: var(--ink-soft);
+}
+
+.staff-quiet:hover:enabled {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.staff-input {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-control);
+  background-color: var(--paper-field);
+  color: var(--ink);
+  /* Sixteen is the floor iOS reads: a field under it is zoomed into on focus and
+     the page is left scaled up with the rest of the screen off the side. A
+     pointer cannot trigger that zoom, so it gets the smaller step back. */
+  font-size: 16px;
+  transition: border-color 150ms var(--ease-out-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .staff-input {
+    font-size: var(--t-3);
+  }
+}
+
+.staff-input::placeholder {
+  color: var(--ink-faint);
+}
+
+.staff-input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+textarea.staff-input {
+  min-height: 84px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/* The key cap in front of a control, and only where there is a keyboard to
+   press it on. A representative works the call screen with one hand, so
+   anything pressed often says the key that fires it. */
+.staff-key {
+  display: none;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  min-width: 19px;
+  justify-content: center;
+  padding-inline: var(--s-1);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-tiny);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--t-1);
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .staff-key {
+    display: inline-flex;
+  }
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────── */
+
+.staff-badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--s-1h);
+  white-space: nowrap;
+  border-radius: var(--r-tiny);
+  padding: var(--s-h) var(--s-1h);
+  font-size: var(--t-1);
+  font-weight: 600;
+  background-color: var(--wash-paper-strong);
+  color: var(--ink-mute);
+}
+
+.staff-badge[data-tone='accent'] {
+  background-color: var(--wash-accent);
+  color: var(--accent);
+}
+
+.staff-badge[data-tone='good'] {
+  background-color: var(--good-wash);
+  color: var(--good);
+}
+
+.staff-badge[data-tone='warn'] {
+  background-color: var(--warn-wash);
+  color: var(--warn);
+}
+
+.staff-badge[data-tone='bad'] {
+  background-color: var(--danger-wash);
+  color: var(--danger);
+}
+
+/* ── The record ─────────────────────────────────────────────────────────── */
+
+/* Every call before this one. A date, what happened and who placed it, and
+   nothing else - it is read with a phone already ringing. */
+
+.staff-record {
+  display: grid;
+  gap: var(--s-2h);
+}
+
+.staff-record > div {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  column-gap: var(--s-3);
+  align-items: baseline;
+}
+
+.staff-record dt {
+  font-size: var(--t-2);
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.staff-record dd {
+  font-size: var(--t-3);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ── The tags ───────────────────────────────────────────────────────────── */
+
+/* What the call came to, and where that leaves the business. Kept this short on
+   purpose: a representative picks one of these sixty times a day and the set has
+   to be small enough to choose from without reading it. */
+
+.staff-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--control-h);
+  padding-inline: var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-control);
+  background-color: transparent;
+  color: var(--ink-soft);
+  font-size: var(--t-3);
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color 150ms var(--ease-out-soft),
+    border-color 150ms var(--ease-out-soft),
+    color 150ms var(--ease-out-soft);
+}
+
+.staff-tag:hover:enabled {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.staff-tag[aria-pressed='true'] {
+  border-color: var(--accent);
+  background-color: var(--wash-accent);
+  color: var(--accent);
+}
+
+.staff-tag[data-tone='good'][aria-pressed='true'] {
+  border-color: var(--good-edge);
+  background-color: var(--good-wash);
+  color: var(--good);
+}
+
+.staff-tag[data-tone='bad'][aria-pressed='true'] {
+  border-color: var(--danger-edge);
+  background-color: var(--danger-wash);
+  color: var(--danger);
+}
+
+/* The lengths Call Back opens. It is the one outcome that cannot stand on its
+   own - a business that needs time needs a length of it - and four lengths is as
+   fine as anything read off this later can use. */
+
+.staff-range {
+  display: grid;
+  gap: var(--s-2h);
+  padding: var(--s-3) var(--s-3h);
+  border-radius: var(--r-control);
+  background-color: var(--wash-paper);
+}
+
+.staff-range .staff-tag {
+  min-height: 36px;
+  padding-inline: var(--s-2h);
+  font-size: var(--t-2);
+}
+
+/* ── Management ─────────────────────────────────────────────────────────── */
+
+.staff-figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.staff-figure {
+  display: grid;
+  /* Figure, label, bar. The label takes the slack so the three bars sit on one
+     line across the row however many lines each label runs to - three bars at
+     three heights read as three different things rather than as one row. */
+  grid-template-rows: auto 1fr auto;
+  gap: var(--s-1h);
+  padding: var(--s-3);
+  border-radius: var(--r-card);
+  background-color: var(--wash-paper);
+  text-align: center;
+}
+
+/* The figure and its label sit together; only the bar under them is spaced off. */
+.staff-figure dd + dt {
+  margin-top: calc(var(--s-1h) * -1);
+}
+
+.staff-figure dd {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: var(--s-1);
+  font-size: var(--t-6);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.025em;
+}
+
+/* The target, beside the count rather than folded into the label under it. Three
+   of these sit side by side on a phone, and a label carrying "of 40" wraps to
+   three lines at that width while the figure it belongs to reads on one. */
+.staff-figure dd span {
+  font-size: var(--t-2);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-faint);
+}
+
+@media (min-width: 768px) {
+  .staff-figure dd {
+    font-size: var(--t-7);
+  }
+}
+
+.staff-figure dt {
+  font-size: var(--t-1);
+  color: var(--ink-faint);
+}
+
+.staff-track {
+  overflow: hidden;
+  height: 4px;
+  border-radius: var(--r-tiny);
+  background-color: var(--wash-paper-strong);
+}
+
+.staff-track span {
+  display: block;
+  height: 100%;
+  border-radius: var(--r-tiny);
+  background-color: var(--accent);
+}
+
+.staff-track span[data-behind='true'] {
+  background-color: var(--warn);
+}
+
+/* A bar is a reading, and a reading run to 46rem is a stripe. It stays the
+   length it is on the phone, where it was the width of the column and the right
+   size to judge by eye. */
+@media (min-width: 768px) {
+  .staff-track {
+    max-width: 22rem;
+  }
+
+  /* A bar inside a figure is already the width of its third of the row, so the
+     cap above has nothing to cut and would only pull it off the tile's axis. */
+  .staff-figure .staff-track {
+    max-width: none;
+  }
+}
+
+.staff-person {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3h) var(--s-4);
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: var(--edge);
+}
+
+.staff-person-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-2);
+}
+
+.staff-person-top b {
+  font-size: var(--t-4);
+  font-weight: 600;
+}
+
+.staff-person-figure {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-1h);
+  font-size: var(--t-6);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.staff-person-figure span {
+  font-size: var(--t-2);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-faint);
+}
+
+/* ── Resources ──────────────────────────────────────────────────────────── */
+
+.staff-topics {
+  display: grid;
+  gap: 0;
+}
+
+.staff-topic {
+  border-bottom: 1px solid var(--hairline);
+}
+
+.staff-topic:first-child {
+  border-top: 1px solid var(--hairline);
+}
+
+.staff-topic summary {
+  min-height: 52px;
+}
+
+.staff-topic-body {
+  display: grid;
+  gap: var(--s-3);
+  padding-bottom: var(--s-3h);
+}
+
+.staff-topic-body p {
+  font-size: var(--t-4);
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.staff-topic-body h4 {
+  font-size: var(--t-3);
+  font-weight: 600;
+}
+
+/* What to do after saying it, which is an instruction to the caller rather than
+   a line they read out. Set smaller and lighter so the two do not run together
+   into one paragraph somebody says the whole of down the phone. */
+.staff-aside {
+  font-size: var(--t-3);
+  line-height: 1.55;
+  color: var(--ink-faint);
+}
+
+/* The list of parts closes with a rule of its own, so anything following it
+   supplies a second one over the top of the first. */
+.staff-topics + .staff-part {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.staff-steps {
+  display: grid;
+  gap: var(--s-2h);
+  counter-reset: step;
+}
+
+.staff-steps li {
+  display: grid;
+  grid-template-columns: 1.25rem minmax(0, 1fr);
+  gap: var(--s-2h);
+  font-size: var(--t-4);
+  line-height: 1.6;
+  color: var(--ink-soft);
+  counter-increment: step;
+}
+
+.staff-steps li::before {
+  content: counter(step);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--t-2);
+  color: var(--ink-ghost);
+}
+
+/* ── The portal ─────────────────────────────────────────────────────────── */
+
+.staff-greet {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.staff-greet h2 {
+  font-size: var(--t-7);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 768px) {
+  .staff-greet h2 {
+    font-size: var(--t-8);
+  }
+}
+
+.staff-tiles {
+  display: grid;
+  gap: var(--s-2h);
+}
+
+@media (min-width: 768px) {
+  .staff-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.staff-tile {
+  display: grid;
+  align-content: center;
+  gap: var(--s-1);
+  min-height: 6.5rem;
+  padding: var(--s-4);
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: var(--edge);
+  color: inherit;
+  text-decoration: none;
+  touch-action: manipulation;
+  transition:
+    box-shadow 150ms var(--ease-out-soft),
+    transform 150ms var(--ease-out-soft);
+}
+
+.staff-tile:hover {
+  box-shadow: var(--raise);
+  transform: translateY(-1px);
+}
+
+.staff-tile:active {
+  transform: none;
+}
+
+.staff-tile b {
+  font-size: var(--t-5);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.staff-tile p {
+  font-size: var(--t-3);
+  line-height: 1.5;
+  color: var(--ink-mute);
+}
+
+.staff-tile[data-lead='true'] {
+  background-color: var(--accent-fill);
+  box-shadow: none;
+  color: var(--on-accent);
+}
+
+.staff-tile[data-lead='true'] p {
+  color: rgb(255 255 255 / 0.82);
+}
+
+.staff-tile[data-lead='true']:hover {
+  background-color: var(--accent-fill-hi);
+  box-shadow: none;
+}
+
+/* ── The end of the list ────────────────────────────────────────────────── */
+
+/* A list runs out most afternoons, and the screen that says so is the one screen
+   in the system nobody drew until somebody hit it. It is also what a read that
+   has not landed and a read that failed both show, so the surface has one empty
+   shape rather than three. */
+
+.staff-spent {
+  display: grid;
+  align-content: center;
+  justify-items: center;
+  gap: var(--s-3);
+  min-height: 18rem;
+  text-align: center;
+}
+
+.staff-spent h2 {
+  font-size: var(--t-7);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+
+.staff-spent p {
+  max-width: 26rem;
+  font-size: var(--t-4);
+  line-height: 1.6;
+  color: var(--ink-mute);
+}
+
+/* Focus is the one thing every control here owes, and it is written once
+   against the controls rather than repeated per rule and forgotten on the
+   seventh. */
+.staff a:focus-visible,
+.staff button:focus-visible,
+.staff summary:focus-visible,
+.staff input:focus-visible,
+.staff textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

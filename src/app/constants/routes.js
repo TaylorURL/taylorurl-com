@@ -147,6 +147,26 @@ const ALL_ROUTES = [
       { key: 'ConsoleStatus', path: 'status' },
     ],
   },
+  // The representatives' own portal, and the three surfaces behind it.
+  //
+  // It is its own family rather than a section of the console because the two
+  // are read by different people for different lengths of time. The console is
+  // a dashboard somebody compares figures in; this is one screen somebody works
+  // with a handset in the other hand, and the only thing a representative
+  // controls is the call screen. Every path here asks for an account and none
+  // is in the sitemap.
+  {
+    key: 'Staff',
+    path: 'staff',
+    session: true,
+    account: true,
+    children: [
+      { key: 'StaffPortal', index: true },
+      { key: 'StaffCalls', path: 'calls' },
+      { key: 'StaffManagement', path: 'management' },
+      { key: 'StaffResources', path: 'resources' },
+    ],
+  },
   { key: 'NotFound', path: '*' },
 ]
 

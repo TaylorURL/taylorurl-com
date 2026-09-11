@@ -38,7 +38,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
-import { authorizeAdmin, connect } from '../lib/db/clients.js'
+import { authorizeCaller, connect } from '../lib/db/clients.js'
 import { readAll, tableMissing } from '../lib/db/rows.js'
 import { field, uuid } from '../lib/db/fields.js'
 import { sharesTrade } from '../lib/outreach/message.js'
@@ -816,12 +816,20 @@ export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'private, no-store')
 
   try {
-    const account = await authorizeAdmin(wired, authorization)
+    const account = await authorizeCaller(wired, authorization)
     if (account.status) return response.status(account.status).json({ error: account.error })
 
     let answer
     try {
       const body = request.body ?? {}
+      const handing = request.method === 'POST' && 'assign' in body
+      // Reading the list and recording a call are what a representative is
+      // here to do. Deciding whose business it is in the first place is not,
+      // and the role that hired them keeps it: a list somebody can move rows
+      // off is a list they can empty of the calls they do not want.
+      if (handing && account.role !== 'admin') {
+        return response.status(403).json({ error: 'Only an admin can hand a business over.' })
+      }
       answer =
         request.method === 'GET'
           ? await list(wired.db, request.query ?? {}, account)
@@ -829,7 +837,7 @@ export default async function handler(request, response) {
             // and they are told apart by what the body carries, because they
             // are the same thing happening to the same business and splitting
             // them across two addresses would say otherwise.
-            'assign' in body
+            handing
             ? await assign(wired.db, body.assign ?? {})
             : await record(wired.db, body, account)
     } catch (cause) {

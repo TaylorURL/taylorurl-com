@@ -34,7 +34,7 @@
  */
 
 import { bearerOr401, methodsOr405, servedHereOr404 } from '../lib/http/guard.js'
-import { authorizeAdmin, connect } from '../lib/db/clients.js'
+import { authorizeCaller, connect } from '../lib/db/clients.js'
 import { tableMissing } from '../lib/db/rows.js'
 import { uuid } from '../lib/db/fields.js'
 import { isCallable } from '../lib/outreach/prospects/calls.js'
@@ -319,7 +319,7 @@ export default async function handler(request, response) {
   response.setHeader('Cache-Control', 'private, no-store')
 
   try {
-    const account = await authorizeAdmin(wired, authorization)
+    const account = await authorizeCaller(wired, authorization)
     if (account.status) return response.status(account.status).json({ error: account.error })
 
     const now = new Date()
