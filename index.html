@@ -247,10 +247,26 @@
         // are landing and whose conversions are going unattributed reads exactly
         // like an account whose ads are not working.
         //
+        // Which is read off the parameters Google Ads appends rather than off
+        // the click identifier alone. `gclid` is the identifier and it is the
+        // thing worth having, but it is not the thing that says an ad was
+        // clicked: auto-tagging writes it, and a click that arrives without it
+        // still carries `gad_source` naming the surface it came from and
+        // `gad_campaignid` naming the campaign that paid for it. The report on
+        // #558 was one of those - a real reader, on `/start`, off campaign
+        // 24232381850, carrying `gad_source=5` and no identifier at all - and
+        // the test here read it as organic traffic and made them wait with
+        // everybody else.
+        //
+        // None of the three appears on a visit nobody paid for, so widening the
+        // test costs no reader who was not already the exception, and a rating
+        // run arrives on the bare address carrying none of them, so it still
+        // costs that reading nothing.
+        //
         // The wait is what keeps the tag out of the window a performance rating
         // is taken from, and a rating run never arrives on one of these
         // addresses, so this costs that reading nothing at all.
-        if (/[?&](gclid|gbraid|wbraid)=/.test(location.search)) {
+        if (/[?&](gclid|gbraid|wbraid|gad_source|gad_campaignid)=/.test(location.search)) {
           fetchTags()
         } else {
           addEventListener('load', function () {
