@@ -20,7 +20,6 @@ import {
   ASSIGNED_MINE,
   ASSIGNED_NOBODY,
   CALL_OUTCOMES,
-  callTakesOwner,
   dialHref,
   outcomeAsksInterest,
   outcomeNeedsCallback,
@@ -51,6 +50,7 @@ import {
   withoutFilter,
 } from '@lib/outreach/prospects/callPrefs.js'
 import { callerMark, callerName, heldByOther } from '@lib/outreach/prospects/callPresence.js'
+import { shiftOf } from '@lib/outreach/prospects/callShift.js'
 import {
   Badge,
   ConsoleError,
@@ -90,6 +90,8 @@ import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import { fullCount } from '../../../analytics/lib/format'
 import CallHandbook from './CallHandbook'
 import CallBoard from './CallBoard'
+import CallRecord from './CallRecord'
+import CallRings from './CallRings'
 import CallSetup from './CallSetup'
 
 /**
@@ -327,22 +329,6 @@ function pullSentence(row) {
   return `${count} reviews against a middle of ${middle} for ${row.trade ?? 'its trade'}${
     ratio ? `, which is ${ratio}× its trade` : ''
   }.`
-}
-
-/** What the history says, in a clause. */
-function historyLine(row, you = null) {
-  if (!row.last_call) return 'Nobody has rung this number.'
-  const outcome = outcomeOf(row.last_call.outcome)?.label ?? row.last_call.outcome
-  const nth = row.calls.length === 1 ? 'Rung once' : `Rung ${row.calls.length} times`
-  // Who made the last one, because the thing a caller most wants before they
-  // dial again is whether the last conversation was theirs.
-  const by =
-    row.last_call.called_by === you
-      ? ' by you'
-      : row.last_call.called_by_name
-        ? ` by ${row.last_call.called_by_name}`
-        : ''
-  return `${nth}, last ${when(row.last_call.called_at)}${by}. ${outcome}.`
 }
 
 /** Where the business stands with the phone, and what that means in time. */
@@ -987,179 +973,6 @@ function Sheet({
   )
 }
 
-/**
- * One business at a time, off a batch held still.
- *
- * The batch is snapshotted when the view opens rather than re-read from the
- * feed, and a business that has been worked stays where it is with the outcome
- * it was given. A row disappearing shifts everything under it by one row
- * height at the exact moment the next name is being read, which is how a place
- * is lost.
- *
- * The eight outcomes are on eight number keys. A caller with a phone in one
- * hand has one hand for the keyboard, and a dropdown plus a submit is four
- * actions for the outcome that happens most: nobody picks up.
- *
- * Two of the eight ask a second question before they are recorded, and it takes
- * the card rather than sitting under the grid. A caller working a batch at one
- * keystroke a business will not notice a control that was already on screen
- * when they pressed the last one; a screen that changes under them is the only
- * thing that reads as being asked. It is one more keystroke - `y`, `n`, or `s`
- * where the call never got to the question - and `n` is the one that keeps the
- * business out of the lead list.
- */
-function CallCard({
-  row,
-  saving,
-  recorded,
-  asking,
-  holder,
-  you,
-  onQuick,
-  onAnswer,
-  onDrop,
-  onOpen,
-  onSkip,
-}) {
-  const href = dialHref(row.phone)
-
-  return (
-    <div className="grid gap-4 px-5 py-4">
-      <div className="grid gap-1">
-        <h3 className="text-[20px] text-ink-paper">{row.name || 'Unnamed business'}</h3>
-        <p className={`${MONO_LABEL} text-paper-faint`}>
-          {[row.trade, row.town].filter(Boolean).join(' · ')}
-        </p>
-        <p className="text-paper-faint min-h-[18px] text-[13px]">{row.address || '—'}</p>
-      </div>
-
-      {/* Whose business this is, said before the number is pressed rather than
-          in the record behind it. A caller who is about to ring somebody
-          else's business is about to have a first conversation with a business
-          that has already had one, and the person who had it is one line
-          away. */}
-      <p className={`${MONO_LABEL} text-paper-faint`}>
-        {callTakesOwner(row)
-          ? 'Nobody holds this one. Recording a call puts it in your name.'
-          : ownerOf(row) === you
-            ? 'Yours since the first call.'
-            : `${callerName({ name: row.assigned_name })} holds this one.`}
-      </p>
-
-      {/* Somebody got to this one first. The number is drawn quiet rather than
-          removed - the batch is a snapshot and they may have hung up by now -
-          and the way past it is offered right here, because the caller wanted
-          the next business rather than this argument. */}
-      {holder ? (
-        <div className="border-hair-paper grid gap-2 rounded-[var(--console-radius-sm)] border px-4 py-3">
-          <p className={`${MONO_LABEL} flex items-center gap-2 text-accent`}>
-            <Badge tone="accent">{callerMark(holder)}</Badge>
-            {callerName(holder)} is on this call.
-          </p>
-          <p className="text-[13px] text-paper-soft">
-            Ringing them as well is the one thing this list exists to stop.
-          </p>
-          <button type="button" className={BUTTON} onClick={onSkip}>
-            Skip to the Next
-          </button>
-        </div>
-      ) : (
-        href && (
-          <a href={href} className={`${BUTTON} min-h-[56px] text-[18px]`}>
-            <Phone aria-hidden="true" className="h-5 w-5" strokeWidth={1.75} />
-            {row.phone}
-          </a>
-        )
-      )}
-
-      <div className="grid min-h-[64px] gap-1">
-        <p className="text-[13px] text-ink-paper">{whyListed(row)}</p>
-        <p className={`${MONO_LABEL} text-paper-faint`}>{pullSentence(row)}</p>
-        <p className={`${MONO_LABEL} text-paper-faint`}>{historyLine(row, you)}</p>
-      </div>
-
-      <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Metric label="Score" value={String(row.score)} />
-        <Metric label="Reviews" value={reviews(row)} />
-        <Metric
-          label="Trade Middle"
-          value={row.trade_median === null ? 'Too few' : fullCount(Math.round(row.trade_median))}
-        />
-        <Metric label="Instead of a Site" value={presence(row)} />
-      </dl>
-
-      {asking ? (
-        <div className="grid gap-2">
-          <p className="text-[15px] text-ink-paper">
-            {outcomeOf(asking)?.label}. Were they interested?
-          </p>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              className={`${BUTTON} min-h-[48px]`}
-              disabled={saving}
-              onClick={() => onAnswer(true)}
-            >
-              <span className="mr-1 rounded-[var(--r-tiny)] border border-current px-1">Y</span>
-              Interested
-            </button>
-            <button
-              type="button"
-              className={`${QUIET} min-h-[48px] justify-center`}
-              disabled={saving}
-              onClick={() => onAnswer(false)}
-            >
-              <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">N</span>
-              Not Interested
-            </button>
-            <button
-              type="button"
-              className={`${QUIET} col-span-2 min-h-[48px] justify-center`}
-              disabled={saving}
-              onClick={() => onAnswer(null)}
-            >
-              <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">S</span>
-              They Did Not Say
-            </button>
-          </div>
-          <p className={`${MONO_LABEL} text-paper-faint`}>
-            Not interested leaves them on the call list and off the lead list. Anything else puts
-            them in the lead list.
-          </p>
-          <button type="button" className={QUIET} disabled={saving} onClick={onDrop}>
-            Back to the Outcomes
-          </button>
-        </div>
-      ) : (
-        <div className="grid gap-2">
-          <p className={`${MONO_LABEL} text-paper-faint`}>
-            {recorded || 'What did the call come to?'}
-          </p>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {CALL_OUTCOMES.map(outcome => (
-              <button
-                key={outcome.id}
-                type="button"
-                className={QUIET}
-                disabled={saving}
-                onClick={() => onQuick(outcome.id)}
-              >
-                <span className="border-hair-paper mr-1 rounded-[var(--r-tiny)] border px-1">
-                  {outcome.key}
-                </span>
-                {outcome.label}
-              </button>
-            ))}
-          </div>
-          <button type="button" className={QUIET} onClick={() => onOpen(row)}>
-            Open the Record to Add a Note or a Time
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-
 export default function CallsPage() {
   const { session } = useSession()
   const token = session?.access_token ?? null
@@ -1533,6 +1346,14 @@ export default function CallsPage() {
       go('calling')
     },
     [go]
+  )
+
+  // The sitting: today's counts from the list read, against the three figures
+  // this account set for itself. They arrive on two different feeds at two
+  // different rates and neither is the whole answer on its own.
+  const sitting = useMemo(
+    () => (shown?.shift ? shiftOf(shown.shift, prefs.goals) : null),
+    [shown, prefs.goals]
   )
 
   const narrowed = filtersNarrow(filters)
@@ -1965,20 +1786,28 @@ export default function CallsPage() {
             </Panel>
           }
         >
+          {/* The sitting rides in the head of the card the calls are made
+              from. It belongs there rather than over the whole section because
+              it is a fact about the person calling rather than about the list,
+              and the list's own figures are three feet to the left saying how
+              many businesses are left - which is the figure this exists to stop
+              being the only one on the screen. */}
           <Panel
             title="Calling"
-            note="Ring the number and press what the call came to. Say whether they were interested where it asks, and the next business comes up on its own."
+            note="Read down to This Call, ring the number and press what it came to. Say whether they were interested where it asks, and the next business comes up on its own."
             loading={loading}
             aside={
               <span className={`${MONO_LABEL} text-paper-faint`}>
                 {loading ? '' : `${fullCount(Math.max(0, batch.length - at))} to go`}
               </span>
             }
+            tools={sitting ? <CallRings shift={sitting} now={readAt ?? undefined} /> : null}
           >
             <PanelBody>
               {current ? (
-                <CallCard
+                <CallRecord
                   row={current}
+                  caller={session?.user?.user_metadata?.full_name}
                   saving={saving}
                   recorded={recorded}
                   asking={asking}

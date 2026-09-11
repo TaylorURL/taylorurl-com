@@ -78,6 +78,7 @@ import {
   DEFAULT_TAKE,
   SORT_IDS,
 } from '../lib/outreach/prospects/callPrefs.js'
+import { callsToday, countsOf } from '../lib/outreach/prospects/callShift.js'
 
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
@@ -471,6 +472,14 @@ async function list(db, query, account) {
   const drawnRows = callable.map(row => drawn(row, { medians, calls, proof, now, named }))
 
   const buckets = placed(drawnRows)
+  // What this caller's day has come to, off the same read. `callsByProspect`
+  // has already fetched every call on file to rank the list, so counting one
+  // person's own day out of it is a pass over an array rather than a query.
+  //
+  // The counts alone. What they are measured against is on the account, the
+  // desk endpoint next door already carries it to the same console, and the
+  // console puts the two together.
+  const shift = countsOf(callsToday([...calls.values()].flat(), account.userId, now))
   // The strip, the dropdowns and the soonest return all answer for the whole
   // list rather than for the question just asked, so they stay steady while a
   // caller narrows. The empty state reads the filtered figures instead, since
@@ -525,6 +534,7 @@ async function list(db, query, account) {
         call: filtered.filter(row => row.place !== 'due').length,
       },
       totals,
+      shift,
       matched_totals: countPlaces(filtered),
       next_back: backs[0] ?? null,
       towns: [...new Set(buckets.call.map(row => row.town).filter(Boolean))].sort(),
