@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="en" data-mockup="thumb-applied">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Staff System: Thumb, Applied - TaylorURL Mockup</title>
+    <link rel="stylesheet" href="./staff.css" />
+    <link rel="stylesheet" href="./thumb.css" />
+    <style>
+      /*
+       * THUMB, APPLIED
+       *
+       * The direction that was picked, drawn at both sizes it has to work at, with
+       * the two of them beside each other so they cannot quietly become two
+       * designs.
+       *
+       * The desktop is not a second layout. It is the same three parts - a head
+       * that is only read, a single scrolling column, a foot that never moves -
+       * with the column held at a reading measure and the bars run full width.
+       * What the extra width buys is a longer line of script and facts in twos,
+       * and that is all it buys: the control that ends a call is in the same
+       * place on both, because a representative who works a tablet in the morning
+       * and a desk in the afternoon is one person learning one screen.
+       *
+       * Everything the two sizes disagree about is one custom property in
+       * `thumb.css`, and every rule below it is written against that property.
+       *
+       * The call screen runs. The tags select, Needs Time opens its lengths, the
+       * mark reveals the two questions, Next unlocks once both are answered, and
+       * Back and Next move between two real businesses - the third call to one
+       * that has a record, and a first call to one that has none. The questions
+       * left on this direction are about sequence rather than arrangement, and
+       * none of them can be read off a picture.
+       */
+
+      .two {
+        display: grid;
+        gap: var(--s-5);
+        align-items: start;
+      }
+
+      @media (min-width: 1180px) {
+        .two {
+          grid-template-columns: 21rem minmax(0, 46rem);
+        }
+      }
+
+      .one {
+        min-width: 0;
+      }
+
+      .one-name {
+        margin-bottom: var(--s-2h);
+        font-size: var(--t-2);
+        font-weight: 500;
+        color: var(--ink-faint);
+      }
+
+      .note {
+        display: grid;
+        gap: var(--s-2);
+        max-width: var(--width-reading);
+        padding: var(--s-4) var(--s-5);
+        border-radius: var(--r-card);
+        background-color: var(--wash);
+      }
+
+      .note p {
+        font-size: var(--t-3);
+        line-height: 1.65;
+        color: var(--ink-soft);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <a class="brief-back" href="./index.html">The five it came from</a>
+        <h1>Thumb, applied</h1>
+        <p>
+          One shape at both sizes. A head that is only read, one scrolling column, and a foot that
+          never moves, so the control that ends a call is in the same place on the sixtieth call as
+          on the first. The desktop is the same three parts with the column held at a reading
+          measure and the bars run full width.
+        </p>
+      </header>
+
+      <div class="note">
+        <p class="label">The call screen runs</p>
+        <p>
+          Press <b>Mark This Called</b> and the two questions arrive. Needs Time opens its lengths.
+          Next unlocks once both are answered, and it moves to a second business - a first call,
+          with no record and no website, which is the other script and the empty state in one row.
+          Back returns. Nothing is stored and nothing is sent.
+        </p>
+      </div>
+
+      <section class="surface" id="portal">
+        <header class="surface-head">
+          <h2>Portal <b>01</b></h2>
+          <p>
+            Four destinations and the one figure the system actually knows. Start Calling is in the
+            foot, where every screen keeps the thing that moves you on.
+          </p>
+        </header>
+
+        <div class="two">
+          <div class="one">
+            <p class="one-name">Phone &middot; 375pt</p>
+            <div class="app">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>TaylorURL Staff</b>
+                  <a class="head-back" href="#">Sign Out</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <div class="greet">
+                    <h2>Afternoon, Dylan</h2>
+                    <p class="t-13 mute">Thursday, September 11 &middot; 2:40 PM</p>
+                  </div>
+                  <nav class="tiles" aria-label="Staff destinations">
+                    <a class="tile" href="#call" data-lead="true">
+                      <b>Call Center</b>
+                      <p>34 left today. At this pace you finish at 4:40.</p>
+                    </a>
+                    <a class="tile" href="#manage">
+                      <b>Management Center</b>
+                      <p>Who is on the phones, and what came back today.</p>
+                    </a>
+                    <a class="tile" href="#resources">
+                      <b>Resources Center</b>
+                      <p>The script, the prices, the procedures.</p>
+                    </a>
+                    <a class="tile" href="#">
+                      <b>Main Site</b>
+                      <p>taylorurl.com as a visitor sees it.</p>
+                    </a>
+                  </nav>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <a class="btn" href="#call">Start Calling</a>
+                  <p class="foot-note">Your list is claimed. Nobody else is ringing it.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="one">
+            <p class="one-name">Desktop &middot; same three parts, longer line</p>
+            <div class="app" data-size="desktop">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>TaylorURL Staff</b>
+                  <a class="head-back" href="#">Sign Out</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <div class="greet">
+                    <h2>Afternoon, Dylan</h2>
+                    <p class="t-13 mute">Thursday, September 11 &middot; 2:40 PM</p>
+                  </div>
+                  <nav class="tiles" aria-label="Staff destinations">
+                    <a class="tile" href="#call" data-lead="true">
+                      <b>Call Center</b>
+                      <p>34 left today. At this pace you finish at 4:40.</p>
+                    </a>
+                    <a class="tile" href="#manage">
+                      <b>Management Center</b>
+                      <p>Who is on the phones, and what came back today.</p>
+                    </a>
+                    <a class="tile" href="#resources">
+                      <b>Resources Center</b>
+                      <p>The script, the prices, the procedures.</p>
+                    </a>
+                    <a class="tile" href="#">
+                      <b>Main Site</b>
+                      <p>taylorurl.com as a visitor sees it.</p>
+                    </a>
+                  </nav>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <a class="btn" href="#call">Start Calling</a>
+                  <p class="foot-note">Your list is claimed. Nobody else is ringing it.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="surface" id="call">
+        <header class="surface-head">
+          <h2>Call Center <b>02</b></h2>
+          <p>
+            The only surface staff drive. The number sits near the top because it is pressed at the
+            start; the foot belongs to what is pressed at the end.
+          </p>
+        </header>
+
+        <div class="two">
+          <div class="one">
+            <p class="one-name">Phone &middot; 375pt</p>
+            <div class="app" data-call>
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b data-where>27 of 60 &middot; 34 left</b>
+                  <a class="head-back" href="#portal">Portal</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <div class="stack" data-business="Gulf Coast Overhead Doors">
+                    <div class="biz">
+                      <h2>Gulf Coast Overhead Doors</h2>
+                      <p>
+                        Garage door contractor &middot; Deer Park &middot; 4120 Center St, TX 77536
+                      </p>
+                      <div class="biz-marks">
+                        <span class="badge" data-tone="accent">Third call</span>
+                        <span class="badge">Ask for Ray</span>
+                        <span class="badge">Back after 2 PM</span>
+                      </div>
+                    </div>
+
+                    <a class="number" href="tel:+12815550142">(281) 555-0142</a>
+
+                    <dl class="pairs">
+                      <div>
+                        <dt>Reviews</dt>
+                        <dd>74 at 4.8</dd>
+                      </div>
+                      <div>
+                        <dt>Trade middle</dt>
+                        <dd>21</dd>
+                      </div>
+                      <div>
+                        <dt>Instead of a site</dt>
+                        <dd>Facebook</dd>
+                      </div>
+                      <div>
+                        <dt>On the list since</dt>
+                        <dd>August 24</dd>
+                      </div>
+                    </dl>
+
+                    <div class="part">
+                      <h3>Every call before this one</h3>
+                      <dl class="record">
+                        <div>
+                          <dt>Sep 2</dt>
+                          <dd>
+                            Pedro reached the front desk. Owner is Ray, out on installs every
+                            morning, back at the shop after two.
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Aug 26</dt>
+                          <dd>Rang at 9:12 and nobody picked up.</dd>
+                        </div>
+                      </dl>
+                      <p class="t-13 mute">It is 2:40 now, so Ray should be back.</p>
+                    </div>
+
+                    <details class="fold">
+                      <summary>What to say</summary>
+                      <div class="fold-body">
+                        <div class="beat">
+                          <p class="label">Get to the owner</p>
+                          <p>Hi, is Ray around? I spoke to someone here last week.</p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Who is calling</p>
+                          <p>
+                            This is Dylan with TaylorURL. We build websites for businesses around
+                            Deer Park and Houston. I am not selling anything over the phone, I rang
+                            about something on your Google listing.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Why you called</p>
+                          <p>
+                            The website on your listing is your Facebook page. They decide who sees
+                            it, and if that account goes tomorrow there is nothing of yours left
+                            online.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">What their trade says</p>
+                          <p>
+                            You have 74 reviews and the middle for garage door listings around here
+                            is about 21, so you are well ahead of the shops you compete with. The
+                            ones with a website are still getting found ahead of you.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">The ask</p>
+                          <p>
+                            I would like to put you a plan together for what your site would say and
+                            what it would cost, for free, with the number agreed before anything
+                            starts. Have you got ten minutes this week?
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="fold">
+                      <summary>Refresher</summary>
+                      <div class="fold-body">
+                        <dl class="pairs">
+                          <div>
+                            <dt>Build</dt>
+                            <dd>From $1,000</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly</dt>
+                            <dd>From $250</dd>
+                          </div>
+                          <div>
+                            <dt>Build time</dt>
+                            <dd>2 to 3 weeks</dd>
+                          </div>
+                          <div>
+                            <dt>Domain</dt>
+                            <dd>Theirs, in their name</dd>
+                          </div>
+                        </dl>
+                        <p class="t-13 faint">
+                          Both figures are where a project starts. Never quote above them on a first
+                          call.
+                        </p>
+                      </div>
+                    </details>
+                  </div>
+                  <div class="stack" data-business="Bayside Turf &amp; Irrigation" hidden>
+                    <div class="biz">
+                      <h2>Bayside Turf &amp; Irrigation</h2>
+                      <p>Landscaper &middot; La Porte &middot; 811 W Fairmont Pkwy, TX 77571</p>
+                      <div class="biz-marks">
+                        <span class="badge">First call</span>
+                        <span class="badge" data-tone="warn">No website at all</span>
+                      </div>
+                    </div>
+
+                    <a class="number" href="tel:+12815550188">(281) 555-0188</a>
+
+                    <dl class="pairs">
+                      <div>
+                        <dt>Reviews</dt>
+                        <dd>12 at 4.4</dd>
+                      </div>
+                      <div>
+                        <dt>Trade middle</dt>
+                        <dd>19</dd>
+                      </div>
+                      <div>
+                        <dt>Instead of a site</dt>
+                        <dd>Nothing</dd>
+                      </div>
+                      <div>
+                        <dt>On the list since</dt>
+                        <dd>September 8</dd>
+                      </div>
+                    </dl>
+
+                    <div class="part">
+                      <h3>Every call before this one</h3>
+                      <p class="t-13 mute">
+                        None. Nobody here has rung them, so there is no name to ask for and no best
+                        time to try. Whatever you learn goes in the note at the end.
+                      </p>
+                    </div>
+
+                    <details class="fold" open>
+                      <summary>What to say</summary>
+                      <div class="fold-body">
+                        <div class="beat">
+                          <p class="label">Get to the owner</p>
+                          <p>Hi, is the owner around?</p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Who is calling</p>
+                          <p>
+                            This is Dylan with TaylorURL. We build websites for businesses around La
+                            Porte and Houston. I am not selling anything over the phone, I rang
+                            about something on your Google listing.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Why you called</p>
+                          <p>
+                            Your listing has a phone number and a map pin but no website. Anybody
+                            who wants your hours or your prices has to ring you to find out.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">What their trade says</p>
+                          <p>
+                            You have 12 reviews, about where most landscaping listings sit around
+                            here. The ones pulling ahead are the ones people can find on a phone at
+                            eight at night.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">The ask</p>
+                          <p>
+                            I would like to put you a plan together for what your site would say and
+                            what it would cost, for free, with the number agreed before anything
+                            starts. Have you got ten minutes this week?
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="fold">
+                      <summary>Refresher</summary>
+                      <div class="fold-body">
+                        <dl class="pairs">
+                          <div>
+                            <dt>Build</dt>
+                            <dd>From $1,000</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly</dt>
+                            <dd>From $250</dd>
+                          </div>
+                          <div>
+                            <dt>Build time</dt>
+                            <dd>2 to 3 weeks</dd>
+                          </div>
+                          <div>
+                            <dt>Domain</dt>
+                            <dd>Theirs, in their name</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    </details>
+                  </div>
+                  <div class="part" data-answers hidden>
+                    <div>
+                      <p class="label" style="margin-bottom: var(--s-2)">What the call came to</p>
+                      <div class="tags-grid" data-group="outcome">
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="no-answer"
+                          aria-pressed="false"
+                        >
+                          <span class="key">1</span> No Answer
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="voicemail"
+                          aria-pressed="false"
+                        >
+                          <span class="key">2</span> Left Voicemail
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="gatekeeper"
+                          aria-pressed="false"
+                        >
+                          <span class="key">3</span> Gatekeeper
+                        </button>
+                        <button type="button" class="tag" data-answer="spoke" aria-pressed="false">
+                          <span class="key">4</span> Spoke To Owner
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="good"
+                          data-answer="booked"
+                          aria-pressed="false"
+                        >
+                          <span class="key">5</span> Booked
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="bad"
+                          data-answer="wrong-number"
+                          aria-pressed="false"
+                        >
+                          <span class="key">6</span> Wrong Number
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p class="label" style="margin-bottom: var(--s-2)">And the business is</p>
+                      <div class="tags-grid" data-group="standing">
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="good"
+                          data-answer="yes"
+                          aria-pressed="false"
+                        >
+                          <span class="key">Y</span> Yes
+                        </button>
+                        <button type="button" class="tag" data-answer="maybe" aria-pressed="false">
+                          <span class="key">M</span> Maybe
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="needs-time"
+                          aria-pressed="false"
+                        >
+                          <span class="key">T</span> Needs Time
+                        </button>
+                        <button type="button" class="tag" data-answer="price" aria-pressed="false">
+                          <span class="key">P</span> Price Issue
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="bad"
+                          data-answer="no"
+                          aria-pressed="false"
+                        >
+                          <span class="key">N</span> No
+                        </button>
+                      </div>
+                      <div class="range" data-range hidden style="margin-top: var(--s-3)">
+                        <p class="label">How long. Four lengths, nothing finer.</p>
+                        <div class="tags-grid" data-group="length">
+                          <button type="button" class="tag" data-answer="2w" aria-pressed="false">
+                            2 weeks
+                          </button>
+                          <button type="button" class="tag" data-answer="1m" aria-pressed="false">
+                            1 month
+                          </button>
+                          <button type="button" class="tag" data-answer="3m" aria-pressed="false">
+                            3 months
+                          </button>
+                          <button
+                            type="button"
+                            class="tag"
+                            data-answer="season"
+                            aria-pressed="false"
+                          >
+                            After the season
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="display: grid; gap: var(--s-2)">
+                      <label class="label" for="note-p">One line for whoever rings next</label>
+                      <textarea
+                        class="input"
+                        id="note-p"
+                        rows="3"
+                        placeholder="Who you got, what they said, and when to try again."
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <button type="button" class="btn" data-mark>Mark This Called</button>
+                  <button type="button" class="btn" data-next hidden disabled>Next Business</button>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet" data-back disabled>Back To Last</button>
+                    <a class="quiet" href="tel:+12815550142">Ring Again</a>
+                  </div>
+                  <p class="foot-note" data-foot-note></p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="one">
+            <p class="one-name">Desktop &middot; same three parts, longer line</p>
+            <div class="app" data-size="desktop" data-call>
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b data-where>27 of 60 &middot; 34 left</b>
+                  <a class="head-back" href="#portal">Portal</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <div class="stack" data-business="Gulf Coast Overhead Doors">
+                    <div class="biz">
+                      <h2>Gulf Coast Overhead Doors</h2>
+                      <p>
+                        Garage door contractor &middot; Deer Park &middot; 4120 Center St, TX 77536
+                      </p>
+                      <div class="biz-marks">
+                        <span class="badge" data-tone="accent">Third call</span>
+                        <span class="badge">Ask for Ray</span>
+                        <span class="badge">Back after 2 PM</span>
+                      </div>
+                    </div>
+
+                    <a class="number" href="tel:+12815550142">(281) 555-0142</a>
+
+                    <dl class="pairs">
+                      <div>
+                        <dt>Reviews</dt>
+                        <dd>74 at 4.8</dd>
+                      </div>
+                      <div>
+                        <dt>Trade middle</dt>
+                        <dd>21</dd>
+                      </div>
+                      <div>
+                        <dt>Instead of a site</dt>
+                        <dd>Facebook</dd>
+                      </div>
+                      <div>
+                        <dt>On the list since</dt>
+                        <dd>August 24</dd>
+                      </div>
+                    </dl>
+
+                    <div class="part">
+                      <h3>Every call before this one</h3>
+                      <dl class="record">
+                        <div>
+                          <dt>Sep 2</dt>
+                          <dd>
+                            Pedro reached the front desk. Owner is Ray, out on installs every
+                            morning, back at the shop after two.
+                          </dd>
+                        </div>
+                        <div>
+                          <dt>Aug 26</dt>
+                          <dd>Rang at 9:12 and nobody picked up.</dd>
+                        </div>
+                      </dl>
+                      <p class="t-13 mute">It is 2:40 now, so Ray should be back.</p>
+                    </div>
+
+                    <details class="fold">
+                      <summary>What to say</summary>
+                      <div class="fold-body">
+                        <div class="beat">
+                          <p class="label">Get to the owner</p>
+                          <p>Hi, is Ray around? I spoke to someone here last week.</p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Who is calling</p>
+                          <p>
+                            This is Dylan with TaylorURL. We build websites for businesses around
+                            Deer Park and Houston. I am not selling anything over the phone, I rang
+                            about something on your Google listing.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Why you called</p>
+                          <p>
+                            The website on your listing is your Facebook page. They decide who sees
+                            it, and if that account goes tomorrow there is nothing of yours left
+                            online.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">What their trade says</p>
+                          <p>
+                            You have 74 reviews and the middle for garage door listings around here
+                            is about 21, so you are well ahead of the shops you compete with. The
+                            ones with a website are still getting found ahead of you.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">The ask</p>
+                          <p>
+                            I would like to put you a plan together for what your site would say and
+                            what it would cost, for free, with the number agreed before anything
+                            starts. Have you got ten minutes this week?
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="fold">
+                      <summary>Refresher</summary>
+                      <div class="fold-body">
+                        <dl class="pairs">
+                          <div>
+                            <dt>Build</dt>
+                            <dd>From $1,000</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly</dt>
+                            <dd>From $250</dd>
+                          </div>
+                          <div>
+                            <dt>Build time</dt>
+                            <dd>2 to 3 weeks</dd>
+                          </div>
+                          <div>
+                            <dt>Domain</dt>
+                            <dd>Theirs, in their name</dd>
+                          </div>
+                        </dl>
+                        <p class="t-13 faint">
+                          Both figures are where a project starts. Never quote above them on a first
+                          call.
+                        </p>
+                      </div>
+                    </details>
+                  </div>
+                  <div class="stack" data-business="Bayside Turf &amp; Irrigation" hidden>
+                    <div class="biz">
+                      <h2>Bayside Turf &amp; Irrigation</h2>
+                      <p>Landscaper &middot; La Porte &middot; 811 W Fairmont Pkwy, TX 77571</p>
+                      <div class="biz-marks">
+                        <span class="badge">First call</span>
+                        <span class="badge" data-tone="warn">No website at all</span>
+                      </div>
+                    </div>
+
+                    <a class="number" href="tel:+12815550188">(281) 555-0188</a>
+
+                    <dl class="pairs">
+                      <div>
+                        <dt>Reviews</dt>
+                        <dd>12 at 4.4</dd>
+                      </div>
+                      <div>
+                        <dt>Trade middle</dt>
+                        <dd>19</dd>
+                      </div>
+                      <div>
+                        <dt>Instead of a site</dt>
+                        <dd>Nothing</dd>
+                      </div>
+                      <div>
+                        <dt>On the list since</dt>
+                        <dd>September 8</dd>
+                      </div>
+                    </dl>
+
+                    <div class="part">
+                      <h3>Every call before this one</h3>
+                      <p class="t-13 mute">
+                        None. Nobody here has rung them, so there is no name to ask for and no best
+                        time to try. Whatever you learn goes in the note at the end.
+                      </p>
+                    </div>
+
+                    <details class="fold" open>
+                      <summary>What to say</summary>
+                      <div class="fold-body">
+                        <div class="beat">
+                          <p class="label">Get to the owner</p>
+                          <p>Hi, is the owner around?</p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Who is calling</p>
+                          <p>
+                            This is Dylan with TaylorURL. We build websites for businesses around La
+                            Porte and Houston. I am not selling anything over the phone, I rang
+                            about something on your Google listing.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">Why you called</p>
+                          <p>
+                            Your listing has a phone number and a map pin but no website. Anybody
+                            who wants your hours or your prices has to ring you to find out.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">What their trade says</p>
+                          <p>
+                            You have 12 reviews, about where most landscaping listings sit around
+                            here. The ones pulling ahead are the ones people can find on a phone at
+                            eight at night.
+                          </p>
+                        </div>
+                        <div class="beat">
+                          <p class="label">The ask</p>
+                          <p>
+                            I would like to put you a plan together for what your site would say and
+                            what it would cost, for free, with the number agreed before anything
+                            starts. Have you got ten minutes this week?
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="fold">
+                      <summary>Refresher</summary>
+                      <div class="fold-body">
+                        <dl class="pairs">
+                          <div>
+                            <dt>Build</dt>
+                            <dd>From $1,000</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly</dt>
+                            <dd>From $250</dd>
+                          </div>
+                          <div>
+                            <dt>Build time</dt>
+                            <dd>2 to 3 weeks</dd>
+                          </div>
+                          <div>
+                            <dt>Domain</dt>
+                            <dd>Theirs, in their name</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    </details>
+                  </div>
+                  <div class="part" data-answers hidden>
+                    <div>
+                      <p class="label" style="margin-bottom: var(--s-2)">What the call came to</p>
+                      <div class="tags-grid" data-group="outcome">
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="no-answer"
+                          aria-pressed="false"
+                        >
+                          <span class="key">1</span> No Answer
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="voicemail"
+                          aria-pressed="false"
+                        >
+                          <span class="key">2</span> Left Voicemail
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="gatekeeper"
+                          aria-pressed="false"
+                        >
+                          <span class="key">3</span> Gatekeeper
+                        </button>
+                        <button type="button" class="tag" data-answer="spoke" aria-pressed="false">
+                          <span class="key">4</span> Spoke To Owner
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="good"
+                          data-answer="booked"
+                          aria-pressed="false"
+                        >
+                          <span class="key">5</span> Booked
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="bad"
+                          data-answer="wrong-number"
+                          aria-pressed="false"
+                        >
+                          <span class="key">6</span> Wrong Number
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p class="label" style="margin-bottom: var(--s-2)">And the business is</p>
+                      <div class="tags-grid" data-group="standing">
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="good"
+                          data-answer="yes"
+                          aria-pressed="false"
+                        >
+                          <span class="key">Y</span> Yes
+                        </button>
+                        <button type="button" class="tag" data-answer="maybe" aria-pressed="false">
+                          <span class="key">M</span> Maybe
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-answer="needs-time"
+                          aria-pressed="false"
+                        >
+                          <span class="key">T</span> Needs Time
+                        </button>
+                        <button type="button" class="tag" data-answer="price" aria-pressed="false">
+                          <span class="key">P</span> Price Issue
+                        </button>
+                        <button
+                          type="button"
+                          class="tag"
+                          data-tone="bad"
+                          data-answer="no"
+                          aria-pressed="false"
+                        >
+                          <span class="key">N</span> No
+                        </button>
+                      </div>
+                      <div class="range" data-range hidden style="margin-top: var(--s-3)">
+                        <p class="label">How long. Four lengths, nothing finer.</p>
+                        <div class="tags-grid" data-group="length">
+                          <button type="button" class="tag" data-answer="2w" aria-pressed="false">
+                            2 weeks
+                          </button>
+                          <button type="button" class="tag" data-answer="1m" aria-pressed="false">
+                            1 month
+                          </button>
+                          <button type="button" class="tag" data-answer="3m" aria-pressed="false">
+                            3 months
+                          </button>
+                          <button
+                            type="button"
+                            class="tag"
+                            data-answer="season"
+                            aria-pressed="false"
+                          >
+                            After the season
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="display: grid; gap: var(--s-2)">
+                      <label class="label" for="note-d">One line for whoever rings next</label>
+                      <textarea
+                        class="input"
+                        id="note-d"
+                        rows="3"
+                        placeholder="Who you got, what they said, and when to try again."
+                      ></textarea>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <button type="button" class="btn" data-mark>Mark This Called</button>
+                  <button type="button" class="btn" data-next hidden disabled>Next Business</button>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet" data-back disabled>Back To Last</button>
+                    <a class="quiet" href="tel:+12815550142">Ring Again</a>
+                  </div>
+                  <p class="foot-note" data-foot-note></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="surface" id="spent">
+        <header class="surface-head">
+          <h2>Call Center, list spent <b>02b</b></h2>
+          <p>
+            A list runs out most afternoons, and this is the screen nobody draws until somebody hits
+            it.
+          </p>
+        </header>
+
+        <div class="two">
+          <div class="one">
+            <p class="one-name">Phone &middot; 375pt</p>
+            <div class="app">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>60 of 60 &middot; none left</b>
+                  <a class="head-back" href="#portal">Portal</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad spent">
+                  <h2>That is the list</h2>
+                  <p>
+                    Sixty called, 7 owners reached, 2 booked. Nothing else is queued for Deer Park,
+                    so there is no next business to hand you.
+                  </p>
+                  <dl class="figure-row" style="width: 100%; margin-top: var(--s-2)">
+                    <div class="figure">
+                      <dd>60</dd>
+                      <dt class="label">Called</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>7</dd>
+                      <dt class="label">Reached</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>2</dd>
+                      <dt class="label">Booked</dt>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <button type="button" class="btn">Ask For Another List</button>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet">Back To Last</button>
+                    <a class="quiet" href="#portal">Portal</a>
+                  </div>
+                  <p class="foot-note">
+                    Trenton is told when a list runs out. You do not have to say so.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="one">
+            <p class="one-name">Desktop &middot; same three parts, longer line</p>
+            <div class="app" data-size="desktop">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>60 of 60 &middot; none left</b>
+                  <a class="head-back" href="#portal">Portal</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad spent">
+                  <h2>That is the list</h2>
+                  <p>
+                    Sixty called, 7 owners reached, 2 booked. Nothing else is queued for Deer Park,
+                    so there is no next business to hand you.
+                  </p>
+                  <dl class="figure-row" style="width: 100%; margin-top: var(--s-2)">
+                    <div class="figure">
+                      <dd>60</dd>
+                      <dt class="label">Called</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>7</dd>
+                      <dt class="label">Reached</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>2</dd>
+                      <dt class="label">Booked</dt>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <button type="button" class="btn">Ask For Another List</button>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet">Back To Last</button>
+                    <a class="quiet" href="#portal">Portal</a>
+                  </div>
+                  <p class="foot-note">
+                    Trenton is told when a list runs out. You do not have to say so.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="surface" id="manage">
+        <header class="surface-head">
+          <h2>Management Center <b>03</b></h2>
+          <p>
+            Read, except for the two things only a manager does: move a list and read the refusals.
+            Same three parts, so a manager who also calls has nothing new to learn.
+          </p>
+        </header>
+
+        <div class="two">
+          <div class="one">
+            <p class="one-name">Phone &middot; 375pt</p>
+            <div class="app">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>Today &middot; 214 calls</b>
+                  <a class="head-back" href="#portal">Portal</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <dl class="figure-row">
+                    <div class="figure">
+                      <dd>214</dd>
+                      <dt class="label">Calls</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>31</dd>
+                      <dt class="label">Reached</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>4</dd>
+                      <dt class="label">Booked</dt>
+                    </div>
+                  </dl>
+
+                  <div class="flag">
+                    <p>
+                      Alex is 14 calls behind the pace that finishes the list, with 2h 20m left.
+                    </p>
+                    <button type="button" class="quiet">Move 20 To Pedro</button>
+                  </div>
+
+                  <div class="flag" style="border-left-color: var(--accent)">
+                    <p>Deer Park garage doors runs out in 34 calls. Nothing is queued behind it.</p>
+                    <button type="button" class="quiet">Build The Next List</button>
+                  </div>
+
+                  <article class="person">
+                    <div class="person-top">
+                      <b>Dylan Jordan</b>
+                      <span class="badge" data-tone="accent">On a call</span>
+                    </div>
+                    <p class="person-figure">26 <span>of 60</span></p>
+                    <span class="track"><span style="width: 43%"></span></span>
+                    <p class="t-13 mute">
+                      Deer Park, garage doors. 5 reached, 1 booked. Finishes 4:40.
+                    </p>
+                  </article>
+
+                  <article class="person">
+                    <div class="person-top">
+                      <b>Pedro Miranda</b>
+                      <span class="badge" data-tone="accent">On a call</span>
+                    </div>
+                    <p class="person-figure">31 <span>of 60</span></p>
+                    <span class="track"><span style="width: 52%"></span></span>
+                    <p class="t-13 mute">
+                      La Porte, landscaping. 7 reached, 2 booked. Finishes 4:05.
+                    </p>
+                  </article>
+
+                  <article class="person">
+                    <div class="person-top">
+                      <b>Alex Reyes</b>
+                      <span class="badge" data-tone="warn">On a break</span>
+                    </div>
+                    <p class="person-figure">18 <span>of 60</span></p>
+                    <span class="track"><span data-behind="true" style="width: 30%"></span></span>
+                    <p class="t-13 mute">
+                      Baytown, roofing. 3 reached, 1 booked. Will not finish the list.
+                    </p>
+                  </article>
+
+                  <div class="part">
+                    <h3>What came back today</h3>
+                    <dl class="pairs">
+                      <div>
+                        <dt>Yes</dt>
+                        <dd>4</dd>
+                      </div>
+                      <div>
+                        <dt>Maybe</dt>
+                        <dd>7</dd>
+                      </div>
+                      <div>
+                        <dt>Needs Time</dt>
+                        <dd>5</dd>
+                      </div>
+                      <div>
+                        <dt>Price Issue</dt>
+                        <dd>3 unread</dd>
+                      </div>
+                      <div>
+                        <dt>No</dt>
+                        <dd>12</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div class="part">
+                    <h3>Booked this week</h3>
+                    <dl class="record">
+                      <div>
+                        <dt>Tue 9 AM</dt>
+                        <dd>Harbor Point Electric, La Porte. Pedro. Plan sent 2:24 PM.</dd>
+                      </div>
+                      <div>
+                        <dt>Fri 2 PM</dt>
+                        <dd>Cedar Bayou Auto, Baytown. Dylan. Plan sent 11:52 AM.</dd>
+                      </div>
+                      <div>
+                        <dt>Mon 10 AM</dt>
+                        <dd>Sylvan Beach Marine, La Porte. Alex. Plan not sent yet.</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <button type="button" class="btn">Build The Next List</button>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet">Assign</button>
+                    <button type="button" class="quiet">The Week</button>
+                  </div>
+                  <p class="foot-note">
+                    Moving a list tells the person it moved to, and the person it moved from.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="one">
+            <p class="one-name">Desktop &middot; same three parts, longer line</p>
+            <div class="app" data-size="desktop">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>Today &middot; 214 calls</b>
+                  <a class="head-back" href="#portal">Portal</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <dl class="figure-row">
+                    <div class="figure">
+                      <dd>214</dd>
+                      <dt class="label">Calls</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>31</dd>
+                      <dt class="label">Reached</dt>
+                    </div>
+                    <div class="figure">
+                      <dd>4</dd>
+                      <dt class="label">Booked</dt>
+                    </div>
+                  </dl>
+
+                  <div class="flag">
+                    <p>
+                      Alex is 14 calls behind the pace that finishes the list, with 2h 20m left.
+                    </p>
+                    <button type="button" class="quiet">Move 20 To Pedro</button>
+                  </div>
+
+                  <div class="flag" style="border-left-color: var(--accent)">
+                    <p>Deer Park garage doors runs out in 34 calls. Nothing is queued behind it.</p>
+                    <button type="button" class="quiet">Build The Next List</button>
+                  </div>
+
+                  <article class="person">
+                    <div class="person-top">
+                      <b>Dylan Jordan</b>
+                      <span class="badge" data-tone="accent">On a call</span>
+                    </div>
+                    <p class="person-figure">26 <span>of 60</span></p>
+                    <span class="track"><span style="width: 43%"></span></span>
+                    <p class="t-13 mute">
+                      Deer Park, garage doors. 5 reached, 1 booked. Finishes 4:40.
+                    </p>
+                  </article>
+
+                  <article class="person">
+                    <div class="person-top">
+                      <b>Pedro Miranda</b>
+                      <span class="badge" data-tone="accent">On a call</span>
+                    </div>
+                    <p class="person-figure">31 <span>of 60</span></p>
+                    <span class="track"><span style="width: 52%"></span></span>
+                    <p class="t-13 mute">
+                      La Porte, landscaping. 7 reached, 2 booked. Finishes 4:05.
+                    </p>
+                  </article>
+
+                  <article class="person">
+                    <div class="person-top">
+                      <b>Alex Reyes</b>
+                      <span class="badge" data-tone="warn">On a break</span>
+                    </div>
+                    <p class="person-figure">18 <span>of 60</span></p>
+                    <span class="track"><span data-behind="true" style="width: 30%"></span></span>
+                    <p class="t-13 mute">
+                      Baytown, roofing. 3 reached, 1 booked. Will not finish the list.
+                    </p>
+                  </article>
+
+                  <div class="part">
+                    <h3>What came back today</h3>
+                    <dl class="pairs">
+                      <div>
+                        <dt>Yes</dt>
+                        <dd>4</dd>
+                      </div>
+                      <div>
+                        <dt>Maybe</dt>
+                        <dd>7</dd>
+                      </div>
+                      <div>
+                        <dt>Needs Time</dt>
+                        <dd>5</dd>
+                      </div>
+                      <div>
+                        <dt>Price Issue</dt>
+                        <dd>3 unread</dd>
+                      </div>
+                      <div>
+                        <dt>No</dt>
+                        <dd>12</dd>
+                      </div>
+                    </dl>
+                  </div>
+
+                  <div class="part">
+                    <h3>Booked this week</h3>
+                    <dl class="record">
+                      <div>
+                        <dt>Tue 9 AM</dt>
+                        <dd>Harbor Point Electric, La Porte. Pedro. Plan sent 2:24 PM.</dd>
+                      </div>
+                      <div>
+                        <dt>Fri 2 PM</dt>
+                        <dd>Cedar Bayou Auto, Baytown. Dylan. Plan sent 11:52 AM.</dd>
+                      </div>
+                      <div>
+                        <dt>Mon 10 AM</dt>
+                        <dd>Sylvan Beach Marine, La Porte. Alex. Plan not sent yet.</dd>
+                      </div>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <button type="button" class="btn">Build The Next List</button>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet">Assign</button>
+                    <button type="button" class="quiet">The Week</button>
+                  </div>
+                  <p class="foot-note">
+                    Moving a list tells the person it moved to, and the person it moved from.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="surface" id="resources">
+        <header class="surface-head">
+          <h2>Resources Center <b>04</b></h2>
+          <p>
+            Folded topics rather than a document, because nobody browses a handbook with somebody on
+            the line. The call stays open behind it.
+          </p>
+        </header>
+
+        <div class="two">
+          <div class="one">
+            <p class="one-name">Phone &middot; 375pt</p>
+            <div class="app">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>Resources &middot; updated Sep 9</b>
+                  <a class="head-back" href="#call">Back To The Call</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <div class="search">Search the handbook</div>
+
+                  <div class="topics">
+                    <details class="topic" open>
+                      <summary>When They Push Back</summary>
+                      <div class="topic-body">
+                        <div>
+                          <h4>We already have a Facebook page.</h4>
+                          <p>
+                            That is where most of your customers found you, and it is the one thing
+                            you do not own. A site is the part nobody can take down.
+                          </p>
+                        </div>
+                        <div>
+                          <h4>How much is it.</h4>
+                          <p>
+                            From $1,000 to build and from $250 a month after. The number is agreed
+                            before any work starts, so there is nothing to find out later.
+                          </p>
+                        </div>
+                        <div>
+                          <h4>Send me something.</h4>
+                          <p>
+                            I can, and I would rather take ten minutes first so what I send is about
+                            your shop rather than a brochure. What does Tuesday look like?
+                          </p>
+                        </div>
+                        <div>
+                          <h4>My nephew is building me one.</h4>
+                          <p>
+                            Good. Ask him who the domain is registered to, and whether anyone is
+                            watching it after it goes up. Those are the two that bite a year later.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Opening The Call</summary>
+                      <div class="topic-body">
+                        <p>
+                          The person answering a shop's phone is not the person who buys a website.
+                          Ask for the owner first and spend nothing on anybody who cannot say yes.
+                        </p>
+                        <ol class="steps">
+                          <li>Ask for the owner by name. If you have no name, ask who owns it.</li>
+                          <li>
+                            Say who you are, then say you are not selling anything over the phone.
+                          </li>
+                          <li>Say what is wrong with their listing, specifically.</li>
+                          <li>Ask for ten minutes this week. A day and a time, never soon.</li>
+                        </ol>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>The Facts</summary>
+                      <div class="topic-body">
+                        <dl class="pairs">
+                          <div>
+                            <dt>Build</dt>
+                            <dd>From $1,000</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly</dt>
+                            <dd>From $250</dd>
+                          </div>
+                          <div>
+                            <dt>Build time</dt>
+                            <dd>2 to 3 weeks</dd>
+                          </div>
+                          <div>
+                            <dt>Domain</dt>
+                            <dd>Theirs, in their name</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly covers</dt>
+                            <dd>Hosting, edits, domain, monitoring</dd>
+                          </div>
+                        </dl>
+                        <p>
+                          These come from the pricing page itself, so they cannot be quoted two
+                          ways. Both are where a project starts rather than what every project
+                          costs.
+                        </p>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Closing The Call</summary>
+                      <div class="topic-body">
+                        <p>
+                          Ask for a day and a time. Soon and this week are not answers, and a
+                          meeting without a time is a meeting that does not happen.
+                        </p>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Procedures</summary>
+                      <div class="topic-body">
+                        <h4>An owner says yes on the call</h4>
+                        <ol class="steps">
+                          <li>Mark the call Booked and tag the business Yes before you hang up.</li>
+                          <li>Get the email and read it back letter by letter.</li>
+                          <li>Put the day and the time in the note. Not a range.</li>
+                          <li>The plan and the price go out the same day, from Trenton.</li>
+                        </ol>
+                        <h4>Somebody asks never to be called again</h4>
+                        <ol class="steps">
+                          <li>Say you will take them off now, and mean it. Do not ask why.</li>
+                          <li>Tag the business No. That takes it off every list for good.</li>
+                          <li>Write what they said in the note, in their words.</li>
+                        </ol>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Who To Escalate To</summary>
+                      <div class="topic-body">
+                        <p>
+                          Anything about money, a refund, or a promise we have not made goes to
+                          Trenton before you answer it. Saying you will find out is never the wrong
+                          answer.
+                        </p>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <a class="btn" href="#call">Back To The Call</a>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet">The Whole Handbook</button>
+                    <button type="button" class="quiet">What Changed</button>
+                  </div>
+                  <p class="foot-note">Gulf Coast Overhead Doors is still open behind this.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="one">
+            <p class="one-name">Desktop &middot; same three parts, longer line</p>
+            <div class="app" data-size="desktop">
+              <div class="app-head">
+                <div class="pad head-row">
+                  <b>Resources &middot; updated Sep 9</b>
+                  <a class="head-back" href="#call">Back To The Call</a>
+                </div>
+              </div>
+              <div class="app-scroll">
+                <div class="pad stack">
+                  <div class="search">Search the handbook</div>
+
+                  <div class="topics">
+                    <details class="topic" open>
+                      <summary>When They Push Back</summary>
+                      <div class="topic-body">
+                        <div>
+                          <h4>We already have a Facebook page.</h4>
+                          <p>
+                            That is where most of your customers found you, and it is the one thing
+                            you do not own. A site is the part nobody can take down.
+                          </p>
+                        </div>
+                        <div>
+                          <h4>How much is it.</h4>
+                          <p>
+                            From $1,000 to build and from $250 a month after. The number is agreed
+                            before any work starts, so there is nothing to find out later.
+                          </p>
+                        </div>
+                        <div>
+                          <h4>Send me something.</h4>
+                          <p>
+                            I can, and I would rather take ten minutes first so what I send is about
+                            your shop rather than a brochure. What does Tuesday look like?
+                          </p>
+                        </div>
+                        <div>
+                          <h4>My nephew is building me one.</h4>
+                          <p>
+                            Good. Ask him who the domain is registered to, and whether anyone is
+                            watching it after it goes up. Those are the two that bite a year later.
+                          </p>
+                        </div>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Opening The Call</summary>
+                      <div class="topic-body">
+                        <p>
+                          The person answering a shop's phone is not the person who buys a website.
+                          Ask for the owner first and spend nothing on anybody who cannot say yes.
+                        </p>
+                        <ol class="steps">
+                          <li>Ask for the owner by name. If you have no name, ask who owns it.</li>
+                          <li>
+                            Say who you are, then say you are not selling anything over the phone.
+                          </li>
+                          <li>Say what is wrong with their listing, specifically.</li>
+                          <li>Ask for ten minutes this week. A day and a time, never soon.</li>
+                        </ol>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>The Facts</summary>
+                      <div class="topic-body">
+                        <dl class="pairs">
+                          <div>
+                            <dt>Build</dt>
+                            <dd>From $1,000</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly</dt>
+                            <dd>From $250</dd>
+                          </div>
+                          <div>
+                            <dt>Build time</dt>
+                            <dd>2 to 3 weeks</dd>
+                          </div>
+                          <div>
+                            <dt>Domain</dt>
+                            <dd>Theirs, in their name</dd>
+                          </div>
+                          <div>
+                            <dt>Monthly covers</dt>
+                            <dd>Hosting, edits, domain, monitoring</dd>
+                          </div>
+                        </dl>
+                        <p>
+                          These come from the pricing page itself, so they cannot be quoted two
+                          ways. Both are where a project starts rather than what every project
+                          costs.
+                        </p>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Closing The Call</summary>
+                      <div class="topic-body">
+                        <p>
+                          Ask for a day and a time. Soon and this week are not answers, and a
+                          meeting without a time is a meeting that does not happen.
+                        </p>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Procedures</summary>
+                      <div class="topic-body">
+                        <h4>An owner says yes on the call</h4>
+                        <ol class="steps">
+                          <li>Mark the call Booked and tag the business Yes before you hang up.</li>
+                          <li>Get the email and read it back letter by letter.</li>
+                          <li>Put the day and the time in the note. Not a range.</li>
+                          <li>The plan and the price go out the same day, from Trenton.</li>
+                        </ol>
+                        <h4>Somebody asks never to be called again</h4>
+                        <ol class="steps">
+                          <li>Say you will take them off now, and mean it. Do not ask why.</li>
+                          <li>Tag the business No. That takes it off every list for good.</li>
+                          <li>Write what they said in the note, in their words.</li>
+                        </ol>
+                      </div>
+                    </details>
+
+                    <details class="topic">
+                      <summary>Who To Escalate To</summary>
+                      <div class="topic-body">
+                        <p>
+                          Anything about money, a refund, or a promise we have not made goes to
+                          Trenton before you answer it. Saying you will find out is never the wrong
+                          answer.
+                        </p>
+                      </div>
+                    </details>
+                  </div>
+                </div>
+              </div>
+              <div class="app-foot">
+                <div class="pad foot-stack">
+                  <a class="btn" href="#call">Back To The Call</a>
+                  <div class="foot-pair">
+                    <button type="button" class="quiet">The Whole Handbook</button>
+                    <button type="button" class="quiet">What Changed</button>
+                  </div>
+                  <p class="foot-note">Gulf Coast Overhead Doors is still open behind this.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="./thumb.js"></script>
+  </body>
+</html>

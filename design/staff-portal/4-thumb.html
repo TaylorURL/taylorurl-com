@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en" data-mockup="thumb">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Staff System: Thumb - TaylorURL Mockup</title>
+    <link rel="stylesheet" href="./staff.css" />
+    <style>
+      /*
+       * THUMB
+       *
+       * Built for the device that is actually in the room: a phone or a tablet
+       * propped beside the handset, worked with one thumb while the other hand
+       * holds a pen.
+       *
+       * The argument is about where a call actually happens. A desktop screen
+       * assumes somebody sitting square at a desk with both hands free, and that
+       * is not what a call looks like - one hand is on the phone, the other is
+       * writing down a name. Every control that matters is therefore in the
+       * bottom third, where a thumb reaches without the device being regripped,
+       * and the top of the screen carries only things that are read.
+       *
+       * A single column, a single scroll, and one bar that never leaves the foot.
+       * Nothing is side by side, because side by side on a phone is two things at
+       * half size and neither of them legible at arm's length.
+       *
+       * The same shape carries all four surfaces, which is the other half of the
+       * argument: a system with one layout is a system somebody learns once.
+       */
+
+      /* ── The devices, shown in a row ───────────────────────────────────── */
+
+      .devices {
+        display: grid;
+        gap: var(--s-5);
+        justify-content: start;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 21rem), 21rem));
+      }
+
+      /* One device. 336 is a phone's column at a comfortable measure, and the
+         height is fixed so all four read as the same screen rather than as four
+         pages of different lengths. */
+      .device {
+        display: grid;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        height: 40rem;
+        overflow: hidden;
+        border-radius: var(--r-feature);
+        background-color: var(--paper);
+        box-shadow: var(--raise-hi);
+      }
+
+      .device-name {
+        margin-bottom: var(--s-2h);
+        font-size: var(--t-3);
+        font-weight: 500;
+      }
+
+      /* ── The head ──────────────────────────────────────────────────────── */
+
+      /* Read only. The way back to the portal is here rather than in the foot,
+         because a thumb near the foot is a thumb that will hit it by accident,
+         and leaving a call by accident is the one mistake this screen must not
+         make easy. */
+
+      .head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2);
+        padding: var(--s-3) var(--s-4);
+        border-bottom: 1px solid var(--hairline);
+        background-color: var(--surface-1);
+      }
+
+      .head b {
+        font-size: var(--t-3);
+        font-weight: 600;
+        letter-spacing: -0.01em;
+      }
+
+      .head a {
+        font-size: var(--t-2);
+        font-weight: 500;
+        text-decoration: none;
+      }
+
+      .scroll {
+        display: grid;
+        align-content: start;
+        gap: var(--s-4);
+        overflow-y: auto;
+        padding: var(--s-4);
+      }
+
+      /* ── The foot ──────────────────────────────────────────────────────── */
+
+      /* Everything pressed. It never scrolls, it is the same height on all four
+         screens, and its controls are 56px because a thumb at arm's length is
+         not a mouse. */
+
+      .foot {
+        display: grid;
+        gap: var(--s-2);
+        padding: var(--s-3) var(--s-4) var(--s-4);
+        border-top: 1px solid var(--hairline);
+        background-color: var(--surface-1);
+      }
+
+      .foot .btn,
+      .foot .quiet {
+        min-height: var(--control-h-dial);
+        font-size: var(--t-4);
+      }
+
+      .foot-pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-2);
+      }
+
+      /* ── 01 The portal ─────────────────────────────────────────────────── */
+
+      .tiles {
+        display: grid;
+        gap: var(--s-2h);
+      }
+
+      .tile {
+        display: grid;
+        gap: var(--s-1);
+        min-height: 6.5rem;
+        align-content: center;
+        padding: var(--s-4);
+        border-radius: var(--r-card);
+        background-color: var(--surface-1);
+        box-shadow: var(--edge);
+        color: inherit;
+        text-decoration: none;
+        touch-action: manipulation;
+      }
+
+      .tile:active {
+        background-color: var(--wash);
+      }
+
+      .tile b {
+        font-size: var(--t-5);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .tile p {
+        font-size: var(--t-3);
+        line-height: 1.5;
+        color: var(--ink-mute);
+      }
+
+      .tile[data-lead='true'] {
+        background-color: var(--accent-fill);
+        box-shadow: none;
+        color: var(--on-accent);
+      }
+
+      .tile[data-lead='true'] p {
+        color: rgba(255, 255, 255, 0.82);
+      }
+
+      .greet {
+        display: grid;
+        gap: var(--s-1);
+        padding-bottom: var(--s-1);
+      }
+
+      .greet h3 {
+        font-size: var(--t-7);
+        letter-spacing: -0.03em;
+      }
+
+      /* ── 02 The call ───────────────────────────────────────────────────── */
+
+      .biz {
+        display: grid;
+        gap: var(--s-1);
+      }
+
+      .biz h3 {
+        font-size: var(--t-7);
+        line-height: 1.15;
+        letter-spacing: -0.03em;
+      }
+
+      .biz p {
+        font-size: var(--t-3);
+        color: var(--ink-mute);
+      }
+
+      /* The number is a link the size of a control, near the top, because it is
+         pressed once at the start of the call rather than at the end - and the
+         foot belongs to what is pressed at the end. */
+      .number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--s-2h);
+        min-height: var(--control-h-dial);
+        border-radius: var(--r-card);
+        background-color: var(--wash-accent);
+        color: var(--accent);
+        font-size: var(--t-6);
+        font-weight: 600;
+        letter-spacing: -0.015em;
+        text-decoration: none;
+        font-variant-numeric: tabular-nums;
+        touch-action: manipulation;
+      }
+
+      .pairs {
+        display: grid;
+        gap: var(--s-2);
+      }
+
+      .pairs > div {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--s-3);
+        font-size: var(--t-3);
+      }
+
+      .pairs dt {
+        color: var(--ink-faint);
+      }
+
+      .pairs dd {
+        font-weight: 500;
+        text-align: right;
+      }
+
+      /* A section on this screen is a titled block with a rule over it. There is
+         no room for cards inside a column this narrow: a card inside a card is
+         two edges and 32px of padding buying nothing. */
+      .part {
+        display: grid;
+        gap: var(--s-2h);
+        padding-top: var(--s-3h);
+        border-top: 1px solid var(--hairline);
+      }
+
+      .part > h4 {
+        font-size: var(--t-4);
+      }
+
+      .beat {
+        display: grid;
+        gap: var(--s-h);
+      }
+
+      .beat p:last-child {
+        font-size: var(--t-4);
+        line-height: 1.6;
+        color: var(--ink-soft);
+      }
+
+      /* Closed by default. A representative reads the script once in the first
+         week and after that wants the two lines they forget. */
+      .fold summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2);
+        min-height: var(--control-h);
+        cursor: pointer;
+        touch-action: manipulation;
+        list-style: none;
+        font-size: var(--t-4);
+        font-weight: 500;
+      }
+
+      .fold summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .fold summary::after {
+        content: '+';
+        font-family: 'Geist Mono', ui-monospace, monospace;
+        font-size: var(--t-4);
+        color: var(--ink-faint);
+      }
+
+      .fold[open] summary::after {
+        content: '\2212';
+      }
+
+      .fold-body {
+        display: grid;
+        gap: var(--s-3);
+        padding-bottom: var(--s-2);
+      }
+
+      /* The tags on this system fill the width in twos, because a row of chips
+         wrapping unevenly is a row a thumb misses. */
+      .tags-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--s-2);
+      }
+
+      .tags-grid .tag {
+        justify-content: center;
+        min-height: 48px;
+      }
+
+      /* ── 03 Management ─────────────────────────────────────────────────── */
+
+      .figure-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: var(--s-2);
+      }
+
+      .figure {
+        display: grid;
+        gap: 0;
+        padding: var(--s-3);
+        border-radius: var(--r-card);
+        background-color: var(--wash);
+        text-align: center;
+      }
+
+      .figure dd {
+        font-size: var(--t-6);
+        font-weight: 600;
+        line-height: 1.2;
+        letter-spacing: -0.025em;
+      }
+
+      .person {
+        display: grid;
+        gap: var(--s-2);
+        padding: var(--s-3h) var(--s-4);
+        border-radius: var(--r-card);
+        background-color: var(--surface-1);
+        box-shadow: var(--edge);
+      }
+
+      .person-top {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: var(--s-2);
+      }
+
+      .person-top b {
+        font-size: var(--t-4);
+        font-weight: 600;
+      }
+
+      .person-figure {
+        display: flex;
+        align-items: baseline;
+        gap: var(--s-1h);
+        font-size: var(--t-6);
+        font-weight: 600;
+        letter-spacing: -0.02em;
+      }
+
+      .person-figure span {
+        font-size: var(--t-2);
+        font-weight: 500;
+        letter-spacing: 0;
+        color: var(--ink-faint);
+      }
+
+      .track {
+        overflow: hidden;
+        height: 4px;
+        border-radius: var(--r-tiny);
+        background-color: var(--wash-strong);
+      }
+
+      .track span {
+        display: block;
+        height: 100%;
+        border-radius: var(--r-tiny);
+        background-color: var(--accent);
+      }
+
+      .track span[data-behind='true'] {
+        background-color: var(--warn);
+      }
+
+      .flag {
+        display: grid;
+        gap: var(--s-2h);
+        padding: var(--s-3) var(--s-3h);
+        border-left: 2px solid var(--warn);
+        border-radius: 0 var(--r-control) var(--r-control) 0;
+        background-color: var(--wash);
+      }
+
+      .flag p {
+        font-size: var(--t-3);
+        line-height: 1.55;
+      }
+
+      /* ── 04 Resources ──────────────────────────────────────────────────── */
+
+      .search {
+        display: flex;
+        align-items: center;
+        gap: var(--s-2h);
+        min-height: var(--control-h);
+        padding-inline: var(--s-3);
+        border: 1px solid var(--hairline-strong);
+        border-radius: var(--r-control);
+        background-color: var(--field);
+        font-size: var(--t-3);
+        color: var(--ink-faint);
+      }
+
+      .topics {
+        display: grid;
+        gap: 0;
+      }
+
+      .topic {
+        border-bottom: 1px solid var(--hairline);
+      }
+
+      .topic:first-child {
+        border-top: 1px solid var(--hairline);
+      }
+
+      .topic summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: var(--s-2);
+        min-height: 52px;
+        cursor: pointer;
+        touch-action: manipulation;
+        list-style: none;
+        font-size: var(--t-4);
+        font-weight: 500;
+      }
+
+      .topic summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .topic summary::after {
+        content: '+';
+        font-family: 'Geist Mono', ui-monospace, monospace;
+        color: var(--ink-faint);
+      }
+
+      .topic[open] summary::after {
+        content: '\2212';
+      }
+
+      .topic-body {
+        display: grid;
+        gap: var(--s-3);
+        padding-bottom: var(--s-3h);
+      }
+
+      .topic-body p {
+        font-size: var(--t-4);
+        line-height: 1.65;
+        color: var(--ink-soft);
+      }
+
+      .topic-body h5 {
+        font-size: var(--t-3);
+      }
+
+      .steps {
+        display: grid;
+        gap: var(--s-2h);
+        counter-reset: step;
+      }
+
+      .steps li {
+        display: grid;
+        grid-template-columns: 1.25rem minmax(0, 1fr);
+        gap: var(--s-2h);
+        font-size: var(--t-4);
+        line-height: 1.6;
+        color: var(--ink-soft);
+        counter-increment: step;
+      }
+
+      .steps li::before {
+        content: counter(step);
+        font-family: 'Geist Mono', ui-monospace, monospace;
+        font-size: var(--t-2);
+        color: var(--ink-ghost);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="brief">
+        <a class="brief-back" href="./index.html">All five systems</a>
+        <h1>Thumb</h1>
+        <p>
+          Built for the device actually in the room: a phone or tablet propped beside the handset,
+          worked with one thumb while the other hand writes down a name. Everything pressed is in a
+          bar at the foot that never scrolls. The top of the screen is only read.
+        </p>
+      </header>
+
+      <section class="surface">
+        <header class="surface-head">
+          <h2>All four, at the size they are used <b>01 &ndash; 04</b></h2>
+          <p>
+            One column, one scroll, one bar. The same three-part shape carries every surface, which
+            is the other half of the argument: a system with one layout is a system learned once.
+          </p>
+        </header>
+
+        <div class="devices">
+          <!-- ── 01 Portal ──────────────────────────────────────────── -->
+          <div>
+            <p class="device-name">01 Portal</p>
+            <div class="device" id="portal">
+              <div class="head">
+                <b>TaylorURL Staff</b>
+                <a href="#">Sign Out</a>
+              </div>
+              <div class="scroll">
+                <div class="greet">
+                  <h3>Afternoon, Dylan</h3>
+                  <p class="t-13 mute">Thursday, September 11 &middot; 2:40 PM</p>
+                </div>
+                <nav class="tiles" aria-label="Staff destinations">
+                  <a class="tile" href="#call" data-lead="true">
+                    <b>Call Center</b>
+                    <p>34 left today. At this pace you finish at 4:40.</p>
+                  </a>
+                  <a class="tile" href="#manage">
+                    <b>Management Center</b>
+                    <p>Who is on the phones and what came back.</p>
+                  </a>
+                  <a class="tile" href="#resources">
+                    <b>Resources Center</b>
+                    <p>The script, the prices, the procedures.</p>
+                  </a>
+                  <a class="tile" href="#">
+                    <b>Main Site</b>
+                    <p>taylorurl.com as a visitor sees it.</p>
+                  </a>
+                </nav>
+              </div>
+              <div class="foot">
+                <a class="btn" href="#call">Start Calling</a>
+                <p class="t-13 faint" style="text-align: center">
+                  Your list is claimed. Nobody else is ringing it.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 02 Call ────────────────────────────────────────────── -->
+          <div>
+            <p class="device-name">02 Call Center, before the mark</p>
+            <div class="device" id="call">
+              <div class="head">
+                <b>27 of 60 &middot; 34 left</b>
+                <a href="#portal">Portal</a>
+              </div>
+              <div class="scroll">
+                <div class="biz">
+                  <h3>Gulf Coast Overhead Doors</h3>
+                  <p>Garage door contractor &middot; Deer Park</p>
+                </div>
+
+                <a class="number" href="tel:+12815550142">(281) 555-0142</a>
+
+                <dl class="pairs">
+                  <div>
+                    <dt>Ask for</dt>
+                    <dd>Ray, after 2 PM</dd>
+                  </div>
+                  <div>
+                    <dt>Attempt</dt>
+                    <dd>Third call</dd>
+                  </div>
+                  <div>
+                    <dt>Reviews</dt>
+                    <dd>74 at 4.8</dd>
+                  </div>
+                  <div>
+                    <dt>Trade middle</dt>
+                    <dd>21</dd>
+                  </div>
+                  <div>
+                    <dt>Instead of a site</dt>
+                    <dd>Facebook</dd>
+                  </div>
+                </dl>
+
+                <div class="part">
+                  <h4>Every call before this one</h4>
+                  <dl class="record">
+                    <div>
+                      <dt>Sep 2</dt>
+                      <dd>
+                        Pedro reached the front desk. Owner is Ray, out on installs every morning,
+                        back at the shop after two.
+                      </dd>
+                    </div>
+                    <div>
+                      <dt>Aug 26</dt>
+                      <dd>Rang at 9:12 and nobody picked up.</dd>
+                    </div>
+                  </dl>
+                </div>
+
+                <div class="part">
+                  <details class="fold" open>
+                    <summary>What to say</summary>
+                    <div class="fold-body">
+                      <div class="beat">
+                        <p class="label">Get to the owner</p>
+                        <p>Hi, is Ray around? I spoke to someone here last week.</p>
+                      </div>
+                      <div class="beat">
+                        <p class="label">Why you called</p>
+                        <p>
+                          The website on your listing is your Facebook page. They decide who sees
+                          it, and if that account goes tomorrow there is nothing of yours left
+                          online.
+                        </p>
+                      </div>
+                      <div class="beat">
+                        <p class="label">The ask</p>
+                        <p>
+                          I would like to put you a plan together for what your site would say and
+                          what it would cost, for free, with the number agreed before anything
+                          starts. Have you got ten minutes this week?
+                        </p>
+                      </div>
+                    </div>
+                  </details>
+
+                  <details class="fold">
+                    <summary>Refresher</summary>
+                    <div class="fold-body">
+                      <dl class="pairs">
+                        <div>
+                          <dt>Build</dt>
+                          <dd>From $1,000</dd>
+                        </div>
+                        <div>
+                          <dt>Monthly</dt>
+                          <dd>From $250</dd>
+                        </div>
+                        <div>
+                          <dt>Build time</dt>
+                          <dd>2 to 3 weeks</dd>
+                        </div>
+                        <div>
+                          <dt>Domain</dt>
+                          <dd>Theirs, in their name</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="foot">
+                <button type="button" class="btn">Mark This Called</button>
+                <div class="foot-pair pending" aria-hidden="true">
+                  <button type="button" class="quiet" disabled>Back</button>
+                  <button type="button" class="quiet" disabled>Next</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 02b Call, marked ───────────────────────────────────── -->
+          <div>
+            <p class="device-name">02b Call Center, after the mark</p>
+            <div class="device">
+              <div class="head">
+                <b>Called 2:41 PM &middot; 3m 20s</b>
+                <a href="#portal">Portal</a>
+              </div>
+              <div class="scroll">
+                <div class="biz">
+                  <h3>Gulf Coast Overhead Doors</h3>
+                  <p>Deer Park &middot; Third call</p>
+                </div>
+
+                <div>
+                  <p class="label" style="margin-bottom: var(--s-2)">What the call came to</p>
+                  <div class="tags-grid">
+                    <button type="button" class="tag">No Answer</button>
+                    <button type="button" class="tag">Voicemail</button>
+                    <button type="button" class="tag">Gatekeeper</button>
+                    <button type="button" class="tag" aria-pressed="true">Spoke To Owner</button>
+                    <button type="button" class="tag" data-tone="good">Booked</button>
+                    <button type="button" class="tag" data-tone="bad">Wrong Number</button>
+                  </div>
+                </div>
+
+                <div class="part">
+                  <p class="label">And the business is</p>
+                  <div class="tags-grid">
+                    <button type="button" class="tag" data-tone="good">Yes</button>
+                    <button type="button" class="tag">Maybe</button>
+                    <button type="button" class="tag" aria-pressed="true">Needs Time</button>
+                    <button type="button" class="tag">Price Issue</button>
+                    <button type="button" class="tag" data-tone="bad">No</button>
+                  </div>
+                  <div class="range">
+                    <p class="label">How long</p>
+                    <div class="tags-grid">
+                      <button type="button" class="tag">2 weeks</button>
+                      <button type="button" class="tag">1 month</button>
+                      <button type="button" class="tag" aria-pressed="true">3 months</button>
+                      <button type="button" class="tag">After the season</button>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="part">
+                  <label class="label" for="note-4">One line for whoever rings next</label>
+                  <textarea class="input" id="note-4" rows="3">
+Flat out through November. Ring in December, ask for Ray direct.</textarea>
+                </div>
+              </div>
+              <div class="foot">
+                <button type="button" class="btn">Next Business</button>
+                <div class="foot-pair">
+                  <button type="button" class="quiet">Back To Last</button>
+                  <button type="button" class="quiet">Ring Again</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 03 Management ──────────────────────────────────────── -->
+          <div>
+            <p class="device-name">03 Management Center</p>
+            <div class="device" id="manage">
+              <div class="head">
+                <b>Today</b>
+                <a href="#portal">Portal</a>
+              </div>
+              <div class="scroll">
+                <dl class="figure-row">
+                  <div class="figure">
+                    <dd>214</dd>
+                    <dt class="label">Calls</dt>
+                  </div>
+                  <div class="figure">
+                    <dd>31</dd>
+                    <dt class="label">Reached</dt>
+                  </div>
+                  <div class="figure">
+                    <dd>4</dd>
+                    <dt class="label">Booked</dt>
+                  </div>
+                </dl>
+
+                <div class="flag">
+                  <p>Alex is 14 calls behind the pace that finishes the list, with 2h 20m left.</p>
+                  <button type="button" class="quiet">Move 20 To Pedro</button>
+                </div>
+
+                <article class="person">
+                  <div class="person-top">
+                    <b>Dylan Jordan</b>
+                    <span class="badge" data-tone="accent">On a call</span>
+                  </div>
+                  <p class="person-figure">26 <span>of 60</span></p>
+                  <span class="track"><span style="width: 43%"></span></span>
+                  <p class="t-13 mute">5 reached, 1 booked. Finishes 4:40.</p>
+                </article>
+
+                <article class="person">
+                  <div class="person-top">
+                    <b>Pedro Miranda</b>
+                    <span class="badge" data-tone="accent">On a call</span>
+                  </div>
+                  <p class="person-figure">31 <span>of 60</span></p>
+                  <span class="track"><span style="width: 52%"></span></span>
+                  <p class="t-13 mute">7 reached, 2 booked. Finishes 4:05.</p>
+                </article>
+
+                <article class="person">
+                  <div class="person-top">
+                    <b>Alex Reyes</b>
+                    <span class="badge" data-tone="warn">On a break</span>
+                  </div>
+                  <p class="person-figure">18 <span>of 60</span></p>
+                  <span class="track"><span data-behind="true" style="width: 30%"></span></span>
+                  <p class="t-13 mute">3 reached, 1 booked. Will not finish the list.</p>
+                </article>
+
+                <div class="part">
+                  <h4>What came back today</h4>
+                  <dl class="pairs">
+                    <div>
+                      <dt>Yes</dt>
+                      <dd>4</dd>
+                    </div>
+                    <div>
+                      <dt>Maybe</dt>
+                      <dd>7</dd>
+                    </div>
+                    <div>
+                      <dt>Needs Time</dt>
+                      <dd>5</dd>
+                    </div>
+                    <div>
+                      <dt>Price Issue</dt>
+                      <dd>3</dd>
+                    </div>
+                    <div>
+                      <dt>No</dt>
+                      <dd>12</dd>
+                    </div>
+                  </dl>
+                </div>
+              </div>
+              <div class="foot">
+                <button type="button" class="btn">Build The Next List</button>
+                <div class="foot-pair">
+                  <button type="button" class="quiet">Assign</button>
+                  <button type="button" class="quiet">The Week</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── 04 Resources ───────────────────────────────────────── -->
+          <div>
+            <p class="device-name">04 Resources Center</p>
+            <div class="device" id="resources">
+              <div class="head">
+                <b>Resources</b>
+                <a href="#call">Back To The Call</a>
+              </div>
+              <div class="scroll">
+                <div class="search">Search the handbook</div>
+
+                <div class="topics">
+                  <details class="topic" open>
+                    <summary>When They Push Back</summary>
+                    <div class="topic-body">
+                      <div>
+                        <h5>We already have a Facebook page.</h5>
+                        <p>
+                          That is where most of your customers found you, and it is the one thing
+                          you do not own. A site is the part nobody can take down.
+                        </p>
+                      </div>
+                      <div>
+                        <h5>How much is it.</h5>
+                        <p>
+                          From $1,000 to build and from $250 a month after. The number is agreed
+                          before any work starts.
+                        </p>
+                      </div>
+                      <div>
+                        <h5>Send me something.</h5>
+                        <p>
+                          I can, and I would rather take ten minutes first so what I send is about
+                          your shop rather than a brochure. What does Tuesday look like?
+                        </p>
+                      </div>
+                    </div>
+                  </details>
+
+                  <details class="topic">
+                    <summary>Opening The Call</summary>
+                    <div class="topic-body">
+                      <p>
+                        The person answering a shop's phone is not the person who buys a website.
+                        Ask for the owner first and spend nothing on anybody who cannot say yes.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details class="topic">
+                    <summary>The Facts</summary>
+                    <div class="topic-body">
+                      <dl class="pairs">
+                        <div>
+                          <dt>Build</dt>
+                          <dd>From $1,000</dd>
+                        </div>
+                        <div>
+                          <dt>Monthly</dt>
+                          <dd>From $250</dd>
+                        </div>
+                        <div>
+                          <dt>Build time</dt>
+                          <dd>2 to 3 weeks</dd>
+                        </div>
+                        <div>
+                          <dt>Domain</dt>
+                          <dd>Theirs, in their name</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </details>
+
+                  <details class="topic">
+                    <summary>Closing The Call</summary>
+                    <div class="topic-body">
+                      <p>
+                        Ask for a day and a time. Soon and this week are not answers, and a meeting
+                        without a time is a meeting that does not happen.
+                      </p>
+                    </div>
+                  </details>
+
+                  <details class="topic">
+                    <summary>Procedures</summary>
+                    <div class="topic-body">
+                      <h5>An owner says yes on the call</h5>
+                      <ol class="steps">
+                        <li>Mark the call Booked and tag the business Yes before you hang up.</li>
+                        <li>Get the email and read it back letter by letter.</li>
+                        <li>Put the day and the time in the note. Not a range.</li>
+                        <li>The plan and the price go out the same day, from Trenton.</li>
+                      </ol>
+                      <h5>Somebody asks never to be called again</h5>
+                      <ol class="steps">
+                        <li>Say you will take them off now, and mean it. Do not ask why.</li>
+                        <li>Tag the business No. That takes it off every list for good.</li>
+                        <li>Write what they said in the note, in their words.</li>
+                      </ol>
+                    </div>
+                  </details>
+                </div>
+              </div>
+              <div class="foot">
+                <a class="btn" href="#call">Back To The Call</a>
+                <p class="t-13 faint" style="text-align: center">
+                  Gulf Coast Overhead Doors is still open behind this.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>

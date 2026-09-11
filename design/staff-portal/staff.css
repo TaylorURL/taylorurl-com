@@ -1,0 +1,758 @@
+/*
+ * The staff portal's ground.
+ *
+ * Drawn from the site's own tokens rather than the console's: this is a system
+ * a representative signs into and lives in for eight hours, and it belongs to
+ * TaylorURL in the way the public site does. Every value below is the value
+ * `src/index.css` sets - the paper, the ink, the four radii, the accent and its
+ * steps - so a screen proposed here can be built with the classes the site
+ * already has.
+ *
+ * It is a copy on purpose. These files have to keep rendering after the build
+ * moves on, and a mockup that quietly restyles itself under a token change is a
+ * mockup nobody can point at.
+ *
+ * What is here is the vocabulary all five share - surfaces, type, controls,
+ * tags, the record. Layout stays in each file, because layout is the thing
+ * being proposed and it is the thing that has to differ.
+ */
+
+@font-face {
+  font-family: 'Geist';
+  src: url('/fonts/geist-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('/fonts/geist-mono-variable.woff2') format('woff2-variations');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Geist Fallback';
+  src: local('Arial'), local('Helvetica'), local('Liberation Sans');
+  size-adjust: 104.48%;
+  ascent-override: 96.19%;
+  descent-override: 28.24%;
+  line-gap-override: 0%;
+  font-display: swap;
+}
+
+/* ── The field ──────────────────────────────────────────────────────────── */
+
+:root {
+  color-scheme: light;
+
+  --paper: #f6f6f5;
+  --ink: #0a0a0a;
+  --ink-soft: rgba(10, 10, 10, 0.72);
+  --ink-mute: rgba(10, 10, 10, 0.62);
+  --ink-faint: rgba(10, 10, 10, 0.57);
+  --ink-ghost: rgba(10, 10, 10, 0.35);
+  --hairline: rgba(10, 10, 10, 0.1);
+  --hairline-strong: rgba(10, 10, 10, 0.14);
+  --field: #ffffff;
+  --wash: rgb(10 10 10 / 0.05);
+  --wash-strong: rgb(10 10 10 / 0.1);
+  --surface-1: #ffffff;
+  --surface-2: #ecece9;
+
+  --accent: #1a4ed8;
+  --accent-hi: #123a9e;
+  --accent-fill: #2b64f0;
+  --accent-fill-hi: #2054d8;
+  --on-accent: #ffffff;
+  --wash-accent: rgb(47 107 255 / 0.1);
+  --wash-accent-strong: rgba(47, 107, 255, 0.16);
+
+  --good: #0f7350;
+  --good-wash: rgba(16, 185, 129, 0.1);
+  --good-edge: rgba(16, 185, 129, 0.4);
+  --warn: #8a5300;
+  --warn-wash: rgba(245, 158, 11, 0.1);
+  --danger: #cf1f1f;
+  --danger-wash: rgba(239, 68, 68, 0.08);
+  --danger-edge: rgba(239, 68, 68, 0.35);
+
+  /* Four radii and no more, which is the site's own rule. A corner is a scale
+     reading, so a feature, a card, a control and a swatch cannot share one. */
+  --r-feature: 12px;
+  --r-card: 8px;
+  --r-control: 6px;
+  --r-tiny: 4px;
+
+  --edge: 0 0 0 1px var(--hairline);
+  --raise:
+    0 0 0 1px var(--hairline), 0 1px 2px rgb(10 10 10 / 4%), 0 8px 24px -12px rgb(10 10 10 / 10%);
+  --raise-hi:
+    0 0 0 1px var(--hairline-strong), 0 2px 4px rgb(10 10 10 / 5%),
+    0 14px 32px -14px rgb(10 10 10 / 16%);
+  --lift: 0 30px 70px -30px rgba(10, 10, 10, 0.22);
+
+  /* One control height, and one taller step for the control a thumb finds
+     without looking while a phone is against an ear. */
+  --control-h: 44px;
+  --control-h-dial: 56px;
+
+  --s-h: 2px;
+  --s-1: 4px;
+  --s-1h: 6px;
+  --s-2: 8px;
+  --s-2h: 10px;
+  --s-3: 12px;
+  --s-3h: 14px;
+  --s-4: 16px;
+  --s-5: 20px;
+  --s-6: 24px;
+  --s-7: 28px;
+  --s-8: 32px;
+  --s-10: 40px;
+  --s-12: 48px;
+  --s-16: 64px;
+
+  /* Ten steps and nothing between them. Five systems drawn from one vocabulary
+     have to set a business name at the same size or they are five
+     vocabularies. */
+  --t-1: 11px;
+  --t-2: 12px;
+  --t-3: 13px;
+  --t-4: 15px;
+  --t-5: 17px;
+  --t-6: 20px;
+  --t-7: 24px;
+  --t-8: 30px;
+  --t-9: 38px;
+  --t-10: 48px;
+
+  --width-page: 1280px;
+  --width-column: 1080px;
+  --width-reading: 760px;
+
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out-soft: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-float: 20;
+}
+
+:root:not([data-theme='light']) {
+  @media (prefers-color-scheme: dark) {
+    color-scheme: dark;
+
+    --paper: #0b0c0f;
+    --ink: #f4f5f7;
+    --ink-soft: rgba(244, 245, 247, 0.72);
+    --ink-mute: rgba(244, 245, 247, 0.55);
+    --ink-faint: rgba(244, 245, 247, 0.47);
+    --ink-ghost: rgba(244, 245, 247, 0.35);
+    --hairline: rgba(244, 245, 247, 0.1);
+    --hairline-strong: rgba(244, 245, 247, 0.14);
+    --field: #121419;
+    --wash: rgb(244 245 247 / 0.05);
+    --wash-strong: rgb(244 245 247 / 0.1);
+    --surface-1: #14161b;
+    --surface-2: #1c1f26;
+
+    --accent: #3d76ff;
+    --accent-hi: #4f86ff;
+
+    --good: #34d399;
+    --warn: #fbbf24;
+    --danger: #f87171;
+    --danger-wash: rgba(239, 68, 68, 0.12);
+
+    --raise:
+      0 0 0 1px var(--hairline), 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px -12px rgb(0 0 0 / 60%);
+    --raise-hi:
+      0 0 0 1px var(--hairline-strong), 0 2px 4px rgb(0 0 0 / 45%),
+      0 14px 32px -14px rgb(0 0 0 / 70%);
+    --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --paper: #0b0c0f;
+  --ink: #f4f5f7;
+  --ink-soft: rgba(244, 245, 247, 0.72);
+  --ink-mute: rgba(244, 245, 247, 0.55);
+  --ink-faint: rgba(244, 245, 247, 0.47);
+  --ink-ghost: rgba(244, 245, 247, 0.35);
+  --hairline: rgba(244, 245, 247, 0.1);
+  --hairline-strong: rgba(244, 245, 247, 0.14);
+  --field: #121419;
+  --wash: rgb(244 245 247 / 0.05);
+  --wash-strong: rgb(244 245 247 / 0.1);
+  --surface-1: #14161b;
+  --surface-2: #1c1f26;
+
+  --accent: #3d76ff;
+  --accent-hi: #4f86ff;
+
+  --good: #34d399;
+  --warn: #fbbf24;
+  --danger: #f87171;
+  --danger-wash: rgba(239, 68, 68, 0.12);
+
+  --raise: 0 0 0 1px var(--hairline), 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px -12px rgb(0 0 0 / 60%);
+  --raise-hi:
+    0 0 0 1px var(--hairline-strong), 0 2px 4px rgb(0 0 0 / 45%), 0 14px 32px -14px rgb(0 0 0 / 70%);
+  --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
+}
+
+/* ── The ground ─────────────────────────────────────────────────────────── */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
+::selection {
+  background-color: var(--wash-accent-strong);
+  color: var(--ink);
+}
+
+body {
+  margin: 0;
+  padding: var(--s-5) var(--s-4) var(--s-16);
+  min-height: 100dvh;
+  overflow-x: clip;
+  background-color: var(--paper);
+  color: var(--ink);
+  font-family: 'Geist', 'Geist Fallback', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (min-width: 768px) {
+  body {
+    padding: var(--s-8) var(--s-6) var(--s-16);
+  }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  margin: 0;
+  min-width: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  /* Business names arrive as they were typed into a Google listing, so a trade
+     name with no space in it breaks rather than running off the side. */
+  overflow-wrap: anywhere;
+}
+
+p,
+ul,
+ol,
+dl,
+dd,
+figure,
+blockquote {
+  margin: 0;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+ul,
+ol {
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  color: var(--accent);
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:where(a, button, select, input, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--r-tiny);
+}
+
+/* ── What a mockup is, said above the mockup ────────────────────────────── */
+
+/* Reading matter for whoever opens the file, set outside every surface below so
+   it is never mistaken for part of the system being proposed. */
+
+.frame {
+  max-width: var(--width-page);
+  margin: 0 auto;
+  display: grid;
+  gap: var(--s-8);
+}
+
+.brief {
+  display: grid;
+  gap: var(--s-2);
+  max-width: var(--width-reading);
+}
+
+.brief h1 {
+  font-size: var(--t-8);
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+}
+
+.brief p {
+  font-size: var(--t-4);
+  line-height: 1.6;
+  color: var(--ink-mute);
+}
+
+.brief-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--control-h);
+  font-size: var(--t-3);
+  font-weight: 500;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.brief-back:hover {
+  text-decoration: underline;
+}
+
+/* The heading over each of the four surfaces. A number, the surface's name, and
+   one line on what this system does with it - because four screens shown in a
+   row with no captions is a slideshow nobody can argue with. */
+
+.surface {
+  display: grid;
+  gap: var(--s-4);
+  scroll-margin-top: var(--s-5);
+}
+
+.surface-head {
+  display: grid;
+  gap: var(--s-1);
+  max-width: var(--width-reading);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--hairline);
+}
+
+.surface-head h2 {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-2h);
+  font-size: var(--t-6);
+}
+
+.surface-head h2 b {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--t-2);
+  font-weight: 500;
+  color: var(--ink-ghost);
+}
+
+.surface-head p {
+  font-size: var(--t-3);
+  line-height: 1.6;
+  color: var(--ink-mute);
+}
+
+/* ── Surfaces ───────────────────────────────────────────────────────────── */
+
+/* The screen itself. `.screen` is the browser-window stand-in every mockup
+   draws its system inside, so a reader can tell where the mockup stops and the
+   page explaining it begins. */
+
+.screen {
+  overflow: hidden;
+  border-radius: var(--r-feature);
+  background-color: var(--paper);
+  box-shadow: var(--raise-hi);
+}
+
+.panel {
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: var(--raise);
+}
+
+.well {
+  border-radius: var(--r-card);
+  background-color: var(--wash);
+}
+
+/* ── Type ───────────────────────────────────────────────────────────────── */
+
+/* Sentence case at reading size, never tracked capitals: a screen sets dozens
+   of these and capitals at 10px are decoded before they are read. */
+.label {
+  font-size: var(--t-2);
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--ink-faint);
+}
+
+.mono {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+.t-13 {
+  font-size: var(--t-3);
+  line-height: 1.6;
+}
+
+.t-15 {
+  font-size: var(--t-4);
+  line-height: 1.6;
+}
+
+.soft {
+  color: var(--ink-soft);
+}
+
+.mute {
+  color: var(--ink-mute);
+}
+
+.faint {
+  color: var(--ink-faint);
+}
+
+/* ── Controls ───────────────────────────────────────────────────────────── */
+
+.btn,
+.quiet {
+  display: inline-flex;
+  min-height: var(--control-h);
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-2);
+  border-radius: var(--r-control);
+  font-size: var(--t-3);
+  font-weight: 500;
+  text-decoration: none;
+  transition:
+    background-color 150ms var(--ease-out-soft),
+    border-color 150ms var(--ease-out-soft),
+    color 150ms var(--ease-out-soft),
+    transform 150ms var(--ease-out-soft);
+}
+
+.btn {
+  border: 0;
+  padding-inline: var(--s-4);
+  background-color: var(--accent-fill);
+  color: var(--on-accent);
+}
+
+.btn:hover:enabled {
+  background-color: var(--accent-fill-hi);
+}
+
+/* A control that cannot be pressed says so, and never reaches a hover or a
+   press: a faded button that still lifts under the cursor reads as one that is
+   merely slow. */
+.btn:active:enabled,
+.quiet:active:enabled {
+  transform: scale(0.985);
+}
+
+.btn:disabled,
+.quiet:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.quiet {
+  padding-inline: var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  background-color: transparent;
+  color: var(--ink-soft);
+}
+
+.quiet:hover:enabled {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.quiet[aria-pressed='true'] {
+  border-color: var(--accent);
+  background-color: var(--wash-accent);
+  color: var(--accent);
+}
+
+.input {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--s-2) var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-control);
+  background-color: var(--field);
+  /* Sixteen is the floor iOS reads: a field under it is zoomed into on focus and
+     the page is left scaled up with the rest of the screen off the side. A
+     pointer cannot trigger that zoom, so it gets the smaller step back. */
+  font-size: 16px;
+  transition: border-color 150ms var(--ease-out-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .input {
+    font-size: var(--t-3);
+  }
+}
+
+.input::placeholder {
+  color: var(--ink-faint);
+}
+
+.input:focus {
+  border-color: var(--accent);
+}
+
+textarea.input {
+  min-height: 84px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+/* The browser paints its own pale yellow over a field it filled and keeps it
+   through hover and focus. An inset shadow the size of the field is the only
+   way to put the design's own ground back. */
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-text-fill-color: var(--ink);
+  -webkit-box-shadow: inset 0 0 0 1000px var(--field);
+  caret-color: var(--ink);
+}
+
+/* The key cap in front of a control. A representative works the call screen
+   with one hand, so anything pressed often says the key that fires it. */
+.key {
+  display: inline-flex;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  min-width: 19px;
+  justify-content: center;
+  padding-inline: var(--s-1);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-tiny);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: var(--t-1);
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+/* ── Badges ─────────────────────────────────────────────────────────────── */
+
+.badge {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: var(--s-1h);
+  white-space: nowrap;
+  border-radius: var(--r-tiny);
+  padding: var(--s-h) var(--s-1h);
+  font-size: var(--t-1);
+  font-weight: 600;
+  background-color: var(--wash-strong);
+  color: var(--ink-mute);
+}
+
+.badge[data-tone='accent'] {
+  background-color: var(--wash-accent);
+  color: var(--accent);
+}
+
+.badge[data-tone='good'] {
+  background-color: var(--good-wash);
+  color: var(--good);
+}
+
+.badge[data-tone='warn'] {
+  background-color: var(--warn-wash);
+  color: var(--warn);
+}
+
+.badge[data-tone='bad'] {
+  background-color: var(--danger-wash);
+  color: var(--danger);
+}
+
+/* ── The dial ───────────────────────────────────────────────────────────── */
+
+/* The number, as the one control on the call screen pressed with a thumb. It
+   says the digits rather than the word Call: a representative reading a number
+   off a screen into a handset needs the digits where the press is. */
+
+.dial {
+  min-height: var(--control-h-dial);
+  font-size: var(--t-6);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The record ─────────────────────────────────────────────────────────── */
+
+/* Every call before this one. A date and what happened, and nothing else - it
+   is read with a phone already ringing. */
+
+.record {
+  display: grid;
+  gap: var(--s-2h);
+}
+
+.record > div {
+  display: grid;
+  grid-template-columns: 4.25rem minmax(0, 1fr);
+  column-gap: var(--s-3);
+  align-items: baseline;
+}
+
+.record dt {
+  font-size: var(--t-2);
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.record dd {
+  font-size: var(--t-3);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ── The tags ───────────────────────────────────────────────────────────── */
+
+/* What the business is, once the call is over. Kept this short on purpose: a
+   representative picks one of these sixty times a day and the set has to be
+   small enough to choose from without reading it. */
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  min-height: var(--control-h);
+  padding-inline: var(--s-3);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-control);
+  background-color: transparent;
+  color: var(--ink-soft);
+  font-size: var(--t-3);
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-user-select: none;
+  transition:
+    background-color 150ms var(--ease-out-soft),
+    border-color 150ms var(--ease-out-soft),
+    color 150ms var(--ease-out-soft);
+}
+
+.tag:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.tag[aria-pressed='true'] {
+  border-color: var(--accent);
+  background-color: var(--wash-accent);
+  color: var(--accent);
+}
+
+.tag[data-tone='good'][aria-pressed='true'] {
+  border-color: var(--good-edge);
+  background-color: var(--good-wash);
+  color: var(--good);
+}
+
+.tag[data-tone='bad'][aria-pressed='true'] {
+  border-color: var(--danger-edge);
+  background-color: var(--danger-wash);
+  color: var(--danger);
+}
+
+/* The lengths a Needs Time tag opens. It is the one tag that cannot stand on its
+   own - a business that needs time needs a length of it - and four lengths is as
+   fine as anything read off this later can use. */
+
+.range {
+  display: grid;
+  gap: var(--s-2h);
+  padding: var(--s-3) var(--s-3h);
+  border-radius: var(--r-control);
+  background-color: var(--wash);
+}
+
+.range .tag {
+  min-height: 36px;
+  padding-inline: var(--s-2h);
+  font-size: var(--t-2);
+}
+
+/* ── Held out of reach ─────────────────────────────────────────────────── */
+
+/* The outcome and the tags only exist once the call has happened, and a screen
+   that offers them before it reads as a form to fill rather than a call to
+   make. Shown at half ink so what is coming is visible and cannot be answered
+   early. */
+
+.pending {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ── Motion ─────────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
