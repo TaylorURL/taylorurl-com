@@ -314,7 +314,7 @@ export default function CallHandbook({ row, caller, onClose }) {
           {searching
             ? found
               ? `${found} of these answer that.`
-              : 'Nothing here answers that. Say you will find out and ring them back.'
+              : 'Nothing here answers that. Say you will find out and call them back.'
             : HANDBOOK_PARTS.map(part => part.label).join(' · ')}
         </p>
       </div>
@@ -335,7 +335,7 @@ export default function CallHandbook({ row, caller, onClose }) {
             <div>
               {lines.length > 0 && (
                 <section>
-                  <PartHead label="Opening the Call" count={`${lines.length} lines`} />
+                  <PartHead label="Opening" count={`${lines.length} lines`} />
                   {lines.map(line => (
                     <Line key={line.id} label={line.label}>
                       {line.say}
@@ -346,10 +346,7 @@ export default function CallHandbook({ row, caller, onClose }) {
 
               {closing.length > 0 && (
                 <section>
-                  <PartHead
-                    label="Closing the Call"
-                    count={`${closing.length} of ${CLOSING.length}`}
-                  />
+                  <PartHead label="Closing" count={`${closing.length} of ${CLOSING.length}`} />
                   {closing.map(step => (
                     <Line key={step.id} label={step.label}>
                       {step.say}
@@ -364,10 +361,7 @@ export default function CallHandbook({ row, caller, onClose }) {
             <div className="border-hair-paper [&:not(:first-child)]:border-l">
               {pushback.length > 0 && (
                 <section>
-                  <PartHead
-                    label="When They Push Back"
-                    count={`${pushback.length} of ${PUSHBACK.length}`}
-                  />
+                  <PartHead label="Objections" count={`${pushback.length} of ${PUSHBACK.length}`} />
                   {pushback.map(one => (
                     <Foldable
                       key={one.id}
@@ -385,7 +379,7 @@ export default function CallHandbook({ row, caller, onClose }) {
               {questions.length > 0 && (
                 <section>
                   <PartHead
-                    label="Questions They Ask"
+                    label="Common Questions"
                     count={`${questions.length} of ${QUESTIONS.length}`}
                   />
                   {questions.map(one => (
@@ -403,7 +397,10 @@ export default function CallHandbook({ row, caller, onClose }) {
 
               {facts.length > 0 && (
                 <section>
-                  <PartHead label="The Facts" count={`${facts.length} of ${FACTS.length}`} />
+                  <PartHead
+                    label="Pricing and Facts"
+                    count={`${facts.length} of ${FACTS.length}`}
+                  />
                   <dl>
                     {facts.map(fact => (
                       <Fact key={fact.id} label={fact.label} value={fact.value} note={fact.note} />

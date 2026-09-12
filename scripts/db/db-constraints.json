@@ -102,9 +102,10 @@
           "callback",
           "not_interested",
           "wrong_number",
-          "booked"
+          "booked",
+          "bad_lead"
         ],
-        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text])))"
+        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text, 'bad_lead'::text])))"
       }
     },
     "outreach_domains": {

@@ -2,7 +2,7 @@ import { formatInstant } from '@lib/time/zone.js'
 import { outcomeOf, placeOf } from '@lib/outreach/prospects/calls.js'
 
 /**
- * The short comments that come up over and over, as one press each.
+ * The short notes that come up over and over, as one press each.
  *
  * They fill the box rather than replacing it. A representative ending sixty
  * calls a day will not type the same four words sixty times, and the note is
@@ -11,15 +11,15 @@ import { outcomeOf, placeOf } from '@lib/outreach/prospects/calls.js'
  * after them.
  */
 export const NOTE_STAMPS = Object.freeze([
-  'Price was the objection.',
-  'Asked to be rung back after hours.',
-  'Said they already have someone.',
-  'Wants it emailed first.',
+  'Price objection.',
+  'Call back after hours.',
+  'Already has someone.',
+  'Wants an email first.',
 ])
 
 /**
- * A call on the record, said the way it is read with a phone ringing: the day,
- * what it came to, and who placed it.
+ * A call on the record, said the way it is read with a phone ringing: what it
+ * came to, and who placed it.
  *
  * @param {{called_at: string, outcome: string, called_by_name: string|null,
  *   note: string|null}} call
@@ -48,7 +48,7 @@ export function callMoment(value) {
 
 /**
  * The badges over a business name: where it sits on the list, how busy its
- * trade says it is, and how many times it has been rung.
+ * trade says it is, and how many times it has been called.
  *
  * Every one of them is a reason the business is on the screen rather than a
  * label about it, which is the test for what belongs up there at all.
@@ -75,7 +75,7 @@ export function marksFor(row) {
     marks.push({
       key: 'tries',
       tone: 'plain',
-      label: row.tries === 1 ? 'Rung Once' : `Rung ${row.tries} Times`,
+      label: row.tries === 1 ? '1 Call' : `${row.tries} Calls`,
     })
   }
   return marks

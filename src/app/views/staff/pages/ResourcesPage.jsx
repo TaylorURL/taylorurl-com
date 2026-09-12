@@ -57,24 +57,21 @@ export default function ResourcesPage() {
   return (
     <StaffScreen title="Resources Center" back={{ to: '/staff', label: 'Portal' }} layout="reading">
       <label className="staff-greet" htmlFor="staff-handbook-search">
-        <span className="staff-label">Search the Handbook</span>
+        <span className="staff-label">Search</span>
         <input
           id="staff-handbook-search"
           className="staff-input"
           type="search"
           value={typed}
           onChange={event => setTyped(event.target.value)}
-          placeholder="price, facebook, how long"
+          placeholder="price, Facebook, timeline"
         />
       </label>
 
       {!hits ? (
         <div className="staff-spent">
-          <h2>Nothing here answers that</h2>
-          <p>
-            Try the word you heard on the phone. Failing that, the questions page on the main site
-            is longer than this one.
-          </p>
+          <h2>No results</h2>
+          <p>Try another word, or open the questions page on the main site.</p>
         </div>
       ) : (
         <div className="staff-topics">
@@ -159,7 +156,7 @@ export default function ResourcesPage() {
 
           {found.send.length > 0 && (
             <details className="staff-topic" open={open}>
-              <summary>Pages to Send Them</summary>
+              <summary>Links to Send</summary>
               <div className="staff-topic-body">
                 {found.send.map(place => (
                   <div key={place.id}>
@@ -177,7 +174,7 @@ export default function ResourcesPage() {
 
       <div className="staff-part">
         <Link className="staff-btn" to="/staff/calls">
-          Back to Calling
+          Back to Calls
         </Link>
       </div>
     </StaffScreen>

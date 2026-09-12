@@ -13,21 +13,20 @@
 const HEADS = Object.freeze({
   '/staff': {
     title: 'Staff Portal',
-    description: 'The portal TaylorURL representatives work the call list from.',
+    description: 'Where TaylorURL representatives work the call list.',
   },
   '/staff/calls': {
     title: 'Call Center',
-    description: 'The next number on the TaylorURL call list, and what to do when the call ends.',
+    description:
+      'The next lead on the TaylorURL call list, and where a representative logs the call.',
   },
   '/staff/management': {
     title: 'Management Center',
-    description:
-      "The day's figures for a TaylorURL representative, and who else is on the call list.",
+    description: "A TaylorURL representative's numbers for the day, and who else is calling.",
   },
   '/staff/resources': {
     title: 'Resources Center',
-    description:
-      'The call script, the questions owners ask, and the answers TaylorURL representatives give.',
+    description: 'The TaylorURL call script, common questions, objections and pricing.',
   },
 })
 

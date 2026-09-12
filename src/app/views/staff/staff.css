@@ -10,33 +10,29 @@
  * rule for it in the shared sheet is a rule every page carries and four pages
  * use.
  *
- *   HEAD    read only. Where you are, and the way back. Never a control that
- *           ends anything, because the head is where a hand rests.
- *   SCROLL  everything read. One column on a phone; on a desk the screens that
- *           have two kinds of reading on them put the two side by side.
+ *   HEAD    read only. Where you are, and the way back.
+ *   SCROLL  everything read. One column on a phone. On a desk the call screen
+ *           stands three columns side by side and the management screen two,
+ *           because a desk has the width and a representative has the phone in
+ *           the other hand.
  *   FOOT    everything pressed. It does not scroll and it does not move between
  *           screens, so the control that ends a call is in the same place on the
  *           sixtieth call as on the first.
  *
- * Nothing on it is drawn for this surface alone. Every treatment is one the site
- * already uses where a visitor can see it: the head behaves as the navigation
- * bar does, a tile is the card the work section draws, the number is the phone
- * chip in the bar, the controls are the button family, a section head is the
- * accent mark over a heading, and every entrance is the rise the front door
- * makes. That is what keeps this reading as the same site the representative is
- * sending people to, rather than a tool that happens to share its logo.
+ * Every colour, radius and curve is a site token, and every control is the
+ * site's own: the filled key, the ringed key, the field, the hairline rule, the
+ * small uppercase label. Nothing lifts, glows or slides in. A screen worked
+ * sixty times a day is read by the shape of its rows, and a shadow under every
+ * key is a shadow under every key on the sixtieth call too.
  *
- * Every colour, radius, shadow and curve is a site token. The steps and the type
- * sizes are the exception and they are declared in the scope below rather than
- * in the shared sheet, because they are this surface's own: the rest of the site
- * spaces and sizes with utilities, and a twelve-step scale in `src/index.css`
- * would be twelve tokens every page carries for the four that use them.
+ * The steps and the type sizes are declared in the scope below rather than in
+ * the shared sheet, because they are this surface's own.
  */
 
 .staff {
   /* The one value the sizes disagree about. Everything else is written against
      it, so the phone and the desk cannot drift into two layouts. */
-  --staff-measure: 21rem;
+  --staff-measure: 100%;
   --staff-pad: var(--s-4);
 
   --s-h: 2px;
@@ -63,14 +59,9 @@
 
   /* The number and the control that ends a call are pressed with a thumb while
      the other hand holds a handset, so they get a taller target than the rest. */
-  --control-h-dial: 56px;
+  --control-h-thumb: 52px;
 
-  /* The three lengths anything here moves in: a hover answering, a press
-     landing, a thing arriving. The site's own curve under all of them, and
-     nothing longer than the front door allows a section. */
-  --beat-hover: 180ms;
-  --beat-press: 120ms;
-  --beat-enter: 420ms;
+  --staff-mono: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
 
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
@@ -96,18 +87,25 @@
   }
 }
 
-/* A desk gets the second column the phone had no room for, so the measure opens
-   to hold two. A screen that is read rather than worked - the handbook - stays
-   at the site's reading measure, because a line of script sixty characters wide
-   is the width a line of script should be. */
+/* A desk opens to hold two columns; a wide one, three. A screen that is read
+   rather than worked - the handbook - stays at the site's reading measure,
+   because a line of script sixty characters wide is the width a line of script
+   should be, and the portal is four doors that do not want the room. */
 @media (min-width: 1024px) {
   .staff {
     --staff-measure: 64rem;
-    --staff-pad: var(--s-10);
+    --staff-pad: var(--s-8);
   }
 
   .staff[data-layout='reading'] {
     --staff-measure: 52rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .staff[data-layout='wide'] {
+    --staff-measure: 84rem;
+    --staff-pad: var(--s-10);
   }
 }
 
@@ -122,9 +120,6 @@
 
 /* ── What every control in here owes ─────────────────────────────────────── */
 
-/* Press, hover, focus and touch are one contract on all of them, written once
-   against the controls rather than repeated per rule and forgotten on the
-   seventh. The console does the same. */
 .staff a,
 .staff button,
 .staff summary {
@@ -148,28 +143,18 @@
 
 /* ── The head ────────────────────────────────────────────────────────────── */
 
-/* It behaves as the site's bar does. At rest it is the page, with nothing
-   between it and the column; once the column has scrolled under it, it takes
-   the page's own ground, the blur and the hairline, so what it is held above
-   reads through it rather than being cut off by it. */
+/* The page's own ground, and a hairline under it once the column has scrolled
+   under it - the site's bar draws the same line for the same reason. */
 .staff-head {
-  position: relative;
-  z-index: 1;
-  padding: var(--s-3) var(--staff-pad);
+  padding: var(--s-2h) var(--staff-pad);
   /* The notch and the rounded corners on a phone held in one hand. */
-  padding-top: calc(var(--s-3) + env(safe-area-inset-top));
-  background-color: transparent;
+  padding-top: calc(var(--s-2h) + env(safe-area-inset-top));
+  background-color: var(--paper);
   box-shadow: inset 0 -1px 0 transparent;
-  transition:
-    background-color 200ms var(--ease-out-soft),
-    box-shadow 200ms var(--ease-out-soft);
-  animation: staff-head-in 250ms var(--ease-out-soft) both;
+  transition: box-shadow 150ms var(--ease-out-soft);
 }
 
 .staff-head[data-surfaced='true'] {
-  background-color: var(--nav-surface);
-  -webkit-backdrop-filter: blur(18px);
-  backdrop-filter: blur(18px);
   box-shadow: inset 0 -1px 0 var(--hairline);
 }
 
@@ -177,7 +162,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-3);
-  min-height: 44px;
+  min-height: 40px;
 }
 
 .staff-head-row b {
@@ -196,7 +181,7 @@
   flex-shrink: 0;
   align-items: center;
   gap: var(--s-1h);
-  min-height: 44px;
+  min-height: 36px;
   margin-left: auto;
   margin-right: calc(var(--s-2) * -1);
   padding-inline: var(--s-2);
@@ -228,7 +213,7 @@
   border-radius: var(--r-tiny);
   background-color: transparent;
   box-shadow: var(--edge);
-  font-family: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
+  font-family: var(--staff-mono);
   font-weight: 500;
   color: var(--ink-mute);
 }
@@ -244,11 +229,11 @@
 
 @media (min-width: 768px) {
   .staff-scroll {
-    padding-top: var(--s-6);
+    padding-top: var(--s-5);
   }
 }
 
-/* The portal is four doors and a greeting, and on a desk that is a screen with
+/* The portal is four doors and a name, and on a desk that is a screen with
    more room than content. It stands in the middle of the window the way the
    sign-in form does, rather than against the top of an empty page. */
 @media (min-width: 1024px) {
@@ -264,420 +249,177 @@
   gap: var(--s-5);
 }
 
-/* Everything in the column arrives the way a section on the front door does: a
-   short rise, one after another, over before the eye has settled. The blocks
-   the call screen keys on the business replay it, so the next number reads as
-   a card that arrived rather than as text that changed under the eye. */
-.staff-stack > *,
-.staff-split > *,
-.staff-cols > * > * {
-  animation: staff-rise var(--beat-enter) var(--ease-out-soft) both;
-}
-
-.staff-split,
-.staff-cols {
-  animation: none;
-}
-
-.staff-stack > :nth-child(2),
-.staff-split > :nth-child(2),
-.staff-cols > * > :nth-child(2) {
-  animation-delay: 50ms;
-}
-
-.staff-stack > :nth-child(3),
-.staff-split > :nth-child(3),
-.staff-cols > * > :nth-child(3) {
-  animation-delay: 100ms;
-}
-
-.staff-stack > :nth-child(4),
-.staff-cols > * > :nth-child(4) {
-  animation-delay: 150ms;
-}
-
-.staff-stack > :nth-child(5),
-.staff-cols > * > :nth-child(5) {
-  animation-delay: 200ms;
-}
-
-.staff-stack > :nth-child(6) {
-  animation-delay: 250ms;
-}
-
-.staff-stack > :nth-child(7) {
-  animation-delay: 300ms;
-}
-
-.staff-stack > :nth-child(n + 8) {
-  animation-delay: 350ms;
-}
-
 /* ── The foot ────────────────────────────────────────────────────────────── */
 
+/* A bar of controls. The quiet ones first, the filled one last and widest, and
+   under them the one line that says what pressing it does. On a desk the line
+   moves to the left and the controls sit at the right end, which is where a
+   pointer expects the control that goes on to be. */
 .staff-foot {
-  padding: var(--s-3) var(--staff-pad) var(--s-4);
-  padding-bottom: calc(var(--s-4) + env(safe-area-inset-bottom));
+  padding: var(--s-2h) var(--staff-pad) var(--s-3);
+  padding-bottom: calc(var(--s-3) + env(safe-area-inset-bottom));
   background-color: var(--paper);
   box-shadow: inset 0 1px 0 var(--hairline);
-  animation: staff-foot-in 250ms var(--ease-out-soft) both;
 }
 
 .staff-foot-stack {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: var(--s-2);
 }
 
 .staff-foot .staff-btn,
 .staff-foot .staff-quiet {
-  min-height: var(--control-h-dial);
+  min-height: var(--control-h-thumb);
   font-size: var(--t-4);
 }
 
-.staff-foot-pair {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--s-2);
+.staff-foot .staff-quiet {
+  flex: 0 0 auto;
 }
 
-/* On a desk the two that move sit beside the one that marks rather than under
-   it, because a pointer does not need the target a thumb does and a bar three
-   rows deep wastes the height a longer script wants. */
-@media (min-width: 768px) {
-  .staff-foot-stack {
-    grid-template-columns: minmax(0, 1fr) auto auto;
-    align-items: center;
-    gap: var(--s-2h);
-  }
-
-  .staff-foot-pair {
-    display: contents;
-  }
-}
-
-/* At a desk's measure the filled control is the size of a key rather than of
-   the column: the site never draws a primary button wider than its words plus
-   room to press it. */
-@media (min-width: 1024px) {
-  .staff-foot .staff-btn {
-    justify-self: start;
-    min-width: 20rem;
-  }
+.staff-foot .staff-btn {
+  flex: 1 1 auto;
 }
 
 .staff-foot-note {
+  flex: 1 0 100%;
+  order: 1;
+  min-width: 0;
   font-size: var(--t-2);
   line-height: 1.45;
   color: var(--ink-faint);
   text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @media (min-width: 768px) {
+  .staff-foot-stack {
+    flex-wrap: nowrap;
+    gap: var(--s-2h);
+  }
+
+  .staff-foot .staff-btn,
+  .staff-foot .staff-quiet {
+    min-height: var(--control-h);
+    font-size: var(--t-3);
+  }
+
+  .staff-foot .staff-btn {
+    flex: 0 0 auto;
+    min-width: 11rem;
+  }
+
   .staff-foot-note {
-    grid-column: 1 / -1;
+    flex: 1 1 auto;
+    order: -1;
     text-align: left;
   }
 }
 
-/* ── Two columns, where a desk has room for them ─────────────────────────── */
+/* ── Columns ─────────────────────────────────────────────────────────────── */
 
-/* The call screen reads two ways at once - what to say to this business, and
-   what has been said to it before - and on a desk the second stands beside the
-   first rather than under it. The management screen's two blocks are the same
-   shape. On a phone both fall back into the one column. */
+/* Two blocks that read as a pair - the two charts, the day and the team - side
+   by side once there is room, one under the other until then. */
 .staff-cols {
   display: grid;
   gap: var(--s-5);
 }
 
-.staff-main,
-.staff-side {
-  display: grid;
-  align-content: start;
-  gap: var(--s-5);
-}
-
 @media (min-width: 1024px) {
-  .staff-cols {
-    grid-template-columns: minmax(0, 1fr) 20rem;
-    column-gap: var(--s-10);
-    align-items: start;
-  }
-
   .staff-cols-even {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  /* The side column's first block stands level with the headline beside it
-     rather than under a rule the headline does not have. */
-  .staff-side > .staff-part:first-child {
-    padding-top: 0;
-    border-top: 0;
+    column-gap: var(--s-8);
+    align-items: start;
   }
 }
 
-/* ── The greeting ────────────────────────────────────────────────────────── */
+/* ── The call screen ─────────────────────────────────────────────────────── */
 
-/* Set as the site sets a headline: large, tight and short, with one sentence in
-   the softer ink under it. */
-.staff-greet {
-  display: grid;
-  gap: var(--s-2);
-}
-
-.staff-greet h2,
-.staff-spent h2 {
-  font-size: clamp(1.8rem, 3.15vw, 2.6rem);
-  font-weight: 600;
-  line-height: 1.04;
-  letter-spacing: -0.045em;
-  text-wrap: balance;
-}
-
-.staff-greet p,
-.staff-spent p {
-  max-width: 34rem;
-  font-size: var(--t-4);
-  line-height: 1.6;
-  color: var(--ink-soft);
-}
-
-/* ── The portal ──────────────────────────────────────────────────────────── */
-
-/* Phone: the greeting, the four doors, the way out. Desk: the greeting and the
-   way out on the left, the four doors on the right, which is the sign-in
-   screen's own split and reads as the same building. */
-.staff-split {
+/* Three blocks: who is being called, what is done about it, and what to say.
+   A phone stacks them in that order, with the log form arriving under the
+   number the moment the call is marked. A desk stands the first two side by
+   side and the script under the business; a wide desk gives the script a
+   column of its own, so the whole call is on screen with nothing folded. */
+.staff-call {
   display: grid;
   gap: var(--s-5);
 }
 
+.staff-who,
+.staff-desk {
+  display: grid;
+  align-content: start;
+  gap: var(--s-4);
+}
+
+.staff-desk {
+  gap: var(--s-5);
+}
+
 @media (min-width: 1024px) {
-  .staff-split {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+  .staff-call {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
-      'greet tiles'
-      'foot tiles';
-    column-gap: var(--s-10);
-    row-gap: var(--s-6);
+      'who desk'
+      'script desk';
+    column-gap: var(--s-8);
+    row-gap: var(--s-5);
     align-items: start;
   }
 
-  .staff-split > .staff-greet {
-    grid-area: greet;
-    padding-top: var(--s-2);
+  .staff-who {
+    grid-area: who;
   }
 
-  .staff-split > .staff-tiles {
-    grid-area: tiles;
+  .staff-desk {
+    grid-area: desk;
   }
 
-  .staff-split > .staff-split-foot {
-    grid-area: foot;
+  .staff-script {
+    grid-area: script;
+  }
+
+  /* The facts stand in a column that is narrower than the pairs' two-column
+     width wants, so they stay one to a line here. */
+  .staff-call .staff-facts {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
-.staff-tiles {
-  display: grid;
-  gap: var(--s-3);
-}
+@media (min-width: 1280px) {
+  .staff-call {
+    grid-template-columns: 18rem minmax(0, 1fr) minmax(0, 25rem);
+    grid-template-areas: 'who script desk';
+    column-gap: var(--s-10);
+  }
 
-@media (min-width: 768px) {
-  .staff-tiles {
+  /* The keypad in a column this narrow holds two keys to a row, not three. */
+  .staff-desk .staff-tags-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-4);
   }
-}
-
-/* A door is the card the site draws for a piece of work: a raised surface
-   inside a hairline ring, a title with the arrow the bar puts after "Start a
-   Project", and the light the pointer is holding over it. The first door is the
-   one filled thing on the screen, because it is where the day is spent. */
-.staff-tile {
-  position: relative;
-  display: grid;
-  gap: var(--s-2);
-  align-content: start;
-  overflow: hidden;
-  padding: var(--s-5);
-  border-radius: var(--r-card);
-  background-color: var(--surface-1);
-  color: var(--ink);
-  box-shadow: var(--raise);
-  text-decoration: none;
-  transition:
-    background-color var(--beat-hover) var(--ease-out-soft),
-    box-shadow var(--beat-hover) var(--ease-out-soft),
-    transform var(--beat-hover) var(--ease-out-soft);
-}
-
-/* The light. Its position arrives as two custom properties written to the tile
-   by the pointer, the same way the site's spotlight card takes it. */
-.staff-tile::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background: radial-gradient(
-    circle at var(--lit-x, 50%) var(--lit-y, 50%),
-    var(--spotlight),
-    transparent 80%
-  );
-  opacity: var(--lit, 0);
-  transition: opacity 300ms var(--ease-in-out-soft);
-}
-
-.staff-tile > * {
-  position: relative;
-}
-
-.staff-tile b {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-2);
-  font-size: var(--t-5);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.staff-tile b svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  color: var(--ink-faint);
-  transition:
-    color var(--beat-hover) var(--ease-out-soft),
-    transform var(--beat-hover) var(--ease-out-soft);
-}
-
-.staff-tile p {
-  font-size: var(--t-3);
-  line-height: 1.55;
-  color: var(--ink-soft);
-}
-
-@media (hover: hover) {
-  .staff-tile:hover {
-    box-shadow: var(--raise-hi);
-    transform: translateY(-2px);
-  }
-
-  .staff-tile:hover b svg {
-    color: var(--accent);
-    transform: translate(2px, -2px);
-  }
-}
-
-.staff-tile:active {
-  transform: scale(0.99);
-}
-
-.staff-tile[data-lead='true'] {
-  background-color: var(--accent-fill);
-  color: var(--on-accent);
-  box-shadow: var(--key-lift);
-}
-
-.staff-tile[data-lead='true']::before {
-  background: radial-gradient(
-    circle at var(--lit-x, 50%) var(--lit-y, 50%),
-    color-mix(in srgb, var(--on-accent) 16%, transparent),
-    transparent 70%
-  );
-}
-
-.staff-tile[data-lead='true'] p {
-  color: color-mix(in srgb, var(--on-accent) 78%, transparent);
-}
-
-.staff-tile[data-lead='true'] b svg {
-  color: var(--on-accent);
-}
-
-@media (hover: hover) {
-  .staff-tile[data-lead='true']:hover {
-    background-color: var(--accent-fill-hi);
-    box-shadow: var(--key-lift);
-  }
-
-  .staff-tile[data-lead='true']:hover b svg {
-    color: var(--on-accent);
-  }
-}
-
-/* ── Sections inside the scroll ──────────────────────────────────────────── */
-
-/* A titled block with a rule over it. The title is the site's section mark: the
-   small accent square and a short label, which is what stands over every
-   heading on the front door. */
-.staff-part {
-  display: grid;
-  gap: var(--s-3);
-  padding-top: var(--s-4);
-  border-top: 1px solid var(--hairline);
-}
-
-.staff-part > h3 {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  font-size: var(--t-3);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: -0.005em;
-  color: var(--accent);
-}
-
-.staff-part > h3::before {
-  content: '';
-  flex-shrink: 0;
-  width: 6px;
-  height: 6px;
-  background-color: var(--accent);
-}
-
-/* A lone control in a section is the size of what it says, not of the column. */
-.staff-part > .staff-btn,
-.staff-part > .staff-quiet {
-  justify-self: start;
-}
-
-.staff-label {
-  font-size: var(--t-1);
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ink-faint);
-}
-
-.staff-mute {
-  color: var(--ink-mute);
-}
-
-.staff-read {
-  font-size: var(--t-4);
-  line-height: 1.65;
-  color: var(--ink-soft);
 }
 
 /* ── The business ────────────────────────────────────────────────────────── */
 
-.staff-biz {
+.staff-lead {
   display: grid;
   gap: var(--s-1h);
 }
 
-.staff-biz h2 {
-  font-size: clamp(1.8rem, 3.15vw, 2.6rem);
+.staff-lead h2 {
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
   font-weight: 600;
-  line-height: 1.04;
-  letter-spacing: -0.045em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   text-wrap: balance;
 }
 
-.staff-biz p {
-  font-size: var(--t-4);
+.staff-lead p {
+  font-size: var(--t-3);
   color: var(--ink-mute);
 }
 
@@ -688,65 +430,47 @@
   margin-top: var(--s-1);
 }
 
-/* The number. It is the phone chip in the site's bar drawn large: the handset,
-   the figure, a raised surface in a ring. A control-sized link near the top,
-   because it is pressed once at the start of the call - the foot belongs to
-   what is pressed at the end. */
-.staff-number {
+/* The number. A ringed key the height of a thumb, with the handset and the
+   figure in the accent, because it is pressed once at the start of every call
+   and has to be found without looking. */
+.staff-dial {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: var(--s-2h);
-  min-height: var(--control-h-dial);
+  min-height: var(--control-h-thumb);
   padding-inline: var(--s-4);
-  border-radius: var(--r-card);
+  border-radius: var(--r-control);
   background-color: var(--surface-1);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
   color: var(--accent);
-  box-shadow: var(--raise);
+  font-family: var(--staff-mono);
   font-size: var(--t-6);
   font-weight: 600;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.01em;
   text-decoration: none;
   font-variant-numeric: tabular-nums;
-  transition:
-    background-color var(--beat-hover) var(--ease-out-soft),
-    box-shadow var(--beat-hover) var(--ease-out-soft),
-    transform var(--beat-press) var(--ease-out-soft);
+  transition: background-color 150ms var(--ease-out-soft);
 }
 
-.staff-number svg {
+.staff-dial svg {
   width: 18px;
   height: 18px;
   flex-shrink: 0;
 }
 
-@media (min-width: 768px) {
-  .staff-number {
-    min-height: 64px;
-    font-size: var(--t-7);
-  }
-
-  .staff-number svg {
-    width: 20px;
-    height: 20px;
-  }
+.staff-dial:hover {
+  background-color: var(--wash-accent);
 }
 
-@media (hover: hover) {
-  .staff-number:hover {
-    background-color: var(--wash-accent);
-    box-shadow: var(--raise-hi);
-  }
-}
-
-.staff-number:active {
+.staff-dial:active {
   transform: scale(0.99);
 }
 
 /* ── Pairs ───────────────────────────────────────────────────────────────── */
 
-/* A fact and its value, one to a ruled line, the way the sign-in screen lists
-   what the console holds. One column on a phone; two once there is room. */
+/* A fact and its value, one to a ruled line. One column on a phone; two once
+   there is room. */
 .staff-pairs {
   display: grid;
 }
@@ -763,12 +487,13 @@
   align-items: baseline;
   justify-content: space-between;
   gap: var(--s-3);
-  padding: var(--s-2h) 0;
+  padding: var(--s-2) 0;
   font-size: var(--t-3);
   box-shadow: inset 0 -1px 0 var(--hairline);
 }
 
 .staff-pairs dt {
+  flex-shrink: 0;
   color: var(--ink-faint);
 }
 
@@ -778,84 +503,65 @@
   text-align: right;
 }
 
-/* ── Folded reading ──────────────────────────────────────────────────────── */
+/* ── Sections ────────────────────────────────────────────────────────────── */
 
-/* The script is open on a first call and closed after that, because a
-   representative reads it once in the first week and after that wants the two
-   lines they forget. */
-
-.staff-fold {
+/* A titled block with a rule over it. The title is the small uppercase label
+   the site's tables and forms carry, and nothing more. */
+.staff-part {
+  display: grid;
+  gap: var(--s-3);
+  padding-top: var(--s-3h);
   border-top: 1px solid var(--hairline);
 }
 
-.staff-fold summary,
-.staff-topic summary {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--s-2);
-  list-style: none;
-  font-size: var(--t-4);
-  font-weight: 500;
-  transition: color 150ms var(--ease-out-soft);
-}
-
-.staff-fold summary {
-  min-height: var(--control-h);
-}
-
-.staff-fold summary:hover,
-.staff-topic summary:hover {
-  color: var(--accent);
-}
-
-.staff-fold summary::-webkit-details-marker,
-.staff-topic summary::-webkit-details-marker {
-  display: none;
-}
-
-.staff-fold summary::after,
-.staff-topic summary::after {
-  content: '+';
-  font-family: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
-  font-size: var(--t-4);
+.staff-part > h3,
+.staff-label {
+  font-size: var(--t-1);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
   color: var(--ink-faint);
-  transition: transform 200ms var(--ease-out-soft);
 }
 
-.staff-fold[open] summary::after,
-.staff-topic[open] summary::after {
-  content: '\2212';
+/* A lone control in a section is the size of what it says, not of the column. */
+.staff-part > .staff-btn,
+.staff-part > .staff-quiet {
+  justify-self: start;
 }
 
-.staff-fold-body {
-  display: grid;
-  gap: var(--s-3);
-  padding-bottom: var(--s-3);
-  animation: staff-rise 300ms var(--ease-out-soft) both;
+.staff-mute {
+  color: var(--ink-mute);
 }
 
-.staff-beat {
-  display: grid;
-  gap: var(--s-h);
-}
-
-.staff-beat p:last-child {
-  font-size: var(--t-4);
-  line-height: 1.65;
+.staff-read {
+  font-size: var(--t-3);
+  line-height: 1.6;
   color: var(--ink-soft);
 }
 
-/* ── The two questions ───────────────────────────────────────────────────── */
+/* ── The log ─────────────────────────────────────────────────────────────── */
 
-/* Not drawn at all until the call is marked. Not dimmed and not disabled: a
-   screen that shows six greyed buttons before a call reads as a form to fill in
-   rather than a call to make, and the height they take is height the script
-   wanted. */
-
-.staff-answers {
+/* The form that files a call, drawn only once the call is marked. It stands
+   inside a ring so it reads as one thing to fill in, with a rule between its
+   parts rather than a rule over each. */
+.staff-log {
   display: grid;
-  gap: var(--s-5);
+  gap: var(--s-4);
+  padding: var(--s-4);
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: var(--edge);
+}
+
+.staff-log > .staff-part {
+  padding-top: 0;
+  border-top: 0;
+}
+
+.staff-log > .staff-part + .staff-part {
+  padding-top: var(--s-4);
+  border-top: 1px solid var(--hairline);
 }
 
 .staff-tags {
@@ -876,25 +582,39 @@
   }
 }
 
+/* Read as a keypad: the key cap first, the label after it, every row the same
+   height, and a label that has to wrap does so under itself rather than
+   across the cap. */
 .staff-tags-grid .staff-tag {
-  justify-content: center;
-  min-height: 48px;
-  text-align: center;
+  justify-content: flex-start;
+  min-height: 42px;
+  padding-inline: var(--s-2h);
+  text-align: left;
+  line-height: 1.2;
 }
 
-@media (min-width: 768px) {
-  .staff-tags-grid .staff-tag {
-    min-height: var(--control-h);
-  }
+/* The lengths Call Back opens: one more row inside the same part, on a wash so
+   it reads as belonging to the outcome above it. */
+.staff-range {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-2h) var(--s-3);
+  border-radius: var(--r-control);
+  background-color: var(--wash-paper);
+}
+
+.staff-range .staff-tag {
+  min-height: 34px;
+  padding-inline: var(--s-2h);
+  font-size: var(--t-2);
 }
 
 /* ── Controls ────────────────────────────────────────────────────────────── */
 
-/* The site's own pair. The filled one is the one loud thing on a screen and
-   carries the key's own shadow; the quiet one is the raised surface in a ring,
-   so it is a white key on paper and a near-black one in the dark setting
-   without either being restated here. Press is a scale rather than a colour,
-   so it answers on a touch screen where there is no hover to answer with. */
+/* The site's own pair, flat. The filled one is the one loud thing on a screen;
+   the ringed one is the surface in a hairline. Press is a scale rather than a
+   colour, so it answers on a touch screen where there is no hover to answer
+   with. */
 .staff-btn,
 .staff-quiet {
   display: inline-flex;
@@ -904,7 +624,7 @@
   align-items: center;
   justify-content: center;
   gap: var(--s-2);
-  padding-inline: var(--s-5);
+  padding-inline: var(--s-4);
   border: 0;
   border-radius: var(--r-control);
   font-size: var(--t-3);
@@ -913,16 +633,15 @@
   white-space: nowrap;
   text-decoration: none;
   transition:
-    background-color var(--beat-hover) var(--ease-out-soft),
-    box-shadow var(--beat-hover) var(--ease-out-soft),
-    color var(--beat-hover) var(--ease-out-soft),
-    transform var(--beat-press) var(--ease-out-soft);
+    background-color 150ms var(--ease-out-soft),
+    box-shadow 150ms var(--ease-out-soft),
+    color 150ms var(--ease-out-soft),
+    transform 120ms var(--ease-out-soft);
 }
 
 .staff-btn {
   background-color: var(--accent-fill);
   color: var(--on-accent);
-  box-shadow: var(--key-lift);
 }
 
 .staff-btn:hover:enabled,
@@ -933,9 +652,7 @@ a.staff-btn:hover {
 .staff-quiet {
   background-color: var(--surface-1);
   color: var(--ink);
-  box-shadow:
-    0 0 0 1px var(--hairline-strong),
-    var(--key-lift-soft);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
 }
 
 .staff-quiet:hover:enabled,
@@ -950,12 +667,27 @@ a.staff-quiet:active {
   transform: scale(0.98);
 }
 
-/* A control that cannot be pressed says so, and never reaches a hover or a
-   press: a faded button that still lifts under the cursor reads as one that is
-   merely slow. */
 .staff-btn:disabled,
 .staff-quiet:disabled {
-  opacity: 0.6;
+  opacity: 0.45;
+}
+
+/* The one control that takes a business off the list for good. It reads as the
+   quiet key in the danger ink until it is armed, and then as the danger fill,
+   so the second press knows what the first one set up. */
+.staff-bad {
+  color: var(--danger-on-paper);
+}
+
+.staff-bad:hover:enabled {
+  background-color: var(--danger-wash);
+}
+
+.staff-bad[data-armed='true'],
+.staff-bad[data-armed='true']:hover:enabled {
+  background-color: var(--danger-fill);
+  color: #ffffff;
+  box-shadow: none;
 }
 
 .staff-input {
@@ -976,7 +708,7 @@ a.staff-quiet:active {
 
 @media (hover: hover) and (pointer: fine) {
   .staff-input {
-    font-size: var(--t-4);
+    font-size: var(--t-3);
   }
 }
 
@@ -990,25 +722,24 @@ a.staff-quiet:active {
 }
 
 textarea.staff-input {
-  min-height: 96px;
-  line-height: 1.6;
+  min-height: 84px;
+  line-height: 1.55;
   resize: vertical;
 }
 
 /* The key cap in front of a control, and only where there is a keyboard to
-   press it on. A representative works the call screen with one hand, so
-   anything pressed often says the key that fires it. */
+   press it on. */
 .staff-key {
   display: none;
   flex-shrink: 0;
   user-select: none;
   -webkit-user-select: none;
-  min-width: 19px;
+  min-width: 18px;
   justify-content: center;
   padding-inline: var(--s-1);
   border-radius: var(--r-tiny);
   box-shadow: var(--edge);
-  font-family: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
+  font-family: var(--staff-mono);
   font-size: var(--t-1);
   line-height: 1.5;
   color: var(--ink-faint);
@@ -1056,66 +787,30 @@ textarea.staff-input {
   color: var(--danger-on-paper);
 }
 
-/* ── The record ──────────────────────────────────────────────────────────── */
-
-/* Every call before this one. A date, what happened and who placed it, and
-   nothing else - it is read with a phone already ringing. The date is set in
-   the mono the site keeps for a figure that is looked up rather than read. */
-
-.staff-record {
-  display: grid;
-  gap: var(--s-2h);
-}
-
-.staff-record > div {
-  display: grid;
-  grid-template-columns: 4.25rem minmax(0, 1fr);
-  column-gap: var(--s-3);
-  align-items: baseline;
-}
-
-.staff-record dt {
-  font-family: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
-  font-size: var(--t-2);
-  font-weight: 500;
-  color: var(--ink-faint);
-}
-
-.staff-record dd {
-  font-size: var(--t-3);
-  line-height: 1.6;
-  color: var(--ink-soft);
-}
-
 /* ── The tags ────────────────────────────────────────────────────────────── */
 
-/* What the call came to, and where that leaves the business. Kept this short on
-   purpose: a representative picks one of these sixty times a day and the set has
-   to be small enough to choose from without reading it. A tag is the quiet key;
-   the pressed one takes the accent ring and wash. */
-
+/* One of these is picked sixty times a day, so the set is drawn as a keypad:
+   ringed keys, the pressed one in the accent. */
 .staff-tag {
   display: inline-flex;
   align-items: center;
   gap: var(--s-2);
-  min-height: var(--control-h);
+  min-height: 38px;
   padding-inline: var(--s-3);
   border: 0;
   border-radius: var(--r-control);
   background-color: var(--surface-1);
-  box-shadow:
-    0 0 0 1px var(--hairline-strong),
-    var(--key-lift-soft);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
   color: var(--ink);
   font-size: var(--t-3);
   font-weight: 500;
   user-select: none;
   -webkit-user-select: none;
   transition:
-    background-color var(--beat-hover) var(--ease-out-soft),
-    box-shadow var(--beat-hover) var(--ease-out-soft),
-    color var(--beat-hover) var(--ease-out-soft),
-    transform var(--beat-press) var(--ease-out-soft);
+    background-color 150ms var(--ease-out-soft),
+    box-shadow 150ms var(--ease-out-soft),
+    color 150ms var(--ease-out-soft),
+    transform 120ms var(--ease-out-soft);
 }
 
 .staff-tag:hover:enabled {
@@ -1128,80 +823,290 @@ textarea.staff-input {
 
 .staff-tag[aria-pressed='true'] {
   background-color: var(--wash-accent);
-  box-shadow:
-    0 0 0 1px var(--accent),
-    var(--key-lift-soft);
+  box-shadow: 0 0 0 1px var(--accent);
   color: var(--accent);
 }
 
 .staff-tag[data-tone='good'][aria-pressed='true'] {
   background-color: var(--good-wash);
-  box-shadow:
-    0 0 0 1px var(--good-edge),
-    var(--key-lift-soft);
+  box-shadow: 0 0 0 1px var(--good-edge);
   color: var(--good-on-paper);
 }
 
 .staff-tag[data-tone='bad'][aria-pressed='true'] {
   background-color: var(--danger-wash);
-  box-shadow:
-    0 0 0 1px var(--danger-edge),
-    var(--key-lift-soft);
+  box-shadow: 0 0 0 1px var(--danger-edge);
   color: var(--danger-on-paper);
 }
 
-/* The lengths Call Back opens. It is the one outcome that cannot stand on its
-   own - a business that needs time needs a length of it - and four lengths is as
-   fine as anything read off this later can use. */
+/* ── The record ──────────────────────────────────────────────────────────── */
 
-.staff-range {
+/* Every call before this one: a date, what happened and who placed it. The
+   date is set in the mono the site keeps for a figure that is looked up rather
+   than read. */
+.staff-record {
   display: grid;
-  gap: var(--s-2h);
-  padding: var(--s-3) var(--s-3h);
-  border-radius: var(--r-control);
-  background-color: var(--wash-paper);
-  animation: staff-rise 300ms var(--ease-out-soft) both;
+  gap: var(--s-2);
 }
 
-.staff-range .staff-tag {
-  min-height: 36px;
-  padding-inline: var(--s-2h);
+.staff-record > div {
+  display: grid;
+  grid-template-columns: 4rem minmax(0, 1fr);
+  column-gap: var(--s-3);
+  align-items: baseline;
+}
+
+.staff-record dt {
+  font-family: var(--staff-mono);
   font-size: var(--t-2);
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.staff-record dd {
+  font-size: var(--t-3);
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ── The script ──────────────────────────────────────────────────────────── */
+
+/* A fold on a phone, because a representative reads the script once in the
+   first week and after that wants the two lines they forget. On a desk it is
+   simply there: the screen opens it, and the summary becomes the label over
+   the column. */
+.staff-fold {
+  border-top: 1px solid var(--hairline);
+}
+
+.staff-fold summary,
+.staff-topic summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-2);
+  list-style: none;
+  font-size: var(--t-4);
+  font-weight: 500;
+  transition: color 150ms var(--ease-out-soft);
+}
+
+.staff-fold summary {
+  min-height: var(--control-h);
+}
+
+.staff-fold summary:hover,
+.staff-topic summary:hover {
+  color: var(--accent);
+}
+
+.staff-fold summary::-webkit-details-marker,
+.staff-topic summary::-webkit-details-marker {
+  display: none;
+}
+
+.staff-fold summary::after,
+.staff-topic summary::after {
+  content: '+';
+  font-family: var(--staff-mono);
+  font-size: var(--t-4);
+  color: var(--ink-faint);
+}
+
+.staff-fold[open] summary::after,
+.staff-topic[open] summary::after {
+  content: '\2212';
+}
+
+.staff-fold-body {
+  display: grid;
+  gap: var(--s-3h);
+  padding-bottom: var(--s-3);
+}
+
+@media (min-width: 1024px) {
+  .staff-script > summary {
+    min-height: 0;
+    padding-bottom: var(--s-3);
+    pointer-events: none;
+    font-size: var(--t-1);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .staff-script > summary::after {
+    content: none;
+  }
+
+  .staff-script > .staff-fold-body {
+    padding-bottom: 0;
+  }
+}
+
+.staff-beat {
+  display: grid;
+  gap: var(--s-1);
+}
+
+.staff-beat p:last-child {
+  font-size: var(--t-3);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* ── The portal ──────────────────────────────────────────────────────────── */
+
+.staff-greet {
+  display: grid;
+  gap: var(--s-1h);
+}
+
+.staff-greet h2,
+.staff-spent h2 {
+  font-size: clamp(1.4rem, 2.2vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
+}
+
+.staff-greet p,
+.staff-spent p {
+  max-width: 34rem;
+  font-size: var(--t-3);
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* Phone: the name, the four doors, the way out. Desk: the name and the way out
+   on the left, the four doors on the right, which is the sign-in screen's own
+   split. */
+.staff-split {
+  display: grid;
+  gap: var(--s-5);
+}
+
+@media (min-width: 1024px) {
+  .staff-split {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    grid-template-areas:
+      'greet tiles'
+      'foot tiles';
+    column-gap: var(--s-10);
+    row-gap: var(--s-5);
+    align-items: start;
+  }
+
+  .staff-split > .staff-greet {
+    grid-area: greet;
+  }
+
+  .staff-split > .staff-tiles {
+    grid-area: tiles;
+  }
+
+  .staff-split > .staff-split-foot {
+    grid-area: foot;
+  }
+}
+
+.staff-tiles {
+  display: grid;
+  gap: var(--s-2h);
+}
+
+@media (min-width: 768px) {
+  .staff-tiles {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-3);
+  }
+}
+
+/* A door: a surface in a hairline, a title and one line. The first door is the
+   one filled thing on the screen, because it is where the day is spent. */
+.staff-tile {
+  display: grid;
+  gap: var(--s-1h);
+  align-content: start;
+  padding: var(--s-4) var(--s-4h, var(--s-4));
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+  color: var(--ink);
+  text-decoration: none;
+  transition:
+    background-color 150ms var(--ease-out-soft),
+    box-shadow 150ms var(--ease-out-soft),
+    transform 120ms var(--ease-out-soft);
+}
+
+.staff-tile b {
+  font-size: var(--t-4);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.staff-tile p {
+  font-size: var(--t-2);
+  line-height: 1.5;
+  color: var(--ink-mute);
+}
+
+.staff-tile:hover {
+  background-color: var(--surface-2);
+}
+
+.staff-tile:active {
+  transform: scale(0.99);
+}
+
+.staff-tile[data-lead='true'] {
+  background-color: var(--accent-fill);
+  color: var(--on-accent);
+  box-shadow: none;
+}
+
+.staff-tile[data-lead='true'] p {
+  color: color-mix(in srgb, var(--on-accent) 78%, transparent);
+}
+
+.staff-tile[data-lead='true']:hover {
+  background-color: var(--accent-fill-hi);
 }
 
 /* ── Management ──────────────────────────────────────────────────────────── */
 
-/* The three figures are set as the sign-in screen sets its two: the label small
-   and faint, the figure large and tabular, each on a raised surface of its own
-   with the bar under it. */
+/* The three figures, side by side at every width: the count large and tabular,
+   the target beside it, the label under, and the bar under that. */
 .staff-figures {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-3);
+  gap: var(--s-2h);
 }
 
 @media (min-width: 768px) {
   .staff-figures {
-    gap: var(--s-4);
+    gap: var(--s-3);
   }
 }
 
 .staff-figure {
   display: grid;
   /* Figure, label, bar. The label takes the slack so the three bars sit on one
-     line across the row however many lines each label runs to - three bars at
-     three heights read as three different things rather than as one row. */
+     line across the row however many lines each label runs to. */
   grid-template-rows: auto 1fr auto;
   gap: var(--s-2);
-  padding: var(--s-3h) var(--s-4);
+  padding: var(--s-3) var(--s-3h);
   border-radius: var(--r-card);
   background-color: var(--surface-1);
-  box-shadow: var(--raise);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
 }
 
 @media (min-width: 768px) {
   .staff-figure {
-    padding: var(--s-5);
+    padding: var(--s-4);
   }
 }
 
@@ -1217,9 +1122,6 @@ textarea.staff-input {
   font-variant-numeric: tabular-nums;
 }
 
-/* The target, beside the count rather than folded into the label under it. Three
-   of these sit side by side on a phone, and a label carrying "of 40" wraps to
-   three lines at that width while the figure it belongs to reads on one. */
 .staff-figure dd span {
   font-size: var(--t-2);
   font-weight: 500;
@@ -1246,29 +1148,28 @@ textarea.staff-input {
   background-color: var(--wash-paper-strong);
 }
 
-/* The bar fills to its reading rather than appearing at it, so a figure
-   arriving reads as measured. */
 .staff-track span {
   display: block;
   height: 100%;
   border-radius: var(--r-tiny);
   background-color: var(--accent);
-  transform-origin: left center;
-  animation: staff-fill 600ms var(--ease-out-soft) both;
-  animation-delay: 200ms;
 }
 
 .staff-track span[data-behind='true'] {
   background-color: var(--warn-on-paper);
 }
 
+/* The charts draw in the console's own tick face; the wrapper only has to be a
+   box of the height the chart asked for. */
+.staff-part .recharts-wrapper {
+  font-family: var(--staff-mono);
+}
+
 .staff-person {
   display: grid;
-  gap: var(--s-2);
-  padding: var(--s-3h) var(--s-4);
-  border-radius: var(--r-card);
-  background-color: var(--surface-1);
-  box-shadow: var(--raise);
+  gap: var(--s-1h);
+  padding: var(--s-2h) 0;
+  box-shadow: inset 0 -1px 0 var(--hairline);
 }
 
 .staff-person-top {
@@ -1279,7 +1180,7 @@ textarea.staff-input {
 }
 
 .staff-person-top b {
-  font-size: var(--t-4);
+  font-size: var(--t-3);
   font-weight: 600;
 }
 
@@ -1299,7 +1200,7 @@ textarea.staff-input {
 }
 
 .staff-topic summary {
-  min-height: 52px;
+  min-height: 48px;
 }
 
 .staff-topic[open] summary {
@@ -1310,17 +1211,16 @@ textarea.staff-input {
   display: grid;
   gap: var(--s-3);
   padding-bottom: var(--s-4);
-  animation: staff-rise 300ms var(--ease-out-soft) both;
 }
 
 .staff-topic-body p {
-  font-size: var(--t-4);
-  line-height: 1.65;
+  font-size: var(--t-3);
+  line-height: 1.6;
   color: var(--ink-soft);
 }
 
 .staff-topic-body h4 {
-  font-size: var(--t-4);
+  font-size: var(--t-3);
   font-weight: 600;
 }
 
@@ -1334,10 +1234,9 @@ textarea.staff-input {
 }
 
 /* What to do after saying it, which is an instruction to the caller rather than
-   a line they read out. Set smaller and lighter so the two do not run together
-   into one paragraph somebody says the whole of down the phone. */
+   a line they read out. */
 .staff-aside {
-  font-size: var(--t-3);
+  font-size: var(--t-2);
   line-height: 1.55;
   color: var(--ink-faint);
 }
@@ -1351,7 +1250,7 @@ textarea.staff-input {
 
 .staff-steps {
   display: grid;
-  gap: var(--s-2h);
+  gap: var(--s-2);
   counter-reset: step;
 }
 
@@ -1359,7 +1258,7 @@ textarea.staff-input {
   display: grid;
   grid-template-columns: 1.25rem minmax(0, 1fr);
   gap: var(--s-2h);
-  font-size: var(--t-4);
+  font-size: var(--t-3);
   line-height: 1.6;
   color: var(--ink-soft);
   counter-increment: step;
@@ -1367,7 +1266,7 @@ textarea.staff-input {
 
 .staff-steps li::before {
   content: counter(step);
-  font-family: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
+  font-family: var(--staff-mono);
   font-size: var(--t-2);
   color: var(--ink-faint);
 }
@@ -1382,78 +1281,25 @@ textarea.staff-input {
   display: grid;
   gap: var(--s-3);
   justify-items: start;
-  padding: var(--s-8) 0;
+  padding: var(--s-6) 0;
 }
 
 .staff-spent .staff-quiet {
-  margin-top: var(--s-2);
+  margin-top: var(--s-1);
 }
 
-/* ── Motion ──────────────────────────────────────────────────────────────── */
+/* ── Less motion ─────────────────────────────────────────────────────────── */
 
-@keyframes staff-rise {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes staff-head-in {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes staff-foot-in {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-
-  to {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes staff-fill {
-  from {
-    transform: scaleX(0);
-  }
-
-  to {
-    transform: scaleX(1);
-  }
-}
-
-/* The site sheet stands every animation and transition down for a reader who
-   asked for less motion. What that cannot reach is a transform carried by a
-   hover or a press, which would still jump to its moved state, so those are
-   held still here. */
+/* The only movement left in here is a press answering with a scale, and a
+   reader who asked for less motion does not get that either. */
 @media (prefers-reduced-motion: reduce) {
-  .staff-tile:hover,
   .staff-tile:active,
-  .staff-number:active,
+  .staff-dial:active,
   .staff-btn:active:enabled,
   .staff-quiet:active:enabled,
   a.staff-btn:active,
   a.staff-quiet:active,
   .staff-tag:active:enabled {
-    transform: none;
-  }
-
-  .staff-tile:hover b svg {
     transform: none;
   }
 }
