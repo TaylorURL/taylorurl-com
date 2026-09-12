@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
+import { useCallDesk } from '@hooks/console/useCallDesk'
+import { useCallsFeed } from '@hooks/console/useCallsFeed'
 import {
   CLOSING,
   FACTS,
@@ -11,6 +13,8 @@ import {
   handbookMatches,
   scriptFor,
 } from '@lib/outreach/prospects/handbook.js'
+import { DEFAULT_GOALS, shiftOf } from '@lib/outreach/prospects/callShift.js'
+import ShiftFigures from './ShiftFigures'
 import { useStaff } from '../lib/context'
 import { usePortalNav } from '../lib/nav'
 
@@ -45,8 +49,19 @@ import { usePortalNav } from '../lib/nav'
  * a phone call. The one thing that gets recorded is what the caller heard, and
  * that is the form on the call screen.
  *
+ * THE RAIL IS WHERE THE READER STANDS. The script holds a reading measure and
+ * will not widen past it, which on a desk leaves room going spare beside it.
+ * The three figures of the day go there: somebody who has opened the handbook
+ * mid-shift is between calls, and between calls is exactly when where they
+ * stand is worth knowing. Below the width that has room for two columns the
+ * rail is simply the last thing on the screen.
+ *
  * @param {{Shell: React.ComponentType}} props
  */
+
+/* The figures come off the top of the list's own answer, so the rail asks for
+   the smallest page that carries them rather than a read of its own. */
+const SHIFT_FILTERS = Object.freeze({ view: 'list', take: 1 })
 
 /** A part with nothing left in it after a search is a part that comes off. */
 function kept(entries, typed) {
@@ -73,10 +88,15 @@ const SHUT = new Set()
 const partLabel = id => HANDBOOK_PARTS.find(one => one.id === id)?.label ?? id
 
 export default function Handbook({ Shell }) {
-  const { name } = useStaff()
+  const { name, token, userId } = useStaff()
   const nav = usePortalNav()
   const [typed, setTyped] = useState('')
   const [opened, setOpened] = useState(SHUT)
+
+  const feed = useCallsFeed({ token, enabled: Boolean(token), filters: SHIFT_FILTERS })
+  const desk = useCallDesk({ token, userId, enabled: Boolean(token) })
+  const goals = desk.prefs?.goals ?? DEFAULT_GOALS
+  const shift = useMemo(() => shiftOf(feed.data?.shift, goals), [feed.data?.shift, goals])
 
   const script = useMemo(() => scriptFor(null, name), [name])
 
@@ -143,163 +163,185 @@ export default function Handbook({ Shell }) {
       back={{ to: nav.hrefFor('portal'), label: 'Portal' }}
       layout="reading"
     >
-      <div className="staff-find">
-        <label className="staff-greet" htmlFor="staff-handbook-search">
-          <span className="staff-label">Search</span>
-          <input
-            id="staff-handbook-search"
-            className="staff-input"
-            type="search"
-            value={typed}
-            onChange={event => retype(event.target.value)}
-            placeholder="price, Facebook, timeline"
-          />
-        </label>
-        {folded.length > 0 && (
-          <button
-            type="button"
-            className="staff-quiet"
-            onClick={() => setOpened(allOut ? SHUT : new Set(folded))}
-          >
-            {allOut ? <ChevronsDownUp aria-hidden="true" /> : <ChevronsUpDown aria-hidden="true" />}
-            {allOut ? 'Collapse All' : 'Expand All'}
-          </button>
-        )}
+      <div className="staff-reading">
+        <div className="staff-reading-main">
+          <div className="staff-find">
+            <label className="staff-greet" htmlFor="staff-handbook-search">
+              <span className="staff-label">Search</span>
+              <input
+                id="staff-handbook-search"
+                className="staff-input"
+                type="search"
+                value={typed}
+                onChange={event => retype(event.target.value)}
+                placeholder="price, Facebook, timeline"
+              />
+            </label>
+            {folded.length > 0 && (
+              <button
+                type="button"
+                className="staff-quiet"
+                onClick={() => setOpened(allOut ? SHUT : new Set(folded))}
+              >
+                {allOut ? (
+                  <ChevronsDownUp aria-hidden="true" />
+                ) : (
+                  <ChevronsUpDown aria-hidden="true" />
+                )}
+                {allOut ? 'Collapse All' : 'Expand All'}
+              </button>
+            )}
+          </div>
+
+          {searching && (
+            <p className="staff-read">
+              {hits
+                ? `${hits} of these answer that.`
+                : 'Nothing here answers that. Say you will find out and call them back.'}
+            </p>
+          )}
+
+          {!hits ? (
+            <div className="staff-spent">
+              <h2>No results</h2>
+              <p>Try another word, or open the questions page on the main site.</p>
+            </div>
+          ) : (
+            <div className="staff-topics">
+              {found.open.length > 0 && (
+                <details className="staff-topic" open={searching || undefined}>
+                  <summary>{partLabel('open')}</summary>
+                  <div className="staff-topic-body">
+                    {found.open.map(beat => (
+                      <div key={beat.id}>
+                        <h4>{beat.label}</h4>
+                        <p>{beat.say}</p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+
+              {found.questions.length > 0 && (
+                <section className="staff-topic-set">
+                  <h3 className="staff-set-head">
+                    {partLabel('questions')}
+                    <span>
+                      {found.questions.length} of {QUESTIONS.length}
+                    </span>
+                  </h3>
+                  {found.questions.map(entry => (
+                    <details
+                      className="staff-topic"
+                      key={entry.id}
+                      open={opened.has(foldKey('questions', entry.id))}
+                      onToggle={event => fold(foldKey('questions', entry.id), event.target.open)}
+                    >
+                      <summary>{entry.ask}</summary>
+                      <div className="staff-topic-body">
+                        <p>{entry.say}</p>
+                      </div>
+                    </details>
+                  ))}
+                </section>
+              )}
+
+              {found.pushback.length > 0 && (
+                <section className="staff-topic-set">
+                  <h3 className="staff-set-head">
+                    {partLabel('pushback')}
+                    <span>
+                      {found.pushback.length} of {PUSHBACK.length}
+                    </span>
+                  </h3>
+                  {found.pushback.map(entry => (
+                    <details
+                      className="staff-topic"
+                      key={entry.id}
+                      open={opened.has(foldKey('pushback', entry.id))}
+                      onToggle={event => fold(foldKey('pushback', entry.id), event.target.open)}
+                    >
+                      <summary>{entry.said}</summary>
+                      <div className="staff-topic-body">
+                        <p>{entry.say}</p>
+                        {entry.after && <p className="staff-aside">{entry.after}</p>}
+                      </div>
+                    </details>
+                  ))}
+                </section>
+              )}
+
+              {found.facts.length > 0 && (
+                <details className="staff-topic" open={searching || undefined}>
+                  <summary>{partLabel('facts')}</summary>
+                  <div className="staff-topic-body">
+                    <dl className="staff-pairs">
+                      {found.facts.map(fact => (
+                        <div key={fact.id}>
+                          <dt>{fact.label}</dt>
+                          <dd>{fact.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    {found.facts.map(fact => (
+                      <p className="staff-mute" key={`${fact.id}-note`}>
+                        <b>{fact.label}.</b> {fact.note}
+                      </p>
+                    ))}
+                  </div>
+                </details>
+              )}
+
+              {found.close.length > 0 && (
+                <details className="staff-topic" open={searching || undefined}>
+                  <summary>{partLabel('close')}</summary>
+                  <div className="staff-topic-body">
+                    <ol className="staff-steps">
+                      {found.close.map(step => (
+                        <li key={step.id}>
+                          <b>{step.label}.</b> {step.say}
+                        </li>
+                      ))}
+                    </ol>
+                  </div>
+                </details>
+              )}
+
+              {found.send.length > 0 && (
+                <details className="staff-topic" open={searching || undefined}>
+                  <summary>Links to Send</summary>
+                  <div className="staff-topic-body">
+                    {found.send.map(place => (
+                      <div key={place.id}>
+                        <h4>
+                          <a href={place.href} target="_blank" rel="noreferrer noopener">
+                            {place.label}
+                          </a>
+                        </h4>
+                        <p>{place.note}</p>
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Where the reader stands, beside what they are reading. The figures
+            are the Management Center's own, drawn from one component so the
+            two screens cannot come to disagree about a number. */}
+        <aside className="staff-reading-side">
+          <div className="staff-part">
+            <h3>Your Day</h3>
+            {feed.loading ? (
+              <p className="staff-mute">Reading the day</p>
+            ) : (
+              <ShiftFigures shift={shift} spent={shift.met.calls} />
+            )}
+          </div>
+        </aside>
       </div>
-
-      {searching && (
-        <p className="staff-read">
-          {hits
-            ? `${hits} of these answer that.`
-            : 'Nothing here answers that. Say you will find out and call them back.'}
-        </p>
-      )}
-
-      {!hits ? (
-        <div className="staff-spent">
-          <h2>No results</h2>
-          <p>Try another word, or open the questions page on the main site.</p>
-        </div>
-      ) : (
-        <div className="staff-topics">
-          {found.open.length > 0 && (
-            <details className="staff-topic" open={searching || undefined}>
-              <summary>{partLabel('open')}</summary>
-              <div className="staff-topic-body">
-                {found.open.map(beat => (
-                  <div key={beat.id}>
-                    <h4>{beat.label}</h4>
-                    <p>{beat.say}</p>
-                  </div>
-                ))}
-              </div>
-            </details>
-          )}
-
-          {found.questions.length > 0 && (
-            <section className="staff-topic-set">
-              <h3 className="staff-set-head">
-                {partLabel('questions')}
-                <span>
-                  {found.questions.length} of {QUESTIONS.length}
-                </span>
-              </h3>
-              {found.questions.map(entry => (
-                <details
-                  className="staff-topic"
-                  key={entry.id}
-                  open={opened.has(foldKey('questions', entry.id))}
-                  onToggle={event => fold(foldKey('questions', entry.id), event.target.open)}
-                >
-                  <summary>{entry.ask}</summary>
-                  <div className="staff-topic-body">
-                    <p>{entry.say}</p>
-                  </div>
-                </details>
-              ))}
-            </section>
-          )}
-
-          {found.pushback.length > 0 && (
-            <section className="staff-topic-set">
-              <h3 className="staff-set-head">
-                {partLabel('pushback')}
-                <span>
-                  {found.pushback.length} of {PUSHBACK.length}
-                </span>
-              </h3>
-              {found.pushback.map(entry => (
-                <details
-                  className="staff-topic"
-                  key={entry.id}
-                  open={opened.has(foldKey('pushback', entry.id))}
-                  onToggle={event => fold(foldKey('pushback', entry.id), event.target.open)}
-                >
-                  <summary>{entry.said}</summary>
-                  <div className="staff-topic-body">
-                    <p>{entry.say}</p>
-                    {entry.after && <p className="staff-aside">{entry.after}</p>}
-                  </div>
-                </details>
-              ))}
-            </section>
-          )}
-
-          {found.facts.length > 0 && (
-            <details className="staff-topic" open={searching || undefined}>
-              <summary>{partLabel('facts')}</summary>
-              <div className="staff-topic-body">
-                <dl className="staff-pairs">
-                  {found.facts.map(fact => (
-                    <div key={fact.id}>
-                      <dt>{fact.label}</dt>
-                      <dd>{fact.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-                {found.facts.map(fact => (
-                  <p className="staff-mute" key={`${fact.id}-note`}>
-                    <b>{fact.label}.</b> {fact.note}
-                  </p>
-                ))}
-              </div>
-            </details>
-          )}
-
-          {found.close.length > 0 && (
-            <details className="staff-topic" open={searching || undefined}>
-              <summary>{partLabel('close')}</summary>
-              <div className="staff-topic-body">
-                <ol className="staff-steps">
-                  {found.close.map(step => (
-                    <li key={step.id}>
-                      <b>{step.label}.</b> {step.say}
-                    </li>
-                  ))}
-                </ol>
-              </div>
-            </details>
-          )}
-
-          {found.send.length > 0 && (
-            <details className="staff-topic" open={searching || undefined}>
-              <summary>Links to Send</summary>
-              <div className="staff-topic-body">
-                {found.send.map(place => (
-                  <div key={place.id}>
-                    <h4>
-                      <a href={place.href} target="_blank" rel="noreferrer noopener">
-                        {place.label}
-                      </a>
-                    </h4>
-                    <p>{place.note}</p>
-                  </div>
-                ))}
-              </div>
-            </details>
-          )}
-        </div>
-      )}
 
       <div className="staff-part">
         <Link className="staff-btn" to={nav.hrefFor('calls')}>

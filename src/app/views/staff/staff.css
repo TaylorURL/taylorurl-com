@@ -34,6 +34,10 @@
      it, so the phone and the desk cannot drift into two layouts. */
   --staff-measure: 100%;
   --staff-pad: var(--s-4);
+  /* How far a card's own edge is drawn outside itself: the hairline ring plus
+     the softest of the three shadows under it. A container that clips has to
+     allow this much past its content or it cuts every card down its side. */
+  --staff-bleed: 8px;
 
   --s-h: 2px;
   --s-1: 4px;
@@ -1702,12 +1706,29 @@ textarea.staff-input {
    scrolls inside the surface and the bar is simply the last row of the grid. */
 @media (min-width: 1024px) {
   .staff[data-mode='console'] {
-    overflow: hidden;
+    /* `clip` rather than `hidden`, because only `clip` takes a margin, and the
+       margin is what lets the column below paint its card edges outside
+       itself. Neither one scrolls, which is all this rule ever wanted. */
+    overflow: clip;
+    overflow-clip-margin: var(--staff-bleed);
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
+  /* A scroll container clips on both axes whatever the other one is asked for:
+     `overflow-y: auto` beside `overflow-x: visible` computes the visible one to
+     `auto` as well, and there is no way to scroll one axis and overflow the
+     other. Every card in this column is the column's own width, so that clip
+     landed exactly on their left and right edges and sliced the ring and the
+     shadow off flat - a few pixels, on every screen in the portal, and only
+     inside the console, which is the one place the column scrolls.
+
+     So the scroll box is widened by the reach of a card's edge and given the
+     same figure back as padding. The cards keep the tab row's measure, and
+     their edges have somewhere to draw. */
   .staff[data-mode='console'] .staff-scroll {
     overflow-y: auto;
+    margin-inline: calc(var(--staff-bleed) * -1);
+    padding-inline: var(--staff-bleed);
     /* The card edges of the last row want air under them rather than the
        bar's own edge against them. */
     padding-bottom: var(--s-2);
@@ -1721,14 +1742,91 @@ textarea.staff-input {
     display: grid;
     align-content: safe center;
   }
+
+  /* Standing alone the front is the sign-in screen's split, and it is that
+     because the window is one phone wide: the name and the way out take the
+     left, the doors take the right, and neither has room to be anything else.
+
+     The console gives it a room instead, and the split spends that room badly -
+     a first name alone in a column, and the doors crowded into the narrower
+     half of what is left. So here the name is a line above the doors rather
+     than a column beside them, and the doors take the whole width. There is
+     nothing to lose by it: the bar names the section and the open tab names the
+     screen, so the left column was never carrying the reader's place on the
+     screen, only their name. */
+  .staff[data-mode='console'] .staff-split {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'greet'
+      'tiles'
+      'foot';
+    row-gap: var(--s-5);
+  }
+
+  /* Doors, as many across as the room takes. The measure is set for the door
+     rather than for the row: seventeen rem is what a title and its line want
+     before the line starts wrapping, and the count follows from it - five
+     across on a wide monitor, four or three on a narrower window.
+
+     Where they do not divide, the one left over is the last, and the last is
+     Main Site. That is the door that leaves the portal, so a row of work doors
+     with the way out sitting under them is the break to have if there has to
+     be one. */
+  .staff[data-mode='console'] .staff-tiles {
+    grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+  }
 }
 
-/* The reading measure is the handbook's, and it is the one thing the console
-   does not get to widen: a line of script sixty characters across is the width
-   a line read out loud to a stranger should be, whatever room is going spare
-   beside it. */
-@media (min-width: 1024px) {
+/* The handbook is a script beside a rail.
+ *
+ * The reading measure is the one thing the console does not get to widen: a
+ * line read out loud to a stranger is sixty characters across whatever room is
+ * going spare beside it. What was wrong was leaving that room empty - on a desk
+ * it is a third of the section and on a wide monitor it is half of it, and a
+ * reader looking at it is looking at nothing. So the measure holds and the room
+ * beside it is given to the rail.
+ *
+ * One column until there is room for two. The threshold is the window rather
+ * than the section, so it is set where the section is actually wide enough: the
+ * console spends the rail and both insets before the portal sees a pixel. */
+.staff-reading {
+  display: grid;
+  gap: var(--s-4);
+  align-items: start;
+}
+
+.staff-reading-main {
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+  min-width: 0;
+  max-width: 52rem;
+}
+
+.staff-reading-side {
+  display: grid;
+  gap: var(--s-4);
+  align-content: start;
+  min-width: 0;
+}
+
+@media (min-width: 1280px) {
+  .staff[data-mode='console'] .staff-reading {
+    grid-template-columns: minmax(0, 52rem) minmax(15rem, 22rem);
+    column-gap: var(--s-8);
+  }
+
+  /* The stack is two columns now, so the cap belongs on the script rather than
+     on everything drawn beside it. */
   .staff[data-mode='console'][data-layout='reading'] .staff-stack {
-    max-width: 52rem;
+    max-width: none;
+  }
+
+  /* Stacked, but only where the rail is a rail. Three figures side by side in a
+     column this narrow is three numbers nobody can read; the same three across
+     the foot of a single-column screen, which is what this is at every width
+     below, is the shape they are drawn in everywhere else. */
+  .staff[data-mode='console'] .staff-reading-side .staff-figures {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

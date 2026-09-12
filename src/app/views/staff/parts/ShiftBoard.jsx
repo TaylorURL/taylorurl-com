@@ -11,9 +11,9 @@ import {
   callsLeft,
   finishAt,
   shiftOf,
-  shiftShare,
 } from '@lib/outreach/prospects/callShift.js'
 import { HourChart, OutcomeChart } from '../Charts'
+import ShiftFigures from './ShiftFigures'
 import { useStaff } from '../lib/context'
 import { usePortalNav } from '../lib/nav'
 import { callMoment } from '../lib/call'
@@ -118,30 +118,7 @@ export default function ShiftBoard({ Shell }) {
         </p>
       </div>
 
-      {/* The three figures, each with its own bar under it. The bar is in the
-          tile rather than in a section of its own: a bar and a figure saying one
-          thing twice is two thirds of this screen spent on three numbers. */}
-      <dl className="staff-figures">
-        {SHIFT_GOALS.map(goal => (
-          <div className="staff-figure" key={goal.id}>
-            <dd>
-              {shift[goal.of]}
-              <span>of {shift.goals[goal.id]}</span>
-            </dd>
-            <dt>{goal.label}</dt>
-            <div className="staff-track">
-              <span
-                // Amber where the calls are spent and this figure is not met,
-                // which is the one thing a day's figures can say that the
-                // figures alone do not: the dialing happened and the
-                // conversations did not.
-                data-behind={callsSpent && !shift.met[goal.id]}
-                style={{ width: `${Math.round(shiftShare(shift, goal.id) * 100)}%` }}
-              />
-            </div>
-          </div>
-        ))}
-      </dl>
+      <ShiftFigures shift={shift} spent={callsSpent} />
 
       <div className="staff-cols staff-cols-even">
         <div className="staff-part">
