@@ -1,10 +1,9 @@
 import { Link } from 'react-router-dom'
-import { m } from 'framer-motion'
 import { ArrowUpRight, Clock, Mail, MessageSquareOff, Phone, ReceiptText } from 'lucide-react'
-import { fadeInUp } from '@constants/animations'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, START_LINK, SUPPORT_EMAIL } from '@constants/navigation'
 import Magnet from '@reactbits/Magnet/Magnet'
 import { AccentGradient } from '@reactbits/kit'
+import Reveal from '@components/page-bands/Reveal'
 import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
@@ -48,11 +47,8 @@ const REPLIES = IS_SECOND_SITE ? HOME.cta.replies : STUDIO_REPLIES
 export default function FinalCtaSection() {
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div className="container-rail relative">
-        <m.div
-          {...fadeInUp}
-          className="panel-plane card-lift relative overflow-hidden rounded-[var(--r-feature)]"
-        >
+      <Reveal className="container-rail relative">
+        <div className="panel-plane card-lift relative overflow-hidden rounded-[var(--r-feature)]">
           {/* The panel is lit from its top left corner, which is where the
               plane's own gradient starts. The edge says so. */}
           <div
@@ -134,8 +130,8 @@ export default function FinalCtaSection() {
               </ul>
             </div>
           </div>
-        </m.div>
-      </div>
+        </div>
+      </Reveal>
     </section>
   )
 }

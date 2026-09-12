@@ -45,6 +45,13 @@
          follows the preference as useTheme's own listener does. -->
     <script>
       ;(function () {
+        // Arms the band arrival, which the stylesheet keeps behind this
+        // attribute. Hidden is a state only script may ask for: set here, before
+        // the first paint, a page whose bundle never arrives is served with
+        // nothing on it hidden, and there is no frame where a band is drawn and
+        // then taken away again.
+        document.documentElement.setAttribute('data-reveal', '')
+
         var stored = null
         try {
           stored = window.localStorage.getItem('taylorurl_theme')

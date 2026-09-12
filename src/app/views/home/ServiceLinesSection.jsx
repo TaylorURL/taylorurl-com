@@ -1,6 +1,5 @@
-import { m } from 'framer-motion'
-import { fadeInUp } from '@constants/animations'
 import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
+import Reveal from '@components/page-bands/Reveal'
 import { Card, Plane } from './CapabilityCard'
 
 /**
@@ -41,19 +40,15 @@ function Terms({ line }) {
 export default function ServiceLinesSection() {
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div className="container-rail relative">
-        <m.h2
-          {...fadeInUp}
-          className="display-3 max-w-[24ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]"
-        >
+      <Reveal className="container-rail relative">
+        <h2 className="display-3 max-w-[24ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]">
           {HOME.lines.heading} <span className="text-paper-soft">{HOME.lines.tail}</span>
-        </m.h2>
+        </h2>
 
         <div className="mt-14 grid gap-5 lg:grid-cols-3">
-          {HOME.lines.cards.map((line, index) => (
+          {HOME.lines.cards.map(line => (
             <Card
               key={line.slug}
-              index={index}
               to={line.path}
               cta={HOME.lines.cta}
               title={line.name}
@@ -63,7 +58,7 @@ export default function ServiceLinesSection() {
             </Card>
           ))}
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }
