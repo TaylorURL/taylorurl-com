@@ -417,8 +417,8 @@ check('the handbook is one press from the call, and the lines are on the call', 
   // opens, and the caller has nothing to read.
   ok(/key: 'resources'/.test(nav), 'the handbook stopped being a surface of the portal')
   ok(
-    screen.includes('PORTAL_SURFACES.map'),
-    'the tab row no longer draws every surface, so one of them cannot be reached'
+    screen.includes("PORTAL_SURFACES.filter(one => one.key !== 'portal')"),
+    'the tab row no longer draws every surface but the front, so one of them cannot be reached'
   )
   ok(desk.includes('scriptFor('), 'the call screen stopped composing the script')
   ok(/staff-script/.test(desk), 'the script is no longer drawn beside the business')

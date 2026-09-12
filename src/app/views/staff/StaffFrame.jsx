@@ -13,11 +13,6 @@ import './staff.css'
 /**
  * The four addresses this portal publishes, and how a screen on one reaches
  * another.
- *
- * There is no call list here. A representative is handed the next business by
- * the call screen and never picks one out of fifteen hundred, so a screen for
- * choosing is a screen they would only ever get lost in; whoever reads the
- * whole list is the person who set the shift, and they read it in the console.
  */
 const SURFACES = Object.freeze(['portal', 'calls', 'management', 'resources'])
 
@@ -75,9 +70,8 @@ export default function StaffFrame() {
   const held = useMemo(() => ({ token, userId, name, signOut }), [token, userId, name, signOut])
 
   // The business a screen was opened on, where one was named. Only the call
-  // screen reads it, and only the console's own list ever writes it - but the
-  // address is the address either way, so a link pasted into a phone opens on
-  // the business it names.
+  // screen reads it, and the address is the address, so a link pasted into a
+  // phone opens on the business it names.
   const opened = params.get('on')
   const nav = useMemo(
     () => ({

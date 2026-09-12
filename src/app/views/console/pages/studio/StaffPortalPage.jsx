@@ -2,11 +2,9 @@ import { useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useSession } from '@hooks/session/useSession'
 import { StaffContext } from '@views/staff/lib/context'
-import { PORTAL_SURFACES, PortalNav } from '@views/staff/lib/nav'
+import { PortalNav } from '@views/staff/lib/nav'
 import CallDesk from '@views/staff/parts/CallDesk'
-import CallList from '@views/staff/parts/CallList'
 import Handbook from '@views/staff/parts/Handbook'
-import PortalDoors from '@views/staff/parts/PortalDoors'
 import ShiftBoard from '@views/staff/parts/ShiftBoard'
 import '@views/staff/staff.css'
 import { useView } from '../../lib/views'
@@ -18,9 +16,9 @@ import PortalScreen, { PORTAL_VIEWS } from './PortalScreen'
  * This section used to be a table of businesses with a button on it pointing at
  * the portal, which meant the person who works the list and the person who reads
  * it were sent to two different surfaces that drew the same rows two different
- * ways. The list is gone and the portal is here instead: the front, the call
- * screen, the list itself, the day's figures and the handbook, all five inside
- * the console frame, under the console's bar and beside its column.
+ * ways. The list is gone and the portal is here instead: the call screen, the
+ * day's figures and the handbook, inside the console frame, under the console's
+ * bar and beside its column.
  *
  * Nothing about the screens changed to get them here. Every one of them is the
  * same component the standalone portal at `/staff` renders, handed a different
@@ -36,21 +34,19 @@ import PortalScreen, { PORTAL_VIEWS } from './PortalScreen'
  * The section is the admin's. A representative works the portal on its own, one
  * viewport tall with a handset in the other hand, which is what `/staff` is for
  * and why it still exists; the console's copy is for the person who set the
- * shift and wants the list beside everything else they read. The endpoints
+ * shift and wants the portal beside everything else they read. The endpoints
  * behind both answer by role on every request, so neither door is what keeps a
  * figure back.
  */
 
 /** Which surface each view draws. */
 const SCREENS = {
-  portal: PortalDoors,
   calls: CallDesk,
-  list: CallList,
   management: ShiftBoard,
   resources: Handbook,
 }
 
-const SURFACE_KEYS = Object.freeze(PORTAL_SURFACES.map(one => one.key))
+const SURFACE_KEYS = Object.freeze(PORTAL_VIEWS.map(one => one.key))
 
 export default function StaffPortalPage() {
   const { session } = useSession()
@@ -85,14 +81,14 @@ export default function StaffPortalPage() {
         return query ? `/console/staff?${query}` : '/console/staff'
       },
       openedOn: openedOn || null,
-      // The shift is set here. Whoever reads the whole list is the person who
-      // decides what a day on the phone comes to.
+      // The shift is set here, by the person who decides what a day on the phone
+      // comes to.
       sets: true,
     }),
     [openedOn]
   )
 
-  const Screen = SCREENS[view] ?? PortalDoors
+  const Screen = SCREENS[view] ?? CallDesk
 
   return (
     <StaffContext.Provider value={staff}>
