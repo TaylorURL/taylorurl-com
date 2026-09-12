@@ -2786,17 +2786,70 @@
    * A page takes one of these and holds it. The hero above and the closing
    * call below are the two that may differ, because each is bounded by an
    * edge of the page rather than by another section.
+   *
+   * The largest of the three steps down on a narrow viewport, because the
+   * space between two bands is paid twice - the foot of one and the head of
+   * the next - and a phone reads that sum against a screen a quarter the
+   * height of the one the desktop figure was chosen on. Held at the desktop
+   * number it put the best part of a screen of nothing between the work and
+   * the heading that argues about it.
    */
   .section-y {
     @apply py-20 sm:py-28;
   }
 
   .section-y-lg {
-    @apply py-24 sm:py-36;
+    @apply py-16 sm:py-36;
   }
 
   .section-y-sm {
     @apply py-14 sm:py-20;
+  }
+
+  /*
+   * THE ARRIVAL — what a band does the first time it is scrolled to, and the
+   * only motion on this page that scroll is allowed to cue.
+   *
+   * It is armed rather than assumed. `data-reveal` is set on the document by
+   * the inline block in `index.html`, which runs before the first paint, so a
+   * visitor whose bundle never arrives is served a page with nothing hidden on
+   * it. Written the other way - hidden by default, cleared by script - the page
+   * that fails to boot is a blank column, and the failure it is most likely to
+   * hit is the script not arriving.
+   *
+   * Opacity and nothing else. The travel this replaced was sixteen pixels of
+   * rise, which is what made a column of bands read as the page assembling
+   * itself under the reader rather than as a page that was already there.
+   *
+   * One duration for every band, inside the ceiling the rest of the site
+   * answers to. The system this replaced ran three at once: four hundred
+   * milliseconds for the reveal, sixty to eighty more per card for the
+   * stagger, and a full second for the swell, which exempted itself from the
+   * ceiling outright.
+   */
+  [data-reveal] .reveal {
+    opacity: 0;
+    transition: opacity 320ms var(--ease-out-soft);
+  }
+
+  [data-reveal] .reveal[data-shown] {
+    opacity: 1;
+  }
+
+  /* A narrow viewport is one column, so every band arrives alone and fills the
+     screen. There the fade is watched from beginning to end rather than met on
+     the way past, and watched again for every band the whole way down. */
+  @media (max-width: 639.98px) {
+    [data-reveal] .reveal {
+      opacity: 1;
+      transition: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-reveal] .reveal {
+      opacity: 1;
+    }
   }
 
   /* A short standing fact set on the accent's own wash - a tag, a state, a

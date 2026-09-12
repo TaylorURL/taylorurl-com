@@ -1,12 +1,10 @@
 import { useCallback, useState } from 'react'
-import { m } from 'framer-motion'
-import { fadeInUp, staggerChild } from '@constants/animations'
 import { HOW_IT_WORKS_STEPS } from '@data/pages/home'
 import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import { PORTFOLIO_PROJECTS, portfolioPreviewSrc } from '@data/portfolio'
-import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import { AccentGradient } from '@reactbits/kit'
 import PaletteShot from '@components/mockups/PaletteShot'
+import Reveal from '@components/page-bands/Reveal'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
 /**
@@ -117,91 +115,72 @@ function artefactFor(index, launched) {
   return launched ? <ClientShot project={launched} /> : null
 }
 
-/**
- * One step, as a column of the schedule.
- *
- * The column is two elements for the same reason a capability card is: the
- * outer one is the grid cell and its one-time arrival, and the inner one swells
- * when this step's turn in the page's queue comes round. Three columns of one
- * row all reach the middle of the screen together, and the queue is what hands
- * them to the reader one at a time instead.
- */
+/** One step, as a column of the schedule. */
 function Step({ item, index, launched }) {
-  const { ref, style } = useScrollSwell()
-
   return (
-    <m.li {...staggerChild(index, 0.08)} className="flex flex-col">
-      <m.div ref={ref} style={style} className="flex flex-1 flex-col">
-        <div className="flex items-center gap-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-[var(--r-control)] bg-[color:var(--wash-accent)] font-mono text-[13px] font-semibold leading-none text-accent">
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <span className="section-label-sm text-paper-faint">{item.stage}</span>
-        </div>
+    <li className="flex flex-col">
+      <div className="flex items-center gap-4">
+        <span className="flex h-9 w-9 items-center justify-center rounded-[var(--r-control)] bg-[color:var(--wash-accent)] font-mono text-[13px] font-semibold leading-none text-accent">
+          {String(index + 1).padStart(2, '0')}
+        </span>
+        <span className="section-label-sm text-paper-faint">{item.stage}</span>
+      </div>
 
-        {/* The bar beside the title is the step's mark on the column, and it
+      {/* The bar beside the title is the step's mark on the column, and it
             stops at the title: a rule down a paragraph reads as a pull quote,
             which is a different thing being said. */}
-        <h3 className="display-6 mt-7 border-l-2 border-[color:var(--accent)] pl-4 font-semibold leading-[1.2] tracking-tight text-ink-paper [text-wrap:balance]">
-          {item.title}
-        </h3>
-        <p className="mt-4 max-w-[42ch] text-[15px] leading-relaxed text-paper-soft">
-          {item.description}
-        </p>
+      <h3 className="display-6 mt-7 border-l-2 border-[color:var(--accent)] pl-4 font-semibold leading-[1.2] tracking-tight text-ink-paper [text-wrap:balance]">
+        {item.title}
+      </h3>
+      <p className="mt-4 max-w-[42ch] text-[15px] leading-relaxed text-paper-soft">
+        {item.description}
+      </p>
 
-        {IS_SECOND_SITE ? null : (
-          <div className="panel-plane mt-9 px-6 pt-7 sm:px-7 sm:pt-8 lg:mt-auto">
-            {artefactFor(index, launched)}
-          </div>
-        )}
-      </m.div>
-    </m.li>
+      {IS_SECOND_SITE ? null : (
+        <div className="panel-plane mt-9 px-6 pt-7 sm:px-7 sm:pt-8 lg:mt-auto">
+          {artefactFor(index, launched)}
+        </div>
+      )}
+    </li>
   )
 }
 
 export default function HowItWorksSection() {
   const launched = PORTFOLIO_PROJECTS.find(entry => entry.displayUrl === LAUNCHED)
-  const heading = useScrollSwell()
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div className="container-rail relative">
-        <m.div {...fadeInUp}>
-          <m.div
-            ref={heading.ref}
-            style={heading.style}
-            className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
-          >
-            {IS_SECOND_SITE ? (
-              <>
-                <div>
-                  <p className="section-label mb-5 text-accent">{HOME.how.eyebrow}</p>
-                  <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
-                    {HOME.how.headingLine} <br />
-                    <AccentGradient>{HOME.how.accentText}</AccentGradient>
-                  </h2>
-                </div>
-                <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-                  {HOME.how.lede}
-                </p>
-              </>
-            ) : (
-              <>
-                <div>
-                  <p className="section-label mb-5 text-accent">Process</p>
-                  <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
-                    How it works <br />
-                    <AccentGradient>in three steps.</AccentGradient>
-                  </h2>
-                </div>
-                <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-                  First message to live website, usually two to four weeks. A small team to talk to,
-                  and we keep it online after that.
-                </p>
-              </>
-            )}
-          </m.div>
-        </m.div>
+      <Reveal className="container-rail relative">
+        <div className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]">
+          {IS_SECOND_SITE ? (
+            <>
+              <div>
+                <p className="section-label mb-5 text-accent">{HOME.how.eyebrow}</p>
+                <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
+                  {HOME.how.headingLine} <br />
+                  <AccentGradient>{HOME.how.accentText}</AccentGradient>
+                </h2>
+              </div>
+              <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+                {HOME.how.lede}
+              </p>
+            </>
+          ) : (
+            <>
+              <div>
+                <p className="section-label mb-5 text-accent">Process</p>
+                <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
+                  How it works <br />
+                  <AccentGradient>in three steps.</AccentGradient>
+                </h2>
+              </div>
+              <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+                First message to live website, usually two to four weeks. A small team to talk to,
+                and we keep it online after that.
+              </p>
+            </>
+          )}
+        </div>
 
         <div className="relative mt-14">
           {/* The rules are drawn over the gutters rather than off the columns'
@@ -224,7 +203,7 @@ export default function HowItWorksSection() {
             ))}
           </ol>
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }
