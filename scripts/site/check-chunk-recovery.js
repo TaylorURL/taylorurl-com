@@ -257,6 +257,40 @@ if (laddering) {
     /waits/.test(laddering.source) && /await wait\(.*waitMs/.test(laddering.source),
     'the long wait is declared and never spent, so the ladder still ends where the quick pair does'
   )
+
+  // And the rungs have to land somewhere this browser holds no answer for, not
+  // just somewhere this document holds no rejection for.
+  //
+  // The count is per document and restarts at 0 in every one of them, so on its
+  // own it names the same four addresses on every visit: the plain one, then 1,
+  // 2 and 3. `vercel.json` serves everything under /assets/ `public,
+  // max-age=31536000, immutable`, and a header rule is matched on the path and
+  // applied whatever the status - so a ladder spent during an outage leaves
+  // four refusals in the browser's own cache, held for a year and never
+  // revalidated. The reload `ErrorBoundary` does then asks at those same four,
+  // is answered out of the cache with nothing sent, and draws the error screen;
+  // and so does every visit after it, until the chunk's hash changes.
+  //
+  // Measured against the built site with this chunk refused for 25 seconds and
+  // served from then on: the visit after the outage asked eight times, was
+  // answered from the cache eight times, reached the server zero times, and sat
+  // on "This page didn't load correctly." with the file answering every request
+  // nobody was making. That is #570, and it is why #561's fourth rung did not
+  // hold - #561 measured against refusals served with no Cache-Control at all,
+  // where every rung reached the network and so every rung was a real attempt.
+  //
+  // A token drawn once per document is what makes a rung an attempt again. Read
+  // rather than run, because the file this is asking about pulls React in.
+  const drawn = /const ([A-Z_]+) = Math\.random\(\)/.exec(laddering.source)
+  check(
+    Boolean(drawn),
+    'every document climbs the route chunk ladder at the same four addresses, so a reader whose first visit cached the refusals is answered out of that cache forever'
+  )
+  const minting = /searchParams\.set\('retry',([^)]*)\)/.exec(laddering.source)
+  check(
+    Boolean(drawn) && Boolean(minting) && minting[1].includes(drawn[1]),
+    'the retry address is numbered and nothing more, so it is the same address the last document asked at'
+  )
 }
 
 // The search is the only chunk on the site a reader asks for by name, and that
@@ -363,6 +397,25 @@ if (settling) {
     check(
       settled(said) === want,
       `a filed report still carries an attempt number: ${settled(said)}`
+    )
+  }
+
+  // The marker carries a token as well as a number, and the whole of it has to
+  // come off. The number alone made an address new to this document; the token
+  // is what makes it new to this browser, which is the half #570 turned on - a
+  // 404 under /assets/ is served `immutable` for a year, so the addresses a
+  // failed ladder asked at are answers the next document's ladder is handed
+  // without sending anything. Both halves ride inside the one `retry` value for
+  // exactly this reason: `settled` drops the parameter whole, so a token that
+  // differs on every visit cannot reach the collector and split one fault into
+  // one ticket per reader.
+  for (const value of ['1.k3n9x', '3.0a7b2c', '2.aaaaaa']) {
+    check(
+      settled(
+        `TypeError: Failed to fetch dynamically imported module: https://www.taylorurl.com/assets/Home-DgqC_Cv8.js?retry=${value}`
+      ) ===
+        'TypeError: Failed to fetch dynamically imported module: https://www.taylorurl.com/assets/Home-DgqC_Cv8.js',
+      `a retry address carrying a per-document token files under an address no other reader will ever report: retry=${value}`
     )
   }
 
@@ -513,6 +566,38 @@ check(
   'the boot asks again without the marker the reporter strips, so every attempt files a fault of its own'
 )
 check(flaky.reloads === 0, 'a bundle that arrived on a later attempt still reloads the document')
+
+// The same ladder, climbed in a second document, must not land on one address
+// the first document already asked at.
+//
+// Two documents is the whole of the test, because that is the shape #570 takes:
+// the first climbs its ladder during an outage, and every refusal it collects is
+// served `public, max-age=31536000, immutable` by the rule `vercel.json` puts on
+// /assets/ - a rule matched on the path and applied whatever the status, so a
+// 404 is stored for a year alongside the 200s. The reload this boot does is the
+// second document, and a ladder that numbers its attempts from zero again asks
+// at four addresses the browser already holds refusals for and sends nothing for
+// any of them. Both documents recover here only because the harness answers
+// them; in a browser the second one is answered out of the cache and the reader
+// is on a dead page until the hash changes.
+//
+// Repeated, because what is being asked about is a random draw: a token that
+// collided once in twenty runs would still pass a single comparison most of the
+// time, and a fix that only usually works is not one.
+const replayed = []
+for (let round = 0; round < 20; round += 1) {
+  const first = await runBoot([refused(), refused(), null])
+  const second = await runBoot([refused(), refused(), null])
+  for (const address of first.asked) {
+    // The plain address is the one every healthy load asks at and the one the
+    // build wrote into the document, so both ladders start there on purpose.
+    if (address.includes('retry=') && second.asked.includes(address)) replayed.push(address)
+  }
+}
+check(
+  replayed.length === 0,
+  `a second document climbs the boot ladder at addresses the first already spent, and a browser holding those refusals answers every one of them without sending anything: ${[...new Set(replayed)].join(', ')}`
+)
 
 const deleted = await runBoot([refused()])
 check(
@@ -734,6 +819,26 @@ check(
 check(
   new Set(sheet.asked.map(ask => ask.href)).size === sheet.asked.length,
   'two attempts at the sheet share an address, so the second of them sends nothing'
+)
+// And no address the last document spent, which is the second half and the one
+// #570 turned on. The sheet lives under /assets/ with the chunks, and
+// `vercel.json` serves everything there `public, max-age=31536000, immutable` -
+// a header rule is matched on the path and applied whatever the status, so the
+// refusals a ladder collects during an outage are kept by the browser for a
+// year. An attempt number that restarts at 1 in every document then names the
+// same three addresses on every visit, and the second document's whole recovery
+// is answered out of the cache without a request leaving. Repeated, because the
+// thing being asked about is a random draw and a fix that usually works is not
+// one.
+const resent = []
+for (let round = 0; round < 20; round += 1) {
+  const here = new Set(sheetAttempts().asked.map(ask => ask.href))
+  for (const href of sheetAttempts().asked.map(ask => ask.href))
+    if (here.has(href)) resent.push(href)
+}
+check(
+  resent.length === 0,
+  `a second document asks for the sheet at addresses the first already spent, so a browser holding those refusals answers the whole recovery without sending anything: ${[...new Set(resent)].join(', ')}`
 )
 check(
   sheet.asked.every(ask => ask.media === 'print'),

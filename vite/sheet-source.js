@@ -31,6 +31,19 @@
  * and the reporter strips the marker in `settled` so the attempts stay one
  * fault rather than three tickets.
  *
+ * The attempt number carries a token drawn once per document, because the
+ * number on its own restarts at 1 in every document and so names the same three
+ * addresses every time. A 404 under /assets/ is served `public,
+ * max-age=31536000, immutable` - `vercel.json` matches by path and Vercel
+ * applies a header rule whatever the status - so a document that spent its
+ * ladder during an outage leaves three refusals in the browser's cache for a
+ * year, and the next document's ladder is answered out of them without sending
+ * anything. The token is what makes the second document's attempts requests
+ * rather than replays. It rides inside the `retry` value rather than beside it
+ * as a parameter of its own, so `settled` still drops the whole marker and the
+ * fault still files at the address the build wrote. #570 is where that was
+ * measured.
+ *
  * Twice quickly, and then once more on a wait, and the two are counted apart.
  * The quick pair is for a request that was dropped and lands on the next ask;
  * they are spent 350ms and 700ms after the first failure, so the whole of them
@@ -122,6 +135,7 @@ export function sheetSource() {
 var ATTEMPTS=2
 var WAITS=1
 var WAIT_MS=5000
+var TOKEN=Math.random().toString(36).slice(2,8)
 function swap(link,attempt){
 var href=link.getAttribute('data-sheet')||link.href
 var next=document.createElement('link')
@@ -132,7 +146,7 @@ next.setAttribute('data-sheet',href)
 next.setAttribute('onload',"this.media='all'")
 next.setAttribute('fetchpriority','high')
 next.setAttribute('onerror',${JSON.stringify(SHEET_HANDLER + '(this,')}+attempt+')')
-next.href=href+(href.indexOf('?')<0?'?':'&')+'retry='+attempt
+next.href=href+(href.indexOf('?')<0?'?':'&')+'retry='+attempt+'.'+TOKEN
 if(!link.parentNode)return
 link.parentNode.insertBefore(next,link.nextSibling)
 if(link.getAttribute('data-sheet'))link.parentNode.removeChild(link)
