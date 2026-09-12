@@ -1,13 +1,25 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, Outlet, useLocation } from 'react-router-dom'
+import { Navigate, Outlet, useLocation, useSearchParams } from 'react-router-dom'
 import Seo from '@components/Seo'
 import Waiting from '@components/app-shell/Waiting'
 import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
 import { useSession } from '@hooks/session/useSession'
 import { supabase } from '@data/supabase/supabaseClient'
 import { StaffContext } from './lib/context'
+import { PortalNav } from './lib/nav'
 import { headFor } from './lib/heads'
 import './staff.css'
+
+/**
+ * The four addresses this portal publishes, and how a screen on one reaches
+ * another.
+ *
+ * There is no call list here. A representative is handed the next business by
+ * the call screen and never picks one out of fifteen hundred, so a screen for
+ * choosing is a screen they would only ever get lost in; whoever reads the
+ * whole list is the person who set the shift, and they read it in the console.
+ */
+const SURFACES = Object.freeze(['portal', 'calls', 'management', 'resources'])
 
 /**
  * The ground the four staff surfaces sit on, and the gate in front of them.
@@ -26,6 +38,7 @@ import './staff.css'
 export default function StaffFrame() {
   const { session, checking, signOut } = useSession()
   const location = useLocation()
+  const [params] = useSearchParams()
   const [name, setName] = useState(null)
   const token = session?.access_token ?? null
   const userId = session?.user?.id ?? null
@@ -61,6 +74,29 @@ export default function StaffFrame() {
 
   const held = useMemo(() => ({ token, userId, name, signOut }), [token, userId, name, signOut])
 
+  // The business a screen was opened on, where one was named. Only the call
+  // screen reads it, and only the console's own list ever writes it - but the
+  // address is the address either way, so a link pasted into a phone opens on
+  // the business it names.
+  const opened = params.get('on')
+  const nav = useMemo(
+    () => ({
+      surfaces: SURFACES,
+      hrefFor: (key, extra) => {
+        const path = key === 'portal' ? '/staff' : `/staff/${key}`
+        const query = new URLSearchParams(
+          Object.entries(extra ?? {}).filter(([, value]) => value)
+        ).toString()
+        return query ? `${path}?${query}` : path
+      },
+      openedOn: opened || null,
+      // A representative reads the figures their shift is measured against and
+      // never moves them. The console's portal is where they are set.
+      sets: false,
+    }),
+    [opened]
+  )
+
   if (checking) {
     return (
       <div className="staff">
@@ -76,8 +112,10 @@ export default function StaffFrame() {
 
   return (
     <StaffContext.Provider value={held}>
-      <Seo title={head.title} description={head.description} path={location.pathname} noIndex />
-      <Outlet />
+      <PortalNav.Provider value={nav}>
+        <Seo title={head.title} description={head.description} path={location.pathname} noIndex />
+        <Outlet />
+      </PortalNav.Provider>
     </StaffContext.Provider>
   )
 }

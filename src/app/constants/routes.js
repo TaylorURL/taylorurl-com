@@ -141,7 +141,7 @@ const ALL_ROUTES = [
       { key: 'ConsoleSettings', path: 'settings' },
       { key: 'ConsoleBuilds', path: 'builds' },
       { key: 'ConsoleLeads', path: 'leads' },
-      { key: 'ConsoleCalls', path: 'calls' },
+      { key: 'ConsoleStaff', path: 'staff' },
       { key: 'ConsolePayments', path: 'payments' },
       { key: 'ConsoleAdmin', path: 'admin' },
       { key: 'ConsoleStatus', path: 'status' },
@@ -149,12 +149,15 @@ const ALL_ROUTES = [
   },
   // The representatives' own portal, and the three surfaces behind it.
   //
-  // It is its own family rather than a section of the console because the two
-  // are read by different people for different lengths of time. The console is
-  // a dashboard somebody compares figures in; this is one screen somebody works
-  // with a handset in the other hand, and the only thing a representative
-  // controls is the call screen. Every path here asks for an account and none
-  // is in the sitemap.
+  // The same screens are a section of the console as well, at `/console/staff`,
+  // and this family is not a copy of that one: both render the components in
+  // `views/staff/parts`, each handed its own shell. What this family is for is
+  // the reader rather than the screens. The console is a dashboard somebody
+  // compares figures in, on a machine, signed in as an admin; this is one
+  // screen somebody works with a handset in the other hand, off a phone's home
+  // screen, and the only thing a representative controls is the call screen.
+  //
+  // Every path here asks for an account and none is in the sitemap.
   {
     key: 'Staff',
     path: 'staff',

@@ -67,6 +67,17 @@ const ok = (condition, what) => {
 
 const read = path => readFileSync(join(ROOT, path), 'utf8')
 
+/**
+ * The one screen the handbook is drawn on.
+ *
+ * There used to be two - a panel beside the console's call list and a page in
+ * the representatives' portal - and they were two sets of headings over one
+ * source, which is a second place for a search to go missing from. The console
+ * draws the portal itself now, so the surface is one file and both readers open
+ * the same one.
+ */
+const HANDBOOK = 'src/app/views/staff/parts/Handbook.jsx'
+
 /** A business the way the console draws one, complete unless the case strips it. */
 const business = (over = {}) => ({
   id: 'one',
@@ -359,44 +370,36 @@ check('nothing is listed twice', () => {
 })
 
 check('the parts named are the parts drawn', () => {
-  const drawn = read('src/app/views/console/pages/studio/CallHandbook.jsx')
+  const drawn = read(HANDBOOK)
+  // The labels are read out of the catalogue rather than typed onto the screen,
+  // so what is held to the catalogue is the id each heading is drawn from: a
+  // part added to `HANDBOOK_PARTS` and never drawn fails here, and a label
+  // reworded in one place cannot disagree with itself in the other.
   for (const part of HANDBOOK_PARTS) {
-    ok(drawn.includes(`"${part.label}"`), `${part.label} is named but never drawn`)
+    ok(drawn.includes(`partLabel('${part.id}')`), `${part.label} is named but never drawn`)
   }
 })
 
-// ── The panel it is drawn in ───────────────────────────────────────────────
+// ── Where it is read from ──────────────────────────────────────────────────
 
-check('the handbook opens with the record and is styled where it lands', () => {
-  const page = read('src/app/views/console/pages/studio/CallsPage.jsx')
-  const panel = read('src/app/views/console/ui.jsx')
-  const sheet = read('src/app/views/console/console.css')
+check('the handbook is one press from the call, and the lines are on the call', () => {
+  const nav = read('src/app/views/staff/lib/nav.js')
+  const screen = read('src/app/views/console/pages/studio/PortalScreen.jsx')
+  const desk = read('src/app/views/staff/parts/CallDesk.jsx')
 
-  ok(page.includes('<CallHandbook'), 'the call list stopped drawing the handbook')
-  ok(/lead=\{/.test(page), 'the handbook is no longer handed to the panel as its lead')
-  ok(panel.includes('console-side-lead'), 'the panel stopped drawing a lead card')
-  // The rule that gives it a ground of its own, rather than any rule naming
-  // it: the lead lies over the record at narrow widths, and one that inherits
-  // the scrim shows the panel underneath straight through the script.
+  // The two halves of what a caller says, and they are not the same thing. The
+  // script is composed against the business on the phone and is drawn on the
+  // call screen itself; the handbook is the reference somebody jumps into
+  // mid-call, and it is a surface of the portal rather than a page away from
+  // it. Losing either is silent: the call screen still draws, the portal still
+  // opens, and the caller has nothing to read.
+  ok(/key: 'resources'/.test(nav), 'the handbook stopped being a surface of the portal')
   ok(
-    /\.console-side-lead \{[^}]*background-color/.test(sheet),
-    'the lead card has no ground of its own, so what it covers reads through it'
+    screen.includes('PORTAL_SURFACES.map'),
+    'the tab row no longer draws every surface, so one of them cannot be reached'
   )
-  // The width that decides beside from over is written twice - once as the
-  // stylesheet's media query and once as the utility that takes the way in off
-  // the record - and the two have to be the same number. Drift either way is
-  // silent and leaves a band of widths with no route to the handbook at all:
-  // the lead still lying over the panel and the button that brings it forward
-  // already gone.
-  const overlay = sheet.match(/@media \(min-width: (\d+)px\)[^@]*\.console-side-lead/)
-  const wayIn = page.match(/min-\[(\d+)px\]:hidden/)
-  ok(overlay, 'the width that decides beside from over is gone, so the two cards overlap')
-  ok(wayIn, 'the record no longer offers a way into the handbook at any width')
-  same(
-    wayIn[1],
-    overlay[1],
-    'the stylesheet and the record disagree on the width the handbook stops being an overlay at'
-  )
+  ok(desk.includes('scriptFor('), 'the call screen stopped composing the script')
+  ok(/staff-script/.test(desk), 'the script is no longer drawn beside the business')
 })
 
 // ── The word that was just said ────────────────────────────────────────────
@@ -457,7 +460,7 @@ check('a word searched under an entry is not already written in it', () => {
 })
 
 check('a word searched under an entry is never read out', () => {
-  const drawn = read('src/app/views/console/pages/studio/CallHandbook.jsx')
+  const drawn = read(HANDBOOK)
   ok(!/\.also\b/.test(drawn), 'the words that are only searched reached the screen')
 })
 
@@ -486,7 +489,7 @@ check('the caller says their own name where the console knows it', () => {
 // ── The way through it ─────────────────────────────────────────────────────
 
 check('every folded answer can be opened and shut without twenty presses', () => {
-  const drawn = read('src/app/views/console/pages/studio/CallHandbook.jsx')
+  const drawn = read(HANDBOOK)
 
   // Twenty answers fold, and the two things done with all of them at once are
   // opening them to read down and shutting them to scan headings again. One
@@ -496,11 +499,16 @@ check('every folded answer can be opened and shut without twenty presses', () =>
   ok(drawn.includes("'Collapse All'"), 'there is no way to shut every answer at once')
   ok(/allOut \? SHUT : new Set\(folded\)/.test(drawn), 'the control no longer moves every fold')
 
-  // Whether a row is open belongs to the card rather than to the row: a fold
-  // holding its own state cannot be moved by the control above it or by a
-  // search, and both of those are how this is actually read.
+  // Whether a row is open belongs to the page rather than to the row. A fold
+  // left to hold its own state cannot be moved by the control above it or by a
+  // search, and both of those are how this is actually read - so the set lives
+  // on the page and every fold is drawn open from it.
   ok(
-    !/function Foldable\([^)]*\)\s*\{\s*const \[/.test(drawn),
+    drawn.includes('const [opened, setOpened] = useState(SHUT)'),
+    'the page stopped holding which answers are open'
+  )
+  ok(
+    /open=\{opened\.has\(foldKey\(/.test(drawn),
     'a fold went back to holding its own state, so nothing above it can move it'
   )
 
