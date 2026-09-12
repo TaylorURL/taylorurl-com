@@ -329,7 +329,7 @@ export const SECTIONS = [
     figures: false,
     description: 'The call screen, the day’s figures and the handbook.',
     title: 'Staff Portal - Console',
-    meta: 'Everything the phones are worked from: the next business to ring with the script beside it, what the day has come to against the shift it was set, and the handbook a caller answers questions out of.',
+    meta: 'Everything a caller works from: the next business to ring with the script beside it, what the day has come to against the shift it was set, and the handbook they answer questions out of.',
   },
   {
     id: 'payments',
