@@ -35,6 +35,35 @@ const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 // single request.
 let spent = 0
 
+// Something no address this browser has ever asked for can already contain.
+//
+// The count above is what made a retry address different from the built one,
+// and it is not what makes it different from the last document's. It restarts
+// at 0 in every document, so a pass that fails asks at the built address and
+// then at retry 1, 2 and 3 - and the next document, and the one after that,
+// ask at those same four.
+//
+// That would cost nothing if a refusal were forgotten. Every 404 under
+// /assets/ is served `public, max-age=31536000, immutable`, because
+// `vercel.json` matches those paths by pattern and Vercel applies a header rule
+// whatever the status - so the four addresses a failed pass asks for are four
+// entries the browser is told to keep for a year and never revalidate. The
+// reload `ErrorBoundary` does next asks at those same four and is answered out
+// of the cache with nothing sent, so it draws the error screen; and so does the
+// visit after that, and the one after that, for as long as the chunk keeps its
+// hash - with the file sitting there answering every request nobody is making.
+// Measured against the built site with the chunk refused for 25 seconds and
+// served from then on: the visit after the outage asked eight times, was
+// answered from the cache eight times, reached the server zero times, and left
+// the reader on the error screen. #570 was that.
+//
+// #561 measured its ladder against refusals served with no Cache-Control at
+// all, which is why a fourth rung looked like the whole answer: every rung
+// reached the server, so every rung was a real attempt. A rung is only an
+// attempt if its address is one no cache holds an answer for, and one drawn
+// fresh per document is.
+const TOKEN = Math.random().toString(36).slice(2, 8)
+
 // The address inside the sentence a browser throws when a module will not load.
 // Chrome and Edge say "Failed to fetch dynamically imported module: <url>", and
 // Firefox and Safari word it differently and sometimes name no address at all -
@@ -53,9 +82,10 @@ const MODULE_URL = /\bhttps?:\/\/[^\s'")]+\.m?js\b/i
  * same rejection, and a chunk that would have answered on a real second attempt
  * was given up on as if it had refused three times.
  *
- * A query string the map has not seen is a different key and a real request. It
- * reaches the same file, because a hashed asset is served by path and the
- * query is ignored by everything that answers for one.
+ * A query string neither the map nor the HTTP cache has seen is a different key
+ * in both, and so a real request. It reaches the same file, because a hashed
+ * asset is served by path and the query is ignored by everything that answers
+ * for one.
  *
  * The address is read out of the message and its query dropped by the pattern
  * above, so what is numbered is always the built address rather than the last
@@ -70,7 +100,12 @@ function refetch(error) {
   if (!found) return null
   const address = new URL(found[0])
   spent += 1
-  address.searchParams.set('retry', String(spent))
+  // One parameter, not two, and the token inside its value. `settled()` in
+  // index.html drops `retry` whole before a failure is filed, so both halves
+  // leave together and every document still reports the one built address -
+  // which is what keeps a fault deduped as one fault rather than one per
+  // reader.
+  address.searchParams.set('retry', `${spent}.${TOKEN}`)
   return import(/* @vite-ignore */ address.href)
 }
 

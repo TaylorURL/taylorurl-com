@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.37.89-2f6bff?style=for-the-badge" alt="Version 2026.37.89" />
+  <img src="https://img.shields.io/badge/version-2026.37.90-2f6bff?style=for-the-badge" alt="Version 2026.37.90" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -330,6 +330,8 @@ taylorurl-com/
 `api/` and `public/` are the two trees whose shape is not a matter of taste: Vercel turns `api/<path>.js` into `/api/<path>`, and everything under `public/` is served at its own path. A file moved in either one changes a URL that is already published — in `vercel.json`'s ten cron entries, in a Stripe or Resend webhook configured outside this repository, or in the unsubscribe link of mail that has already been sent. They stay flat for that reason rather than by neglect.
 
 Vite writes a content hash into every filename under `/assets`, so one of those files cannot change without changing its name. `vercel.json` serves them `immutable` for a year on that basis; the documents themselves stay on `must-revalidate`, so a deploy is live on the next request.
+
+That year holds for a file that answers and for one that does not, because a header rule is matched on the path and applied whatever the status — so an asset missing for the few seconds either side of a deploy is a 404 the browser is told to keep and never re-ask. An address carrying `retry` is therefore excluded from the rule and served `no-store` instead. Those are the addresses the recoveries in `lazyWithRetry.js`, `vite/boot-source.js` and `vite/sheet-source.js` ask at after a first attempt has failed, and they are the ones that must never be answered from a cache; the plain address every healthy load asks at is untouched and still `immutable`.
 
 ## License
 
