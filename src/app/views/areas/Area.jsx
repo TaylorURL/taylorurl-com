@@ -3,6 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import RuledSection from '@components/page-bands/RuledSection'
+import NoteColumns from '@components/page-bands/NoteColumns'
 import Mesh from '@components/mesh/Mesh'
 import TradeMesh from '@components/mesh/TradeMesh'
 import WorkMesh from '@components/mesh/WorkMesh'
@@ -20,8 +21,7 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 const WORK_LIMIT = 3
 
 // The four ways the work starts sit two to a row from the first breakpoint
-// with room for the pair, and four divides that exactly. The local band names
-// four things about a town, so it takes the same pair.
+// with room for the pair, and four divides that exactly.
 const PAIR_COLUMNS = { base: 1, sm: 2 }
 
 // The bands alternate grounds down the page, so a town carrying a local band
@@ -57,7 +57,6 @@ export default function Area() {
   const notesGround = groundFor('notes')
   const tradesGround = groundFor('trades')
   const servicesGround = groundFor('services')
-  const notesTone = GROUNDS[notesGround]
   const servicesTone = GROUNDS[servicesGround]
 
   return (
@@ -132,22 +131,7 @@ export default function Area() {
           description="Who is looking, what they type, and what a site has to do here to be the one they call."
           meta={`${area.name}, Texas`}
         >
-          <Mesh items={profile.notes} ground={notesGround} columns={PAIR_COLUMNS}>
-            {(note, index, cell) => (
-              <div
-                key={note.title}
-                className={`flex h-full flex-col gap-4 p-6 ${cell} ${notesTone.surface}`}
-              >
-                <span className="section-label-sm text-accent">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <h3 className={`text-[19px] font-semibold leading-tight ${notesTone.title}`}>
-                  {note.title}
-                </h3>
-                <p className={`text-[14px] leading-relaxed ${notesTone.body}`}>{note.body}</p>
-              </div>
-            )}
-          </Mesh>
+          <NoteColumns notes={profile.notes} ground={notesGround} />
         </RuledSection>
       )}
 
