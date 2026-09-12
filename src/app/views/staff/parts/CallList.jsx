@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight, Phone } from 'lucide-react'
 import { useCallDesk } from '@hooks/console/useCallDesk'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
-import { dialHref, placeOf, tellingTerms, whyListed } from '@lib/outreach/prospects/calls.js'
+import { dialHref, tellingTerms, whyListed } from '@lib/outreach/prospects/calls.js'
 import { CALL_SORTS } from '@lib/outreach/prospects/callPrefs.js'
 import {
   callerName,
@@ -353,7 +353,6 @@ export default function CallList({ Shell }) {
  * @param {{row: object, held: object|null, to: string}} props
  */
 function Business({ row, held, to }) {
-  const place = placeOf(row.place)
   const reasons = tellingTerms(row.terms)
 
   return (
@@ -369,11 +368,6 @@ function Business({ row, held, to }) {
           {[row.trade, row.town].filter(Boolean).join(' in ') || 'Trade not on file'}
         </span>
         <span className="staff-marks">
-          {place && (
-            <span className="staff-badge" data-tone={place.tone}>
-              {place.label}
-            </span>
-          )}
           {marksFor(row).map(mark => (
             <span key={mark.key} className="staff-badge" data-tone={mark.tone}>
               {mark.label}

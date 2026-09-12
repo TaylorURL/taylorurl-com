@@ -1307,16 +1307,40 @@ textarea.staff-input {
   min-width: 0;
 }
 
-/* The field's own shape, with the browser's arrow left where it is: a list a
-   thumb opens has to look like one, and a caret drawn in CSS over a native
-   select is the one that goes missing on a phone. */
+/* The field's own shape, which a select takes only once its native appearance
+   is turned off. WebKit refuses the ground, the radius and the ring on a select
+   still set to the platform's own appearance and draws the pop-up button
+   instead, so a rule holding every one of those and not the appearance held
+   none of them there while reading correctly in Chromium.
+
+   Turning the appearance off takes the browser's arrow with it, so the caret is
+   drawn here as the field's own background rather than as a mark placed over
+   the control. A list a thumb opens has to look like one, and a background
+   belongs to the element it is set on: a platform that paints the control
+   itself cannot leave this behind the way it leaves behind something
+   positioned on top of it. */
 .staff-select {
+  appearance: none;
+  -webkit-appearance: none;
   width: 100%;
+  /* Room on the closing side for the caret and the gap before it. */
+  padding: var(--s-2) var(--s-8) var(--s-2) var(--s-2h);
   min-height: var(--control-h);
-  padding: var(--s-2) var(--s-2h);
   border: 0;
   border-radius: var(--r-control);
   background-color: var(--paper-field);
+  /* Two diagonal bands overlapping into the chevron the icons elsewhere draw.
+     Bands rather than a drawing in a file because they read the ink token: a
+     caret carried as an image has its colour baked in, and the one baked for
+     the light palette is the one that disappears on the dark. */
+  background-image:
+    linear-gradient(45deg, transparent 42%, var(--ink-soft) 42% 58%, transparent 58%),
+    linear-gradient(135deg, transparent 42%, var(--ink-soft) 42% 58%, transparent 58%);
+  background-position:
+    right 16px center,
+    right 11px center;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
   box-shadow: 0 0 0 1px var(--hairline-strong);
   color: var(--ink);
   font-size: 16px;
