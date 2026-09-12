@@ -146,6 +146,14 @@ async function askOnce(signal) {
     if (!response.ok) return { up: false, why: `The door answered HTTP ${response.status}.` }
     const payload = await response.json()
     if (payload.up === true) return { up: true, why: null }
+    // `wired: false` is the door saying it was never built with anything behind
+    // it, which only a branch build answers. That is a fact about where this
+    // copy of the site is running rather than something that broke, so the
+    // widget stays off the page in silence: the report would name an assistant
+    // as missing from a build that was never given one, and it would be filed
+    // by every branch build the site ever puts up, in the same words as a real
+    // outage on the live site.
+    if (payload.wired === false) return { up: false, why: null }
     return { up: false, why: 'The door answered that there is nothing behind it.' }
   } catch (cause) {
     // A probe the widget cancelled itself answers nothing, and calling that a
