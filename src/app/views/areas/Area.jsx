@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import RuledSection from '@components/page-bands/RuledSection'
-import NoteColumns from '@components/page-bands/NoteColumns'
+import ProseRail from '@components/page-bands/ProseRail'
 import Mesh from '@components/mesh/Mesh'
 import TradeMesh from '@components/mesh/TradeMesh'
 import WorkMesh from '@components/mesh/WorkMesh'
@@ -30,12 +30,13 @@ const PAIR_COLUMNS = { base: 1, sm: 2 }
 const groundAt = index => (index % 2 === 0 ? 'paper' : 'band')
 
 /**
- * One town's page: the client work live there, what is true of the place, the
- * trades it most often calls for, and what a site includes.
+ * One town's page: the client work live there, what the work around it looks
+ * like, the trades it most often calls for, and what a site includes.
  *
- * A town whose profile names a client leads with that work and carries a band
- * of its own; a town without one shows the nearest work and the copy every town
- * shares. A slug no town answers to renders the not-found state rather than a
+ * A town whose profile names a client leads with that work; a town without one
+ * shows the nearest work under the heading every such town shares, because a
+ * line of its own per town for the same absent fact is one sentence copied five
+ * ways. A slug no town answers to renders the not-found state rather than a
  * page about nowhere.
  */
 export default function Area() {
@@ -52,9 +53,9 @@ export default function Area() {
     profile?.search ||
     `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from a small team in Baytown.`
 
-  const bands = profile ? ['work', 'notes', 'trades', 'services'] : ['work', 'trades', 'services']
+  const bands = profile ? ['work', 'local', 'trades', 'services'] : ['work', 'trades', 'services']
   const groundFor = band => groundAt(bands.indexOf(band))
-  const notesGround = groundFor('notes')
+  const localGround = groundFor('local')
   const tradesGround = groundFor('trades')
   const servicesGround = groundFor('services')
   const servicesTone = GROUNDS[servicesGround]
@@ -110,11 +111,11 @@ export default function Area() {
         ground={groundFor('work')}
         eyebrow="Live Work"
         title={
-          profile?.work.title ||
+          profile?.work?.title ||
           (local.length ? `Work already live in ${area.name}.` : 'Work already live nearby.')
         }
         description={
-          profile?.work.description ||
+          profile?.work?.description ||
           'Client sites running now, each one built, hosted, and looked after from Baytown.'
         }
         meta={local.length ? `${area.name}, Texas` : 'Southeast Texas'}
@@ -125,13 +126,12 @@ export default function Area() {
       {profile && (
         <RuledSection
           id="area-local"
-          ground={notesGround}
-          eyebrow="On the Ground"
-          title={`What decides the search in ${area.name}.`}
-          description="Who is looking, what they type, and what a site has to do here to be the one they call."
-          meta={`${area.name}, Texas`}
+          ground={localGround}
+          eyebrow="Local"
+          title={profile.local.title}
+          meta={profile.local.county}
         >
-          <NoteColumns notes={profile.notes} ground={notesGround} />
+          <ProseRail body={profile.local.body} nearby={profile.local.nearby} ground={localGround} />
         </RuledSection>
       )}
 
