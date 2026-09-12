@@ -216,6 +216,12 @@ check(
   'an unreachable assistant still showed the widget'
 )
 
+stub(body(true, { up: false, wired: false }))
+check(
+  (await assistantUp({ gapsMs: NOW })) === false,
+  'a build with no assistant wired to it still showed the widget'
+)
+
 stub(body(false, { error: 'no' }))
 check((await assistantUp({ gapsMs: NOW })) === false, 'a refused probe still showed the widget')
 
@@ -418,6 +424,8 @@ globalThis.window = globalThis.window || {}
 console.error = message => reports.push(String(message))
 let recovered = null
 let quiet = 0
+let unwired = null
+let unwiredQuiet = 0
 try {
   // A round that ends on a yes is a widget that was drawn, so it has nothing
   // to report. The sentence says no widget was drawn, and filing it for a page
@@ -429,6 +437,15 @@ try {
   }
   recovered = await assistantUp({ gapsMs: NOW })
   quiet = reports.length
+
+  // A build with no assistant wired to it has none missing. The live site is
+  // the only deployment holding the assistant's address and its secret, so
+  // every branch build answers this, on every page, for as long as the branch
+  // is up - and said out loud it arrives in the queue wearing the same sentence
+  // the live site uses when its own assistant is genuinely gone.
+  stub(body(true, { up: false, wired: false }))
+  unwired = await assistantUp({ gapsMs: NOW })
+  unwiredQuiet = reports.length
 
   stub(body(true, { up: false }))
   answers.push(await assistantUp({ gapsMs: NOW }))
@@ -445,6 +462,19 @@ try {
 
 check(recovered === true, 'a round that ended on a yes did not draw the widget')
 check(quiet === 0, 'a lost connection the next ask recovered was reported as no widget at all')
+check(unwired === false, 'a build with no assistant wired to it still drew the widget')
+check(unwiredQuiet === 0, 'a build that was never given an assistant reported one as missing')
+
+// The silence above is worth having only while it is impossible on the site
+// itself. The live deployment holding no assistant is the fault this whole
+// report exists to catch, so it answers an ordinary no and is reported like
+// one; only a build that is not the site may say it was never wired.
+const door = readFileSync(join(HERE, '../..', 'api/live-chat.js'), 'utf8')
+check(/wired: false/.test(door), 'the endpoint no longer says when it was never wired up')
+check(
+  /if \(!WIRED && !LIVE_SITE\)/.test(door),
+  'the live site can answer that it never had an assistant, which silences its own outage'
+)
 check(
   answers.every(answer => answer === false),
   'a reported outage stopped the widget answering no'
