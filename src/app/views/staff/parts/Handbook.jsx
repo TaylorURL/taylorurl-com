@@ -335,7 +335,7 @@ export default function Handbook({ Shell }) {
           <div className="staff-part">
             <h3>Your Day</h3>
             {feed.loading ? (
-              <p className="staff-mute">Reading the day</p>
+              <p className="staff-mute">Loading</p>
             ) : (
               <ShiftFigures shift={shift} spent={shift.met.calls} />
             )}
