@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Phone } from 'lucide-react'
 import { useCallDesk } from '@hooks/console/useCallDesk'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
 import { isTyping } from '@utils/keyboard'
@@ -279,183 +280,190 @@ export default function CallPage() {
           )}
         </div>
       ) : (
-        <>
-          <div className="staff-biz" key={`${current.id}-who`}>
-            <h2>{current.name}</h2>
-            <p>
-              {[current.trade, current.town].filter(Boolean).join(' in ') || 'Trade not on file'}
-            </p>
-            <div className="staff-marks">
-              {marksFor(current).map(mark => (
-                <span key={mark.key} className="staff-badge" data-tone={mark.tone}>
-                  {mark.label}
-                </span>
-              ))}
+        <div className="staff-cols">
+          <div className="staff-main">
+            <div className="staff-biz" key={`${current.id}-who`}>
+              <h2>{current.name}</h2>
+              <p>
+                {[current.trade, current.town].filter(Boolean).join(' in ') || 'Trade not on file'}
+              </p>
+              <div className="staff-marks">
+                {marksFor(current).map(mark => (
+                  <span key={mark.key} className="staff-badge" data-tone={mark.tone}>
+                    {mark.label}
+                  </span>
+                ))}
+              </div>
             </div>
-          </div>
 
-          <a className="staff-number" href={dialHref(current.phone)} key={`${current.id}-dial`}>
-            {current.phone}
-          </a>
+            <a className="staff-number" href={dialHref(current.phone)} key={`${current.id}-dial`}>
+              <Phone aria-hidden="true" />
+              {current.phone}
+            </a>
 
-          <dl className="staff-pairs" key={`${current.id}-facts`}>
-            <div>
-              <dt>Address</dt>
-              <dd>{current.address || 'Not on file'}</dd>
-            </div>
-            <div>
-              <dt>Reviews</dt>
-              <dd>
-                {current.rating
-                  ? `${current.rating} from ${current.rating_count ?? 0}`
-                  : 'None on file'}
-              </dd>
-            </div>
-            <div>
-              <dt>Site</dt>
-              <dd>{current.site_kind === 'social' ? 'Social page only' : 'None'}</dd>
-            </div>
-            <div>
-              {/* A time the owner named is a different fact from a rest running
+            <dl className="staff-pairs" key={`${current.id}-facts`}>
+              <div>
+                <dt>Address</dt>
+                <dd>{current.address || 'Not on file'}</dd>
+              </div>
+              <div>
+                <dt>Reviews</dt>
+                <dd>
+                  {current.rating
+                    ? `${current.rating} from ${current.rating_count ?? 0}`
+                    : 'None on file'}
+                </dd>
+              </div>
+              <div>
+                <dt>Site</dt>
+                <dd>{current.site_kind === 'social' ? 'Social page only' : 'None'}</dd>
+              </div>
+              <div>
+                {/* A time the owner named is a different fact from a rest running
                   out, and reading the first as the second is how a caller rings
                   somebody an hour before they asked to be rung. */}
-              <dt>{current.callback_at ? 'They Said' : 'Comes Back'}</dt>
-              <dd>
-                {current.callback_at
-                  ? callMoment(current.callback_at)
-                  : current.ready_at
-                    ? callMoment(current.ready_at)
-                    : 'Ready now'}
-              </dd>
-            </div>
-          </dl>
+                <dt>{current.callback_at ? 'They Said' : 'Comes Back'}</dt>
+                <dd>
+                  {current.callback_at
+                    ? callMoment(current.callback_at)
+                    : current.ready_at
+                      ? callMoment(current.ready_at)
+                      : 'Ready now'}
+                </dd>
+              </div>
+            </dl>
 
-          <div className="staff-part" key={`${current.id}-record`}>
-            <h3>The Record</h3>
-            {current.calls?.length ? (
-              <dl className="staff-record">
-                {current.calls.map(call => (
-                  <div key={call.id}>
-                    <dt>{callDay(call.called_at)}</dt>
-                    <dd>
-                      {callLine(call)}
-                      {call.note ? `. ${call.note}` : ''}
-                    </dd>
+            {marked && (
+              <div className="staff-answers">
+                <div className="staff-part">
+                  <h3>What the Call Came To</h3>
+                  <div className="staff-tags-grid">
+                    {CALL_OUTCOMES.map(one => (
+                      <button
+                        key={one.id}
+                        type="button"
+                        className="staff-tag"
+                        data-tone={one.tone}
+                        aria-pressed={outcome === one.id}
+                        onClick={() => setOutcome(held => (held === one.id ? null : one.id))}
+                      >
+                        <span className="staff-key">{one.key}</span>
+                        {one.label}
+                      </button>
+                    ))}
                   </div>
-                ))}
-              </dl>
-            ) : (
-              <p className="staff-read">Nobody has rung this one yet. Yours is the first call.</p>
+                  {asksLength && (
+                    <div className="staff-range">
+                      <p className="staff-label">Ring Back In</p>
+                      <div className="staff-tags">
+                        {CALLBACK_LENGTHS.map(length => (
+                          <button
+                            key={length.hours}
+                            type="button"
+                            className="staff-tag"
+                            aria-pressed={hours === length.hours}
+                            onClick={() =>
+                              setHours(held => (held === length.hours ? null : length.hours))
+                            }
+                          >
+                            {length.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {asksInterest && (
+                  <div className="staff-part">
+                    <h3>Were They Interested</h3>
+                    <div className="staff-tags">
+                      <button
+                        type="button"
+                        className="staff-tag"
+                        data-tone="good"
+                        aria-pressed={interest === true}
+                        onClick={() => setInterest(held => (held === true ? null : true))}
+                      >
+                        Interested
+                      </button>
+                      <button
+                        type="button"
+                        className="staff-tag"
+                        data-tone="bad"
+                        aria-pressed={interest === false}
+                        onClick={() => setInterest(held => (held === false ? null : false))}
+                      >
+                        Not Interested
+                      </button>
+                    </div>
+                    <p className="staff-read">
+                      Leave it unpressed where the call did not get that far. Not interested keeps
+                      them on the call list and off the lead list.
+                    </p>
+                  </div>
+                )}
+
+                <div className="staff-part">
+                  <h3>Comment</h3>
+                  <div className="staff-tags">
+                    {NOTE_STAMPS.map(stamp => (
+                      <button
+                        key={stamp}
+                        type="button"
+                        className="staff-tag"
+                        onClick={() =>
+                          setNote(held => (held ? `${held.trimEnd()} ${stamp}` : stamp))
+                        }
+                      >
+                        {stamp}
+                      </button>
+                    ))}
+                  </div>
+                  <textarea
+                    className="staff-input"
+                    value={note}
+                    onChange={event => setNote(event.target.value)}
+                    placeholder="What the next person ringing them needs to know."
+                  />
+                </div>
+              </div>
             )}
           </div>
 
-          <details className="staff-fold">
-            <summary>Refresher</summary>
-            <div className="staff-fold-body">
-              {script.map(beat => (
-                <div className="staff-beat" key={beat.id}>
-                  <p className="staff-label">{beat.label}</p>
-                  <p>{beat.say}</p>
-                </div>
-              ))}
-            </div>
-          </details>
-
-          {marked && (
-            <div className="staff-answers">
-              <div className="staff-part">
-                <h3>What the Call Came To</h3>
-                <div className="staff-tags-grid">
-                  {CALL_OUTCOMES.map(one => (
-                    <button
-                      key={one.id}
-                      type="button"
-                      className="staff-tag"
-                      data-tone={one.tone}
-                      aria-pressed={outcome === one.id}
-                      onClick={() => setOutcome(held => (held === one.id ? null : one.id))}
-                    >
-                      <span className="staff-key">{one.key}</span>
-                      {one.label}
-                    </button>
-                  ))}
-                </div>
-                {asksLength && (
-                  <div className="staff-range">
-                    <p className="staff-label">Ring Back In</p>
-                    <div className="staff-tags">
-                      {CALLBACK_LENGTHS.map(length => (
-                        <button
-                          key={length.hours}
-                          type="button"
-                          className="staff-tag"
-                          aria-pressed={hours === length.hours}
-                          onClick={() =>
-                            setHours(held => (held === length.hours ? null : length.hours))
-                          }
-                        >
-                          {length.label}
-                        </button>
-                      ))}
+          <aside className="staff-side">
+            <div className="staff-part" key={`${current.id}-record`}>
+              <h3>The Record</h3>
+              {current.calls?.length ? (
+                <dl className="staff-record">
+                  {current.calls.map(call => (
+                    <div key={call.id}>
+                      <dt>{callDay(call.called_at)}</dt>
+                      <dd>
+                        {callLine(call)}
+                        {call.note ? `. ${call.note}` : ''}
+                      </dd>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {asksInterest && (
-                <div className="staff-part">
-                  <h3>Were They Interested</h3>
-                  <div className="staff-tags">
-                    <button
-                      type="button"
-                      className="staff-tag"
-                      data-tone="good"
-                      aria-pressed={interest === true}
-                      onClick={() => setInterest(held => (held === true ? null : true))}
-                    >
-                      Interested
-                    </button>
-                    <button
-                      type="button"
-                      className="staff-tag"
-                      data-tone="bad"
-                      aria-pressed={interest === false}
-                      onClick={() => setInterest(held => (held === false ? null : false))}
-                    >
-                      Not Interested
-                    </button>
-                  </div>
-                  <p className="staff-read">
-                    Leave it unpressed where the call did not get that far. Not interested keeps
-                    them on the call list and off the lead list.
-                  </p>
-                </div>
-              )}
-
-              <div className="staff-part">
-                <h3>Comment</h3>
-                <div className="staff-tags">
-                  {NOTE_STAMPS.map(stamp => (
-                    <button
-                      key={stamp}
-                      type="button"
-                      className="staff-tag"
-                      onClick={() => setNote(held => (held ? `${held.trimEnd()} ${stamp}` : stamp))}
-                    >
-                      {stamp}
-                    </button>
                   ))}
-                </div>
-                <textarea
-                  className="staff-input"
-                  value={note}
-                  onChange={event => setNote(event.target.value)}
-                  placeholder="What the next person ringing them needs to know."
-                />
-              </div>
+                </dl>
+              ) : (
+                <p className="staff-read">Nobody has rung this one yet. Yours is the first call.</p>
+              )}
             </div>
-          )}
-        </>
+
+            <details className="staff-fold">
+              <summary>Refresher</summary>
+              <div className="staff-fold-body">
+                {script.map(beat => (
+                  <div className="staff-beat" key={beat.id}>
+                    <p className="staff-label">{beat.label}</p>
+                    <p>{beat.say}</p>
+                  </div>
+                ))}
+              </div>
+            </details>
+          </aside>
+        </div>
       )}
     </StaffScreen>
   )

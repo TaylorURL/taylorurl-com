@@ -55,7 +55,7 @@ export default function ResourcesPage() {
   const open = Boolean(typed.trim())
 
   return (
-    <StaffScreen title="Resources Center" back={{ to: '/staff', label: 'Portal' }}>
+    <StaffScreen title="Resources Center" back={{ to: '/staff', label: 'Portal' }} layout="reading">
       <label className="staff-greet" htmlFor="staff-handbook-search">
         <span className="staff-label">Search the Handbook</span>
         <input

@@ -93,63 +93,65 @@ export default function ManagementPage() {
         ))}
       </dl>
 
-      <div className="staff-part">
-        <h3>The Rest of the Day</h3>
-        <dl className="staff-pairs">
-          <div>
-            <dt>Started</dt>
-            <dd>{shift.first ? callMoment(shift.first) : 'Not yet'}</dd>
-          </div>
-          <div>
-            <dt>Goal Met By</dt>
-            <dd>
-              {finish
-                ? callMoment(finish.toISOString())
-                : shift.met.calls
-                  ? 'Met'
-                  : 'Too early to say'}
-            </dd>
-          </div>
-          <div>
-            <dt>Ready to Call</dt>
-            <dd>{totals ? totals.call : 'Reading'}</dd>
-          </div>
-          <div>
-            <dt>Soonest Back</dt>
-            <dd>{nextBack ? callMoment(nextBack) : 'None waiting'}</dd>
-          </div>
-        </dl>
-        <p className="staff-read">
-          The figures above are yours alone. Whoever set your shift sets them in the console, not
-          here, so ask them if one of them looks wrong.
-        </p>
-      </div>
-
-      <div className="staff-part">
-        <h3>At the Desk</h3>
-        {desk.loading ? (
-          <p className="staff-read">Reading the desk.</p>
-        ) : board.length ? (
-          board.map(row => (
-            <div className="staff-person" key={row.user_id}>
-              <div className="staff-person-top">
-                <b>{row.user_id === userId ? 'You' : callerName(row)}</b>
-                <span className="staff-badge" data-tone={row.business ? 'accent' : 'plain'}>
-                  {row.business ? 'On a Call' : 'At the Desk'}
-                </span>
-              </div>
-              <p className="staff-read">
-                {row.business
-                  ? `${row.business.name}${row.business.town ? `, ${row.business.town}` : ''}${
-                      row.on_phone_since ? ` (${saidSince(row.on_phone_since)})` : ''
-                    }`
-                  : 'Nothing held.'}
-              </p>
+      <div className="staff-cols staff-cols-even">
+        <div className="staff-part">
+          <h3>The Rest of the Day</h3>
+          <dl className="staff-pairs">
+            <div>
+              <dt>Started</dt>
+              <dd>{shift.first ? callMoment(shift.first) : 'Not yet'}</dd>
             </div>
-          ))
-        ) : (
-          <p className="staff-read">Nobody else has the list open.</p>
-        )}
+            <div>
+              <dt>Goal Met By</dt>
+              <dd>
+                {finish
+                  ? callMoment(finish.toISOString())
+                  : shift.met.calls
+                    ? 'Met'
+                    : 'Too early to say'}
+              </dd>
+            </div>
+            <div>
+              <dt>Ready to Call</dt>
+              <dd>{totals ? totals.call : 'Reading'}</dd>
+            </div>
+            <div>
+              <dt>Soonest Back</dt>
+              <dd>{nextBack ? callMoment(nextBack) : 'None waiting'}</dd>
+            </div>
+          </dl>
+          <p className="staff-read">
+            The figures above are yours alone. Whoever set your shift sets them in the console, not
+            here, so ask them if one of them looks wrong.
+          </p>
+        </div>
+
+        <div className="staff-part">
+          <h3>At the Desk</h3>
+          {desk.loading ? (
+            <p className="staff-read">Reading the desk.</p>
+          ) : board.length ? (
+            board.map(row => (
+              <div className="staff-person" key={row.user_id}>
+                <div className="staff-person-top">
+                  <b>{row.user_id === userId ? 'You' : callerName(row)}</b>
+                  <span className="staff-badge" data-tone={row.business ? 'accent' : 'plain'}>
+                    {row.business ? 'On a Call' : 'At the Desk'}
+                  </span>
+                </div>
+                <p className="staff-read">
+                  {row.business
+                    ? `${row.business.name}${row.business.town ? `, ${row.business.town}` : ''}${
+                        row.on_phone_since ? ` (${saidSince(row.on_phone_since)})` : ''
+                      }`
+                    : 'Nothing held.'}
+                </p>
+              </div>
+            ))
+          ) : (
+            <p className="staff-read">Nobody else has the list open.</p>
+          )}
+        </div>
       </div>
 
       <div className="staff-part">
