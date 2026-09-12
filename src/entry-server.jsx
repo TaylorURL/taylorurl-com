@@ -77,19 +77,14 @@ const ROOT_OPEN_TAG = '<div id="root">'
  * route's hoisted tags ahead of the root, and they are moved into the document
  * head here.
  *
- * A route whose content comes from the database is handed it in `seed`, since
- * an effect never runs here and the file would otherwise be a loading shell
- * with no title, description or structured data in it.
- *
  * @param {string} url - Route path to render (e.g. `/blog/some-slug`).
  * @param {string} headInner - Inner HTML of the built template's <head>.
- * @param {object|null} [seed] - Build-time data for this route.
  * @returns {string} A complete HTML document (without the leading doctype).
  */
-export function render(url, headInner, seed = null) {
+export function render(url, headInner) {
   const markup = renderToString(
     <div id="root">
-      <Providers seed={seed}>
+      <Providers>
         <StaticRouter location={url}>
           <App views={views} />
         </StaticRouter>
