@@ -93,20 +93,20 @@ const TOWN_PROFILES = {
 
   Houston: {
     client: 'delux-financial-solutions',
-    lede: 'Houston is twenty-six miles west on I-10, and by a wide margin the largest market on this list. Websites for the shops, trades, offices, and independent pros working in it, in any part of the city.',
+    lede: 'Houston is twenty-six miles west on I-10, and the largest market we build in. Websites for the shops, trades, offices, and independent pros working in any part of the city.',
     search:
-      'Web design in Houston, TX for small businesses in any part of the city. Custom sites built and hosted from Baytown. See Delux Financial Solutions, live.',
+      'Web design in Houston, TX and Harris County for small businesses in any part of the city. Built and hosted from Baytown. See Delux Financial Solutions, live.',
     work: {
       title: 'Delux Financial Solutions books both kinds of appointment.',
       description:
         'A Houston credit-education practice, with credit building and financial guidance laid out across services, education, and a booking path. Virtual consultations and mobile in-person ones are set on the site rather than over the phone.',
     },
     local: {
-      title: 'Houston is the one town on this list too big to rank for.',
+      title: 'Houston is too big to win on the city name alone.',
       counties: ['Harris'],
       body: [
-        'Nobody small wins a search for Houston. Two million people means an agency for every keyword with a budget behind it, so the searches worth having name a neighborhood and a trade rather than the city. We write the page for the neighborhood a business actually trades in and let the city keyword go.',
-        'Most of what we have built around Houston is quoted rather than bought off a shelf. A broker or a repair shop wins on the quote sheet, which puts the weight on proof of work and on a form that asks for the detail a price depends on.',
+        'Two million people means every keyword with a budget behind it already has an agency on it, so the searches worth having name a part of town and a trade as well as the city. We write the page for the part of Houston a business actually trades in, and the city name sits on it beside that rather than instead of it.',
+        'Around Houston, most of the businesses we build for sell by quote rather than off a shelf. A broker wins on the quote sheet, which puts the weight on proof of work and on a form that asks for the detail a price depends on.',
       ],
     },
     close:
@@ -392,17 +392,24 @@ export function areaBySlug(slug) {
 /**
  * The client sites in a town, the one its profile leads with first.
  *
+ * Work filed under one town can run in others. A concrete producer's plants and
+ * crews are not one place, and neither is a field-service product, so those
+ * entries name the further towns in `alsoIn` and show up here too. They come
+ * after the town's own, because a business that trades here is better proof to
+ * a reader here than one that reaches here.
+ *
  * @param {string} name A town name.
  * @returns {Array<object>} Matching portfolio entries; empty for a town with no
  *   client of its own yet.
  */
 export function workInTown(name) {
   const featured = TOWN_PROFILES[name]?.client
-  const lead = featured ? PORTFOLIO_PROJECTS.filter(project => project.slug === featured) : []
-  const rest = PORTFOLIO_PROJECTS.filter(
-    project => project.town === name && project.slug !== featured
-  )
-  return [...lead, ...rest]
+  const here = project => project.town === name
+  const reaches = project => project.alsoIn?.includes(name)
+  const rank = project => (project.slug === featured ? 0 : here(project) ? 1 : 2)
+  return PORTFOLIO_PROJECTS.filter(
+    project => project.slug === featured || here(project) || reaches(project)
+  ).sort((a, b) => rank(a) - rank(b))
 }
 
 /**

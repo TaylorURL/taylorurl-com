@@ -10,12 +10,13 @@ import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
 import { areaBySlug, townSlug, workInTown, workNear } from '@data/towns-and-trades/areas'
 import { TRADES } from '@data/towns-and-trades/trades'
-import { SERVICE_LINES } from '@data/pages/services'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 // How many more sites in the same town run under the one the page leads with,
 // before the block stops reading as proof and starts reading as a directory.
-const ALSO_LIMIT = 2
+// Houston is the town that needs the third: two clients of its own, plus the
+// concrete platform and the tire product whose work runs there as well.
+const ALSO_LIMIT = 3
 
 // The bands alternate grounds down the page, so a town carrying a local band
 // takes a different arrangement from a town without one and the closing panel
@@ -29,13 +30,15 @@ const groundAt = index => (index % 2 === 0 ? 'paper' : 'band')
  * It used to close on the four ways a job starts, which was the same four cells
  * under the same heading on all thirteen pages, so the band a reader reached
  * last was the one that told them least about where they were. The service
- * lines are still in this page's schema and still a click away in the nav; what
- * they are not is the last thing a page about Dayton has to say.
+ * lines are still a click away in the nav, and the offer catalog that described
+ * that band went out with it rather than staying behind as markup for a band no
+ * page draws. What they are not is the last thing a page about Dayton has to
+ * say.
  *
  * A town whose profile names a client leads with that work; a town without one
- * shows the nearest work under the heading every such town shares, because a
- * line of its own per town for the same absent fact is one sentence copied five
- * ways. A slug no town answers to renders the not-found state rather than a
+ * shows one site from the towns around it, under the heading every such town
+ * shares, because a line of its own per town for the same absent fact is one
+ * sentence copied five ways. A slug no town answers to renders the not-found state rather than a
  * page about nowhere.
  */
 export default function Area() {
@@ -54,6 +57,8 @@ export default function Area() {
   // Where that site is. Most entries carry a town; one carries only the
   // "Pasadena, Texas" it prints, so the town is read off that rather than
   // guessed, and a sentence that would have to guess is not written at all.
+  // The sentence says where rather than how near: workNear picks on trade and
+  // on measured speed, so the site it lands on is not always the closest one.
   const leadTown = lead && (lead.town || lead.location?.split(',')[0])
   const trades = area.trades.map(id => TRADES.find(trade => trade.id === id)).filter(Boolean)
   const counties = profile?.local.counties || []
@@ -107,14 +112,6 @@ export default function Area() {
               },
               ...nearby.map(place => ({ '@type': 'Place', name: place.name })),
             ],
-            hasOfferCatalog: {
-              '@type': 'OfferCatalog',
-              name: `Website services in ${area.name}`,
-              itemListElement: SERVICE_LINES.map(line => ({
-                '@type': 'Offer',
-                itemOffered: { '@type': 'Service', name: line.name, description: line.summary },
-              })),
-            },
           },
         ]}
       />
@@ -141,7 +138,7 @@ export default function Area() {
         description={
           profile?.work?.description ||
           (leadTown
-            ? `The nearest client site running now is in ${leadTown}, built, hosted, and looked after from Baytown.`
+            ? `We built this one for a business in ${leadTown}, and we still host it and look after it.`
             : undefined)
         }
         meta={local.length ? `${area.name}, Texas` : `Near ${area.name}, Texas`}
