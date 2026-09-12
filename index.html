@@ -190,6 +190,46 @@
         // What it files is worded exactly as the reporter's own resource branch
         // words it. The collector groups by the message, so a wording of its own
         // here would split one fault into two and start its history over.
+        //
+        // And the rule above reads what became of a request without ever asking
+        // whether the reader was still there while it was outstanding. A script
+        // still in flight when the document is taken off the screen is torn down
+        // by the system, and the element fires `error` for it exactly as it does
+        // for a library that is gone. That is the third thing one tag failing
+        // while the other arrived can mean, and it is the everyday shape of a
+        // phone: the reader taps through, locks the screen or switches apps, and
+        // whatever had not landed yet is cancelled underneath them.
+        //
+        // It lands on this tag rather than the other for the same reason every
+        // recurrence here has. Google's is the heavier of the two and it is the
+        // one asked for twice, so the pixel has usually landed while the second
+        // ask is still going out - one arrived, one refused, filed. A reader
+        // arriving on an ad meets it hardest, because the click parameters take
+        // the fast path below and put both asks into the page's first moment,
+        // which on a throttled connection is the most contended moment there is
+        // and the one a first navigation is most likely to land on top of.
+        //
+        // The reporter already reads every failed `fetch` this way and holds the
+        // ones the reader walked out on. The tag block is the one caller into it
+        // that never did, so this keeps the same bookkeeping: where the document
+        // stood when a tag was first asked for, read again when the verdict on it
+        // is reached. It keeps its own count rather than the reporter's because
+        // this block runs first and the reporter does not exist yet at the moment
+        // an ask goes out.
+        //
+        // A page the reader stayed on files exactly as before. That is the
+        // report this host is worth having and nothing here narrows it.
+        var departures = 0
+        function offscreen() {
+          return document.visibilityState === 'hidden'
+        }
+        addEventListener('pagehide', function () {
+          departures += 1
+        })
+        document.addEventListener('visibilitychange', function () {
+          if (offscreen()) departures += 1
+        })
+        var asked = {}
         var answered = {}
         function settle(src, arrived) {
           answered[src] = arrived
@@ -200,6 +240,17 @@
           }
           if (lost.length === tags.length) return
           for (var m = 0; m < lost.length; m += 1) {
+            var when = asked[lost[m]]
+            if (!when || when.away || offscreen() || departures !== when.left) {
+              if (window.__reporter && window.__reporter.hold)
+                window.__reporter.hold(
+                  'tag',
+                  'No answer from ' +
+                    lost[m].split('?')[0] +
+                    ', asked for across a page the reader left'
+                )
+              continue
+            }
             if (window.__reporter && window.__reporter.file)
               window.__reporter.file('resource', 'Failed to load script: ' + lost[m])
           }
@@ -256,6 +307,10 @@
           }
         }
         function fetchTag(tag, cors) {
+          // The first ask only. A tag refused on its CORS mode is asked again,
+          // and what decides the verdict is whether the reader was there for the
+          // whole of it rather than for the last request of it.
+          if (!(tag.src in asked)) asked[tag.src] = { left: departures, away: offscreen() }
           var node = document.createElement('script')
           node.async = true
           if (cors) node.crossOrigin = 'anonymous'
@@ -962,6 +1017,13 @@
           // either of them is a fact about the other.
           file: function (kind, message) {
             report(kind, message, '')
+          },
+          // The same caller's other answer. A tag failure the loader decided not
+          // to file is still worth reading off the live console, the same way
+          // every failure this block holds itself is, so it comes in here rather
+          // than being dropped on the floor.
+          hold: function (kind, message) {
+            hold(kind, message, '')
           },
         }
         // The attempt number this page hung on an address of its own, taken
