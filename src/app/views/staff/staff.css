@@ -1275,6 +1275,322 @@ textarea.staff-input {
   color: var(--ink);
 }
 
+/* ── Icons inside a control ──────────────────────────────────────────────── */
+
+/* A key that carries a drawing carries it at the size of its own type, and
+   never lets it shrink when the label beside it runs long. */
+.staff-btn svg,
+.staff-quiet svg {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* ── Fields that are picked rather than typed ────────────────────────────── */
+
+/* A label over a control, which is how every narrowing on the list is set. The
+   label is the same small uppercase one the sections carry, so a row of these
+   reads as one band rather than as four separate forms. */
+.staff-picks {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+  gap: var(--s-2h);
+}
+
+.staff-pick {
+  display: grid;
+  gap: var(--s-1h);
+  min-width: 0;
+}
+
+/* The field's own shape, with the browser's arrow left where it is: a list a
+   thumb opens has to look like one, and a caret drawn in CSS over a native
+   select is the one that goes missing on a phone. */
+.staff-select {
+  width: 100%;
+  min-height: var(--control-h);
+  padding: var(--s-2) var(--s-2h);
+  border: 0;
+  border-radius: var(--r-control);
+  background-color: var(--paper-field);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+  color: var(--ink);
+  font-size: 16px;
+  transition: box-shadow 150ms var(--ease-out-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .staff-select {
+    font-size: var(--t-3);
+  }
+}
+
+.staff-select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.staff-select:disabled {
+  opacity: 0.45;
+}
+
+/* ── The call list ───────────────────────────────────────────────────────── */
+
+/* Who is on the phone. One line per caller, and it wraps rather than truncating
+   a business name: this is read in the second before somebody presses a number,
+   and a name cut at "Lone Star Weld..." is a name that could be two businesses. */
+.staff-onphone-list {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.staff-onphone-list li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-1h) var(--s-2h);
+  font-size: var(--t-3);
+  color: var(--ink-soft);
+}
+
+.staff-onphone-list b {
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.staff-onphone-list .staff-quiet {
+  min-height: 32px;
+  margin-left: auto;
+  padding-inline: var(--s-2h);
+  font-size: var(--t-2);
+}
+
+/* The four counts over the list. Two to a row on a phone and four across from
+   a tablet up, because a count set three characters wide in a quarter of a
+   phone is a figure with a word under it that has to hyphenate. */
+.staff-counts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+@media (min-width: 640px) {
+  .staff-counts {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.staff-counts > div {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-2h) var(--s-3);
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+.staff-counts dd {
+  font-size: var(--t-6);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.staff-counts dt {
+  font-size: var(--t-1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* What the list is narrowed by: the three views, the search, and the pickers.
+   One column on a phone, because every one of them is a full-width control at
+   that size and a two-column form of half-width dropdowns is a form nobody can
+   read the labels of. */
+.staff-controls {
+  display: grid;
+  gap: var(--s-2h);
+}
+
+/* A business, folded. The face of it is what decides whether to ring it; the
+   rest is one press underneath. */
+.staff-rows {
+  display: grid;
+  gap: var(--s-2);
+}
+
+.staff-row {
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+.staff-row > summary {
+  display: grid;
+  gap: var(--s-1h);
+  padding: var(--s-3) var(--s-3h);
+  border-radius: var(--r-card);
+  list-style: none;
+}
+
+.staff-row > summary::-webkit-details-marker {
+  display: none;
+}
+
+.staff-row > summary:hover {
+  background-color: var(--surface-2);
+}
+
+.staff-row[open] > summary {
+  border-end-start-radius: 0;
+  border-end-end-radius: 0;
+  box-shadow: inset 0 -1px 0 var(--hairline);
+}
+
+.staff-row-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-3);
+}
+
+.staff-row-head b {
+  min-width: 0;
+  font-size: var(--t-4);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  /* Two lines of a long trading name rather than an ellipsis. A business is
+     picked out of the list by its name, and the half of it that fits is not
+     always the half that tells it apart from the one under it. */
+  overflow-wrap: anywhere;
+}
+
+/* The score, at the right end, in the mono face the rest of the surface's
+   figures are set in. It is out of a hundred and never carries the hundred
+   with it: the denominator is the same on every row, so printing it is the
+   same four characters twenty-five times down the page. */
+.staff-row-score {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-family: var(--staff-mono);
+  font-size: var(--t-4);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-mute);
+}
+
+.staff-row-where {
+  font-size: var(--t-2);
+  line-height: 1.5;
+  color: var(--ink-mute);
+}
+
+.staff-row-body {
+  display: grid;
+  gap: var(--s-3);
+  padding: var(--s-3) var(--s-3h) var(--s-4);
+}
+
+/* The number and the way onto the call screen, side by side where there is
+   room and stacked where there is not. The number is the wider of the two on a
+   phone, because it is the one a thumb is aiming for. */
+.staff-row-acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2h);
+}
+
+.staff-row-acts .staff-dial {
+  /* The number takes the room on a phone, where it is what a thumb is aiming
+     for, and stops growing once it has enough of it - a telephone number set
+     across a desk monitor is a target nobody was having trouble hitting. */
+  flex: 1 1 12rem;
+  max-width: 18rem;
+}
+
+/* A row before the read lands. It is the shape of a row and none of its
+   content, because a list drawn empty says the account has nothing to ring. */
+.staff-row-ghost {
+  display: grid;
+  gap: var(--s-2);
+  padding: var(--s-3) var(--s-3h);
+}
+
+.staff-ghost {
+  display: block;
+  height: 10px;
+  border-radius: var(--r-tiny);
+  background-color: var(--wash-paper-strong);
+}
+
+.staff-ghost-name {
+  width: 45%;
+  height: 13px;
+}
+
+.staff-ghost-where {
+  width: 28%;
+}
+
+.staff-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+/* ── The handbook's own controls ─────────────────────────────────────────── */
+
+/* The search, and the one control that opens or shuts every answer at once.
+   The control drops under the field on a phone rather than squeezing it. */
+.staff-find {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: var(--s-2h);
+}
+
+.staff-find > .staff-greet {
+  flex: 1 1 14rem;
+  min-width: 0;
+}
+
+/* A run of folds under one heading, where the console's handbook used a
+   sticky part head. The heading counts what survived the search beside it,
+   because a part that has gone from twelve answers to two has been narrowed
+   and should say so. */
+.staff-topic-set {
+  display: grid;
+  gap: 0;
+}
+
+.staff-set-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+  padding-top: var(--s-4);
+  padding-bottom: var(--s-2);
+  font-size: var(--t-1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.staff-set-head span {
+  font-family: var(--staff-mono);
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.staff-topic-set .staff-topic:first-child {
+  border-top: 1px solid var(--hairline);
+}
+
 /* ── Nothing to show ─────────────────────────────────────────────────────── */
 
 .staff-spent {
@@ -1301,5 +1617,118 @@ textarea.staff-input {
   a.staff-quiet:active,
   .staff-tag:active:enabled {
     transform: none;
+  }
+}
+
+/* ── The portal inside the console ───────────────────────────────────────── */
+
+/*
+ * The same five screens, standing in the console's work region instead of in a
+ * window of their own.
+ *
+ * Nothing about the screens changes to get them here and nothing about their
+ * colours does either: every value on this surface is a token, and the console
+ * scope redefines the tokens, so the portal is drawn in the console's own
+ * palette in both settings without a rule of its own for either.
+ *
+ * What changes is the three parts. Standing alone, the surface is the window:
+ * one viewport tall, the middle part the only thing that scrolls. Inside the
+ * console it is a section of a page the console already scrolls, so the height
+ * comes off, the measure goes to the full width of the region, and the padding
+ * goes to nothing - the region's own inset is already there and a second one
+ * inside it would set the portal in from every card beside it.
+ *
+ * The head is the tab row rather than a title. The console's bar already names
+ * the section above it and the open tab names the screen, so a heading here
+ * would be the third statement of where the reader is standing.
+ */
+.staff[data-mode='console'] {
+  --staff-measure: 100%;
+  --staff-pad: 0px;
+  height: auto;
+  min-height: 0;
+  overflow: visible;
+  background-color: transparent;
+  grid-template-rows: auto auto auto;
+  gap: var(--console-gap);
+}
+
+.staff[data-mode='console'] .staff-head {
+  padding: 0;
+  background-color: transparent;
+  box-shadow: none;
+}
+
+/* The tab row takes the width and anything the screen puts beside it sits at
+   the end of it, dropping under on a phone rather than squeezing the tabs. */
+.staff-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-2h);
+}
+
+.staff-nav > .console-views {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.staff[data-mode='console'] .staff-scroll {
+  overflow: visible;
+  padding: 0;
+}
+
+/* The bar of controls, drawn as one of the console's cards rather than as a
+   band across the window.
+
+   Standing alone it is fixed to the bottom of the screen, so the control that
+   ends a call is in the same place on the sixtieth call as on the first. That
+   promise is kept here from the desk width up, where the console gives a
+   section the whole height of its region and the bar is simply its last row.
+   Below that width the console scrolls the region as one column - which is its
+   own rule, stated for every section - and the bar is the last card in it. The
+   surface built for a phone is the portal on its own, and that one keeps the
+   foot against the bottom edge at every size. */
+.staff[data-mode='console'] .staff-foot {
+  padding: var(--s-2h) var(--s-3h);
+  padding-bottom: var(--s-2h);
+  border-radius: var(--console-radius);
+  background-color: var(--console-card-bg);
+  box-shadow: var(--console-card-shadow);
+}
+
+/* At a desk the console gives a section the whole height of its work region,
+   so the portal lays out into it the way it lays out into a window: the column
+   scrolls inside the surface and the bar is simply the last row of the grid. */
+@media (min-width: 1024px) {
+  .staff[data-mode='console'] {
+    overflow: hidden;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  .staff[data-mode='console'] .staff-scroll {
+    overflow-y: auto;
+    /* The card edges of the last row want air under them rather than the
+       bar's own edge against them. */
+    padding-bottom: var(--s-2);
+  }
+
+  /* The portal front is four doors and a name, which is less than a desk's
+     work region holds. It stands in the middle of the room the console gives
+     it rather than against the top of an empty section, which is what it does
+     standing alone for the same reason. */
+  .staff[data-mode='console'][data-layout='portal'] .staff-scroll {
+    display: grid;
+    align-content: safe center;
+  }
+}
+
+/* The reading measure is the handbook's, and it is the one thing the console
+   does not get to widen: a line of script sixty characters across is the width
+   a line read out loud to a stranger should be, whatever room is going spare
+   beside it. */
+@media (min-width: 1024px) {
+  .staff[data-mode='console'][data-layout='reading'] .staff-stack {
+    max-width: 52rem;
   }
 }

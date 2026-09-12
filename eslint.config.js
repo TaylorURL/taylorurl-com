@@ -35,7 +35,16 @@ export default defineConfig([
       // (no eslint-plugin-react installed). The capitalized pattern exempts
       // component imports; `m` is framer-motion's lowercase JSX namespace under
       // LazyMotion, used as <m.div> and otherwise flagged as unused.
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]|^m$' }],
+      //
+      // The same holds one level down, for a component handed to another
+      // component as a prop: the staff portal's screens take the shell they
+      // draw into that way, so the same five screens render standalone and
+      // inside the console. A destructured prop is an argument rather than a
+      // variable, so it needs the pattern stated twice.
+      'no-unused-vars': [
+        'error',
+        { varsIgnorePattern: '^[A-Z_]|^m$', argsIgnorePattern: '^[A-Z_]' },
+      ],
     },
   },
   {

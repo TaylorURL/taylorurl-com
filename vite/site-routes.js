@@ -426,7 +426,7 @@ const STUDIO_PRERENDER_ROUTES = [
   '/console/settings',
   '/console/builds',
   '/console/leads',
-  '/console/calls',
+  '/console/staff',
   '/console/payments',
   '/console/admin',
   // The representatives' portal and its three surfaces, built for the reason
