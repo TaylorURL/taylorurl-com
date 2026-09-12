@@ -212,7 +212,7 @@ const DETAIL = {
       'Estimates and crew scheduling stay in Jobber or Buildertrend. Inquiries arrive there with the footage already on them, priced before anyone drives out to measure.',
     workTitle: 'Built and running.',
     workDescription:
-      'Live client work from the towns we build in. Each site was built here and is still looked after here.',
+      'Live client work around Baytown and Houston. Each site was built here and is still looked after here.',
     townsDescription:
       'Deed restrictions and fence heights change from one subdivision to the next out here, which is why a fence site has to know the town it is quoting in.',
     ctaDescription:
@@ -362,7 +362,8 @@ const DETAIL = {
     toolsDescription:
       'Rates, occupancy, and autopay stay in storEDGE or SiteLink. The site shows what the front counter shows, at the moment it changes, so nobody rents a unit that went an hour ago.',
     workTitle: 'Live sites.',
-    workDescription: 'Businesses whose sites we built and maintain, each one live now.',
+    workDescription:
+      'Businesses around Houston whose sites we built and maintain, each one live now.',
     townsDescription:
       'Facilities along 146 and the interstate draw from the towns beside them rather than from a radius on a map.',
     ctaDescription:
@@ -440,7 +441,7 @@ const DETAIL = {
     workDescription:
       'Sites around Baytown and the ship channel that are live right now, every one of them built and hosted by us.',
     townsDescription:
-      '146, 225, and the interstate feed most of the calls, and a driver on the shoulder searches the town they can see the sign for.',
+      '146, 225, and the interstate feed most of the calls around Baytown and the ship channel, and a driver on the shoulder searches the town they can see the sign for.',
     ctaDescription:
       'Tell us how many trucks you run and whether you work motor club or private property. We usually reply within the hour, and the price is settled before anything is built.',
   },
@@ -515,7 +516,7 @@ const DETAIL = {
     workDescription:
       'Impressiva Printing in Pasadena runs a quoting and order portal built here, from a hundred business cards to a ten-foot vinyl banner.',
     townsDescription:
-      'Shop orders come from contractors, schools, and teams right across the area, and a team orders from the shop in its own town.',
+      'Shop orders come from contractors, schools, and teams right across Baytown and Houston, and a team orders from the shop in its own town.',
     ctaDescription:
       'Tell us what you print and how orders reach you now. You get a written plan and price before anything is built, and most sites are live inside a month.',
   },

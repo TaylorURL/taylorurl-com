@@ -42,6 +42,11 @@
  *                  attached. An empty array is a site offered as general work.
  * - `town`         Where the client trades, for the entries whose reach is one
  *                  place. Sites working a region rather than a town carry none.
+ * - `alsoIn`       Further towns the work runs in, for a site whose reach is
+ *                  wider than the one town it is filed under. A town page shows
+ *                  these under its own work, and nothing else reads them: the
+ *                  entry stays filed under `town`, so the row prints one place
+ *                  and the /start configurator still joins on one.
  * - `location`     Where the business trades, where its own site states one.
  *                  Separate from `town`, which the /start configurator reads.
  * - `description`  One- or two-sentence pitch summarising the project.
@@ -127,6 +132,7 @@ export const PORTFOLIO_PROJECTS = [
     displayUrl: 'tiretracker.app',
     tagline: 'Field service software · Dispatch and logging',
     trades: ['auto-repair'],
+    alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
     pagespeed: { mobile: 94, desktop: 100, runs: 3, measured: '2026-09-11' },
@@ -229,6 +235,7 @@ export const PORTFOLIO_PROJECTS = [
     tagline: 'Operations platform · Management dashboard',
     trades: [],
     town: 'Baytown',
+    alsoIn: ['Houston'],
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
