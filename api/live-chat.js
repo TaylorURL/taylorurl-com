@@ -41,6 +41,19 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 const AGENT_URL = process.env.LIVE_AGENT_URL || ''
 const AGENT_SECRET = process.env.LIVE_AGENT_SECRET || ''
 
+// Whether this deployment was given an assistant to stand in front of at all.
+// The address and the secret reach it, the key writes the thread down, and
+// without all three there is nothing behind this door and never was.
+const WIRED = Boolean(SERVICE_KEY && AGENT_URL && AGENT_SECRET)
+
+// Whether this deployment is the site itself. A branch build is a copy of the
+// site put up to be read, and the assistant's address and its secret are held
+// for the live deployment alone, so an assistant missing from a branch build is
+// the arrangement working rather than a fault. Where the platform does not say,
+// the answer is the site: a deployment that cannot tell should behave like the
+// one whose failures matter.
+const LIVE_SITE = (process.env.VERCEL_ENV || 'production') === 'production'
+
 // The upstream holds its own 45s ceiling. This one sits just outside it so a
 // slow turn is reported by the side that knows why it was slow.
 const AGENT_TIMEOUT_MS = 50000
@@ -275,7 +288,7 @@ async function knock() {
  * @returns {Promise<boolean>}
  */
 async function reachable() {
-  if (!SERVICE_KEY || !AGENT_URL || !AGENT_SECRET) return false
+  if (!WIRED) return false
 
   for (let ask = 0; ask < REACH_ASKS; ask += 1) {
     try {
@@ -361,6 +374,21 @@ export default async function handler(request, response) {
   // is public, cheap, and held in front of the function for a minute at a
   // time, because every visitor on the site asks it once.
   if (request.method === 'GET') {
+    // A deployment with no assistant wired to it is told apart from one whose
+    // assistant did not answer, because only the second is something going
+    // wrong. The widget stays off both, and the branch build says nothing about
+    // it: the sentence it would say names an assistant as missing, and on a
+    // build that was never given one that sentence is false. Said anyway, it is
+    // said by every branch build of the site, on every page, forever, under the
+    // same words the live site uses when its own assistant is genuinely gone -
+    // and the ticket that matters is then read as one more of those. The answer
+    // stands as long as a yes does; it changes only when the deployment does.
+    if (!WIRED && !LIVE_SITE) {
+      response.setHeader('Cache-Control', `public, max-age=0, s-maxage=${REACH_FRESH_S}`)
+      response.status(200).json({ up: false, wired: false })
+      return
+    }
+
     const up = await reachable()
     // A yes is held and served stale while it is checked again; a no is held
     // briefly and never served stale, so the next visitor asks rather than
