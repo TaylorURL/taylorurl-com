@@ -12,6 +12,7 @@ import {
   shiftShare,
 } from '@lib/outreach/prospects/callShift.js'
 import StaffScreen from '../StaffScreen'
+import { HourChart, OutcomeChart } from '../Charts'
 import { useStaff } from '../lib/context'
 import { callMoment } from '../lib/call'
 
@@ -25,11 +26,11 @@ const FILTERS = Object.freeze({ view: 'list', take: 25 })
  *
  * It reads and it does not act, which is the line between this screen and the
  * one next door: a representative controls the call screen and nothing else, so
- * the three figures here are a reading rather than a set of controls. The goals
+ * the figures here are a reading rather than a set of controls. The goals
  * behind them are set in the console by whoever set the shift.
  *
  * The desk is on it because a representative who cannot see the colleague beside
- * them rings the business that colleague is on the phone with. The call screen
+ * them calls the business that colleague is on the phone with. The call screen
  * already refuses to hand them one that is held; this is where that becomes
  * something they can see rather than something that silently happens to them.
  */
@@ -58,17 +59,17 @@ export default function ManagementPage() {
   return (
     <StaffScreen title="Management Center" back={{ to: '/staff', label: 'Portal' }}>
       <div className="staff-greet">
-        <h2>{name ? name.split(' ')[0] : 'Your day'}</h2>
+        <h2>{name ? name.split(' ')[0] : 'Today'}</h2>
         <p className="staff-mute">
           {feed.loading
-            ? 'Reading the day.'
+            ? 'Loading'
             : left
               ? `${left} ${left === 1 ? 'call' : 'calls'} to go.`
-              : 'Every figure met.'}
+              : 'All goals met.'}
         </p>
       </div>
 
-      {/* The three figures, each with its own reading under it. The bar is in the
+      {/* The three figures, each with its own bar under it. The bar is in the
           tile rather than in a section of its own: a bar and a figure saying one
           thing twice is two thirds of this screen spent on three numbers. */}
       <dl className="staff-figures">
@@ -83,7 +84,7 @@ export default function ManagementPage() {
               <span
                 // Amber where the calls are spent and this figure is not met,
                 // which is the one thing a day's figures can say that the
-                // figures alone do not: the dialling happened and the
+                // figures alone do not: the dialing happened and the
                 // conversations did not.
                 data-behind={callsSpent && !shift.met[goal.id]}
                 style={{ width: `${Math.round(shiftShare(shift, goal.id) * 100)}%` }}
@@ -95,48 +96,52 @@ export default function ManagementPage() {
 
       <div className="staff-cols staff-cols-even">
         <div className="staff-part">
-          <h3>The Rest of the Day</h3>
+          <h3>Calls by Hour</h3>
+          <HourChart hours={shift.hours} />
+        </div>
+        <div className="staff-part">
+          <h3>Outcomes</h3>
+          <OutcomeChart outcomes={shift.outcomes} />
+        </div>
+      </div>
+
+      <div className="staff-cols staff-cols-even">
+        <div className="staff-part">
+          <h3>Today</h3>
           <dl className="staff-pairs">
             <div>
               <dt>Started</dt>
               <dd>{shift.first ? callMoment(shift.first) : 'Not yet'}</dd>
             </div>
             <div>
-              <dt>Goal Met By</dt>
+              <dt>On Pace For</dt>
               <dd>
-                {finish
-                  ? callMoment(finish.toISOString())
-                  : shift.met.calls
-                    ? 'Met'
-                    : 'Too early to say'}
+                {finish ? callMoment(finish.toISOString()) : shift.met.calls ? 'Met' : 'Too early'}
               </dd>
             </div>
             <div>
-              <dt>Ready to Call</dt>
-              <dd>{totals ? totals.call : 'Reading'}</dd>
+              <dt>Leads Available</dt>
+              <dd>{totals ? totals.call : 'Loading'}</dd>
             </div>
             <div>
-              <dt>Soonest Back</dt>
-              <dd>{nextBack ? callMoment(nextBack) : 'None waiting'}</dd>
+              <dt>Next Callback</dt>
+              <dd>{nextBack ? callMoment(nextBack) : 'None'}</dd>
             </div>
           </dl>
-          <p className="staff-read">
-            The figures above are yours alone. Whoever set your shift sets them in the console, not
-            here, so ask them if one of them looks wrong.
-          </p>
+          <p className="staff-read">Goals are set in the console.</p>
         </div>
 
         <div className="staff-part">
-          <h3>At the Desk</h3>
+          <h3>Team</h3>
           {desk.loading ? (
-            <p className="staff-read">Reading the desk.</p>
+            <p className="staff-read">Loading</p>
           ) : board.length ? (
             board.map(row => (
               <div className="staff-person" key={row.user_id}>
                 <div className="staff-person-top">
                   <b>{row.user_id === userId ? 'You' : callerName(row)}</b>
                   <span className="staff-badge" data-tone={row.business ? 'accent' : 'plain'}>
-                    {row.business ? 'On a Call' : 'At the Desk'}
+                    {row.business ? 'On a Call' : 'Available'}
                   </span>
                 </div>
                 <p className="staff-read">
@@ -144,19 +149,19 @@ export default function ManagementPage() {
                     ? `${row.business.name}${row.business.town ? `, ${row.business.town}` : ''}${
                         row.on_phone_since ? ` (${saidSince(row.on_phone_since)})` : ''
                       }`
-                    : 'Nothing held.'}
+                    : 'No lead open.'}
                 </p>
               </div>
             ))
           ) : (
-            <p className="staff-read">Nobody else has the list open.</p>
+            <p className="staff-read">No one else is online.</p>
           )}
         </div>
       </div>
 
       <div className="staff-part">
         <Link className="staff-btn" to="/staff/calls">
-          Back to Calling
+          Back to Calls
         </Link>
       </div>
     </StaffScreen>
