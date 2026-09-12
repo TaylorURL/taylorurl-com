@@ -232,8 +232,8 @@ export default function ShiftBoard({ Shell }) {
             ))}
           </div>
           <p className="staff-read">
-            What a day on the phone comes to. The Call Center counts calls against the first of them
-            as they go, and the figures above draw all three.
+            What a day on the phone comes to. The Call Center counts your calls against the first of
+            them as you go, and the figures above draw all three.
           </p>
         </div>
       )}
