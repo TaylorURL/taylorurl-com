@@ -46,7 +46,6 @@ export const CELL_TIGHT = 'px-3 py-3 text-[14px]'
 // is aligned to.
 export const TH_END = `${MONO_LABEL} text-paper-faint whitespace-nowrap pl-1 pr-3 py-2.5 text-right`
 export const CELL_END = 'pl-1 pr-3 py-3 text-[14px] text-right'
-export const CELL_END_PACKED = 'pl-1 pr-3 py-1.5 text-[13px] text-right'
 
 // One line a row, for a table somebody is working down rather than reading.
 //
@@ -105,10 +104,9 @@ export const ROW_HEIGHT = {
   // 1280px rather than the height of its shortest row, which would leave the
   // first paint short and move everything under it down as the feed lands.
   calls: '77.5px',
-  // The same table with the second line out of every cell and the call control
-  // drawn at the row's height rather than a thumb's. Only a first visit reads
-  // either figure: after one, the placeholder is the size of the rows this
-  // reader last saw, at the density they last read them at.
+  // The same table with the second line out of every cell. Only a first visit
+  // reads either figure: after one, the placeholder is the size of the rows
+  // this reader last saw, at the density they last read them at.
   callsTight: '38px',
   // The Server section's routines: a routine's name over the sentence saying
   // what it does, a badge over its cadence, and a relative time over the clock
