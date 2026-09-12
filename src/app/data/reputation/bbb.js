@@ -67,8 +67,3 @@ export const BBB_SEAL_RADIUS = 9
 export function bbbAccredited() {
   return Boolean(BBB_SEAL_SRC)
 }
-
-/** Whether there is a BBB listing to send a reader to at all. */
-export function bbbListed() {
-  return Boolean(BBB_PROFILE_URL)
-}

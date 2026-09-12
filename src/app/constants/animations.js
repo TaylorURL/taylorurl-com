@@ -24,13 +24,6 @@ export const fadeInUp = {
   transition: { duration: 0.4, ease: EASE },
 }
 
-export const pageTransition = {
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  exit: { opacity: 0 },
-  transition: { duration: 0.25, ease: EASE },
-}
-
 export const staggerChild = (index, delay = 0.06) => ({
   initial: { opacity: 0, y: 18 },
   whileInView: { opacity: 1, y: 0 },
@@ -58,8 +51,8 @@ export const slideInRightMount = {
 
 // The page-to-page contract. Leaving is quicker than arriving: an exit a reader
 // waits through is dead time, while an entrance that lands too fast is a cut.
-export const PAGE_EXIT_MS = 0.16
-export const PAGE_ENTER_MS = 0.24
+const PAGE_EXIT_MS = 0.16
+const PAGE_ENTER_MS = 0.24
 
 // How long the whole change takes, for anything that has to hold a state for
 // the length of it. The fixed chrome reads it: while a page is being replaced
@@ -88,9 +81,9 @@ export const settleIn = {
 // page rather than resolving in place, and it is over inside the time a page
 // change takes: chrome answering a scroll is a smaller event than the page
 // underneath it being replaced.
-export const CHROME_MS = 0.25
+const CHROME_MS = 0.25
 
-export const chromeTransition = { duration: CHROME_MS, ease: EASE }
+const chromeTransition = { duration: CHROME_MS, ease: EASE }
 
 export const chromeRise = {
   initial: { opacity: 0, transform: 'translateY(12px)' },

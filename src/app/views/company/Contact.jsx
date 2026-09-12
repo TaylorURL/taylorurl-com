@@ -23,7 +23,7 @@ import { submitEnquiry } from '@data/leads/sendEnquiry'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import Magnet from '@reactbits/Magnet/Magnet'
 import { AccentGradient } from '@reactbits/kit'
-import { PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
+import { PUBLISHES_REVIEWS } from '../../../../lib/site/current.js'
 
 // The third row of the contact card says where the work happens, and the mark
 // over it is part of that claim: a pin for a town the studio names, a globe for

@@ -712,23 +712,16 @@ export const LEGAL_LINKS = served(STUDIO_LEGAL_LINKS)
 export const serves = target => isOffSite(target) || !IS_SECOND_SITE || SERVED.has(target)
 
 /**
- * The other site, and the rows this one points at it with.
- *
- * `SIBLING` is the whole of what the chrome needs to name it: an origin to build
- * a link on and the name to print. Both come off the record `current.js`
- * resolved, so the losing site's copy is not in this bundle.
+ * The rows this site points at the other one with.
  *
  * `SIBLING_LINKS` is `CROSS_LINKS` read from this side. An entry names the site
  * that serves it, so the rows for this build are the ones naming the other, and
- * each becomes an `href` on the sibling's origin. `check-cross-links.js` resolves
- * every one of these against that site's route table, which is the only thing in
- * the repo that looks at a link leaving the origin it is drawn on.
+ * each becomes an `href` on the sibling's origin. The origin comes off the record
+ * `current.js` resolved, so the losing site's copy is not in this bundle.
+ * `check-cross-links.js` resolves every one of these against that site's route
+ * table, which is the only thing in the repo that looks at a link leaving the
+ * origin it is drawn on.
  */
-export const SIBLING = {
-  origin: SITE.siblingOrigin,
-  label: SITE.siblingShortName,
-}
-
 export const SIBLING_LINKS = CROSS_LINKS.filter(entry => entry.site !== SITE.key).map(entry => ({
   key: entry.key,
   href: `${SITE.siblingOrigin}${entry.path === '/' ? '' : entry.path}`,

@@ -24,7 +24,7 @@ import { REVIEW_SOURCES, reviewSource } from '../../src/app/data/reputation/revi
 import {
   REVIEW_STANDINGS,
   REVIEW_STANDING_MAX_AGE_DAYS,
-  committedStandings,
+  committedStanding,
   standingShows,
 } from '../../src/app/data/reputation/review-standings.js'
 import { dayIn } from '../../lib/time/zone.js'
@@ -120,7 +120,9 @@ if (bbb?.seal && bbb.seal.src !== BBB_SEAL_SRC) {
 
 // The rail draws the registry's order and skips whatever has nothing published
 // on it yet, so what a reader is shown is decided here rather than in markup.
-const showing = committedStandings().map(standing => standing.key)
+const showing = REVIEW_SOURCES.filter(source => committedStanding(source.key)).map(
+  source => source.key
+)
 const expected = REVIEW_SOURCES.filter(source => standingShows(REVIEW_STANDINGS[source.key])).map(
   source => source.key
 )
@@ -147,7 +149,8 @@ if (failed) {
   process.exit(1)
 }
 
-const drawn = committedStandings()
+const drawn = REVIEW_SOURCES.map(source => committedStanding(source.key))
+  .filter(Boolean)
   .map(standing =>
     `${standing.key} ${standing.verdict ?? standing.rating ?? standing.reviewCount}`.trim()
   )
