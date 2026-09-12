@@ -17,7 +17,8 @@ const HEADS = Object.freeze({
   },
   '/staff/calls': {
     title: 'Call Center',
-    description: 'The next lead on the TaylorURL call list, and where the call gets logged.',
+    description:
+      'The next lead on the TaylorURL call list, and where a representative logs the call.',
   },
   '/staff/management': {
     title: 'Management Center',
