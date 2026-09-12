@@ -1706,11 +1706,25 @@ textarea.staff-input {
    scrolls inside the surface and the bar is simply the last row of the grid. */
 @media (min-width: 1024px) {
   .staff[data-mode='console'] {
-    /* `clip` rather than `hidden`, because only `clip` takes a margin, and the
-       margin is what lets the column below paint its card edges outside
-       itself. Neither one scrolls, which is all this rule ever wanted. */
-    overflow: clip;
-    overflow-clip-margin: var(--staff-bleed);
+    /* Widened by the bleed and given the same figure back as padding, so the
+       clip below falls a card's edge outside the contents rather than along
+       them. The content box does not move, so nothing on the screen shifts.
+
+       `overflow-clip-margin` says this in one declaration and is what this rule
+       reached for first. It is not carried everywhere `overflow: clip` is, and
+       a browser that honours the clip and ignores the margin snaps the clip
+       back onto the contents - which is not a smaller fix, it is no fix at all,
+       silently, in exactly the browsers nobody tested. Padding is the same
+       allowance in properties that have worked everywhere for twenty years.
+
+       `width: auto` because the console sets `width: 100%` on everything in its
+       work region, and against a fixed width a negative margin is a shove to
+       the left rather than room on both sides. Stretched by the flex column,
+       auto gives the width and the margins together. */
+    width: auto;
+    margin-inline: calc(var(--staff-bleed) * -1);
+    padding-inline: var(--staff-bleed);
+    overflow: hidden;
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
 
@@ -1723,8 +1737,9 @@ textarea.staff-input {
      inside the console, which is the one place the column scrolls.
 
      So the scroll box is widened by the reach of a card's edge and given the
-     same figure back as padding. The cards keep the tab row's measure, and
-     their edges have somewhere to draw. */
+     same figure back as padding, the same way the surface above it is. The
+     cards keep the tab row's measure, and their edges have somewhere to
+     draw. */
   .staff[data-mode='console'] .staff-scroll {
     overflow-y: auto;
     margin-inline: calc(var(--staff-bleed) * -1);
