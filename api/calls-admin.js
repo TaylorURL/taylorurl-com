@@ -63,6 +63,7 @@ import {
   pullBand,
   pullOf,
   readyAt,
+  reviewsOf,
   scoreOf,
   TRADE_FLOOR,
   triesRun,
@@ -252,14 +253,19 @@ async function callers(db) {
  *
  * A trade holding fewer than TRADE_FLOOR of them gets no middle at all rather
  * than one taken over four rows, and every business in it reads `unread`.
+ *
+ * Counted the way the score counts, so a listing Google answered for with no
+ * reviews is a zero in its trade's middle rather than missing from it - leaving
+ * them out would take the middle from the businesses that can be found.
  */
 function mediansByTrade(callable) {
   const counts = new Map()
   for (const row of callable) {
-    if (!row.trade || typeof row.rating_count !== 'number') continue
+    const count = reviewsOf(row)
+    if (!row.trade || count === null) continue
     const held = counts.get(row.trade)
-    if (held) held.push(row.rating_count)
-    else counts.set(row.trade, [row.rating_count])
+    if (held) held.push(count)
+    else counts.set(row.trade, [count])
   }
   const medians = new Map()
   for (const [trade, values] of counts) {
