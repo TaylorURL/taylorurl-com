@@ -16,8 +16,7 @@ import { surfacesIn, usePortalNav } from '../lib/nav'
  * script.
  *
  * Which doors there are is the portal's own answer rather than this screen's,
- * because the standalone portal and the console's carry different sets and a
- * list written here would be right in one of them.
+ * so a surface added to the portal is a door here without this file changing.
  *
  * @param {{Shell: React.ComponentType}} props
  */

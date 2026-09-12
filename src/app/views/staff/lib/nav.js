@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 /**
  * The portal's surfaces, and how one reaches another.
  *
- * The same five screens are opened from two places. A representative works them
+ * The same screens are opened from two places. A representative works them
  * on their own, one viewport tall, with nothing else on the screen; an admin
  * works them inside the console, under its bar and beside its column. Which
  * they are standing in decides nothing about what a screen says and everything
@@ -19,9 +19,7 @@ import { createContext, useContext } from 'react'
 /**
  * Every surface, in the order the portal offers them.
  *
- * The call center leads because it is where the day is spent. The list is
- * second because it is the one screen somebody opens to find a business rather
- * than to be handed one, and the two are read together.
+ * The call center leads because it is where the day is spent.
  *
  * `lede` is the line under the door on the portal front. It says what the
  * screen is for rather than what is on it, which is what somebody deciding
@@ -39,12 +37,6 @@ export const PORTAL_SURFACES = Object.freeze([
     label: 'Call Center',
     title: 'Call Center',
     lede: 'Next lead, call history, and logging.',
-  },
-  {
-    key: 'list',
-    label: 'Call List',
-    title: 'Call List',
-    lede: 'Every business to ring, and who is on one now.',
   },
   {
     key: 'management',
@@ -65,16 +57,7 @@ export function surfaceOf(key) {
   return PORTAL_SURFACES.find(one => one.key === key)
 }
 
-/**
- * What the standalone portal publishes: four addresses, one per screen, and no
- * call list.
- *
- * The list is the console's own. A representative is handed the next business
- * by the call center and never picks one out of fifteen hundred, so a screen
- * for choosing is a screen they would only ever get lost in; the person who
- * reads the whole list is the one who set the shift, and they are in the
- * console.
- */
+/** What the standalone portal publishes: four addresses, one per screen. */
 const STANDALONE = Object.freeze({
   surfaces: Object.freeze(['portal', 'calls', 'management', 'resources']),
   hrefFor: (key, params) => {
