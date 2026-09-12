@@ -161,12 +161,13 @@ export default function CallSetup({
           ))}
         </ul>
         <p className="text-[13px] text-paper-soft">
-          A narrow screen draws the four it cannot be worked without, whatever is ticked here.
+          A narrow screen draws only the columns it cannot be worked without, whatever is ticked
+          here.
         </p>
       </section>
 
       <section className="grid gap-2">
-        <h3 className={`${MONO_LABEL} text-paper-faint`}>Rows A Page, And A Batch</h3>
+        <h3 className={`${MONO_LABEL} text-paper-faint`}>Rows a Page</h3>
         <div className="flex flex-wrap gap-2">
           {CALL_TAKES.map(size => (
             <button
@@ -181,17 +182,15 @@ export default function CallSetup({
           ))}
         </div>
         <p className="text-[13px] text-paper-soft">
-          The same figure both ways: how many rows a page of the list holds, and how many businesses
-          Call Mode takes at a time.
+          How many businesses one page of the list holds before the pager takes over.
         </p>
       </section>
 
-      {/* The three figures the rings in Call Mode are drawn against.
-          They sit here rather than in a dialog of their own because a goal is a
-          fact about the person working the list, which is what every other
-          control on this panel is, and because somebody setting up how they
-          read the list is the same person deciding what a day of it looks
-          like. */}
+      {/* The three figures a shift is read against, wherever it is read. They
+          sit here rather than in a dialog of their own because a goal is a fact
+          about the person working the list, which is what every other control
+          on this panel is, and because somebody setting up how they read the
+          list is the same person deciding what a day of it looks like. */}
       <section className="grid gap-2">
         <h3 className={`${MONO_LABEL} text-paper-faint`}>Your Shift</h3>
         <div className="grid gap-2 sm:grid-cols-3">
@@ -205,8 +204,9 @@ export default function CallSetup({
           ))}
         </div>
         <p className="text-[13px] text-paper-soft">
-          What a day on the phone comes to. Call Mode counts today's calls against these three and
-          says what time you meet the calls figure at the rate the day has gone.
+          What a day on the phone comes to. The Call Center counts your calls against the first of
+          them as you go, and the Management Center draws all three and says what time you finish at
+          the rate the day has gone.
         </p>
       </section>
 

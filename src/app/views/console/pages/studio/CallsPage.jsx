@@ -1,9 +1,11 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { m, useReducedMotion } from 'framer-motion'
 import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  Headphones,
   Maximize2,
   Minimize2,
   Phone,
@@ -51,12 +53,10 @@ import {
   withoutFilter,
 } from '@lib/outreach/prospects/callPrefs.js'
 import { callerMark, callerName, heldByOther } from '@lib/outreach/prospects/callPresence.js'
-import { shiftOf } from '@lib/outreach/prospects/callShift.js'
 import {
   Badge,
   ConsoleError,
   ConsolePage,
-  ConsoleSplit,
   EmptyRow,
   Metric,
   Panel,
@@ -70,8 +70,6 @@ import {
 } from '../../ui'
 import {
   BUTTON,
-  CELL_END,
-  CELL_END_PACKED,
   CELL_PACKED,
   CELL_TIGHT as CELL,
   CHIP_BUTTON,
@@ -83,7 +81,6 @@ import {
   ROW_HEIGHT,
   SELECT,
   SELECT_ON,
-  TH_END,
   TH_TIGHT as TH,
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
@@ -91,8 +88,6 @@ import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import { fullCount } from '../../../analytics/lib/format'
 import CallHandbook from './CallHandbook'
 import CallBoard from './CallBoard'
-import CallRecord from './CallRecord'
-import CallRings from './CallRings'
 import CallSetup from './CallSetup'
 
 /**
@@ -106,15 +101,23 @@ import CallSetup from './CallSetup'
  * at 'unreachable' and the pipeline is done with them - and they are the
  * strongest leads on the table, because the thing being sold is the thing they
  * visibly do not have. Every one of them carries the phone number the same
- * search returned. This is the section that dials them.
+ * search returned. This is the list they are rung from.
+ *
+ * THE CALLS ARE NOT PLACED HERE. A representative works the Call Center, which
+ * is one of the three surfaces behind the staff portal at /staff: one business
+ * on the screen, the script beside it, and no way past it but a logged call.
+ * This page is the list behind that screen - what is on it, why each business
+ * sorts where it does, who is on a number this minute, and every call anybody
+ * has placed. The head carries the way over to the portal, because somebody who
+ * opened this to work the list rather than read it should not have to go
+ * looking for the screen built for it.
  *
  * Six things this page has to do that a table of names does not.
  *
  * SAY WHY EACH BUSINESS IS HERE. The answer has been in the payload since the
  * first version and was never drawn: `skip_reason` is the enrichment job's own
- * words for why it gave up. Every row carries that sentence now, and the card
- * in Call Mode leads with it, because it is also the first thing to say on the
- * call.
+ * words for why it gave up. Every row carries that sentence now, and the record
+ * opens with it, because it is also the first thing to say on the call.
  *
  * SAY WHY THEY SORT. The score is an integer out of a hundred and the
  * decomposition is the score function's own return value, so the chips in the
@@ -140,9 +143,9 @@ import CallSetup from './CallSetup'
  * whole of a double call happens in the four minutes before anybody records
  * anything. Two callers who open this page a minute apart are handed the same
  * page in the same order. So the list is live rather than a snapshot - it
- * re-reads itself while somebody is watching - and every console says which
- * number it is on, which is drawn on the row, on the board above it, and as a
- * lock on the one control that would place the second call.
+ * re-reads itself while somebody is watching - and every screen working the list
+ * says which number it is on, which is drawn on the board above the table and
+ * beside the number on the row itself.
  *
  * SAY WHETHER THEY WANTED IT. Which is a different question from what the call
  * came to, and only the person who made it can answer either. Spoke To Owner
@@ -150,8 +153,8 @@ import CallSetup from './CallSetup'
  * thanks and hung up, and the section next door reads that column to decide who
  * is a lead - so it filed both, and half of the first afternoon's leads had to
  * be ruled out by hand. The caller is asked outright now, on the two outcomes
- * that leave the question open, and the answer is one keystroke because it sits
- * between them and the next business.
+ * that leave the question open, on the record here and on the Call Center's own
+ * form alike.
  *
  * LET THE READER SET IT UP. Which columns, how tight the rows, what it is
  * narrowed to and which narrowings are worth keeping are all facts about the
@@ -170,10 +173,9 @@ import CallSetup from './CallSetup'
  * up a phone, and the note is theirs rather than anything composed for them.
  */
 
-/** The four views, the first carrying no parameter so /console/calls is the front. */
+/** The three views, the first carrying no parameter so /console/calls is the front. */
 const CALL_VIEWS = [
   { key: 'list', label: 'The List' },
-  { key: 'calling', label: 'Call Mode' },
   { key: 'resting', label: 'Resting' },
   { key: 'finished', label: 'Finished' },
 ]
@@ -408,7 +410,7 @@ function BandHeading({ cols, title, count, note }) {
  * businesses on the screen, and neither of those is the right answer for
  * everybody.
  */
-function RowCell({ id, row, tight, holder, you, onOpen, onCall }) {
+function RowCell({ id, row, tight, holder, you, onOpen }) {
   if (id === 'business') {
     // What it does and where it is goes under the name at the roomy setting.
     // At the tight one the town alone stands beside it: a caller scanning for
@@ -448,12 +450,26 @@ function RowCell({ id, row, tight, holder, you, onOpen, onCall }) {
 
   if (id === 'phone') {
     const href = dialHref(row.phone)
-    return href ? (
-      <a href={href} className="whitespace-nowrap text-accent">
-        {row.phone}
-      </a>
-    ) : (
-      '—'
+    return (
+      <span className="flex items-center gap-2">
+        {href ? (
+          <a href={href} className="whitespace-nowrap text-accent">
+            {row.phone}
+          </a>
+        ) : (
+          <span className="text-paper-faint">—</span>
+        )}
+        {/* Somebody has this number up to their ear this minute. It sits on the
+            number itself rather than in a column of its own, because the moment
+            it is worth knowing is the moment a reader is about to press it, and
+            it names whose call it is rather than going quiet - the reader's next
+            move is to ask that person how it went. */}
+        {holder && (
+          <Badge tone="accent" title={`${callerName(holder)} is on this call`}>
+            {callerMark(holder)}
+          </Badge>
+        )}
+      </span>
     )
   }
 
@@ -524,43 +540,19 @@ function RowCell({ id, row, tight, holder, you, onOpen, onCall }) {
     )
   }
 
-  // The one control that would place a second call to a business somebody is
-  // already on. It says whose call it is rather than going quiet, because the
-  // reader's next move is to ask that person how it went.
-  if (holder) {
-    return (
-      <Badge tone="accent" title={`${callerName(holder)} is on this call`}>
-        {callerMark(holder)}
-      </Badge>
-    )
-  }
-  return (
-    <button
-      type="button"
-      className={tight ? QUIET_ROW : QUIET}
-      aria-label={`Call ${row.name || 'this business'}`}
-      onClick={() => onCall(row)}
-    >
-      <Phone aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
-    </button>
-  )
+  // A column nothing here draws is a column the table should not have asked
+  // for, so it takes no room rather than falling through to whatever happens to
+  // be written last.
+  return null
 }
 
 /** One business on the list, in whichever columns this account draws. */
-const CallRow = memo(function CallRow({ row, columns, tight, holder, yours, you, onOpen, onCall }) {
+const CallRow = memo(function CallRow({ row, columns, tight, holder, yours, you, onOpen }) {
   return (
     <tr className={yours ? 'bg-[color:var(--wash-accent)]' : undefined}>
       {columns.map(id => (
         <td key={id} className={cellClass(id, tight)}>
-          <RowCell
-            id={id}
-            row={row}
-            tight={tight}
-            holder={holder}
-            you={you}
-            onOpen={onOpen}
-            onCall={onCall}
-          />
+          <RowCell id={id} row={row} tight={tight} holder={holder} you={you} onOpen={onOpen} />
         </td>
       ))}
     </tr>
@@ -618,15 +610,9 @@ function drawnAs(row) {
   ].join('\u0000')
 }
 
-/** What a column's cells wear: their measure, and which edge they set against. */
+/** What a column's cells wear, which is their measure at this density. */
 function cellClass(id, tight) {
-  if (columnOf(id)?.align === 'end') return tight ? CELL_END_PACKED : CELL_END
   return tight ? CELL_PACKED : CELL
-}
-
-/** And what its heading wears, so the two are set against the same edge. */
-function headClass(id) {
-  return columnOf(id)?.align === 'end' ? TH_END : TH
 }
 
 /**
@@ -646,8 +632,7 @@ function ringBackFor(outcome, chosen = '') {
 }
 
 /**
- * The form that records one call, used in the side panel and in Call Mode
- * alike.
+ * The form that records one call, in the side panel a business opens into.
  *
  * The outcomes are grouped by track rather than offered as eight equal
  * buttons, because the caller has already decided which of the four things
@@ -1009,14 +994,6 @@ export default function CallsPage() {
   // Only read on a screen too narrow to carry the handbook beside the record.
   // Where there is room for both, the stylesheet shows it whatever this says.
   const [handbook, setHandbook] = useState(false)
-  const [batch, setBatch] = useState([])
-  const [worked, setWorked] = useState({})
-  const [at, setAt] = useState(0)
-  // The outcome a caller has pressed in Call Mode that is waiting on whether
-  // they were interested. Held rather than recorded, because the answer belongs
-  // to the call that was just made and the page has no way to guess it - but a
-  // key gets past it unanswered, so the question never holds up the next number.
-  const [asking, setAsking] = useState(null)
   const [keyOpen, setKeyOpen] = useState(false)
   const [setupOpen, setSetupOpen] = useState(false)
   // Whether the list has the page to itself. Held for the sitting rather than
@@ -1077,9 +1054,7 @@ export default function CallsPage() {
     return () => clearTimeout(timer)
   }, [filters, sort])
 
-  // How many rows a page holds, and how many businesses a batch takes. One
-  // figure, because they are the same decision: a caller who wants fifty in
-  // front of them wants fifty to work through.
+  // How many businesses a page of the list holds, which is this account's own.
   const take = prefs.take
 
   const query = useMemo(
@@ -1153,53 +1128,7 @@ export default function CallsPage() {
     if (!loading) rememberRows(shapeKey, body.current)
   }, [loading, rows, shapeKey])
 
-  // The batch is held rather than re-read, so the order under the caller never
-  // moves while they work it.
-  const holdBatch = useCallback(() => {
-    setBatch(rows)
-    setWorked({})
-    setAt(0)
-  }, [rows])
-
-  useEffect(() => {
-    if (view !== 'calling') return
-    setBatch(current => (current.length ? current : rows))
-  }, [view, rows])
-
-  // Call Mode is reached from a row's own dial button as well as from the tabs,
-  // so it can be entered while the block above the list is folded away - and
-  // its batch controls, its tabs and the way back out are all in there. It
-  // unfolds rather than stranding a caller in a view with no way off it.
-  useEffect(() => {
-    if (view === 'calling') setAlone(false)
-  }, [view])
-
-  const current = batch[at] ?? null
-  const heldHere = current ? heldByOther(desk.held, current.id, desk.you) : null
-  // Whose call it is rather than the row saying so. The board is re-read every
-  // twenty seconds and hands back a new object each time, so keying the claim
-  // on the row would re-send it on every beat.
-  const heldBy = heldHere?.user_id ?? null
-
-  // Being on this business in Call Mode is being on the phone with it, so the
-  // console says so and every other console draws the lock.
-  //
-  // The three ways of being on nothing all release: leaving Call Mode, reaching
-  // the end of the batch, and landing on a business somebody else already holds.
-  // The last is the one worth stating - a caller who moves off a number is not
-  // on it any more, and holding the one behind them while they read the one in
-  // front is how a colleague ends up locked out of a call that ended minutes
-  // ago. Claiming the held one instead would be the double call itself.
-  const claim = desk.takeNumber
-  const drop = desk.dropNumber
-  useEffect(() => {
-    if (view !== 'calling' || !current || heldBy) {
-      drop()
-      return
-    }
-    claim(current.id)
-  }, [view, current, heldBy, claim, drop])
-
+  // One call on the record, and the line saying what it did to the business.
   const write = useCallback(
     async call => {
       const saved = await record(call)
@@ -1219,98 +1148,6 @@ export default function CallsPage() {
     [record]
   )
 
-  const quick = useCallback(
-    async outcome => {
-      if (!current) return
-      // A call back finishes on its key like every other outcome, at the
-      // default day out. The key used to open the record instead, because the
-      // time was required, which put a form in front of a caller mid-batch for
-      // the one outcome that means somebody wants to hear from them again. The
-      // record is still a button below, for the caller who was given a time.
-      //
-      // The two a key cannot finish on its own: the outcome does not say
-      // whether anybody wanted it, and a no is what keeps the business out of
-      // the lead list. The card asks, and whichever of the three answers comes
-      // back records the outcome with it.
-      if (outcomeAsksInterest(outcome)) {
-        setAsking(outcome)
-        setRecorded(null)
-        return
-      }
-      const saved = await write({
-        id: current.id,
-        outcome,
-        note: '',
-        interested: null,
-        callback_at: ringBackFor(outcome),
-      })
-      if (saved) {
-        setWorked(held => ({ ...held, [current.id]: outcome }))
-        setAt(index => index + 1)
-        setRecorded(null)
-      }
-    },
-    [current, write]
-  )
-
-  /** The waiting outcome recorded, now that the caller has said which it was. */
-  const answer = useCallback(
-    async interested => {
-      if (!current || !asking) return
-      const saved = await write({
-        id: current.id,
-        outcome: asking,
-        note: '',
-        interested,
-        callback_at: null,
-      })
-      if (saved) {
-        setWorked(held => ({ ...held, [current.id]: asking }))
-        setAt(index => index + 1)
-        setAsking(null)
-        setRecorded(null)
-      }
-    },
-    [current, asking, write]
-  )
-
-  // A question is asked of one business. Moving off that business, leaving Call
-  // Mode or opening the record all drop it, because the answer belongs to the
-  // call that was just made rather than to the next one up.
-  useEffect(() => {
-    setAsking(null)
-  }, [view, current, openRow])
-
-  // The eight outcomes on the eight number keys, ignored while a field has
-  // focus so typing a note never records a call. While one of them is waiting
-  // on whether they were interested the numbers stand down and `y`, `n` and `s`
-  // answer it, so the keyboard never records the outcome under the question.
-  useEffect(() => {
-    if (view !== 'calling' || !current || openRow) return undefined
-    const onKey = event => {
-      const tag = document.activeElement?.tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
-      if (asking) {
-        if (event.key === 'Escape') {
-          event.preventDefault()
-          setAsking(null)
-          return
-        }
-        const said = event.key.toLowerCase()
-        if (said !== 'y' && said !== 'n' && said !== 's') return
-        event.preventDefault()
-        answer(said === 's' ? null : said === 'y')
-        return
-      }
-      const outcome = CALL_OUTCOMES.find(one => one.key === event.key)
-      if (!outcome) return
-      event.preventDefault()
-      quick(outcome.id)
-    }
-    document.addEventListener('keydown', onKey)
-    return () => document.removeEventListener('keydown', onKey)
-  }, [view, current, openRow, asking, quick, answer])
-
   const openBusiness = useCallback(row => {
     setOpenRow(row)
     setRecorded(null)
@@ -1322,41 +1159,6 @@ export default function CallsPage() {
     setRecorded(null)
     setHandbook(false)
   }, [])
-
-  // A call recorded through the record while Call Mode is open finishes the
-  // business the caller was on, so the batch moves the way a key moves it.
-  // Without this the caller names the time somebody gave them and then finds
-  // the same business still in front of them.
-  const writeFromSheet = useCallback(
-    async call => {
-      const saved = await write(call)
-      if (saved && view === 'calling' && current && call.id === current.id) {
-        setWorked(held => ({ ...held, [current.id]: call.outcome }))
-        setAt(index => index + 1)
-        setOpenRow(null)
-      }
-      return saved
-    },
-    [write, view, current]
-  )
-
-  const callOne = useCallback(
-    row => {
-      setBatch([row])
-      setWorked({})
-      setAt(0)
-      go('calling')
-    },
-    [go]
-  )
-
-  // The sitting: today's counts from the list read, against the three figures
-  // this account set for itself. They arrive on two different feeds at two
-  // different rates and neither is the whole answer on its own.
-  const sitting = useMemo(
-    () => (shown?.shift ? shiftOf(shown.shift, prefs.goals) : null),
-    [shown, prefs.goals]
-  )
 
   const narrowed = filtersNarrow(filters)
   const chips = useMemo(() => filterChips(filters, people), [filters, people])
@@ -1466,7 +1268,6 @@ export default function CallsPage() {
         yours={Boolean(holder && holder.user_id === desk.you)}
         you={desk.you}
         onOpen={openBusiness}
-        onCall={callOne}
       />
     )
   }
@@ -1525,6 +1326,13 @@ export default function CallsPage() {
             loading={loading}
           />
 
+          {/* Who is on a number this minute. Nothing on this page claims one:
+              a claim says somebody has a handset against their ear, the only
+              screen that can say that truthfully is the one the call is placed
+              from, and so the board reads the claims the Call Center makes and
+              never adds one of its own. Hanging up stays, because a claim left
+              behind by a screen that died is one anybody at the desk should be
+              able to give back. */}
           <CallBoard
             presence={desk.presence}
             you={desk.you}
@@ -1706,174 +1514,40 @@ export default function CallsPage() {
         </div>
       </m.div>
 
-      {view === 'calling' ? (
-        <ConsoleSplit
-          area="work"
-          list={
-            <Panel
-              title="The Batch"
-              note="The businesses this sitting works through, best first. Click any name to jump to it."
-              loading={loading}
-              aside={
-                <span className={`${MONO_LABEL} text-paper-faint`}>
-                  {loading
-                    ? ''
-                    : `${fullCount(Object.keys(worked).length)} of ${fullCount(batch.length)} worked`}
-                </span>
-              }
-            >
-              <PanelBody>
-                <div className="flex flex-wrap gap-2 px-5 py-2">
-                  <button type="button" className={QUIET} onClick={holdBatch}>
-                    Take a Fresh Batch of {take}
-                  </button>
-                  <button
-                    type="button"
-                    className={QUIET}
-                    onClick={() => setSetupOpen(true)}
-                    aria-haspopup="dialog"
-                  >
-                    <SlidersHorizontal
-                      aria-hidden="true"
-                      className="h-3.5 w-3.5"
-                      strokeWidth={1.75}
-                    />
-                    Batch Size
-                  </button>
-                </div>
-                {/* One column at the width the card has, never at the width
-                    the longest name wants. A bare `grid` sizes its column to
-                    max-content, so one business with a long name widened every
-                    row in the batch and pushed all fifty scores out past the
-                    card's edge, where they were clipped rather than scrolled
-                    to. The name is the part that gives way. */}
-                <ul className="grid grid-cols-1">
-                  {batch.map((one, index) => {
-                    const holder = heldByOther(desk.held, one.id, desk.you)
-                    return (
-                      <li
-                        key={one.id}
-                        className={`border-hair-paper flex items-baseline justify-between gap-2 border-t px-5 py-2 ${
-                          index === at ? 'bg-[color:var(--wash-accent)]' : ''
-                        }`}
-                      >
-                        <button
-                          type="button"
-                          className="min-w-0 flex-1 text-left text-[13px] text-ink-paper hover:text-accent"
-                          onClick={() => setAt(index)}
-                        >
-                          <span className="block truncate">{one.name || 'Unnamed business'}</span>
-                          <span className={`${MONO_LABEL} text-paper-faint block truncate`}>
-                            {one.town}
-                          </span>
-                        </button>
-                        {worked[one.id] ? (
-                          <Badge tone={outcomeOf(worked[one.id])?.tone ?? 'plain'}>
-                            {outcomeOf(worked[one.id])?.label}
-                          </Badge>
-                        ) : holder ? (
-                          <Badge tone="accent" title={`${callerName(holder)} is on this call`}>
-                            {callerMark(holder)}
-                          </Badge>
-                        ) : (
-                          <span className={`${MONO_LABEL} text-paper-faint flex-shrink-0`}>
-                            {one.score}
-                          </span>
-                        )}
-                      </li>
-                    )
-                  })}
-                </ul>
-              </PanelBody>
-            </Panel>
-          }
-        >
-          {/* The sitting rides in the head of the card the calls are made
-              from. It belongs there rather than over the whole section because
-              it is a fact about the person calling rather than about the list,
-              and the list's own figures are three feet to the left saying how
-              many businesses are left - which is the figure this exists to stop
-              being the only one on the screen. */}
-          <Panel
-            title="Calling"
-            note="Read down to the call you are placing, ring the number and press what it came to. Say whether they were interested where it asks, and the next business comes up on its own."
-            loading={loading}
-            aside={
-              <span className={`${MONO_LABEL} text-paper-faint`}>
-                {loading ? '' : `${fullCount(Math.max(0, batch.length - at))} to go`}
-              </span>
-            }
-            tools={sitting ? <CallRings shift={sitting} now={readAt ?? undefined} /> : null}
-          >
-            <PanelBody>
-              {current ? (
-                <CallRecord
-                  row={current}
-                  caller={session?.user?.user_metadata?.full_name}
-                  saving={saving}
-                  recorded={recorded}
-                  asking={asking}
-                  holder={heldHere}
-                  you={desk.you}
-                  onQuick={quick}
-                  onAnswer={answer}
-                  onDrop={() => setAsking(null)}
-                  onOpen={openBusiness}
-                  onSkip={() => setAt(index => index + 1)}
-                />
-              ) : (
-                <div className="grid gap-3 px-5 py-4">
-                  <p className="text-[14px] text-ink-paper">
-                    {batch.length
-                      ? 'That is the batch worked through.'
-                      : narrowed
-                        ? 'Nothing matches those filters, so there is no batch to work.'
-                        : 'Nothing is ready to ring right now.'}
-                  </p>
-                  <p className={`${MONO_LABEL} text-paper-faint`}>
-                    {fullCount(totals.resting ?? 0)} are resting
-                    {shown?.next_back
-                      ? `, and the first comes back ${shortWhen(shown.next_back)}`
-                      : ''}
-                    .
-                  </p>
-                  <span className="flex flex-wrap gap-2">
-                    <button type="button" className={BUTTON} onClick={holdBatch}>
-                      Take Another Batch
-                    </button>
-                    {narrowed && (
-                      <button type="button" className={QUIET} onClick={clearAll}>
-                        Clear All
-                      </button>
-                    )}
-                  </span>
-                </div>
-              )}
-            </PanelBody>
-          </Panel>
-        </ConsoleSplit>
-      ) : (
-        <Panel
-          title={view === 'resting' ? 'Resting' : view === 'finished' ? 'Finished' : 'Call List'}
-          area="work"
-          note="Work it from the top down. The name opens a business, the button beside it dials."
-          loading={loading}
-          aside={
-            <span className={`${MONO_LABEL} text-paper-faint`}>
-              {/* Said where the count sits, because the count is the thing that
-                  is out of date: the rows below are the last question's answer
-                  and this is the one line that would otherwise state them as
-                  the answer to the question just asked. */}
-              {loading ? '' : behind ? 'Reading' : `${fullCount(shown?.matched ?? 0)} matching`}
-            </span>
-          }
-          tools={
-            /* The one control that is not about which businesses are on the
-               list but about how much of the screen they get. It sits in the
-               card's own head because the card is what moves, and because the
-               head is the only part of it still on screen once everything
-               above has folded away - a button that folded with the rest
-               would be a door that locks behind you. */
+      <Panel
+        title={view === 'resting' ? 'Resting' : view === 'finished' ? 'Finished' : 'Call List'}
+        area="work"
+        note="Work it from the top down. The name opens a business and the number dials it. You log your calls in the Call Center, behind the staff portal."
+        loading={loading}
+        aside={
+          <span className={`${MONO_LABEL} text-paper-faint`}>
+            {/* Said where the count sits, because the count is the thing that
+                is out of date: the rows below are the last question's answer
+                and this is the one line that would otherwise state them as
+                the answer to the question just asked. */}
+            {loading ? '' : behind ? 'Reading' : `${fullCount(shown?.matched ?? 0)} matching`}
+          </span>
+        }
+        tools={
+          /* The two controls that are not about which businesses are on the
+             list. One is the way over to where the calls are actually placed;
+             the other is how much of the screen this list gets.
+
+             It lands on the portal rather than on the call screen itself. The
+             call screen takes a business the moment it opens and says so to
+             everybody else at the desk, which is the right thing to do for
+             somebody about to dial and the wrong thing to do to somebody who
+             pressed a button to see where it went.
+
+             Both sit in the card's own head because the head is the only part
+             of the page still on screen once the block above has folded away -
+             a way out that folded with the rest would be a door that locks
+             behind you. */
+          <>
+            <Link className={BUTTON} to="/staff">
+              <Headphones aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+              Staff Portal
+            </Link>
             <button
               type="button"
               className={QUIET_ROW}
@@ -1888,92 +1562,92 @@ export default function CallsPage() {
               )}
               {alone ? 'Bring the Rest Back' : 'Give It the Screen'}
             </button>
-          }
-        >
-          <PanelBody>
-            {shown?.complete === false && (
-              <SectionNotice>
-                The read stopped at its ceiling of {fullCount(shown.cap)} businesses, so the figures
-                above cover that many rather than the whole table.
-              </SectionNotice>
-            )}
-            <table className="console-table">
-              <thead>
-                <tr>
-                  {columns.map(id => (
-                    <th key={id} className={headClass(id)} style={{ width: widths[id] }}>
-                      {columnOf(id)?.label}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody ref={body}>
-                {loading ? (
-                  <SkeletonRows
-                    cols={cellClasses}
-                    rows={shape.rows}
-                    height={shape.height}
-                    lastHeight={shape.lastHeight}
-                  />
-                ) : rows.length ? (
-                  listRows
-                ) : (
-                  <EmptyRow cols={columns.length}>
-                    {view === 'resting'
-                      ? 'Nothing is resting. Every business either waits for a call or is finished with.'
-                      : view === 'finished'
-                        ? 'Nothing has come off the list yet.'
-                        : narrowed || search
-                          ? 'Nothing is ready to ring under these filters.'
-                          : `Nothing is ready to ring. ${fullCount(matchedTotals.resting ?? totals.resting ?? 0)} are resting.`}
-                  </EmptyRow>
-                )}
-              </tbody>
-            </table>
-          </PanelBody>
-          <PanelFoot>
-            <span className="flex flex-wrap items-center gap-2">
+          </>
+        }
+      >
+        <PanelBody>
+          {shown?.complete === false && (
+            <SectionNotice>
+              The read stopped at its ceiling of {fullCount(shown.cap)} businesses, so the figures
+              above cover that many rather than the whole table.
+            </SectionNotice>
+          )}
+          <table className="console-table">
+            <thead>
+              <tr>
+                {columns.map(id => (
+                  <th key={id} className={TH} style={{ width: widths[id] }}>
+                    {columnOf(id)?.label}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody ref={body}>
+              {loading ? (
+                <SkeletonRows
+                  cols={cellClasses}
+                  rows={shape.rows}
+                  height={shape.height}
+                  lastHeight={shape.lastHeight}
+                />
+              ) : rows.length ? (
+                listRows
+              ) : (
+                <EmptyRow cols={columns.length}>
+                  {view === 'resting'
+                    ? 'Nothing is resting. Every business either waits for a call or is finished with.'
+                    : view === 'finished'
+                      ? 'Nothing has come off the list yet.'
+                      : narrowed || search
+                        ? 'Nothing is ready to ring under these filters.'
+                        : `Nothing is ready to ring. ${fullCount(matchedTotals.resting ?? totals.resting ?? 0)} are resting.`}
+                </EmptyRow>
+              )}
+            </tbody>
+          </table>
+        </PanelBody>
+        <PanelFoot>
+          <span className="flex flex-wrap items-center gap-2">
+            <span className={`${MONO_LABEL} text-paper-faint`}>
+              {view === 'resting'
+                ? 'Soonest back first. The number still dials and the record still opens.'
+                : view === 'finished'
+                  ? 'Last call first. Recording another call puts a business back on the list.'
+                  : banded
+                    ? 'Ordered by score, best first.'
+                    : 'Ordered as you asked, so the band headings are off.'}
+            </span>
+            <button type="button" className={QUIET} onClick={() => setKeyOpen(true)}>
+              How It Is Ranked
+            </button>
+          </span>
+          {pages > 1 && (
+            <span className="inline-flex items-center gap-2">
               <span className={`${MONO_LABEL} text-paper-faint`}>
-                {view === 'resting'
-                  ? 'Soonest back first. The number still dials and the record still opens.'
-                  : view === 'finished'
-                    ? 'Last call first. Recording another call puts a business back on the list.'
-                    : banded
-                      ? 'Ordered by score, best first.'
-                      : 'Ordered as you asked, so the band headings are off.'}
+                Page {fullCount(shown?.page ?? page)} of {fullCount(pages)}
               </span>
-              <button type="button" className={QUIET} onClick={() => setKeyOpen(true)}>
-                How It Is Ranked
+              <button
+                type="button"
+                className={QUIET}
+                disabled={page <= 1}
+                onClick={() => setPage(one => Math.max(1, one - 1))}
+              >
+                <ChevronLeft className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
+                Previous
+              </button>
+              <button
+                type="button"
+                className={QUIET}
+                disabled={page >= pages}
+                onClick={() => setPage(one => one + 1)}
+              >
+                Next
+                <ChevronRight className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
               </button>
             </span>
-            {pages > 1 && (
-              <span className="inline-flex items-center gap-2">
-                <span className={`${MONO_LABEL} text-paper-faint`}>
-                  Page {fullCount(shown?.page ?? page)} of {fullCount(pages)}
-                </span>
-                <button
-                  type="button"
-                  className={QUIET}
-                  disabled={page <= 1}
-                  onClick={() => setPage(one => Math.max(1, one - 1))}
-                >
-                  <ChevronLeft className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
-                  Previous
-                </button>
-                <button
-                  type="button"
-                  className={QUIET}
-                  disabled={page >= pages}
-                  onClick={() => setPage(one => one + 1)}
-                >
-                  Next
-                  <ChevronRight className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
-                </button>
-              </span>
-            )}
-          </PanelFoot>
-        </Panel>
-      )}
+          )}
+        </PanelFoot>
+      </Panel>
 
       {/* One business over the list it was opened from: why it is here, what
           it scores and out of what, every call placed to it, and the form that
@@ -2015,7 +1689,7 @@ export default function CallsPage() {
             people={people}
             you={desk.you}
             onHand={handOver}
-            onRecord={writeFromSheet}
+            onRecord={write}
             onHandbook={() => setHandbook(true)}
           />
         )}

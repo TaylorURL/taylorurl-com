@@ -86,7 +86,7 @@ const CALLS = 'outreach_calls'
 const PROFILES = 'profiles'
 
 /** The views, which decide which bucket of the set is answered for. */
-const VIEWS = Object.freeze(['list', 'calling', 'resting', 'finished'])
+const VIEWS = Object.freeze(['list', 'resting', 'finished'])
 
 /**
  * The callable set's ceiling.
