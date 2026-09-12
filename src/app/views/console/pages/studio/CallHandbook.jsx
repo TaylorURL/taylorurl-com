@@ -314,7 +314,7 @@ export default function CallHandbook({ row, caller, onClose }) {
           {searching
             ? found
               ? `${found} of these answer that.`
-              : 'Nothing here answers that. Say you will find out and ring them back.'
+              : 'Nothing here answers that. Say you will find out and call them back.'
             : HANDBOOK_PARTS.map(part => part.label).join(' · ')}
         </p>
       </div>

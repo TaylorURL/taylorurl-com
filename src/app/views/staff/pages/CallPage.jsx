@@ -232,7 +232,7 @@ export default function CallPage() {
         <p className="staff-foot-note">
           {picked
             ? asksLength && !hours
-              ? 'No callback time set. Files as tomorrow.'
+              ? 'No callback time set. They come back on the list tomorrow.'
               : next
                 ? `Next: ${next.name}`
                 : 'Last lead on the list.'

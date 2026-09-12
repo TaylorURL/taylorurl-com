@@ -128,7 +128,7 @@ export default function ManagementPage() {
               <dd>{nextBack ? callMoment(nextBack) : 'None'}</dd>
             </div>
           </dl>
-          <p className="staff-read">Goals are set in the console.</p>
+          <p className="staff-read">Whoever set your shift sets the goals in the console.</p>
         </div>
 
         <div className="staff-part">
