@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useSurfaced } from './lib/surface'
 
 /**
@@ -12,19 +13,15 @@ import { useSurfaced } from './lib/surface'
  * bottom of the window rather than to a rule with empty space under it.
  *
  * The head is never a control that ends anything. It holds where you are and
- * the way back, because the head is where a hand rests.
+ * the way back, because the head is where a hand rests. It behaves as the
+ * site's own bar does: nothing until the column has scrolled under it, and then
+ * the page's ground and a hairline. `useSurfaced` writes that to the head
+ * directly rather than through a render.
  *
- * The three parts sit inside a window rather than directly on the surface. On a
- * phone that window is the whole screen and the distinction costs nothing; on a
- * desktop it is a pane standing on a lit field, which is the one thing the
- * bigger screen is actually for - a phone has no room to stand anything on
- * anything, and a surface drawn edge to edge at fifteen hundred pixels is a
- * narrow column of work in the middle of an empty page.
- *
- * The bars are panes of the same material, so the head says how far it is held
- * above the column by what it casts onto it - the one thing it can only know
- * from where the column is. `useSurfaced` writes that to the head directly
- * rather than through a render.
+ * `layout` is the one thing a screen says about its own shape. The portal
+ * stands in the middle of a desk's window the way the sign-in form does; the
+ * handbook holds the site's reading measure; everything else opens wide enough
+ * for the two columns a desk has room for.
  *
  * The document's head is the frame's, not this one's. It has to be written for a
  * visit that never reaches a screen at all - a crawler, or a direct load before
@@ -32,34 +29,34 @@ import { useSurfaced } from './lib/surface'
  *
  * @param {{title: string, back?: {to: string, label: string},
  *   aside?: React.ReactNode, foot?: React.ReactNode,
+ *   layout?: 'wide' | 'portal' | 'reading',
  *   children: React.ReactNode}} props
  */
-export default function StaffScreen({ title, back, aside, foot, children }) {
+export default function StaffScreen({ title, back, aside, foot, layout = 'wide', children }) {
   const surfaced = useSurfaced()
 
   return (
-    <div className="staff">
-      <div className="staff-window">
-        <header className="staff-head" ref={surfaced.head} data-surfaced="false">
-          <div className="staff-pad staff-head-row">
-            <b>{title}</b>
-            {aside}
-            {back && (
-              <Link className="staff-back" to={back.to}>
-                {back.label}
-              </Link>
-            )}
-          </div>
-        </header>
-        <div className="staff-scroll" ref={surfaced.scroll}>
-          <div className="staff-pad staff-stack">{children}</div>
+    <div className="staff" data-layout={layout}>
+      <header className="staff-head" ref={surfaced.head} data-surfaced="false">
+        <div className="staff-pad staff-head-row">
+          <b>{title}</b>
+          {aside}
+          {back && (
+            <Link className="staff-back" to={back.to}>
+              <ArrowLeft aria-hidden="true" />
+              {back.label}
+            </Link>
+          )}
         </div>
-        {foot && (
-          <footer className="staff-foot">
-            <div className="staff-pad staff-foot-stack">{foot}</div>
-          </footer>
-        )}
+      </header>
+      <div className="staff-scroll" ref={surfaced.scroll}>
+        <div className="staff-pad staff-stack">{children}</div>
       </div>
+      {foot && (
+        <footer className="staff-foot">
+          <div className="staff-pad staff-foot-stack">{foot}</div>
+        </footer>
+      )}
     </div>
   )
 }
