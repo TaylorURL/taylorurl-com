@@ -127,6 +127,10 @@ const SHAPES = [
   ['work of ours in its town', business({ proof: 'town', proof_work: [{ name: 'A', town: 'B' }] })],
   ['no work of ours to name', business({ proof: null, proof_work: [] })],
   ['a quiet listing', business({ pull: 'quiet', rating_count: 4 })],
+  [
+    'a listing with no reviews on it',
+    business({ pull: 'quiet', rating_count: null, business_status: 'OPERATIONAL' }),
+  ],
   ['a middling listing', business({ pull: 'steady', rating_count: 51 })],
   ['a gatekeeper already met', business({ calls: [{ outcome: 'gatekeeper' }] })],
   ['nothing but an id', { id: 'bare' }],
@@ -154,6 +158,24 @@ check('the opening is about the business rather than about businesses', () => {
   ok(say.includes('52'), 'the middle for its trade was not said')
   ok(say.includes('barber shop'), 'its trade was not said')
   ok(say.includes('Square'), 'the platform its listing points at was not named')
+})
+
+check('a listing with no reviews is told it has none, not that it cannot be measured', () => {
+  // The list leads with these, so the line is read on most calls. Google
+  // leaves the count off a listing nobody has reviewed, and reading that as an
+  // unmeasured trade told an owner with no reviews something untrue about their
+  // trade instead of the one true thing about them.
+  const trade = row => scriptFor(row).find(line => line.id === 'trade').say
+  const none = trade(
+    business({ pull: 'quiet', rating_count: null, business_status: 'OPERATIONAL' })
+  )
+  ok(none.includes('no reviews'), `a listing with no reviews was told: "${none}"`)
+  ok(
+    !none.includes('too few'),
+    `a listing with no reviews was told it could not be measured: "${none}"`
+  )
+  const one = trade(business({ pull: 'quiet', rating_count: 1 }))
+  ok(one.includes('1 review '), `one review was said as: "${one}"`)
 })
 
 check('a listing with no website is not told about its website', () => {

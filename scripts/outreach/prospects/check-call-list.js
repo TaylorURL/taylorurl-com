@@ -70,6 +70,7 @@ import {
   pullBand,
   pullOf,
   readyAt,
+  reviewsOf,
   scoreOf,
   tellingTerms,
   triesRun,
@@ -248,9 +249,26 @@ check('a handful of reviews in a busy trade is not read as exceptional', () => {
 
 check('a trade with no middle to take reads unread rather than being ranked', () => {
   same(pullBand(row(), null), 'unread', 'a trade under the floor')
-  same(pullBand(row({ rating_count: null }), 40), 'unread', 'a listing with no count')
+  same(
+    pullBand(row({ rating_count: null, business_status: null }), 40),
+    'unread',
+    'a listing nothing asked about'
+  )
   same(pullOf(row({ rating_count: '40' }), 40), null, 'a count that is not a number')
   ok(TRADE_FLOOR >= 5, 'the trade floor is low enough to be a middle of anything')
+})
+
+check('a listing Google answered with no reviews on it reads as none, not as unread', () => {
+  // Google leaves the count off a listing nobody has reviewed. Read as unread,
+  // the least findable businesses on the table sat under every one that could be
+  // measured, which is the list running backwards from what it is for.
+  same(reviewsOf(row({ rating_count: null })), 0, 'a status and no count')
+  same(pullBand(row({ rating_count: null }), 40), 'quiet', 'no reviews against a middle of forty')
+  // The other half of the rule, and the half that must not move: a row the sweep
+  // never asked about is not a business with no reviews.
+  same(reviewsOf(row({ rating_count: null, business_status: null })), null, 'neither on the row')
+  same(reviewsOf(row({ rating_count: '40' })), null, 'a count that is not a number')
+  same(reviewsOf(row({ rating_count: 0 })), 0, 'a count of nought')
 })
 
 check('every reading a listing can come to is one of the four named', () => {
@@ -387,7 +405,8 @@ check('how the trade reads is the largest thing the score turns on', () => {
   // The failure to catch is the one where the trade reading is quietly demoted
   // under something easier to compute. Everything else about a business is
   // circumstance; how it reads against its own trade is the finding.
-  const busy = SCORE_WEIGHTS.trade.busy
+  const top = Math.max(...Object.values(SCORE_WEIGHTS.trade))
+  same(top, SCORE_WEIGHTS.trade.quiet, 'the reading the trade weights are led by')
   const rest = [
     ...Object.values(SCORE_WEIGHTS.proof),
     ...Object.values(SCORE_WEIGHTS.presence),
@@ -396,20 +415,47 @@ check('how the trade reads is the largest thing the score turns on', () => {
     Math.abs(SCORE_WEIGHTS.attempts.floor),
   ]
   for (const weight of rest) {
-    ok(busy > weight, `a weight of ${weight} met or beat how the trade reads`)
+    ok(top > weight, `a weight of ${weight} met or beat how the trade reads`)
   }
-  for (const band of PULLS) {
-    ok(SCORE_WEIGHTS.trade[band] > 0, `${band} scores nothing, so its trade decides nothing`)
-  }
+  same(
+    Object.keys(SCORE_WEIGHTS.trade)
+      .sort((one, two) => SCORE_WEIGHTS.trade[two] - SCORE_WEIGHTS.trade[one])
+      .join(','),
+    'quiet,steady,unread,busy',
+    'the trade readings from most points to fewest'
+  )
+  same(
+    [...PULLS].sort().join(','),
+    Object.keys(SCORE_WEIGHTS.trade).sort().join(','),
+    'a reading with no weight'
+  )
 })
 
-check('a busy listing outscores a middling one in the same trade', () => {
+check('the listing its trade buries outscores the one Google already shows', () => {
+  // The list ran the other way until the calls said otherwise: busy listings
+  // first, and every owner at the top of it already had the work. A business
+  // that is hard to find is the one with something to buy.
   const busy = scoreOf(row({ rating_count: 200 }), { median: 40 }).score
   const steady = scoreOf(row({ rating_count: 40 }), { median: 40 }).score
   const quiet = scoreOf(row({ rating_count: 4 }), { median: 40 }).score
-  ok(busy > steady, 'a busy listing did not outscore a middling one')
-  ok(steady > quiet, 'a middling listing did not outscore an unfindable one')
-  ok(quiet > 0, 'an unfindable listing scored nothing, which is not what it is worth')
+  ok(quiet > steady, 'an unfindable listing did not outscore a middling one')
+  ok(steady > busy, 'a middling listing did not outscore a busy one')
+})
+
+check('before anybody rings either, a listing Google shows never outranks one it hides', () => {
+  // The whole guarantee, with every advantage on the busy side and none on the
+  // quiet one. The history terms are left out on purpose: a busy business an
+  // owner has already heard the pitch from is a conversation, and it is allowed
+  // to climb.
+  const found = scoreOf(row({ rating_count: 200, trade: 'barber shop', site_kind: 'none' }), {
+    median: 40,
+    proof: 'trade',
+  }).score
+  const hidden = scoreOf(
+    row({ rating_count: 4, site_kind: 'social', website: 'https://www.booksy.com/en-us/1' }),
+    { median: 40, proof: null }
+  ).score
+  ok(hidden > found, `a busy listing with everything scored ${found} against ${hidden}`)
 })
 
 check('an unrated listing is not read as a badly rated one', () => {
@@ -489,14 +535,12 @@ check('what it has instead of a site is read from the listing, not guessed', () 
     'portal',
     'a directory somebody else listed it in'
   )
-  ok(
-    SCORE_WEIGHTS.presence.booking > SCORE_WEIGHTS.presence.social,
-    'a business already paying for software did not outrank a Facebook page'
-  )
-  ok(
-    SCORE_WEIGHTS.presence.none > SCORE_WEIGHTS.presence.portal,
-    'a directory listing outranked a business with nothing at all'
-  )
+  // Ranked by how findable each leaves the business. A booking platform is last
+  // because its own marketplace is already a search that sends it customers.
+  const { none, social, portal, booking } = SCORE_WEIGHTS.presence
+  ok(none > social, 'a Facebook page outranked a business with nothing at all')
+  ok(social > portal, 'a directory listing outranked a page it does not own')
+  ok(portal > booking, 'a booking platform outranked a directory listing')
 })
 
 check('a row says why it is on the list, whatever it has instead of a site', () => {
@@ -513,7 +557,7 @@ check('a row says why it is on the list, whatever it has instead of a site', () 
 })
 
 check('a row shows its two best reasons and every penalty', () => {
-  const { terms } = scoreOf(row({ rating: 2.9, rating_count: 200 }), {
+  const { terms } = scoreOf(row({ rating: 2.9, rating_count: 20 }), {
     median: 40,
     calls: [call(), call({ id: 'c2' })],
   })
@@ -578,15 +622,21 @@ check('two businesses level on rank are separated to the last', () => {
   // Without a total order a page boundary can show one business twice and
   // another not at all, which reads as the list losing rows.
   const order = byCallOrder(now)
-  const one = listed({ id: 'a', rating_count: 90, created_at: '2026-01-01T00:00:00.000Z' })
-  const two = listed({ id: 'b', rating_count: 40, created_at: '2026-01-01T00:00:00.000Z' })
-  ok(order(one, two) < 0, 'the busier listing did not break the tie')
+  const filed = '2026-01-01T00:00:00.000Z'
+  // Listed with the harder one to find second, so a sort that fell back on the
+  // id would put them the wrong way round.
+  const found = listed({ id: 'a', pull_ratio: 1.1, created_at: filed })
+  const hidden = listed({ id: 'b', pull_ratio: 0.3, created_at: filed })
+  ok(order(hidden, found) < 0, 'the listing further behind its trade did not break the tie')
 
-  const older = listed({ id: 'a', rating_count: 40, created_at: '2025-01-01T00:00:00.000Z' })
-  ok(order(older, two) < 0, 'the listing that has waited longest did not break the tie')
+  const unread = listed({ id: 'a', pull_ratio: null, created_at: filed })
+  ok(order(found, unread) < 0, 'a listing nobody could read broke the tie ahead of one that reads')
 
-  const same0 = listed({ id: 'a', rating_count: 40, created_at: '2026-01-01T00:00:00.000Z' })
-  const same1 = listed({ id: 'b', rating_count: 40, created_at: '2026-01-01T00:00:00.000Z' })
+  const older = listed({ id: 'c', pull_ratio: 1.1, created_at: '2025-01-01T00:00:00.000Z' })
+  ok(order(older, found) < 0, 'the listing that has waited longest did not break the tie')
+
+  const same0 = listed({ id: 'a', pull_ratio: 1.1, created_at: filed })
+  const same1 = listed({ id: 'b', pull_ratio: 1.1, created_at: filed })
   ok(order(same0, same1) !== 0, 'two identical listings ordered the same, so the sort is partial')
 })
 
