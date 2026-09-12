@@ -64,6 +64,11 @@ function arrangement(spans, part) {
  * committed capture is the source; a site whose capture has not been taken
  * falls back to a server-rendered screenshot of the page itself, so the card
  * always shows the real thing.
+ *
+ * The card is the hover target and the capture is what answers it, which is
+ * why both carry a class the stylesheet names: a pointer anywhere on the card
+ * crops the picture a little tighter inside its frame, and the link at the
+ * foot stays the one thing a keyboard lands on.
  */
 function WorkCard({ project, tone, cell, spans, feature, headingTag }) {
   const Heading = headingTag
@@ -73,7 +78,7 @@ function WorkCard({ project, tone, cell, spans, feature, headingTag }) {
     : portfolioPreviewSrc(project, 'desktop')
 
   return (
-    <article className={`grid ${tone.surface} ${cell} ${arrangement(spans, 'article')}`}>
+    <article className={`work-card grid ${tone.surface} ${cell} ${arrangement(spans, 'article')}`}>
       <div
         className={`bg-surface-1 aspect-[16/10] w-full overflow-hidden border-b ${tone.rule} ${arrangement(
           spans,
@@ -88,7 +93,7 @@ function WorkCard({ project, tone, cell, spans, feature, headingTag }) {
           loading="lazy"
           decoding="async"
           onError={() => setUseFallback(true)}
-          className="h-full w-full object-cover object-top"
+          className="work-capture h-full w-full object-cover object-top transition-transform duration-200 ease-out-soft"
         />
       </div>
       <div

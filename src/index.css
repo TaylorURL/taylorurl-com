@@ -2367,6 +2367,36 @@
     display: none;
   }
 
+  /* The capture under the pointer. A work card is a picture of a client's site
+     over a paragraph about it, and the picture is the largest thing in the
+     band. The card answers a pointer by moving that picture inside its frame
+     and changing nothing else: the card is a window onto somebody's site
+     rather than an object being picked up, so a lift, a tint or a shadow would
+     be describing the wrong thing.
+
+     The hover is hung on the card and read on the capture, so a pointer
+     anywhere - the frame, the paragraph, the space between them - moves the
+     same image, and the frame's own hidden overflow is what crops it. It is a
+     media query rather than Tailwind's `group-hover` because the hover variant
+     is ungated at this version: a tap on a phone leaves the hovered state
+     behind until something else is tapped, which would hold the capture at its
+     scaled crop for as long as the reader stayed on the page. */
+  @media (hover: hover) and (pointer: fine) {
+    .work-card:hover .work-capture {
+      transform: scale(1.03);
+    }
+  }
+
+  /* The blanket rule at the foot of this sheet stills durations and leaves
+     transforms alone, so a reader who asked for less motion would be handed
+     the crop change as a jump rather than not at all. The capture holds its
+     frame instead. */
+  @media (prefers-reduced-motion: reduce) {
+    .work-card:hover .work-capture {
+      transform: none;
+    }
+  }
+
   /* The rail sits on paper, so its controls take the paper palette rather than
      the page ink, which on the dark setting is the wrong end of the scale. */
   .review-rail-step {
@@ -2896,6 +2926,33 @@
 
   @media (prefers-reduced-motion: reduce) {
     .btn:active {
+      transform: none;
+    }
+  }
+
+  /*
+   * THE PRESSED CELL
+   * -------------------------------------------------------------------------
+   * A cell on a ruled mesh is a link that draws the rules either side of it, so
+   * it cannot take the press a button takes: scaling the link would pull the
+   * grid apart under the finger and leave a gap where the rule was. What the
+   * cell holds takes it instead, so the press reads and the ruling holds still.
+   *
+   * The figures are the button's, because a press is one thing on the site
+   * however large the thing being pressed is.
+   */
+  .cell-press {
+    transition: transform 120ms var(--ease-out-soft);
+  }
+
+  a:active > .cell-press,
+  button:not(:disabled):active > .cell-press {
+    transform: scale(0.98);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a:active > .cell-press,
+    button:not(:disabled):active > .cell-press {
       transform: none;
     }
   }
