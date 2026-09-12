@@ -17,6 +17,7 @@ import { DEFAULT_GOALS } from '@lib/outreach/prospects/callShift.js'
 import { scriptFor } from '@lib/outreach/prospects/handbook.js'
 import StaffScreen from '../StaffScreen'
 import { useStaff } from '../lib/context'
+import { useDesk } from '../lib/surface'
 import { NOTE_STAMPS, callDay, callLine, callMoment, marksFor } from '../lib/call'
 
 // The whole list, ranked, in one read. A representative works the top of it and
@@ -30,17 +31,23 @@ const FILTERS = Object.freeze({ view: 'list', take: 50 })
  * One business at a time, and the order is the list's own ranking rather than
  * anything chosen here. What is on screen is the next number to call, what is
  * known about the business, every call placed to it, and the lines to say - and
- * once the call is marked, the two questions that file it.
+ * once the call is marked, the form that logs it.
  *
- * The questions are not drawn before the call is marked. A screen that offers
- * eight outcomes and a comment box to somebody who has not dialled yet reads as
- * a form to fill in rather than a call to make, and the height they take is
- * height the script wanted.
+ * Nobody moves to the next lead without logging this one. The only way past a
+ * business is a filed call, and the one shortcut is Bad Lead, which is a filed
+ * call too: it says the business should never have been on the list and takes
+ * it off, so the next person is not handed it. The one exception is a business
+ * somebody else has already logged since it was opened here, which Next steps
+ * over because there is nothing left to file.
  *
- * The four blocks that describe the business are keyed on it, so moving to the
- * next number draws them as a card that arrived rather than as four fields whose
- * text changed under the eye. The refresher below them is not keyed: a
- * representative who opened the script wants it open on the next call too.
+ * The form is not drawn before the call is marked. A screen that offers nine
+ * outcomes and a comment box to somebody who has not dialed yet reads as a form
+ * to fill in rather than a call to make, and the height it takes is height the
+ * script wanted.
+ *
+ * On a desk the script is a column of its own and always open. On a phone it
+ * folds, because a representative reads it once in the first week and after
+ * that wants the two lines they forget.
  *
  * Where the caller is in the list is held as a trail of businesses rather than
  * an index into the rows, because the rows re-rank under it: a business that has
@@ -53,6 +60,11 @@ export default function CallPage() {
   const { token, userId, name } = useStaff()
   const desk = useCallDesk({ token, userId, enabled: Boolean(token) })
   const feed = useCallsFeed({ token, enabled: Boolean(token), filters: FILTERS })
+  const wide = useDesk()
+  // A phone's foot has room for three short keys and not for a long one: the
+  // armed label says the whole of what it does where there is room, and the
+  // one word that matters where there is not.
+  const roomy = useDesk('(min-width: 768px)')
 
   const [trail, setTrail] = useState([])
   const [cursor, setCursor] = useState(0)
@@ -61,6 +73,10 @@ export default function CallPage() {
   const [hours, setHours] = useState(null)
   const [interest, setInterest] = useState(null)
   const [note, setNote] = useState('')
+  // Bad Lead takes a business off the list for good on one press, so the first
+  // press arms it and the second files it. Anything else the caller does
+  // disarms it.
+  const [armed, setArmed] = useState(false)
 
   const rows = useMemo(() => feed.data?.rows ?? [], [feed.data])
   const shift = feed.data?.shift ?? null
@@ -123,6 +139,7 @@ export default function CallPage() {
     setHours(null)
     setInterest(null)
     setNote('')
+    setArmed(false)
   }, [])
 
   // Arriving at a business clears what was answered about the last one. Carrying
@@ -165,9 +182,23 @@ export default function CallPage() {
     onward()
   }, [current, picked, note, hours, interest, feed, desk, onward])
 
+  // A bad lead is filed the same way a call is, with nothing asked. Two presses:
+  // the first arms the control, the second files it.
+  const badLead = useCallback(async () => {
+    if (!current || feed.saving) return
+    if (!armed) {
+      setArmed(true)
+      return
+    }
+    const saved = await feed.record(callBody({ id: current.id, outcome: 'bad_lead' }))
+    if (!saved) return
+    await desk.dropNumber()
+    onward()
+  }, [current, armed, feed, desk, onward])
+
   // The keys, for the hand that is not holding a handset. They are only live once
   // the call is marked, because until then there is nothing on screen they
-  // name - and never while somebody is typing the comment.
+  // name - and never while somebody is typing the note.
   useEffect(() => {
     if (!marked) return undefined
     const onKey = event => {
@@ -187,59 +218,65 @@ export default function CallPage() {
   const script = useMemo(() => (current ? scriptFor(current, name) : []), [current, name])
 
   const placed = shift?.placed ?? 0
-  const progress = `${placed} of ${goals.calls}`
+  const progress = `${placed} / ${goals.calls} calls`
 
   const foot = current ? (
     marked ? (
       <>
-        <button type="button" className="staff-btn" onClick={file} disabled={!ready}>
-          {feed.saving ? 'Filing' : 'File Call & Next'}
+        <button type="button" className="staff-quiet" onClick={clear}>
+          Undo
         </button>
-        <div className="staff-foot-pair">
-          <button type="button" className="staff-quiet" onClick={clear}>
-            Not Yet
-          </button>
-          <button type="button" className="staff-quiet" onClick={onward} disabled={!next}>
-            Skip
-          </button>
-        </div>
+        <button type="button" className="staff-btn" onClick={file} disabled={!ready}>
+          {feed.saving ? 'Saving' : 'Save & Next'}
+        </button>
         <p className="staff-foot-note">
           {picked
             ? asksLength && !hours
-              ? 'You have not picked a length. They come back on the list tomorrow.'
+              ? 'No callback time set. Files as tomorrow.'
               : next
-                ? `Next up is ${next.name}.`
-                : 'That is the last one on the list.'
-            : 'Press what the call came to.'}
+                ? `Next: ${next.name}`
+                : 'Last lead on the list.'
+            : 'Choose an outcome.'}
         </p>
       </>
     ) : (
       <>
-        <button
-          type="button"
-          className="staff-btn"
-          onClick={() => setMarked(true)}
-          disabled={spent}
-        >
-          Mark This One Called
+        <button type="button" className="staff-quiet" onClick={() => move(-1)} disabled={!cursor}>
+          Back
         </button>
-        <div className="staff-foot-pair">
-          <button type="button" className="staff-quiet" onClick={() => move(-1)} disabled={!cursor}>
-            Last Number
-          </button>
+        {spent ? (
           <button
             type="button"
-            className="staff-quiet"
+            className="staff-btn"
             onClick={onward}
             disabled={!next && cursor >= trail.length - 1}
           >
-            Next Number
+            Next
           </button>
-        </div>
+        ) : (
+          <>
+            <button
+              type="button"
+              className="staff-quiet staff-bad"
+              data-armed={armed}
+              onClick={badLead}
+              disabled={feed.saving}
+            >
+              {armed ? (roomy ? 'Confirm Bad Lead' : 'Confirm') : 'Bad Lead'}
+            </button>
+            <button type="button" className="staff-btn" onClick={() => setMarked(true)}>
+              Mark as Called
+            </button>
+          </>
+        )}
         <p className="staff-foot-note">
           {spent
-            ? 'This one is already filed. Press Next Number to carry on.'
-            : 'Ring the number above, then mark it called to file what it came to.'}
+            ? 'Already logged.'
+            : armed
+              ? 'Takes the business off the list for good.'
+              : next
+                ? `Next: ${next.name}`
+                : 'Last lead on the list.'}
         </p>
       </>
     )
@@ -260,18 +297,14 @@ export default function CallPage() {
               telling somebody the day is over when the answer was 403 sends
               them home. */}
           <h2>
-            {feed.loading
-              ? 'Reading the list'
-              : feed.error
-                ? 'This screen cannot read the list'
-                : 'The list is spent'}
+            {feed.loading ? 'Loading' : feed.error ? 'The list did not load' : 'No leads available'}
           </h2>
           <p>
             {feed.loading
-              ? 'One moment.'
+              ? ''
               : feed.error
                 ? feed.error
-                : 'Every business that was ready has been rung. The ones resting come back on their own, and the Management Center says when the soonest is due.'}
+                : 'Every available lead has been called. Leads on callback return when their time comes. The Management Center shows the next one due.'}
           </p>
           {!feed.loading && !feed.error && (
             <Link className="staff-quiet" to="/staff/management">
@@ -280,9 +313,9 @@ export default function CallPage() {
           )}
         </div>
       ) : (
-        <div className="staff-cols">
-          <div className="staff-main">
-            <div className="staff-biz" key={`${current.id}-who`}>
+        <div className="staff-call">
+          <div className="staff-who">
+            <div className="staff-lead" key={`${current.id}-who`}>
               <h2>{current.name}</h2>
               <p>
                 {[current.trade, current.town].filter(Boolean).join(' in ') || 'Trade not on file'}
@@ -296,12 +329,12 @@ export default function CallPage() {
               </div>
             </div>
 
-            <a className="staff-number" href={dialHref(current.phone)} key={`${current.id}-dial`}>
+            <a className="staff-dial" href={dialHref(current.phone)} key={`${current.id}-dial`}>
               <Phone aria-hidden="true" />
               {current.phone}
             </a>
 
-            <dl className="staff-pairs" key={`${current.id}-facts`}>
+            <dl className="staff-pairs staff-facts" key={`${current.id}-facts`}>
               <div>
                 <dt>Address</dt>
                 <dd>{current.address || 'Not on file'}</dd>
@@ -311,32 +344,35 @@ export default function CallPage() {
                 <dd>
                   {current.rating
                     ? `${current.rating} from ${current.rating_count ?? 0}`
-                    : 'None on file'}
+                    : 'Not on file'}
                 </dd>
               </div>
               <div>
-                <dt>Site</dt>
+                <dt>Website</dt>
                 <dd>{current.site_kind === 'social' ? 'Social page only' : 'None'}</dd>
               </div>
               <div>
-                {/* A time the owner named is a different fact from a rest running
-                  out, and reading the first as the second is how a caller rings
-                  somebody an hour before they asked to be rung. */}
-                <dt>{current.callback_at ? 'They Said' : 'Comes Back'}</dt>
+                {/* A time the owner named is a different fact from a rest
+                    running out, and reading the first as the second is how a
+                    caller calls somebody an hour before they asked to be
+                    called. */}
+                <dt>{current.callback_at ? 'Callback' : 'Available'}</dt>
                 <dd>
                   {current.callback_at
                     ? callMoment(current.callback_at)
                     : current.ready_at
                       ? callMoment(current.ready_at)
-                      : 'Ready now'}
+                      : 'Now'}
                 </dd>
               </div>
             </dl>
+          </div>
 
+          <div className="staff-desk">
             {marked && (
-              <div className="staff-answers">
+              <div className="staff-log">
                 <div className="staff-part">
-                  <h3>What the Call Came To</h3>
+                  <h3>Outcome</h3>
                   <div className="staff-tags-grid">
                     {CALL_OUTCOMES.map(one => (
                       <button
@@ -354,7 +390,7 @@ export default function CallPage() {
                   </div>
                   {asksLength && (
                     <div className="staff-range">
-                      <p className="staff-label">Ring Back In</p>
+                      <p className="staff-label">Call Back In</p>
                       <div className="staff-tags">
                         {CALLBACK_LENGTHS.map(length => (
                           <button
@@ -376,7 +412,7 @@ export default function CallPage() {
 
                 {asksInterest && (
                   <div className="staff-part">
-                    <h3>Were They Interested</h3>
+                    <h3>Interested?</h3>
                     <div className="staff-tags">
                       <button
                         type="button"
@@ -385,7 +421,7 @@ export default function CallPage() {
                         aria-pressed={interest === true}
                         onClick={() => setInterest(held => (held === true ? null : true))}
                       >
-                        Interested
+                        Yes
                       </button>
                       <button
                         type="button"
@@ -394,18 +430,17 @@ export default function CallPage() {
                         aria-pressed={interest === false}
                         onClick={() => setInterest(held => (held === false ? null : false))}
                       >
-                        Not Interested
+                        No
                       </button>
                     </div>
                     <p className="staff-read">
-                      Leave it unpressed where the call did not get that far. Not interested keeps
-                      them on the call list and off the lead list.
+                      Optional. No keeps them on the call list and off the lead list.
                     </p>
                   </div>
                 )}
 
                 <div className="staff-part">
-                  <h3>Comment</h3>
+                  <h3>Notes</h3>
                   <div className="staff-tags">
                     {NOTE_STAMPS.map(stamp => (
                       <button
@@ -424,16 +459,14 @@ export default function CallPage() {
                     className="staff-input"
                     value={note}
                     onChange={event => setNote(event.target.value)}
-                    placeholder="What the next person ringing them needs to know."
+                    placeholder="Notes for the next call"
                   />
                 </div>
               </div>
             )}
-          </div>
 
-          <aside className="staff-side">
-            <div className="staff-part" key={`${current.id}-record`}>
-              <h3>The Record</h3>
+            <div className="staff-part staff-history" key={`${current.id}-record`}>
+              <h3>Call History</h3>
               {current.calls?.length ? (
                 <dl className="staff-record">
                   {current.calls.map(call => (
@@ -447,22 +480,22 @@ export default function CallPage() {
                   ))}
                 </dl>
               ) : (
-                <p className="staff-read">Nobody has rung this one yet. Yours is the first call.</p>
+                <p className="staff-read">No calls yet.</p>
               )}
             </div>
+          </div>
 
-            <details className="staff-fold">
-              <summary>Refresher</summary>
-              <div className="staff-fold-body">
-                {script.map(beat => (
-                  <div className="staff-beat" key={beat.id}>
-                    <p className="staff-label">{beat.label}</p>
-                    <p>{beat.say}</p>
-                  </div>
-                ))}
-              </div>
-            </details>
-          </aside>
+          <details className="staff-fold staff-script" open={wide || undefined}>
+            <summary>Script</summary>
+            <div className="staff-fold-body">
+              {script.map(beat => (
+                <div className="staff-beat" key={beat.id}>
+                  <p className="staff-label">{beat.label}</p>
+                  <p>{beat.say}</p>
+                </div>
+              ))}
+            </div>
+          </details>
         </div>
       )}
     </StaffScreen>

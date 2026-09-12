@@ -301,7 +301,7 @@ check('the ladder counts the run of unanswered rings, not the calls on file', ()
 })
 
 check('an ending outcome buys no wait at all, because there is nothing to wait for', () => {
-  for (const outcome of ['booked', 'not_interested', 'wrong_number']) {
+  for (const outcome of ['booked', 'not_interested', 'wrong_number', 'bad_lead']) {
     same(waitAfter(listed(), outcome), null, `the wait after ${outcome}`)
   }
   same(waitAfter(listed(), 'callback'), null, 'the wait after a call back')
@@ -668,7 +668,7 @@ check('every outcome carries the key it is recorded on, and no key repeats', () 
 })
 
 check('the outcomes that end a business are the ones that should', () => {
-  for (const id of ['booked', 'not_interested', 'wrong_number']) {
+  for (const id of ['booked', 'not_interested', 'wrong_number', 'bad_lead']) {
     ok(outcomeEnds(id), `${id} left the business on the list`)
   }
   for (const id of ['no_answer', 'voicemail', 'gatekeeper', 'spoke', 'callback']) {
@@ -715,7 +715,7 @@ check('every outcome either answers for interest, asks, or reached nobody', () =
   const held = id => CALL_OUTCOMES.find(one => one.id === id) ?? {}
   const asks = ['gatekeeper', 'spoke']
   const answers = ['callback', 'booked', 'not_interested']
-  const reachedNobody = ['no_answer', 'voicemail', 'wrong_number']
+  const reachedNobody = ['no_answer', 'voicemail', 'wrong_number', 'bad_lead']
   same(
     [...asks, ...answers, ...reachedNobody].sort().join(','),
     [...OUTCOME_IDS].sort().join(','),
@@ -777,7 +777,7 @@ check('the calls that reached somebody become leads unless they said no', () => 
   ok(!callMakesLead('not_interested'), 'a refusal became a lead')
   // A phone that rang out reached nobody who could have wanted anything, so no
   // answer sent against one puts it in front of a person as a lead.
-  for (const id of ['no_answer', 'voicemail', 'wrong_number']) {
+  for (const id of ['no_answer', 'voicemail', 'wrong_number', 'bad_lead']) {
     ok(!callMakesLead(id), `${id} became a lead having reached nobody`)
     ok(!callMakesLead(id, true), `${id} became a lead on an answer nobody could have given`)
   }

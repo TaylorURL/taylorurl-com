@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /** How far the column travels before the head starts casting over it. */
 const CAST_AT = 4
@@ -107,4 +107,32 @@ export function usePointerLight(selector) {
   }, [selector])
 
   return { ref }
+}
+
+/**
+ * Whether the screen is a desk rather than a phone, read once and kept current.
+ *
+ * The one thing on these screens that changes shape between the two rather
+ * than merely reflowing is the script on the call screen: a fold a thumb opens
+ * on a phone, and a column that is simply there on a desk. A `<details>` cannot
+ * be opened by a stylesheet, so the screen has to know which it is drawing for.
+ *
+ * @param {string} [query] The width a desk starts at.
+ * @returns {boolean}
+ */
+export function useDesk(query = '(min-width: 1024px)') {
+  const [desk, setDesk] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(query).matches : false
+  )
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    const media = window.matchMedia(query)
+    const read = () => setDesk(media.matches)
+    read()
+    media.addEventListener('change', read)
+    return () => media.removeEventListener('change', read)
+  }, [query])
+
+  return desk
 }
