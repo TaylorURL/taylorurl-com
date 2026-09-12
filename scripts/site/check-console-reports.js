@@ -467,10 +467,12 @@ if (!loader) {
  * elements the block appends, and answering one runs the handler the block hung
  * on it.
  */
-function tagLoader() {
+function tagLoader(search = '') {
   const filed = []
+  const kept = []
   const appended = []
   const listeners = {}
+  const watching = {}
   const sandbox = {
     Date,
     URL,
@@ -479,8 +481,12 @@ function tagLoader() {
       ;(listeners[type] = listeners[type] || []).push(handler)
     },
     removeEventListener() {},
-    location: { search: '' },
+    location: { search },
     document: {
+      visibilityState: 'visible',
+      addEventListener(type, handler) {
+        ;(watching[type] = watching[type] || []).push(handler)
+      },
       createElement() {
         const node = { async: false, src: '', crossOrigin: null, on: {} }
         node.addEventListener = (type, handler) => {
@@ -493,20 +499,42 @@ function tagLoader() {
   }
   sandbox.window = sandbox
   // The reporter block runs after this one in the page and is long since up by
-  // the time a tag settles, so the door it opens is here from the start.
+  // the time a tag settles, so the doors it opens are here from the start.
   sandbox.__reporter = {
     file(kind, message) {
       filed.push({ kind, message })
+    },
+    hold(kind, message) {
+      kept.push({ kind, message })
     },
   }
   const context = vm.createContext(sandbox)
   new vm.Script(loader, { filename: 'https://www.taylorurl.com/start' }).runInContext(context)
   // A reader's first touch is what fetches them on a page carrying no click
-  // identifier, and a scroll counts, so this is the ordinary arrival.
-  for (const handler of listeners.pointerdown || []) handler({})
+  // identifier, and a scroll counts, so this is the ordinary arrival. An
+  // address carrying click parameters has already fetched them itself.
+  if (!search) for (const handler of listeners.pointerdown || []) handler({})
   const settled = new Set()
   return {
     filed,
+    kept,
+    // The reader tapping through, locking the screen or switching apps. The
+    // tab going behind something hides the document and may never fire
+    // `pagehide`; a navigation fires both.
+    hides() {
+      sandbox.document.visibilityState = 'hidden'
+      for (const handler of watching.visibilitychange || []) handler({})
+    },
+    leaves() {
+      sandbox.document.visibilityState = 'hidden'
+      for (const handler of watching.visibilitychange || []) handler({})
+      for (const handler of listeners.pagehide || []) handler({})
+    },
+    // And back again, with everything on screen saying they never went.
+    shows() {
+      sandbox.document.visibilityState = 'visible'
+      for (const handler of watching.visibilitychange || []) handler({})
+    },
     written: sandbox.__siteTags,
     fetched: appended.map(node => node.src),
     // The oldest ask to that host nobody has answered yet. A tag refused for
@@ -659,6 +687,91 @@ check(
       'Failed to load script: https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
   'the analytics tag failed on both asks while the pixel arrived and nothing was filed, so the ' +
     'second ask has silenced the one report on this host that was ever worth having'
+)
+
+/* ----------------------------------------------------------------------- *
+ * The tag the phone took away.
+ * ----------------------------------------------------------------------- */
+
+// The third thing one tag failing while the other arrived can mean, and the one
+// none of #549, #558 or #563 was looking at. All three asked how the tag was
+// refused; none asked whether the reader was still on the page while it was
+// outstanding. A script still in flight when the document is taken off the
+// screen is torn down by the system and fires `error` exactly as a missing
+// library does, so a reader who taps through files a fault against a site that
+// was working - and files it again on the next visit, which is what this
+// fingerprint coming back four times against a healthy page looks like.
+//
+// The reporter has read every failed `fetch` this way since #455. The tag block
+// is the one caller into it that never did.
+
+// The ticket's own sequence. An ad click takes the fast path, so both asks go
+// out in the page's first moment; the lighter pixel lands, the reader navigates,
+// and both of Google's asks are cancelled under them.
+const walked = tagLoader('?gclid=EAIaIQobChM&gad_source=5')
+check(
+  walked.fetched.length === 2,
+  'an arrival carrying click parameters no longer fetches its tags at once, so the reader who ' +
+    'paid for is measured against whatever page they moved to'
+)
+walked.answer('connect.facebook.net', true)
+walked.leaves()
+walked.answer('googletagmanager.com', false)
+walked.again('googletagmanager.com', false)
+check(
+  walked.filed.length === 0,
+  'a tag cancelled by the reader navigating away was filed as a missing library, so every visitor ' +
+    'who taps through before the page settles opens a ticket against a site that was working'
+)
+check(
+  walked.kept.length === 1 && walked.kept[0].kind === 'tag',
+  'a tag failure the loader declined to file was dropped rather than held, so it cannot be read ' +
+    'off the live console at all'
+)
+
+// Backgrounding a phone hides the document and suspends the web view under it,
+// which kills what was in flight without ever firing `pagehide`.
+const hidden = tagLoader('?gad_campaignid=24247626934')
+hidden.answer('connect.facebook.net', true)
+hidden.hides()
+hidden.answer('googletagmanager.com', false)
+hidden.again('googletagmanager.com', false)
+check(
+  hidden.filed.length === 0,
+  'a tag killed by the phone suspending a backgrounded tab was filed as a missing library, so the ' +
+    'reporter reads a locked screen as a fault on the site'
+)
+
+// The direction that matters most, and the reason none of the above may be
+// written as a mute. A reader who stayed on the page the whole time still files,
+// worded exactly as before, so a library that has genuinely stopped being served
+// reaches the queue on this same fingerprint.
+const stayed = tagLoader()
+stayed.answer('connect.facebook.net', true)
+stayed.answer('googletagmanager.com', false)
+stayed.again('googletagmanager.com', false)
+check(
+  stayed.filed.length === 1 &&
+    stayed.filed[0].kind === 'resource' &&
+    stayed.filed[0].message ===
+      'Failed to load script: https://www.googletagmanager.com/gtag/js?id=%SITE_GA_ID%',
+  'the analytics tag failed on both asks in front of a reader who never left the page and nothing ' +
+    'was filed, so the departure check has silenced the one report on this host worth having'
+)
+
+// The reader who came back. A document hidden and shown again during the ask
+// has still had its requests torn down, and everything on screen by the time the
+// handler runs says it never went anywhere.
+const returned = tagLoader()
+returned.answer('connect.facebook.net', true)
+returned.leaves()
+returned.shows()
+returned.answer('googletagmanager.com', false)
+returned.again('googletagmanager.com', false)
+check(
+  returned.filed.length === 0,
+  'a tag torn down while the reader was away was filed because they were back by the time it ' +
+    'failed, so the verdict is read off where the page ended rather than where the request lived'
 )
 
 /* ----------------------------------------------------------------------- *
