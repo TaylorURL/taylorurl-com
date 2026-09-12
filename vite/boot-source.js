@@ -22,6 +22,19 @@
  * nothing. The marker is the one `lazyWithRetry` and the capture frames use,
  * and the reporter strips it before filing so the attempts stay one fault.
  *
+ * The number alone is not enough to make that address new, and this is the
+ * second layer rather than a detail of the first. A count that restarts at 0 in
+ * every document has every document asking at the same handful of addresses,
+ * and the refusals are kept: `vercel.json` stamps `public, max-age=31536000,
+ * immutable` on everything under /assets/ by path pattern, which Vercel applies
+ * whatever the status, so a 404 at one of those addresses is one the browser is
+ * told to hold for a year without revalidating. The reload below then asks at
+ * addresses the cache already answers, gets the refusal back with nothing sent,
+ * and the reader is on a dead document on every visit until the hash changes.
+ * The per-document token is what stops the ladder inheriting the last
+ * document's answers; see `lazyWithRetry.js`, where the same thing was measured
+ * end to end. #570 was that.
+ *
  * A chunk a deploy has deleted. No address recovers it, because the name is
  * gone from the disk it was served off; only a newer document carries the name
  * that replaced it. So the document is asked for again, once per tab, and the
@@ -106,6 +119,8 @@ var WAIT_MS=5000
 var TOO_OLD='This browser is too old to run this page. Its links still work. To use the buttons and forms, update it or open the page in a newer browser.'
 var STALLED='This page did not finish loading. Its links still work. To use the buttons and forms, reload the page.'
 var attempts=0
+var TOKEN=Math.random().toString(36).slice(2,8)
+function mark(n){return entry+'?retry='+n+'.'+TOKEN}
 function parseFailure(error){return Boolean(error)&&error.name==='SyntaxError'}
 function tooOld(){
 try{Function('return {}?.a ?? 0');return false}
@@ -125,7 +140,7 @@ return import(address).catch(function(error){
 if(parseFailure(error)||attempts>=2)throw error
 attempts+=1
 return new Promise(function(resolve){setTimeout(resolve,350*attempts)}).then(function(){
-return start(entry+'?retry='+attempts)
+return start(mark(attempts))
 })
 })
 }
@@ -148,7 +163,7 @@ start(entry).then(done,function(error){
 if(parseFailure(error))return lost(error)
 if(navigator.onLine!==false&&once()){location.reload();return}
 attempts+=1
-var late=entry+'?retry='+attempts
+var late=mark(attempts)
 return new Promise(function(resolve){setTimeout(resolve,WAIT_MS)}).then(function(){
 return start(late).then(done,lost)
 })

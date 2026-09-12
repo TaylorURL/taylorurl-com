@@ -331,6 +331,8 @@ taylorurl-com/
 
 Vite writes a content hash into every filename under `/assets`, so one of those files cannot change without changing its name. `vercel.json` serves them `immutable` for a year on that basis; the documents themselves stay on `must-revalidate`, so a deploy is live on the next request.
 
+That year holds for a file that answers and for one that does not, because a header rule is matched on the path and applied whatever the status — so an asset missing for the few seconds either side of a deploy is a 404 the browser is told to keep and never re-ask. An address carrying `retry` is therefore excluded from the rule and served `no-store` instead. Those are the addresses the recoveries in `lazyWithRetry.js`, `vite/boot-source.js` and `vite/sheet-source.js` ask at after a first attempt has failed, and they are the ones that must never be answered from a cache; the plain address every healthy load asks at is untouched and still `immutable`.
+
 ## License
 
 Copyright (c) 2026 TaylorURL LLC. All rights reserved. See [LICENSE.md](LICENSE.md).
