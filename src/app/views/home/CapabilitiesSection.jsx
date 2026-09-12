@@ -1,7 +1,4 @@
 import { useCallback, useState } from 'react'
-import { m } from 'framer-motion'
-import { fadeInUp } from '@constants/animations'
-import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import {
   PORTFOLIO_AVERAGES,
   PORTFOLIO_PROJECTS,
@@ -10,6 +7,7 @@ import {
 } from '@data/portfolio'
 import { PROCESS_TIMELINE } from '@data/pages/home'
 import PaletteShot from '@components/mockups/PaletteShot'
+import Reveal from '@components/page-bands/Reveal'
 import { Card, Foot, Plane } from './CapabilityCard'
 
 /**
@@ -214,30 +212,20 @@ function ProcessTimeline() {
 export default function CapabilitiesSection() {
   const shown = projectFor(SHOWN)
   const measured = projectFor(MEASURED)
-  // Set narrower than the rail, so it grows off its own left edge rather than
-  // out of the line the card grid below it is set to.
-  const heading = useScrollSwell({ origin: 'left' })
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div className="container-rail relative">
-        <m.div {...fadeInUp}>
-          <m.h2
-            ref={heading.ref}
-            style={heading.style}
-            className="display-3 max-w-[20ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]"
-          >
-            Every site on this page is live.{' '}
-            <span className="text-paper-soft">
-              Built for a business nearby, and we still look after every one of them.
-            </span>
-          </m.h2>
-        </m.div>
+      <Reveal className="container-rail relative">
+        <h2 className="display-3 max-w-[20ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]">
+          Every site on this page is live.{' '}
+          <span className="text-paper-soft">
+            Built for a business nearby, and we still look after every one of them.
+          </span>
+        </h2>
 
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {shown ? (
             <Card
-              index={0}
               wide
               to="/portfolio"
               cta="See the Work"
@@ -254,7 +242,6 @@ export default function CapabilitiesSection() {
               to see their own score arrived at a page about the studio. */}
           {measured?.pagespeed ? (
             <Card
-              index={1}
               to="/speed-check"
               cta="Run the Report"
               title="Scores you can check yourself"
@@ -265,7 +252,6 @@ export default function CapabilitiesSection() {
           ) : null}
 
           <Card
-            index={2}
             to="/console/status"
             cta="Open the Board"
             title="Watched after launch"
@@ -275,7 +261,6 @@ export default function CapabilitiesSection() {
           </Card>
 
           <Card
-            index={3}
             wide
             to="/process"
             cta="See the Process"
@@ -293,7 +278,7 @@ export default function CapabilitiesSection() {
             </Plane>
           </Card>
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }

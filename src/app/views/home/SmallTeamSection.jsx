@@ -1,10 +1,8 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import { m } from 'framer-motion'
-import { fadeInUp } from '@constants/animations'
 import { ABOUT } from '@data/pages/about'
 import { CLIENT_PROJECTS } from '@data/portfolio'
-import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
+import Reveal from '@components/page-bands/Reveal'
 import WorkDeck from './WorkDeck'
 
 /**
@@ -25,34 +23,15 @@ import WorkDeck from './WorkDeck'
  * The sentences are the about page's, read from its own record rather than
  * transcribed. The claim exists in one place, and a band on the front door that
  * quietly disagrees with the page it links to is worse than no band.
- *
- * The depth is in `WorkDeck`, and it is a rotation rather than a decoration:
- * the frames stand on a rail that turns them as it carries them past, so the
- * one being read faces the reader square and its neighbours are edging away.
- * The rail advances itself, and a reader cannot take hold of it.
  */
 export default function SmallTeamSection() {
-  // The claim swells as its turn comes round; the deck under it does not. The
-  // frames on that rail are already turning as they travel, and a band that
-  // scaled them at the same time would be two motions arguing over one row.
-  //
-  // It grows off its own left edge because the deck is set to that same edge
-  // and stays where it is. Grown from the middle the headline steps twenty
-  // pixels out of the line the frames underneath it are still holding, which
-  // reads as the margin slipping rather than as the words coming forward.
-  const heading = useScrollSwell({ origin: 'left' })
-
   return (
     <section className="section-y-lg border-hair-paper relative isolate overflow-x-clip border-t bg-paper">
-      <m.div {...fadeInUp} className="container-rail relative">
+      <Reveal className="container-rail relative">
         {/* The claim on the left and the qualification on the right, so the
             headline keeps a measure it can be set at and the paragraph is not
             one line of eighty characters underneath it. */}
-        <m.div
-          ref={heading.ref}
-          style={heading.style}
-          className="xl:grid xl:grid-cols-[1.15fr_0.85fr] xl:items-end xl:gap-16"
-        >
+        <div className="xl:grid xl:grid-cols-[1.15fr_0.85fr] xl:items-end xl:gap-16">
           <div>
             <p className="section-label mb-5 flex items-center gap-3 text-accent">
               <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />
@@ -75,12 +54,12 @@ export default function SmallTeamSection() {
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
           </div>
-        </m.div>
+        </div>
 
         <div className="mt-12 lg:mt-16">
           <WorkDeck projects={CLIENT_PROJECTS} />
         </div>
-      </m.div>
+      </Reveal>
     </section>
   )
 }

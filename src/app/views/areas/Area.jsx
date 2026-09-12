@@ -1,28 +1,22 @@
-import { Link, useParams } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
+import { useParams } from 'react-router-dom'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import RuledSection from '@components/page-bands/RuledSection'
 import ProseRail from '@components/page-bands/ProseRail'
-import Mesh from '@components/mesh/Mesh'
+import WorkProof from '@components/areas/WorkProof'
 import TradeMesh from '@components/mesh/TradeMesh'
 import WorkMesh from '@components/mesh/WorkMesh'
 import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
-import { areaBySlug, townSlug, workInTown } from '@data/towns-and-trades/areas'
-import { LOCAL_PORTFOLIO } from '@data/portfolio'
+import { areaBySlug, townSlug, workInTown, workNear } from '@data/towns-and-trades/areas'
 import { TRADES } from '@data/towns-and-trades/trades'
-import { SERVICE_LINES } from '@data/pages/services'
-import { GROUNDS } from '@constants/grounds'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
-// How many client sites the work block holds before it stops reading as proof
-// and starts reading as a directory.
-const WORK_LIMIT = 3
-
-// The four ways the work starts sit two to a row from the first breakpoint
-// with room for the pair, and four divides that exactly.
-const PAIR_COLUMNS = { base: 1, sm: 2 }
+// How many more sites in the same town run under the one the page leads with,
+// before the block stops reading as proof and starts reading as a directory.
+// Houston is the town that needs the third: two clients of its own, plus the
+// concrete platform and the tire product whose work runs there as well.
+const ALSO_LIMIT = 3
 
 // The bands alternate grounds down the page, so a town carrying a local band
 // takes a different arrangement from a town without one and the closing panel
@@ -31,12 +25,20 @@ const groundAt = index => (index % 2 === 0 ? 'paper' : 'band')
 
 /**
  * One town's page: the client work live there, what the work around it looks
- * like, the trades it most often calls for, and what a site includes.
+ * like, and the trades it most often calls for.
+ *
+ * It used to close on the four ways a job starts, which was the same four cells
+ * under the same heading on all thirteen pages, so the band a reader reached
+ * last was the one that told them least about where they were. The service
+ * lines are still a click away in the nav, and the offer catalog that described
+ * that band went out with it rather than staying behind as markup for a band no
+ * page draws. What they are not is the last thing a page about Dayton has to
+ * say.
  *
  * A town whose profile names a client leads with that work; a town without one
- * shows the nearest work under the heading every such town shares, because a
- * line of its own per town for the same absent fact is one sentence copied five
- * ways. A slug no town answers to renders the not-found state rather than a
+ * shows one site from the towns around it, under the heading every such town
+ * shares, because a line of its own per town for the same absent fact is one
+ * sentence copied five ways. A slug no town answers to renders the not-found state rather than a
  * page about nowhere.
  */
 export default function Area() {
@@ -47,7 +49,17 @@ export default function Area() {
 
   const profile = area.profile
   const local = workInTown(area.name)
-  const work = (local.length ? local : LOCAL_PORTFOLIO).slice(0, WORK_LIMIT)
+  // What the page leads with: this town's own work where there is any, and
+  // otherwise the one nearest site that is worth showing it. A town with a
+  // second client of its own runs that under the first.
+  const lead = local[0] || workNear(area)
+  const alsoLocal = local.slice(1, 1 + ALSO_LIMIT)
+  // Where that site is. Most entries carry a town; one carries only the
+  // "Pasadena, Texas" it prints, so the town is read off that rather than
+  // guessed, and a sentence that would have to guess is not written at all.
+  // The sentence says where rather than how near: workNear picks on trade and
+  // on measured speed, so the site it lands on is not always the closest one.
+  const leadTown = lead && (lead.town || lead.location?.split(',')[0])
   const trades = area.trades.map(id => TRADES.find(trade => trade.id === id)).filter(Boolean)
   const counties = profile?.local.counties || []
   // Twelve of the thirteen rails name at least one town with a page of its own,
@@ -61,12 +73,10 @@ export default function Area() {
     profile?.search ||
     `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from a small team in Baytown.`
 
-  const bands = profile ? ['work', 'local', 'trades', 'services'] : ['work', 'trades', 'services']
+  const bands = profile ? ['work', 'local', 'trades'] : ['work', 'trades']
   const groundFor = band => groundAt(bands.indexOf(band))
   const localGround = groundFor('local')
   const tradesGround = groundFor('trades')
-  const servicesGround = groundFor('services')
-  const servicesTone = GROUNDS[servicesGround]
 
   return (
     <div>
@@ -102,14 +112,6 @@ export default function Area() {
               },
               ...nearby.map(place => ({ '@type': 'Place', name: place.name })),
             ],
-            hasOfferCatalog: {
-              '@type': 'OfferCatalog',
-              name: `Website services in ${area.name}`,
-              itemListElement: SERVICE_LINES.map(line => ({
-                '@type': 'Offer',
-                itemOffered: { '@type': 'Service', name: line.name, description: line.summary },
-              })),
-            },
           },
         ]}
       />
@@ -135,13 +137,22 @@ export default function Area() {
         }
         description={
           profile?.work?.description ||
-          (local.length
-            ? 'Client sites running now, each one built, hosted, and looked after from Baytown.'
-            : `Client sites running now in the towns around ${area.name}, each one built, hosted, and looked after from Baytown.`)
+          (leadTown
+            ? `We built this one for a business in ${leadTown}, and we still host it and look after it.`
+            : undefined)
         }
         meta={local.length ? `${area.name}, Texas` : `Near ${area.name}, Texas`}
       >
-        <WorkMesh projects={work} ground={groundFor('work')} />
+        {lead && (
+          <div className="flex flex-col gap-10">
+            <WorkProof
+              project={lead}
+              ground={groundFor('work')}
+              showIdentity={!profile?.work?.title}
+            />
+            {alsoLocal.length > 0 && <WorkMesh projects={alsoLocal} ground={groundFor('work')} />}
+          </div>
+        )}
       </RuledSection>
 
       {profile && (
@@ -167,43 +178,8 @@ export default function Area() {
         <TradeMesh trades={trades} ground={tradesGround} />
       </RuledSection>
 
-      <RuledSection
-        id="area-services"
-        ground={servicesGround}
-        eyebrow="What Gets Built"
-        title="Four ways the work starts."
-        description="A new site, a rebuild of the one you have, the tools that sit behind it, or looking after what is already running."
-        meta="Baytown, Texas"
-      >
-        <Mesh items={SERVICE_LINES} ground={servicesGround} columns={PAIR_COLUMNS}>
-          {(line, index, cell) => (
-            <Link
-              key={line.slug}
-              to={`/services#${line.slug}`}
-              className={`group flex h-full flex-col gap-4 p-6 transition duration-200 ease-out-soft focus-visible:-outline-offset-2 ${cell} ${servicesTone.surface} ${servicesTone.wash}`}
-            >
-              <span className="flex items-baseline justify-between gap-4">
-                <span className="section-label-sm text-accent">
-                  {String(index + 1).padStart(2, '0')}
-                </span>
-                <ArrowUpRight
-                  className={`h-4 w-4 ${servicesTone.meta} transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5`}
-                  aria-hidden="true"
-                />
-              </span>
-              <span className={`text-[19px] font-semibold leading-tight ${servicesTone.title}`}>
-                {line.name}
-              </span>
-              <span className={`text-[14px] leading-relaxed ${servicesTone.body}`}>
-                {line.summary}
-              </span>
-            </Link>
-          )}
-        </Mesh>
-      </RuledSection>
-
       <CtaSection
-        ground={servicesGround === 'paper' ? 'dark' : 'paper'}
+        ground={tradesGround === 'paper' ? 'dark' : 'paper'}
         eyebrow="Start"
         title={
           <>

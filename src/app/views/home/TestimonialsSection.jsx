@@ -1,10 +1,8 @@
-import { m } from 'framer-motion'
 import { ArrowUpRight, PencilLine } from 'lucide-react'
 import ReviewCarousel from '@components/reviews/ReviewCarousel'
 import ReviewStandingRail from '@components/reviews/ReviewStandingRail'
+import Reveal from '@components/page-bands/Reveal'
 import { reviewSourceFill, reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
-import { fadeInUp } from '@constants/animations'
-import { useScrollSwell } from '@hooks/scroll/useScrollSwell'
 import { CLIENT_REVIEW_LIST, QUOTED_SOURCES, reviewSourcesWith } from '@data/reputation/reviews'
 import { AccentGradient } from '@reactbits/kit'
 
@@ -19,64 +17,51 @@ export default function TestimonialsSection() {
   const writeTo = reviewSourcesWith('writes')[0]
   const holdsTheQuotes = QUOTED_SOURCES[0]
 
-  // The heading swells and nothing else in this band does. The quotes below it
-  // are other people's words standing as evidence, and a testimonial that grows
-  // as the page goes by is the site performing over the testimony rather than
-  // presenting it. The buttons under them are targets, and a target that
-  // changes size while a pointer is travelling to it is a worse target.
-  const heading = useScrollSwell()
-
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <div className="container-rail relative flex flex-col gap-12 md:gap-16">
-        <m.div {...fadeInUp}>
-          <m.div
-            ref={heading.ref}
-            style={heading.style}
-            className="border-hair-paper grid items-end gap-10 border-b pb-16 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div>
-              <p className="section-label mb-5 text-accent">Reviews</p>
-              <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
-                Owners who <br />
-                <AccentGradient>hired us.</AccentGradient>
-              </h2>
-            </div>
-            {/* The ratings rail inside is a scroller of fixed-width badges, and a
+      <Reveal className="container-rail relative flex flex-col gap-12 md:gap-16">
+        <div className="border-hair-paper grid items-end gap-10 border-b pb-16 lg:grid-cols-[1.4fr_1fr]">
+          <div>
+            <p className="section-label mb-5 text-accent">Reviews</p>
+            <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
+              Owners who <br />
+              <AccentGradient>hired us.</AccentGradient>
+            </h2>
+          </div>
+          {/* The ratings rail inside is a scroller of fixed-width badges, and a
               scroller's own content is as wide as everything on it. Left to size
               itself this column would be asked for the width of all five badges
               laid end to end and would take it out of the headline beside it. */}
-            <div className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
-              <ReviewStandingRail />
+          <div className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
+            <ReviewStandingRail />
 
-              {/*
+            {/*
               Every listing the same business is reviewed on, each in its own
               colour. The colours are the point rather than decoration: a row set
               in one house ink reads as a list this site wrote, and the only
               thing worth saying here is that these are other people's pages and
               a reader can go and look at any of them.
             */}
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-1 lg:justify-end">
-                {readable.map(source => {
-                  const Mark = reviewSourceMark(source.key)
-                  return (
-                    <a
-                      key={source.key}
-                      href={source.reads}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{ '--review-ink': reviewSourceInk(source.key) }}
-                      className="group -my-3 flex min-h-[44px] items-center gap-2 py-3 text-[13px] font-medium text-paper-soft transition-colors hover:text-[color:var(--review-ink)]"
-                    >
-                      {Mark && <Mark className="h-4 w-4" style={{ color: 'var(--mark-brand)' }} />}
-                      {source.label}
-                    </a>
-                  )
-                })}
-              </div>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 lg:justify-end">
+              {readable.map(source => {
+                const Mark = reviewSourceMark(source.key)
+                return (
+                  <a
+                    key={source.key}
+                    href={source.reads}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{ '--review-ink': reviewSourceInk(source.key) }}
+                    className="group -my-3 flex min-h-[44px] items-center gap-2 py-3 text-[13px] font-medium text-paper-soft transition-colors hover:text-[color:var(--review-ink)]"
+                  >
+                    {Mark && <Mark className="h-4 w-4" style={{ color: 'var(--mark-brand)' }} />}
+                    {source.label}
+                  </a>
+                )
+              })}
             </div>
-          </m.div>
-        </m.div>
+          </div>
+        </div>
 
         <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
 
@@ -106,7 +91,7 @@ export default function TestimonialsSection() {
             </a>
           )}
         </div>
-      </div>
+      </Reveal>
     </section>
   )
 }
