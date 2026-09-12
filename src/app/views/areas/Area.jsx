@@ -9,7 +9,7 @@ import TradeMesh from '@components/mesh/TradeMesh'
 import WorkMesh from '@components/mesh/WorkMesh'
 import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
-import { areaBySlug, workInTown } from '@data/towns-and-trades/areas'
+import { areaBySlug, townSlug, workInTown } from '@data/towns-and-trades/areas'
 import { LOCAL_PORTFOLIO } from '@data/portfolio'
 import { TRADES } from '@data/towns-and-trades/trades'
 import { SERVICE_LINES } from '@data/pages/services'
@@ -49,6 +49,14 @@ export default function Area() {
   const local = workInTown(area.name)
   const work = (local.length ? local : LOCAL_PORTFOLIO).slice(0, WORK_LIMIT)
   const trades = area.trades.map(id => TRADES.find(trade => trade.id === id)).filter(Boolean)
+  const counties = profile?.local.counties || []
+  // Twelve of the thirteen rails name at least one town with a page of its own,
+  // so the names resolve to links here rather than in the band, which has no
+  // business reading the town list.
+  const nearby = (profile?.local.nearby || []).map(name => {
+    const town = areaBySlug(townSlug(name))
+    return town && town.name !== area.name ? { name, to: `/areas/${town.slug}` } : { name }
+  })
   const description =
     profile?.search ||
     `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from a small team in Baytown.`
@@ -80,11 +88,20 @@ export default function Area() {
             description,
             url: `${SITE_URL}/areas/${area.slug}`,
             provider: { '@id': BUSINESS_ID },
-            areaServed: {
-              '@type': 'City',
-              name: area.name,
-              containedInPlace: { '@type': 'State', name: 'Texas' },
-            },
+            areaServed: [
+              {
+                '@type': 'City',
+                name: area.name,
+                containedInPlace: counties.length
+                  ? counties.map(county => ({
+                      '@type': 'AdministrativeArea',
+                      name: `${county} County`,
+                      containedInPlace: { '@type': 'State', name: 'Texas' },
+                    }))
+                  : { '@type': 'State', name: 'Texas' },
+              },
+              ...nearby.map(place => ({ '@type': 'Place', name: place.name })),
+            ],
             hasOfferCatalog: {
               '@type': 'OfferCatalog',
               name: `Website services in ${area.name}`,
@@ -112,13 +129,17 @@ export default function Area() {
         eyebrow="Live Work"
         title={
           profile?.work?.title ||
-          (local.length ? `Work already live in ${area.name}.` : 'Work already live nearby.')
+          (local.length
+            ? `Work already live in ${area.name}.`
+            : `Work already live near ${area.name}.`)
         }
         description={
           profile?.work?.description ||
-          'Client sites running now, each one built, hosted, and looked after from Baytown.'
+          (local.length
+            ? 'Client sites running now, each one built, hosted, and looked after from Baytown.'
+            : `Client sites running now in the towns around ${area.name}, each one built, hosted, and looked after from Baytown.`)
         }
-        meta={local.length ? `${area.name}, Texas` : 'Southeast Texas'}
+        meta={local.length ? `${area.name}, Texas` : `Near ${area.name}, Texas`}
       >
         <WorkMesh projects={work} ground={groundFor('work')} />
       </RuledSection>
@@ -127,11 +148,11 @@ export default function Area() {
         <RuledSection
           id="area-local"
           ground={localGround}
-          eyebrow="Local"
+          eyebrow="The Work Here"
           title={profile.local.title}
-          meta={profile.local.county}
+          meta={`${counties.join(' and ')} ${counties.length > 1 ? 'Counties' : 'County'}`}
         >
-          <ProseRail body={profile.local.body} nearby={profile.local.nearby} ground={localGround} />
+          <ProseRail body={profile.local.body} nearby={nearby} ground={localGround} />
         </RuledSection>
       )}
 

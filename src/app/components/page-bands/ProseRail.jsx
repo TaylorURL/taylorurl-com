@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { staggerChild } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
@@ -27,9 +28,15 @@ const MEASURE = 'max-w-[64ch]'
  * instead of on its side, so the two never sit as narrow columns side by side.
  *
  * @param {object} props
+ * A place carrying a `to` is drawn as a link, because most of these lists name
+ * towns with pages of their own and a reader looking down the rail for their
+ * own town has nowhere to go otherwise. The band does not work out which ones
+ * those are: it is handed them.
+ *
  * @param {Array<string>} props.body - The paragraphs, in reading order.
- * @param {Array<string>} [props.nearby] - Places the page also covers. Left
- *   out or empty, the prose runs on its own and the rail is not drawn.
+ * @param {Array<{ name: string, to?: string }>} [props.nearby] - Places the
+ *   page also covers, each linked where it has a page. Left out or empty, the
+ *   prose runs on its own and the rail is not drawn.
  * @param {string} [props.nearbyLabel] - The rail's standing label.
  * @param {'paper' | 'sheet' | 'dark' | 'band'} [props.ground] - Which ground
  *   the band stands on, which is where the two weights of ink come from.
@@ -67,8 +74,17 @@ export default function ProseRail({
           <p className={`section-label-sm ${tone.meta}`}>{nearbyLabel}</p>
           <ul role="list" className="mt-4 flex flex-wrap gap-x-5 gap-y-2 lg:flex-col lg:gap-2">
             {nearby.map(place => (
-              <li key={place} className={`text-[15px] leading-snug ${tone.title}`}>
-                {place}
+              <li key={place.name} className={`text-[15px] leading-snug ${tone.title}`}>
+                {place.to ? (
+                  <Link
+                    to={place.to}
+                    className="underline decoration-1 underline-offset-4 transition-colors duration-200 hover:text-accent"
+                  >
+                    {place.name}
+                  </Link>
+                ) : (
+                  place.name
+                )}
               </li>
             ))}
           </ul>
