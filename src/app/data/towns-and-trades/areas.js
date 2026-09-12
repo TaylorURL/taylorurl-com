@@ -59,7 +59,9 @@ const COMMON_TRADES = ['plumbing', 'hvac', 'auto-repair', 'restaurant', 'real-es
  *   and the places the page also covers.
  * - `nearby`   Coverage rather than proximity, so it does not have to be
  *   symmetric: a town names the places its own page answers for. A name that
- *   matches a town with a page of its own is linked to it.
+ *   matches a town with a page of its own is linked to it. Optional, and
+ *   Houston leaves it out: naming six neighborhoods out of a city that size
+ *   reads as the list of the ones covered, and this page answers for all of it.
  * - `close`    The closing invitation. The first sentence is the town's; the
  *   two after it are the standing promise every closing panel on the site
  *   makes, and they are worded the same here as everywhere else.
@@ -91,29 +93,20 @@ const TOWN_PROFILES = {
 
   Houston: {
     client: 'delux-financial-solutions',
-    lede: 'Houston is twenty-six miles west on I-10, and the east side of it is the half we reach first. Websites for businesses around the ship channel terminals, the East End, and the strips along Navigation and Wayside.',
+    lede: 'Houston is twenty-six miles west on I-10, and by a wide margin the largest market on this list. Websites for the shops, trades, offices, and independent pros working in it, in any part of the city.',
     search:
-      'Web design in Houston, TX for east-side businesses, from the ship channel to the East End. Custom sites from Baytown. See Delux Financial Solutions, live.',
+      'Web design in Houston, TX for small businesses in any part of the city. Custom sites built and hosted from Baytown. See Delux Financial Solutions, live.',
     work: {
       title: 'Delux Financial Solutions books both kinds of appointment.',
       description:
         'A Houston credit-education practice, with credit building and financial guidance laid out across services, education, and a booking path. Virtual consultations and mobile in-person ones are set on the site rather than over the phone.',
     },
     local: {
-      title: 'The east side is the part of Houston we cover.',
+      title: 'Houston is the one town on this list too big to rank for.',
       counties: ['Harris'],
       body: [
-        'Nobody small wins a search for Houston. Two million people means an agency for every keyword with a budget behind it, so the searches worth having name a neighborhood and a trade. We write the page for Second Ward or Navigation or the East End and let the city keyword go.',
-        'Most of what we have built on this side is quoted rather than bought off a shelf. The brokers, haulers, and repair shops east of the Turning Basin win on a quote sheet, which puts the weight on proof of work and on a form that asks for the detail a price depends on.',
-        'The Greater East End is majority Latino and a good deal of business there is done in Spanish. We build bilingual when that is already how a business talks to its customers, and it picks up a second set of searches while it is at it.',
-      ],
-      nearby: [
-        'East End',
-        'Second Ward',
-        'Magnolia Park',
-        'Denver Harbor',
-        'Galena Park',
-        'Jacinto City',
+        'Nobody small wins a search for Houston. Two million people means an agency for every keyword with a budget behind it, so the searches worth having name a neighborhood and a trade rather than the city. We write the page for the neighborhood a business actually trades in and let the city keyword go.',
+        'Most of what we have built around Houston is quoted rather than bought off a shelf. A broker or a repair shop wins on the quote sheet, which puts the weight on proof of work and on a form that asks for the detail a price depends on.',
       ],
     },
     close:
@@ -410,4 +403,45 @@ export function workInTown(name) {
     project => project.town === name && project.slug !== featured
   )
   return [...lead, ...rest]
+}
+
+/**
+ * The one site a town with no client of its own leads with.
+ *
+ * One rather than three. Five of the thirteen towns have no client yet and each
+ * was showing the first three entries of the portfolio, so the most prominent
+ * band on all five was the same band, which is the whole of why those pages
+ * read as one page. Picking one means picking the right one, in this order:
+ *
+ *   1. a site in a trade this town calls for, in a town this page names
+ *   2. a site in a trade this town calls for, anywhere
+ *   3. a site in a town this page names
+ *   4. the client site that measured best
+ *
+ * Which lands Texas City on the fleeting service in Dickinson, the next town
+ * over and the trade it leads with, and Mont Belvieu on Baytown's work rather
+ * than on an accountant in Houston it has no reason to care about.
+ *
+ * @param {object} area An entry from `AREAS`.
+ * @returns {object | null} A portfolio entry, or null where there are none.
+ */
+export function workNear(area) {
+  const clients = PORTFOLIO_PROJECTS.filter(project => project.town && project.kind === 'client')
+  const named = new Set(TOWN_PROFILES[area.name]?.local?.nearby || [])
+  const best = pool => [...pool].sort((a, b) => b.pagespeed.mobile - a.pagespeed.mobile)[0] || null
+
+  const inTrade = clients.filter(project =>
+    project.trades.some(trade => area.trades.includes(trade))
+  )
+
+  // A neighbouring town is represented by whatever its own page leads with,
+  // so the two pages agree about what the work there is.
+  const nextDoor = [...named].map(town => workInTown(town)[0]).filter(Boolean)
+
+  return (
+    best(inTrade.filter(project => named.has(project.town))) ||
+    best(inTrade) ||
+    best(nextDoor) ||
+    best(clients)
+  )
 }
