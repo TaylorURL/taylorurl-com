@@ -632,8 +632,7 @@ function ringBackFor(outcome, chosen = '') {
 }
 
 /**
- * The form that records one call, used in the side panel and in Call Mode
- * alike.
+ * The form that records one call, in the side panel a business opens into.
  *
  * The outcomes are grouped by track rather than offered as eight equal
  * buttons, because the caller has already decided which of the four things

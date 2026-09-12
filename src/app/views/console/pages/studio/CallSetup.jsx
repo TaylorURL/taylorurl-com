@@ -167,7 +167,7 @@ export default function CallSetup({
       </section>
 
       <section className="grid gap-2">
-        <h3 className={`${MONO_LABEL} text-paper-faint`}>Rows A Page</h3>
+        <h3 className={`${MONO_LABEL} text-paper-faint`}>Rows a Page</h3>
         <div className="flex flex-wrap gap-2">
           {CALL_TAKES.map(size => (
             <button
