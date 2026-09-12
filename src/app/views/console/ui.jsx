@@ -160,27 +160,8 @@ export function SkeletonList({ rows = 5 }) {
  * Focus goes to the close button on open and back to whatever opened the panel
  * on close, so a panel opened from the keyboard is a panel the keyboard can
  * leave.
- *
- * `lead` is a second card against the OPPOSITE edge, for the reference a
- * section's panel is read alongside rather than after. It is one dialog and one
- * scrim: two panels each with their own backdrop would darken the page twice
- * and would close one at a time, and what is on the left is only ever there
- * because of what is on the right. Where there is no room for two cards the
- * lead lies over the panel instead of beside it, and `leadOpen` is what brings
- * it forward - the width that decides which of those happens is the
- * stylesheet's, so a caller passes the state and never the measurement.
  */
-export function SidePanel({
-  open,
-  title,
-  aside,
-  note,
-  onClose,
-  children,
-  loading,
-  lead,
-  leadOpen = false,
-}) {
+export function SidePanel({ open, title, aside, note, onClose, children, loading }) {
   const closer = useRef(null)
 
   // Opening and closing is all this effect answers to. Hanging it on the close
@@ -218,11 +199,6 @@ export function SidePanel({
         if (event.target === event.currentTarget) onClose()
       }}
     >
-      {lead && (
-        <div className="console-side-lead" data-open={leadOpen ? 'true' : 'false'}>
-          {lead}
-        </div>
-      )}
       <div className="console-side-card">
         <header>
           <div className="grid min-w-0 gap-0.5">
@@ -639,42 +615,6 @@ export function ConsoleError({ children, area }) {
     >
       {readable(children)}
     </p>
-  )
-}
-
-/**
- * A section's work beside the controls that act on it.
- *
- * A table under a stack of switches is a table the reader scrolls past the
- * controls to reach, every time, and the controls are gone from view by the
- * moment they act on something. Side by side, the rail stays on screen while
- * the list moves under it.
- *
- * One column until there is width for two. A rail squeezed into a narrow
- * viewport is a second column of nothing, so below the desk width the rail
- * simply follows the work, which is the order it reads in anyway. From the
- * desk width up the two stand side by side at every size, because that is
- * where the region stops scrolling and a rail stacked under the work would
- * be a rail nothing can reach.
- *
- * The work fills the room it is given, the same as every other section. A card
- * whose contents read badly that wide holds them to their own measure inside
- * it; holding the card back instead leaves the page indented from a margin
- * that is not there, or stranded beside a column of nothing.
- */
-export function ConsoleRail({ children, rail, area }) {
-  return (
-    <div
-      className="grid min-h-0 items-start gap-4 lg:h-full lg:grid-cols-[minmax(0,1fr)_18rem] lg:items-stretch xl:grid-cols-[minmax(0,1fr)_21rem]"
-      style={area ? { '--area': area } : undefined}
-    >
-      <div className="grid min-h-0 min-w-0 gap-4 lg:h-full lg:auto-rows-[minmax(0,1fr)] [&>*]:min-h-0">
-        {children}
-      </div>
-      <div className="grid min-h-0 content-start gap-4 lg:overflow-y-auto lg:overscroll-contain">
-        {rail}
-      </div>
-    </div>
   )
 }
 

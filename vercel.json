@@ -66,6 +66,11 @@
       "permanent": true
     },
     {
+      "source": "/console/calls",
+      "destination": "/console/staff",
+      "permanent": true
+    },
+    {
       "source": "/console/traffic",
       "destination": "/console",
       "permanent": true

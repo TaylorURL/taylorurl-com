@@ -65,7 +65,7 @@ import {
  * to sign in on clicking one. Settings is locked on the same terms: it is one
  * account's own arrangements, and there is nothing in it to read without one.
  *
- * Server, Outreach, Builds, Leads, Call List, Payments and Admin are the other
+ * Server, Outreach, Builds, Leads, Staff Portal, Payments and Admin are the other
  * exceptions, and they are the same kind: `admin` marks a section only an admin
  * account may open. A locked section is one this reader could open by signing
  * in, which is worth showing; a section for a role they will never hold is not
@@ -315,21 +315,21 @@ export const SECTIONS = [
     meta: 'Every lead the studio holds, read in one place: which door they came through, what they said, how far they got, and the record of every answer written to them from the console itself.',
   },
   {
-    id: 'calls',
+    id: 'staff',
     mark: MarkDial,
     group: 'Studio',
-    path: 'calls',
-    label: 'Call List',
+    path: 'staff',
+    label: 'Staff Portal',
     admin: true,
-    // A business to ring is not a site with a window over it, and the list is
-    // the same list whichever site is in scope, so the traffic strip, the date
+    // A business to ring is not a site with a window over it, and the portal is
+    // the same portal whichever site is in scope, so the traffic strip, the date
     // picker and the site chooser all measure something else.
     account: true,
     scope: false,
     figures: false,
-    description: 'The businesses with no site of their own, and a number to ring them on.',
-    title: 'Call List - Console',
-    meta: 'Every business the cold email engine found and cannot write to, because it has no website of its own for an address to be printed on: the number to ring, how much trade its listing proves against others in the same trade, and the record of every call placed to it.',
+    description: 'The call screen, the list, the day’s figures and the handbook.',
+    title: 'Staff Portal - Console',
+    meta: 'Everything the phones are worked from: the next business to ring with the script beside it, every business on the list and who is on one right now, what the day has come to against the shift it was set, and the handbook a caller answers questions out of.',
   },
   {
     id: 'payments',
