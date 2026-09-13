@@ -30,7 +30,7 @@ import {
 } from '../../../lib/outreach/variants.js'
 import { answersFrom, captureOnFile } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
-import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
+import { AFTERNOON, atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 import { OFFLINE } from '../../harness/offline.js'
 
@@ -39,7 +39,7 @@ installFixtureHeldDomains()
 // Nothing here may reach the network.
 globalThis.fetch = OFFLINE
 
-const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
+const { forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { FOLLOW_UP_COLUMNS } = await import('../../../lib/outreach/sending/queue.js')
 const { dueAfter, work: sendWork } = await import('../../../api/outreach/send.js')
 
@@ -397,10 +397,7 @@ const plan = ({
 })
 
 forgetDomains()
-await checkAddress(null, 'maria@example.com', {
-  now: AFTERNOON,
-  resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-})
+await settleAddress('maria@example.com')
 
 const inserted = writes => writes.filter(write => write.key === 'insert:outreach_messages')
 const prospectWrites = writes => writes.filter(write => write.key === 'update:outreach_prospects')
@@ -642,10 +639,7 @@ check(
       audit_score: 67,
     }))
     for (const row of owed) {
-      await checkAddress(null, row.email, {
-        now: AFTERNOON,
-        resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-      })
+      await settleAddress(row.email)
     }
     const { db } = stubDb(
       plan({

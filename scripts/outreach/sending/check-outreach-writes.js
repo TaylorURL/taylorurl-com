@@ -30,7 +30,7 @@ import { execFileSync } from 'node:child_process'
 import { answersFrom, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { bounceReport, inbound } from '../inbound-fixture.js'
-import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
+import { atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
 import { MAIL_BOX, statesNoAddress } from '../../mail/mail-box-fixture.js'
 
@@ -39,7 +39,7 @@ installFixtureHeldDomains()
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../../..')
 
-const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
+const { forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { work: watchWork } = await import('../../../api/outreach/watch.js')
 const { work: sendWork } = await import('../../../api/outreach/send.js')
 const { renderText, renderHtml } = await import('../../../lib/outreach/message.js')
@@ -276,10 +276,7 @@ check('a person answering a cold letter becomes a lead', () => {
 // ── Send: the writes around the transport ────────────────────────────────
 
 forgetDomains()
-await checkAddress(null, 'owner@example.com', {
-  now: AFTERNOON,
-  resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-})
+await settleAddress('owner@example.com')
 
 const SETTINGS = {
   sending_enabled: true,

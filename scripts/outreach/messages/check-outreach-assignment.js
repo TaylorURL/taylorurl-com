@@ -30,18 +30,18 @@ import {
 import { CANDIDATE_COLUMNS, queueFor } from '../../../lib/outreach/sending/queue.js'
 import { answersFrom, captureOnFile, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
-import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
+import { atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
 import { OFFLINE } from '../../harness/offline.js'
 
 installFixtureHeldDomains()
 
 // Nothing here may reach the network. The address check is settled below
-// against a resolver that answers from here, and the capture is found already
+// against the send fixture's resolver, and the capture is found already
 // stored, so a path that reaches this is a path that was not stubbed.
 globalThis.fetch = OFFLINE
 
-const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
+const { forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { compose, work: sendWork } = await import('../../../api/outreach/send.js')
 
 // ── The rows ─────────────────────────────────────────────────────────────
@@ -69,8 +69,8 @@ const SOCIAL = {
 
 // Each business answers on its own address. The queue writes one message per
 // address however many listings carry it, so two businesses sharing one would
-// reach the sender as one. Every address sits at the one domain the resolver
-// below is settled for.
+// reach the sender as one. Every address sits at the one domain the address
+// check below is settled for.
 
 /** A business whose slow site was measured. */
 const SCORED = {
@@ -474,10 +474,7 @@ const sendPlan = (candidates, extra = {}) => ({
 })
 
 forgetDomains()
-await checkAddress(null, 'owner@example.com', {
-  now: AFTERNOON,
-  resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-})
+await settleAddress('owner@example.com')
 
 /** Sending closed, so every run writes drafts and reaches no transport. */
 const DRAFTING = {
