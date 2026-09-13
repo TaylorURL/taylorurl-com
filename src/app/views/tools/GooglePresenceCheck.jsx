@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, Check, Minus, Search } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
@@ -7,10 +7,11 @@ import StepFlow from '../start/steps/StepFlow'
 import ToolEnquiry from './ToolEnquiry'
 import { enquiryLines, reportFor } from '@app/tools/lib/findings'
 import { NAV_GROUPS } from '@constants/navigation'
-import { STAGES, TICK_MS, stageAt } from '@app/tools/lib/progress'
+import { STAGES, stageAt } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { GROUND } from './lib/ground'
+import { useElapsed } from './lib/useElapsed'
 
 const LABEL = 'section-label-sm mb-2 block text-paper-faint'
 
@@ -73,23 +74,13 @@ export default function GooglePresenceCheck({ tool }) {
   const toast = useToast()
   const [address, setAddress] = useState('')
   const [status, setStatus] = useState('idle')
-  const [elapsed, setElapsed] = useState(0)
   const [reading, setReading] = useState(null)
   const [fault, setFault] = useState(null)
-  const startedAt = useRef(0)
 
   const report = reading ? reportFor(reading) : null
   const running = status === 'reading'
 
-  // The elapsed count is what tells a reader the page has not died on them, so
-  // it runs off a clock rather than off the stages: it keeps moving whatever
-  // Google is doing, and it goes on being true past the point the estimate
-  // stops being.
-  useEffect(() => {
-    if (!running) return undefined
-    const tick = setInterval(() => setElapsed(Date.now() - startedAt.current), TICK_MS)
-    return () => clearInterval(tick)
-  }, [running])
+  const { elapsed, restart } = useElapsed(running)
 
   // A failure here ends a wait of most of a minute, so it is said in two places
   // rather than one. The notice is what reaches somebody still watching the
@@ -110,8 +101,7 @@ export default function GooglePresenceCheck({ tool }) {
     setStatus('reading')
     setFault(null)
     setReading(null)
-    startedAt.current = Date.now()
-    setElapsed(0)
+    restart()
 
     try {
       const response = await fetch(`/api/site-audit?site=${encodeURIComponent(address.trim())}`)

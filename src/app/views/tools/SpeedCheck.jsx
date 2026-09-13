@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Gauge } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
 import CheckStage from '@components/conversion/CheckStage'
@@ -8,10 +8,10 @@ import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
 import { GROUNDS } from '@constants/grounds'
 import { breadcrumbSchema } from '@constants/seo'
-import { TICK_MS } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { STAGES, runSpeedCheck, speedCheckErrorMessage, stageIndex } from '@data/leads/speedCheck'
 import { isValidEmail } from '@utils/validation'
+import { useElapsed } from './lib/useElapsed'
 
 /**
  * The reading a site gets asked for by the person who owns it.
@@ -210,22 +210,12 @@ export default function SpeedCheck() {
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
   const [stage, setStage] = useState(STAGES[0].id)
-  const [elapsed, setElapsed] = useState(0)
   const [reading, setReading] = useState(null)
   const [fault, setFault] = useState(null)
-  const startedAt = useRef(0)
 
   const running = status === 'reading'
 
-  // The elapsed count is what tells a reader the page has not died on them, so
-  // it runs off a clock rather than off the stages: it keeps moving whatever
-  // Google is doing, and it goes on being true past the point the last stage
-  // stops saying anything new.
-  useEffect(() => {
-    if (!running) return undefined
-    const tick = setInterval(() => setElapsed(Date.now() - startedAt.current), TICK_MS)
-    return () => clearInterval(tick)
-  }, [running])
+  const { elapsed, restart } = useElapsed(running)
 
   const change = field => event => {
     const next = { ...values, [field]: event.target.value }
@@ -264,8 +254,7 @@ export default function SpeedCheck() {
     setFault(null)
     setReading(null)
     setStage(STAGES[0].id)
-    startedAt.current = Date.now()
-    setElapsed(0)
+    restart()
 
     try {
       const answered = await runSpeedCheck(values, { onStage: setStage })
