@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { ArrowUpRight, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
+import EnquirySend from '@components/conversion/EnquirySend'
+import { useFormFields } from '@hooks/useFormFields'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { submitEnquiry, enquiryErrorMessage } from '@data/leads/sendEnquiry'
@@ -39,21 +41,12 @@ const ASKED = QUESTIONS.start
  *   it. The panel only ever stands on a step that address opened.
  */
 export default function SaveSection({ summary, tradeName = '', email = '' }) {
-  const [fields, setFields] = useState(() => ({ ...EMPTY, email }))
-  const [errors, setErrors] = useState({})
+  const { fields, setFields, errors, setErrors, change } = useFormFields(() => ({
+    ...EMPTY,
+    email,
+  }))
   const [fault, setFault] = useState(null)
   const [status, setStatus] = useState('idle')
-
-  const change = event => {
-    const { name, value } = event.target
-    setFields(held => ({ ...held, [name]: value }))
-    setErrors(current => {
-      if (!current[name]) return current
-      const rest = { ...current }
-      delete rest[name]
-      return rest
-    })
-  }
 
   // The same two rules the endpoint applies to what this form collects. The
   // message is not among them: it is composed from the configuration, so it is
@@ -179,24 +172,7 @@ export default function SaveSection({ summary, tradeName = '', email = '' }) {
             </div>
 
             <div className={`border-t pt-6 ${GROUND.rule}`}>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <button
-                  type="submit"
-                  disabled={status === 'submitting'}
-                  className="btn btn-primary group"
-                >
-                  {status === 'submitting' ? 'Sending…' : 'Send My Answers'}
-                  {status !== 'submitting' && (
-                    <ArrowUpRight
-                      className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                      aria-hidden="true"
-                    />
-                  )}
-                </button>
-                <p className="section-label-sm text-paper-faint">
-                  Free, and usually answered within the hour
-                </p>
-              </div>
+              <EnquirySend sending={status === 'submitting'}>Send My Answers</EnquirySend>
               {fault && (
                 <p className={FIELD_FAULT} role="alert">
                   {fault}

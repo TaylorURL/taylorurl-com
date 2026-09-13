@@ -32,6 +32,16 @@ const PlaceIcon = CONTACT.place.icon
 
 const REQUIRED_FIELDS = ['name', 'email', 'phone', 'message']
 
+const BLANK = {
+  name: '',
+  email: '',
+  company: '',
+  projectType: '',
+  contactMethod: DEFAULT_CONTACT_METHOD,
+  phone: '',
+  message: '',
+}
+
 // What a message that did not leave says.
 //
 // This is the longest form on the site and the box is often a paragraph the
@@ -104,15 +114,7 @@ export default function Contact() {
   const { state } = useLocation()
   // Read once, on the mount the visitor arrived on. The box is theirs to edit
   // from that point, and a re-read would take back an edit they had made.
-  const [formData, setFormData] = useState(() => ({
-    name: '',
-    email: '',
-    company: '',
-    projectType: '',
-    contactMethod: DEFAULT_CONTACT_METHOD,
-    phone: '',
-    message: briefText(state?.brief),
-  }))
+  const [formData, setFormData] = useState(() => ({ ...BLANK, message: briefText(state?.brief) }))
 
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
@@ -176,15 +178,7 @@ export default function Contact() {
     try {
       await submitEnquiry({ ...formData, form: 'contact' })
       setStatus('sent')
-      setFormData({
-        name: '',
-        email: '',
-        company: '',
-        projectType: '',
-        contactMethod: DEFAULT_CONTACT_METHOD,
-        phone: '',
-        message: '',
-      })
+      setFormData(BLANK)
     } catch (cause) {
       // A send that failed is a notice rather than a line in the form. The four
       // faults this form raises itself are each about one field and each sit
