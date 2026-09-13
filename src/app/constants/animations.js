@@ -5,8 +5,8 @@
 // than met, and on a narrow viewport, where the sections arrive one at a time
 // down a single column, being watched is the whole way down.
 //
-// `<MotionConfig reducedMotion="user">` in main.jsx carries the preference for
-// every variant here, so none of them double-handles it. Its reach ends at
+// `<MotionConfig reducedMotion="user">` in Providers.jsx carries the preference
+// for every variant here, so none of them double-handles it. Its reach ends at
 // Framer's own animations: a frame loop, a canvas, a CSS animation and a filter
 // are all outside it and each has to read the preference for itself.
 
