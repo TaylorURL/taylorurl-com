@@ -10,9 +10,15 @@ const PREVIEW_BOX = { width: 1280, height: 800 }
  * falls back to a server-rendered screenshot of the page itself, so what shows
  * is always the real thing.
  *
+ * The capture fills the box it is put in, and `className` is its whole class
+ * list, so a card that animates its capture names that alongside the fill.
+ *
  * @param {{ project: object, className?: string }} props
  */
-export default function PortfolioPreview({ project, className = '' }) {
+export default function PortfolioPreview({
+  project,
+  className = 'h-full w-full object-cover object-top',
+}) {
   const [useFallback, setUseFallback] = useState(false)
   const src = useFallback
     ? portfolioScreenshotServiceUrl(project, 'desktop')
@@ -27,7 +33,7 @@ export default function PortfolioPreview({ project, className = '' }) {
       loading="lazy"
       decoding="async"
       onError={() => setUseFallback(true)}
-      className={`h-full w-full object-cover object-top ${className}`}
+      className={className}
     />
   )
 }

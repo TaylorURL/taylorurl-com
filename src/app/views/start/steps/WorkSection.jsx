@@ -3,7 +3,7 @@ import Mesh from '@components/mesh/Mesh'
 import ToolMesh from '@components/mesh/ToolMesh'
 import BlockHead from './BlockHead'
 import DesignChoice from './DesignChoice'
-import PortfolioPreview from './PortfolioPreview'
+import PortfolioPreview from '@components/mockups/PortfolioPreview'
 import { BLOCK_LABEL, BLOCK_META, GROUND } from '../lib/ground'
 
 // The one live site fills the block, and the jobs the site has to do sit two

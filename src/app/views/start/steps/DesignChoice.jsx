@@ -2,7 +2,7 @@ import { PenLine } from 'lucide-react'
 import Mesh from '@components/mesh/Mesh'
 import { meshLadder, meshSpans } from '@constants/mesh'
 import BlockHead from './BlockHead'
-import PortfolioPreview from './PortfolioPreview'
+import PortfolioPreview from '@components/mockups/PortfolioPreview'
 import { GROUND } from '../lib/ground'
 
 /** The answer a visitor gives when the design they want is not on the wall. */
