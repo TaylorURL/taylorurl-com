@@ -14,9 +14,18 @@ import {
   YAxis,
 } from 'recharts'
 import { bucketLabel, bucketTitle, compactCount, fullCount, hourLabel } from './lib/format'
-import { TooltipCard } from './ChartTooltip'
+import { ShareTooltip, TooltipCard } from './ChartTooltip'
 // Each chart reserves its box before recharts measures the container.
-import { ANIMATE, AXIS, CHART_HEIGHT, CHART_INSET, frame, GRID, seriesColor } from './chartKit'
+import {
+  ANIMATE,
+  AXIS,
+  CHART_HEIGHT,
+  CHART_INSET,
+  COUNT_AXIS,
+  frame,
+  GRID,
+  seriesColor,
+} from './chartKit'
 
 /**
  * Charts for the analytics console.
@@ -55,14 +64,7 @@ export function TrafficChart({ series, grain, fill }) {
             axisLine={{ stroke: GRID }}
             minTickGap={18}
           />
-          <YAxis
-            tick={AXIS}
-            tickLine={false}
-            axisLine={false}
-            width="auto"
-            tickFormatter={compactCount}
-            allowDecimals={false}
-          />
+          <YAxis {...COUNT_AXIS} />
           <Tooltip
             cursor={{ stroke: GRID }}
             content={({ active, payload, label }) =>
@@ -125,14 +127,7 @@ export function HourChart({ hours, fill }) {
             axisLine={{ stroke: GRID }}
             interval={2}
           />
-          <YAxis
-            tick={AXIS}
-            tickLine={false}
-            axisLine={false}
-            width="auto"
-            tickFormatter={compactCount}
-            allowDecimals={false}
-          />
+          <YAxis {...COUNT_AXIS} />
           <Tooltip
             cursor={{ fill: 'var(--paper-hairline)' }}
             content={({ active, payload, label }) =>
@@ -184,22 +179,7 @@ export function BreakdownDonut({ rows, total }) {
                 <Cell key={row.name} fill={seriesColor(index)} />
               ))}
             </Pie>
-            <Tooltip
-              content={({ active, payload }) =>
-                active && payload?.length ? (
-                  <TooltipCard
-                    title={payload[0].name}
-                    rows={[
-                      { label: 'Sessions', value: fullCount(payload[0].value) },
-                      {
-                        label: 'Share',
-                        value: total ? `${Math.round((payload[0].value / total) * 100)}%` : '—',
-                      },
-                    ]}
-                  />
-                ) : null
-              }
-            />
+            <Tooltip content={<ShareTooltip total={total} />} />
           </PieChart>
         </ResponsiveContainer>
       </div>

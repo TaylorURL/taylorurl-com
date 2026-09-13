@@ -1,12 +1,13 @@
 import { CHART_HEIGHT } from '../console/lib/tokens'
+import { compactCount } from './lib/format'
 
 /**
  * What every chart in the console shares: the tick style, the grid colour,
- * the series ramp and the box a chart draws into.
+ * the count axis, the series ramp and the box a chart draws into.
  *
  * They live apart from the charts so a section that draws a chart of its own
- * imports the same four things rather than carrying copies, and apart from
- * the tooltip card because this file exports no component and can be read by
+ * imports the same things rather than carrying copies, and apart from the
+ * tooltip card because this file exports no component and can be read by
  * anything.
  */
 
@@ -27,6 +28,19 @@ export const AXIS = {
 }
 
 export const GRID = 'var(--paper-hairline)'
+
+/**
+ * The side axis of a chart that counts: whole figures only, shortened past a
+ * thousand, and as wide as its widest tick.
+ */
+export const COUNT_AXIS = {
+  tick: AXIS,
+  tickLine: false,
+  axisLine: false,
+  width: 'auto',
+  tickFormatter: compactCount,
+  allowDecimals: false,
+}
 
 /**
  * Whether a chart animates its series in. It does not.
