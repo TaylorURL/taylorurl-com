@@ -5,11 +5,14 @@ FreeType is built here without Raqm, so Pillow lays glyphs out one at a time wit
 no kerning and no hinting at small sizes; supersampling is what gets the type
 edges back. It also means tracking has to be applied by hand, which `text` does.
 
-Colours and type sizes come from the live site's own custom properties, read off
-taylorurl.com rather than restated from memory. The paper ground, the near-black
-ink, the single blue accent and the hairline weights are the same values the
-site paints with, so an image dropped beside a screenshot of the site reads as
-one system.
+Colours and type sizes are the site's own custom properties rather than values
+restated from memory. The grounds and inks are the TaylorURL theme: a warm ivory
+sheet at #f0eee6, a warm charcoal ink at #141413, the darker slab at #1f1e1d the
+studio's own share cards stand on, and the one blue accent, stepped lighter
+where it has to hold against a dark ground. The ivory does two jobs, because it
+is the ground on a light sheet and the ink on a dark one. Every hairline and
+every softer step is the ground's own ink held at a fraction of itself, so an
+image dropped beside a screenshot of the site reads as one system.
 """
 
 from PIL import Image, ImageDraw, ImageFont
@@ -18,13 +21,14 @@ SS = 2
 
 SRC = __file__.rsplit("/", 1)[0]
 
-PAPER = (246, 246, 245)
-INK = (10, 10, 10)
+PAPER = (240, 238, 230)
+INK = (20, 20, 19)
 BLUE = (26, 78, 216)
-BLUE_BRIGHT = (47, 107, 255)
-NIGHT = (33, 34, 38)
-NIGHT_INK = (244, 244, 245)
-WHITE = (255, 255, 255)
+BLUE_BRIGHT = (92, 140, 255)
+NIGHT = (38, 38, 36)
+NIGHT_INK = (240, 238, 230)
+SLAB = (31, 30, 29)
+SLAB_INK = (240, 238, 230)
 
 WEIGHTS = {
     "thin": 100, "extralight": 200, "light": 300, "regular": 400,

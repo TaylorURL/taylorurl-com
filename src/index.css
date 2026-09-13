@@ -72,29 +72,30 @@
 
 :root {
   /*
-   * THE FIELD — the ground a page stands on, at its light values. The dark
-   * setting below restates the same roles on a near-black canvas, and a
+   * THE FIELD — the ground a page stands on, at its light values. This is the
+   * TaylorURL theme: ivory paper by day, warm charcoal by night, one blue on
+   * both. The dark setting below restates the same roles on the charcoal, and a
    * document that carries no setting yet reads on the light ones.
    */
-  --paper: #f6f6f5;
-  --paper-ink: #0a0a0a;
-  --paper-ink-soft: rgba(10, 10, 10, 0.72);
-  --paper-ink-mute: rgba(10, 10, 10, 0.62);
-  --paper-ink-faint: rgba(10, 10, 10, 0.57);
-  /* The one step below AA, at 2.32:1. It belongs to decoration — the watermark
+  --paper: #f0eee6;
+  --paper-ink: #141413;
+  --paper-ink-soft: rgba(20, 20, 19, 0.72);
+  --paper-ink-mute: rgba(20, 20, 19, 0.62);
+  --paper-ink-faint: rgba(20, 20, 19, 0.57);
+  /* The one step below AA, at 2.21:1. It belongs to decoration — the watermark
      numerals, the town names set across the foot of the page — and never to a
      word that carries meaning. */
-  --paper-ink-ghost: rgba(10, 10, 10, 0.35);
-  --paper-hairline: rgba(10, 10, 10, 0.1);
-  --paper-hairline-strong: rgba(10, 10, 10, 0.14);
+  --paper-ink-ghost: rgba(20, 20, 19, 0.35);
+  --paper-hairline: rgba(20, 20, 19, 0.1);
+  --paper-hairline-strong: rgba(20, 20, 19, 0.14);
   /* Input ground. A field on a paper panel needs to sit on its own surface, or
      the border is the only thing saying it can be typed in. */
-  --paper-field: #ffffff;
-  --wash-paper: rgb(10 10 10 / 0.05);
-  --wash-paper-strong: rgb(10 10 10 / 0.1);
+  --paper-field: #faf9f5;
+  --wash-paper: rgb(20 20 19 / 0.05);
+  --wash-paper-strong: rgb(20 20 19 / 0.1);
   /* The blueprint rule, at the two weights the field takes. */
-  --rule-paper: rgba(10, 10, 10, 0.05);
-  --rule-paper-fine: rgba(10, 10, 10, 0.03);
+  --rule-paper: rgba(20, 20, 19, 0.05);
+  --rule-paper-fine: rgba(20, 20, 19, 0.03);
 
   /*
    * THE GROUND ROLES — what --bg, --ink, the hairlines, the surfaces, the
@@ -114,16 +115,16 @@
   --hairline: var(--paper-hairline);
   --hairline-strong: var(--paper-hairline-strong);
   /* A raised card and a sunk well, one step either side of the field. */
-  --surface-1: #ffffff;
-  --surface-2: #ecece9;
+  --surface-1: #faf9f5;
+  --surface-2: #e8e6dc;
   --wash-ink: var(--wash-paper);
   --wash-ink-strong: var(--wash-paper-strong);
   --rule-ink: var(--rule-paper);
   --rule-ink-fine: var(--rule-paper-fine);
   /* Two lifts, which is every raised thing on the site. A shadow over a light
-     ground carries far less black than one over a dark ground, or it reads as
+     ground carries far less ink than one over a dark ground, or it reads as
      dirt. */
-  --lift: 0 30px 70px -30px rgba(10, 10, 10, 0.22);
+  --lift: 0 30px 70px -30px rgba(20, 20, 19, 0.22);
   --rule-under: inset 0 -1px 0 var(--paper-hairline);
   /* Four radii and no more. A corner is a scale reading: the eye judges how
      large a thing is partly by how far its corner turns, so a card and the
@@ -143,32 +144,32 @@
      however far the shadow beneath it spreads. */
   --edge: 0 0 0 1px var(--paper-hairline);
   --raise:
-    0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(10 10 10 / 4%),
-    0 8px 24px -12px rgb(10 10 10 / 10%);
+    0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(20 20 19 / 4%),
+    0 8px 24px -12px rgb(20 20 19 / 10%);
   --raise-hi:
-    0 0 0 1px var(--paper-hairline-strong), 0 2px 4px rgb(10 10 10 / 5%),
-    0 14px 32px -14px rgb(10 10 10 / 16%);
+    0 0 0 1px var(--paper-hairline-strong), 0 2px 4px rgb(20 20 19 / 5%),
+    0 14px 32px -14px rgb(20 20 19 / 16%);
   /* What a key carries under it: tighter than a card's raise, because a button
      sits on the page rather than floating above it. The soft one is the single
      contact shadow a ringed key takes. Both are restated wherever --raise is,
      so the ink follows the ground the key stands on rather than staying cut for
      paper. */
-  --key-lift: 0 1px 1px rgb(10 10 10 / 8%), 0 2px 5px -1px rgb(10 10 10 / 14%);
-  --key-lift-soft: 0 1px 2px rgb(10 10 10 / 5%);
+  --key-lift: 0 1px 1px rgb(20 20 19 / 8%), 0 2px 5px -1px rgb(20 20 19 / 14%);
+  --key-lift-soft: 0 1px 2px rgb(20 20 19 / 5%);
   /* The bar's ground once content has scrolled beneath it, at an alpha the blur
      behind it can read through. The solid one is what an open panel stands on:
      a bar 76px deep can be a scrim over the page, but a panel that runs four
      hundred pixels down it is a surface someone reads forty-six names off, and
      display type behind it survives an 18px blur at 15% and shows through the
      words. */
-  --nav-surface: rgba(246, 246, 245, 0.85);
-  --nav-surface-solid: #f6f6f5;
+  --nav-surface: rgba(240, 238, 230, 0.85);
+  --nav-surface-solid: #f0eee6;
   /* The moving highlight a shiny label sweeps, and the ground and edge a glare
      sits on. All three follow the ground rather than the brand. */
   --shine-base: var(--ink-mute);
-  --shine-sweep: rgba(10, 10, 10, 0.92);
-  --glare-ground: #f6f6f5;
-  --glare-edge: rgba(10, 10, 10, 0.2);
+  --shine-sweep: rgba(20, 20, 19, 0.92);
+  --glare-ground: #f0eee6;
+  --glare-edge: rgba(20, 20, 19, 0.2);
   /* The light a card carries under the pointer. */
   --spotlight: rgba(47, 107, 255, 0.16);
   --spotlight-soft: rgba(47, 107, 255, 0.1);
@@ -229,25 +230,25 @@
   /* Instagram publishes its mark as a gradient rather than as one colour,
      and the magenta at the middle of it is the step the network uses
      wherever a single ink is all there is. It is drawn as a shape and never
-     carries type, which is what the 4.0 against paper is allowed to be. */
+     carries type, which is what the 3.5 against paper is allowed to be. */
   --ig-magenta: #e4405f;
   --tp-fill: #005128;
   /* BBB's torch blue, and the gold Google fills a review star with. The blue
      clears AA as type on paper and carries white ink on a filled button, so it
      serves the mark, the seal's caption and the panel alike. The gold never
-     carries type: at 1.8 against white it is a shape and nothing else. */
+     carries type: at 1.5 against the paper it is a shape and nothing else. */
   --bbb-blue: #015a75;
   --bbb-fill: #015a75;
   --google-gold: color-mix(in srgb, #fbbc04 var(--brand-shape-hold), var(--paper));
 
   /* How much of a borrowed brand colour survives where it is drawn as a shape
      rather than as type: a filled rating star, a rating tile, the bar along the
-     top of a review card. Every one of these steps was cut against white, where
-     a saturated brand colour is quiet - the gold above lands at 1.7 there, which
-     is why the note beside it calls it a shape and nothing else. The same hex on
-     a near-black ground is 11.5, within reach of the 17.9 the body copy itself is
-     set at, and a row of stars that loud is read before the quote under it. A
-     rating is the citation, not the point.
+     top of a review card. Every one of these steps was cut against the ivory
+     paper, where a saturated brand colour is quiet - the gold above lands at 1.5
+     there, which is why the note beside it calls it a shape and nothing else.
+     The same hex on the charcoal is 8.9, within reach of the 13.1 the body copy
+     itself is set at, and a row of stars that loud is read before the quote
+     under it. A rating is the citation, not the point.
 
      It is one step every shape mixes through rather than a second hex per colour,
      so each ground pulls its borrowed colours back by the same amount and a
@@ -260,8 +261,8 @@
      their green held at the step above; the empty one is a ghost of the page
      rather than the fixed #dcdce6 they publish, because an empty tile carries no
      part of the rating and a near-white square on a dark page is this site's
-     noise rather than Trustpilot's shape. On paper it lands within a hair of the
-     grey it replaces. */
+     noise rather than Trustpilot's shape. On paper it lands a shade under the
+     grey it replaces, and warm where that one is cool. */
   --tp-tile: color-mix(in srgb, var(--tp-star) var(--brand-shape-hold), var(--paper));
   --tp-tile-empty: color-mix(in srgb, var(--paper-ink) 14%, var(--paper));
   /* A flat single-ink wordmark is drawn by flattening the file to black and
@@ -291,10 +292,10 @@
   --good-fill: #10b981;
   --good-edge: rgba(16, 185, 129, 0.4);
   --good-wash: rgba(16, 185, 129, 0.1);
-  /* The two above are cut for ink on the dark ground and land near 2:1 on a
-     white card, where a status drawn in either is decoration rather than a
+  /* The two above are cut for ink on the dark ground and land under 2:1 on a
+     light card, where a status drawn in either is decoration rather than a
      reading. These are the same two hues taken down to where body text clears
-     4.5:1 on the sheet, alongside the danger step that already had one. A
+     4.5:1 on the paper, alongside the danger step that already had one. A
      three-band figure needs all three or it reads as one colour and two
      guesses. */
   --warn-on-paper: #8a5300;
@@ -341,7 +342,7 @@
      It is mixed into the ground rather than named, so the same recipe gives a
      pale field on paper and a deep one under the dark setting without either
      being written out twice. */
-  --plane-ground: #ffffff;
+  --plane-ground: #faf9f5;
   --plane:
     radial-gradient(
       124% 128% at 12% 0%,
@@ -454,7 +455,7 @@
 }
 
 /*
- * THE DARK SETTING — the field goes to a near-black canvas and every role that
+ * THE DARK SETTING — the field goes to a warm charcoal and every role that
  * hangs off it follows: ink at four weights, hairlines, surfaces, washes,
  * rules, the lift, the bar's ground, the chart's furniture, the glare and the
  * accent step.
@@ -470,37 +471,37 @@
 :root[data-theme='dark'] {
   /* The plane mixes into the ground the setting stands on, so the same
      recipe reads as a pale field on paper and a deep one here. */
-  --plane-ground: #0b0c0f;
-  /* The dark green that carries type on paper disappears into a near-black
-     ground, so on this setting the bright star green takes the type and the
-     dark one stays behind white ink on a filled button. */
+  --plane-ground: #30302e;
+  /* The dark green that carries type on paper disappears into the charcoal, so
+     on this setting the bright star green takes the type and the dark one stays
+     behind white ink on a filled button. */
   --tp-ink: #00b67a;
   --yelp-red: #ff3b3b;
   --bbb-blue: #4eb4d8;
   /* The ground is what changed, so the shapes drawn on it are pulled back toward
-     it: the gold star settles at 6.0 and the Trustpilot tile at 4.1, both still
+     it: the gold star settles at 5.1 and the Trustpilot tile at 3.5, both still
      unmistakably the colour the network uses and neither of them louder than the
      review it belongs to. */
   --brand-shape-hold: 70%;
-  --paper: #0b0c0f;
-  --paper-ink: #f4f5f7;
-  --paper-ink-soft: rgba(244, 245, 247, 0.72);
-  --paper-ink-mute: rgba(244, 245, 247, 0.55);
-  --paper-ink-faint: rgba(244, 245, 247, 0.47);
-  --paper-ink-ghost: rgba(244, 245, 247, 0.35);
-  --paper-hairline: rgba(244, 245, 247, 0.1);
-  --paper-hairline-strong: rgba(244, 245, 247, 0.14);
-  --paper-field: #121419;
-  --wash-paper: rgb(244 245 247 / 0.05);
-  --wash-paper-strong: rgb(244 245 247 / 0.1);
-  --rule-paper: rgba(244, 245, 247, 0.05);
-  --rule-paper-fine: rgba(244, 245, 247, 0.03);
-  --surface-1: #14161b;
-  --surface-2: #1c1f26;
+  --paper: #262624;
+  --paper-ink: #f0eee6;
+  --paper-ink-soft: rgba(240, 238, 230, 0.72);
+  --paper-ink-mute: rgba(240, 238, 230, 0.55);
+  --paper-ink-faint: rgba(240, 238, 230, 0.47);
+  --paper-ink-ghost: rgba(240, 238, 230, 0.35);
+  --paper-hairline: rgba(240, 238, 230, 0.1);
+  --paper-hairline-strong: rgba(240, 238, 230, 0.14);
+  --paper-field: #30302e;
+  --wash-paper: rgb(240 238 230 / 0.05);
+  --wash-paper-strong: rgb(240 238 230 / 0.1);
+  --rule-paper: rgba(240, 238, 230, 0.05);
+  --rule-paper-fine: rgba(240, 238, 230, 0.03);
+  --surface-1: #30302e;
+  --surface-2: #3b3a37;
   --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
-  /* The same recipe over a near-black canvas. A drop shadow works by darkening
-     the ground it falls on, so the alphas that read on paper do nothing here
-     and the ring carries most of the separation. */
+  /* The same recipe over the charcoal. A drop shadow works by darkening the
+     ground it falls on, so the alphas that read on paper do nothing here and the
+     ring carries most of the separation. */
   --raise:
     0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(0 0 0 / 40%), 0 8px 24px -12px rgb(0 0 0 / 60%);
   --raise-hi:
@@ -508,18 +509,26 @@
     0 14px 32px -14px rgb(0 0 0 / 70%);
   --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
-  --nav-surface: rgba(11, 12, 15, 0.85);
-  --nav-surface-solid: #0b0c0f;
-  --shine-sweep: rgba(255, 255, 255, 0.95);
-  --glare-ground: #0b0c0f;
-  --glare-edge: rgba(244, 245, 247, 0.2);
+  --nav-surface: rgba(38, 38, 36, 0.85);
+  --nav-surface-solid: #262624;
+  --shine-sweep: rgba(240, 238, 230, 0.95);
+  --glare-ground: #262624;
+  --glare-edge: rgba(240, 238, 230, 0.2);
   --spotlight: rgba(47, 107, 255, 0.2);
   --spotlight-soft: rgba(47, 107, 255, 0.12);
+  /* The accent's two dark steps, restated because this ground is lifted off
+     black and the steps at :root were cut against one that is not. #3d76ff
+     lands at 3.78 on the charcoal, under AA for the 12-13px labels most of the
+     accent text here is set in; these two clear it. Measured: #5c8cff is 4.80
+     on the paper and 5.27 on the slab under it, #709aff 5.60 on the paper. Any
+     scope that keeps a near-black ground still takes the :root pair. */
+  --accent-bright: #5c8cff;
+  --accent-hi-bright: #709aff;
   --accent: var(--accent-bright);
   --accent-hi: var(--accent-hi-bright);
   --accent-loud: var(--accent-hi-bright);
   --mark-invert: 1;
-  /* The field is near-black here, so the danger steps cut for a light panel
+  /* The field is the charcoal here, so the danger steps cut for a light panel
      take the dark ground's weight instead. */
   --danger-on-paper: var(--danger);
   --warn-on-paper: var(--warn);
@@ -539,15 +548,15 @@
  *                        neither setting
  *
  * The light setting has no slabs in it. A reader who asks a site for light is
- * asking for a light page, and a black masthead over it, a black band every
- * second section and a black closing call at the foot are the page refusing
+ * asking for a light page, and a dark masthead over it, a dark band every
+ * second section and a dark closing call at the foot are the page refusing
  * three times on one scroll. So under light every ground stands down and the
  * whole page is the field the setting chose; the contrast that a slab was
  * carrying is drawn instead by the objects set into the field, which is the
  * lit plane, the card and its lift.
  *
  * Under the dark setting the slab is still worth having, because there it is
- * not a reversal: the page is already near-black, and the slab is one step
+ * not a reversal: the page is already the charcoal, and the slab is one step
  * deeper than the field, which is what lets a masthead sit under a page
  * without a rule between them. A band stands down there as it always did, or a
  * page keeping its contrast every second section reads as stripes.
@@ -563,25 +572,25 @@
  * own values and the section reads as part of the page.
  */
 :root[data-theme='dark'] [data-ground='dark'] {
-  --bg: #000000;
-  --ink: #ffffff;
-  --ink-soft: rgba(255, 255, 255, 0.72);
-  --ink-mute: rgba(255, 255, 255, 0.55);
-  --ink-faint: rgba(255, 255, 255, 0.46);
-  --ink-ghost: rgba(255, 255, 255, 0.32);
-  --hairline: rgba(255, 255, 255, 0.1);
-  --hairline-strong: rgba(255, 255, 255, 0.18);
-  --surface-1: #0a0a0a;
-  --surface-2: #131313;
-  --wash-ink: rgb(255 255 255 / 0.05);
-  --wash-ink-strong: rgb(255 255 255 / 0.1);
-  --rule-ink: rgba(255, 255, 255, 0.06);
-  --rule-ink-fine: rgba(255, 255, 255, 0.04);
+  --bg: #1f1e1d;
+  --ink: #f0eee6;
+  --ink-soft: rgba(240, 238, 230, 0.72);
+  --ink-mute: rgba(240, 238, 230, 0.55);
+  --ink-faint: rgba(240, 238, 230, 0.46);
+  --ink-ghost: rgba(240, 238, 230, 0.32);
+  --hairline: rgba(240, 238, 230, 0.1);
+  --hairline-strong: rgba(240, 238, 230, 0.18);
+  --surface-1: #262624;
+  --surface-2: #2c2b29;
+  --wash-ink: rgb(240 238 230 / 0.05);
+  --wash-ink-strong: rgb(240 238 230 / 0.1);
+  --rule-ink: rgba(240, 238, 230, 0.06);
+  --rule-ink-fine: rgba(240, 238, 230, 0.04);
   --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.55);
   /* A slab carries the page's light paper roles unchanged, because the cards
      set into one are light cards. What it does restate is the lift, which has
      to be drawn against the slab's own hairline rather than paper's, and given
-     enough black to register on a ground that is already black. */
+     enough black to register on a ground that is already dark. */
   --edge: 0 0 0 1px var(--hairline);
   --raise:
     0 0 0 1px var(--hairline), 0 1px 2px rgb(0 0 0 / 40%), 0 10px 28px -14px rgb(0 0 0 / 55%);
@@ -589,11 +598,11 @@
     0 0 0 1px var(--hairline-strong), 0 2px 4px rgb(0 0 0 / 45%), 0 16px 36px -16px rgb(0 0 0 / 65%);
   --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
-  --nav-surface: rgba(0, 0, 0, 0.85);
-  --nav-surface-solid: #000000;
-  --shine-sweep: #ffffff;
-  --glare-ground: #000000;
-  --glare-edge: #333333;
+  --nav-surface: rgba(31, 30, 29, 0.85);
+  --nav-surface-solid: #1f1e1d;
+  --shine-sweep: #f0eee6;
+  --glare-ground: #1f1e1d;
+  --glare-edge: rgba(240, 238, 230, 0.2);
   --spotlight: rgba(47, 107, 255, 0.2);
   --spotlight-soft: rgba(47, 107, 255, 0.12);
   --accent: var(--accent-bright);
@@ -601,7 +610,7 @@
   --accent-loud: var(--accent-hi-bright);
   --mark-invert: 1;
   /* The two borrowed brand colours cut for a light sheet disappear into a slab:
-     the dark Trustpilot green reads as black on black, and Yelp's red lands
+     the dark Trustpilot green all but vanishes at 1.8, and Yelp's red lands
      near 3:1. A slab takes the same steps the dark setting takes. */
   --tp-ink: var(--tp-star);
   --yelp-red: #ff3b3b;
@@ -647,7 +656,7 @@
      setting pours into these would sit on a white sheet as dirt. The sheet
      restates every shadow that carries ink of its own, and the plane's ground
      with them: a plane is mixed into the ground it stands on, and the setting's
-     near-black would take a window inside a white sheet down with it. */
+     charcoal would take a window inside a white sheet down with it. */
   --edge: 0 0 0 1px var(--paper-hairline);
   --raise:
     0 0 0 1px var(--paper-hairline), 0 1px 2px rgb(10 10 10 / 4%),
@@ -852,80 +861,75 @@
    * The console reads on its own grounds rather than the site's. A marketing
    * page is read once and has to hold attention; a dashboard is read several
    * times a day by somebody who came for one figure, so what carries it is
-   * separation rather than contrast. On the light ground the page takes a
-   * tint, the cards sit on it in white with a lift rather than a rule, and the
-   * ink is a blue-grey rather than black - at 10.4:1 it clears AA twice over
-   * while taking the glare off a screen somebody has open all day. The accent
-   * stays the studio's blue: what is borrowed here is an arrangement, never
-   * another company's colour.
+   * separation rather than contrast. Both palettes are the page's own warm
+   * family a step off it: on the light ground the rail takes the page's ivory,
+   * the cards sit on it a shade lighter with a lift rather than a rule, and the
+   * ink is a warm grey rather than the page's near-black - at 9.91:1 it clears
+   * AA twice over while taking the glare off a screen somebody has open all
+   * day. The accent stays the studio's blue: what is borrowed here is an
+   * arrangement, never another company's colour.
    *
    * The scope still follows the document's setting, so the light setting gives
-   * a light dashboard and the dark one the near-black canvas, and it restates
-   * the paper roles on both, so every Panel, Tile and table cell built from
-   * bg-paper / text-paper-soft / border-hair-paper translates through variable
-   * inheritance without a per-file swap.
+   * a light dashboard and the dark one the charcoal, and it restates the paper
+   * roles on both, so every Panel, Tile and table cell built from bg-paper /
+   * text-paper-soft / border-hair-paper translates through variable inheritance
+   * without a per-file swap.
    *
    * The status hues and the chart series take a darker step on the light
-   * ground: the steps cut for a near-black canvas sit between 1.5:1 and 2.4:1
-   * on white, which is below the 3:1 a chart segment or a state dot owes and
+   * ground: the steps cut for the charcoal sit between 1.6:1 and 2.6:1 on a
+   * light card, which is below the 3:1 a chart segment or a state dot owes and
    * far below the 4.5:1 a run label owes.
    */
   [data-theme='console'] {
-    --paper: #f6f8fb;
-    --paper-ink: #3c4257;
-    --paper-ink-soft: #545a69;
-    /* The two quiet steps are cut against the card rather than picked to look
-       quiet, which is the mistake the first light palette made.
+    --paper: #f0eee6;
+    --paper-ink: #443f37;
+    --paper-ink-soft: #5d564b;
+    /* The ramp is the page's warm family taken down until each step clears its
+       floor, rather than picked to look quiet - which is the mistake the first
+       light palette made.
 
-       The dark palette was measured - its own note records the faint step at
-       4.49 on the rail behind it - and the status hues and the chart series
-       were measured on this ground too. The greys were not, and they are the
-       ones that carry the reading: faint is baked into the table head, the
-       quiet button and every field's placeholder, and it landed at 3.15 on a
-       white card against 4.65 for the same step on the dark one. The same
-       column heading was legible in one setting and not in the other.
-
-       So both steps take the darker cut that clears 4.5, and the ramp keeps
-       the shape the dark one has: 9.96, 6.90, 5.70, 4.63 on the card. Ghost
-       stays where it is - three borders and the breadcrumb's separator, none
+       Every step is measured on both of the grounds it sits on, because the two
+       are no longer the same value: the cards are #faf9f5 and the rail and the
+       bar are the page's own #f0eee6 a shade under them. On the card the ramp
+       reads 9.91, 6.88, 5.71, 5.05; on the rail 8.99, 6.24, 5.18, 4.58. Ghost
+       is left where it is - three borders and the breadcrumb's separator, none
        of which is text somebody reads.
 
        The faint step is cut against the rail rather than the card, because the
-       rail is the lower of the two grounds it sits on and the card was only
-       ever the right one to measure while the two were the same white. Once the
-       rail dropped a step to let the open section lift off it, the same ink was
-       4.63 on a card and 4.36 on the rail - and the group headings, the locked
-       rows and the width control are all on the rail. 4.56 there, 4.86 on the
-       card. */
-    --paper-ink-mute: #5d677a;
-    --paper-ink-faint: #697281;
-    --paper-ink-ghost: #a3acba;
-    --paper-hairline: rgba(60, 66, 87, 0.08);
-    --paper-hairline-strong: rgba(60, 66, 87, 0.16);
-    --paper-field: #ffffff;
-    --wash-paper: rgba(60, 66, 87, 0.04);
-    --wash-paper-strong: rgba(60, 66, 87, 0.08);
-    --rule-paper: rgba(60, 66, 87, 0.05);
-    --rule-paper-fine: rgba(60, 66, 87, 0.03);
+       rail is the lower of the two and faint is baked into the table head, the
+       quiet button and every field's placeholder, while the group headings, the
+       locked rows and the width control are all on the rail. Cut against the
+       card at 4.88 the same ink falls to 4.43 on the rail, under AA in half the
+       places it is used. */
+    --paper-ink-mute: #6a6255;
+    --paper-ink-faint: #736a5c;
+    --paper-ink-ghost: #aea69a;
+    --paper-hairline: rgba(68, 63, 55, 0.08);
+    --paper-hairline-strong: rgba(68, 63, 55, 0.16);
+    --paper-field: #faf9f5;
+    --wash-paper: rgba(68, 63, 55, 0.04);
+    --wash-paper-strong: rgba(68, 63, 55, 0.08);
+    --rule-paper: rgba(68, 63, 55, 0.05);
+    --rule-paper-fine: rgba(68, 63, 55, 0.03);
     /* A card is separated by a lift rather than a line. One hairline shadow
        and one soft one under it, which is what reads as a raised surface
        without drawing a box around everything. */
     --console-radius: var(--r-card);
     --console-radius-sm: var(--r-control);
     --console-card-shadow:
-      0 0 0 1px rgba(60, 66, 87, 0.06), 0 1px 3px rgba(60, 66, 87, 0.08),
-      0 2px 6px rgba(60, 66, 87, 0.04);
-    --console-row-hover: rgba(60, 66, 87, 0.05);
+      0 0 0 1px rgba(68, 63, 55, 0.06), 0 1px 3px rgba(68, 63, 55, 0.08),
+      0 2px 6px rgba(68, 63, 55, 0.04);
+    --console-row-hover: rgba(68, 63, 55, 0.05);
     /* The open row in the rail, set into the ground rather than lifted off
        it: one step darker than the rail and nothing else - no border, no
-       shadow, no white. A raised card says the row is in front of the rail,
-       which is a claim about depth the rail does not make anywhere else;
+       shadow, no lighter card. A raised card says the row is in front of the
+       rail, which is a claim about depth the rail does not make anywhere else;
        recessing it says the row is the part of the rail you are standing
        in, which is what being on a page actually is. The step is the same
        fifteen levels the reference this was taken from moves by. */
-    --console-rail-active: rgba(60, 66, 87, 0.08);
-    --console-raise-shadow: 0 0 0 1px rgba(60, 66, 87, 0.08), 0 1px 2px rgb(60 66 87 / 12%);
-    --bg: #eceef1;
+    --console-rail-active: rgba(68, 63, 55, 0.08);
+    --console-raise-shadow: 0 0 0 1px rgba(68, 63, 55, 0.08), 0 1px 2px rgb(68 63 55 / 12%);
+    --bg: #e8e6dc;
     --ink: var(--paper-ink);
     --ink-soft: var(--paper-ink-soft);
     --ink-mute: var(--paper-ink-mute);
@@ -933,21 +937,21 @@
     --ink-ghost: var(--paper-ink-ghost);
     --hairline: var(--paper-hairline);
     --hairline-strong: var(--paper-hairline-strong);
-    --surface-1: #ffffff;
-    --surface-2: #f3f4f6;
+    --surface-1: #faf9f5;
+    --surface-2: #edebe2;
     --wash-ink: var(--wash-paper);
     --wash-ink-strong: var(--wash-paper-strong);
     --rule-ink: var(--rule-paper);
     --rule-ink-fine: var(--rule-paper-fine);
-    --lift: 0 18px 44px -26px rgba(10, 10, 10, 0.28);
+    --lift: 0 18px 44px -26px rgba(20, 20, 19, 0.28);
     --accent: var(--accent-lo);
     --accent-hi: var(--accent-deep);
     --accent-loud: var(--accent-lo);
     --mark-invert: 0;
     --shine-base: var(--ink-mute);
-    --shine-sweep: rgba(10, 10, 10, 0.92);
-    --glare-ground: #ffffff;
-    --glare-edge: rgba(10, 10, 10, 0.2);
+    --shine-sweep: rgba(20, 20, 19, 0.92);
+    --glare-ground: #faf9f5;
+    --glare-edge: rgba(20, 20, 19, 0.2);
     --spotlight: rgba(47, 107, 255, 0.16);
     --spotlight-soft: rgba(47, 107, 255, 0.1);
     --danger: #cf1f1f;
@@ -993,19 +997,19 @@
        one ground, cards and the open section lifted off it.
 
        That step is what makes the open section a raised card rather than a
-       tinted row. A white row on a white rail is not raised, it is outlined,
-       and the ring ends up doing work the ground should be doing. The dark
-       setting has had the step all along, which is why the open row read there
-       and not here - and why the bar is in this rule too, since a white bar
-       above a recessed rail put a seam down the console's own corner that dark
-       never had. */
+       tinted row. A card on a rail of the same value is not raised, it is
+       outlined, and the ring ends up doing work the ground should be doing. The
+       dark setting has had the step all along, which is why the open row read
+       there and not here - and why the bar is in this rule too, since a bar at
+       the card's value above a recessed rail put a seam down the console's own
+       corner that dark never had. */
     --console-rail-bg: var(--paper);
     --console-bar-bg: var(--paper);
-    --console-card-bg: #ffffff;
+    --console-card-bg: #faf9f5;
     /* The lift under a panel that floats over the page rather than sitting in
        it. Deeper on the dark setting, where a shadow has less ground to darken
        and the edge does more of the separating. */
-    --console-float-shadow: 0 12px 32px -12px rgb(10 10 10 / 28%);
+    --console-float-shadow: 0 12px 32px -12px rgb(20 20 19 / 28%);
     /* The half of the console the stylesheet cannot reach.
 
        A checkbox's box, a select's dropped list, the spinners on a number, the
@@ -1027,39 +1031,42 @@
   }
 
   :root[data-theme='dark'] [data-theme='console'] {
-    --paper: #08090c;
-    --paper-ink: #f4f5f7;
-    --paper-ink-soft: rgba(244, 245, 247, 0.72);
-    --paper-ink-mute: rgba(244, 245, 247, 0.55);
-    /* The rail and the bar sit a step behind the cards, so the quietest text
-       step is cut against the rail rather than the card: 0.47 clears AA on
-       #08090c and lands at 4.49 on the rail behind it. */
-    --paper-ink-faint: rgba(244, 245, 247, 0.48);
-    --paper-ink-ghost: rgba(244, 245, 247, 0.32);
-    --paper-hairline: rgba(255, 255, 255, 0.07);
-    --paper-hairline-strong: rgba(255, 255, 255, 0.14);
-    --paper-field: #0c0e13;
-    --wash-paper: rgb(255 255 255 / 0.05);
-    --wash-paper-strong: rgb(255 255 255 / 0.1);
-    --rule-paper: rgba(255, 255, 255, 0.05);
-    --rule-paper-fine: rgba(255, 255, 255, 0.03);
-    --bg: #04050a;
-    --surface-1: #0a0c12;
-    --surface-2: #10131b;
+    --paper: #1f1e1d;
+    --paper-ink: #f0eee6;
+    --paper-ink-soft: rgba(240, 238, 230, 0.72);
+    --paper-ink-mute: rgba(240, 238, 230, 0.55);
+    /* The console sits one step behind the site's own dark paper, so here the
+       cards are the lower of the two grounds rather than the higher: the rail
+       and the bar are #1f1e1d and the cards #262624 above them. The quietest
+       text step is therefore cut against the card. At the 0.48 it carried
+       against the old near-black it lands at 4.16 on a card, under AA; 0.52
+       reads 4.62 on the card and 4.83 on the rail. */
+    --paper-ink-faint: rgba(240, 238, 230, 0.52);
+    --paper-ink-ghost: rgba(240, 238, 230, 0.32);
+    --paper-hairline: rgba(240, 238, 230, 0.07);
+    --paper-hairline-strong: rgba(240, 238, 230, 0.14);
+    --paper-field: #262624;
+    --wash-paper: rgb(240 238 230 / 0.05);
+    --wash-paper-strong: rgb(240 238 230 / 0.1);
+    --rule-paper: rgba(240, 238, 230, 0.05);
+    --rule-paper-fine: rgba(240, 238, 230, 0.03);
+    --bg: #1c1b1a;
+    --surface-1: #262624;
+    --surface-2: #2c2b29;
     --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
     --accent: var(--accent-bright);
     --accent-hi: var(--accent-hi-bright);
     --accent-loud: var(--accent-hi-bright);
     --mark-invert: 1;
-    --shine-sweep: rgba(255, 255, 255, 0.95);
-    --glare-ground: #08090c;
-    --glare-edge: rgba(244, 245, 247, 0.2);
+    --shine-sweep: rgba(240, 238, 230, 0.95);
+    --glare-ground: #1f1e1d;
+    --glare-edge: rgba(240, 238, 230, 0.2);
     --spotlight: rgba(47, 107, 255, 0.2);
     --spotlight-soft: rgba(47, 107, 255, 0.12);
     --danger: #f87171;
     --danger-fill: #ef4444;
     --danger-edge: rgba(239, 68, 68, 0.6);
-    /* The card ground is near-black in here, so the danger steps cut for a
+    /* The card ground is the charcoal in here, so the danger steps cut for a
        light panel take the dark ground's weight instead. */
     --danger-on-paper: var(--danger);
     --warn-on-paper: var(--warn);
@@ -1080,16 +1087,16 @@
     --series-5: #10b981;
     --series-6: #ec4899;
     --series-7: #64748b;
-    --console-rail-bg: #0b0d12;
-    --console-bar-bg: #0b0d12;
-    --console-card-bg: #12151c;
+    --console-rail-bg: #1f1e1d;
+    --console-bar-bg: #1f1e1d;
+    --console-card-bg: #262624;
     --console-float-shadow: 0 12px 32px -12px rgb(0 0 0 / 62%);
-    --console-card-shadow: 0 0 0 1px rgba(244, 245, 247, 0.07);
-    --console-row-hover: rgba(244, 245, 247, 0.06);
-    --console-rail-active: rgba(244, 245, 247, 0.09);
+    --console-card-shadow: 0 0 0 1px rgba(240, 238, 230, 0.07);
+    --console-row-hover: rgba(240, 238, 230, 0.06);
+    --console-rail-active: rgba(240, 238, 230, 0.09);
     /* A raised chip separates itself by catching light on a pale ground and by
        its own edge on a dark one, where a shadow has nothing left to darken. */
-    --console-raise-shadow: 0 0 0 1px rgba(244, 245, 247, 0.12), 0 1px 2px rgb(0 0 0 / 40%);
+    --console-raise-shadow: 0 0 0 1px rgba(240, 238, 230, 0.12), 0 1px 2px rgb(0 0 0 / 40%);
     color-scheme: dark;
   }
 
@@ -2200,49 +2207,15 @@
     box-shadow: var(--raise-hi);
   }
 
-  /* A review card in the colours of the platform the words were left on.
-     Every one of these quotes is somewhere else, under somebody else's name and
-     somebody else's rating form, and a row of identically styled cards flattens
-     that into a list this site typed out. So the card carries one custom
-     property - the platform's own ink, set on it by the component - and the
-     edge, the ring, the wash and the spotlight are all mixed from it.
-
-     The wash is four percent because the card is a page of body copy first. Any
-     more and the tint starts arguing with the quote for attention, which is the
-     wrong way round: the platform is the citation, not the point. */
-  .review-card {
-    background-color: color-mix(in srgb, var(--review-ink) 4%, var(--paper));
-  }
-
-  /* The bar along the top edge, which is the part that reads at a glance and
-     from across the room. It sits inside the card's own rounding because the
-     card clips its overflow.
-
-     It is held at the shape step for the reason the stars are: three saturated
-     bars in three hues across one row are three unrelated widgets on a dark
-     ground, where the same three on paper are a row of cards from three places. */
-  .review-card::before {
-    content: '';
-    position: absolute;
-    inset: 0 0 auto;
-    height: 2px;
-    background-color: color-mix(in srgb, var(--review-ink) var(--brand-shape-hold), var(--paper));
-  }
-
-  /* Both raises are restated rather than inherited from `.card-lift`, because a
-     ring and a lift are one box-shadow and the second declaration would drop
-     whichever was written first. */
-  .review-card.card-lift {
-    box-shadow:
-      var(--raise),
-      inset 0 0 0 1px color-mix(in srgb, var(--review-ink) 20%, transparent);
-  }
-
-  .review-card.card-lift:hover {
-    box-shadow:
-      var(--raise-hi),
-      inset 0 0 0 1px color-mix(in srgb, var(--review-ink) 34%, transparent);
-  }
+  /* A review card is the feature card above it and nothing more: the page's
+     paper, the one ring and lift `.card-lift` draws, the same corner. It once
+     carried the platform's colours - a wash mixed from the network's ink, a
+     bar of it along the top edge, a ring of it round the card - and three of
+     those in a row under a band of plain cards read as three widgets pasted
+     onto the page. The network's ink is still set on the card by the
+     component, for the rating drawn in the network's own colour and the name
+     in the corner; the surface itself belongs to the page. The class stays as
+     the hook the rail below reaches the cards by. */
 
   /* The rail the reviews stand on. It scrolls, and the scrollbar is taken off
      it because the dots underneath already say where in the row you are and a
@@ -2255,6 +2228,29 @@
 
   .review-rail::-webkit-scrollbar {
     display: none;
+  }
+
+  /* Every column on the rail stands the full height of the row rather than the
+     height of what is in it, so a row of reviews has one bottom edge whatever
+     the quotes on it run to and the captions sit on one line. A short quote
+     leaves air above its caption; it does not leave a short card in a row of
+     tall ones, which is the thing that reads as three unrelated boxes.
+
+     It is set on the column rather than on the rail because the rail starts its
+     columns at the top, and `align-self` is the one a column answers to. */
+  .review-rail > * {
+    align-self: stretch;
+  }
+
+  /* A scroller clips what stands on it, and the card's raise falls eight pixels
+     below the card. Once every card in the row ends on the same line, a row that
+     ends on the rail's own floor has all three shadows cut off square at once,
+     which is a rule drawn under the reviews rather than a shadow under each of
+     them. The eight pixels are taken under the card, where the drop needs them,
+     rather than as padding on the rail: the cards do not move, and what gets
+     deeper by eight is the rail beneath them. */
+  .review-rail .review-card {
+    margin-bottom: 8px;
   }
 
   /* The work deck scrolls the same way the review rail does, and clips the same
@@ -2374,9 +2370,9 @@
    * The bottom corners are turned only when the band is the last thing in the
    * card. A card can stack a foot and then a plane, and a band that rounds
    * wherever it sits cuts two notches out of the middle of that card - showing
-   * the card's own ground through them, which is invisible on white and plain
-   * on black. Whichever band ends the card turns the corner; the ones above it
-   * meet the next square.
+   * the card's own ground through them, which is invisible on the ivory and
+   * plain on the charcoal. Whichever band ends the card turns the corner; the
+   * ones above it meet the next square.
    */
   .card-foot {
     background:
@@ -2527,8 +2523,8 @@
   }
 
   /* The quieter half of a pair. It takes the ground's own raised surface and a
-     ring, so it is a white key on a page and a near-black one on a slab
-     without either being restated at the call site. */
+     ring, so it is a pale key on a page and a dark one on a slab without
+     either being restated at the call site. */
   .btn-secondary {
     background-color: var(--surface-1);
     color: var(--ink);
@@ -2543,14 +2539,14 @@
 
   /* The secondary as it reads on a light panel set inside a dark page. The
      paper roles are named outright rather than inherited, because a slab hands
-     down its own ground and a white section standing on one would otherwise
-     get a near-black key. */
+     down its own ground and a light section standing on one would otherwise
+     get a dark key. */
   .btn-secondary-paper {
     background-color: var(--paper-field);
     color: var(--paper-ink);
     box-shadow:
       0 0 0 1px var(--paper-hairline-strong),
-      0 1px 2px rgb(10 10 10 / 5%);
+      0 1px 2px rgb(20 20 19 / 5%);
   }
 
   .btn-secondary-paper:hover {
@@ -2809,7 +2805,7 @@
   }
 
   /* The danger step cut for a light panel, because a field stands on its own
-     white ground whatever the section behind it is. */
+     light ground whatever the section behind it is. */
   .field[aria-invalid='true'] {
     --field-ring: var(--danger-on-paper);
   }
