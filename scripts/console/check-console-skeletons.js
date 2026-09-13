@@ -37,11 +37,6 @@ const SCANNED = [
   'src/app/views/status',
 ]
 
-/**
- * Every fault a rule found, not the first. One rule holding sixteen sections
- * that reports one of them turns a single pass into sixteen.
- */
-
 // -- the feed's rule ---------------------------------------------------------
 
 check('a feed that has read nothing answers nothing', () => {
