@@ -31,6 +31,7 @@ import { answersFrom, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
+import { MAIL_BOX, statesNoAddress } from '../../mail/mail-box-fixture.js'
 
 installFixtureHeldDomains()
 
@@ -494,10 +495,6 @@ check('send counts a message only once every one of its writes has landed', asyn
 
 // ── The postal address ───────────────────────────────────────────────────
 
-/** The Houston mail box, and the fragments a footer built from it would print. */
-const MAIL_BOX = 'TaylorURL LLC, 3120 Southwest Fwy Ste 101, PMB #841258, Houston, TX 77098-4520'
-const MAIL_BOX_FRAGMENTS = ['3120 Southwest Fwy', 'PMB #841258', 'Houston, TX', '77098']
-
 /** One message, in the shape both halves take. */
 const message = (contact = {}) => ({
   subject: 'Your website',
@@ -521,14 +518,6 @@ const message = (contact = {}) => ({
   track: null,
   contact: { phone: '', unsubscribe: 'https://example.com/u/1', ...contact },
 })
-
-function statesNoAddress(part, where) {
-  const said = String(part)
-  ok(!said.includes(MAIL_BOX), `the whole address is absent from ${where}`)
-  for (const fragment of MAIL_BOX_FRAGMENTS) {
-    ok(!said.includes(fragment), `"${fragment}" is absent from ${where}`)
-  }
-}
 
 // ── The way to check the figure ──────────────────────────────────────────
 

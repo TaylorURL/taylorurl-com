@@ -62,6 +62,7 @@ import {
 import { DRAFT, READY, SENT, blocksFor, hasContentFor, sendRefusal } from '../../lib/mail/issues.js'
 import { renderIssueEmail, renderIssueHtml, renderIssueText } from '../../lib/mail/emailTemplate.js'
 import { cases, check, finish, ok, quietly, refusal, same } from '../harness/checks.js'
+import { MAIL_BOX, statesNoAddress } from './mail-box-fixture.js'
 
 // Placeholders for the credentials the endpoints read at load. Neither of the
 // first two opens anything: the provider is a recorder in every case that
@@ -80,14 +81,6 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
 /** The environment variable no sender reads. The cases hold the name to prove it. */
 const POSTAL_ADDRESS_VAR = 'OUTREACH_POSTAL_ADDRESS'
-
-/**
- * The mail box no message states. It is here so the cases can look for it, and
- * the fragments beside it are what a footer built from a differently formatted
- * copy of the same box would print.
- */
-const ADDRESS = 'TaylorURL LLC, 3120 Southwest Fwy Ste 101, PMB #841258, Houston, TX 77098-4520'
-const ADDRESS_FRAGMENTS = ['3120 Southwest Fwy', 'PMB #841258', 'Houston, TX', '77098']
 
 const ISSUE = {
   id: 'issue-1',
@@ -271,15 +264,6 @@ function exchange(body = { slug: ISSUE.slug }) {
 
 const patchFor = writes => writes.find(write => write.kind === 'update')?.patch
 
-/** Every fragment of the mail box, held out of one part of one message. */
-function statesNoAddress(part, where) {
-  const said = String(part)
-  ok(!said.includes(ADDRESS), `the whole address is absent from ${where}`)
-  for (const fragment of ADDRESS_FRAGMENTS) {
-    ok(!said.includes(fragment), `"${fragment}" is absent from ${where}`)
-  }
-}
-
 check('the laid-out footer states no address', () => {
   statesNoAddress(renderIssueHtml({ issue: ISSUE, unsubscribe: null }), 'the laid-out part')
 })
@@ -309,11 +293,11 @@ check('the plaintext part renders when no address is passed', () => {
 
 check('an address a stale caller still passes reaches neither part', () => {
   statesNoAddress(
-    renderIssueHtml({ issue: ISSUE, unsubscribe: null, senderAddress: ADDRESS }),
+    renderIssueHtml({ issue: ISSUE, unsubscribe: null, senderAddress: MAIL_BOX }),
     'the laid-out part'
   )
   statesNoAddress(
-    renderIssueText({ issue: ISSUE, unsubscribe: null, senderAddress: ADDRESS }),
+    renderIssueText({ issue: ISSUE, unsubscribe: null, senderAddress: MAIL_BOX }),
     'the plaintext part'
   )
 })
@@ -349,7 +333,7 @@ check('a delivery goes out with no address configured', async () => {
 })
 
 check('a delivery ignores the variable a deployment has not cleared yet', async () => {
-  process.env[POSTAL_ADDRESS_VAR] = ADDRESS
+  process.env[POSTAL_ADDRESS_VAR] = MAIL_BOX
   const sender = await loadSender()
   const provider = recorder()
   const store = sends()
