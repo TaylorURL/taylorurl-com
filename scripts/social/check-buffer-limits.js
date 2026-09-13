@@ -30,12 +30,10 @@
 import { RATE_LIMITED, connect, post, promote, wiring } from '../../lib/social/buffer.js'
 import { assetFor, card } from '../../lib/social/cards.js'
 import { cases, check, finish, ok, same } from '../harness/checks.js'
+import { OFFLINE } from '../harness/offline.js'
 
 // Replaced before the first check, so a call that forgot its stub fails here
 // rather than spending the allowance this file exists to protect.
-const OFFLINE = () => {
-  throw new Error('a check reached the network')
-}
 globalThis.fetch = OFFLINE
 
 // Read into a const when the endpoint module loads, so they are set before the

@@ -31,11 +31,10 @@ import { STUDIO_INBOX } from '../../../lib/outreach/message.js'
 import { variantSettings } from '../../../lib/outreach/sending/queue.js'
 import { answersFrom, refused } from '../database-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { OFFLINE } from '../../harness/offline.js'
 
 // Nothing here may reach the network.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 const { preview, proof, setVariant, variantResults } =
   await import('../../../api/outreach-admin.js')

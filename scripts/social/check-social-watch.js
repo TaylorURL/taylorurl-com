@@ -37,10 +37,8 @@ import {
 } from '../../lib/social/watch.js'
 import { CADENCE, RATE_LIMITED, connect, coversDays } from '../../lib/social/buffer.js'
 import { cases, check, finish, ok, same } from '../harness/checks.js'
+import { OFFLINE } from '../harness/offline.js'
 
-const OFFLINE = () => {
-  throw new Error('a check reached the network')
-}
 globalThis.fetch = OFFLINE
 
 process.env.CRON_SECRET = 'a-cron-secret'

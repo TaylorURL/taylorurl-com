@@ -32,13 +32,12 @@ import { answersFrom, captureOnFile } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { OFFLINE } from '../../harness/offline.js'
 
 installFixtureHeldDomains()
 
 // Nothing here may reach the network.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { FOLLOW_UP_COLUMNS } = await import('../../../lib/outreach/sending/queue.js')

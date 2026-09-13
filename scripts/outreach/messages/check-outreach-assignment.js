@@ -32,15 +32,14 @@ import { answersFrom, captureOnFile, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
+import { OFFLINE } from '../../harness/offline.js'
 
 installFixtureHeldDomains()
 
 // Nothing here may reach the network. The address check is settled below
 // against a resolver that answers from here, and the capture is found already
 // stored, so a path that reaches this is a path that was not stubbed.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { compose, work: sendWork } = await import('../../../api/outreach/send.js')

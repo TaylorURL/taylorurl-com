@@ -26,12 +26,11 @@ import { answering, why } from '../../api/live-chat.js'
 import { addressesFor } from '../../lib/http/reach.js'
 import { ASK_GAPS_MS, assistantUp } from '../../src/app/data/liveChat.js'
 import { expect as check, finish } from '../harness/checks.js'
+import { OFFLINE } from '../harness/offline.js'
 
 // Nothing here is allowed to reach the network. An unstubbed path fails loudly
 // rather than passing for the wrong reason.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 /* Ordinary visitors. Every one of these must reach the assistant. */
 const ORDINARY = [
@@ -307,9 +306,7 @@ try {
 }
 check(dropped, 'a cancelled probe was read as an assistant that is down')
 
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 // The gate itself, because the whole of the fix is one condition in front of
 // the launcher and a refactor that drops it looks like working code: the
@@ -579,9 +576,7 @@ await addressesFor('d.example')
 await addressesFor('d.example')
 check(spentResolving === 1, 'an address already found was looked up again')
 
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 /* The sentence a refused visitor reads. */
 check(!/\bAI\b|bot|violat|abuse|attempt/i.test(REFUSAL), 'the refusal accuses the visitor')
