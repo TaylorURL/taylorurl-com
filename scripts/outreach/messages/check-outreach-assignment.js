@@ -32,7 +32,9 @@ import {
   variantById,
 } from '../../../lib/outreach/variants.js'
 import { CANDIDATE_COLUMNS, queueFor } from '../../../lib/outreach/sending/queue.js'
+import { answersFrom, captureOnFile, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
@@ -44,7 +46,6 @@ globalThis.fetch = () => {
   throw new Error('a check reached the network')
 }
 
-const nodemailer = (await import('nodemailer')).default
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { compose, work: sendWork } = await import('../../../api/outreach/send.js')
 
@@ -413,16 +414,7 @@ check('a business nothing fits is refused rather than sent an empty message', ()
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, where: [] }
@@ -454,19 +446,8 @@ function stubDb(plan) {
     return chain
   }
 
-  const storage = {
-    from: () => ({
-      list: async (_, { search }) => ({ data: [{ name: search }], error: null }),
-      getPublicUrl: path => ({ data: { publicUrl: `https://shots.example.com/${path}` } }),
-      upload: async () => ({ error: null }),
-    }),
-  }
-
-  return { db: { from, storage }, asked, writes }
+  return { db: { from, storage: captureOnFile }, asked, writes }
 }
-
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
 
 /** The row a drafted message reads back as. */
 const drafted = {
@@ -506,41 +487,6 @@ const sendPlan = (candidates, extra = {}) => ({
   'update:outreach_prospects': { error: null },
   ...extra,
 })
-
-/** The instant every send case is run at, and the one the address is settled at. */
-const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
-
-/** The clock the send path is run against, held inside the sending window. */
-async function atMidAfternoon(run) {
-  const Real = Date
-  const fixed = AFTERNOON
-  class Frozen extends Real {
-    constructor(...args) {
-      return args.length ? new Real(...args) : new Real(fixed)
-    }
-    static now() {
-      return fixed
-    }
-  }
-  globalThis.Date = Frozen
-  try {
-    return await run()
-  } finally {
-    globalThis.Date = Real
-  }
-}
-
-/** A transport that answers like a mail server and reaches no network. */
-const TRANSPORT = (() => {
-  const sent = []
-  nodemailer.createTransport = () => ({
-    sendMail: async message => {
-      sent.push(message)
-      return { messageId: '<delivered-1@example.com>' }
-    },
-  })
-  return { sent, clear: () => sent.splice(0, sent.length) }
-})()
 
 forgetDomains()
 await checkAddress(null, 'owner@example.com', {

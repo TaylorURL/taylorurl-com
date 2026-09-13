@@ -27,7 +27,9 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { answersFrom, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
@@ -39,7 +41,6 @@ process.env.OUTREACH_SEND_ARMED = 'true'
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../../..')
 
-const nodemailer = (await import('nodemailer')).default
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { work: watchWork } = await import('../../../api/outreach/watch.js')
 const { work: sendWork } = await import('../../../api/outreach/send.js')
@@ -61,8 +62,7 @@ async function refusal(run) {
  * A client that answers every query from a plan, and records what was asked.
  *
  * The plan is keyed on the operation and the table, since that pair is what
- * names a write in either route. A value may be a single answer or a list of
- * them, which is how two reads of one table in a single run are told apart.
+ * names a write in either route.
  *
  * The operation is fixed by the first mutating call in a chain rather than by
  * the last, so the `.select()` an insert takes to read its own row back leaves
@@ -71,16 +71,7 @@ async function refusal(run) {
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null }
@@ -122,9 +113,6 @@ function stubDb(plan) {
 
   return { db: { from, rpc }, asked, writes }
 }
-
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
 
 // ── What the watch route is handed ───────────────────────────────────────
 
@@ -324,55 +312,6 @@ check('a person answering a cold letter becomes a lead', () => {
 })
 
 // ── Send: the writes around the transport ────────────────────────────────
-
-/**
- * The clock the send path is run against.
- *
- * The window opens at eight and closes at five in Texas, and a run outside it
- * composes without delivering, so a check of what happens after the transport
- * would turn on the hour it was run at. The instant below is an afternoon
- * inside the window, held for the length of one case.
- */
-async function atMidAfternoon(run) {
-  const Real = Date
-  const fixed = AFTERNOON
-  class Frozen extends Real {
-    constructor(...args) {
-      return args.length ? new Real(...args) : new Real(fixed)
-    }
-    static now() {
-      return fixed
-    }
-  }
-  globalThis.Date = Frozen
-  try {
-    return await run()
-  } finally {
-    globalThis.Date = Real
-  }
-}
-
-/**
- * A transport that answers like a mail server and reaches no network.
- *
- * The route builds its transport once per process and holds it, so this is
- * installed once and read between cases rather than swapped in around each of
- * them. Installing it before the first case is also what guarantees no case can
- * open a socket.
- */
-const TRANSPORT = (() => {
-  const sent = []
-  nodemailer.createTransport = () => ({
-    sendMail: async message => {
-      sent.push(message)
-      return { messageId: '<delivered-1@example.com>' }
-    },
-  })
-  return { sent, clear: () => sent.splice(0, sent.length) }
-})()
-
-/** The instant every send case is run at, and the one the address is settled at. */
-const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
 
 forgetDomains()
 await checkAddress(null, 'owner@example.com', {

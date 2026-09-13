@@ -29,6 +29,7 @@ import {
 } from '../../../lib/outreach/variants.js'
 import { STUDIO_INBOX } from '../../../lib/outreach/message.js'
 import { variantSettings } from '../../../lib/outreach/sending/queue.js'
+import { answersFrom, refused } from '../database-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 // Nothing here may reach the network.
@@ -67,29 +68,14 @@ const prospectRead = state => {
  * storage bucket answers that nothing is on file, so a preview renders with no
  * capture and fetches none.
  *
- * A plan is keyed by operation and table - `select:outreach_variants` - and a
- * read of the businesses may be keyed one step further, by which of the reads
- * behind a sample it answers: `select:outreach_prospects:filed` is the whole
- * file's own fixture, and `prospectRead` above says how each read is recognised.
- * An entry under the plain key answers any read the named keys leave over. An
- * array under either is served an element per call, the last standing for the
- * rest.
+ * A read of the businesses is answered by which of the reads behind a sample
+ * it is: `select:outreach_prospects:filed` is the whole file's own fixture, and
+ * `prospectRead` above says how each read is recognised.
  */
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = (key, role) => {
-    const named = role === null ? null : `${key}:${role}`
-    const at = named !== null && plan[named] !== undefined ? named : key
-    const planned = plan[at]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const call = pending.get(at) ?? 0
-    pending.set(at, call + 1)
-    return planned[Math.min(call, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, options: null, where: [], order: [] }
@@ -137,9 +123,6 @@ function stubDb(plan) {
 
   return { db: { from, storage }, asked, writes }
 }
-
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
 
 /** The answer a database without the table gives. */
 const ABSENT = {

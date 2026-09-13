@@ -32,7 +32,9 @@ import {
   familyOf,
   wouldEmptySegment,
 } from '../../../lib/outreach/variants.js'
+import { answersFrom, captureOnFile } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
@@ -42,7 +44,6 @@ globalThis.fetch = () => {
   throw new Error('a check reached the network')
 }
 
-const nodemailer = (await import('nodemailer')).default
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { FOLLOW_UP_COLUMNS } = await import('../../../lib/outreach/sending/queue.js')
 const { dueAfter, work: sendWork } = await import('../../../api/outreach/send.js')
@@ -297,28 +298,14 @@ const prospectRead = state => {
  * The same stand-in the assignment check drives the job against, with the
  * `or` filter kept as well, since that is how the cap leaves follow-ups out.
  *
- * A plan is keyed by operation and table - `select:outreach_messages` - and a
- * read of the businesses may be keyed one step further, by which of the run's
- * reads it answers: `select:outreach_prospects:due` is the follow-up read's own
- * fixture, and `prospectRead` above says how each read is recognised. An entry
- * under the plain key answers any read the named keys leave over. An array
- * under either is served an element per call, the last standing for the rest.
+ * A read of the businesses is answered by which of the run's reads it is:
+ * `select:outreach_prospects:due` is the follow-up read's own fixture, and
+ * `prospectRead` above says how each read is recognised.
  */
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = (key, role) => {
-    const named = role === null ? null : `${key}:${role}`
-    const at = named !== null && plan[named] !== undefined ? named : key
-    const planned = plan[at]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const call = pending.get(at) ?? 0
-    pending.set(at, call + 1)
-    return planned[Math.min(call, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, where: [], order: [], columns: null }
@@ -372,15 +359,7 @@ function stubDb(plan) {
     return chain
   }
 
-  const storage = {
-    from: () => ({
-      list: async (_, { search }) => ({ data: [{ name: search }], error: null }),
-      getPublicUrl: path => ({ data: { publicUrl: `https://shots.example.com/${path}` } }),
-      upload: async () => ({ error: null }),
-    }),
-  }
-
-  return { db: { from, storage }, asked, writes }
+  return { db: { from, storage: captureOnFile }, asked, writes }
 }
 
 /** The row a drafted message reads back as. */
@@ -423,39 +402,6 @@ const plan = ({
   'update:outreach_messages': { error: null },
   'update:outreach_prospects': { error: null },
 })
-
-/** The instant every run is held at: mid-afternoon on a sending day. */
-const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
-
-async function atMidAfternoon(run) {
-  const Real = Date
-  class Frozen extends Real {
-    constructor(...args) {
-      return args.length ? new Real(...args) : new Real(AFTERNOON)
-    }
-    static now() {
-      return AFTERNOON
-    }
-  }
-  globalThis.Date = Frozen
-  try {
-    return await run()
-  } finally {
-    globalThis.Date = Real
-  }
-}
-
-/** A transport that answers like a mail server and reaches no network. */
-const TRANSPORT = (() => {
-  const sent = []
-  nodemailer.createTransport = () => ({
-    sendMail: async message => {
-      sent.push(message)
-      return { messageId: '<delivered-2@example.com>' }
-    },
-  })
-  return { sent, clear: () => sent.splice(0, sent.length) }
-})()
 
 forgetDomains()
 await checkAddress(null, 'maria@example.com', {

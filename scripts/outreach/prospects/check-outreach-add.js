@@ -20,6 +20,7 @@
  * write checks are driven against.
  */
 
+import { answersFrom, refused } from '../database-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const { addProspect } = await import('../../../api/outreach-admin.js')
@@ -30,11 +31,8 @@ const { SOURCE: PLACES, prospect: placeRow } = await import('../../../api/outrea
 /**
  * A client that answers every query from a plan, and records what was asked.
  *
- * The plan is keyed on the operation and the table, and a value may be a
- * single answer or a list of them, which is how the three reads this action
- * makes against one table are told apart. A plan naming fewer answers than
- * there are reads holds its last one, so a case that cares about the first
- * read alone says only that.
+ * A list in the plan is served in order, which is how the three reads this
+ * action makes against one table are told apart.
  *
  * The operation is fixed by the first mutating call in a chain rather than by
  * the last, so the `.select()` an insert takes to read its own row back leaves
@@ -44,16 +42,7 @@ function stubDb(plan) {
   const asked = []
   const writes = []
   const filters = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, where: [] }
@@ -87,9 +76,6 @@ function stubDb(plan) {
 
   return { db: { from }, asked, writes, filters }
 }
-
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
 
 /** The row the insert reads back, which is the shape the console files away. */
 const filed = over => ({
