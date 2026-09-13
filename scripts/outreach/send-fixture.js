@@ -1,5 +1,12 @@
 /**
- * The clock and the mail server the send checks run the route against.
+ * The clock, the mail login and the mail server the send checks run the route
+ * against.
+ *
+ * The route reads its mail login, and the switch that arms sending, once as it
+ * loads. Without the switch a run composes and delivers nothing, and without the
+ * login an armed run refuses, so both are set as this module loads - which is
+ * before any check that imports it has loaded the route. Neither reaches a real
+ * mailbox: the transport below is the only mail server the route is handed.
  *
  * The sending window opens at eight and closes at five in Texas, and a run
  * outside it composes without delivering, so a check of what happens after the
@@ -13,6 +20,10 @@
  * case can open a socket.
  */
 import nodemailer from 'nodemailer'
+
+process.env.OUTREACH_SMTP_USER = 'studio@example.com'
+process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
+process.env.OUTREACH_SEND_ARMED = 'true'
 
 /** The instant every send case is run at, and the one the address is settled at. */
 export const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()

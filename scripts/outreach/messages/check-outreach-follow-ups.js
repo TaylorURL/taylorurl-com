@@ -15,10 +15,6 @@
  *   npm run check:outreach-follow-ups
  */
 
-process.env.OUTREACH_SMTP_USER = 'studio@example.com'
-process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
-process.env.OUTREACH_SEND_ARMED = 'true'
-
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import { FOLLOW_UP_DAYS } from '../../../lib/outreach/sending/limits.js'
 import {

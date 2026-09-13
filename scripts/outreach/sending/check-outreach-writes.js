@@ -35,10 +35,6 @@ import { MAIL_BOX, statesNoAddress } from '../../mail/mail-box-fixture.js'
 
 installFixtureHeldDomains()
 
-process.env.OUTREACH_SMTP_USER = 'studio@example.com'
-process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
-process.env.OUTREACH_SEND_ARMED = 'true'
-
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../../..')
 

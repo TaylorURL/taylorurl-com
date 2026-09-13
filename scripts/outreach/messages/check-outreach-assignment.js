@@ -18,10 +18,6 @@
  *   npm run check:outreach-assignment
  */
 
-process.env.OUTREACH_SMTP_USER = 'studio@example.com'
-process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
-process.env.OUTREACH_SEND_ARMED = 'true'
-
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import {
   HOLDOUTS,
