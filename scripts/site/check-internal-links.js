@@ -35,12 +35,13 @@
  *   npm run check:internal-links
  *   node scripts/site/check-internal-links.js --self-test
  */
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
 
 import { SITE } from '../../lib/site/current.js'
 import { fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const DIST = join(ROOT, 'dist')
@@ -133,20 +134,15 @@ if (!existsSync(DIST)) {
 }
 
 /** Every built page, and the path a reader reaches it at. */
-function builtPages(dir = DIST) {
-  return readdirSync(dir).flatMap(entry => {
-    const path = join(dir, entry)
-    if (statSync(path).isDirectory()) return builtPages(path)
-    if (!path.endsWith('.html')) return []
+function builtPages() {
+  return filesUnder(DIST, /\.html$/).map(path => {
     const route = `/${relative(DIST, path)
       .replace(/index\.html$/, '')
       .replace(/\.html$/, '')}`
-    return [
-      {
-        route: route.length > 1 ? route.replace(/\/$/, '') : '/',
-        html: readFileSync(path, 'utf8'),
-      },
-    ]
+    return {
+      route: route.length > 1 ? route.replace(/\/$/, '') : '/',
+      html: readFileSync(path, 'utf8'),
+    }
   })
 }
 

@@ -32,10 +32,11 @@
  *     npm run check:font-coverage
  */
 import { brotliDecompressSync } from 'node:zlib'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { expect as check, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -250,16 +251,10 @@ const SOURCE_FILES = ['index.html']
 const TEXT = /\.(jsx?|tsx?|css|html|json|md|svg)$/
 
 function sourceFiles() {
-  const found = [...SOURCE_FILES.map(file => path.join(ROOT, file))]
-  const walk = dir => {
-    for (const entry of readdirSync(dir)) {
-      const full = path.join(dir, entry)
-      if (statSync(full).isDirectory()) walk(full)
-      else if (TEXT.test(entry)) found.push(full)
-    }
-  }
-  SOURCE_DIRS.forEach(dir => walk(path.join(ROOT, dir)))
-  return found
+  return [
+    ...SOURCE_FILES.map(file => path.join(ROOT, file)),
+    ...SOURCE_DIRS.flatMap(dir => filesUnder(path.join(ROOT, dir), TEXT)),
+  ]
 }
 
 /*

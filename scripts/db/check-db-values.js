@@ -32,11 +32,12 @@
  * migration, and the diff is the review.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadSnapshot, readValueList } from './db-constraints.js'
 import { fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../..')
@@ -51,15 +52,6 @@ let checked = 0
 let dynamic = 0
 
 // ── Reading source ───────────────────────────────────────────────────────
-
-/** Every `.js` and `.jsx` under a directory. */
-function* sources(dir) {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name)
-    if (statSync(path).isDirectory()) yield* sources(path)
-    else if (/\.jsx?$/.test(name)) yield path
-  }
-}
 
 /**
  * The object literal starting at `open`, as written.
@@ -262,7 +254,7 @@ function literalsIn(expression) {
 /** Every source file that could carry a write. */
 const FILES = ROUTES.flatMap(dir => {
   try {
-    return [...sources(join(ROOT, dir))]
+    return filesUnder(join(ROOT, dir), /\.jsx?$/)
   } catch {
     return []
   }

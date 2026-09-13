@@ -25,27 +25,20 @@
  *   npm run check:api-gate
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
 
 import { SITES } from '../../lib/site/sites.js'
 import { SITE_KEYS } from '../../lib/site/registry.js'
 import { expect as check, fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const API = join(ROOT, 'api')
 
 /** Every handler file under api/, at any depth. */
-function handlers(dir) {
-  return readdirSync(dir).flatMap(entry => {
-    const path = join(dir, entry)
-    if (statSync(path).isDirectory()) return handlers(path)
-    return path.endsWith('.js') ? [path] : []
-  })
-}
-
-const files = handlers(API)
+const files = filesUnder(API, /\.js$/)
 check(files.length > 0, 'no handlers found under api/')
 
 for (const path of files) {

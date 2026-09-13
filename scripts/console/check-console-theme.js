@@ -24,10 +24,11 @@
  * whatever the reader has chosen.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cases, check, finish, same } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -48,13 +49,7 @@ const FIXED = {
 }
 
 function sources(dir) {
-  const found = []
-  for (const entry of readdirSync(join(ROOT, dir))) {
-    const rel = join(dir, entry)
-    if (statSync(join(ROOT, rel)).isDirectory()) found.push(...sources(rel))
-    else if (/\.(jsx?|css)$/.test(entry)) found.push(rel)
-  }
-  return found
+  return filesUnder(join(ROOT, dir), /\.(jsx?|css)$/).map(file => relative(ROOT, file))
 }
 
 const FILES = SCANNED.flatMap(sources)

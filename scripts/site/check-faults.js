@@ -26,11 +26,12 @@
  * looks at. There is no allowlist: a message worth showing is worth naming as
  * a fallback, which is an argument to `faultMessage` and passes.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { FALLBACK_FAULT, faultMessage, readsAsWritten } from '../../src/app/utils/faults.js'
 import { cases, check, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const FAULTS = path.join(ROOT, 'src/app/utils/faults.js')
@@ -290,16 +291,7 @@ const LOGGED = /console\.(?:error|warn|log|debug|info)\s*\(/
  */
 const LENGTH_GATE = /\.(?:message|error)\??\.?length\s*(?:&&|<|<=)/
 
-function filesUnder(dir, out = []) {
-  for (const entry of readdirSync(dir)) {
-    const full = path.join(dir, entry)
-    if (statSync(full).isDirectory()) filesUnder(full, out)
-    else if (/\.jsx?$/.test(entry)) out.push(full)
-  }
-  return out
-}
-
-const swept = filesUnder(path.join(ROOT, 'src/app'))
+const swept = filesUnder(path.join(ROOT, 'src/app'), /\.jsx?$/)
 const leaks = []
 for (const file of swept) {
   const shown = path.relative(ROOT, file)

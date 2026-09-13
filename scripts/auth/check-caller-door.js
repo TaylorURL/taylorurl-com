@@ -16,11 +16,12 @@
  *   node scripts/auth/check-caller-door.js
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { authorizeAdmin, authorizeCaller } from '../../lib/db/clients.js'
 import { cases, check, finish, same } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -142,16 +143,7 @@ check('handing a business over is still the admin role alone', async () => {
 
 /** Every endpoint in the tree, so the assertion above cannot miss a new one. */
 function endpoints() {
-  const found = []
-  const walk = here => {
-    for (const entry of readdirSync(join(ROOT, here))) {
-      const at = `${here}/${entry}`
-      if (statSync(join(ROOT, at)).isDirectory()) walk(at)
-      else if (entry.endsWith('.js')) found.push(at)
-    }
-  }
-  walk('api')
-  return found
+  return filesUnder(join(ROOT, 'api'), /\.js$/).map(file => relative(ROOT, file))
 }
 
 const passed = await finish({ listed: true })

@@ -45,12 +45,13 @@
  * `sheetSource` is the recovery and `sheetRecovery` is what attaches it, and
  * the section after the boot runs both.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bootSource } from '../../vite/boot-source.js'
 import { SHEET_HANDLER, sheetRecovery, sheetSource } from '../../vite/sheet-source.js'
 import { cases, expect as check, fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const APP = path.join(ROOT, 'src/app')
@@ -72,16 +73,7 @@ function sweep(ok, complaint) {
   if (!ok) fail(complaint)
 }
 
-function filesUnder(dir, out = []) {
-  for (const entry of readdirSync(dir)) {
-    const full = path.join(dir, entry)
-    if (statSync(full).isDirectory()) filesUnder(full, out)
-    else if (/\.jsx?$/.test(entry)) out.push(full)
-  }
-  return out
-}
-
-const swept = filesUnder(APP).map(file => ({
+const swept = filesUnder(APP, /\.jsx?$/).map(file => ({
   name: path.relative(ROOT, file),
   source: readFileSync(file, 'utf8'),
 }))
