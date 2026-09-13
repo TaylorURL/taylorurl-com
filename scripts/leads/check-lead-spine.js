@@ -23,16 +23,10 @@
  *   npm run check:lead-spine
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import { MOMENTS, SOURCES, SPINE, ownAddress, phoneDigits } from '../../lib/leads/spine.js'
 import { callMakesLead } from '../../lib/outreach/prospects/calls.js'
 import { cases, check, finish, same } from '../harness/checks.js'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
+import { read } from '../harness/files.js'
 
 const ADMIN = 'api/leads-admin.js'
 const CONSOLE = 'src/app/views/console/pages/studio/LeadsPage.jsx'

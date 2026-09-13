@@ -26,13 +26,8 @@
  *   npm run check:project-brief
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { cases, check, finish, report, same } from '../harness/checks.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { read } from '../harness/files.js'
 
 const START = 'src/app/views/start/Start.jsx'
 const SENDER = 'src/app/data/checkout/startCheckout.js'

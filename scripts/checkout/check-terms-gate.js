@@ -19,10 +19,8 @@
  *   npm run check:terms-gate
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { cases, check, finish, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 // Fixed before the endpoint is imported: it reads all of these at module load
 // and answers 503 rather than opening anything without them.
@@ -32,9 +30,6 @@ process.env.STRIPE_PRODUCT_CARE = 'prod_care_test'
 process.env.SITE_URL = 'https://www.taylorurl.com'
 
 const { default: checkout } = await import('../../api/checkout.js')
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
 
 const PAY = 'src/app/views/start/steps/PaySection.jsx'
 const START = 'src/app/views/start/Start.jsx'

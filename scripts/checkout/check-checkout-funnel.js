@@ -15,15 +15,13 @@
  * for the sentences that said payment came later.
  */
 
-import { readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cases, check, finish, report, same } from '../harness/checks.js'
-import { filesUnder } from '../harness/files.js'
+import { filesUnder, read } from '../harness/files.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
 
 /** Every file under `src`, which is everything a visitor can end up reading. */
 function everySource() {

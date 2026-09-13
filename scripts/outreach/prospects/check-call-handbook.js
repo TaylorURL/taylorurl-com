@@ -34,10 +34,6 @@
  *
  *   npm run check:call-handbook
  */
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import {
   CLOSING,
   FACTS,
@@ -51,10 +47,7 @@ import {
 import { BUILD_PRICE, MONTHLY_PRICE } from '../../../src/app/data/checkout/pricing.js'
 import { PORTFOLIO_AVERAGES } from '../../../src/app/data/portfolio.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..')
-
-const read = path => readFileSync(join(ROOT, path), 'utf8')
+import { read } from '../../harness/files.js'
 
 /**
  * The one screen the handbook is drawn on.

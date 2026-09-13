@@ -20,10 +20,6 @@
  *   npm run check:lead-capture
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import {
   PAYMENT_PATH,
   PAY_STEP,
@@ -32,9 +28,7 @@ import {
   fromPaymentPage,
 } from '../../lib/leads/paths.js'
 import { cases, check, finish, same } from '../harness/checks.js'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
+import { read } from '../harness/files.js'
 
 const PAYMENT = 'src/app/views/start/Payment.jsx'
 const START = 'src/app/views/start/Start.jsx'

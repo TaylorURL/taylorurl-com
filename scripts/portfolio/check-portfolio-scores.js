@@ -36,14 +36,8 @@
  * sites — that needs the PageSpeed API and a key, and it is what
  * `npm run audit:portfolio` is for. This checks the site against itself.
  */
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { cases, check, finish } from '../harness/checks.js'
-
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-
-const read = file => readFileSync(path.join(ROOT, file), 'utf8')
+import { read } from '../harness/files.js'
 
 const { PORTFOLIO_PROJECTS, CLIENT_PROJECTS, PORTFOLIO_AVERAGES, formatMeasuredDate } =
   await import('../../src/app/data/portfolio.js')

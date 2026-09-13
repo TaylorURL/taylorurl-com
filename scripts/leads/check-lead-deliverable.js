@@ -23,14 +23,9 @@
  *   node scripts/leads/check-lead-deliverable.js
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { deliverable } from '../../lib/leads/record.js'
 import { cases, check, finish, same } from '../harness/checks.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { read } from '../harness/files.js'
 
 // Every reserved name, at the second level and as a bare top-level domain,
 // plus a subdomain of each - RFC 2606 and RFC 6761 reserve the names and

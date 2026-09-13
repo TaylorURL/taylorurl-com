@@ -25,14 +25,14 @@
  * worse.
  */
 
-import { readFileSync, existsSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { cases, check, finish, report, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
 
 /** The five addresses the kit was published at. */
 const RETIRED = [

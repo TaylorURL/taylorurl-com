@@ -25,13 +25,10 @@
  *   npm run check:buyer-path
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import { claimHolds, claimReturnUrl, mintClaim, withinClaimWindow } from '../../lib/stripe/claim.js'
 import { claimSpent } from '../../lib/auth/buyer.js'
 import { cases, check, finish, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 // Read before the endpoint is imported: it fixes the Stripe key at module load
 // and answers 503 without one, and the database client fixes its own pair the
@@ -43,10 +40,6 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'service_role_not_a_real_key'
 process.env.SUPABASE_ANON_KEY = 'anon_not_a_real_key'
 
 const { default: claimEndpoint } = await import('../../api/checkout-claim.js')
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const ROOT = join(HERE, '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
 
 const WELCOME = 'src/app/views/auth/Welcome.jsx'
 const LOGIN = 'src/app/views/auth/Login.jsx'

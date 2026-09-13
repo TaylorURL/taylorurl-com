@@ -33,14 +33,9 @@
  *   npm run check:onboarding-gate
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { currentProject, inOnboarding, stageRank } from '../../src/app/views/console/lib/stages.js'
 import { cases, check, finish, same } from '../harness/checks.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { read } from '../harness/files.js'
 
 const FRAME = 'src/app/views/console/ConsoleFrame.jsx'
 const SECTIONS = 'src/app/views/console/lib/sections.js'

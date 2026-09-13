@@ -21,15 +21,10 @@
  * anything, because there is nothing to confirm.
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { buildRecord } from '../../api/payments-admin.js'
 import { recurringLine, setupCents } from '../../lib/stripe/roster.js'
 import { cases, check, finish, report, same } from '../harness/checks.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { read } from '../harness/files.js'
 
 const ENDPOINT = 'api/payments-admin.js'
 const PAGE = 'src/app/views/console/pages/studio/PaymentsPage.jsx'

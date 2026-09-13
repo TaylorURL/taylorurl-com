@@ -34,13 +34,8 @@
  *   npm run check:server-console
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { cases, check, finish, report, same } from '../harness/checks.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { read } from '../harness/files.js'
 
 const ENDPOINT = 'api/server-feed.js'
 const PAGE = 'src/app/views/console/pages/health/ServerPage.jsx'

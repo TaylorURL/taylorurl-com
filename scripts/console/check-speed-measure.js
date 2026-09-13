@@ -24,13 +24,8 @@
  *   npm run check:speed-measure
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { cases, expect as check, finish } from '../harness/checks.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { read } from '../harness/files.js'
 
 const HOOK = 'src/app/hooks/console/useSpeedFeed.js'
 const REQUESTS = 'src/app/hooks/console/endpoint.js'

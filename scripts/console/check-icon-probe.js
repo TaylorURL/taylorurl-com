@@ -26,10 +26,11 @@
  * committed but never drawn, or named but missing.
  */
 
-import { readFileSync, readdirSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect as check, finish } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -37,8 +38,6 @@ const ICON = 'src/app/views/console/SiteIcon.jsx'
 const COLLECTOR = 'index.html'
 const REGISTRY = 'src/app/data/console/siteIcons.js'
 const ICONS = 'public/site-icons'
-
-const read = where => readFileSync(join(ROOT, where), 'utf8')
 
 // The component marks its guesses.
 const component = read(ICON)
