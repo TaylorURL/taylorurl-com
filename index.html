@@ -712,6 +712,45 @@
           }
           return true
         }
+        // The same fault where the stack test above cannot reach it. An
+        // extension's own failures do not all arrive as JavaScript throws: on
+        // iOS the extension APIs are a native bridge, and a rejected
+        // `runtime.sendMessage` comes back as an `Error` the bridge built
+        // rather than one any script constructed, so it carries no `stack` at
+        // all. `extensionOnly` is handed an empty string, finds no scheme in it
+        // to judge, and answers no - which is the right answer to the question
+        // it was asked and the wrong verdict on the failure.
+        //
+        // #575 was that: `Invalid call to runtime.sendMessage(). Tab not
+        // found.`, off an iPhone on the home page, filed against this site over
+        // a message from a background page that had gone while its content
+        // script was still talking to it. Safari delivers that rejection to the
+        // page rather than keeping it in the extension's world, so there is no
+        // arrangement here that would stop it arriving.
+        //
+        // What makes it answerable without a stack is that the message names an
+        // API. These belong to the extension platform and to nothing else, and
+        // nothing this site serves can call one: the site has no extension, is
+        // not packaged as one, and would have no bridge to reach if it were. So
+        // a stackless failure naming one of them describes the visitor's
+        // browser as surely as a stack full of `safari-extension://` frames
+        // does.
+        //
+        // Named one at a time rather than by namespace. `runtime` and `tabs`
+        // are the extension's alone, but `storage.local` is a word any wrapper
+        // around `localStorage` might use, and a list that reaches for the
+        // whole namespace to save typing is a list that will one day hold a
+        // real fault off this site.
+        //
+        // Both halves are required. A stack is the better evidence wherever
+        // there is one, so a site frame under a message that merely quotes an
+        // API name keeps reporting exactly as it does today.
+        var extensionApis =
+          /\b(?:runtime\.(?:sendMessage|connect|sendNativeMessage|lastError|getURL)|tabs\.(?:sendMessage|query|connect))\b/
+        function extensionApiOnly(message, stack) {
+          if (String(stack || '')) return false
+          return extensionApis.test(String(message || ''))
+        }
         // What the browser hands over when it has decided not to say. A throw
         // inside a script from another origin that was not fetched in CORS mode
         // is muted: the message becomes "Script error.", the file is blank, the
@@ -1073,6 +1112,7 @@
           hold(kind, message, stack)
           if (sent >= 10) return // a page stuck in an error loop stops at ten
           if (extensionOnly(stack)) return
+          if (extensionApiOnly(message, stack)) return
           sent += 1
           try {
             send(
