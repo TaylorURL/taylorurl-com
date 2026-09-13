@@ -83,12 +83,13 @@ function ReviewEndorsement({ source }) {
  * behind it; a logo that carries its own ground carries it, which is that
  * business's mark and not this page's to recolour.
  *
- * The initials stand in only where no logo arrives, rather than underneath
- * the image, because a logo with a transparent ground would show them through
- * itself.
+ * The initials stand in only where no logo arrives - none was captured for
+ * the site, or the file did not load - rather than underneath the image,
+ * because a logo with a transparent ground would show them through itself.
  */
 function ClientAvatar({ name, business, displayUrl }) {
-  const [missing, setMissing] = useState(false)
+  const src = reviewLogoSrc(displayUrl)
+  const [missing, setMissing] = useState(!src)
   const initials = name
     .split(' ')
     .map(part => part[0])
@@ -99,7 +100,7 @@ function ClientAvatar({ name, business, displayUrl }) {
         initials
       ) : (
         <img
-          src={reviewLogoSrc(displayUrl)}
+          src={src}
           alt={`${business} logo`}
           width="44"
           height="44"
