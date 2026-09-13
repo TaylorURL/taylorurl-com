@@ -8,7 +8,7 @@ import { START_LINK, serves } from '@constants/navigation'
 import { EXTRA_SERVICES, otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
-import ServiceCards from './ServiceCards'
+import MoreServices from './MoreServices'
 import SectionLink from './SectionLink'
 import { IS_SECOND_SITE, SITE } from '../../../../lib/site/current.js'
 
@@ -129,18 +129,7 @@ export default function ServiceDetail() {
         )}
       </ServiceSection>
 
-      <ServiceSection
-        id="more"
-        ground="paper"
-        eyebrow="The Rest of It"
-        title="Everything else on offer."
-      >
-        <ServiceCards
-          pages={[...otherServices(page.slug), ...EXTRA_SERVICES]}
-          ground="paper"
-          columns={{ base: 1, sm: 2, lg: 3 }}
-        />
-      </ServiceSection>
+      <MoreServices pages={[...otherServices(page.slug), ...EXTRA_SERVICES]} />
 
       <CtaBanner
         eyebrow="Let’s Talk"
