@@ -1,70 +1,91 @@
 import { useEffect, useRef } from 'react'
 
 /**
- * The one way a band on this page is allowed to arrive.
+ * How an element on the home page arrives.
  *
- * What stood here before was two systems on the same elements. A reveal fired
- * when a block was a fraction below the fold, and a swell fired later, when its
- * middle crossed two thirds down the screen - so a card arrived, settled, and
- * then grew a second time for no reason a reader could connect to anything.
- * Both wrote `transform`, which is why every card and every step carried a
- * second nested element whose only job was to hold them apart. A system that
- * needs an extra div per instance to stop it colliding with itself is a system
- * saying so.
+ * Every heading, card, step and panel below the hero is drawn hidden, and is
+ * shown the first time it comes onto the screen: a short fade and the same
+ * fourteen pixels of rise the page itself arrives with, so a reader scrolling
+ * down meets each thing as it becomes the thing to look at, rather than finding
+ * a whole band already standing there.
  *
- * This is the whole replacement: a band fades up once, on its own, and is never
- * touched again. There is no per-child API on purpose. A stagger is how the
- * last one sprawled from a section to a heading to each card to each span, and
- * nothing here can be handed an index or a delay.
+ * The unit is the element and not the band. A band shown all at once is a
+ * screen of content landing together, and on a phone it was a screen the
+ * reader watched fade rather than met, which is why the band arrival stood
+ * down under `sm`. An element is small enough to arrive as it is reached, so
+ * this runs at every width.
  *
- * Three things it deliberately does not do.
+ * Whatever comes onto the screen in the same frame is set off in the order it
+ * stands on the page: two cards in a row, the three steps of the process, a
+ * heading and the sentence beside it. The stagger is worked out here from what
+ * actually arrived together and is never handed in as a prop, which is how the
+ * system before the last one sprawled from a section to a heading to each card
+ * to each span. There is no per-child API on purpose.
  *
- * It is not driven by scroll position. Scroll cues it and nothing more, so the
- * fade runs on its own clock: a flick does not blow it through in two frames
- * and inching down does not leave it stalled half open. A value that is a
- * function of the wheel is a readout of the wheel.
+ * Scroll cues the arrival and nothing more, so it runs on its own clock: a
+ * flick does not blow it through in two frames and inching down does not leave
+ * it stalled half open. A value that is a function of the wheel is a readout of
+ * the wheel.
  *
- * It does not move anything. The old reveal travelled sixteen pixels up, and
- * travel is what makes a column of bands read as the page assembling itself in
- * front of the reader rather than as the page already being there. Opacity
- * alone leaves the layout settled from the first frame, which also means no
- * band can shift what is under it as it arrives.
- *
- * It does nothing at all on a narrow viewport. One column means every band
- * arrives alone and fills the screen, so the fade is watched from start to
- * finish instead of being met on the way past - and it is watched again for
- * every band, the whole way down. The stylesheet drops it under `sm`.
+ * Shown once and spent. An element that went back out on the way up would be
+ * the page performing for a reader who is going back to re-read something.
  *
  * The hidden state lives in CSS behind `data-reveal` on the document, which the
  * inline script in `index.html` sets before the first paint. A visitor whose
  * bundle never arrives is served a page with nothing hidden on it, rather than
  * the blank column a baked-in `opacity: 0` leaves when the script that was
- * going to clear it does not run.
+ * going to clear it does not run. The motion itself is the stylesheet's, under
+ * THE ARRIVAL in `index.css`; this file decides when it runs.
  */
 
 /**
- * How far into the screen a band's top edge has to come before it is cued, as a
- * share of the window height taken off the bottom of the root.
+ * How far into the screen an element's top edge has to come before it is cued,
+ * as a share of the window height taken off the bottom of the root.
  *
- * A tenth is barely over the fold. Cued there the fade has a moment to run
- * while the reader is still scrolling toward the band, so they arrive at
+ * A tenth is barely over the fold. Cued there the arrival has a moment to run
+ * while the reader is still scrolling toward the element, so they arrive at
  * something that has finished rather than watching it finish. Cued earlier it
- * is over before anyone could see it, which is a reveal that costs frames and
+ * is over before anyone could see it, which is an arrival that costs frames and
  * shows nothing.
  */
 const CUE = '0px 0px -10% 0px'
 
-/** Every band waiting to be cued, watched by one observer rather than each its own. */
+/**
+ * How far apart two elements arriving in the same frame are set off, and the
+ * most steps any one of them waits.
+ *
+ * The step is the page arrival's own, so a row of cards coming up under a
+ * scroll and a column of sections coming up under a page change move to one
+ * rhythm. The cap is for a flick that lands a whole band in one frame: the
+ * fifth element waits as long as the fourth, rather than the last one sitting
+ * invisible on a screen the reader has already reached.
+ */
+const STEP_MS = 60
+const STEP_CAP = 4
+
+/** Every element waiting to be cued, watched by one observer rather than each its own. */
 let watcher = null
 
-function show(entries) {
-  for (const entry of entries) {
-    if (!entry.isIntersecting) continue
-    entry.target.setAttribute('data-shown', '')
-    // Shown once and spent. A band that faded back out on the way up would be
-    // the page performing for a reader who is going back to re-read something.
-    watcher.unobserve(entry.target)
-  }
+/**
+ * Where an entry stands on the page, top edge first and then left edge, so a
+ * batch is set off in reading order whatever order the observer handed it over
+ * in.
+ */
+function byPlace(a, b) {
+  return (
+    a.boundingClientRect.top - b.boundingClientRect.top ||
+    a.boundingClientRect.left - b.boundingClientRect.left
+  )
+}
+
+function arrive(entries) {
+  const arriving = entries.filter(entry => entry.isIntersecting).sort(byPlace)
+  arriving.forEach((entry, i) => {
+    const el = entry.target
+    el.style.setProperty('--reveal-delay', `${Math.min(i, STEP_CAP) * STEP_MS}ms`)
+    el.setAttribute('data-shown', 'arriving')
+    watcher.unobserve(el)
+  })
 }
 
 function watch(el) {
@@ -72,26 +93,29 @@ function watch(el) {
     el.setAttribute('data-shown', '')
     return () => {}
   }
-  watcher ??= new IntersectionObserver(show, { rootMargin: CUE })
+  watcher ??= new IntersectionObserver(arrive, { rootMargin: CUE })
   watcher.observe(el)
   return () => watcher.unobserve(el)
 }
 
 /**
  * @param {object} props
+ * @param {string} [props.as] The element itself - an `article` for a card, an
+ *   `li` for a step, an `h2` for a heading - so arriving never costs an element
+ *   a wrapper, and a grid never has to be told about one.
  * @param {import('react').ReactNode} props.children
- * @param {string} [props.className] Classes for the same element, so wrapping a
- *   band in this does not cost it a div.
+ * @param {string} [props.className] Classes for the same element.
  */
-export default function Reveal({ children, className = '' }) {
+export default function Reveal({ as: Tag = 'div', children, className = '' }) {
   const ref = useRef(null)
 
   useEffect(() => {
     const el = ref.current
     if (!el) return undefined
-    // A band already on screen when the page opens has no arrival to animate:
-    // it is the thing the reader is looking at. It is shown on the spot, which
-    // also keeps the fade off the critical path of the first paint.
+    // An element already on screen when the page opens has no arrival to
+    // animate: it is the thing the reader is looking at. It is shown on the
+    // spot, which also keeps the arrival off the critical path of the first
+    // paint.
     if (el.getBoundingClientRect().top < window.innerHeight) {
       el.setAttribute('data-shown', '')
       return undefined
@@ -100,8 +124,8 @@ export default function Reveal({ children, className = '' }) {
   }, [])
 
   return (
-    <div ref={ref} className={`reveal ${className}`.trim()}>
+    <Tag ref={ref} className={`reveal ${className}`.trim()}>
       {children}
-    </div>
+    </Tag>
   )
 }

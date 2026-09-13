@@ -40,10 +40,13 @@ function Terms({ line }) {
 export default function ServiceLinesSection() {
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <Reveal className="container-rail relative">
-        <h2 className="display-3 max-w-[24ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]">
+      <div className="container-rail relative">
+        <Reveal
+          as="h2"
+          className="display-3 max-w-[24ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]"
+        >
           {HOME.lines.heading} <span className="text-paper-soft">{HOME.lines.tail}</span>
-        </h2>
+        </Reveal>
 
         <div className="mt-14 grid gap-5 lg:grid-cols-3">
           {HOME.lines.cards.map(line => (
@@ -58,7 +61,7 @@ export default function ServiceLinesSection() {
             </Card>
           ))}
         </div>
-      </Reveal>
+      </div>
     </section>
   )
 }

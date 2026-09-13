@@ -2689,8 +2689,8 @@
   }
 
   /*
-   * THE ARRIVAL — what a band does the first time it is scrolled to, and the
-   * only motion on this page that scroll is allowed to cue.
+   * THE ARRIVAL — what an element does the first time it is scrolled to, and
+   * the only motion on this page that scroll is allowed to cue.
    *
    * It is armed rather than assumed. `data-reveal` is set on the document by
    * the inline block in `index.html`, which runs before the first paint, so a
@@ -2699,38 +2699,52 @@
    * that fails to boot is a blank column, and the failure it is most likely to
    * hit is the script not arriving.
    *
-   * Opacity and nothing else. The travel this replaced was sixteen pixels of
-   * rise, which is what made a column of bands read as the page assembling
-   * itself under the reader rather than as a page that was already there.
+   * A fade and the page arrival's own fourteen pixels of rise, over the page
+   * arrival's own duration, so an element coming up under a scroll and a
+   * section coming up under a page change are one movement. The rise is
+   * written to `translate` rather than `transform`, so it composes with any
+   * transform the element already carries instead of overwriting it, which is
+   * the collision the spare div per card once existed to hold apart.
    *
-   * One duration for every band, inside the ceiling the rest of the site
-   * answers to. The system this replaced ran three at once: four hundred
-   * milliseconds for the reveal, sixty to eighty more per card for the
-   * stagger, and a full second for the swell, which exempted itself from the
-   * ceiling outright.
+   * It is a keyframe and not a transition. A transition is one property on the
+   * element, and set here it would take a card's own hover transition with it.
+   * The keyframe fills backwards and nothing else: held hidden through its
+   * delay, and once it has run the element is simply itself, with no animation
+   * left standing on it to argue with a later hover.
+   *
+   * The delay is the stagger, written onto the element by `Reveal.jsx` from
+   * what arrived in the same frame. Nothing here counts children.
    */
   [data-reveal] .reveal {
     opacity: 0;
-    transition: opacity 320ms var(--ease-out-soft);
   }
 
   [data-reveal] .reveal[data-shown] {
     opacity: 1;
   }
 
-  /* A narrow viewport is one column, so every band arrives alone and fills the
-     screen. There the fade is watched from beginning to end rather than met on
-     the way past, and watched again for every band the whole way down. */
-  @media (max-width: 639.98px) {
-    [data-reveal] .reveal {
-      opacity: 1;
-      transition: none;
+  [data-reveal] .reveal[data-shown='arriving'] {
+    animation: reveal-in 420ms var(--ease-out-soft) backwards;
+    animation-delay: var(--reveal-delay, 0ms);
+  }
+
+  @keyframes reveal-in {
+    from {
+      opacity: 0;
+      translate: 0 14px;
     }
   }
 
+  /* Movement is what reduced motion asks to be spared, and an element held
+     back from a page is worse than one that simply is there, so it is simply
+     there. */
   @media (prefers-reduced-motion: reduce) {
     [data-reveal] .reveal {
       opacity: 1;
+    }
+
+    [data-reveal] .reveal[data-shown='arriving'] {
+      animation: none;
     }
   }
 
