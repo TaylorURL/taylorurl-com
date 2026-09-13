@@ -122,6 +122,16 @@ const inSegment = segment => {
   return row
 }
 
+/** The letters a business in `segment` can be drawn for its first message. */
+const drawnFirst = segment =>
+  VARIANTS.filter(
+    entry =>
+      entry.segment === segment &&
+      stepOf(entry) === 1 &&
+      entry.status === 'live' &&
+      entry.weight > 0
+  )
+
 check('every step draws the same letter, in every segment', () => {
   // The chain is one letter arriving again rather than a sequence of different
   // ones, so what is owed next month is what arrived this month. A step that
@@ -182,13 +192,7 @@ check('nothing is drawn into a holdout at any step', () => {
 
 check('the one letter takes the whole share of its segment', () => {
   for (const segment of SEGMENTS) {
-    const drawn = VARIANTS.filter(
-      entry =>
-        entry.segment === segment &&
-        stepOf(entry) === 1 &&
-        entry.status === 'live' &&
-        entry.weight > 0
-    )
+    const drawn = drawnFirst(segment)
     same(drawn.map(entry => entry.id).join(), `${segment}-intro`, `the ${segment} letters drawn`)
   }
 })
@@ -199,13 +203,7 @@ check('every segment opens on the one voice that still writes', () => {
   // retired letter that finds its way back onto the draw is the one change
   // here nobody would notice from the outside.
   for (const segment of SEGMENTS) {
-    const drawn = VARIANTS.filter(
-      entry =>
-        entry.segment === segment &&
-        stepOf(entry) === 1 &&
-        entry.status === 'live' &&
-        entry.weight > 0
-    )
+    const drawn = drawnFirst(segment)
     ok(drawn.length, `${segment} opens on nothing`)
     for (const entry of drawn) {
       same(familyOf(entry), 'introduction', `the family ${entry.id} opens ${segment} on`)
@@ -407,6 +405,9 @@ await checkAddress(null, 'maria@example.com', {
 const inserted = writes => writes.filter(write => write.key === 'insert:outreach_messages')
 const prospectWrites = writes => writes.filter(write => write.key === 'update:outreach_prospects')
 
+/** Whether a write is of one kind against one table, and sets `column`. */
+const sets = (key, column) => write => write.key === key && column in (write.payload ?? {})
+
 // ── The send job ─────────────────────────────────────────────────────────
 
 check(
@@ -433,7 +434,7 @@ check(
     same(draft.payload.variant_id, CONTACTED.variant_id, 'the letter drawn')
     same(mail.subject, 'Trenton Taylor, TaylorURL', `the subject: ${mail.subject}`)
 
-    const moved = prospectWrites(writes).find(write => 'step' in (write.payload ?? {}))
+    const moved = writes.find(sets('update:outreach_prospects', 'step'))
     ok(moved, 'the business was not moved on')
     same(moved.payload.step, 2, 'the step on the business')
     same(
@@ -442,7 +443,7 @@ check(
       'when the next letter is owed'
     )
     ok(
-      !prospectWrites(writes).some(write => 'variant_id' in (write.payload ?? {})),
+      !writes.some(sets('update:outreach_prospects', 'variant_id')),
       'a follow-up stamped the business with a letter'
     )
 
@@ -476,7 +477,7 @@ check('a business deep into its chain is still owed the next one', async () => {
   same(answer.followed, 1, 'follow-ups sent')
   same(answer.closed, 0, 'chains closed')
   same(TRANSPORT.sent.length, 1, 'messages handed to the transport')
-  const moved = prospectWrites(writes).find(write => 'step' in (write.payload ?? {}))
+  const moved = writes.find(sets('update:outreach_prospects', 'step'))
   same(moved.payload.step, 13, 'the step on the business')
   same(
     moved.payload.next_due_at,
@@ -703,9 +704,7 @@ check('a draft written before the letters existed is drafted again under one', a
 
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
-  const rewritten = writes.find(
-    write => write.key === 'update:outreach_messages' && 'variant_id' in (write.payload ?? {})
-  )
+  const rewritten = writes.find(sets('update:outreach_messages', 'variant_id'))
   ok(rewritten, 'the draft was not written again')
   ok(
     rewritten.where.some(clause => clause.column === 'id' && clause.value === stale.id),
@@ -718,7 +717,7 @@ check('a draft written before the letters existed is drafted again under one', a
   same(stepOf(VARIANTS.find(entry => entry.id === rewritten.payload.variant_id)), 1, 'the letter')
   same(rewritten.payload.step, 1, 'the step on the row')
   ok(rewritten.payload.body_text !== stale.body_text, 'the words were kept')
-  const given = prospectWrites(writes).find(write => 'variant_id' in (write.payload ?? {}))
+  const given = writes.find(sets('update:outreach_prospects', 'variant_id'))
   ok(given, 'the business was not given its letter')
   ok(!given.payload.variant_id.endsWith('-holdout'), 'a drafted business was held out')
 })
@@ -768,9 +767,7 @@ check('a draft written under a letter, on the day it goes, goes as it was writte
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
   ok(
-    !writes.some(
-      write => write.key === 'update:outreach_messages' && 'body_text' in (write.payload ?? {})
-    ),
+    !writes.some(sets('update:outreach_messages', 'body_text')),
     'a reviewed draft was written over'
   )
   same(TRANSPORT.sent[0]?.text, kept.body_text, 'the words handed to the transport')
@@ -817,9 +814,7 @@ check('a draft held past its own day is written again before it goes', async () 
 
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
-  const rewritten = writes.find(
-    write => write.key === 'update:outreach_messages' && 'body_text' in (write.payload ?? {})
-  )
+  const rewritten = writes.find(sets('update:outreach_messages', 'body_text'))
   ok(rewritten, 'a draft written yesterday went out with yesterday’s words')
   // The letter is live, so this is the same letter said again rather than a
   // fresh pick. A business does not change letters because a day turned.
@@ -863,9 +858,7 @@ check('a draft written under a retired family is written again before it goes', 
 
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
-  const rewritten = writes.find(
-    write => write.key === 'update:outreach_messages' && 'variant_id' in (write.payload ?? {})
-  )
+  const rewritten = writes.find(sets('update:outreach_messages', 'variant_id'))
   ok(rewritten, 'the draft was not written again')
   ok(rewritten.payload.variant_id !== laid.variant_id, 'the retired letter was written again')
   same(
@@ -877,9 +870,7 @@ check('a draft written under a retired family is written again before it goes', 
 
   // Both rows say the same letter, or the results count one and the follow-up
   // opens in another's family.
-  const given = writes.find(
-    write => write.key === 'update:outreach_prospects' && 'variant_id' in (write.payload ?? {})
-  )
+  const given = writes.find(sets('update:outreach_prospects', 'variant_id'))
   ok(given, 'the business kept the retired letter on its row')
   same(given.payload.variant_id, rewritten.payload.variant_id, 'the letter on the business')
   ok(
