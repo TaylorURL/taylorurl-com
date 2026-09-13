@@ -25,6 +25,7 @@ import {
 } from '../../lib/social/buffer.js'
 import { ZONE } from '../../lib/outreach/sending/schedule.js'
 import { fail, finish } from '../harness/checks.js'
+import { localReading } from './local-reading.js'
 
 // One date on each side of the daylight saving change. The slot is written in
 // local time and Buffer is told an instant, so the two disagree by an hour for
@@ -52,25 +53,6 @@ function allowedGaps(cadence) {
   if (!cadence.weekdays) return new Set([1])
   const days = [...cadence.weekdays].sort((a, b) => a - b)
   return new Set(days.map((day, index) => (days[(index + 1) % days.length] - day + 7) % 7 || 7))
-}
-
-/** The hour and weekday an instant falls on, on the clock in Baytown. */
-function localReading(iso) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: ZONE,
-    hour: 'numeric',
-    hour12: false,
-    weekday: 'short',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date(iso))
-  const at = type => parts.find(part => part.type === type)?.value ?? ''
-  return {
-    hour: Number(at('hour')) % 24,
-    weekday: at('weekday').toLowerCase(),
-    date: `${at('year')}-${at('month')}-${at('day')}`,
-  }
 }
 
 for (const [service, cadence] of Object.entries(CADENCE)) {

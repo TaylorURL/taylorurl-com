@@ -18,8 +18,8 @@
  */
 import { CADENCE } from '../../lib/social/buffer.js'
 import { HELD, articleUrl, hasCopy, plan, postText } from '../../lib/social/announce.js'
-import { ZONE } from '../../lib/outreach/sending/schedule.js'
 import { expect as check, fail, finish } from '../harness/checks.js'
+import { localReading } from './local-reading.js'
 
 const ARTICLE = {
   slug: 'what-a-plumbers-website-has-to-do',
@@ -70,25 +70,6 @@ const channel = (service, extra = {}) => ({
 })
 
 const NOW = new Date('2026-08-29T18:00:00Z')
-
-/** The hour, weekday and date an instant falls on, on the clock in Baytown. */
-function localReading(iso) {
-  const parts = new Intl.DateTimeFormat('en-US', {
-    timeZone: ZONE,
-    hour: 'numeric',
-    hour12: false,
-    weekday: 'short',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).formatToParts(new Date(iso))
-  const at = type => parts.find(part => part.type === type)?.value ?? ''
-  return {
-    hour: Number(at('hour')) % 24,
-    weekday: at('weekday').toLowerCase(),
-    date: `${at('year')}-${at('month')}-${at('day')}`,
-  }
-}
 
 // Every service the queue schedules either has copy written for it or says it
 // takes no announcement, and every post fits the service it is written for. A
