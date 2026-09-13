@@ -56,7 +56,7 @@ import {
   readNotification,
   recipientsFor,
 } from '../../lib/mail/notify.js'
-import { expect as check, finish } from '../harness/checks.js'
+import { expect as check, finish, quietly } from '../harness/checks.js'
 import { answerTo } from './notify-fixture.js'
 
 // The credentials the endpoint reads at load. Neither opens anything: the
@@ -485,13 +485,7 @@ globalThis.fetch = async (url, options) => {
 async function run(db, project, body) {
   const read = readNotification(body, project)
   if (read.error) throw new Error(read.error)
-  const said = console.error
-  console.error = () => {}
-  try {
-    return await deliver(db, project, read.notification)
-  } finally {
-    console.error = said
-  }
+  return quietly(() => deliver(db, project, read.notification))
 }
 
 const SETUP = {

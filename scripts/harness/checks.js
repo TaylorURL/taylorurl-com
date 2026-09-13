@@ -104,6 +104,22 @@ export async function refusal(run) {
   return null
 }
 
+/**
+ * Runs `run` with `console.error` held back, and answers what it answered. The
+ * code under test logs the refusals it is right to log, and a passing run should
+ * read as a passing run rather than as a page of the errors it proved were
+ * handled.
+ */
+export async function quietly(run) {
+  const held = console.error
+  console.error = () => {}
+  try {
+    return await run()
+  } finally {
+    console.error = held
+  }
+}
+
 // How far into `cases` the runner has got, so a script can finish one stretch
 // of checks, say what held, and go on to check more without running the first
 // stretch twice.

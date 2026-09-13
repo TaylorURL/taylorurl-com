@@ -61,7 +61,7 @@ import {
 } from '../../lib/mail/audience.js'
 import { DRAFT, READY, SENT, blocksFor, hasContentFor, sendRefusal } from '../../lib/mail/issues.js'
 import { renderIssueEmail, renderIssueHtml, renderIssueText } from '../../lib/mail/emailTemplate.js'
-import { cases, check, finish, ok, refusal, same } from '../harness/checks.js'
+import { cases, check, finish, ok, quietly, refusal, same } from '../harness/checks.js'
 
 // Placeholders for the credentials the endpoints read at load. Neither of the
 // first two opens anything: the provider is a recorder in every case that
@@ -125,20 +125,6 @@ function recorder(answer = { id: 're_recorded' }) {
         headers: { 'content-type': 'application/json' },
       })
     },
-  }
-}
-
-/**
- * Runs `act` with the endpoint's own logging held back, so a case that exercises
- * a refusal does not print one alongside the run's result.
- */
-const quietly = async act => {
-  const held = console.error
-  console.error = () => {}
-  try {
-    return await act()
-  } finally {
-    console.error = held
   }
 }
 

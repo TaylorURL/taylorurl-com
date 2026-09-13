@@ -32,7 +32,7 @@ import {
 import { ASKED_SOURCE, ranksAhead } from '../../../lib/outreach/sending/rank.js'
 import { asked, filtered, rows, stubDb } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
-import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { cases, check, finish, ok, quietly, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
 
@@ -56,17 +56,6 @@ async function bridgeOver(reading, plan = {}) {
   })
   const result = await bridge(db, reading)
   return { result, queries }
-}
-
-/** Run something with the log silenced, for the paths that report a fault. */
-async function quietly(run) {
-  const real = console.error
-  console.error = () => {}
-  try {
-    return await run()
-  } finally {
-    console.error = real
-  }
 }
 
 /** One row of `public.speed_checks`, the way api/speed-check.js closes one. */

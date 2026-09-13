@@ -13,6 +13,7 @@
  * The endpoint is handed in rather than imported here. It reads its environment
  * once, at load, and each check sets that environment before importing it.
  */
+import { quietly } from '../harness/checks.js'
 
 /** The status, body and headers `handler` answered `request` with. */
 export async function answerTo(handler, request) {
@@ -30,12 +31,6 @@ export async function answerTo(handler, request) {
       return response
     },
   }
-  const said = console.error
-  console.error = () => {}
-  try {
-    await handler(request, response)
-  } finally {
-    console.error = said
-  }
+  await quietly(() => handler(request, response))
   return answer
 }
