@@ -2220,10 +2220,28 @@
   /* The rail the reviews stand on. It scrolls, and the scrollbar is taken off
      it because the dots underneath already say where in the row you are and a
      bar under a row of cards reads as a stray rule. Keyboard and touch reach it
-     the same either way. */
+     the same either way.
+
+     A scroller clips at its own padding edge, and a card's ring is drawn one
+     pixel outside the card. With the cards standing flush against the rail's
+     top and ends, the ring was cut off along the top of every card and down
+     the outer edge of whichever card stood at either end, which reads as a row
+     of cards with their lids off. So the rail is padded by the ring and the
+     tight shadow under it and pulled back out by the same amount: the cards
+     stand exactly where they stood, and only the clip edge has moved. The
+     snap padding matches, so a card snapped to the start of the rail lands
+     inside that room rather than against the edge of it, and the gliding hook
+     measures its stops from the same edge. */
   .review-rail {
+    --rail-room: 4px;
+    margin-top: calc(-1 * var(--rail-room));
+    margin-right: calc(-1 * var(--rail-room));
+    margin-left: calc(-1 * var(--rail-room));
+    padding-top: var(--rail-room);
+    padding-right: var(--rail-room);
+    padding-left: var(--rail-room);
     scrollbar-width: none;
-    scroll-padding-left: 0;
+    scroll-padding-left: var(--rail-room);
   }
 
   .review-rail::-webkit-scrollbar {

@@ -89,7 +89,12 @@ export default function useGlidingRail({ count, dwellMs, fit = 'round' }) {
       const target = node?.children[index]
       if (!node || !target) return
       cancelAnimationFrame(glide.current)
-      const to = target.offsetLeft - node.offsetLeft
+      // Measured from the rail's padding edge, which is where a snapped item
+      // lands. The rail keeps a few pixels of room at that edge for what an
+      // item paints outside itself, and a stop taken from the border edge
+      // would scroll the item into it.
+      const room = parseFloat(getComputedStyle(node).paddingLeft) || 0
+      const to = target.offsetLeft - node.offsetLeft - room
       const from = node.scrollLeft
       steering.current = true
 
