@@ -928,6 +928,81 @@ check(
   `the reporter does not name ${SHEET_HANDLER}, so it cannot tell a sheet under recovery from one with nothing behind it`
 )
 
+// And the sheets no markup names, which is where this was still open.
+//
+// Everything above covers the sheet Beasties deferred into the served head. A
+// code-split route has a stylesheet of its own, and Rollup's preload helper
+// builds that link in script when the route's chunk is imported - so nothing
+// rewrote it, it carried no catch, and its first dropped request was filed as
+// a fault while the helper's own map made sure nothing ever asked again.
+// Measured against this build with `/console/staff`'s sheet refused: one
+// request at 439ms, none after it, and the console rendered with none of its
+// 19.9KB of rules. #577 was that.
+//
+// Run rather than read, same as the ladder: what is being checked is that a
+// link appended after the document is stamped with the handler the served ones
+// carry, and that one already carrying it is left alone - a replacement the
+// recovery itself inserted must not be put on a second ladder.
+function sheetWatching() {
+  let callback = null
+  let watched = null
+  const element = attributes => ({
+    tagName: 'LINK',
+    written: { ...attributes },
+    getAttribute(name) {
+      return name in this.written ? this.written[name] : null
+    },
+    setAttribute(name, value) {
+      this.written[name] = String(value)
+    },
+  })
+  const stub = {
+    document: { createElement: () => element({}), head: { tag: 'HEAD' } },
+    MutationObserver: function (run) {
+      callback = run
+      this.observe = (node, options) => {
+        watched = { node, options }
+      }
+    },
+    setTimeout: () => {},
+    Number,
+    location: { reload: () => {} },
+    window: {},
+  }
+  const names = Object.keys(stub)
+  new Function(...names, sheetSource())(...names.map(name => stub[name]))
+  const seen = {
+    sheet: element({ rel: 'stylesheet' }),
+    listed: element({ rel: 'stylesheet alternate' }),
+    module: element({ rel: 'modulepreload' }),
+    held: element({ rel: 'stylesheet', onerror: `${SHEET_HANDLER}(this,2)` }),
+  }
+  if (callback) callback([{ addedNodes: [...Object.values(seen), { nodeType: 3 }] }])
+  return { watched, seen }
+}
+
+const watching = sheetWatching()
+check(
+  Boolean(watching.watched) && watching.watched.options.childList === true,
+  'a stylesheet the bundle appends after the document is never noticed, so a route chunk that loses its sheet has no retry, no raised priority and no hold on the report'
+)
+check(
+  watching.seen.sheet.getAttribute('onerror') === `${SHEET_HANDLER}(this,0)`,
+  'a stylesheet appended by the preload helper is left without the catch the served ones carry, so its first dropped request is filed as a fault and nothing asks again'
+)
+check(
+  watching.seen.listed.getAttribute('onerror') === `${SHEET_HANDLER}(this,0)`,
+  'a stylesheet whose rel carries more than one token is skipped, so a real sheet is read as something the page does not depend on'
+)
+check(
+  watching.seen.module.getAttribute('onerror') === null,
+  'a modulepreload is put on the sheet ladder, which asks for a chunk as a stylesheet'
+)
+check(
+  watching.seen.held.getAttribute('onerror') === `${SHEET_HANDLER}(this,2)`,
+  "a link already on the ladder is stamped again at attempt zero, so the recovery's own replacement restarts the attempts it was the third of"
+)
+
 await finish({ hint: 'a chunk that has gone is the deploy working; the page it was on carries on' })
 
 console.log(
