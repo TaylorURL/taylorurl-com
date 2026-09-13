@@ -97,7 +97,8 @@
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { randomUUID } from 'node:crypto'
 import nodemailer from 'nodemailer'
-import { runJob, wait } from '../../lib/outreach/runtime.js'
+import { runJob } from '../../lib/outreach/runtime.js'
+import { wait } from '../../lib/time/wait.js'
 import { field } from '../../lib/db/fields.js'
 import { columnMissing } from '../../lib/db/rows.js'
 import {

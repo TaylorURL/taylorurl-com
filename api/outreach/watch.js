@@ -77,6 +77,7 @@
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { ImapFlow } from 'imapflow'
 import { runJob } from '../../lib/outreach/runtime.js'
+import { wait } from '../../lib/time/wait.js'
 import { field } from '../../lib/db/fields.js'
 import { readAutoReply, readOptOut } from '../../lib/outreach/sending/replies.js'
 import { SOURCES, SPINE, keepLead } from '../../lib/leads/spine.js'
@@ -705,8 +706,8 @@ async function forward(message, prospect) {
   const notice = replyNotice(message, prospect)
   const { from } = message
 
-  const wait = NOTICE_GAP_MS - (Date.now() - lastNotice)
-  if (wait > 0) await new Promise(resolve => setTimeout(resolve, wait))
+  const gap = NOTICE_GAP_MS - (Date.now() - lastNotice)
+  if (gap > 0) await wait(gap)
   lastNotice = Date.now()
 
   try {
