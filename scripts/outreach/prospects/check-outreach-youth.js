@@ -34,7 +34,6 @@ import {
 import {
   YOUNG_REVIEW_CEILING,
   YOUTHS,
-  gained,
   isOperating,
   isYoung,
   youthOf,
@@ -282,37 +281,6 @@ check(
     same(rankOf(row({ site_kind: 'social', rating_count: 2 })), YOUNG_RANK, 'the rank')
   }
 )
-
-// ── Reviews gained since the row was filed ───────────────────────────────
-
-check('gained is null while the first-count column is not there', () => {
-  // A database the column has not reached reads this way on every row, and it
-  // has to answer rather than throw, because the console renders the same
-  // component over rows written on either side of it.
-  same(gained(row({ rating_count: 40 })), null, 'a row with no first count')
-  same(gained(row({ rating_count: 40, rating_count_first: null })), null, 'an unfilled column')
-  same(gained(row({ rating_count: 40, rating_count_first: '' })), null, 'an empty column')
-  same(gained(row({ rating_count: null, rating_count_first: 4 })), null, 'no count to compare')
-  same(gained({}), null, 'a row with neither end')
-  same(gained(null), null, 'no row at all')
-})
-
-check('gained is the arithmetic once both ends are on the row', () => {
-  same(gained(row({ rating_count: 9, rating_count_first: 4 })), 5, 'five reviews collected')
-  same(gained(row({ rating_count: 4, rating_count_first: 4 })), 0, 'a listing that has not moved')
-  same(gained(row({ rating_count: '12', rating_count_first: '7' })), 5, 'both ends as text')
-})
-
-check('gained answers zero for a listing that has not moved and null for one nobody asked', () => {
-  // The two readings mean opposite things - nobody is finding this business,
-  // against nothing is known yet - and collapsing them would turn every row
-  // filed before the migration into a claim that it has gone nowhere.
-  const still = gained(row({ rating_count: 6, rating_count_first: 6 }))
-  const unknown = gained(row({ rating_count: 6 }))
-  same(still, 0, 'a listing that has not moved')
-  same(unknown, null, 'a listing with no history')
-  ok(still !== unknown, 'a row with no history reads the same as one that has not moved')
-})
 
 // ── One rank, over every shape a row can take ────────────────────────────
 

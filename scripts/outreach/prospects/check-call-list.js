@@ -49,7 +49,6 @@ import {
   SCORE_PEAK,
   SCORE_WEIGHTS,
   TRADE_FLOOR,
-  TRACKS,
   byCallOrder,
   callMakesLead,
   callPlace,
@@ -72,11 +71,9 @@ import {
   readyAt,
   reviewsOf,
   scoreOf,
-  tellingTerms,
   triesRun,
   uncallableReason,
-  waitAfter,
-  whyListed,
+  waitHoursFor,
 } from '../../../lib/outreach/prospects/calls.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..')
@@ -127,6 +124,10 @@ const call = over => ({
   called_at: '2026-09-01T15:00:00.000Z',
   ...over,
 })
+
+/** The hours a business waits once this outcome is on file, read the way the list reads it. */
+const waitAfter = (held, outcome) =>
+  waitHoursFor(outcome, triesRun({ ...held, calls: [call({ outcome }), ...held.calls] }))
 
 // ── Who is on the list ──────────────────────────────────────────────────
 
@@ -543,35 +544,6 @@ check('what it has instead of a site is read from the listing, not guessed', () 
   ok(portal > booking, 'a booking platform outranked a directory listing')
 })
 
-check('a row says why it is on the list, whatever it has instead of a site', () => {
-  for (const website of [
-    null,
-    'https://www.facebook.com/mikes',
-    'https://www.booksy.com/en-us/1',
-    'https://www.yelp.com/biz/mikes',
-  ]) {
-    const kind = website ? 'social' : 'none'
-    const sentence = whyListed(row({ website, site_kind: kind }))
-    ok(sentence && sentence.endsWith('.'), `no sentence for ${website ?? 'no website'}`)
-  }
-})
-
-check('a row shows its two best reasons and every penalty', () => {
-  const { terms } = scoreOf(row({ rating: 2.9, rating_count: 20 }), {
-    median: 40,
-    calls: [call(), call({ id: 'c2' })],
-  })
-  const telling = tellingTerms(terms)
-  const negatives = terms.filter(term => term.points < 0)
-  for (const term of negatives) {
-    ok(
-      telling.some(one => one.id === term.id),
-      `${term.id} subtracted points and was not shown`
-    )
-  }
-  same(telling.filter(term => term.points > 0).length, 2, 'the positives shown')
-})
-
 // ── The order to work it in ─────────────────────────────────────────────
 
 check('a callback that has come due leads everything', () => {
@@ -693,21 +665,6 @@ check('every outcome carries a label and a tone, and none repeats an id', () => 
   same(new Set(OUTCOME_IDS).size, CALL_OUTCOMES.length, 'two outcomes sharing an id')
   for (const outcome of CALL_OUTCOMES) {
     ok(outcome.label && outcome.tone, `${outcome.id} is missing a label or a tone`)
-  }
-})
-
-check('every outcome sits in a track, and every track has something in it', () => {
-  // The tracks are what turn eight buttons into four decisions on screen, so
-  // an outcome added later without one would simply not be offered.
-  const tracks = new Set(TRACKS.map(track => track.id))
-  for (const outcome of CALL_OUTCOMES) {
-    ok(tracks.has(outcome.track), `${outcome.id} is in no track`)
-  }
-  for (const track of TRACKS) {
-    ok(
-      CALL_OUTCOMES.some(outcome => outcome.track === track.id),
-      `${track.id} holds no outcome`
-    )
   }
 })
 
