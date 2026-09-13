@@ -167,13 +167,16 @@ export default function CapabilitiesSection() {
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <Reveal className="container-rail relative">
-        <h2 className="display-3 max-w-[20ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]">
+      <div className="container-rail relative">
+        <Reveal
+          as="h2"
+          className="display-3 max-w-[20ch] font-semibold leading-[1.06] tracking-tightest text-ink-paper [text-wrap:balance]"
+        >
           Every site on this page is live.{' '}
           <span className="text-paper-soft">
             Built for a business nearby, and we still look after every one of them.
           </span>
-        </h2>
+        </Reveal>
 
         <div className="mt-14 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {shown ? (
@@ -230,7 +233,7 @@ export default function CapabilitiesSection() {
             </Plane>
           </Card>
         </div>
-      </Reveal>
+      </div>
     </section>
   )
 }

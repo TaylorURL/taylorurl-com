@@ -47,8 +47,8 @@ const REPLIES = IS_SECOND_SITE ? HOME.cta.replies : STUDIO_REPLIES
 export default function FinalCtaSection() {
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <Reveal className="container-rail relative">
-        <div className="panel-plane card-lift relative overflow-hidden rounded-[var(--r-feature)]">
+      <div className="container-rail relative">
+        <Reveal className="panel-plane card-lift relative overflow-hidden rounded-[var(--r-feature)]">
           {/* The panel is lit from its top left corner, which is where the
               plane's own gradient starts. The edge says so. */}
           <div
@@ -130,8 +130,8 @@ export default function FinalCtaSection() {
               </ul>
             </div>
           </div>
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </section>
   )
 }

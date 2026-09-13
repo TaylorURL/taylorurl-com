@@ -85,7 +85,7 @@ function artefactFor(index, launched) {
 /** One step, as a column of the schedule. */
 function Step({ item, index, launched }) {
   return (
-    <li className="flex flex-col">
+    <Reveal as="li" className="flex flex-col">
       <div className="flex items-center gap-4">
         <span className="flex h-9 w-9 items-center justify-center rounded-[var(--r-control)] bg-[color:var(--wash-accent)] font-mono text-[13px] font-semibold leading-none text-accent">
           {String(index + 1).padStart(2, '0')}
@@ -108,7 +108,7 @@ function Step({ item, index, launched }) {
           {artefactFor(index, launched)}
         </div>
       )}
-    </li>
+    </Reveal>
   )
 }
 
@@ -117,34 +117,40 @@ export default function HowItWorksSection() {
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <Reveal className="container-rail relative">
+      <div className="container-rail relative">
         <div className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]">
           {IS_SECOND_SITE ? (
             <>
-              <div>
+              <Reveal>
                 <p className="section-label mb-5 text-accent">{HOME.how.eyebrow}</p>
                 <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
                   {HOME.how.headingLine} <br />
                   <AccentGradient>{HOME.how.accentText}</AccentGradient>
                 </h2>
-              </div>
-              <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+              </Reveal>
+              <Reveal
+                as="p"
+                className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right"
+              >
                 {HOME.how.lede}
-              </p>
+              </Reveal>
             </>
           ) : (
             <>
-              <div>
+              <Reveal>
                 <p className="section-label mb-5 text-accent">Process</p>
                 <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
                   How it works <br />
                   <AccentGradient>in three steps.</AccentGradient>
                 </h2>
-              </div>
-              <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
+              </Reveal>
+              <Reveal
+                as="p"
+                className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right"
+              >
                 First message to live website, usually two to four weeks. A small team to talk to,
                 and we keep it online after that.
-              </p>
+              </Reveal>
             </>
           )}
         </div>
@@ -170,7 +176,7 @@ export default function HowItWorksSection() {
             ))}
           </ol>
         </div>
-      </Reveal>
+      </div>
     </section>
   )
 }

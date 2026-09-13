@@ -19,20 +19,20 @@ export default function TestimonialsSection() {
 
   return (
     <section className="section-y-lg border-hair-paper relative overflow-hidden border-t bg-paper">
-      <Reveal className="container-rail relative flex flex-col gap-12 md:gap-16">
+      <div className="container-rail relative flex flex-col gap-12 md:gap-16">
         <div className="border-hair-paper grid items-end gap-10 border-b pb-16 lg:grid-cols-[1.4fr_1fr]">
-          <div>
+          <Reveal>
             <p className="section-label mb-5 text-accent">Reviews</p>
             <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
               Owners who <br />
               <AccentGradient>hired us.</AccentGradient>
             </h2>
-          </div>
+          </Reveal>
           {/* The ratings rail inside is a scroller of fixed-width badges, and a
               scroller's own content is as wide as everything on it. Left to size
               itself this column would be asked for the width of all five badges
               laid end to end and would take it out of the headline beside it. */}
-          <div className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
+          <Reveal className="flex min-w-0 flex-col items-start gap-7 lg:items-end">
             <ReviewStandingRail />
 
             {/*
@@ -60,12 +60,14 @@ export default function TestimonialsSection() {
                 )
               })}
             </div>
-          </div>
+          </Reveal>
         </div>
 
-        <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
+        <Reveal>
+          <ReviewCarousel reviews={CLIENT_REVIEW_LIST} />
+        </Reveal>
 
-        <div className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+        <Reveal className="flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
           {writeTo && (
             <a
               href={writeTo.writes}
@@ -90,8 +92,8 @@ export default function TestimonialsSection() {
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </a>
           )}
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </section>
   )
 }
