@@ -1,20 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { EASE } from '@constants/animations'
 import { GROUND } from '../lib/ground'
-
-const DURATION = 0.42
+import { useStepTravel } from '../lib/useStepTravel'
+import StepFrame from './StepFrame'
 
 // How far a step travels on its way in and out. Far enough to read as a
 // sideways move, short enough that the words stay legible the whole way.
 const SHIFT = 56
-
-const PANEL = {
-  enter: direction => ({ opacity: 0, x: direction < 0 ? -SHIFT : SHIFT }),
-  center: { opacity: 1, x: 0 },
-  exit: direction => ({ opacity: 0, x: direction < 0 ? SHIFT : -SHIFT }),
-}
 
 const TRAIL_LABEL = 'section-label transition duration-200'
 
@@ -83,11 +74,8 @@ function StepTrail({ steps, active, reach, onOpen, label }) {
  * The configurator frame: one step in it at a time, the trail above it, and
  * the controls that move between them below.
  *
- * The frame keeps its place on the page. A step arrives from the side the
- * visitor is travelling, the step it replaces leaves the other way, and the
- * frame eases between the two heights rather than snapping, so the controls
- * under it stay near the hand that reached for them. Reduced motion collapses
- * both to a swap.
+ * The frame keeps its place on the page, and a step moves through it the way
+ * `StepFrame` describes.
  *
  * A step is answered or it is not, and the control that opens the next one is
  * live only once the current step has its answer. The trail behind the frame
@@ -99,18 +87,10 @@ function StepTrail({ steps, active, reach, onOpen, label }) {
  * The line is the button's own description, so it is read out with the control
  * rather than sitting near it.
  *
- * Moving the frame moves focus onto the new step's heading, which is what puts
- * a screen reader at the top of the step rather than wherever the last control
- * left it.
- *
- * @param {{ steps: Array<{ id: string, label: string, eyebrow: string,
- *   title: string, description?: string, meta?: React.ReactNode,
- *   answered?: boolean, missing?: string | null,
- *   content: React.ReactNode }> }} props
- */
-/**
  * @param {object} props
- * @param {Array} props.steps
+ * @param {Array<{ id: string, label: string, eyebrow: string, title: string,
+ *   description?: string, meta?: React.ReactNode, answered?: boolean,
+ *   missing?: string | null, content: React.ReactNode }>} props.steps
  * @param {boolean} [props.atTop] - The configurator is the first thing on the
  *   page rather than something under a hero. It then owes what the hero owed:
  *   clearance under the fixed bar, no rule against it, and the page's one h1.
@@ -142,74 +122,24 @@ export default function StepFlow({
   aside = null,
   head = null,
 }) {
-  const reduced = useReducedMotion()
-  const [index, setIndex] = useState(0)
-  const [direction, setDirection] = useState(1)
-  const [height, setHeight] = useState(null)
-  const panelRef = useRef(null)
-  const travelled = useRef(false)
-
   // The furthest step the answers so far open up. Everything before it has
   // been answered, so clearing an answer pulls the frame back with it.
   let reach = 0
   while (reach < steps.length - 1 && steps[reach].answered) reach += 1
 
-  const active = Math.min(index, reach)
-  const step = steps[active]
-  const previous = steps[active - 1]
-  const next = steps[active + 1]
-  const transition = { duration: reduced ? 0 : DURATION, ease: EASE }
-
-  // The height the frame holds, taken from the step standing in it. The step
-  // on its way out is out of the flow by then, and content that grows inside a
-  // step — a form turning into its confirmation — moves the frame with it.
-  useEffect(() => {
-    const element = panelRef.current
-    if (!element) return undefined
-
-    // Layout pixels rather than the painted box, so a page the browser is
-    // scaling reports the height the frame has to hold rather than the height
-    // it happens to be drawn at.
-    const measure = () => setHeight(element.offsetHeight)
-    measure()
-
-    const observer = new ResizeObserver(measure)
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [active])
-
-  useEffect(() => {
-    if (!travelled.current) return
-    document.getElementById(`${step.id}-title`)?.focus()
-  }, [step.id])
-
   // An answer taken back closes the steps behind it, and the frame has to come
   // back with them rather than only being clamped for the render. Held apart,
   // giving the answer again would throw the visitor forward to wherever they
   // had reached before they changed their mind.
-  useEffect(() => {
-    setIndex(current => Math.min(current, reach))
-  }, [reach])
-
-  // Answers restored from a previous visit arrive after the first paint, so the
-  // step they were left on is taken then. It is clamped by `active` like any
-  // other, which is what stops a stale number opening a step the restored
-  // answers no longer reach.
-  useEffect(() => {
-    if (resumeAt === null) return
-    setDirection(1)
-    setIndex(resumeAt)
-  }, [resumeAt])
-
-  useEffect(() => {
-    onStep?.(active)
-  }, [active, onStep])
-
-  // The panel on its way out releases its node after the one arriving has
-  // claimed the slot, so only a mounting node is taken.
-  const holdPanel = node => {
-    if (node) panelRef.current = node
-  }
+  const { active, step, direction, open } = useStepTravel({
+    steps,
+    reach,
+    retreat: true,
+    resumeAt,
+    onStep,
+  })
+  const previous = steps[active - 1]
+  const next = steps[active + 1]
 
   // The step's heading is the page's own only where nothing above it holds
   // one. A frame given a head has its heading there instead.
@@ -219,13 +149,6 @@ export default function StepFlow({
   // standing under a live button reads as a refusal of the thing that just
   // worked.
   const waiting = step.answered ? null : step.missing || null
-
-  const open = target => {
-    if (target === active || target > reach) return
-    travelled.current = true
-    setDirection(target > active ? 1 : -1)
-    setIndex(target)
-  }
 
   // The page's own section rhythm either way. Standing first on the page, the
   // frame takes the extra top clearance a hero takes, because the fixed bar is
@@ -242,63 +165,36 @@ export default function StepFlow({
 
         <StepTrail steps={steps} active={active} reach={reach} onOpen={open} label={label} />
 
-        <p role="status" className="sr-only">
-          {`Step ${active + 1} of ${steps.length}. ${step.label}.`}
-        </p>
-
-        <m.div
-          initial={false}
-          animate={height === null ? {} : { height }}
-          transition={transition}
-          // The clip the height animation needs would also cut the focus ring
-          // off any control sitting against the edge of the step, because a
-          // field paints its ring four pixels outside its own box. The negative
-          // margin and the padding cancel, so the content stays where it was
-          // and the ring has somewhere to land.
-          className="relative -mx-1 overflow-hidden px-1"
-        >
-          <AnimatePresence initial={false} mode="popLayout" custom={direction}>
-            <m.div
-              key={step.id}
-              ref={holdPanel}
-              custom={direction}
-              variants={PANEL}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={transition}
-            >
-              <header className={`mb-12 border-b pb-8 ${GROUND.rule}`}>
-                <p className="section-label mb-5 block text-accent">{step.eyebrow}</p>
-                <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-                  {/* The step's own title is the page's heading when the
-                      frame is the page and nothing above it holds one. A page
-                      whose only headings are second level reads to a screen
-                      reader, and to a crawler, as a fragment of a page that is
-                      missing. */}
-                  <Title
-                    id={`${step.id}-title`}
-                    tabIndex={-1}
-                    className={`display-4 max-w-2xl font-semibold leading-[1.05] tracking-tightest [text-wrap:balance] ${GROUND.title}`}
-                  >
-                    {step.title}
-                  </Title>
-                  {step.meta && (
-                    <div className="flex flex-shrink-0 items-center gap-4 self-start lg:self-auto">
-                      {step.meta}
-                    </div>
-                  )}
+        <StepFrame steps={steps} active={active} direction={direction} shift={SHIFT}>
+          <header className={`mb-12 border-b pb-8 ${GROUND.rule}`}>
+            <p className="section-label mb-5 block text-accent">{step.eyebrow}</p>
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              {/* The step's own title is the page's heading when the
+                  frame is the page and nothing above it holds one. A page
+                  whose only headings are second level reads to a screen
+                  reader, and to a crawler, as a fragment of a page that is
+                  missing. */}
+              <Title
+                id={`${step.id}-title`}
+                tabIndex={-1}
+                className={`display-4 max-w-2xl font-semibold leading-[1.05] tracking-tightest [text-wrap:balance] ${GROUND.title}`}
+              >
+                {step.title}
+              </Title>
+              {step.meta && (
+                <div className="flex flex-shrink-0 items-center gap-4 self-start lg:self-auto">
+                  {step.meta}
                 </div>
-                {step.description && (
-                  <p className={`mt-6 max-w-2xl text-[16px] leading-relaxed ${GROUND.body}`}>
-                    {step.description}
-                  </p>
-                )}
-              </header>
-              {step.content}
-            </m.div>
-          </AnimatePresence>
-        </m.div>
+              )}
+            </div>
+            {step.description && (
+              <p className={`mt-6 max-w-2xl text-[16px] leading-relaxed ${GROUND.body}`}>
+                {step.description}
+              </p>
+            )}
+          </header>
+          {step.content}
+        </StepFrame>
 
         {(previous || next) && (
           <div
