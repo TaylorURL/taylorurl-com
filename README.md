@@ -270,7 +270,7 @@ taylorurl-com/
 │   └── time/                  The zone every time in this project is read in, and the pause every wait goes through
 ├── public/                    Static assets — the logo and marks, the two share cards, portfolio shots, the home page's board and process shots, the social cards, the client site icons, the reviewer logos, robots.txt, the web manifest, release.json, the Geist woff2 files
 ├── scripts/                   Every check `npm test` runs, plus the capture, audit and regeneration tools, filed under the subject each one is about
-│   ├── harness/               The runner every check reports through, the tree walk the sweeps share, and the hook that lets a check import the site's own modules
+│   ├── harness/               The runner every check reports through and the helpers its cases share, how a check reads a file and sweeps a tree, the fetch that stands in for the network, and the hook that lets a check import the site's own modules
 │   ├── outreach/              The cold pipeline, in the three stages a prospect passes through: prospects/, messages/, sending/
 │   ├── mail/                  The messages the studio sends under its own name, the notifications door, and the inbox preview
 │   ├── social/                The post queue, its watch, and what an article writes for itself
