@@ -252,24 +252,25 @@ taylorurl-com/
 ├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
 ├── brand/                     The post cards the queue publishes, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
-│   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, and the shapes a value takes before it reaches a column
+│   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, the shapes a value takes before it reaches a column, and the runner a posted action calls its database function through
 │   ├── enquiry/               What each enquiry form asks, in the words the sender read
-│   ├── http/                  Request guards, the per-caller window, the timed fetch, the scheduler check, the public-address check, and the console's edge proxy
+│   ├── http/                  Request guards, the body readers, the per-caller window and the caller digest, the timed fetch, the scheduler check, the public-address check, the answer an unsubscribe link gives, and the console's edge proxy
 │   ├── leads/                 The address the configurator records, the two pages that record one, and the one message a lead who did not finish gets
 │   ├── live-chat/             How much of the assistant one connection gets, and what a typed message is read for before a turn is spent
-│   ├── mail/                  The sheet every message is drawn on, the studio's identity and bio, the mailing list's audience and issues, the confirmation bodies, the notice to the studio's own inbox, the catalogue every family is drawn from for a design read, and the brand a client project's notification is drawn in
+│   ├── mail/                  The sheet every message is drawn on and the escaping every body goes through, the studio's identity and bio, the mailing list's audience and issues, the confirmation bodies, the notice to the studio's own inbox, the catalogue every family is drawn from for a design read, and the brand a client project's notification is drawn in
 │   ├── outreach/              The message a prospect is given, the segments and the letter variants, the first names a mailbox can be greeted by, and the door every outreach job stands behind
-│   │   ├── prospects/         Whether a business can be written to at all - the address, the exclusions, the host, the site search, the youth reading, the speed-check bridge, and who is left to ring
+│   │   ├── prospects/         Whether a business can be written to at all - the address, the exclusions, the host, the site search, the youth reading, the speed-check bridge, who is left to ring, and the stages a prospect moves through
 │   │   ├── audit/             The measurement of their site: the PageSpeed run, what a score means, the capture
 │   │   ├── sending/           The run itself - the queue and its ranking, the window, the caps and the ramp, the bounces and the replies
 │   │   └── openers/           The letters the sender can open with, one file each, the plain second letters under plain/, all listed by the registry in variants.js
 │   ├── site/                  The two site records, the one file that reads SITE, the subsidiary's written route list, and the links each site carries to the other
 │   ├── social/                The Buffer queue, its cards, its watch and the announcement
 │   ├── speed-check/           How a public speed reading is worded
-│   ├── stripe/                Reading the account back, and which of its money belongs to a website client
-│   └── time/                  The zone every time in this project is read in
+│   ├── stripe/                A checkout session opened and read back, the account read back, and which of its money belongs to a website client
+│   └── time/                  The zone every time in this project is read in, and the pause every wait goes through
 ├── public/                    Static assets — the logo and marks, the two share cards, portfolio shots, the home page's board and process shots, the social cards, the client site icons, the reviewer logos, robots.txt, the web manifest, release.json, the Geist woff2 files
 ├── scripts/                   Every check `npm test` runs, plus the capture, audit and regeneration tools, filed under the subject each one is about
+│   ├── harness/               The runner every check reports through, the tree walk the sweeps share, and the hook that lets a check import the site's own modules
 │   ├── outreach/              The cold pipeline, in the three stages a prospect passes through: prospects/, messages/, sending/
 │   ├── mail/                  The messages the studio sends under its own name, the notifications door, and the inbox preview
 │   ├── social/                The post queue, its watch, and what an article writes for itself
@@ -298,12 +299,12 @@ taylorurl-com/
 │   │   │   ├── chrome/        The fixed furniture Layout mounts around every page
 │   │   │   ├── navigation/    The bar, its panel, the search and the palette control
 │   │   │   ├── page-bands/    The hero, the ruled band, and the frame a standing document is set in
-│   │   │   ├── mesh/          The ruled mesh and its three fillings
+│   │   │   ├── mesh/          The ruled mesh and its four fillings
 │   │   │   ├── article/       The reading frame: body, controls, rail and the share row
 │   │   │   ├── reviews/       Cards, stars, standings and the seals
 │   │   │   ├── marks/         The drawing vocabulary and the three registries that key into it
 │   │   │   ├── conversion/    The things whose job is to move a reader to the next step
-│   │   │   ├── mockups/       The browser and phone frames a capture is shown in
+│   │   │   ├── mockups/       The browser and phone frames a capture is shown in, and the capture itself
 │   │   │   ├── account/       The ground the console and the auth screens sit on
 │   │   │   ├── app-shell/     The three modules mounted around the route tree
 │   │   │   └── reactbits/     WebGL + motion effects (Aurora, Particles, ShinyText…)
@@ -316,11 +317,11 @@ taylorurl-com/
 │   │   │   ├── analytics/     Charts, and under lib/ the number formatting and the pages the console does not count
 │   │   │   ├── status/        The uptime board, the console's public section
 │   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
-│   │   ├── hooks/             console/ (eleven feeds, the state they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and usePrerenderData.js above them, which belongs to no surface
+│   │   ├── hooks/             console/ (eleven feeds, the state, requests and clocks they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and useFormFields.js and useMediaQuery.js above them, which belong to no surface
 │   │   ├── constants/         navigation, seo, business-schema, animations, grounds, mesh, routes
 │   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, console/, supabase/, liveChat.js
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, how a site reading is worded, and the pacing of a wait nothing reports on
-│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, and how a prospect's audit score reads
+│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, the browser's own stores where it has them, and how a prospect's audit score reads
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   ├── index.css              The token block and the font faces
 │   └── main.jsx               Browser entry
