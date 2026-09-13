@@ -713,7 +713,7 @@ export const STEPS = [
  * this list as a description of their own site rather than as a menu. They are
  * Title Case, being labels beside a switch.
  */
-export const PAGE_LABELS = {
+const PAGE_LABELS = {
   home: 'Home',
   privacy: 'Privacy',
   terms: 'Terms',
@@ -826,7 +826,7 @@ export const FIXED_PAGES = ['home', 'privacy', 'terms']
  * either wants badly or not at all, and defaulting those on would put pages on
  * the list that nobody asked for and somebody has to write.
  */
-export const COMMON_PAGES = [
+const COMMON_PAGES = [
   { id: 'services', on: true },
   { id: 'about', on: true },
   { id: 'contact', on: true },
@@ -856,7 +856,7 @@ export const COMMON_PAGES = [
  * with the client, and a form that refuses a ninth page teaches them to stop
  * typing.
  */
-export const TRADE_PAGES = {
+const TRADE_PAGES = {
   'barber-shop': {
     add: ['services_pricing', 'the_team', 'walk_ins'],
     flip: { book: true, gallery: true, faq: false },
@@ -998,20 +998,6 @@ export function pagesForTrade(tradeId) {
 /** Where a step sits in the order, counting from one. Zero for a name nothing uses. */
 export function stepRank(id) {
   return STEPS.findIndex(step => step.id === id) + 1
-}
-
-/** One step by name, or the first, so a frame always has something to hold. */
-export function stepOf(id) {
-  return STEPS.find(step => step.id === id) || STEPS[0]
-}
-
-/** One field by its stored path, or null. */
-export function fieldOf(key) {
-  for (const step of STEPS) {
-    const found = step.fields.find(field => field.key === key)
-    if (found) return found
-  }
-  return null
 }
 
 /**
@@ -1274,35 +1260,6 @@ export function onboardingPercent(answers) {
   }
 
   return complete ? 100 : Math.min(99, Math.floor(earned))
-}
-
-/**
- * Whether every applicable required field on every step is answered.
- *
- * Asked separately from the percent rather than read off it, because the submit
- * control is a different question from the bar and reading one off the other is
- * how the two come to disagree.
- */
-export function onboardingComplete(answers) {
-  return STEPS.every(step => {
-    const { answered, required } = stepProgress(step, answers)
-    return answered >= required
-  })
-}
-
-/**
- * The first step that still owes something, as an index into `STEPS`.
- *
- * A finished form answers with the review step rather than with nothing,
- * because that is where somebody who has answered everything belongs and a
- * caller asking this question is asking where to put them.
- */
-export function nextUnfinished(answers) {
-  const owing = STEPS.findIndex(step => {
-    const { answered, required } = stepProgress(step, answers)
-    return required > 0 && answered < required
-  })
-  return owing === -1 ? STEPS.length - 1 : owing
 }
 
 /**

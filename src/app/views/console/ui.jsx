@@ -134,16 +134,6 @@ export function SkeletonList({ rows = 5 }) {
 }
 
 /**
- * One headline figure.
- *
- * The strip of these under the topbar is the first thing read on every section,
- * so the number carries the weight and everything around it stays quiet: a
- * label above at label scale, the figure at display scale in tabular figures so
- * a column of them lines up, and one line of context under it saying what the
- * number counts. `pulse` marks the one figure that is a live count rather than
- * a total for the window.
- */
-/**
  * A section's controls, against the right edge, over the work they act on.
  *
  * A control that is set once and read from after that does not earn a column
@@ -232,16 +222,6 @@ export function SidePanel({ open, title, aside, note, onClose, children, loading
 }
 
 /**
- * Placeholder rows in the shape of the ones replacing them: same cell count,
- * same row height, same column alignment, so nothing shifts when the figures
- * arrive. Hidden from screen readers, which have nothing to read here.
- *
- * A table whose columns give way as the page narrows hands its cells' classes
- * in a list rather than a count, because a placeholder holding cells the head
- * above it has dropped is a table drawn one width while it loads and another
- * once the rows land - which is the shift this exists to prevent.
- */
-/**
  * One figure on its own, for a page whose strip is a plain row of them.
  *
  * The figure strip in `Figures.jsx` promotes one figure and holds the rest
@@ -270,6 +250,16 @@ export function StatCard({ label, value, caption, tone = 'plain', pulse, loading
   )
 }
 
+/**
+ * Placeholder rows in the shape of the ones replacing them: same cell count,
+ * same row height, same column alignment, so nothing shifts when the figures
+ * arrive. Hidden from screen readers, which have nothing to read here.
+ *
+ * A table whose columns give way as the page narrows hands its cells' classes
+ * in a list rather than a count, because a placeholder holding cells the head
+ * above it has dropped is a table drawn one width while it loads and another
+ * once the rows land - which is the shift this exists to prevent.
+ */
 export function SkeletonRows({ cols, rows, height = ROW_HEIGHT.plain, lastHeight = height }) {
   const cells = Array.isArray(cols) ? cols : Array.from({ length: cols }, () => 'px-5')
   return Array.from({ length: rows }).map((_, row) => (
@@ -386,27 +376,6 @@ export function RankedList({
         </li>
       ))}
     </ul>
-  )
-}
-
-/**
- * Panels side by side rather than stacked.
- *
- * A ranked list of ten names is three hundred pixels of content, and a section
- * that gives each one the full width of the work region spends a screen height
- * on what would fit in a third of it - so the reader scrolls past three cards to
- * compare two figures that could have been level with each other. Two or three
- * across is the dashboard's shape; one column is what a phone gets.
- */
-export function PanelGrid({ children, columns = 2, area }) {
-  const track = columns === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-2'
-  return (
-    <div
-      className={`grid min-h-0 gap-4 lg:h-full lg:auto-rows-[minmax(0,1fr)] [&>*]:min-h-0 [&>*]:min-w-0 ${track}`}
-      style={area ? { '--area': area } : undefined}
-    >
-      {children}
-    </div>
   )
 }
 

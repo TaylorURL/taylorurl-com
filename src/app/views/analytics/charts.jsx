@@ -16,17 +16,7 @@ import {
 import { bucketLabel, bucketTitle, compactCount, fullCount, hourLabel } from './lib/format'
 import { TooltipCard } from './ChartTooltip'
 // Each chart reserves its box before recharts measures the container.
-import {
-  ANIMATE,
-  AXIS,
-  BAR_SIZE,
-  CHART_HEIGHT,
-  CHART_INSET,
-  fitName,
-  frame,
-  GRID,
-  seriesColor,
-} from './chartKit'
+import { ANIMATE, AXIS, CHART_HEIGHT, CHART_INSET, frame, GRID, seriesColor } from './chartKit'
 
 /**
  * Charts for the analytics console.
@@ -237,70 +227,6 @@ export function BreakdownDonut({ rows, total }) {
   )
 }
 
-// The room a source's name gets on the axis; the tooltip carries the whole
-// of one that does not fit.
-const RANK_NAME_WIDTH = 104
-const rankTick = fitName(RANK_NAME_WIDTH)
-
-/** Where sessions came from, ranked. Vertical bars keep long names readable. */
-export function RankedBars({ rows, height = CHART_HEIGHT.traffic, fill }) {
-  if (!rows.length) return null
-  return (
-    <div {...frame(fill, height)}>
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={rows}
-          layout="vertical"
-          margin={{ top: 4, right: CHART_INSET, bottom: 4, left: CHART_INSET }}
-        >
-          <CartesianGrid stroke={GRID} horizontal={false} />
-          <XAxis
-            type="number"
-            tick={AXIS}
-            tickLine={false}
-            axisLine={false}
-            tickFormatter={compactCount}
-            allowDecimals={false}
-          />
-          <YAxis
-            type="category"
-            dataKey="name"
-            tick={AXIS}
-            tickLine={false}
-            axisLine={false}
-            width={RANK_NAME_WIDTH}
-            interval={0}
-            tickFormatter={rankTick}
-          />
-          <Tooltip
-            cursor={{ fill: 'var(--paper-hairline)' }}
-            content={({ active, payload, label }) =>
-              active && payload?.length ? (
-                <TooltipCard
-                  title={label}
-                  rows={[{ label: 'Sessions', value: fullCount(payload[0].value) }]}
-                />
-              ) : null
-            }
-          />
-          <Bar
-            dataKey="sessions"
-            fill="var(--accent)"
-            radius={[0, 1, 1, 0]}
-            barSize={BAR_SIZE}
-            isAnimationActive={ANIMATE}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  )
-}
-
-/**
- * The site's shape over the window, small enough to sit in a table row. No axes
- * and no tooltip: the row's own figures carry the numbers, and this carries
- * whether they are climbing, flat, or a single spike.
- */
 /**
  * The live count over the last stretch of readings, as a filled line.
  *
@@ -357,6 +283,11 @@ export function LiveHistory({ series, height = CHART_HEIGHT.hour, fill }) {
   )
 }
 
+/**
+ * The site's shape over the window, small enough to sit in a table row. No axes
+ * and no tooltip: the row's own figures carry the numbers, and this carries
+ * whether they are climbing, flat, or a single spike.
+ */
 export function Sparkline({ series, height = CHART_HEIGHT.spark, fill }) {
   if (!series?.length) return null
   return (

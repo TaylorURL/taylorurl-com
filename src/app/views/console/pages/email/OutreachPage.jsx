@@ -338,7 +338,6 @@ const VARIANT_STATUS = {
   paused: { label: 'Paused', tone: 'muted' },
   draft: { label: 'Draft', tone: 'plain' },
 }
-const VARIANT_STATUS_ORDER = ['live', 'paused', 'draft']
 
 /** The sentence that says which way the scale runs, wherever a score is shown. */
 const SCALE =

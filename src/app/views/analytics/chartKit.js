@@ -41,11 +41,11 @@ export const GRID = 'var(--paper-hairline)'
 export const ANIMATE = false
 
 /**
- * The thickness of a ranked bar.
+ * The thickness of a bar.
  *
- * A row on Sources, a row on Sites and a row on Pages are the same kind of row
- * - one name, one length - and three weights across three tabs read as three
- * different charts rather than as one console.
+ * A bar by the hour and a bar by the outcome on the management screen are the
+ * same kind of mark - one figure, one length - and two weights on one screen
+ * read as two different charts rather than as one console.
  */
 export const BAR_SIZE = 11
 
@@ -84,32 +84,5 @@ export function frame(fill, height) {
  * is a name, past it and out of the card altogether.
  */
 export const CHART_INSET = 12
-
-// What recharts leaves between the axis and the text hung off it, whether or
-// not the tick line is drawn.
-const TICK_OFFSET = 8
-
-// The ticks are set in the console's figure face, which advances every glyph
-// the same, so the room a label takes is its length times one glyph rather
-// than something to be measured.
-const GLYPH = AXIS.fontSize * 0.6
-
-/**
- * A name trimmed to the room an axis of this width has, the whole of it left
- * to the tooltip.
- *
- * A name longer than its axis is not cut off by recharts. It is wrapped onto
- * as many lines as it takes, over the row above and the row below, or it is
- * drawn out past the left edge of the card, so an axis of names is given a
- * formatter that trims to what the axis can hold rather than a width and a
- * hope.
- */
-export function fitName(width) {
-  const chars = Math.max(4, Math.floor((width - TICK_OFFSET) / GLYPH))
-  return name => {
-    const text = String(name ?? '')
-    return text.length > chars ? `${text.slice(0, chars - 1)}…` : text
-  }
-}
 
 export { CHART_HEIGHT }

@@ -13,7 +13,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
  * build it draws is written down here.
  *
  * NOTHING IN THIS FILE CAN REACH A REAL RECORD, and that is not a claim about
- * how carefully it is used. It is four separate things, each of which holds on
+ * how carefully it is used. It is three separate things, each of which holds on
  * its own:
  *
  *   It has no way to ask. This module imports nothing that fetches and calls
@@ -33,10 +33,6 @@ import { useLocation, useNavigate } from 'react-router-dom'
  *   refuse a row that does not belong to the caller. An admin's session cannot
  *   answer a client's question even when it is pointed at one.
  *
- *   The address on the sample account is at `.example`, which is reserved and
- *   can never be registered, so nothing here can be mistaken for a customer or
- *   reach one by accident.
- *
  * What this file does NOT do is swap anything. It answers one question - is
  * this reader being shown the client's console - and hands back the build to
  * show. The console is what puts the sample in place of the live feed, in one
@@ -54,7 +50,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
  * the only version of this that stays correct as the flow grows.
  */
 const FLAG_KEY = 'taylorurl_console_preview'
-export const PREVIEW_PREFIX = 'taylorurl_console_preview'
+const PREVIEW_PREFIX = 'taylorurl_console_preview'
 
 /** The address that turns it on, and the one value it answers to. */
 const FLAG = 'preview'
@@ -92,7 +88,7 @@ function store() {
 }
 
 /** Whether this tab is in a preview. False everywhere there is no store. */
-export function heldPreview() {
+function heldPreview() {
   const held = store()
   if (!held) return false
   try {
@@ -103,7 +99,7 @@ export function heldPreview() {
 }
 
 /** Turns it on for this tab. */
-export function holdPreview() {
+function holdPreview() {
   const held = store()
   if (!held) return
   try {
@@ -120,7 +116,7 @@ export function holdPreview() {
  * never heard of is still cleared. Anything written while a preview is on
  * belongs under the prefix for exactly this reason.
  */
-export function dropPreview() {
+function dropPreview() {
   const held = store()
   if (!held) return
   try {
@@ -222,9 +218,6 @@ export function usePreviewClient(signedInRole) {
  */
 export const SAMPLE_BUSINESS = 'Bellview Plumbing'
 
-/** The address on the sample account. `.example` is reserved and unroutable. */
-const SAMPLE_EMAIL = 'owner@bellview-plumbing.example'
-
 /**
  * The seven items a build opens with, in the database's own order and its own
  * words.
@@ -325,7 +318,7 @@ const SEEDED = [
  * the one thing that would ever move is which day is being looked at, and a
  * fixture that has to be rewritten to answer that is a fixture nobody moves.
  */
-export function sampleProject(stage = 'received') {
+function sampleProject(stage = 'received') {
   const opened = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
   return {
     project_id: 'sample-project',
@@ -340,56 +333,6 @@ export function sampleProject(stage = 'received') {
     // A build on its first afternoon has nothing written against it, and the
     // tracker already says so in better words than a made-up update would.
     updates: [],
-  }
-}
-
-/**
- * What the sample client answered before the card was taken.
- *
- * These are the rows the pay form writes into `project_briefs.answers`, and
- * they are display names rather than ids because that is what is stored there:
- * 'Plumbing' rather than `plumbing`, 'ServiceTitan, Jobber' rather than a pair
- * of keys. The prefill resolves each name back against the module the name was
- * written from, so a fixture holding ids would exercise a path no client ever
- * takes and prove nothing about the one they do.
- *
- * A full set of nine, because the interesting thing to preview is a form that
- * opens a third answered. The empty version of it is what a build with no
- * brief gets, and it is reached by handing this an empty list rather than by
- * being written down twice.
- */
-export function sampleOrder() {
-  return [
-    { label: 'Business Type', value: 'Plumbing' },
-    { label: 'Designs You Like', value: 'Two picked from the wall' },
-    { label: 'How It Should Feel', value: 'Hard-wearing and practical, Clean and simple' },
-    { label: 'Logo and Colors', value: 'A logo, no set colors' },
-    { label: 'Photographs', value: 'A few photos' },
-    { label: 'How It Reads', value: 'Plain and friendly' },
-    { label: 'Sites to Look At', value: 'None given' },
-    { label: 'Tools in Use', value: 'ServiceTitan, QuickBooks' },
-    { label: 'Business Email', value: 'Google Workspace' },
-  ]
-}
-
-/**
- * The brief before anybody has answered any of it.
- *
- * A preview starts where a client starts. An admin who wants to see the
- * finished half of the form answers their way into it, which is the same
- * walk a client takes and the only one worth rehearsing; a fixture that
- * arrived half filled in would be a preview of a screen nobody is ever shown.
- */
-export function sampleBrief() {
-  return {
-    onboarding_id: 'sample-brief',
-    project_id: 'sample-project',
-    email: SAMPLE_EMAIL,
-    answers: {},
-    progress: 0,
-    step: 'welcome',
-    submitted_at: null,
-    created_at: new Date().toISOString(),
   }
 }
 

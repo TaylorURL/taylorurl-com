@@ -52,11 +52,6 @@ export const PORTAL_SURFACES = Object.freeze([
   },
 ])
 
-/** @param {string} key @returns {object|undefined} */
-export function surfaceOf(key) {
-  return PORTAL_SURFACES.find(one => one.key === key)
-}
-
 /** What the standalone portal publishes: four addresses, one per screen. */
 const STANDALONE = Object.freeze({
   surfaces: Object.freeze(['portal', 'calls', 'management', 'resources']),
