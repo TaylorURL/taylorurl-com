@@ -118,6 +118,37 @@
  * appends nothing; it has already failed, so it fetches nothing further and
  * dresses nothing. Only a link this recovery wrote itself is cleared away,
  * which is what `data-sheet` distinguishes.
+ *
+ * And the sheets that are not in the document at all when it is served.
+ *
+ * Everything above is about the sheet Beasties deferred, which is in the head
+ * the reader was handed and can therefore be rewritten while the markup is
+ * being written. A route that is code-split has a stylesheet of its own, and
+ * that one is asked for by Rollup's preload helper at the moment the route's
+ * chunk is imported: it builds a `<link rel="stylesheet">` in script, appends
+ * it to the head, and waits on it. Nothing in the served markup names it, so
+ * `sheetRecovery` never saw it and it carried none of this - no retry, no
+ * raised priority, and no hold, so its first dropped request was filed as a
+ * fault the moment it happened.
+ *
+ * What that leaves a reader is worse than the deferred sheet's subset, because
+ * there is no subset. The helper records the address in a map before it asks,
+ * so nothing asks again for the life of the document however many times the
+ * route is mounted; the chunk's import rejects once on the failure and
+ * `lazyWithRetry` brings the route back on its next attempt without the sheet.
+ * Measured against this build with `/console/staff`'s sheet refused: the route
+ * rendered, the one request for its 19.9KB of rules was made at 439ms and
+ * never again, and the reader sat on a console with none of them.
+ *
+ * So a stylesheet that arrives after the document does is given the same
+ * `onerror` the served ones carry, which puts it on the same ladder and behind
+ * the same hold in the reporter. It is stamped by a `MutationObserver` rather
+ * than at the point it is created, because the code that creates it is
+ * Rollup's and is not ours to change - and an observer's callback runs at the
+ * end of the task that appended the link, which is before any network result
+ * can be delivered, so there is no window where such a sheet can fail
+ * unwatched. A link that already carries the attribute is left alone, which is
+ * what keeps the recovery's own replacements off the ladder twice.
  */
 
 // What the link is rewritten to call. Short, because it is written into the
@@ -163,6 +194,20 @@ var made=Number(attempt||0)+1
 if(!link)return
 if(made>ATTEMPTS+WAITS){lost(link);return}
 setTimeout(function(){swap(link,made)},made>ATTEMPTS?WAIT_MS:350*made)
+}
+function watch(node){
+if(!node||node.tagName!=='LINK')return
+if(String(node.getAttribute('rel')||'').toLowerCase().split(/\\s+/).indexOf('stylesheet')<0)return
+if(node.getAttribute('onerror'))return
+node.setAttribute('onerror',${JSON.stringify(SHEET_HANDLER + '(this,0)')})
+}
+if(typeof MutationObserver==='function'&&document.head){
+new MutationObserver(function(records){
+for(var i=0;i<records.length;i++){
+var added=records[i].addedNodes
+for(var j=0;j<added.length;j++)watch(added[j])
+}
+}).observe(document.head,{childList:true,subtree:true})
 }
 })()`
 }
