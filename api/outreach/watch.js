@@ -491,6 +491,27 @@ async function carryReply(db, prospect, message, now) {
 const CLICK_BATCH = 200
 
 /**
+ * The first and last row seen under each message token, and how many there were.
+ *
+ * @param {Array<{utm_content: string, created_at: string}>} rows
+ * @returns {Map<string, {first: string, last: string, count: number}>}
+ */
+function seenByToken(rows) {
+  const seen = new Map()
+  for (const row of rows) {
+    const held = seen.get(row.utm_content)
+    if (!held) {
+      seen.set(row.utm_content, { first: row.created_at, last: row.created_at, count: 1 })
+      continue
+    }
+    held.count += 1
+    if (row.created_at < held.first) held.first = row.created_at
+    if (row.created_at > held.last) held.last = row.created_at
+  }
+  return seen
+}
+
+/**
  * Clicks out of a cold message, read off the site's own arrivals.
  *
  * A cold message's links are plain first-party addresses rather than hops
@@ -529,17 +550,7 @@ async function reconcileClicks(db) {
   // reading rather than a watch run that failed.
   if (arrivals.error) return 0
 
-  const seen = new Map()
-  for (const row of arrivals.data) {
-    const held = seen.get(row.utm_content)
-    if (!held) {
-      seen.set(row.utm_content, { first: row.created_at, last: row.created_at, count: 1 })
-      continue
-    }
-    held.count += 1
-    if (row.created_at < held.first) held.first = row.created_at
-    if (row.created_at > held.last) held.last = row.created_at
-  }
+  const seen = seenByToken(arrivals.data)
 
   let moved = 0
   for (const message of messages) {
@@ -600,17 +611,7 @@ async function reconcileEnquiries(db) {
   // allowance the click reading makes for the collector's own tables.
   if (written.error) return 0
 
-  const seen = new Map()
-  for (const row of written.data) {
-    const held = seen.get(row.utm_content)
-    if (!held) {
-      seen.set(row.utm_content, { first: row.created_at, last: row.created_at, count: 1 })
-      continue
-    }
-    held.count += 1
-    if (row.created_at < held.first) held.first = row.created_at
-    if (row.created_at > held.last) held.last = row.created_at
-  }
+  const seen = seenByToken(written.data)
 
   let moved = 0
   for (const message of messages) {

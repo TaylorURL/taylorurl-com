@@ -99,6 +99,7 @@ import { randomUUID } from 'node:crypto'
 import nodemailer from 'nodemailer'
 import { runJob, wait } from '../../lib/outreach/runtime.js'
 import { field } from '../../lib/db/fields.js'
+import { columnMissing } from '../../lib/db/rows.js'
 import {
   FOLLOW_UP_DAYS,
   FOLLOW_UPS_PER_RUN,
@@ -694,13 +695,6 @@ async function warmShot(db, prospect, letter = null) {
   // and the opener it gets shows no capture, so there is nothing to take.
   if (prospect.site_kind === 'social' || !prospect.website) return null
   return ensureShot(db, prospect, { budgetMs: SHOT_WARM_MS })
-}
-
-/** Postgres and PostgREST each have their own way of saying a column is absent. */
-function columnMissing(error) {
-  const code = error?.code || ''
-  if (code === '42703' || code === 'PGRST204') return true
-  return /column .* does not exist|could not find the .* column/i.test(error?.message || '')
 }
 
 /**

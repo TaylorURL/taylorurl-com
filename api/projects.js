@@ -37,6 +37,7 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { authorizeAccount, connect } from '../lib/db/clients.js'
 import { field, uuid } from '../lib/db/fields.js'
+import { runWrite } from '../lib/db/writes.js'
 
 // How long a link to a capture stays good. Long enough to read a page of
 // updates without one going dead mid-scroll, short enough that a link copied
@@ -91,57 +92,35 @@ function faulted(error, said) {
 const ATTACH_FAILED = 'That file could not be attached. Try again in a moment.'
 
 /**
- * Every capture, as a link that works for an hour.
+ * Every capture, or every file the client has handed over, as a link that works
+ * for an hour.
  *
- * The bucket is private, so what the database holds is an object path and
+ * The buckets are private, so what the database holds is an object path and
  * nothing a browser can load. Signing happens on the way out rather than being
  * stored, because a URL written into a row is a dead string by the time
  * anybody opens it.
- */
-async function withSignedShots(db, projects) {
-  const paths = projects.flatMap(project =>
-    (project.updates || []).flatMap(update => (update.media || []).map(shot => shot.path))
-  )
-  if (!paths.length) return projects
-
-  const { data, error } = await db.storage
-    .from('project-shots')
-    .createSignedUrls(paths, SHOT_TTL_SECONDS)
-  if (error) return projects
-
-  const signed = new Map((data || []).map(row => [row.path, row.signedUrl]))
-  return projects.map(project => ({
-    ...project,
-    updates: (project.updates || []).map(update => ({
-      ...update,
-      media: (update.media || []).map(shot => ({ ...shot, url: signed.get(shot.path) || null })),
-    })),
-  }))
-}
-
-/**
- * Every file the client has handed over, as links that work for an hour.
  *
- * Signed on the way out for the same reason the captures are: a URL written
- * into a row is a dead string by the time anybody opens it.
+ * @param {object} db A service-role client.
+ * @param {object[]} projects The builds, as the database answered them.
+ * @param {string} bucket Where the objects are kept.
+ * @param {string} list What each build holds them under: its `updates` or its `tasks`.
+ * @param {string} items What each of those names them in: `media` or `files`.
  */
-async function withSignedFiles(db, projects) {
+async function withSignedLinks(db, projects, bucket, list, items) {
   const paths = projects.flatMap(project =>
-    (project.tasks || []).flatMap(task => (task.files || []).map(file => file.path))
+    (project[list] || []).flatMap(entry => (entry[items] || []).map(item => item.path))
   )
   if (!paths.length) return projects
 
-  const { data, error } = await db.storage
-    .from(INTAKE_BUCKET)
-    .createSignedUrls(paths, SHOT_TTL_SECONDS)
+  const { data, error } = await db.storage.from(bucket).createSignedUrls(paths, SHOT_TTL_SECONDS)
   if (error) return projects
 
   const signed = new Map((data || []).map(row => [row.path, row.signedUrl]))
   return projects.map(project => ({
     ...project,
-    tasks: (project.tasks || []).map(task => ({
-      ...task,
-      files: (task.files || []).map(file => ({ ...file, url: signed.get(file.path) || null })),
+    [list]: (project[list] || []).map(entry => ({
+      ...entry,
+      [items]: (entry[items] || []).map(item => ({ ...item, url: signed.get(item.path) || null })),
     })),
   }))
 }
@@ -201,8 +180,8 @@ export default async function handler(request, response) {
         .json(faulted(error, 'Your projects could not be loaded. Try again in a moment.'))
     }
 
-    const shown = await withSignedShots(wired.db, data ?? [])
-    const projects = await withSignedFiles(wired.db, shown)
+    const shown = await withSignedLinks(wired.db, data ?? [], 'project-shots', 'updates', 'media')
+    const projects = await withSignedLinks(wired.db, shown, INTAKE_BUCKET, 'tasks', 'files')
     response.setHeader('Cache-Control', 'no-store')
     // The number is served rather than shipped, because this repository is
     // public and the site states nowhere that anybody can be phoned. A
@@ -229,11 +208,6 @@ export default async function handler(request, response) {
     return response.status(200).json(signed)
   }
 
-  // The writes answer the same way, so they are read off one table rather than
-  // written out as five near-identical blocks: the difference between them is
-  // the function and its arguments, the sentence a failed call gets, and
-  // nothing else. The sentence sits here rather than at the call because only
-  // this table knows which of the five things the client asked for.
   const writes = {
     tick: () => {
       const task = uuid(body.task_id)
@@ -298,14 +272,7 @@ export default async function handler(request, response) {
     },
   }
 
-  const chosen = writes[body.action]
-  if (!chosen) return response.status(400).json({ error: 'Unknown action.' })
-
-  const call = chosen()
-  if (call.fault) return response.status(400).json({ error: call.fault })
-
-  const { data, error } = await wired.db.rpc(call.name, call.args)
-  if (error) return response.status(500).json(faulted(error, call.failed))
-  if (data?.error) return response.status(400).json({ error: data.error })
+  const ran = await runWrite(wired.db, writes, body.action, faulted)
+  if (ran.body) return response.status(ran.status).json(ran.body)
   return response.status(200).json({ ok: true })
 }

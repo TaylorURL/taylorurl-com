@@ -76,7 +76,7 @@
  * the console reads that sentence out to whoever opened the section.
  */
 import { servedHereOr404 } from '../lib/http/guard.js'
-import { countOf, readAll } from '../lib/db/rows.js'
+import { countOf, readAll, tableMissing } from '../lib/db/rows.js'
 import { bounceRecord } from '../lib/outreach/sending/bounces.js'
 import { hostOf } from '../lib/outreach/prospects/platforms.js'
 import {
@@ -274,13 +274,6 @@ const NO_TABLES =
   'The outreach tables are not in this database yet. Apply the outreach migration to the ' +
   'project, then reload this section.'
 
-/** Postgres and PostgREST each have their own way of saying a table is absent. */
-function absent(error) {
-  const code = error?.code || ''
-  if (code === '42P01' || code === 'PGRST205' || code === 'PGRST106') return true
-  return /does not exist|could not find the table/i.test(error?.message || '')
-}
-
 /** What is said when the board itself will not come back. */
 const BOARD_UNREAD = 'The outreach board could not be read. Try again in a moment.'
 
@@ -303,7 +296,7 @@ const VARIANT_FAILED = 'That letter could not be saved. Try again in a moment.'
  * board did not happen.
  */
 function refusal(error, said = BOARD_UNREAD) {
-  if (absent(error)) return { status: 503, body: { error: NO_TABLES } }
+  if (tableMissing(error)) return { status: 503, body: { error: NO_TABLES } }
   console.error('outreach-admin: %s', error?.message || error)
   return { status: 500, body: { error: said } }
 }
