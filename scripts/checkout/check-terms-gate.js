@@ -153,12 +153,17 @@ check('the payment form asks for the agreement', () => {
   same(start.includes('onAgree={handleAgree}'), true, 'and takes the tick back')
 })
 
-check('the terms open in a tab of their own', () => {
-  const pay = read(PAY)
-  const link = pay.slice(pay.indexOf('to="/terms"'), pay.indexOf('Terms of Service'))
+/** Ends a case unless the form at `path` opens the terms in a tab that cannot reach back. */
+function opensTermsApart(path) {
+  const form = read(path)
+  const link = form.slice(form.indexOf('to="/terms"'), form.indexOf('Terms of Service'))
   same(link.length > 0, true, 'the agreement links to the terms')
   same(link.includes('target="_blank"'), true, 'the terms open in a new tab')
   same(link.includes('noopener'), true, 'the new tab cannot reach back at the page that opened it')
+}
+
+check('the terms open in a tab of their own', () => {
+  opensTermsApart(PAY)
 })
 
 check('the flow refuses to pay without it', () => {
@@ -200,11 +205,7 @@ check('the short checkout asks for the agreement too', () => {
 })
 
 check('the short checkout opens the terms in a tab of their own', () => {
-  const direct = read(DIRECT)
-  const link = direct.slice(direct.indexOf('to="/terms"'), direct.indexOf('Terms of Service'))
-  same(link.length > 0, true, 'the agreement links to the terms')
-  same(link.includes('target="_blank"'), true, 'the terms open in a new tab')
-  same(link.includes('noopener'), true, 'the new tab cannot reach back at the page that opened it')
+  opensTermsApart(DIRECT)
 })
 
 await finish()
