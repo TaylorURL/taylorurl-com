@@ -163,11 +163,6 @@
      words. */
   --nav-surface: rgba(246, 246, 245, 0.85);
   --nav-surface-solid: #f6f6f5;
-  /* The hand-rolled chart's furniture: its grid, the muted series, and the line
-     that follows the pointer. */
-  --chart-grid: rgba(10, 10, 10, 0.15);
-  --chart-baseline: rgba(10, 10, 10, 0.5);
-  --chart-cursor: rgba(47, 107, 255, 0.4);
   /* The moving highlight a shiny label sweeps, and the ground and edge a glare
      sits on. All three follow the ground rather than the brand. */
   --shine-base: var(--ink-mute);
@@ -374,8 +369,6 @@
   --float-near:
     0 2px 4px rgba(16, 30, 66, 0.14), 0 14px 28px -8px rgba(16, 30, 66, 0.2),
     0 34px 64px -28px rgba(16, 30, 66, 0.24);
-  /* Opaque ink for a mask, where alpha is the mask's own business. */
-  --mask-ink: #000;
   /* The dim behind a layer, the ink it is cut from, and how far the page
      under it is thrown out of focus. A dim is the absence of the page rather
      than a shade of it, so both are black under either setting; the ink is
@@ -517,8 +510,6 @@
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
   --nav-surface: rgba(11, 12, 15, 0.85);
   --nav-surface-solid: #0b0c0f;
-  --chart-grid: rgba(244, 245, 247, 0.15);
-  --chart-baseline: rgba(244, 245, 247, 0.4);
   --shine-sweep: rgba(255, 255, 255, 0.95);
   --glare-ground: #0b0c0f;
   --glare-edge: rgba(244, 245, 247, 0.2);
@@ -600,8 +591,6 @@
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
   --nav-surface: rgba(0, 0, 0, 0.85);
   --nav-surface-solid: #000000;
-  --chart-grid: rgba(255, 255, 255, 0.15);
-  --chart-baseline: rgba(255, 255, 255, 0.4);
   --shine-sweep: #ffffff;
   --glare-ground: #000000;
   --glare-edge: #333333;
@@ -680,8 +669,6 @@
      opened under the dark setting would inherit its step and mix toward its own
      white, which is the one direction these colours cannot afford to go. */
   --brand-shape-hold: 100%;
-  --chart-grid: rgba(10, 10, 10, 0.15);
-  --chart-baseline: rgba(10, 10, 10, 0.5);
   --shine-sweep: rgba(10, 10, 10, 0.92);
   --glare-ground: #ffffff;
   --glare-edge: rgba(10, 10, 10, 0.2);
@@ -957,8 +944,6 @@
     --accent-hi: var(--accent-deep);
     --accent-loud: var(--accent-lo);
     --mark-invert: 0;
-    --chart-grid: rgba(10, 10, 10, 0.12);
-    --chart-baseline: rgba(10, 10, 10, 0.5);
     --shine-base: var(--ink-mute);
     --shine-sweep: rgba(10, 10, 10, 0.92);
     --glare-ground: #ffffff;
@@ -1066,8 +1051,6 @@
     --accent-hi: var(--accent-hi-bright);
     --accent-loud: var(--accent-hi-bright);
     --mark-invert: 1;
-    --chart-grid: rgba(244, 245, 247, 0.15);
-    --chart-baseline: rgba(244, 245, 247, 0.4);
     --shine-sweep: rgba(255, 255, 255, 0.95);
     --glare-ground: #08090c;
     --glare-edge: rgba(244, 245, 247, 0.2);
@@ -1401,14 +1384,6 @@
     transform: translateY(-1px);
   }
 
-  /* The rail's mark, which is the only one the panel still draws. A drawing
-     beside every row was eleven things competing with the words it was there
-     to introduce; one at the head of the card is the card's own sign. */
-  .nav-panel-mark {
-    color: var(--ink-mute);
-    @apply transition-colors duration-[var(--nav-duration)] ease-out-soft;
-  }
-
   /* The captures under a feature label, held to the top of the page they
      show. At this size a whole page is a grey smudge, whereas its first
      screen still reads as a website, which is the only thing three thumbnails
@@ -1468,14 +1443,6 @@
     --mark-brand: var(--ink);
   }
 
-  .nav-panel-feature .nav-panel-mark {
-    color: var(--accent);
-  }
-
-  .nav-panel-feature[data-tone='trustpilot'] .nav-panel-mark {
-    color: var(--tp-star);
-  }
-
   /* The group's own index, promoted out of the columns onto a tinted card in
      the rail so the panel has one thing to go to when none of the rows is the
      answer. */
@@ -1516,10 +1483,6 @@
   /* The accreditation panel, in BBB's own torch blue for the reason the
      Trustpilot one is in Trustpilot's green: an accreditation drawn in this
      site's colour reads as one this site issued itself. */
-  .nav-panel-feature[data-tone='bbb'] .nav-panel-mark {
-    color: var(--bbb-blue);
-  }
-
   .nav-panel-feature[data-tone='bbb'] {
     background-color: color-mix(in srgb, var(--bbb-blue) 10%, var(--bg));
     box-shadow: 0 0 0 1px color-mix(in srgb, var(--bbb-blue) 34%, transparent);
@@ -1585,21 +1548,6 @@
 
   .drawer-link[aria-current='page']:hover {
     color: var(--accent-hi);
-  }
-
-  /* A button wearing a field's clothes. It cannot be a field: what it opens is
-     a dialog carrying its own input, and two inputs for one search means a
-     reader can type into the one that does nothing. Dressed as a field it says
-     what it opens without a line of instruction beside it. */
-  .nav-search-open {
-    @apply inline-flex h-[var(--control-h)] cursor-pointer items-center gap-2 rounded-[var(--r-control)] px-2.5 text-[14px] font-medium transition-colors duration-[var(--nav-duration)] ease-out-soft;
-    color: var(--ink-mute);
-    box-shadow: inset 0 0 0 1px var(--hairline-strong);
-  }
-
-  .nav-search-open:hover {
-    background-color: var(--wash-ink);
-    color: var(--ink);
   }
 
   /* The chip printing the shortcut. It inherits the bar's family rather than
@@ -1932,24 +1880,6 @@
   .container-rail-prose {
     @apply mx-auto w-full max-w-[var(--width-reading)] px-6 sm:px-10;
   }
-
-  .hair-x {
-    @apply border-t border-[color:var(--hairline)];
-  }
-
-  .hair-x-paper {
-    @apply border-t border-[color:var(--paper-hairline)];
-  }
-
-  /* The standing label under its other name. One rule rather than two bodies
-     carrying one meaning, which drift the moment either is tuned. */
-  .eyebrow {
-    @apply section-label;
-  }
-
-  .eyebrow-accent {
-    @apply eyebrow text-accent;
-  }
 }
 
 @layer utilities {
@@ -2005,10 +1935,6 @@
     color: var(--paper-ink-faint);
   }
 
-  .text-paper-ghost {
-    color: var(--paper-ink-ghost);
-  }
-
   .bg-bg {
     background-color: var(--bg);
   }
@@ -2049,10 +1975,6 @@
     background-color: var(--paper-hairline);
   }
 
-  .divide-hair > :not([hidden]) ~ :not([hidden]) {
-    border-color: var(--hairline);
-  }
-
   .divide-hair-paper > :not([hidden]) ~ :not([hidden]) {
     border-color: var(--paper-hairline);
   }
@@ -2090,23 +2012,6 @@
     background-repeat: no-repeat;
     background-size: 100% 1px;
   }
-
-  .marquee-fade-x {
-    mask-image: linear-gradient(
-      90deg,
-      transparent,
-      var(--mask-ink) 8%,
-      var(--mask-ink) 92%,
-      transparent
-    );
-    -webkit-mask-image: linear-gradient(
-      90deg,
-      transparent,
-      var(--mask-ink) 8%,
-      var(--mask-ink) 92%,
-      transparent
-    );
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -2121,8 +2026,7 @@
      stopped, so it holds a steady tint rather than going invisible at whatever
      point in the cycle the animation was cut. It is stated before the blanket
      rule below so the placeholder's own answer is the first thing read. */
-  .animate-pulse,
-  .skeleton {
+  .animate-pulse {
     animation: none !important;
     opacity: 0.65;
   }
@@ -2489,24 +2393,6 @@
     border-radius: 0 0 var(--r-feature) var(--r-feature);
   }
 
-  /* The same foot under a panel, which turns a shallower corner. */
-  .panel-foot {
-    @apply card-foot;
-  }
-
-  .panel-foot:last-child {
-    border-radius: 0 0 var(--r-card) var(--r-card);
-  }
-
-  /* A capture inside the foot sits on the page's own ground with a hairline,
-     so a screenshot of a white site does not dissolve into the wash behind it. */
-  .card-shot {
-    border-radius: var(--r-card) var(--r-card) 0 0;
-    border: 1px solid var(--paper-hairline-strong);
-    border-bottom: 0;
-    background-color: var(--paper-field);
-  }
-
   /*
    * THE PLANE, AND WHAT STANDS ON IT
    * -------------------------------------------------------------------------
@@ -2787,7 +2673,7 @@
    * call below are the two that may differ, because each is bounded by an
    * edge of the page rather than by another section.
    *
-   * The largest of the three steps down on a narrow viewport, because the
+   * The larger of the two steps down on a narrow viewport, because the
    * space between two bands is paid twice - the foot of one and the head of
    * the next - and a phone reads that sum against a screen a quarter the
    * height of the one the desktop figure was chosen on. Held at the desktop
@@ -2800,10 +2686,6 @@
 
   .section-y-lg {
     @apply py-16 sm:py-36;
-  }
-
-  .section-y-sm {
-    @apply py-14 sm:py-20;
   }
 
   /*
