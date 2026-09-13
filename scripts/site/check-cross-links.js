@@ -20,11 +20,11 @@
  * against the route table of the site that actually serves each one. A path is
  * good if that site publishes it and there is no third answer.
  *
- * It also holds the two records' sibling fields to each other. `siblingOrigin`
- * and `siblingShortName` are written by hand on both records because the map in
- * `sites.js` must not reach a browser chunk, and a value written twice is a
- * value that can disagree with itself. `check-site-key.js` asserts the fields
- * are present on both; only this asserts they are right.
+ * It also holds the two records' sibling origins to each other. `siblingOrigin`
+ * is written by hand on both records because the map in `sites.js` must not
+ * reach a browser chunk, and a value written twice is a value that can disagree
+ * with itself. `check-site-key.js` asserts the field is present on both; only
+ * this asserts it is right.
  *
  * Nothing here touches the network or the built output, so it runs anywhere and
  * needs no build first.
@@ -85,7 +85,7 @@ const published = key => {
 // a third site quietly point at whichever one was written down first.
 check(
   SITE_KEYS.length === 2,
-  `the sibling fields describe a pair, and there are now ${SITE_KEYS.length} sites ` +
+  `the sibling origin describes a pair, and there are now ${SITE_KEYS.length} sites ` +
     `(${SITE_KEYS.join(', ')}) — siblingOrigin cannot name one of several`
 )
 
@@ -98,11 +98,6 @@ if (SITE_KEYS.length === 2) {
       record.siblingOrigin === other.origin,
       `${key}: siblingOrigin is "${record.siblingOrigin}" but ${other.key} serves "${other.origin}" ` +
         '— every cross-site link on this site would be built on the wrong host'
-    )
-    check(
-      record.siblingShortName === other.shortName,
-      `${key}: siblingShortName is "${record.siblingShortName}" but ${other.key} calls itself ` +
-        `"${other.shortName}" — the chrome would print a name the other site does not answer to`
     )
   }
 }
@@ -119,7 +114,7 @@ if (SITE_KEYS.length === 2) {
  * `serves` is null where the route table could not be read; the path assertion is
  * skipped rather than guessed at, and the read failure is reported on its own.
  */
-export function rowProblems(entry, serves, siteKeys = SITE_KEYS) {
+function rowProblems(entry, serves, siteKeys = SITE_KEYS) {
   const found = []
   const where = entry.key || entry.path
 

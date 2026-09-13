@@ -61,7 +61,7 @@ const HREF = /href="([^"]+)"/g
  * @param {string} origin This site's own, so absolute self-links are read too.
  * @returns {Map<string, Set<string>>} Dead target, and the pages naming it.
  */
-export function deadLinks(pages, answers, origin) {
+function deadLinks(pages, answers, origin) {
   const dead = new Map()
 
   for (const page of pages) {
