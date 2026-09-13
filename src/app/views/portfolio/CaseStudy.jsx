@@ -17,28 +17,43 @@ function kindLabel(kind) {
   return kind === 'product' ? 'Studio Product' : 'Client'
 }
 
-function SectionHeading({ eyebrow, title }) {
+/** One paper band of the study, opened by its label and its heading. */
+function StudySection({ eyebrow, title, children }) {
   return (
-    <m.div {...fadeInUp} className="mb-10">
-      <p className="section-label mb-5 text-accent">{eyebrow}</p>
-      <h2 className="display-4 max-w-2xl font-semibold leading-[1.08] tracking-tightest text-ink-paper [text-wrap:balance]">
-        {title}
-      </h2>
-    </m.div>
+    <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
+      <div className="container-rail-tight relative">
+        <m.div {...fadeInUp} className="mb-10">
+          <p className="section-label mb-5 text-accent">{eyebrow}</p>
+          <h2 className="display-4 max-w-2xl font-semibold leading-[1.08] tracking-tightest text-ink-paper [text-wrap:balance]">
+            {title}
+          </h2>
+        </m.div>
+        {children}
+      </div>
+    </section>
   )
 }
 
-function DetailCard({ item, index }) {
+/** Numbered cards, two to a row, one per thing said about the site or the build. */
+function DetailCards({ items }) {
   return (
-    <m.article {...staggerChild(index, 0.05)} className="panel-static bg-paper p-7">
-      <p className="text-paper-faint mb-4 font-mono text-[12px] tabular-nums">
-        {String(index + 1).padStart(2, '0')}
-      </p>
-      <h3 className="text-[18px] font-semibold leading-snug tracking-tight text-ink-paper">
-        {item.title}
-      </h3>
-      <p className="mt-4 text-[15px] leading-relaxed text-paper-soft">{item.body}</p>
-    </m.article>
+    <div className="grid gap-5 sm:grid-cols-2">
+      {items.map((item, index) => (
+        <m.article
+          key={item.title}
+          {...staggerChild(index, 0.05)}
+          className="panel-static bg-paper p-7"
+        >
+          <p className="text-paper-faint mb-4 font-mono text-[12px] tabular-nums">
+            {String(index + 1).padStart(2, '0')}
+          </p>
+          <h3 className="text-[18px] font-semibold leading-snug tracking-tight text-ink-paper">
+            {item.title}
+          </h3>
+          <p className="mt-4 text-[15px] leading-relaxed text-paper-soft">{item.body}</p>
+        </m.article>
+      ))}
+    </div>
   )
 }
 
@@ -177,65 +192,45 @@ function Study({ project }) {
         </div>
       </section>
 
-      <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div className="container-rail-tight relative">
-          <SectionHeading eyebrow="The Business" title="What the business does." />
-          <div className="max-w-[68ch] space-y-6">
-            {study.business.map(paragraph => (
-              <m.p
-                key={paragraph}
-                {...fadeInUp}
-                className="text-[17px] leading-[1.65] text-paper-soft"
-              >
-                {paragraph}
-              </m.p>
-            ))}
-          </div>
+      <StudySection eyebrow="The Business" title="What the business does.">
+        <div className="max-w-[68ch] space-y-6">
+          {study.business.map(paragraph => (
+            <m.p
+              key={paragraph}
+              {...fadeInUp}
+              className="text-[17px] leading-[1.65] text-paper-soft"
+            >
+              {paragraph}
+            </m.p>
+          ))}
         </div>
-      </section>
+      </StudySection>
 
-      <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div className="container-rail-tight relative">
-          <SectionHeading eyebrow="The Site" title="What a visitor can do here." />
-          <div className="grid gap-5 sm:grid-cols-2">
-            {study.site.map((item, index) => (
-              <DetailCard key={item.title} item={item} index={index} />
+      <StudySection eyebrow="The Site" title="What a visitor can do here.">
+        <DetailCards items={study.site} />
+      </StudySection>
+
+      <StudySection eyebrow="The Build" title="How it is put together.">
+        <DetailCards items={study.build} />
+
+        <m.div {...fadeInUp} className="border-hair-paper mt-12 border-t pt-8">
+          <p className="text-paper-faint section-label-sm mb-5">Built With</p>
+          <ul className="flex flex-wrap gap-2">
+            {study.stack.map(item => (
+              <li key={item} className="chip-static text-paper-soft">
+                {item}
+              </li>
             ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div className="container-rail-tight relative">
-          <SectionHeading eyebrow="The Build" title="How it is put together." />
-          <div className="grid gap-5 sm:grid-cols-2">
-            {study.build.map((item, index) => (
-              <DetailCard key={item.title} item={item} index={index} />
-            ))}
-          </div>
-
-          <m.div {...fadeInUp} className="border-hair-paper mt-12 border-t pt-8">
-            <p className="text-paper-faint section-label-sm mb-5">Built With</p>
-            <ul className="flex flex-wrap gap-2">
-              {study.stack.map(item => (
-                <li key={item} className="chip-static text-paper-soft">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </m.div>
-        </div>
-      </section>
+          </ul>
+        </m.div>
+      </StudySection>
 
       {review && (
-        <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-          <div className="container-rail-tight relative">
-            <SectionHeading eyebrow="The Client" title="What the client said." />
-            <div className="max-w-[680px]">
-              <ClientTestimonialCard review={review} />
-            </div>
+        <StudySection eyebrow="The Client" title="What the client said.">
+          <div className="max-w-[680px]">
+            <ClientTestimonialCard review={review} />
           </div>
-        </section>
+        </StudySection>
       )}
 
       <section
