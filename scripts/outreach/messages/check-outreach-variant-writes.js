@@ -29,7 +29,7 @@ import {
 } from '../../../lib/outreach/variants.js'
 import { STUDIO_INBOX } from '../../../lib/outreach/message.js'
 import { variantSettings } from '../../../lib/outreach/sending/queue.js'
-import { answersFrom, refused } from '../database-fixture.js'
+import { answersFrom, answersInItsOwnWords, refused } from '../database-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 import { OFFLINE } from '../../harness/offline.js'
 
@@ -417,14 +417,7 @@ check('a refused write is answered rather than reported as saved', async () => {
   // A proof is the one write that answers differently, because its whole
   // purpose is to report what the mail server said.
   same(answer.status, 500, 'the status')
-  ok(
-    !answer.body.error.includes('upsert refused'),
-    `the driver is not quoted: ${answer.body.error}`
-  )
-  ok(
-    /^[A-Z].*[.?]$/.test(answer.body.error),
-    `the reason reads as a sentence: ${answer.body.error}`
-  )
+  answersInItsOwnWords(answer, 'upsert refused')
 })
 
 check('a database without the table names the migration', async () => {

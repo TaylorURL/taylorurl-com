@@ -20,7 +20,7 @@
  * write checks are driven against.
  */
 
-import { answersFrom, refused } from '../database-fixture.js'
+import { answersFrom, answersInItsOwnWords, refused } from '../database-fixture.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const { addProspect } = await import('../../../api/outreach-admin.js')
@@ -530,14 +530,7 @@ check('a refused insert is answered rather than reported as filed', async () => 
   // the reason goes to the log instead. Asserting the driver text here was
   // pinning the leak in place rather than the behaviour the name describes.
   same(answer.status, 500, 'the status')
-  ok(
-    !answer.body.error.includes('insert refused'),
-    `the driver is not quoted: ${answer.body.error}`
-  )
-  ok(
-    /^[A-Z].*[.?]$/.test(answer.body.error),
-    `the reason reads as a sentence: ${answer.body.error}`
-  )
+  answersInItsOwnWords(answer, 'insert refused')
 })
 
 check('a table that is not there names itself', async () => {

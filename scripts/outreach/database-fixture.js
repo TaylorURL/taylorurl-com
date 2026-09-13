@@ -11,8 +11,11 @@
  * write carried, a queue check keeps the order a read asked for, and those live
  * beside the check that reads them. How a plan answers, the shapes a client
  * answers in and the client that keeps every filter are the same wherever they
- * are used, so they are here.
+ * are used, so they are here. So is the way the console endpoint's answer to a
+ * refused write is read, since it words that answer the same way whichever
+ * action was refused.
  */
+import { ok } from '../harness/checks.js'
 
 /**
  * Answers a query from a plan.
@@ -44,6 +47,19 @@ export function answersFrom(plan) {
 
 /** A refusal shaped the way a Supabase client reports one. */
 export const refused = what => ({ data: null, error: { message: what } })
+
+/**
+ * Ends a case unless an answer to a refusal gives its reason in a sentence of
+ * its own rather than in `what`, the words the refusal carried. The body is
+ * drawn on a console screen, and the driver's words belong in the log.
+ */
+export function answersInItsOwnWords(answer, what) {
+  ok(!answer.body.error.includes(what), `the driver is not quoted: ${answer.body.error}`)
+  ok(
+    /^[A-Z].*[.?]$/.test(answer.body.error),
+    `the reason reads as a sentence: ${answer.body.error}`
+  )
+}
 
 /** A page of rows, shaped the way a Supabase read answers with one. */
 export const rows = data => ({ data, error: null, count: data.length })
