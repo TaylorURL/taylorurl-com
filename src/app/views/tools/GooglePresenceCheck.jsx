@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, Check, Minus, Search } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
+import CheckScope from '@components/conversion/CheckScope'
 import CheckStage from '@components/conversion/CheckStage'
 import StepFlow from '../start/steps/StepFlow'
 import ToolEnquiry from './ToolEnquiry'
@@ -10,10 +11,8 @@ import { NAV_GROUPS } from '@constants/navigation'
 import { STAGES, stageAt } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultFromResponse, faultMessage } from '@utils/faults'
-import { GROUND } from './lib/ground'
+import { FIELD_LABEL, GROUND, RUN_FAULT } from './lib/ground'
 import { useElapsed } from './lib/useElapsed'
-
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
 
 // What a reading that did not land says when nothing better came back with it.
 // It names the address rather than whatever failed behind it, because the
@@ -139,25 +138,23 @@ export default function GooglePresenceCheck({ tool }) {
                 ground={GROUND}
               />
             ) : (
-              <div className={`p-8 ${GROUND.shell}`}>
-                <p className="section-label-sm text-accent">What Gets Checked</p>
-                <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                  <li>How long the page takes to become usable on a phone.</li>
-                  <li>Whether your business details are in a form Google reads.</li>
-                  <li>What your link looks like when somebody shares it.</li>
-                  <li>Whether the address answers one way rather than two.</li>
-                </ul>
-                <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
-                  Rankings, review counts and what competitors are doing cannot be measured for
-                  free, so they are not in this report.
-                </p>
-              </div>
+              <CheckScope
+                title="What Gets Checked"
+                items={[
+                  'How long the page takes to become usable on a phone.',
+                  'Whether your business details are in a form Google reads.',
+                  'What your link looks like when somebody shares it.',
+                  'Whether the address answers one way rather than two.',
+                ]}
+                note="Rankings, review counts and what competitors are doing cannot be measured for free, so they are not in this report."
+                ground={GROUND}
+              />
             )
           }
         >
           <form onSubmit={run} className="space-y-6">
             <div>
-              <label htmlFor="check-site" className={LABEL}>
+              <label htmlFor="check-site" className={FIELD_LABEL}>
                 Web address
               </label>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -187,11 +184,7 @@ export default function GooglePresenceCheck({ tool }) {
                 stands here is a run that did not finish, which is as often the
                 measurement as the address, and telling a screen reader the
                 field is invalid would name the wrong one. */}
-            {fault && (
-              <p className="text-[14px] leading-snug text-[color:var(--danger-on-paper)]">
-                {fault}
-              </p>
-            )}
+            {fault && <p className={RUN_FAULT}>{fault}</p>}
           </form>
         </CheckStage>
       ),

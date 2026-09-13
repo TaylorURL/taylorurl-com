@@ -14,9 +14,7 @@ import {
 import { zipBlob } from '@app/tools/lib/zip'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
-import { GROUND, SHEET } from './lib/ground'
-
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
+import { FIELD_LABEL, GROUND, SHEET } from './lib/ground'
 
 // What a file that would not open says. It is what `readImage` refuses with and
 // what anything else thrown on the way in falls back to, because from the
@@ -304,7 +302,7 @@ export default function LogoCleaner({ tool }) {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div className="space-y-8">
             <div>
-              <p className={LABEL}>The file</p>
+              <p className={FIELD_LABEL}>The file</p>
               <label
                 className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--r-card)] border border-dashed p-10 text-center transition duration-200 ease-out-soft focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--accent)] ${GROUND.ruleStrong} ${GROUND.wash}`}
                 onDragOver={event => event.preventDefault()}
@@ -360,7 +358,7 @@ export default function LogoCleaner({ tool }) {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div className="space-y-8">
             <div>
-              <p className={LABEL}>What counts as background</p>
+              <p className={FIELD_LABEL}>What counts as background</p>
               <Mesh items={REACHES} columns={{ base: 1, sm: 2 }}>
                 {(entry, index, cell) => {
                   const on = settings.reach === entry.id
@@ -455,7 +453,7 @@ export default function LogoCleaner({ tool }) {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div className="space-y-8">
             <div>
-              <p className={LABEL}>What goes in the folder</p>
+              <p className={FIELD_LABEL}>What goes in the folder</p>
               <ul className={`divide-hair-paper divide-y ${GROUND.shell}`}>
                 {VARIANTS.map(variant => {
                   const on = variant.always || chosen.has(variant.id)

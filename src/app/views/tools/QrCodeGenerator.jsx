@@ -6,9 +6,7 @@ import { LEVELS, encodeQr, maximumBytes } from '@app/tools/lib/qr'
 import { qrPngBlob, qrSvg, qrSvgBlob } from '@app/tools/lib/qrRender'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
-import { GROUND } from './lib/ground'
-
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
+import { FIELD_LABEL, GROUND } from './lib/ground'
 
 // What a code that could not be drawn says, for the causes that are not about
 // what was typed. The reader has one thing they can do about any of them.
@@ -263,7 +261,7 @@ export default function QrCodeGenerator({ tool }) {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div className="space-y-8">
             <div>
-              <p className={LABEL}>What it should do</p>
+              <p className={FIELD_LABEL}>What it should do</p>
               <Mesh items={KINDS} columns={{ base: 1, sm: 2 }}>
                 {(entry, index, cell) => {
                   const chosen = entry.id === kindId
@@ -292,7 +290,7 @@ export default function QrCodeGenerator({ tool }) {
             <div className="space-y-5">
               {kind.fields.map(field => (
                 <div key={field.name}>
-                  <label htmlFor={`qr-${field.name}`} className={LABEL}>
+                  <label htmlFor={`qr-${field.name}`} className={FIELD_LABEL}>
                     {field.label}
                   </label>
                   <input
@@ -333,17 +331,17 @@ export default function QrCodeGenerator({ tool }) {
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
           <div className="space-y-8">
             <div>
-              <p className={LABEL}>Color</p>
+              <p className={FIELD_LABEL}>Color</p>
               {chooser(PRESETS, presetId, setPresetId, option =>
                 option.id === 'classic' ? 'Scans anywhere' : 'Check it scans before printing'
               )}
             </div>
             <div>
-              <p className={LABEL}>Size</p>
+              <p className={FIELD_LABEL}>Size</p>
               {chooser(SIZES, sizeId, setSizeId, option => `${option.note}, ${option.pixels}px`)}
             </div>
             <div>
-              <p className={LABEL}>Damage it survives</p>
+              <p className={FIELD_LABEL}>Damage it survives</p>
               {chooser(
                 LEVELS.filter(level => level.id !== 'L'),
                 levelId,
@@ -439,7 +437,7 @@ function QrPreview({ svg, grid, payload }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <p className={LABEL}>Preview</p>
+      <p className={FIELD_LABEL}>Preview</p>
       <div
         className={`flex items-center justify-center p-6 ${grid ? 'aspect-square' : ''} ${GROUND.shell}`}
       >

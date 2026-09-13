@@ -4,12 +4,12 @@ import SendButton from '@components/conversion/SendButton'
 import BbbSeal from '@components/reviews/BbbSeal'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
-import { GROUNDS } from '@constants/grounds'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import { checkoutErrorMessage, openCheckout } from '@data/checkout/startCheckout'
 import { recordStart } from '@data/leads/startLead'
 import { PAY_STEP } from '@lib/leads/paths.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
+import { FIELD_FAULT, FIELD_LABEL, GROUND } from './lib/ground'
 
 /**
  * The short way to pay, for a build that was agreed in person.
@@ -61,10 +61,6 @@ import { hasMinLength, isValidEmail } from '@utils/validation'
  * out of an index, and it only works on a crawler allowed to fetch the page
  * and read it.
  */
-
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
-const FAULT = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
-const GROUND = GROUNDS.paper
 
 const FIELDS = {
   name: 'payment-name',
@@ -253,7 +249,7 @@ export default function Payment() {
               </div>
 
               <div>
-                <label htmlFor={FIELDS.name} className={LABEL}>
+                <label htmlFor={FIELDS.name} className={FIELD_LABEL}>
                   Full name
                 </label>
                 <input
@@ -271,14 +267,14 @@ export default function Payment() {
                   placeholder="Your name"
                 />
                 {errors.name && (
-                  <p id={`${FIELDS.name}-error`} className={FAULT} role="alert">
+                  <p id={`${FIELDS.name}-error`} className={FIELD_FAULT} role="alert">
                     {errors.name}
                   </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor={FIELDS.email} className={LABEL}>
+                <label htmlFor={FIELDS.email} className={FIELD_LABEL}>
                   Email
                 </label>
                 <input
@@ -296,7 +292,7 @@ export default function Payment() {
                   placeholder="you@yourbusiness.com"
                 />
                 {errors.email && (
-                  <p id={`${FIELDS.email}-error`} className={FAULT} role="alert">
+                  <p id={`${FIELDS.email}-error`} className={FIELD_FAULT} role="alert">
                     {errors.email}
                   </p>
                 )}
@@ -310,7 +306,7 @@ export default function Payment() {
               </div>
 
               <div>
-                <label htmlFor={FIELDS.phone} className={LABEL}>
+                <label htmlFor={FIELDS.phone} className={FIELD_LABEL}>
                   Phone
                 </label>
                 <input
@@ -329,7 +325,7 @@ export default function Payment() {
                   placeholder="(000) 000-0000"
                 />
                 {errors.phone && (
-                  <p id={`${FIELDS.phone}-error`} className={FAULT} role="alert">
+                  <p id={`${FIELDS.phone}-error`} className={FIELD_FAULT} role="alert">
                     {errors.phone}
                   </p>
                 )}
@@ -365,7 +361,7 @@ export default function Payment() {
                   </span>
                 </label>
                 {errors.terms && (
-                  <p id={`${FIELDS.terms}-error`} className={`${FAULT} pl-7`} role="alert">
+                  <p id={`${FIELDS.terms}-error`} className={`${FIELD_FAULT} pl-7`} role="alert">
                     {errors.terms}
                   </p>
                 )}
@@ -378,7 +374,7 @@ export default function Payment() {
               </div>
 
               {fault && (
-                <p className={FAULT} role="alert">
+                <p className={FIELD_FAULT} role="alert">
                   {fault}
                 </p>
               )}
