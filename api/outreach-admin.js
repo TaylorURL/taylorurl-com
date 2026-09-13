@@ -969,6 +969,18 @@ function describeVariants(rows) {
 /** The variants and the holdouts together, as the console has set them. */
 const everything = rows => [...withSettings(VARIANTS, rows), ...withSettings(HOLDOUTS, rows)]
 
+/** A row of counts with the rates they come to, each against what was sent. */
+function withRates(row) {
+  const rate = part => (row.sent && part !== null ? (part / row.sent) * 100 : null)
+  return {
+    ...row,
+    open_rate: rate(row.opened),
+    click_rate: rate(row.clicked),
+    reply_rate: rate(row.replied),
+    enquiry_rate: rate(row.enquired),
+  }
+}
+
 /**
  * What went out under each variant, and what came back.
  *
@@ -1024,15 +1036,7 @@ export function variantResults(variants, messages, prospects = []) {
     if (row.enquired_at) counts.enquired += 1
   }
 
-  const rate = (part, whole) => (whole && part !== null ? (part / whole) * 100 : null)
-  const result = (about, counts) => ({
-    ...about,
-    ...counts,
-    open_rate: rate(counts.opened, counts.sent),
-    click_rate: rate(counts.clicked, counts.sent),
-    reply_rate: rate(counts.replied, counts.sent),
-    enquiry_rate: rate(counts.enquired, counts.sent),
-  })
+  const result = (about, counts) => withRates({ ...about, ...counts })
 
   const rows = variants.map(variant => result(describeVariant(variant), bucket(variant.id)))
   const known = new Set(variants.map(variant => variant.id))
@@ -1116,14 +1120,7 @@ function lettersByName(rows) {
     for (const column of COUNTED) held[column] = (held[column] ?? 0) + (row[column] ?? 0)
   }
 
-  const rate = (part, whole) => (whole && part !== null ? (part / whole) * 100 : null)
-  return order.map(row => ({
-    ...row,
-    open_rate: rate(row.opened, row.sent),
-    click_rate: rate(row.clicked, row.sent),
-    reply_rate: rate(row.replied, row.sent),
-    enquiry_rate: rate(row.enquired, row.sent),
-  }))
+  return order.map(row => withRates(row))
 }
 
 /**

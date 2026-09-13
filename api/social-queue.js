@@ -54,6 +54,9 @@ const runningDryOn = channels =>
     )
     .map(channel => channel.service)
 
+/** A promoted post, as the answer names one. */
+const named = post => ({ id: post.id, service: post.service, dueAt: post.dueAt })
+
 /**
  * How long the platform gives this run, and what of it may go on waiting.
  *
@@ -94,11 +97,7 @@ export default async function handler(request, response) {
 
     response.status(200).json({
       ok: true,
-      promoted: moved.promoted.map(post => ({
-        id: post.id,
-        service: post.service,
-        dueAt: post.dueAt,
-      })),
+      promoted: moved.promoted.map(named),
       skipped: moved.skipped,
       channels: after.channels,
       // A service the cadence covers that Buffer has nothing connected for, and
@@ -151,11 +150,7 @@ export default async function handler(request, response) {
       retryAfterMs: cause.retryAfterMs ?? null,
       // What the run had already moved before it was stopped. Promoting reads
       // the queue back every time, so the next run repeats none of it.
-      promoted: (cause.promoted ?? []).map(post => ({
-        id: post.id,
-        service: post.service,
-        dueAt: post.dueAt,
-      })),
+      promoted: (cause.promoted ?? []).map(named),
       skipped: cause.skipped ?? [],
     })
   }
