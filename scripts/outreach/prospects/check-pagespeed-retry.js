@@ -15,7 +15,7 @@ import {
   PSI_RETRY_PAUSE_MS,
   measure,
 } from '../../../lib/outreach/audit/pagespeed.js'
-import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { cases, check, finish, ok, raised, same } from '../../harness/checks.js'
 
 const contains = (got, want, what) => {
   if (!String(got).includes(want)) throw new Error(`${what}: ${want} missing from ${got}`)
@@ -45,16 +45,6 @@ const report = () => ({
   status: 200,
   json: async () => ({ lighthouseResult: { categories: { performance: { score: 0.67 } } } }),
 })
-
-/** What a call raised, or null when it did not. */
-async function raised(run) {
-  try {
-    await run()
-    return null
-  } catch (cause) {
-    return cause
-  }
-}
 
 check('a report Google failed on its own side is taken again', async () => {
   const asked = []

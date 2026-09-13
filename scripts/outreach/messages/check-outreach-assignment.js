@@ -35,7 +35,7 @@ import { CANDIDATE_COLUMNS, queueFor } from '../../../lib/outreach/sending/queue
 import { answersFrom, captureOnFile, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
-import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
 
@@ -48,16 +48,6 @@ globalThis.fetch = () => {
 
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { compose, work: sendWork } = await import('../../../api/outreach/send.js')
-
-/** The reason a call refused, or nothing where it did not refuse. */
-async function refusal(run) {
-  try {
-    await run()
-  } catch (cause) {
-    return cause.message
-  }
-  return null
-}
 
 // ── The rows ─────────────────────────────────────────────────────────────
 

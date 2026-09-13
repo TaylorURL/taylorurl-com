@@ -23,7 +23,7 @@
  * against, and the client is a plan of answers that records what was written.
  */
 
-import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { cases, check, finish, ok, raised, same } from '../../harness/checks.js'
 
 process.env.GOOGLE_PLACES_API_KEY = 'a-places-key'
 
@@ -220,16 +220,6 @@ async function sweep(script, { settings = SETTINGS, clock, ...plan } = {}) {
 
 /** Every row that reached the table in a sweep. */
 const filed = upserts => upserts.flat()
-
-/** What a sweep raised, or null where it raised nothing. */
-async function raised(run) {
-  try {
-    await run()
-    return null
-  } catch (cause) {
-    return cause
-  }
-}
 
 // ── The walk ─────────────────────────────────────────────────────────────
 

@@ -80,6 +80,30 @@ export function report(faults) {
   if (faults.length) throw new Error(faults.join('\n'))
 }
 
+/**
+ * What `run` threw, or null when it did not throw. A refusal is often what a
+ * case is about, so it is held as a value the case can ask about - its kind, its
+ * code, its reason - rather than as a throw that would end the case.
+ */
+export async function raised(run) {
+  try {
+    await run()
+    return null
+  } catch (cause) {
+    return cause
+  }
+}
+
+/** The reason `run` refused, or null when it did not refuse. */
+export async function refusal(run) {
+  try {
+    await run()
+  } catch (cause) {
+    return cause.message
+  }
+  return null
+}
+
 // How far into `cases` the runner has got, so a script can finish one stretch
 // of checks, say what held, and go on to check more without running the first
 // stretch twice.

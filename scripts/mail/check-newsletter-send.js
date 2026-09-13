@@ -61,7 +61,7 @@ import {
 } from '../../lib/mail/audience.js'
 import { DRAFT, READY, SENT, blocksFor, hasContentFor, sendRefusal } from '../../lib/mail/issues.js'
 import { renderIssueEmail, renderIssueHtml, renderIssueText } from '../../lib/mail/emailTemplate.js'
-import { cases, check, finish, ok, same } from '../harness/checks.js'
+import { cases, check, finish, ok, refusal, same } from '../harness/checks.js'
 
 // Placeholders for the credentials the endpoints read at load. Neither of the
 // first two opens anything: the provider is a recorder in every case that
@@ -100,16 +100,6 @@ const SUBSCRIBER = {
   id: 'sub-1',
   email: 'reader@example.com',
   unsub_token: '11111111-2222-4333-8444-555555555555',
-}
-
-/** Runs `act` and returns the message it raised, or null when it did not. */
-const raised = async act => {
-  try {
-    await act()
-    return null
-  } catch (cause) {
-    return cause.message
-  }
 }
 
 let instance = 0
@@ -442,7 +432,7 @@ check('a message with no unsubscribe link never reaches the provider', async () 
   const sender = await loadSender()
   const provider = recorder()
   const message = await withFetch(provider.fetch, () =>
-    raised(() =>
+    refusal(() =>
       sender.sendOne({
         to: SUBSCRIBER.email,
         subject: ISSUE.title,
