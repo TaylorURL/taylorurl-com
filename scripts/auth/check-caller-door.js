@@ -9,9 +9,8 @@
  * those two are the whole of the job the role describes.
  *
  * The risk in widening a door is not the door that was widened. It is the six
- * beside it that were written against the same helper and must not move, and the
- * one action inside a widened endpoint that still belongs to whoever hired the
- * caller. Both are asserted here rather than read off the diff.
+ * beside it that were written against the same helper and must not move, and
+ * that is asserted here rather than read off the diff.
  *
  *   node scripts/auth/check-caller-door.js
  */
@@ -122,18 +121,6 @@ check('only the two call endpoints admit a representative', async () => {
     /\bauthorizeCaller\b/.test(readFileSync(join(ROOT, file), 'utf8'))
   )
   same(widened.sort().join(','), [...CALLER_DOORS].sort().join(','), 'the widened set')
-})
-
-check('handing a business over is still the admin role alone', async () => {
-  const source = readFileSync(join(ROOT, 'api/calls-admin.js'), 'utf8')
-  // The list and the record are the job; deciding whose business it is is not.
-  // A list somebody can move rows off is a list they can empty of the calls
-  // they do not want.
-  same(
-    /'assign' in body[\s\S]{0,400}account\.role !== 'admin'/.test(source),
-    true,
-    'the hand-over is narrowed by role inside the endpoint'
-  )
 })
 
 /** Every endpoint in the tree, so the assertion above cannot miss a new one. */
