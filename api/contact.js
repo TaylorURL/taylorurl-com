@@ -32,16 +32,8 @@ import { questionsFor } from '../lib/enquiry/questions.js'
 import { markLead } from '../lib/leads/record.js'
 import { SOURCES, keepLead, markLead as markSpineLead } from '../lib/leads/spine.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
-import {
-  INK,
-  INK_FAINT,
-  INK_SOFT,
-  SANS,
-  escapeHtml,
-  eyebrowMark,
-  page,
-  rule,
-} from '../lib/mail/frame.js'
+import { INK, INK_FAINT, INK_SOFT, SANS, eyebrowMark, page, rule } from '../lib/mail/frame.js'
+import { escapeHtml } from '../lib/mail/escape.js'
 import { block, line, sendNotice } from '../lib/mail/notice.js'
 import { CAMPAIGN_FIELDS } from '../src/app/data/leads/campaign.js'
 

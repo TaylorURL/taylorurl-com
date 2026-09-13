@@ -51,7 +51,7 @@ import {
   textBody,
 } from '../../api/contact.js'
 import { QUESTIONS, questionsFor } from '../../lib/enquiry/questions.js'
-import { escapeHtml } from '../../lib/mail/frame.js'
+import { escapeHtml } from '../../lib/mail/escape.js'
 import { campaignUrl } from '../../lib/mail/emailTemplate.js'
 import { SITE } from '../../lib/site/current.js'
 import { cases, check, finish, same } from '../harness/checks.js'
