@@ -1,4 +1,5 @@
 import { SITE } from '../../../../../lib/site/current.js'
+import { bareDomain } from '../../../utils/domains.js'
 
 /**
  * The pages this site does not count as visits, read a second time over the
@@ -65,13 +66,6 @@ export function counted(path) {
   return !ignored.some(entry => under(where, entry))
 }
 
-/** A hostname to compare on: lower case, and with any `www.` off the front. */
-function registrable(host) {
-  return String(host ?? '')
-    .toLowerCase()
-    .replace(/^www\./, '')
-}
-
 // The site the rule belongs to. One tracker serves every site TaylorURL looks
 // after and each declares its own paths, so `rootriseholdings.com/login` is a
 // client's sign-in page with sixty views on it rather than a page of this
@@ -83,7 +77,7 @@ function registrable(host) {
 // `taylorurl.com` and it serves itself at `www.taylorurl.com`, and a hostname
 // written down here a second time would be a third answer to a question the
 // registry already answers.
-const OURS = registrable(new URL(SITE.origin).host)
+const OURS = bareDomain(new URL(SITE.origin).host)
 
 /**
  * The page rows to draw.
@@ -96,7 +90,7 @@ const OURS = registrable(new URL(SITE.origin).host)
 export function countedPages(pages, scopeName) {
   return (pages || []).filter(row => {
     const site = row.site ?? scopeName
-    return !site || registrable(site) !== OURS || counted(row.path)
+    return !site || bareDomain(site) !== OURS || counted(row.path)
   })
 }
 
