@@ -51,9 +51,11 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
+import { field } from '../lib/db/fields.js'
+import { usableEmail } from '../lib/leads/record.js'
 import { claimReturnUrl, mintClaim } from '../lib/stripe/claim.js'
+import { form, openSession } from '../lib/stripe/session.js'
 
-const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
 const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 
@@ -62,8 +64,6 @@ const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 // of the account, and the sandbox keeps its own pair.
 const BUILD_PRODUCT = process.env.STRIPE_PRODUCT_BUILD || ''
 const CARE_PRODUCT = process.env.STRIPE_PRODUCT_CARE || ''
-
-const TIMEOUT_MS = 10000
 
 /**
  * How long a link lives, in seconds.
@@ -88,31 +88,6 @@ const LINK_SECONDS = 24 * 60 * 60 - 300
  */
 const BUILD_CEILING_CENTS = 5000000
 const MONTHLY_CEILING_CENTS = 500000
-
-/** Stripe takes form encoding with square brackets for nesting, not JSON. */
-function form(entries) {
-  const body = new URLSearchParams()
-  for (const [key, value] of Object.entries(entries)) {
-    if (value === undefined || value === null || value === '') continue
-    body.append(key, String(value))
-  }
-  return body
-}
-
-/** An address that could plausibly receive the receipt. */
-function usableEmail(value) {
-  if (typeof value !== 'string') return null
-  const trimmed = value.trim().toLowerCase()
-  if (trimmed.length < 5 || trimmed.length > 254) return null
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) return null
-  return trimmed
-}
-
-/** Trimmed and capped, empty rather than absent when it holds nothing. */
-function short(value, limit) {
-  if (typeof value !== 'string') return ''
-  return value.trim().slice(0, limit)
-}
 
 /**
  * One quoted figure, or the reason it cannot stand.
@@ -274,8 +249,8 @@ export default async function handler(request, response) {
   const expiresAt = Math.floor(Date.now() / 1000) + LINK_SECONDS
   const fields = linkFields({
     email,
-    business: short(payload.business_name, 120),
-    website: short(payload.website, 200),
+    business: field(payload.business_name, 120),
+    website: field(payload.website, 200),
     buildCents: build.cents,
     monthlyCents: monthly.cents,
     quotedBy: caller.email || '',
@@ -283,20 +258,8 @@ export default async function handler(request, response) {
     expiresAt,
   })
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
-    const created = await fetch(STRIPE_ENDPOINT, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: fields,
-    })
-
-    const session = await created.json()
+    const { answer: created, session } = await openSession(fields, SECRET_KEY)
     if (!created.ok || !session.url) {
       // Stripe's own message names the field it refused. This answers an admin
       // rather than a buyer, and an admin can act on it, so it comes back
@@ -321,7 +284,5 @@ export default async function handler(request, response) {
       `checkout-link: ${error?.name === 'AbortError' ? 'Stripe timed out' : 'Stripe unreachable'}`
     )
     return response.status(502).json({ error: 'Stripe could not be reached.' })
-  } finally {
-    clearTimeout(timer)
   }
 }

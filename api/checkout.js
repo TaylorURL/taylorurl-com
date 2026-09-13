@@ -63,11 +63,12 @@ import { servedHereOr404 } from '../lib/http/guard.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
-import { markLead } from '../lib/leads/record.js'
+import { field } from '../lib/db/fields.js'
+import { markLead, usableEmail } from '../lib/leads/record.js'
 import { markLead as markSpineLead } from '../lib/leads/spine.js'
 import { claimReturnUrl, mintClaim } from '../lib/stripe/claim.js'
+import { form, openSession } from '../lib/stripe/session.js'
 
-const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
 const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 
@@ -76,45 +77,12 @@ const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 const BUILD_PRODUCT = process.env.STRIPE_PRODUCT_BUILD || ''
 const CARE_PRODUCT = process.env.STRIPE_PRODUCT_CARE || ''
 
-const TIMEOUT_MS = 10000
-
 // What one email address may start inside one window. A checkout costs nothing
 // to open and expires on its own, so this is aimed at a script in a loop rather
 // than at somebody who changed their mind twice. The window counts the address
 // the checkout is for rather than the connection it came over, since the same
 // buyer retrying from a phone and a laptop is one buyer.
 const startWindow = callerWindow({ limit: 6, windowMs: 10 * 60 * 1000 })
-
-/**
- * Stripe takes form encoding with square brackets for nesting, not JSON.
- *
- * Written out rather than reached for from a library because the shape is
- * small and fixed, and because a helper that flattens anything would happily
- * flatten a field nobody meant to send.
- */
-function form(fields) {
-  const body = new URLSearchParams()
-  for (const [key, value] of Object.entries(fields)) {
-    if (value === undefined || value === null || value === '') continue
-    body.append(key, String(value))
-  }
-  return body
-}
-
-/** An address that could plausibly receive the receipt. */
-function usableEmail(value) {
-  if (typeof value !== 'string') return null
-  const trimmed = value.trim().toLowerCase()
-  if (trimmed.length < 5 || trimmed.length > 254) return null
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(trimmed)) return null
-  return trimmed
-}
-
-/** Trimmed and capped, empty rather than absent when it holds nothing. */
-function short(value, limit) {
-  if (typeof value !== 'string') return ''
-  return value.trim().slice(0, limit)
-}
 
 // What one brief may carry. The configurator asks eight questions and the caps
 // are well clear of the longest answer any of them can produce, so these refuse
@@ -137,8 +105,8 @@ function briefRows(value) {
   if (!Array.isArray(value)) return []
   const rows = []
   for (const row of value.slice(0, BRIEF_ROWS)) {
-    const label = short(row?.label, BRIEF_LABEL)
-    const answer = short(row?.value, BRIEF_VALUE)
+    const label = field(row?.label, BRIEF_LABEL)
+    const answer = field(row?.value, BRIEF_VALUE)
     if (label && answer) rows.push({ label, value: answer })
   }
   return rows
@@ -213,8 +181,8 @@ export default async function handler(request, response) {
   }
   const agreedAt = new Date().toISOString()
 
-  const business = short(payload.business_name, 120)
-  const website = short(payload.website, 200)
+  const business = field(payload.business_name, 120)
+  const website = field(payload.website, 200)
   const brief = await storeBrief(briefRows(payload.brief), email)
   const campaign = payload.campaign && typeof payload.campaign === 'object' ? payload.campaign : {}
 
@@ -279,11 +247,11 @@ export default async function handler(request, response) {
     // are empty. The pixel's cookies go beside them: `_fbp` names the browser
     // and `_fbc` the Meta click, and neither is derivable from anything on this
     // side of the redirect.
-    'metadata[gclid]': short(campaign.gclid, 200),
-    'metadata[gbraid]': short(campaign.gbraid, 200),
-    'metadata[wbraid]': short(campaign.wbraid, 200),
-    'metadata[fbp]': short(payload.fbp, 200),
-    'metadata[fbc]': short(payload.fbc, 400),
+    'metadata[gclid]': field(campaign.gclid, 200),
+    'metadata[gbraid]': field(campaign.gbraid, 200),
+    'metadata[wbraid]': field(campaign.wbraid, 200),
+    'metadata[fbp]': field(payload.fbp, 200),
+    'metadata[fbc]': field(payload.fbc, 400),
     // The brief itself stays here; this is the string that finds it again when
     // the payment lands. `form` drops an empty value, so a checkout opened
     // without a brief carries no key rather than an empty one.
@@ -299,20 +267,8 @@ export default async function handler(request, response) {
     cancel_url: `${SITE_URL}/pricing`,
   })
 
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
-    const created = await fetch(STRIPE_ENDPOINT, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${SECRET_KEY}`,
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
-      body: fields,
-    })
-
-    const session = await created.json()
+    const { answer: created, session } = await openSession(fields, SECRET_KEY)
     if (!created.ok || !session.url) {
       // Stripe's own message names the field it refused, which is worth having
       // in the log and worth keeping out of the browser.
@@ -329,7 +285,5 @@ export default async function handler(request, response) {
       `checkout: ${error?.name === 'AbortError' ? 'Stripe timed out' : 'Stripe unreachable'}`
     )
     return response.status(502).json({ error: 'Checkout could not be started.' })
-  } finally {
-    clearTimeout(timer)
   }
 }

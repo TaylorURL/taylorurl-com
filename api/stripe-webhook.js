@@ -56,6 +56,7 @@ import { notice, sendNotice } from '../lib/mail/notice.js'
 import { markLead } from '../lib/leads/record.js'
 import { markLead as markSpineLead } from '../lib/leads/spine.js'
 import { openBuyerAccount } from '../lib/auth/buyer.js'
+import { buyerEmail } from '../lib/stripe/session.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { SITE } from '../lib/site/current.js'
 import { timedFetch } from '../lib/http/timed.js'
@@ -152,27 +153,12 @@ export function signed(header, body, secret) {
   })
 }
 
-/** The address the receipt went to, whichever field Stripe filled in. */
-function buyerEmail(session) {
-  return session?.customer_details?.email || session?.customer_email || null
-}
-
-/** A payment intent id, whether Stripe expanded the object or sent the id. */
-function paymentIntentId(session) {
-  const intent = session?.payment_intent
-  return typeof intent === 'string' ? intent : intent?.id || null
-}
-
-/** A customer id, on the same terms. */
-function customerId(session) {
-  const customer = session?.customer
-  return typeof customer === 'string' ? customer : customer?.id || null
-}
-
-/** The subscription the session opened, on the same terms. */
-function subscriptionId(session) {
-  const subscription = session?.subscription
-  return typeof subscription === 'string' ? subscription : subscription?.id || null
+/**
+ * The id of an object a session points at - its payment intent, its customer,
+ * the subscription it opened - whether Stripe expanded the object or sent the id.
+ */
+function idOf(object) {
+  return typeof object === 'string' ? object : object?.id || null
 }
 
 /**
@@ -235,10 +221,10 @@ export function openArgs(session, email) {
   const args = {
     p_email: email,
     p_business_name: session?.metadata?.business_name || null,
-    p_customer: customerId(session),
-    p_payment_intent: paymentIntentId(session),
+    p_customer: idOf(session?.customer),
+    p_payment_intent: idOf(session?.payment_intent),
     p_session: typeof session?.id === 'string' ? session.id : null,
-    p_subscription: subscriptionId(session),
+    p_subscription: idOf(session?.subscription),
   }
   const build = quoted(session, 'build_cents')
   if (build !== null) args.p_deposit_cents = build
