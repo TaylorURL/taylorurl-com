@@ -317,9 +317,9 @@ export default function OnlineTools() {
         ]}
       />
       <PageHero
-        eyebrow="What Runs Underneath"
-        title="Booking, ordering, and tracking go in with the site."
-        description="Booking, ordering, and payment at the front. Ad tracking, conversion events, a sending domain, and monitoring underneath. All of it goes in during the build, so none of it has to be retrofitted the day you decide to use it."
+        eyebrow="Built to Order"
+        title="Tools built around how you run the business."
+        description="Stock that counts itself down as sales come in. Every job application in one list, sorted by who can start Monday. The day’s numbers pulled from the software you already use, checked, and in your inbox at seven. Whatever you still do by hand, we build into the site."
       />
 
       <ServiceSection
