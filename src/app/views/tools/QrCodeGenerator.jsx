@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download } from 'lucide-react'
-import Mesh from '@components/mesh/Mesh'
 import StepFlow from '../start/steps/StepFlow'
 import { LEVELS, encodeQr, maximumBytes } from '@app/tools/lib/qr'
 import { qrPngBlob, qrSvg, qrSvgBlob } from '@app/tools/lib/qrRender'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
 import { FIELD_LABEL, GROUND } from './lib/ground'
+import TilePicker from './TilePicker'
+import { ToolNote, ToolStep } from './ToolStep'
 
 // What a code that could not be drawn says, for the causes that are not about
 // what was typed. The reader has one thing they can do about any of them.
@@ -15,12 +16,6 @@ const NOT_DRAWN = 'That could not be turned into a code. Change what it points a
 // What a file that would not save says. Both formats are written here in the
 // browser, so the press is the whole of what there is to try again.
 const NOT_SAVED = 'That file could not be saved. Try the download again.'
-
-// A choice drawn as a mesh cell. The ring is inset because the cell sits inside
-// the mesh's clipping shell, where a ring drawn outside the border is cut off on
-// every edge the cell shares with it.
-const TILE =
-  'flex min-h-[44px] flex-col gap-1 p-4 text-left transition duration-200 ease-out-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--accent)]'
 
 // What the code can point at. Each takes the fields it needs and writes the
 // string a scanner hands to the phone, which is the whole difference between
@@ -223,31 +218,7 @@ export default function QrCodeGenerator({ tool }) {
     }
   }
 
-  const chooser = (options, current, onPick, describe) => (
-    <Mesh items={options} columns={{ base: 1, sm: 3 }}>
-      {(option, index, cell) => {
-        const chosen = option.id === current
-        return (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onPick(option.id)}
-            aria-pressed={chosen}
-            className={`${TILE} ${cell} ${
-              chosen
-                ? 'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)]'
-                : `${GROUND.surface} ${GROUND.title} ${GROUND.wash}`
-            }`}
-          >
-            <span className="text-[13px] font-medium leading-snug">{option.label}</span>
-            <span className={`text-[12px] leading-snug ${chosen ? '' : GROUND.body}`}>
-              {describe(option)}
-            </span>
-          </button>
-        )
-      }}
-    </Mesh>
-  )
+  const Preview = <QrPreview svg={preview} grid={grid} payload={payload} />
 
   const steps = [
     {
@@ -258,65 +229,45 @@ export default function QrCodeGenerator({ tool }) {
       description: tool.lede,
       answered: Boolean(payload),
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-          <div className="space-y-8">
-            <div>
-              <p className={FIELD_LABEL}>What it should do</p>
-              <Mesh items={KINDS} columns={{ base: 1, sm: 2 }}>
-                {(entry, index, cell) => {
-                  const chosen = entry.id === kindId
-                  return (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() => setKindId(entry.id)}
-                      aria-pressed={chosen}
-                      className={`${TILE} ${cell} ${
-                        chosen
-                          ? 'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)]'
-                          : `${GROUND.surface} ${GROUND.title} ${GROUND.wash}`
-                      }`}
-                    >
-                      <span className="text-[13px] font-medium leading-snug">{entry.label}</span>
-                      <span className={`text-[12px] leading-snug ${chosen ? '' : GROUND.body}`}>
-                        {entry.hint}
-                      </span>
-                    </button>
-                  )
-                }}
-              </Mesh>
-            </div>
-
-            <div className="space-y-5">
-              {kind.fields.map(field => (
-                <div key={field.name}>
-                  <label htmlFor={`qr-${field.name}`} className={FIELD_LABEL}>
-                    {field.label}
-                  </label>
-                  <input
-                    id={`qr-${field.name}`}
-                    name={field.name}
-                    type={field.type}
-                    value={values[field.name]}
-                    onChange={change}
-                    className="field py-3.5"
-                    placeholder={field.placeholder}
-                  />
-                </div>
-              ))}
-              {encoded?.error && (
-                <p
-                  className="text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
-                  role="alert"
-                >
-                  {encoded.error}
-                </p>
-              )}
-            </div>
+        <ToolStep preview={Preview}>
+          <div>
+            <p className={FIELD_LABEL}>What it should do</p>
+            <TilePicker
+              options={KINDS}
+              current={kindId}
+              onPick={setKindId}
+              describe={entry => entry.hint}
+              columns={{ base: 1, sm: 2 }}
+            />
           </div>
 
-          <QrPreview svg={preview} grid={grid} payload={payload} />
-        </div>
+          <div className="space-y-5">
+            {kind.fields.map(field => (
+              <div key={field.name}>
+                <label htmlFor={`qr-${field.name}`} className={FIELD_LABEL}>
+                  {field.label}
+                </label>
+                <input
+                  id={`qr-${field.name}`}
+                  name={field.name}
+                  type={field.type}
+                  value={values[field.name]}
+                  onChange={change}
+                  className="field py-3.5"
+                  placeholder={field.placeholder}
+                />
+              </div>
+            ))}
+            {encoded?.error && (
+              <p
+                className="text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
+                role="alert"
+              >
+                {encoded.error}
+              </p>
+            )}
+          </div>
+        </ToolStep>
       ),
     },
     {
@@ -328,35 +279,44 @@ export default function QrCodeGenerator({ tool }) {
         'Black on white at medium is what a printer expects. Change it only if the code has to sit on something that will not take it.',
       answered: true,
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-          <div className="space-y-8">
-            <div>
-              <p className={FIELD_LABEL}>Color</p>
-              {chooser(PRESETS, presetId, setPresetId, option =>
+        <ToolStep preview={Preview}>
+          <div>
+            <p className={FIELD_LABEL}>Color</p>
+            <TilePicker
+              options={PRESETS}
+              current={presetId}
+              onPick={setPresetId}
+              describe={option =>
                 option.id === 'classic' ? 'Scans anywhere' : 'Check it scans before printing'
-              )}
-            </div>
-            <div>
-              <p className={FIELD_LABEL}>Size</p>
-              {chooser(SIZES, sizeId, setSizeId, option => `${option.note}, ${option.pixels}px`)}
-            </div>
-            <div>
-              <p className={FIELD_LABEL}>Damage it survives</p>
-              {chooser(
-                LEVELS.filter(level => level.id !== 'L'),
-                levelId,
-                setLevelId,
-                option => `${Math.round(option.recovers * 100)}% obscured still scans`
-              )}
-              <p className={`mt-3 text-[13px] leading-relaxed ${GROUND.body}`}>
-                Higher recovery makes the pattern denser. Medium is right unless the code is going
-                somewhere it will be rubbed, folded or rained on.
-              </p>
-            </div>
+              }
+              columns={{ base: 1, sm: 3 }}
+            />
           </div>
-
-          <QrPreview svg={preview} grid={grid} payload={payload} />
-        </div>
+          <div>
+            <p className={FIELD_LABEL}>Size</p>
+            <TilePicker
+              options={SIZES}
+              current={sizeId}
+              onPick={setSizeId}
+              describe={option => `${option.note}, ${option.pixels}px`}
+              columns={{ base: 1, sm: 3 }}
+            />
+          </div>
+          <div>
+            <p className={FIELD_LABEL}>Damage it survives</p>
+            <TilePicker
+              options={LEVELS.filter(level => level.id !== 'L')}
+              current={levelId}
+              onPick={setLevelId}
+              describe={option => `${Math.round(option.recovers * 100)}% obscured still scans`}
+              columns={{ base: 1, sm: 3 }}
+            />
+            <p className={`mt-3 text-[13px] leading-relaxed ${GROUND.body}`}>
+              Higher recovery makes the pattern denser. Medium is right unless the code is going
+              somewhere it will be rubbed, folded or rained on.
+            </p>
+          </div>
+        </ToolStep>
       ),
     },
     {
@@ -368,49 +328,39 @@ export default function QrCodeGenerator({ tool }) {
         'PNG for anything you are sending to a printer or dropping into a document. SVG when it needs to scale to a vehicle wrap or a banner without going soft.',
       answered: true,
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-          <div className="space-y-8">
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <button
-                type="button"
-                onClick={() => save('png')}
-                disabled={!grid || saving}
-                className="btn btn-primary"
-              >
-                <Download className="h-4 w-4" aria-hidden="true" />
-                {saving ? 'Preparing…' : `PNG, ${size.pixels}px`}
-              </button>
-              <button
-                type="button"
-                onClick={() => save('svg')}
-                disabled={!grid}
-                className="btn btn-secondary"
-              >
-                <Download className="h-4 w-4" aria-hidden="true" />
-                SVG, any size
-              </button>
-            </div>
-
-            <div className={`border-t pt-6 ${GROUND.rule}`}>
-              <p className="section-label-sm text-accent">Before You Print a Thousand</p>
-              <p className={`mt-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                Scan it off your own screen with your own phone. A code that fails does so for a
-                reason worth finding now: too small on the page, too little contrast against what it
-                is printed on, or an address that was mistyped.
-              </p>
-            </div>
-
-            <div className={`border-t pt-6 ${GROUND.rule}`}>
-              <p className="section-label-sm text-accent">Nothing Leaves This Page</p>
-              <p className={`mt-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                The code is drawn in your browser. What it points at is never sent anywhere, and the
-                file is yours to keep, with no watermark and nothing to sign up for.
-              </p>
-            </div>
+        <ToolStep preview={Preview}>
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => save('png')}
+              disabled={!grid || saving}
+              className="btn btn-primary"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              {saving ? 'Preparing…' : `PNG, ${size.pixels}px`}
+            </button>
+            <button
+              type="button"
+              onClick={() => save('svg')}
+              disabled={!grid}
+              className="btn btn-secondary"
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              SVG, any size
+            </button>
           </div>
 
-          <QrPreview svg={preview} grid={grid} payload={payload} />
-        </div>
+          <ToolNote title="Before You Print a Thousand">
+            Scan it off your own screen with your own phone. A code that fails does so for a reason
+            worth finding now: too small on the page, too little contrast against what it is printed
+            on, or an address that was mistyped.
+          </ToolNote>
+
+          <ToolNote title="Nothing Leaves This Page">
+            The code is drawn in your browser. What it points at is never sent anywhere, and the
+            file is yours to keep, with no watermark and nothing to sign up for.
+          </ToolNote>
+        </ToolStep>
       ),
     },
   ]

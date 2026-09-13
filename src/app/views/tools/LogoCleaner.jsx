@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Download, ImageUp, Undo2 } from 'lucide-react'
-import Mesh from '@components/mesh/Mesh'
 import StepFlow from '../start/steps/StepFlow'
 import {
   REACHES,
@@ -15,6 +14,8 @@ import { zipBlob } from '@app/tools/lib/zip'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
 import { FIELD_LABEL, GROUND, SHEET } from './lib/ground'
+import TilePicker from './TilePicker'
+import { ToolNote, ToolStep } from './ToolStep'
 
 // What a file that would not open says. It is what `readImage` refuses with and
 // what anything else thrown on the way in falls back to, because from the
@@ -27,12 +28,6 @@ const NOT_AN_IMAGE =
 // change: press it again, or hand it something smaller.
 const NOT_BUILT =
   'The logo files could not be built. Try the download again, or a smaller export of the logo.'
-
-// A choice drawn as a mesh cell. The ring is inset because the cell sits inside
-// the mesh's clipping shell, where a ring drawn outside the border is cut off on
-// every edge the cell shares with it.
-const TILE =
-  'flex min-h-[44px] flex-col gap-1 p-4 text-left transition duration-200 ease-out-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--accent)]'
 
 // The longest edge the preview is worked at. A logo arrives at whatever size it
 // was exported and the settings are dragged rather than typed, so the picture
@@ -299,51 +294,45 @@ export default function LogoCleaner({ tool }) {
       description: tool.lede,
       answered: Boolean(image),
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-          <div className="space-y-8">
-            <div>
-              <p className={FIELD_LABEL}>The file</p>
-              <label
-                className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--r-card)] border border-dashed p-10 text-center transition duration-200 ease-out-soft focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--accent)] ${GROUND.ruleStrong} ${GROUND.wash}`}
-                onDragOver={event => event.preventDefault()}
-                onDrop={event => {
-                  event.preventDefault()
-                  take(event.dataTransfer.files[0])
-                }}
+        <ToolStep preview={Preview}>
+          <div>
+            <p className={FIELD_LABEL}>The file</p>
+            <label
+              className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--r-card)] border border-dashed p-10 text-center transition duration-200 ease-out-soft focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--accent)] ${GROUND.ruleStrong} ${GROUND.wash}`}
+              onDragOver={event => event.preventDefault()}
+              onDrop={event => {
+                event.preventDefault()
+                take(event.dataTransfer.files[0])
+              }}
+            >
+              <ImageUp className="h-6 w-6 text-accent" aria-hidden="true" />
+              <span className="text-[15px] font-medium text-ink-paper">
+                Drop a logo here, or choose a file
+              </span>
+              <span className={`text-[13px] ${GROUND.body}`}>PNG, JPG or WebP</span>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                className="sr-only"
+                onChange={event => take(event.target.files[0])}
+              />
+            </label>
+            {fault && (
+              <p
+                className="mt-3 text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
+                role="alert"
               >
-                <ImageUp className="h-6 w-6 text-accent" aria-hidden="true" />
-                <span className="text-[15px] font-medium text-ink-paper">
-                  Drop a logo here, or choose a file
-                </span>
-                <span className={`text-[13px] ${GROUND.body}`}>PNG, JPG or WebP</span>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  className="sr-only"
-                  onChange={event => take(event.target.files[0])}
-                />
-              </label>
-              {fault && (
-                <p
-                  className="mt-3 text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
-                  role="alert"
-                >
-                  {fault}
-                </p>
-              )}
-            </div>
-
-            <div className={`border-t pt-6 ${GROUND.rule}`}>
-              <p className="section-label-sm text-accent">Nothing Leaves This Page</p>
-              <p className={`mt-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                The logo is opened and worked on in your browser. It is never uploaded, so the only
-                copy stays where it already was.
+                {fault}
               </p>
-            </div>
+            )}
           </div>
-          {Preview}
-        </div>
+
+          <ToolNote title="Nothing Leaves This Page">
+            The logo is opened and worked on in your browser. It is never uploaded, so the only copy
+            stays where it already was.
+          </ToolNote>
+        </ToolStep>
       ),
     },
     {
@@ -355,90 +344,71 @@ export default function LogoCleaner({ tool }) {
         'The defaults suit a logo on a white page. The two that matter most are how much of the background to take and whether to reach inside the artwork.',
       answered: true,
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-          <div className="space-y-8">
-            <div>
-              <p className={FIELD_LABEL}>What counts as background</p>
-              <Mesh items={REACHES} columns={{ base: 1, sm: 2 }}>
-                {(entry, index, cell) => {
-                  const on = settings.reach === entry.id
-                  return (
-                    <button
-                      key={entry.id}
-                      type="button"
-                      onClick={() => set('reach', entry.id)}
-                      aria-pressed={on}
-                      className={`${TILE} ${cell} ${
-                        on
-                          ? 'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)]'
-                          : `${GROUND.surface} ${GROUND.title} ${GROUND.wash}`
-                      }`}
-                    >
-                      <span className="text-[13px] font-medium leading-snug">{entry.label}</span>
-                      <span className={`text-[12px] leading-snug ${on ? '' : GROUND.body}`}>
-                        {entry.hint}
-                      </span>
-                    </button>
-                  )
-                }}
-              </Mesh>
-            </div>
-
-            <Slider
-              id="logo-tolerance"
-              label="How much to take"
-              value={settings.tolerance}
-              onChange={value => set('tolerance', value)}
-              hint="Raise it if a rim of the old background is left behind."
+        <ToolStep preview={Preview}>
+          <div>
+            <p className={FIELD_LABEL}>What counts as background</p>
+            <TilePicker
+              options={REACHES}
+              current={settings.reach}
+              onPick={id => set('reach', id)}
+              describe={entry => entry.hint}
+              columns={{ base: 1, sm: 2 }}
             />
-            <Slider
-              id="logo-softness"
-              label="Edge softness"
-              value={settings.softness}
-              max={0.3}
-              onChange={value => set('softness', value)}
-              hint="Raise it for a photographed or scanned logo with a soft edge."
-            />
+          </div>
 
-            <div className={`flex flex-wrap gap-3 border-t pt-6 ${GROUND.rule}`}>
-              <Toggle on={settings.trim} onClick={() => set('trim', !settings.trim)}>
-                Crop to the Artwork
-              </Toggle>
-              <Toggle on={settings.unmix} onClick={() => set('unmix', !settings.unmix)}>
-                Clean the Edge Color
-              </Toggle>
-              <Toggle on={picking} onClick={() => setPicking(!picking)}>
-                {picking ? 'Click the Preview' : 'Pick the Background'}
-              </Toggle>
-              {settings.background && (
-                <button
-                  type="button"
-                  onClick={() => set('background', null)}
-                  className="btn btn-secondary"
-                >
-                  <Undo2 className="h-4 w-4" aria-hidden="true" />
-                  Back to Automatic
-                </button>
-              )}
-            </div>
+          <Slider
+            id="logo-tolerance"
+            label="How much to take"
+            value={settings.tolerance}
+            onChange={value => set('tolerance', value)}
+            hint="Raise it if a rim of the old background is left behind."
+          />
+          <Slider
+            id="logo-softness"
+            label="Edge softness"
+            value={settings.softness}
+            max={0.3}
+            onChange={value => set('softness', value)}
+            hint="Raise it for a photographed or scanned logo with a soft edge."
+          />
 
-            {kept > 0.97 && (
-              <p className={`text-[14px] leading-relaxed ${GROUND.meta}`}>
-                Almost nothing was removed. The background may not be a flat color, or the artwork
-                may already run to every edge.
-              </p>
-            )}
-            {kept < 0.1 && (
-              <p className={`text-[14px] leading-relaxed ${GROUND.meta}`}>
-                Only {Math.round(kept * 100)}% of the picture is left, which usually means the
-                artwork is close in color to what it is sitting on. Lower how much to take, or pick
-                the background off the preview. A logo the same color as its background cannot be
-                separated from it by color alone.
-              </p>
+          <div className={`flex flex-wrap gap-3 border-t pt-6 ${GROUND.rule}`}>
+            <Toggle on={settings.trim} onClick={() => set('trim', !settings.trim)}>
+              Crop to the Artwork
+            </Toggle>
+            <Toggle on={settings.unmix} onClick={() => set('unmix', !settings.unmix)}>
+              Clean the Edge Color
+            </Toggle>
+            <Toggle on={picking} onClick={() => setPicking(!picking)}>
+              {picking ? 'Click the Preview' : 'Pick the Background'}
+            </Toggle>
+            {settings.background && (
+              <button
+                type="button"
+                onClick={() => set('background', null)}
+                className="btn btn-secondary"
+              >
+                <Undo2 className="h-4 w-4" aria-hidden="true" />
+                Back to Automatic
+              </button>
             )}
           </div>
-          {Preview}
-        </div>
+
+          {kept > 0.97 && (
+            <p className={`text-[14px] leading-relaxed ${GROUND.meta}`}>
+              Almost nothing was removed. The background may not be a flat color, or the artwork may
+              already run to every edge.
+            </p>
+          )}
+          {kept < 0.1 && (
+            <p className={`text-[14px] leading-relaxed ${GROUND.meta}`}>
+              Only {Math.round(kept * 100)}% of the picture is left, which usually means the artwork
+              is close in color to what it is sitting on. Lower how much to take, or pick the
+              background off the preview. A logo the same color as its background cannot be
+              separated from it by color alone.
+            </p>
+          )}
+        </ToolStep>
       ),
     },
     {
@@ -450,71 +420,65 @@ export default function LogoCleaner({ tool }) {
         'A zip holding the transparent logo and whichever versions are marked In, at the size you supplied it, with a note saying which to use where.',
       answered: true,
       content: (
-        <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:gap-16">
-          <div className="space-y-8">
-            <div>
-              <p className={FIELD_LABEL}>What goes in the folder</p>
-              <ul className={`divide-hair-paper divide-y ${GROUND.shell}`}>
-                {VARIANTS.map(variant => {
-                  const on = variant.always || chosen.has(variant.id)
-                  return (
-                    <li key={variant.id}>
-                      <button
-                        type="button"
-                        disabled={variant.always}
-                        aria-pressed={on}
-                        onClick={() =>
-                          setChosen(held => {
-                            const next = new Set(held)
-                            if (next.has(variant.id)) next.delete(variant.id)
-                            else next.add(variant.id)
-                            return next
-                          })
-                        }
-                        className={`flex min-h-[44px] w-full items-start justify-between gap-4 p-4 text-left transition duration-200 ease-out-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
-                          variant.always ? 'cursor-default' : GROUND.wash
-                        }`}
+        <ToolStep preview={Preview}>
+          <div>
+            <p className={FIELD_LABEL}>What goes in the folder</p>
+            <ul className={`divide-hair-paper divide-y ${GROUND.shell}`}>
+              {VARIANTS.map(variant => {
+                const on = variant.always || chosen.has(variant.id)
+                return (
+                  <li key={variant.id}>
+                    <button
+                      type="button"
+                      disabled={variant.always}
+                      aria-pressed={on}
+                      onClick={() =>
+                        setChosen(held => {
+                          const next = new Set(held)
+                          if (next.has(variant.id)) next.delete(variant.id)
+                          else next.add(variant.id)
+                          return next
+                        })
+                      }
+                      className={`flex min-h-[44px] w-full items-start justify-between gap-4 p-4 text-left transition duration-200 ease-out-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
+                        variant.always ? 'cursor-default' : GROUND.wash
+                      }`}
+                    >
+                      <span className="flex flex-col gap-1">
+                        <span className="text-[13px] font-medium leading-snug text-ink-paper">
+                          {variant.label}
+                        </span>
+                        <span className={`text-[12px] leading-snug ${GROUND.body}`}>
+                          {variant.hint}
+                        </span>
+                      </span>
+                      <span
+                        className={`section-label-sm flex-shrink-0 ${on ? 'text-accent' : GROUND.meta}`}
                       >
-                        <span className="flex flex-col gap-1">
-                          <span className="text-[13px] font-medium leading-snug text-ink-paper">
-                            {variant.label}
-                          </span>
-                          <span className={`text-[12px] leading-snug ${GROUND.body}`}>
-                            {variant.hint}
-                          </span>
-                        </span>
-                        <span
-                          className={`section-label-sm flex-shrink-0 ${on ? 'text-accent' : GROUND.meta}`}
-                        >
-                          {variant.always ? 'Always' : on ? 'In' : 'Out'}
-                        </span>
-                      </button>
-                    </li>
-                  )
-                })}
-              </ul>
-            </div>
-
-            <button
-              type="button"
-              onClick={save}
-              disabled={!image || busy}
-              className="btn btn-primary"
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              {busy ? 'Building…' : 'Download the Logo Files'}
-            </button>
-
-            <div className={`border-t pt-6 ${GROUND.rule}`}>
-              <p className="section-label-sm text-accent">Check It on Black</p>
-              <p className={`mt-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                A cutout that looks clean on white can still carry a pale rim. Open the on-black
-                version first: if the edges hold up there, they hold up anywhere.
-              </p>
-            </div>
+                        {variant.always ? 'Always' : on ? 'In' : 'Out'}
+                      </span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
           </div>
-          {Preview}
-        </div>
+
+          <button
+            type="button"
+            onClick={save}
+            disabled={!image || busy}
+            className="btn btn-primary"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" />
+            {busy ? 'Building…' : 'Download the Logo Files'}
+          </button>
+
+          <ToolNote title="Check It on Black">
+            A cutout that looks clean on white can still carry a pale rim. Open the on-black version
+            first: if the edges hold up there, they hold up anywhere.
+          </ToolNote>
+        </ToolStep>
       ),
     },
   ]
