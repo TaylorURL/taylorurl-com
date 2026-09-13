@@ -1,6 +1,7 @@
 import { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { m, useAnimationFrame, useMotionValue, useReducedMotion, useTransform } from 'framer-motion'
 import { ChevronsLeftRight, Search, Star } from 'lucide-react'
+import { useMediaQuery } from '@hooks/useMediaQuery'
 
 const START_PERCENT = 42
 const KEY_STEP = 4
@@ -36,17 +37,7 @@ const FINE_POINTER = '(hover: hover) and (pointer: fine)'
  * and hydration is what adds one.
  */
 function useFinePointer() {
-  const [fine, setFine] = useState(false)
-
-  useEffect(() => {
-    const query = window.matchMedia(FINE_POINTER)
-    const sync = () => setFine(query.matches)
-    sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
-  }, [])
-
-  return fine
+  return useMediaQuery(FINE_POINTER)
 }
 
 /**

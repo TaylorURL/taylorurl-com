@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef } from 'react'
 import {
   useMotionTemplate,
   useReducedMotion,
@@ -6,6 +6,7 @@ import {
   useSpring,
   useTransform,
 } from 'framer-motion'
+import { useMediaQuery } from '@hooks/useMediaQuery'
 
 const DEFAULT_OFFSET = ['start end', 'end start']
 const DEFAULT_SPRING = { stiffness: 120, damping: 30, mass: 0.5 }
@@ -24,17 +25,7 @@ const SIDE_BY_SIDE = '(min-width: 1024px)'
  * paint after it carry no drift and nothing moves as the bundle lands.
  */
 function useSideBySide() {
-  const [wide, setWide] = useState(false)
-
-  useEffect(() => {
-    const query = window.matchMedia(SIDE_BY_SIDE)
-    const sync = () => setWide(query.matches)
-    sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
-  }, [])
-
-  return wide
+  return useMediaQuery(SIDE_BY_SIDE)
 }
 
 /**
