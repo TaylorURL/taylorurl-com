@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { m } from 'framer-motion'
 import { X } from 'lucide-react'
 import { fadeInUp } from '@constants/animations'
+import { SUPPORT_EMAIL } from '@constants/navigation'
 import { faultMessage } from '@utils/faults'
 import { MONO_LABEL, ROW_HEIGHT } from './lib/tokens'
 
@@ -448,6 +449,19 @@ export function PanelFill({ children, className = '', minHeight = 120 }) {
   )
 }
 
+/**
+ * What a chart's box says when there is no chart to draw in it. It takes the
+ * box rather than its own padding, so the card stays the height its
+ * neighbours are whichever of them has figures behind it.
+ */
+export function EmptyFill({ children }) {
+  return (
+    <div className="flex items-center justify-center px-5">
+      <p className="text-center text-[13px] text-paper-soft">{children}</p>
+    </div>
+  )
+}
+
 /** The block a card closes on: a note, a total, or the control that acts on it. */
 export function PanelFoot({ children, className = '' }) {
   return <div className={`console-card-foot ${className}`}>{children}</div>
@@ -486,6 +500,28 @@ export function SectionNotice({ children, area }) {
     <Panel title="Nothing to Show" area={area}>
       <p className="px-5 py-10 text-center text-[13px] text-paper-soft">{readable(children)}</p>
     </Panel>
+  )
+}
+
+/**
+ * Somebody to reach, under a client screen that has nothing else to offer: the
+ * studio's number where the feed carries one, and its address whether or not.
+ */
+export function ContactLine({ phone }) {
+  return (
+    <p>
+      {phone ? (
+        <>
+          <a className="console-link" href={`tel:${phone.replace(/[^0-9+]/g, '')}`}>
+            {phone}
+          </a>
+          {' or '}
+        </>
+      ) : null}
+      <a className="console-link" href={`mailto:${SUPPORT_EMAIL}`}>
+        {SUPPORT_EMAIL}
+      </a>
+    </p>
   )
 }
 

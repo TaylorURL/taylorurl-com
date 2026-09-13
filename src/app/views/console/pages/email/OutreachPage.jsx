@@ -1585,6 +1585,20 @@ function QueueLetter({ row, step, letters, onOpenLetter }) {
   )
 }
 
+/** A business's name at the head of a row, and the way into its record. */
+function ProspectName({ name, onOpen }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      title={name || 'Unnamed business'}
+      className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
+    >
+      {name || 'Unnamed business'}
+    </button>
+  )
+}
+
 /**
  * A business about to be written to: when, its place in the line, the kind
  * it reads as, the letter it gets and where the letter goes.
@@ -1623,14 +1637,7 @@ function NextRow({ row, place, letters, onOpenProspect, onOpenLetter }) {
         {place === null ? '—' : fullCount(place + 1)}
       </td>
       <td className={CELL}>
-        <button
-          type="button"
-          onClick={() => onOpenProspect(row.prospect_id)}
-          title={row.name || 'Unnamed business'}
-          className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
-        >
-          {row.name || 'Unnamed business'}
-        </button>
+        <ProspectName name={row.name} onOpen={() => onOpenProspect(row.prospect_id)} />
         <span className={`${MONO_LABEL} text-paper-faint block truncate`}>
           {[row.town, row.trade].filter(Boolean).join(' · ') || '—'}
         </span>
@@ -1713,14 +1720,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
         {stamp(row.sent_at || row.created_at)}
       </td>
       <td className={CELL}>
-        <button
-          type="button"
-          onClick={() => onOpenProspect(row.prospect_id)}
-          title={row.name || 'Unnamed business'}
-          className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
-        >
-          {row.name || 'Unnamed business'}
-        </button>
+        <ProspectName name={row.name} onOpen={() => onOpenProspect(row.prospect_id)} />
         <span className={`${MONO_LABEL} text-paper-faint block truncate`}>{row.town || '—'}</span>
         {/* What the dropped columns were carrying, folded back under the name
             at the widths they are gone. */}
@@ -1890,14 +1890,7 @@ function ProspectRow({ row, onOpenProspect }) {
   return (
     <tr className="border-hair-paper border-t align-top">
       <td className={CELL}>
-        <button
-          type="button"
-          onClick={() => onOpenProspect(row.id)}
-          title={row.name || 'Unnamed business'}
-          className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
-        >
-          {row.name || 'Unnamed business'}
-        </button>
+        <ProspectName name={row.name} onOpen={() => onOpenProspect(row.id)} />
         <span className={`${MONO_LABEL} text-paper-faint block truncate`} title={place}>
           {place || '—'}
         </span>

@@ -264,11 +264,13 @@ function nothing(whole, kind) {
   return whole.length ? 'Nothing matches.' : `No ${kind} yet.`
 }
 
-/**
- * Every account: its role and the sites it can open, with the role changed
- * and a site granted or taken back on the row.
- */
-function PeopleTable({ area, people, shown, query, onQuery, sites, me, acting, act, loading }) {
+/** What a staff or admin account can open, which no grant on a site decides. */
+function EverySite() {
+  return <Badge title="Granted by the role, not by a grant on a site">Every Site</Badge>
+}
+
+/** The People card, as the work or as the reading: its count, and its search. */
+function PeopleCard({ area, people, shown, query, onQuery, loading, children }) {
   return (
     <Panel
       area={area}
@@ -284,6 +286,41 @@ function PeopleTable({ area, people, shown, query, onQuery, sites, me, acting, a
           onChange={onQuery}
         />
       )}
+      {children}
+    </Panel>
+  )
+}
+
+/** The Sites card, as the work or as the reading: its count, and its search. */
+function SitesCard({ area, sites, shown, query, onQuery, loading, children }) {
+  return (
+    <Panel
+      area={area}
+      title="Sites"
+      aside={query ? `${shown.length} of ${sites.length}` : `${sites.length} tracked`}
+      loading={loading}
+    >
+      {sites.length >= SEARCHED && (
+        <SearchBar
+          label="Search Sites"
+          placeholder="Search by domain or owner"
+          value={query}
+          onChange={onQuery}
+        />
+      )}
+      {children}
+    </Panel>
+  )
+}
+
+/**
+ * Every account: its role and the sites it can open, with the role changed
+ * and a site granted or taken back on the row.
+ */
+function PeopleTable({ sites, me, acting, act, ...roll }) {
+  const { people, shown, loading } = roll
+  return (
+    <PeopleCard {...roll}>
       <PanelBody>
         {/* Fixed columns rather than shared-out ones: a name takes its share
             of the card, a role is the width of its own picker whatever the
@@ -364,9 +401,7 @@ function PeopleTable({ area, people, shown, query, onQuery, sites, me, acting, a
                           />
                         </div>
                       ) : (
-                        <Badge title="Granted by the role, not by a grant on a site">
-                          Every Site
-                        </Badge>
+                        <EverySite />
                       )}
                     </td>
                   </tr>
@@ -381,7 +416,7 @@ function PeopleTable({ area, people, shown, query, onQuery, sites, me, acting, a
       <PanelFoot>
         <p className="leading-relaxed">{DOMAIN_NOTE}</p>
       </PanelFoot>
-    </Panel>
+    </PeopleCard>
   )
 }
 
@@ -390,22 +425,10 @@ function PeopleTable({ area, people, shown, query, onQuery, sites, me, acting, a
  * many sites they hold, which is what a reader handing out a site wants to
  * know about the person they are handing it to.
  */
-function PeopleRoll({ area, people, shown, query, onQuery, loading }) {
+function PeopleRoll(roll) {
+  const { people, shown, loading } = roll
   return (
-    <Panel
-      area={area}
-      title="People"
-      aside={query ? `${shown.length} of ${people.length}` : `${people.length} accounts`}
-      loading={loading}
-    >
-      {people.length >= SEARCHED && (
-        <SearchBar
-          label="Search Accounts"
-          placeholder="Search by name or email"
-          value={query}
-          onChange={onQuery}
-        />
-      )}
+    <PeopleCard {...roll}>
       <PanelBody>
         <table className="console-table text-[13px]" aria-busy={loading}>
           <thead>
@@ -441,9 +464,7 @@ function PeopleRoll({ area, people, shown, query, onQuery, loading }) {
                         {person.memberships.length}
                       </span>
                     ) : (
-                      <Badge title="Granted by the role, not by a grant on a site">
-                        Every Site
-                      </Badge>
+                      <EverySite />
                     )}
                   </td>
                 </tr>
@@ -454,7 +475,7 @@ function PeopleRoll({ area, people, shown, query, onQuery, loading }) {
           </tbody>
         </table>
       </PanelBody>
-    </Panel>
+    </PeopleCard>
   )
 }
 
@@ -462,22 +483,10 @@ function PeopleRoll({ area, people, shown, query, onQuery, loading }) {
  * Every site: whose it is and who can open it, with the owner picked and a
  * reader taken back on the row.
  */
-function SitesTable({ area, sites, shown, query, onQuery, people, acting, act, loading }) {
+function SitesTable({ people, acting, act, ...roll }) {
+  const { sites, shown, loading } = roll
   return (
-    <Panel
-      area={area}
-      title="Sites"
-      aside={query ? `${shown.length} of ${sites.length}` : `${sites.length} tracked`}
-      loading={loading}
-    >
-      {sites.length >= SEARCHED && (
-        <SearchBar
-          label="Search Sites"
-          placeholder="Search by domain or owner"
-          value={query}
-          onChange={onQuery}
-        />
-      )}
+    <SitesCard {...roll}>
       <PanelBody>
         <table className="console-table text-[13px]" aria-busy={loading}>
           <thead>
@@ -576,7 +585,7 @@ function SitesTable({ area, sites, shown, query, onQuery, people, acting, act, l
       <PanelFoot>
         <p className="leading-relaxed">{DOMAIN_NOTE}</p>
       </PanelFoot>
-    </Panel>
+    </SitesCard>
   )
 }
 
@@ -585,22 +594,10 @@ function SitesTable({ area, sites, shown, query, onQuery, people, acting, act, l
  * many can open it, so a site nobody owns or nobody reads is found without
  * leaving the roll a grant is made on.
  */
-function SitesRoll({ area, sites, shown, query, onQuery, loading }) {
+function SitesRoll(roll) {
+  const { sites, shown, loading } = roll
   return (
-    <Panel
-      area={area}
-      title="Sites"
-      aside={query ? `${shown.length} of ${sites.length}` : `${sites.length} tracked`}
-      loading={loading}
-    >
-      {sites.length >= SEARCHED && (
-        <SearchBar
-          label="Search Sites"
-          placeholder="Search by domain or owner"
-          value={query}
-          onChange={onQuery}
-        />
-      )}
+    <SitesCard {...roll}>
       <PanelBody>
         <table className="console-table text-[13px]" aria-busy={loading}>
           <thead>
@@ -647,7 +644,7 @@ function SitesRoll({ area, sites, shown, query, onQuery, loading }) {
           </tbody>
         </table>
       </PanelBody>
-    </Panel>
+    </SitesCard>
   )
 }
 

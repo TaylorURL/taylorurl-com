@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useConsole } from '../../lib/context'
-import { ConsolePage, Panel, PanelFoot, SkeletonBar } from '../../ui'
+import { ConsolePage, ContactLine, Panel, PanelFoot, SkeletonBar } from '../../ui'
 import { MONO_LABEL } from '../../lib/tokens'
 import { currentProject } from '../../lib/stages'
 import {
@@ -668,19 +668,7 @@ export default function OnboardingPage() {
                 paid with. Signing in with that address will bring it up. If that is the address you
                 used, tell us and we will move it across in a minute.
               </p>
-              <p>
-                {phone ? (
-                  <>
-                    <a className="console-link" href={`tel:${phone.replace(/[^0-9+]/g, '')}`}>
-                      {phone}
-                    </a>
-                    {' or '}
-                  </>
-                ) : null}
-                <a className="console-link" href={`mailto:${SUPPORT_EMAIL}`}>
-                  {SUPPORT_EMAIL}
-                </a>
-              </p>
+              <ContactLine phone={phone} />
             </div>
           )}
         </Panel>

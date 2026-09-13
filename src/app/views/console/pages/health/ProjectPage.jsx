@@ -3,6 +3,7 @@ import { useConsole } from '../../lib/context'
 import {
   Area,
   ConsolePage,
+  ContactLine,
   Panel,
   PanelBody,
   PanelFoot,
@@ -119,19 +120,7 @@ export default function ProjectPage() {
                 Signing in with that address will bring it up. If that is the address you used, tell
                 us and we will move it across in a minute.
               </p>
-              <p>
-                {phone ? (
-                  <>
-                    <a className="console-link" href={`tel:${phone.replace(/[^0-9+]/g, '')}`}>
-                      {phone}
-                    </a>
-                    {' or '}
-                  </>
-                ) : null}
-                <a className="console-link" href={`mailto:${SUPPORT_EMAIL}`}>
-                  {SUPPORT_EMAIL}
-                </a>
-              </p>
+              <ContactLine phone={phone} />
             </div>
           )}
         </Panel>

@@ -10,6 +10,7 @@ import {
 } from '../../../analytics/lib/format'
 import {
   ConsolePage,
+  EmptyFill,
   Metric,
   Panel,
   PanelBody,
@@ -154,19 +155,6 @@ function Reading({ label, value, note, loading }) {
       )}
       {!loading && note && <span className={`${MONO_LABEL} text-paper-faint`}>{note}</span>}
     </span>
-  )
-}
-
-/**
- * What a chart's box says when there is no chart to draw in it. It takes the
- * box rather than its own padding, so the card stays the height its
- * neighbours are whichever of them has figures behind it.
- */
-function EmptyFill({ children }) {
-  return (
-    <div className="flex items-center justify-center px-5">
-      <p className="text-center text-[13px] text-paper-soft">{children}</p>
-    </div>
   )
 }
 

@@ -519,6 +519,23 @@ function Reading({ lead, team, messages, messagesError, saving, onMark, onCompos
   )
 }
 
+/** A letter's subject line, as the composer and the draft editor both take it. */
+function SubjectField({ value, onChange }) {
+  return (
+    <label className="grid gap-1.5">
+      <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
+      <input
+        required
+        type="text"
+        maxLength={TEMPLATE_LIMITS.subject}
+        value={value}
+        onChange={event => onChange(event.target.value)}
+        className={FIELD}
+      />
+    </label>
+  )
+}
+
 /**
  * The composer: a draft picked, the blanks filled from the lead, and the
  * whole message read before it goes.
@@ -598,17 +615,7 @@ function Composer({ open, lead, templates, sending, onSend, onClose }) {
             with the lead's own details already in the blanks.
           </p>
         )}
-        <label className="grid gap-1.5">
-          <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
-          <input
-            required
-            type="text"
-            maxLength={TEMPLATE_LIMITS.subject}
-            value={subject}
-            onChange={event => setSubject(event.target.value)}
-            className={FIELD}
-          />
-        </label>
+        <SubjectField value={subject} onChange={setSubject} />
         <label className="grid gap-1.5">
           <span className={`${MONO_LABEL} text-paper-faint`}>Message</span>
           <textarea
@@ -800,17 +807,7 @@ function DraftEditor({ open, draft, busy, onSave, onDelete, onClose }) {
             className={FIELD}
           />
         </label>
-        <label className="grid gap-1.5">
-          <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
-          <input
-            required
-            type="text"
-            maxLength={TEMPLATE_LIMITS.subject}
-            value={subject}
-            onChange={event => setSubject(event.target.value)}
-            className={FIELD}
-          />
-        </label>
+        <SubjectField value={subject} onChange={setSubject} />
         <label className="grid gap-1.5">
           <span className={`${MONO_LABEL} text-paper-faint`}>Body</span>
           <textarea

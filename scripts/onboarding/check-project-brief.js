@@ -166,7 +166,12 @@ check('a console with no build in it explains itself', () => {
     'the empty tracker has something to say rather than one centred line'
   )
   same(tracker.includes('the email address you paid with'), true, 'it names the likeliest cause')
-  same(tracker.includes('SUPPORT_EMAIL'), true, 'it gives them somebody to reach')
+  same(
+    tracker.includes('<ContactLine phone={phone} />') &&
+      read('src/app/views/console/ui.jsx').includes('mailto:${SUPPORT_EMAIL}'),
+    true,
+    'it gives them somebody to reach'
+  )
 })
 
 check('a build pointed at the wrong address can be moved', () => {
