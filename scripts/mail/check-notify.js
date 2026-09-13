@@ -76,11 +76,11 @@ const notifyHandler = (await import('../../api/notify.js')).default
  * a brand. Every sender that speaks for the studio alone still draws this, byte
  * for byte, and a frame change that alters one character of it fails here.
  */
-const STUDIO_MASTHEAD = `<tr><td bgcolor="#000000" style="padding:26px 40px;background-color:#000000;">
+const STUDIO_MASTHEAD = `<tr><td bgcolor="#1f1e1d" style="padding:26px 40px;background-color:#1f1e1d;">
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;width:100%;">
       <tr>
         <td align="left" valign="middle" style="line-height:0;font-size:0;"><img src="https://www.taylorurl.com/images/email/wordmark-on-dark.png" alt="TaylorURL" width="120" height="36" style="display:block;width:120px;height:36px;border:0;outline:none;text-decoration:none;" /></td>
-        <td align="right" valign="middle"><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#9a9a9a;">TaylorURL LLC</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#9a9a9a;">Baytown, TX</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#9a9a9a;">(281) 862-8687</div></td>
+        <td align="right" valign="middle"><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">TaylorURL LLC</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">Baytown, TX</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">(281) 862-8687</div></td>
       </tr>
     </table>
   </td></tr>`

@@ -36,12 +36,23 @@ export const BBB_EVALUATE_URL = `${BBB_PROFILE_URL}/leave-a-review`
  * the site's own CDN, and a request to it on every page is a request that says
  * who is reading this site to somebody who did not need telling.
  *
- * It is the horizontal colour lockup, resized and nothing else. BBB licenses
+ * It is the horizontal black lockup, resized and nothing else. BBB licenses
  * the artwork on the condition it is shown whole and unaltered, so the file is
- * BBB's own pixels down to the rounded corners the transparency carries, and
- * the footer sizes it in CSS rather than the file being redrawn to fit.
+ * BBB's own pixels down to the rounded corners the transparency carries.
+ *
+ * Holding it is the claim; drawing it is a separate decision, and the site's
+ * surfaces do not. The lockup carries its own white panel and its own box,
+ * made to stand on somebody else's page, and on this one it read as a sticker.
+ * `@components/BbbSeal` and the standings rail draw the torch in the network's
+ * own ink with the claim in words beside it, the way every other network's
+ * mark is drawn. The social card about the accreditation is the one place the
+ * seal itself is shown, because that card is about the seal.
+ *
+ * The path names the variant. `/images/` is served immutable for a year, so a
+ * different lockup at the old path would never reach a reader who had seen the
+ * first one.
  */
-export const BBB_SEAL_SRC = '/images/bbb-accredited-business.png'
+export const BBB_SEAL_SRC = '/images/bbb-accredited-business-black.png'
 
 /** The seal artwork's own proportions, so the footer reserves its box. */
 export const BBB_SEAL_WIDTH = 384
@@ -50,12 +61,11 @@ export const BBB_SEAL_HEIGHT = 137
 /**
  * The corner BBB rounded the lockup to, in the file's own pixels.
  *
- * It is here rather than in the component for the reason the width and the
- * height are: it is a measurement off the artwork, and a surface that seats the
- * seal on a tile has to cut that tile to the same curve or the corner shows -
- * white nubs outside the lockup where the tile is squarer, a clipped keyline
- * where it is rounder. Scaled against `BBB_SEAL_WIDTH` it holds at whatever
- * width the seal is drawn.
+ * It is here rather than in a component for the reason the width and the
+ * height are: it is a measurement off the artwork, and a surface that ever
+ * seats the seal itself has to cut its box to the same curve or the corner
+ * shows. Scaled against `BBB_SEAL_WIDTH` it holds at whatever width the seal
+ * is drawn.
  */
 export const BBB_SEAL_RADIUS = 9
 
