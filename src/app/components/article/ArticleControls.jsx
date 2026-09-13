@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
 import SeriesMark from '@components/marks/SeriesMark'
-import { seriesNumber } from '@utils/articleLayout'
+import { seriesNote, seriesNumber } from '@utils/articleLayout'
 
 /**
  * The furniture an article page stands its controls and its commentary in.
@@ -71,6 +71,28 @@ export function ArticleFigures({ post, words }) {
 }
 
 /**
+ * The length of the article already read, drawn as a bar and given as the
+ * figure a screen reader announces for it.
+ *
+ * @param {{ progress: number, className?: string }} props - The share of the
+ *   body already scrolled past, from 0 to 1, and where the gauge sets the bar.
+ */
+export function GaugeBar({ progress, className = '' }) {
+  return (
+    <div
+      className={`article-gauge ${className}`}
+      role="progressbar"
+      aria-label="How far through the article"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={Math.round(progress * 100)}
+    >
+      <span style={{ transform: `scaleX(${progress})` }} />
+    </div>
+  )
+}
+
+/**
  * How much of the article has gone by, and which section it is in.
  *
  * @param {{ progress: number, position: number, total: number }} props - The
@@ -91,16 +113,7 @@ export function ReadingGauge({ progress, position, total }) {
           {position.toString().padStart(2, '0')} / {total.toString().padStart(2, '0')}
         </span>
       </div>
-      <div
-        className="article-gauge mt-3.5"
-        role="progressbar"
-        aria-label="How far through the article"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percent}
-      >
-        <span style={{ transform: `scaleX(${progress})` }} />
-      </div>
+      <GaugeBar progress={progress} className="mt-3.5" />
     </div>
   )
 }
@@ -156,7 +169,7 @@ export function PulledLine({ quote, className = '' }) {
  * @param {{ series: object, post: object, limit?: number }} props - The series,
  *   the article being read, and how many of its neighbours to name.
  */
-export function SeriesStanding({ series, post, limit = 4 }) {
+function SeriesStanding({ series, post, limit = 4 }) {
   const others = series.posts.filter(entry => entry.slug !== post.slug).slice(0, limit)
 
   return (
@@ -211,7 +224,7 @@ export function SeriesStanding({ series, post, limit = 4 }) {
  * @param {{ posts: Array<object> }} props - The articles to offer, already
  *   chosen and ordered by the caller.
  */
-export function ReadNext({ posts }) {
+function ReadNext({ posts }) {
   return (
     <ul className="divide-hair-paper -my-1 divide-y">
       {posts.map(next => (
@@ -235,5 +248,31 @@ export function ReadNext({ posts }) {
         </li>
       ))}
     </ul>
+  )
+}
+
+/**
+ * The two panels both frames end their commentary on: where the piece sits in
+ * its series, and what to read after it. A piece in a series is offered the
+ * rest of that series first, so the shelf is named for the series when there
+ * is one.
+ *
+ * @param {{ post: object, series: (object | null), related: Array<object> }} props
+ *   - The article, its series, and the articles to offer after it.
+ */
+export function FurtherReading({ post, series, related }) {
+  return (
+    <>
+      {series && (
+        <RailPanel label="Series" note={seriesNote(series, post)}>
+          <SeriesStanding series={series} post={post} />
+        </RailPanel>
+      )}
+      {related.length > 0 && (
+        <RailPanel label={series ? 'More from the Series' : 'Read Next'}>
+          <ReadNext posts={related} />
+        </RailPanel>
+      )}
+    </>
   )
 }
