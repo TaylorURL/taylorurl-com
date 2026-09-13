@@ -9,7 +9,8 @@ import { checkoutErrorMessage, openCheckout } from '@data/checkout/startCheckout
 import { recordStart } from '@data/leads/startLead'
 import { PAY_STEP } from '@lib/leads/paths.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
-import { FIELD_FAULT, FIELD_LABEL, GROUND } from './lib/ground'
+import { GROUND } from './lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 /**
  * The short way to pay, for a build that was agreed in person.

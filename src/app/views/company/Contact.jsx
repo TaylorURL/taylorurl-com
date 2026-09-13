@@ -14,6 +14,7 @@ import {
 } from '@constants/navigation'
 import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
 import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
@@ -211,11 +212,6 @@ export default function Contact() {
     }
   }
 
-  const labelClass = 'section-label-sm mb-2 block text-paper-faint'
-  // A fault is a sentence rather than a standing label, so it is set as small
-  // prose and left free to wrap.
-  const errorClass = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
-
   return (
     <div>
       <Seo
@@ -335,7 +331,7 @@ export default function Contact() {
                 <form onSubmit={handleSubmit} className="space-y-7" noValidate>
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="name" className={labelClass}>
+                      <label htmlFor="name" className={FIELD_LABEL}>
                         {ASKED.name}
                       </label>
                       <input
@@ -353,13 +349,13 @@ export default function Contact() {
                         aria-describedby={errors.name ? 'name-error' : undefined}
                       />
                       {errors.name && (
-                        <p id="name-error" className={errorClass} role="alert">
+                        <p id="name-error" className={FIELD_FAULT} role="alert">
                           {errors.name}
                         </p>
                       )}
                     </div>
                     <div>
-                      <label htmlFor="email" className={labelClass}>
+                      <label htmlFor="email" className={FIELD_LABEL}>
                         {ASKED.email}
                       </label>
                       <input
@@ -377,7 +373,7 @@ export default function Contact() {
                         aria-describedby={errors.email ? 'email-error' : undefined}
                       />
                       {errors.email && (
-                        <p id="email-error" className={errorClass} role="alert">
+                        <p id="email-error" className={FIELD_FAULT} role="alert">
                           {errors.email}
                         </p>
                       )}
@@ -386,7 +382,7 @@ export default function Contact() {
 
                   <div className="grid gap-6 sm:grid-cols-2">
                     <div>
-                      <label htmlFor="company" className={labelClass}>
+                      <label htmlFor="company" className={FIELD_LABEL}>
                         {ASKED.company}
                       </label>
                       <input
@@ -402,7 +398,7 @@ export default function Contact() {
                       />
                     </div>
                     <div>
-                      <label htmlFor="projectType" className={labelClass}>
+                      <label htmlFor="projectType" className={FIELD_LABEL}>
                         {ASKED.projectType}
                       </label>
                       {/* The arrow is drawn beside the select rather than painted
@@ -443,7 +439,7 @@ export default function Contact() {
                   />
 
                   <div>
-                    <label htmlFor="message" className={labelClass}>
+                    <label htmlFor="message" className={FIELD_LABEL}>
                       {ASKED.message}
                     </label>
                     <textarea
@@ -460,7 +456,7 @@ export default function Contact() {
                       aria-describedby={errors.message ? 'message-error' : undefined}
                     />
                     {errors.message && (
-                      <p id="message-error" className={errorClass} role="alert">
+                      <p id="message-error" className={FIELD_FAULT} role="alert">
                         {errors.message}
                       </p>
                     )}

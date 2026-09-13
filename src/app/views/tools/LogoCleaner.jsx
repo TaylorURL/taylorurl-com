@@ -13,7 +13,8 @@ import {
 import { zipBlob } from '@app/tools/lib/zip'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
-import { FIELD_LABEL, GROUND, SHEET } from './lib/ground'
+import { GROUND, SHEET } from './lib/ground'
+import { FIELD_LABEL } from '@constants/grounds'
 import TilePicker from './TilePicker'
 import { ToolNote, ToolStep } from './ToolStep'
 

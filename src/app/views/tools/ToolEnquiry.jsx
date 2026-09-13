@@ -8,7 +8,8 @@ import { useFormFields } from '@hooks/useFormFields'
 import { faultMessage } from '@utils/faults'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { submitEnquiry } from '@data/leads/sendEnquiry'
-import { FIELD_FAULT, FIELD_LABEL, GROUND } from './lib/ground'
+import { GROUND } from './lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 const EMPTY = { name: '', email: '', contactMethod: 'either', phone: '', message: '' }
 

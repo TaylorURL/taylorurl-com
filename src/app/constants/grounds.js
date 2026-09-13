@@ -104,3 +104,15 @@ export const GROUNDS = {
  */
 export const CELL_FOCUS =
   'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'
+
+/**
+ * The label over a form field on paper, and the line a refused field carries.
+ *
+ * Every form drawn on paper sets these two - the configurator, the tools and
+ * the contact page - and holding them apart is how one form ends up a size away
+ * from the next. A fault is a sentence rather than a standing label, so it is
+ * set as small prose and left free to wrap.
+ */
+export const FIELD_LABEL = `section-label-sm mb-2 block ${GROUNDS.paper.meta}`
+
+export const FIELD_FAULT = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'

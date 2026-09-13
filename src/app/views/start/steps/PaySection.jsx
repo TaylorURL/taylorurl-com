@@ -2,7 +2,8 @@ import { Link } from 'react-router-dom'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import BbbSeal from '@components/reviews/BbbSeal'
 import SendButton from '@components/conversion/SendButton'
-import { FIELD_FAULT, FIELD_LABEL, GROUND, PANEL_EYEBROW, PANEL_TITLE } from '../lib/ground'
+import { GROUND, PANEL_EYEBROW, PANEL_TITLE } from '../lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 /**
  * What the payment starts, in the order it happens.

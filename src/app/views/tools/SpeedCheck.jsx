@@ -11,7 +11,8 @@ import { breadcrumbSchema } from '@constants/seo'
 import { useToast } from '@hooks/chrome/useToast'
 import { STAGES, runSpeedCheck, speedCheckErrorMessage, stageIndex } from '@data/leads/speedCheck'
 import { isValidEmail } from '@utils/validation'
-import { FIELD_FAULT, FIELD_LABEL, GROUND, RUN_FAULT } from './lib/ground'
+import { GROUND, RUN_FAULT } from './lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import { useElapsed } from './lib/useElapsed'
 
 /**

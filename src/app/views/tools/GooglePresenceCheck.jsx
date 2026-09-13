@@ -11,7 +11,8 @@ import { NAV_GROUPS } from '@constants/navigation'
 import { STAGES, stageAt } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultFromResponse, faultMessage } from '@utils/faults'
-import { FIELD_LABEL, GROUND, RUN_FAULT } from './lib/ground'
+import { GROUND, RUN_FAULT } from './lib/ground'
+import { FIELD_LABEL } from '@constants/grounds'
 import { useElapsed } from './lib/useElapsed'
 
 // What a reading that did not land says when nothing better came back with it.

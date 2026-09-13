@@ -2,11 +2,6 @@ import { GROUNDS } from '@constants/grounds'
 
 export const GROUND = GROUNDS.paper
 
-/** The label over a field, and the line a refused field carries. */
-export const FIELD_LABEL = `section-label-sm mb-2 block ${GROUND.meta}`
-
-export const FIELD_FAULT = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
-
 /** The line a run that did not finish carries, under the form rather than a field. */
 export const RUN_FAULT = 'text-[14px] leading-snug text-[color:var(--danger-on-paper)]'
 

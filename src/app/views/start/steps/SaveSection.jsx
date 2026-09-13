@@ -5,7 +5,8 @@ import { useFormFields } from '@hooks/useFormFields'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { submitEnquiry, enquiryErrorMessage } from '@data/leads/sendEnquiry'
-import { FIELD_FAULT, FIELD_LABEL, GROUND, PANEL_EYEBROW, PANEL_TITLE } from '../lib/ground'
+import { GROUND, PANEL_EYEBROW, PANEL_TITLE } from '../lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 const EMPTY = { name: '', email: '' }
 
