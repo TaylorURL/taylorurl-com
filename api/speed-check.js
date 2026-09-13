@@ -38,6 +38,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { createHash } from 'node:crypto'
 import { countOf } from '../lib/db/rows.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
@@ -97,18 +98,6 @@ function callerHash(address) {
   const pepper = process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET || ''
   if (!pepper) return null
   return createHash('sha256').update(`${pepper}:${address}`).digest('hex').slice(0, 32)
-}
-
-/** The JSON body, whether the platform parsed it or handed it over as text. */
-function readBody(request) {
-  const body = request.body
-  if (body && typeof body === 'object') return body
-  if (typeof body !== 'string' || !body) return {}
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
 }
 
 /** How many rows match, since a moment. */

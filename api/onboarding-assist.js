@@ -42,6 +42,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { authorizeAccount, connect } from '../lib/db/clients.js'
 import { field } from '../lib/db/fields.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
@@ -174,18 +175,6 @@ export function assistAnswering(status) {
 export function assistLeaked(text) {
   const flat = String(text).replace(/\s+/g, ' ').trim().toLowerCase()
   return LEAK_MARKERS.some(marker => flat.includes(marker))
-}
-
-/** The JSON body, whether the platform parsed it or handed it over as text. */
-function readBody(request) {
-  const body = request.body
-  if (body && typeof body === 'object') return body
-  if (typeof body !== 'string' || !body) return {}
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
 }
 
 /**

@@ -25,6 +25,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
 import { questionsFor } from '../lib/enquiry/questions.js'
@@ -104,18 +105,6 @@ export const METHOD_LABELS = {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-/** The posted JSON, however the platform hands the body over. */
-function readBody(request) {
-  const body = request.body
-  if (!body) return {}
-  if (typeof body !== 'string') return body
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
-}
 
 /**
  * A single-line field. Line breaks come out because these values reach the

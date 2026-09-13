@@ -26,6 +26,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { rawBody } from '../lib/http/body.js'
 import { createHmac, timingSafeEqual } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 
@@ -68,13 +69,6 @@ export function signed(headers, body, secret = SIGNING_SECRET) {
       const [version, value] = entry.split(',')
       return version === 'v1' && value && same(value, expected)
     })
-}
-
-/** The raw bytes of the request, read straight off the stream. */
-async function rawBody(request) {
-  const chunks = []
-  for await (const chunk of request) chunks.push(Buffer.from(chunk))
-  return Buffer.concat(chunks).toString('utf8')
 }
 
 /**

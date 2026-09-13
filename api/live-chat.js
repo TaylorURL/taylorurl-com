@@ -23,6 +23,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { reach } from '../lib/http/reach.js'
 import { createHash } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
@@ -134,18 +135,6 @@ function callerHash(address) {
     process.env.LIVE_CHAT_PEPPER || process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET || ''
   if (!pepper) return null
   return createHash('sha256').update(`${pepper}:${address}`).digest('hex').slice(0, 32)
-}
-
-/** The JSON body, whether the platform parsed it or handed it over as text. */
-function readBody(request) {
-  const body = request.body
-  if (body && typeof body === 'object') return body
-  if (typeof body !== 'string' || !body) return {}
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
 }
 
 /** Visitor messages from one caller since a moment. */

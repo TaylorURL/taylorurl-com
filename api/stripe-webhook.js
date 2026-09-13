@@ -48,6 +48,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { rawBody } from '../lib/http/body.js'
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
@@ -117,13 +118,6 @@ const REPORT_TIMEOUT_MS = 8000
 // How old a signed request may be. Stripe signs the moment it sends, so a
 // wider window is a wider replay window and nothing else.
 const TOLERANCE_SECONDS = 300
-
-/** The raw bytes of the request, read straight off the stream. */
-async function rawBody(request) {
-  const chunks = []
-  for await (const chunk of request) chunks.push(Buffer.from(chunk))
-  return Buffer.concat(chunks).toString('utf8')
-}
 
 /**
  * Whether the signature Stripe sent matches the body that arrived.

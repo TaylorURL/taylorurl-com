@@ -34,6 +34,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { countOf, tableMissing } from '../lib/db/rows.js'
 import { uuid } from '../lib/db/fields.js'
@@ -224,18 +225,6 @@ async function readMessages(db, leadId, response) {
   }
   response.setHeader('Cache-Control', 'private, no-store')
   return response.status(200).json({ messages: data || [] })
-}
-
-/** The posted JSON, however the platform hands the body over. */
-function readBody(request) {
-  const body = request.body
-  if (!body) return {}
-  if (typeof body !== 'string') return body
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
 }
 
 /**
