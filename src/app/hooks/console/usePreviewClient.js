@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { browserStore } from '@utils/storage'
 
 /**
  * The console as a client sees it, shown to an admin, over a build that is not
@@ -73,18 +74,12 @@ const FLAG_ON = 'client'
  * store shared between them would put both into whichever state was written
  * last and take that arrangement away.
  *
- * A browser set to block site data throws on the accessor itself rather than
- * answering empty, so reaching it is what has to be guarded. A refused store
- * means the preview cannot be entered at all, which is right: a rehearsal
- * whose answers cannot be written down is one that loses them on the first
- * navigation.
+ * A refused store means the preview cannot be entered at all, which is right: a
+ * rehearsal whose answers cannot be written down is one that loses them on the
+ * first navigation.
  */
 function store() {
-  try {
-    return typeof sessionStorage === 'undefined' ? null : sessionStorage
-  } catch {
-    return null
-  }
+  return browserStore('sessionStorage')
 }
 
 /** Whether this tab is in a preview. False everywhere there is no store. */

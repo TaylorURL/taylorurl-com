@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { browserStore } from '@utils/storage'
 import { readEndpoint, writeEndpoint } from './endpoint'
 import { answerFor, NOTHING_HELD } from './feedState'
 import { useAlive } from './useAlive'
@@ -68,17 +69,6 @@ const NOT_SENT =
 
 /** A read is the other way round, and this is where one that failed lands. */
 const NOT_READ = 'Your brief could not be read.'
-
-/** The browser's own store, where there is one. */
-function store() {
-  try {
-    return typeof sessionStorage === 'undefined' ? null : sessionStorage
-  } catch {
-    // A browser set to block site data throws on the accessor itself rather
-    // than answering empty, so reaching it is what has to be guarded.
-    return null
-  }
-}
 
 /**
  * A record in the shape the console holds one, whatever it was read out of.
@@ -243,7 +233,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       if (!unsent.current || !outgoing) return true
 
       if (preview) {
-        const kept = store()
+        const kept = browserStore('sessionStorage')
         if (kept) kept.setItem(PREVIEW_KEY, JSON.stringify(outgoing))
         if (latest.current === outgoing) unsent.current = false
         return true
@@ -299,7 +289,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       // them believes it is holding.
       let stored = null
       try {
-        stored = JSON.parse(store()?.getItem(PREVIEW_KEY) || 'null')
+        stored = JSON.parse(browserStore('sessionStorage')?.getItem(PREVIEW_KEY) || 'null')
       } catch {
         stored = null
       }
@@ -409,7 +399,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       const now = latest.current
       if (!now) return false
       const record = { ...now, percent: 100, submittedAt: new Date().toISOString() }
-      const kept = store()
+      const kept = browserStore('sessionStorage')
       if (kept) kept.setItem(PREVIEW_KEY, JSON.stringify(record))
       put(record)
       return true
