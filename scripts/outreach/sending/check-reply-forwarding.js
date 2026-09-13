@@ -40,7 +40,7 @@
  */
 
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
-import { inbound } from '../inbound-fixture.js'
+import { bounceReport, inbound } from '../inbound-fixture.js'
 
 process.env.OUTREACH_SMTP_USER = 'studio@example.com'
 process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
@@ -280,16 +280,7 @@ check('a refused notice leaves an unmatched message to the next run', async () =
 })
 
 check('a bounce is acted on rather than forwarded', async () => {
-  const report = inbound('Final-Recipient: rfc822; owner@example.com\nStatus: 5.1.1\n', {
-    bounce: true,
-    envelope: {
-      messageId: '<bounce-1@example.com>',
-      subject: 'Delivery Status Notification (Failure)',
-      from: [{ address: 'mailer-daemon@example.com' }],
-      to: [{ address: 'studio@example.com' }],
-      date: '2026-08-29T15:00:00.000Z',
-    },
-  })
+  const report = bounceReport()
 
   const { go } = run([report])
   const sent = await withMail(accepted, go)

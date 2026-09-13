@@ -29,7 +29,7 @@ import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { answersFrom, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
-import { inbound } from '../inbound-fixture.js'
+import { bounceReport, inbound } from '../inbound-fixture.js'
 import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
 import { MAIL_BOX, statesNoAddress } from '../../mail/mail-box-fixture.js'
@@ -198,17 +198,7 @@ check('watch fails the run when the opt-out suppression is refused', async () =>
 })
 
 check('watch fails the run when the bounce suppression is refused', async () => {
-  const report = inbound('', {
-    bounce: true,
-    body: 'Final-Recipient: rfc822; owner@example.com\nStatus: 5.1.1\n',
-    envelope: {
-      messageId: '<bounce-1@example.com>',
-      subject: 'Delivery Status Notification (Failure)',
-      from: [{ address: 'mailer-daemon@example.com' }],
-      to: [{ address: 'studio@example.com' }],
-      date: '2026-08-29T15:00:00.000Z',
-    },
-  })
+  const report = bounceReport()
 
   const { db, asked } = stubDb({
     'select:outreach_messages': { data: [], error: null },
