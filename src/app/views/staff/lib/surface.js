@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
+import { useMediaQuery } from '@hooks/useMediaQuery'
 
 /** How far the column travels before the head starts casting over it. */
 const CAST_AT = 4
@@ -53,18 +54,5 @@ export function useSurfaced() {
  * @returns {boolean}
  */
 export function useDesk(query = '(min-width: 1024px)') {
-  const [desk, setDesk] = useState(() =>
-    typeof window !== 'undefined' && window.matchMedia ? window.matchMedia(query).matches : false
-  )
-
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined
-    const media = window.matchMedia(query)
-    const read = () => setDesk(media.matches)
-    read()
-    media.addEventListener('change', read)
-    return () => media.removeEventListener('change', read)
-  }, [query])
-
-  return desk
+  return useMediaQuery(query, { readWhileRendering: true })
 }
