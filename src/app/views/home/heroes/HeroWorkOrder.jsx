@@ -1,13 +1,8 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
 import WorkOrderCard from './WorkOrderCard'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
 
 export default function HeroWorkOrder() {
   return (

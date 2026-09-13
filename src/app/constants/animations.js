@@ -37,6 +37,13 @@ export const fadeInUpMount = {
   transition: { duration: 0.42, ease: EASE },
 }
 
+// The same entrance held back by `delay` seconds, for the pieces of a screen
+// that land one after another rather than all at once.
+export const rise = delay => ({
+  ...fadeInUpMount,
+  transition: { ...fadeInUpMount.transition, delay },
+})
+
 export const slideInLeftMount = {
   initial: { opacity: 0, x: -24 },
   animate: { opacity: 1, x: 0 },

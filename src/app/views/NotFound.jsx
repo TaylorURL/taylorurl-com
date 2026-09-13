@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { m } from 'framer-motion'
-import { ArrowUpRight, Bug } from 'lucide-react'
+import { Bug } from 'lucide-react'
 import Seo from '@components/Seo'
-import { EASE, fadeInUpMount, settleIn } from '@constants/animations'
-import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
+import WaysOnward from '@components/conversion/WaysOnward'
+import { EASE, rise, settleIn } from '@constants/animations'
+import { useAnnounceGround } from '@hooks/theme/useOnDarkBackground'
 import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import { useTheme } from '@hooks/theme/useTheme'
-import Magnet from '@reactbits/Magnet/Magnet'
 import { LazyAurora } from '@reactbits/LazyBg'
 import { AccentGradient } from '@reactbits/kit'
 import { IS_SECOND_SITE } from '../../../lib/site/current.js'
@@ -19,10 +18,7 @@ const MOVE_INTERVAL_MS = 1200
 // two ways off this page are the fourth thing to land, not the last.
 const ENTER_STEP = 0.08
 
-const entering = index => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay: index * ENTER_STEP },
-})
+const entering = index => rise(index * ENTER_STEP)
 
 /**
  * What the page tells a crawler it is.
@@ -37,9 +33,7 @@ const DESCRIPTION = IS_SECOND_SITE
   : 'That page is not here. Head back to the home page for websites, redesigns, hosting, and local search work for Baytown and Houston businesses.'
 
 export default function NotFound() {
-  // The bar above reads the ground by sampling the page, and a view that
-  // arrives in its own chunk lands after that reading was taken. This says so.
-  useEffect(() => announceGroundChange(), [])
+  useAnnounceGround()
 
   const [score, setScore] = useState(0)
   const [bugPos, setBugPos] = useState({ x: 0, y: 0 })
@@ -114,19 +108,7 @@ export default function NotFound() {
             were after.
           </m.p>
 
-          <m.div {...entering(3)} className="mt-10 flex flex-wrap gap-4">
-            <Magnet padding={60} magnetStrength={5}>
-              <Link to="/" className="btn btn-primary group">
-                Return to Home
-                <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-              </Link>
-            </Magnet>
-            <Magnet padding={60} magnetStrength={5}>
-              <Link to="/contact" className="btn btn-secondary">
-                Get in Touch
-              </Link>
-            </Magnet>
-          </m.div>
+          <WaysOnward delay={3 * ENTER_STEP} />
         </div>
 
         <m.div

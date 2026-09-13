@@ -1,12 +1,7 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
 
 // The column rule the type is set against. Twelve columns at the rail width,
 // drawn as one gradient rather than twelve elements, and pale enough that it

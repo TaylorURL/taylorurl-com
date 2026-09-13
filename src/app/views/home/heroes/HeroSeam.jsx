@@ -1,13 +1,8 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
 import SearchSeamPlate from './SearchSeamPlate'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
 
 export default function HeroSeam() {
   return (

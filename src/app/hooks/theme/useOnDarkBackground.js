@@ -12,6 +12,16 @@ export function announceGroundChange() {
   window.dispatchEvent(new Event(GROUND_CHANGE))
 }
 
+/**
+ * Announce the ground once, as the view drawing it mounts.
+ *
+ * The bar reads the ground by sampling the page, and a view that arrives in its
+ * own chunk lands after that reading was taken. This says so.
+ */
+export function useAnnounceGround() {
+  useEffect(() => announceGroundChange(), [])
+}
+
 const DARK_LUMINANCE_THRESHOLD = 0.45
 
 /**
@@ -81,7 +91,7 @@ function backgroundAtPoint(x, y, ignoreEls) {
  * all, which would otherwise answer with its own background every time.
  *
  * A view arriving in its own chunk lands after the last reading was taken, so
- * it announces itself with `announceGroundChange` and the reading is retaken.
+ * it announces itself with `useAnnounceGround` and the reading is retaken.
  *
  * @param {{current: Element|null}} probeRef - The element whose centre is sampled.
  * @param {Array<{current: Element|null}>} [ignoreRefs] - Subtrees to look

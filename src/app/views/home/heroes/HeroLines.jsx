@@ -1,13 +1,8 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import { HOME } from '@data/taylorwebsite/homeTaylorwebsite'
 import HeroActions from './HeroActions'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
 
 /**
  * The hero for the site that sells three things.
