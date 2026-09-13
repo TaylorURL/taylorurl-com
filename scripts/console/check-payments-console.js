@@ -25,6 +25,7 @@ import { buildRecord } from '../../api/payments-admin.js'
 import { recurringLine, setupCents } from '../../lib/stripe/roster.js'
 import { cases, check, finish, report, same } from '../harness/checks.js'
 import { read } from '../harness/files.js'
+import { asksForAdmin, sectionEntry, unregistered } from './section-wiring.js'
 
 const ENDPOINT = 'api/payments-admin.js'
 const PAGE = 'src/app/views/console/pages/studio/PaymentsPage.jsx'
@@ -194,36 +195,18 @@ const ROSTER = {
 }
 
 check('the payments section is registered everywhere a section is registered', () => {
-  const faults = []
-  const places = [
-    ['src/app/views/console/lib/sections.js', "id: 'payments'"],
-    ['src/app/constants/routes.js', "key: 'ConsolePayments', path: 'payments'"],
-    ['src/app/views.js', 'ConsolePayments:'],
-    ['vite/site-routes.js', "'/console/payments'"],
-  ]
-  for (const [path, needle] of places) {
-    if (!read(path).includes(needle)) faults.push(`${path} does not carry the payments section`)
-  }
-  report(faults)
+  report(unregistered({ id: 'payments', key: 'ConsolePayments', called: 'payments' }))
 })
 
 check('the section is admin-only and asks for no site in scope', () => {
-  const sections = read('src/app/views/console/lib/sections.js')
-  const entry = sections.slice(sections.indexOf("id: 'payments'"))
-  const body = entry.slice(0, entry.indexOf('},'))
+  const body = sectionEntry('payments')
   same(/admin: true/.test(body), true, 'admin only')
   same(/scope: false/.test(body), true, 'no site in scope')
   same(/account: true/.test(body), true, 'answers for the account rather than a site')
 })
 
 check('the endpoint asks for the admin role rather than for a session', () => {
-  const endpoint = read(ENDPOINT)
-  same(endpoint.includes('authorizeAdmin'), true, 'authorizeAdmin is the door')
-  same(
-    /authorizeAccount\s*\(/.test(endpoint),
-    false,
-    'no plain session check stands in for the role check'
-  )
+  asksForAdmin(ENDPOINT)
 })
 
 check('nothing in the section can move money', () => {

@@ -36,6 +36,7 @@
 
 import { cases, check, finish, report, same } from '../harness/checks.js'
 import { read } from '../harness/files.js'
+import { asksForAdmin, sectionEntry, unregistered } from './section-wiring.js'
 
 const ENDPOINT = 'api/server-feed.js'
 const PAGE = 'src/app/views/console/pages/health/ServerPage.jsx'
@@ -54,23 +55,11 @@ const FRAME = 'src/app/views/console/ConsoleFrame.jsx'
 const STATES = ['operational', 'degraded', 'down']
 
 check('the section is registered everywhere a section is registered', () => {
-  const faults = []
-  const places = [
-    [SECTIONS, "id: 'server'"],
-    ['src/app/constants/routes.js', "key: 'ConsoleServer', path: 'server'"],
-    ['src/app/views.js', 'ConsoleServer:'],
-    ['vite/site-routes.js', "'/console/server'"],
-  ]
-  for (const [path, needle] of places) {
-    if (!read(path).includes(needle)) faults.push(`${path} does not carry the Server section`)
-  }
-  report(faults)
+  report(unregistered({ id: 'server', key: 'ConsoleServer', called: 'Server' }))
 })
 
 check('the section is admin-only, and offers no scope, window or traffic strip', () => {
-  const sections = read(SECTIONS)
-  const entry = sections.slice(sections.indexOf("id: 'server'"))
-  const body = entry.slice(0, entry.indexOf('},'))
+  const body = sectionEntry('server')
   same(/admin: true/.test(body), true, 'admin only')
   // One machine that hosts none of the sites. A site chooser narrows nothing
   // on it, a date window has nothing to put over a temperature, and the
@@ -102,13 +91,7 @@ check('a reader who is not an admin cannot open the section by typing its addres
 })
 
 check('the endpoint asks for the admin role rather than for a session', () => {
-  const endpoint = read(ENDPOINT)
-  same(endpoint.includes('authorizeAdmin'), true, 'authorizeAdmin is the door')
-  same(
-    /authorizeAccount\s*\(/.test(endpoint),
-    false,
-    'no plain session check stands in for the role check'
-  )
+  asksForAdmin(ENDPOINT)
 })
 
 check('nothing is read from the server before the caller has been checked', () => {

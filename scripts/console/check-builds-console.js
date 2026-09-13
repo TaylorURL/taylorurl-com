@@ -22,6 +22,7 @@
 
 import { cases, check, finish, report, same } from '../harness/checks.js'
 import { read } from '../harness/files.js'
+import { asksForAdmin, sectionEntry, unregistered } from './section-wiring.js'
 
 const ENDPOINT = 'api/projects-admin.js'
 const PAGE = 'src/app/views/console/pages/studio/BuildsPage.jsx'
@@ -51,13 +52,7 @@ check('every admin project function has a caller', () => {
 })
 
 check('the endpoint asks for the admin role rather than for a session', () => {
-  const endpoint = read(ENDPOINT)
-  same(endpoint.includes('authorizeAdmin'), true, 'authorizeAdmin is the door')
-  same(
-    /authorizeAccount\s*\(/.test(endpoint),
-    false,
-    'no plain session check stands in for the role check'
-  )
+  asksForAdmin(ENDPOINT)
 })
 
 check("the client's own endpoint knows none of the admin functions", () => {
@@ -69,23 +64,11 @@ check("the client's own endpoint knows none of the admin functions", () => {
 })
 
 check('the builds section is registered everywhere a section is registered', () => {
-  const faults = []
-  const places = [
-    ['src/app/views/console/lib/sections.js', "id: 'builds'"],
-    ['src/app/constants/routes.js', "key: 'ConsoleBuilds', path: 'builds'"],
-    ['src/app/views.js', 'ConsoleBuilds:'],
-    ['vite/site-routes.js', "'/console/builds'"],
-  ]
-  for (const [path, needle] of places) {
-    if (!read(path).includes(needle)) faults.push(`${path} does not carry the builds section`)
-  }
-  report(faults)
+  report(unregistered({ id: 'builds', key: 'ConsoleBuilds', called: 'builds' }))
 })
 
 check('the section is admin-only and asks for no site in scope', () => {
-  const sections = read('src/app/views/console/lib/sections.js')
-  const entry = sections.slice(sections.indexOf("id: 'builds'"))
-  const body = entry.slice(0, entry.indexOf('},'))
+  const body = sectionEntry('builds')
   same(/admin: true/.test(body), true, 'admin only')
   same(/scope: false/.test(body), true, 'no site in scope')
 })
