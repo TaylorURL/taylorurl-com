@@ -374,6 +374,65 @@ check(
 )
 
 /* ----------------------------------------------------------------------- *
+ * The extension failure that arrives with no stack to judge.
+ * ----------------------------------------------------------------------- */
+
+// An extension's own faults are ruled out by their frames, and on iOS there are
+// none to read. The extension APIs there are a native bridge, so a rejected
+// `runtime.sendMessage` comes back as an Error the bridge built rather than one
+// a script constructed, and it carries no `stack` at all. `extensionOnly` is
+// handed an empty string, finds no scheme in it, and answers no.
+//
+// #575 was that: `Invalid call to runtime.sendMessage(). Tab not found.`, off an
+// iPhone on the home page, filed against this site over a content script still
+// talking to a background page that had gone. Safari hands that rejection to the
+// page rather than keeping it in the extension's world, so nothing arranged here
+// stops it arriving -- only the message names whose failure it is.
+function stackless(message) {
+  const error = new Error(message)
+  delete error.stack
+  return error
+}
+
+const bridged = collector()
+bridged.rejects(stackless('Invalid call to runtime.sendMessage(). Tab not found.'))
+check(
+  bridged.posted.length === 0,
+  'a stackless rejection naming an extension API was filed against the site, so an extension ' +
+    'talking to a background page that has gone is reported as this site breaking'
+)
+check(
+  bridged.held().some(entry => /runtime\.sendMessage/.test(entry.message)),
+  'a stackless extension rejection was dropped instead of held, so a live console cannot say ' +
+    'that anything threw at all'
+)
+
+// The message alone is never the verdict. A stack is the better evidence
+// wherever there is one, and a site frame under a sentence that merely quotes an
+// API name is still the site's to answer for.
+const quoting = collector()
+quoting.rejects({
+  name: 'Error',
+  message: 'Our own wrapper around runtime.sendMessage failed',
+  stack: '@https://www.taylorurl.com/start:101:32',
+})
+check(
+  quoting.posted.length === 1,
+  'a rejection carrying a site frame stopped reporting because its message quoted an extension ' +
+    'API, so the name test has widened onto the site’s own faults'
+)
+
+// And a stackless failure that names no extension API is the site's as it always
+// was. The boot builds exactly one of these.
+const stackfree = collector()
+stackfree.rejects(stackless('The page could not start: TypeError: Failed to fetch'))
+check(
+  stackfree.posted.length === 1,
+  'a stackless rejection off the site’s own boot was held rather than filed, so the one path a ' +
+    'page that never started reports through has gone quiet'
+)
+
+/* ----------------------------------------------------------------------- *
  * The loader host that serves two different things.
  * ----------------------------------------------------------------------- */
 
