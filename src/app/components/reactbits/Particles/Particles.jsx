@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { Renderer, Camera, Geometry, Program, Mesh } from 'ogl'
+import { Camera, Geometry, Program, Mesh } from 'ogl'
 import { useThemeTokens } from '@hooks/theme/useThemeTokens'
-import { drawsInSoftware, webglAvailable } from '@utils/softwareRenderer'
+import { drawWhileWatched, openRenderer } from '@utils/softwareRenderer'
 
 const hexToRgb = hex => {
   hex = hex.replace(/^#/, '')
@@ -106,26 +106,13 @@ const Particles = ({
     const container = containerRef.current
     if (!container) return
 
-    // The field is decoration over a ground that is already drawn, so where
-    // there is no context to draw it in there is nothing to replace and nothing
-    // to say: the section keeps its grid and its wash and the reader is none
-    // the wiser. Asking anyway is what turns a machine without WebGL into a
-    // broken page rather than a plainer one.
-    if (!webglAvailable()) return undefined
-
-    let renderer
-    try {
-      renderer = new Renderer({
-        dpr: pixelRatio,
-        depth: false,
-        alpha: true,
-      })
-    } catch {
-      renderer = null
-    }
-    if (!renderer?.gl) return undefined
+    const renderer = openRenderer({
+      dpr: pixelRatio,
+      depth: false,
+      alpha: true,
+    })
+    if (!renderer) return undefined
     const gl = renderer.gl
-    const software = drawsInSoftware(gl)
     container.appendChild(gl.canvas)
     gl.clearColor(0, 0, 0, 0)
 
@@ -195,22 +182,10 @@ const Particles = ({
 
     const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program })
 
-    // A field that keeps drawing behind the page competes with every
-    // interaction for as long as the visit lasts. It stops when the tab is
-    // hidden and when the field has been scrolled off, because nobody is
-    // reading it in either place, and it never starts for a reader who has
-    // asked for less motion - who still gets the field, drawn once and left
-    // still.
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)')
-    let onScreen = true
-    let animationFrameId
     let lastTime = performance.now()
     let elapsed = 0
 
-    const running = () => !still.matches && !software && !document.hidden && onScreen
     const update = t => {
-      if (running()) animationFrameId = requestAnimationFrame(update)
-      else animationFrameId = 0
       const delta = t - lastTime
       lastTime = t
       elapsed += delta * speed
@@ -234,38 +209,16 @@ const Particles = ({
       renderer.render({ scene: particles, camera })
     }
 
-    animationFrameId = requestAnimationFrame(update)
-
-    // Coming back to the tab, or scrolling the field back into view, restarts
-    // it from wherever it left off, and a reader who turns reduced motion off
-    // gets the movement without a reload.
-    const wake = () => {
-      if (!animationFrameId && running()) {
-        lastTime = performance.now()
-        animationFrameId = requestAnimationFrame(update)
-      }
-    }
-    document.addEventListener('visibilitychange', wake)
-    still.addEventListener('change', wake)
-
-    const watcher =
-      typeof IntersectionObserver === 'function'
-        ? new IntersectionObserver(([entry]) => {
-            onScreen = entry.isIntersecting
-            wake()
-          })
-        : null
-    watcher?.observe(container)
+    const stop = drawWhileWatched(container, gl, update, () => {
+      lastTime = performance.now()
+    })
 
     return () => {
       window.removeEventListener('resize', resize)
-      watcher?.disconnect()
-      document.removeEventListener('visibilitychange', wake)
-      still.removeEventListener('change', wake)
+      stop()
       if (moveParticlesOnHover) {
         container.removeEventListener('mousemove', handleMouseMove)
       }
-      cancelAnimationFrame(animationFrameId)
       if (container.contains(gl.canvas)) {
         container.removeChild(gl.canvas)
       }

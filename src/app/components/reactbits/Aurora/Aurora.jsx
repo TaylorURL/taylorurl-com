@@ -1,7 +1,7 @@
-import { Renderer, Program, Mesh, Color, Triangle } from 'ogl'
+import { Program, Mesh, Color, Triangle } from 'ogl'
 import { useEffect, useRef } from 'react'
 import { useThemeTokens } from '@hooks/theme/useThemeTokens'
-import { drawsInSoftware, webglAvailable } from '@utils/softwareRenderer'
+import { drawWhileWatched, openRenderer } from '@utils/softwareRenderer'
 
 const VERT = `#version 300 es
 in vec2 position;
@@ -128,25 +128,13 @@ export default function Aurora(props) {
     const ctn = ctnDom.current
     if (!ctn) return
 
-    // Same reading as the particle field: a browser that will not hand out a
-    // context gets the wash left off rather than a renderer built around
-    // nothing, which announces itself and then throws where the page can see
-    // it.
-    if (!webglAvailable()) return undefined
-
-    let renderer
-    try {
-      renderer = new Renderer({
-        alpha: true,
-        premultipliedAlpha: true,
-        antialias: true,
-      })
-    } catch {
-      renderer = null
-    }
-    if (!renderer?.gl) return undefined
+    const renderer = openRenderer({
+      alpha: true,
+      premultipliedAlpha: true,
+      antialias: true,
+    })
+    if (!renderer) return undefined
     const gl = renderer.gl
-    const software = drawsInSoftware(gl)
     gl.clearColor(0, 0, 0, 0)
     gl.enable(gl.BLEND)
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA)
@@ -190,18 +178,7 @@ export default function Aurora(props) {
     const mesh = new Mesh(gl, { geometry, program })
     ctn.appendChild(gl.canvas)
 
-    // A shader that keeps drawing competes with every interaction for as long
-    // as the visit lasts. It stops when the tab is hidden and when the wash has
-    // been scrolled off, because nobody is reading it in either place, and it
-    // never starts for a reader who has asked for less motion - who still gets
-    // the wash, drawn once and left still.
-    const still = window.matchMedia('(prefers-reduced-motion: reduce)')
-    let onScreen = true
-    let animateId = 0
-    const running = () => !still.matches && !software && !document.hidden && onScreen
-    const update = t => {
-      if (running()) animateId = requestAnimationFrame(update)
-      else animateId = 0
+    const stop = drawWhileWatched(ctn, gl, t => {
       const { time = t * 0.01, speed = 1.0 } = propsRef.current
       program.uniforms.uTime.value = time * speed * 0.1
       program.uniforms.uAmplitude.value = propsRef.current.amplitude ?? 1.0
@@ -212,36 +189,12 @@ export default function Aurora(props) {
         return [c.r, c.g, c.b]
       })
       renderer.render({ scene: mesh })
-    }
-    animateId = requestAnimationFrame(update)
-
-    // Coming back to the tab, or scrolling the wash back into view, restarts it
-    // from wherever it left off, and a reader who turns reduced motion off gets
-    // the movement without a reload.
-    const wake = () => {
-      if (!animateId && running()) {
-        animateId = requestAnimationFrame(update)
-      }
-    }
-    document.addEventListener('visibilitychange', wake)
-    still.addEventListener('change', wake)
-
-    const watcher =
-      typeof IntersectionObserver === 'function'
-        ? new IntersectionObserver(([entry]) => {
-            onScreen = entry.isIntersecting
-            wake()
-          })
-        : null
-    watcher?.observe(ctn)
+    })
 
     resize()
 
     return () => {
-      cancelAnimationFrame(animateId)
-      watcher?.disconnect()
-      document.removeEventListener('visibilitychange', wake)
-      still.removeEventListener('change', wake)
+      stop()
       window.removeEventListener('resize', resize)
       if (ctn && gl.canvas.parentNode === ctn) {
         ctn.removeChild(gl.canvas)
