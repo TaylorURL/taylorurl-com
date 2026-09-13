@@ -12,14 +12,7 @@
  * because the bar eases and time does not.
  */
 import { STAGES, TYPICAL_MS, clock, creep, stageAt } from '../../src/app/tools/lib/progress.js'
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
+import { expect as check, finish } from '../harness/checks.js'
 
 // A run sampled every quarter second out to five minutes, which is past
 // anything the endpoint will still be waiting on.
@@ -71,10 +64,7 @@ check(clock(60_000) === '01:00', `clock(60s) is ${clock(60_000)}`)
 check(clock(125_400) === '02:05', `clock(125.4s) is ${clock(125_400)}`)
 check(clock(-500) === '00:00', `a clock running before the start reads ${clock(-500)}`)
 
-if (failures) {
-  console.error(`progress: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `progress: bar rises and never fills, all ${STAGES.length} stages reached in order, clock exact`
 )

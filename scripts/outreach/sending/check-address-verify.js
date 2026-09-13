@@ -33,20 +33,9 @@ import {
 import { queueFor } from '../../../lib/outreach/sending/queue.js'
 import { deliver } from '../../../api/outreach/send.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, raised, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 /** A resolver answering with one mail server, counting how often it was asked. */
 function resolves(exchange = 'mx.example.net') {
@@ -115,6 +104,15 @@ const MESSAGE = {
 }
 
 const FROM = { name: 'TaylorURL', address: 'hello@taylorurl.com' }
+
+/** A send of the message to `to` with no unsubscribe link, and what it threw. */
+async function attemptSend(db, to) {
+  const mail = transport()
+  const cause = await raised(() =>
+    deliver(db, { ...MESSAGE, to_address: to }, FROM, '', mail.build)
+  )
+  return { mail, cause }
+}
 
 // -- the shape, which costs nothing and settles most of it -------------------
 
@@ -305,21 +303,9 @@ check('a settled reading stands, and a shape refusal never reaches the cache', a
 
 check('the transport is never reached for a mailbox that reaches nobody', async () => {
   forgetDomains()
-  const mail = transport()
-  let raised = null
-  try {
-    await deliver(
-      null,
-      { ...MESSAGE, to_address: 'noreply@harbourplumbing.example' },
-      FROM,
-      '',
-      mail.build
-    )
-  } catch (cause) {
-    raised = cause
-  }
-  ok(raised instanceof Undeliverable, 'the send was not refused')
-  same(raised.reason, 'role_box', 'refusal reason')
+  const { mail, cause } = await attemptSend(null, 'noreply@harbourplumbing.example')
+  ok(cause instanceof Undeliverable, 'the send was not refused')
+  same(cause.reason, 'role_box', 'refusal reason')
   same(mail.sent.length, 0, 'messages handed to the transport')
 })
 
@@ -330,22 +316,10 @@ check('the transport is never reached for a domain with no mail server', async (
   // the answer is already held by the time the send asks for it.
   await checkAddress(store.db, 'owner@harbourplumbing.example', { resolveMx: async () => [] })
 
-  const mail = transport()
-  let raised = null
-  try {
-    await deliver(
-      store.db,
-      { ...MESSAGE, to_address: 'owner@harbourplumbing.example' },
-      FROM,
-      '',
-      mail.build
-    )
-  } catch (cause) {
-    raised = cause
-  }
-  ok(raised instanceof Undeliverable, 'the send was not refused')
-  same(raised.verdict, 'undeliverable', 'refusal verdict')
-  same(raised.reason, 'no_mx', 'refusal reason')
+  const { mail, cause } = await attemptSend(store.db, 'owner@harbourplumbing.example')
+  ok(cause instanceof Undeliverable, 'the send was not refused')
+  same(cause.verdict, 'undeliverable', 'refusal verdict')
+  same(cause.reason, 'no_mx', 'refusal reason')
   same(mail.sent.length, 0, 'messages handed to the transport')
 })
 
@@ -354,21 +328,9 @@ check('the transport is never reached for a reading that could not be settled', 
   const store = cache()
   await checkAddress(store.db, 'owner@harbourplumbing.example', { resolveMx: fails('ETIMEOUT') })
 
-  const mail = transport()
-  let raised = null
-  try {
-    await deliver(
-      store.db,
-      { ...MESSAGE, to_address: 'owner@harbourplumbing.example' },
-      FROM,
-      '',
-      mail.build
-    )
-  } catch (cause) {
-    raised = cause
-  }
-  ok(raised instanceof Undeliverable, 'the send was not refused')
-  same(raised.verdict, 'unknown', 'refusal verdict')
+  const { mail, cause } = await attemptSend(store.db, 'owner@harbourplumbing.example')
+  ok(cause instanceof Undeliverable, 'the send was not refused')
+  same(cause.verdict, 'unknown', 'refusal verdict')
   same(mail.sent.length, 0, 'messages handed to the transport')
 })
 
@@ -456,19 +418,6 @@ check('two listings sharing a mailbox get one letter between them', () => {
   same(queue[0].id, 'branch-a', 'the row that survived is not the one that sorted first')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} address verification checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`address verification: ${cases.length} checks passed`)

@@ -18,7 +18,7 @@ import { faultMessage } from '@utils/faults'
  */
 
 /** How many recovery codes an enrolment hands over. */
-export const RECOVERY_CODE_COUNT = 10
+const RECOVERY_CODE_COUNT = 10
 
 /** The name the factor carries in the account, and in an authenticator's list. */
 const FACTOR_NAME = 'Authenticator App'

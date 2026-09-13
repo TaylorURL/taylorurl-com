@@ -1,13 +1,9 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
+import HeroEyebrow from './HeroEyebrow'
 import WorkOrderCard from './WorkOrderCard'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
 
 export default function HeroWorkOrder() {
   return (
@@ -16,10 +12,7 @@ export default function HeroWorkOrder() {
     <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden bg-bg pt-24 text-ink">
       <div className="container-rail relative grid items-center gap-14 pb-16 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16">
         <div>
-          <m.p {...rise(0)} className="section-label-sm flex items-center gap-3 text-ink-mute">
-            <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />
-            TaylorURL LLC · Baytown, TX
-          </m.p>
+          <HeroEyebrow />
 
           <h1 className="display-1 mt-8 font-semibold leading-[0.94] tracking-tightest text-ink [text-wrap:balance]">
             <m.span {...rise(0.08)} className="block">

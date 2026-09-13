@@ -1,4 +1,5 @@
 import { Phone } from 'lucide-react'
+import { FIELD_FAULT } from '@constants/grounds'
 import { CONTACT_METHODS } from '@constants/navigation'
 import { REPLY_QUESTIONS } from '@lib/enquiry/questions.js'
 
@@ -83,11 +84,7 @@ export default function ContactMethodChoice({
             />
           </div>
           {error && (
-            <p
-              id={`${phoneId}-error`}
-              role="alert"
-              className="mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
-            >
+            <p id={`${phoneId}-error`} role="alert" className={FIELD_FAULT}>
               {error}
             </p>
           )}

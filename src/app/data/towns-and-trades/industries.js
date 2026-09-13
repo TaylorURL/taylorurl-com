@@ -15,7 +15,7 @@
  * aliases nor the icon components the trade data carries would resolve; the
  * views join the two lists together with `groupsWith`.
  */
-export const INDUSTRY_GROUPS = [
+const INDUSTRY_GROUPS = [
   {
     id: 'home-trades',
     name: 'Home and Property',

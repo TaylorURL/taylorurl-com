@@ -11,32 +11,16 @@
  *   npm run check:feed
  */
 import { readFile } from 'node:fs/promises'
-import { registerHooks } from 'node:module'
+import { expect as check, fail, finish } from '../harness/checks.js'
+import { allowExtensionlessImports } from '../harness/extensionless-imports.js'
 
-// The data modules import each other without extensions, which the bundler
-// resolves and bare Node does not.
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const relative = specifier.startsWith('.')
-    const spelled = relative && !/\.[a-z]+$/i.test(specifier) ? `${specifier}.js` : specifier
-    return nextResolve(spelled, context)
-  },
-})
+allowExtensionlessImports()
 
 const { BLOG_ROUTES, publishedAt, SITE_URL, SITEMAP_ROUTES } =
   await import('../../vite/site-routes.js')
 const { FEED_PATH, renderFeed } = await import('../../vite/feed-plugin.js')
 const { BLOG_POSTS } = await import('../../src/app/data/blog/index.js')
 const { matchViewKeys } = await import('../../src/app/constants/routes.js')
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
 
 const document = renderFeed()
 
@@ -247,10 +231,7 @@ check(document === renderFeed(), 'two renders of the feed disagree')
 // rather than written.
 check(!/\p{Extended_Pictographic}/u.test(document), 'the feed carries an emoji')
 
-if (failed) {
-  console.error(`\n${failed} feed ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 const series = new Set(BLOG_ROUTES.map(route => route.series?.slug).filter(Boolean))
 console.log(

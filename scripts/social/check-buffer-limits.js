@@ -29,29 +29,17 @@
  */
 import { RATE_LIMITED, connect, post, promote, wiring } from '../../lib/social/buffer.js'
 import { assetFor, card } from '../../lib/social/cards.js'
+import { cases, check, finish, ok, same } from '../harness/checks.js'
+import { OFFLINE } from '../harness/offline.js'
 
 // Replaced before the first check, so a call that forgot its stub fails here
 // rather than spending the allowance this file exists to protect.
-const OFFLINE = () => {
-  throw new Error('a check reached the network')
-}
 globalThis.fetch = OFFLINE
 
 // Read into a const when the endpoint module loads, so they are set before the
 // check that drives it imports it.
 process.env.CRON_SECRET = 'a-cron-secret'
 process.env.BUFFER_API_KEY = 'a-key'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 /** Which operation a request body carries, read the way a reader would name it. */
 const OPERATIONS = [
@@ -376,7 +364,6 @@ check('a promotion stopped partway says what it moved', async () => {
 
 // The client names every pause it takes on the way to giving up, which is what
 // a run in production is read by and what a run of these checks would drown in.
-const say = console.error
 console.error = () => {}
 
 /** A stand-in for the response half of a Vercel handler, recording what it sent. */
@@ -536,21 +523,6 @@ check('a caption with no image is refused before it reaches Buffer', async () =>
   same(stub.count('Create'), 0, 'and nothing was placed')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-console.error = say
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} Buffer limit checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`buffer limits: ${cases.length} checks passed`)

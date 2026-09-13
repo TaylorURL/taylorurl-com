@@ -21,6 +21,7 @@
 
 import { timingSafeEqual } from 'node:crypto'
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
@@ -37,18 +38,6 @@ const postWindow = callerWindow({ limit: 60, windowMs: 10 * 60 * 1000 })
 
 /** One sentence, whether the header was missing or simply wrong. */
 const UNAUTHORIZED = 'That secret does not open this door.'
-
-/** The posted JSON, however the platform hands the body over. */
-function readBody(request) {
-  const body = request.body
-  if (!body) return {}
-  if (typeof body !== 'string') return body
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
-}
 
 /**
  * Whether the caller presented the secret this deployment holds.

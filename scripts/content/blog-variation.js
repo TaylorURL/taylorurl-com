@@ -43,6 +43,7 @@ import path from 'node:path'
 import { existsSync } from 'node:fs'
 import { registerHooks } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { finish, is as check } from '../harness/checks.js'
 
 const SHINGLE_WORDS = 5
 const MAX_CONTAINMENT = 0.1
@@ -253,12 +254,7 @@ function distribution(posts) {
     console.log(`    ${pair.score.toFixed(4)}  ${pair.a}  ||  ${pair.b}`)
 }
 
-function selfTest() {
-  const failures = []
-  const check = (label, got, want) => {
-    if (got !== want)
-      failures.push(`${label}: got ${JSON.stringify(got)}, want ${JSON.stringify(want)}`)
-  }
+async function selfTest() {
   const article = (slug, sentences) => ({
     slug,
     title: slug.replace(/-/g, ' '),
@@ -327,11 +323,8 @@ function selfTest() {
   )
   check('an article is never held against itself', collisionsIn(published, published).length, 0)
 
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.log(
-    `blog variation self-test: ${failures.length ? `${failures.length} failed` : 'all cases pass'}`
-  )
-  return failures.length === 0
+  await finish()
+  console.log('blog variation self-test: all cases pass')
 }
 
 async function main() {
@@ -341,7 +334,7 @@ async function main() {
     return at < 0 ? null : argv[at + 1]
   }
 
-  if (argv.includes('--self-test')) process.exit(selfTest() ? 0 : 1)
+  if (argv.includes('--self-test')) return selfTest()
 
   const published = measured(await load(CORPUS))
 

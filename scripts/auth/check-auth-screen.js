@@ -19,15 +19,7 @@
  */
 
 import { nextScreen, welcomeScreen } from '../../src/app/views/auth/lib/screen.js'
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
+import { cases, check, finish, same } from '../harness/checks.js'
 
 /** Run a sequence of states through the rule, collecting what each draws. */
 function walk(states, start = 'password') {
@@ -117,15 +109,5 @@ check('a key that opened nothing is what reaches the second screen', () => {
   same(welcomeScreen(NO_WAY_IN), 'password', 'screen')
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`FAIL  ${name}\n      ${cause.message}`)
-  }
-}
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

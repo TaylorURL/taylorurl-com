@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useConsole } from '../../lib/context'
-import { ConsolePage, Panel, PanelFoot, SkeletonBar } from '../../ui'
+import { ConsolePage, ContactLine, Panel, PanelFoot, SkeletonBar } from '../../ui'
 import { MONO_LABEL } from '../../lib/tokens'
 import { currentProject } from '../../lib/stages'
 import {
   BRIEF_LABELS,
   CONTEXT_LABELS,
+  DAY_NAMES,
   STEPS,
   answerAt,
   answeredField,
+  applicable,
   onboardingPercent,
   optionsFor,
   prefill,
@@ -76,34 +78,11 @@ const NOT_HANDED_OVER = 'Your brief did not go over. Everything you typed is sav
  */
 const NOTHING = {}
 
-/** The days a week of opening hours is read back in. */
-const DAYS = {
-  mon: 'Monday',
-  tue: 'Tuesday',
-  wed: 'Wednesday',
-  thu: 'Thursday',
-  fri: 'Friday',
-  sat: 'Saturday',
-  sun: 'Sunday',
-}
-
-/**
- * Whether a field is in the running for this set of answers.
- *
- * The model's own rule, which lives on the field rather than in an export: a
- * conditional field whose condition is false is not asked for, not counted and
- * not read back, so the review has to ask the same question the percent does or
- * it lists a logo picker at a client who said they have no logo.
- */
-function applies(field, answers) {
-  return typeof field.applies === 'function' ? field.applies(answers) === true : true
-}
-
 /** One row of a list field, in a few words. */
 function rowText(item) {
   if (!item || typeof item !== 'object') return null
   if (item.day) {
-    const day = DAYS[item.day] || item.day
+    const day = DAY_NAMES[item.day] || item.day
     if (item.closed) return `${day} closed`
     return item.open && item.close ? `${day} ${item.open} to ${item.close}` : null
   }
@@ -266,7 +245,7 @@ function Review({ answers, brief }) {
   const groups = STEPS.filter(step => step.fields.length).map(step => ({
     step,
     rows: step.fields
-      .filter(field => applies(field, answers))
+      .filter(field => applicable(field, answers))
       .map(field => {
         const value = answerAt(answers, field.key)
         return { field, text: readable(field, value), answered: answeredField(field, value) }
@@ -358,7 +337,7 @@ function StepFields({ step, answers, onChange, disabled, assist, files, trade })
   return (
     <div className="flex flex-col gap-6">
       {step.fields
-        .filter(field => applies(field, answers))
+        .filter(field => applicable(field, answers))
         .map(field => (
           <OnboardingFields
             key={field.key}
@@ -668,19 +647,7 @@ export default function OnboardingPage() {
                 paid with. Signing in with that address will bring it up. If that is the address you
                 used, tell us and we will move it across in a minute.
               </p>
-              <p>
-                {phone ? (
-                  <>
-                    <a className="console-link" href={`tel:${phone.replace(/[^0-9+]/g, '')}`}>
-                      {phone}
-                    </a>
-                    {' or '}
-                  </>
-                ) : null}
-                <a className="console-link" href={`mailto:${SUPPORT_EMAIL}`}>
-                  {SUPPORT_EMAIL}
-                </a>
-              </p>
+              <ContactLine phone={phone} />
             </div>
           )}
         </Panel>

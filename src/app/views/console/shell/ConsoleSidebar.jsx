@@ -2,7 +2,6 @@ import { ChevronsLeft, Lock } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { GROUPS, sectionHref } from '../lib/sections'
 import { ConsoleAccount } from './ConsoleAccount'
-import { THEMES, useTheme } from '@hooks/theme/useTheme'
 
 /**
  * The console's own navigation: a full-height column beside the work, not a box
@@ -74,12 +73,9 @@ export function ConsoleSidebar({
   canPreview,
   preview,
   onPreview,
+  theme,
+  onCycleTheme,
 }) {
-  const { choice, setChoice } = useTheme()
-  // One control cycles the three rather than opening a second menu inside the
-  // first, which is a panel a reader has to close twice.
-  const cycleTheme = () => setChoice(THEMES[(THEMES.indexOf(choice) + 1) % THEMES.length])
-
   return (
     <nav
       id="console-sections"
@@ -117,8 +113,8 @@ export function ConsoleSidebar({
         email={email}
         role={role}
         collapsed={collapsed}
-        theme={choice}
-        onCycleTheme={cycleTheme}
+        theme={theme}
+        onCycleTheme={onCycleTheme}
         sites={sites}
         siteIds={siteIds}
         scopeLabel={scopeLabel}

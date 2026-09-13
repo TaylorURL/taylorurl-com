@@ -5,7 +5,7 @@ import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants
 import { EXTRA_SERVICES, SERVICE_PAGES } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
-import ServiceCards from './ServiceCards'
+import MoreServices from './MoreServices'
 import SectionLink from './SectionLink'
 
 const PAGE_PATH = '/services/business-email'
@@ -142,18 +142,9 @@ export default function BusinessEmail() {
         </div>
       </ServiceSection>
 
-      <ServiceSection
-        id="more"
-        ground="paper"
-        eyebrow="The Rest of It"
-        title="Everything else on offer."
-      >
-        <ServiceCards
-          pages={[...SERVICE_PAGES, ...EXTRA_SERVICES.filter(page => page.path !== PAGE_PATH)]}
-          ground="paper"
-          columns={{ base: 1, sm: 2, lg: 3 }}
-        />
-      </ServiceSection>
+      <MoreServices
+        pages={[...SERVICE_PAGES, ...EXTRA_SERVICES.filter(page => page.path !== PAGE_PATH)]}
+      />
 
       <CtaBanner
         eyebrow="Let’s Talk"

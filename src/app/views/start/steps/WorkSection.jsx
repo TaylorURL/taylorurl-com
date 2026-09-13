@@ -1,15 +1,14 @@
-import { ArrowUpRight, Check } from 'lucide-react'
+import { ArrowUpRight } from 'lucide-react'
 import Mesh from '@components/mesh/Mesh'
+import NeedMesh from '@components/mesh/NeedMesh'
 import ToolMesh from '@components/mesh/ToolMesh'
 import BlockHead from './BlockHead'
 import DesignChoice from './DesignChoice'
-import PortfolioPreview from './PortfolioPreview'
+import PortfolioPreview from '@components/mockups/PortfolioPreview'
 import { BLOCK_LABEL, BLOCK_META, GROUND } from '../lib/ground'
 
-// The one live site fills the block, and the jobs the site has to do sit two
-// to a row from the first breakpoint with room for the pair.
+// The one live site fills the block.
 const LEAD_COLUMNS = { base: 1 }
-const NEEDS_COLUMNS = { base: 1, sm: 2 }
 
 /**
  * The client site built for this trade, turned on its side so the strongest
@@ -91,21 +90,7 @@ export default function WorkSection({
 
       <div>
         <BlockHead label="What the Site Does" meta={trade.name} />
-        <Mesh items={trade.needs} ground="paper" columns={NEEDS_COLUMNS} as="ul">
-          {(need, index, cell) => (
-            <li
-              key={need}
-              className={`flex items-start gap-4 p-6 text-[15px] leading-snug text-ink-paper ${cell}`}
-            >
-              <Check
-                className="mt-0.5 h-4 w-4 flex-shrink-0 text-accent"
-                strokeWidth={2}
-                aria-hidden="true"
-              />
-              {need}
-            </li>
-          )}
-        </Mesh>
+        <NeedMesh needs={trade.needs} />
       </div>
 
       <div>

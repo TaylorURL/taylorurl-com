@@ -7,6 +7,7 @@ import { fullCount, percent } from '../../../analytics/lib/format'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
 import {
   ConsolePage,
+  EmptyFill,
   EmptyRow,
   Metric,
   Panel,
@@ -155,15 +156,6 @@ function standing({ scoped, sites }) {
     visitors: share('visitors'),
     sessions: share('sessions'),
   }
-}
-
-/** What a chart's box says when there is no chart to draw in it. */
-function EmptyFill({ children }) {
-  return (
-    <div className="flex items-center justify-center px-5">
-      <p className="text-center text-[13px] text-paper-soft">{children}</p>
-    </div>
-  )
 }
 
 /**

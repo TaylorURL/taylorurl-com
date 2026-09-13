@@ -32,10 +32,12 @@
  * migration, and the diff is the review.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadSnapshot, readValueList } from './db-constraints.js'
+import { fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../..')
@@ -46,18 +48,43 @@ const ROUTES = ['api', 'lib', 'src']
 /** The calls that carry a row. A select carries none and is not read. */
 const WRITES = ['insert', 'update', 'upsert']
 
-const failures = []
 let checked = 0
 let dynamic = 0
 
 // ── Reading source ───────────────────────────────────────────────────────
 
-/** Every `.js` and `.jsx` under a directory. */
-function* sources(dir) {
-  for (const name of readdirSync(dir)) {
-    const path = join(dir, name)
-    if (statSync(path).isDirectory()) yield* sources(path)
-    else if (/\.jsx?$/.test(name)) yield path
+/**
+ * Every character of `text` from `from` on that sits outside a string or a
+ * template, with where it sits.
+ *
+ * Every reader below walks source that carries quoted braces, commas and colons,
+ * and each one would misread the payload the same way on the first of them. So
+ * quoting is tracked here, once, and a quote mark itself is never handed on.
+ */
+function* unquoted(text, from = 0) {
+  let quote = null
+  for (let at = from; at < text.length; at += 1) {
+    const char = text[at]
+    if (quote) {
+      if (char === '\\') at += 1
+      else if (char === quote) quote = null
+      continue
+    }
+    if (char === "'" || char === '"' || char === '`') quote = char
+    else yield [at, char]
+  }
+}
+
+/**
+ * Every character of `text` outside strings, templates and brackets, with where
+ * it sits. A bracket is stepped over along with everything inside it.
+ */
+function* topLevel(text) {
+  let depth = 0
+  for (const [at, char] of unquoted(text)) {
+    if ('([{'.includes(char)) depth += 1
+    else if (')]}'.includes(char)) depth -= 1
+    else if (depth === 0) yield [at, char]
   }
 }
 
@@ -73,16 +100,8 @@ function* sources(dir) {
  */
 function objectAt(text, open) {
   let depth = 0
-  let quote = null
-  for (let at = open; at < text.length; at += 1) {
-    const char = text[at]
-    if (quote) {
-      if (char === '\\') at += 1
-      else if (char === quote) quote = null
-      continue
-    }
-    if (char === "'" || char === '"' || char === '`') quote = char
-    else if (char === '{') depth += 1
+  for (const [at, char] of unquoted(text, open)) {
+    if (char === '{') depth += 1
     else if (char === '}') {
       depth -= 1
       if (depth === 0) return text.slice(open, at + 1)
@@ -101,27 +120,14 @@ function objectAt(text, open) {
 function entriesOf(objectText) {
   const body = objectText.slice(1, -1)
   const entries = []
-  let depth = 0
-  let quote = null
   let start = 0
 
   const push = end => {
     const piece = body.slice(start, end).trim()
     if (!piece || piece.startsWith('...')) return
     let colon = -1
-    let inner = 0
-    let held = null
-    for (let at = 0; at < piece.length; at += 1) {
-      const char = piece[at]
-      if (held) {
-        if (char === '\\') at += 1
-        else if (char === held) held = null
-        continue
-      }
-      if (char === "'" || char === '"' || char === '`') held = char
-      else if ('([{'.includes(char)) inner += 1
-      else if (')]}'.includes(char)) inner -= 1
-      else if (char === ':' && inner === 0) {
+    for (const [at, char] of topLevel(piece)) {
+      if (char === ':') {
         colon = at
         break
       }
@@ -137,17 +143,8 @@ function entriesOf(objectText) {
     })
   }
 
-  for (let at = 0; at < body.length; at += 1) {
-    const char = body[at]
-    if (quote) {
-      if (char === '\\') at += 1
-      else if (char === quote) quote = null
-      continue
-    }
-    if (char === "'" || char === '"' || char === '`') quote = char
-    else if ('([{'.includes(char)) depth += 1
-    else if (')]}'.includes(char)) depth -= 1
-    else if (char === ',' && depth === 0) {
+  for (const [at, char] of topLevel(body)) {
+    if (char === ',') {
       push(at)
       start = at + 1
     }
@@ -196,20 +193,9 @@ function constantsIn(files) {
  */
 function valuePositions(expression) {
   const pieces = []
-  let depth = 0
-  let quote = null
   let start = 0
-  for (let at = 0; at < expression.length; at += 1) {
-    const char = expression[at]
-    if (quote) {
-      if (char === '\\') at += 1
-      else if (char === quote) quote = null
-      continue
-    }
-    if (char === "'" || char === '"' || char === '`') quote = char
-    else if ('([{'.includes(char)) depth += 1
-    else if (')]}'.includes(char)) depth -= 1
-    else if ((char === '?' || char === ':') && depth === 0) {
+  for (const [at, char] of topLevel(expression)) {
+    if (char === '?' || char === ':') {
       pieces.push({ text: expression.slice(start, at).trim(), followedBy: char })
       start = at + 1
     }
@@ -262,7 +248,7 @@ function literalsIn(expression) {
 /** Every source file that could carry a write. */
 const FILES = ROUTES.flatMap(dir => {
   try {
-    return [...sources(join(ROOT, dir))]
+    return filesUnder(join(ROOT, dir), /\.jsx?$/)
   } catch {
     return []
   }
@@ -285,7 +271,7 @@ for (const [table, byColumn] of Object.entries(raw.columns ?? {})) {
       again.allows.length === held.allows.length &&
       again.allows.every(value => held.allows.includes(value))
     if (!agrees) {
-      failures.push(
+      fail(
         `${table}.${column}: the snapshot's list does not follow from the definition beside it. ` +
           `Refresh it rather than editing it: npm run refresh:db-constraints`
       )
@@ -332,7 +318,7 @@ for (const [table, byColumn] of Object.entries(raw.columns ?? {})) {
         for (const value of literals) {
           checked += 1
           if (held.allows.includes(value)) continue
-          failures.push(
+          fail(
             `${where}: ${table}.${entry.key} is written '${value}', which ${held.constraint} refuses. ` +
               `It takes ${held.allows.map(one => `'${one}'`).join(', ')}.`
           )
@@ -352,28 +338,21 @@ if (process.argv.includes('--self-test')) {
   const writes = literalsIn("asked.optOut ? 'opt_out' : machine.auto ? 'auto_reply' : null")
   const refused = writes.filter(value => !before.allows.includes(value))
   if (refused.join() !== 'auto_reply') {
-    console.error(`self-test: expected 'auto_reply' to be refused, got ${JSON.stringify(refused)}`)
-    process.exit(1)
+    fail(`self-test: expected 'auto_reply' to be refused, got ${JSON.stringify(refused)}`)
   }
   const now = readValueList(
     "CHECK (((intent IS NULL) OR (intent = ANY (ARRAY['opt_out'::text, 'auto_reply'::text]))))"
   )
   if (writes.some(value => !now.allows.includes(value))) {
-    console.error('self-test: the widened constraint should accept both values')
-    process.exit(1)
+    fail('self-test: the widened constraint should accept both values')
   }
+  await finish()
   console.log(
     'check-db-values self-test: the constraint as it stood refuses auto_reply; as widened it does not.'
   )
 }
 
-if (failures.length > 0) {
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error(
-    `\ncheck-db-values: ${failures.length} write${failures.length === 1 ? '' : 's'} the schema would refuse.`
-  )
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `check-db-values: ${checked} written values across ${columns.size} constrained columns all stand, ` +

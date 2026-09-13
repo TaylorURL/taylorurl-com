@@ -26,26 +26,8 @@
  *   npm run check:project-brief
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
+import { cases, check, finish, report, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const START = 'src/app/views/start/Start.jsx'
 const SENDER = 'src/app/data/checkout/startCheckout.js'
@@ -166,7 +148,12 @@ check('a console with no build in it explains itself', () => {
     'the empty tracker has something to say rather than one centred line'
   )
   same(tracker.includes('the email address you paid with'), true, 'it names the likeliest cause')
-  same(tracker.includes('SUPPORT_EMAIL'), true, 'it gives them somebody to reach')
+  same(
+    tracker.includes('<ContactLine phone={phone} />') &&
+      read('src/app/views/console/ui.jsx').includes('mailto:${SUPPORT_EMAIL}'),
+    true,
+    'it gives them somebody to reach'
+  )
 })
 
 check('a build pointed at the wrong address can be moved', () => {
@@ -181,16 +168,5 @@ check('a build pointed at the wrong address can be moved', () => {
   )
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

@@ -32,7 +32,7 @@ const ASSUMED = '⌘'
  * time asking for `navigator` gets a confident wrong answer rather than none,
  * and every page ships with Ctrl written into it.
  */
-export function modifierLabel() {
+function modifierLabel() {
   if (typeof window === 'undefined') return ASSUMED
   return /Mac|iPhone|iPad/.test(navigator.platform) ? ASSUMED : 'Ctrl '
 }

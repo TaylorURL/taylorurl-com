@@ -22,18 +22,9 @@ import { BUSINESS_ID } from '../../src/app/constants/seo.js'
 import { CLIENT_REVIEWS, reviewSource } from '../../src/app/data/reputation/reviews.js'
 import { TRUSTPILOT_STANDING } from '../../src/app/data/reputation/trustpilot-standing.js'
 import { withSiteHead } from '../../vite/site-head-plugin.js'
+import { fail, finish, is } from '../harness/checks.js'
 
 const LD_JSON = /<script type="application\/ld\+json">([\s\S]*?)<\/script>/g
-
-let failed = 0
-function fail(message) {
-  failed += 1
-  console.error(`FAIL ${message}`)
-}
-
-function is(where, got, want) {
-  if (got !== want) fail(`${where}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
 
 /** Every JSON-LD node in a page, in the order the page carries them. */
 function nodesIn(html) {
@@ -49,7 +40,7 @@ function nodesIn(html) {
 const page = withSiteHead(readFileSync(new URL('../../index.html', import.meta.url), 'utf8'))
 const before = nodesIn(page).find(node => node['@id'] === BUSINESS_ID)
 if (!before) {
-  console.error(`FAIL index.html carries no JSON-LD node with @id ${BUSINESS_ID}`)
+  fail(`index.html carries no JSON-LD node with @id ${BUSINESS_ID}`)
   process.exit(1)
 }
 
@@ -220,10 +211,7 @@ try {
 }
 if (!refused) fail('the transform accepted a page with no business node')
 
-if (failed) {
-  console.error(`\n${failed} review schema ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `Business node publishes ${rating.ratingValue}/5 from ${rating.ratingCount} ratings ` +

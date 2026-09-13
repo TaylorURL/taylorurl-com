@@ -33,16 +33,9 @@
 import { readFileSync, existsSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { expect as check, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 const { PORTFOLIO_PROJECTS } = await import('../../src/app/data/portfolio.js')
 const { PORTFOLIO_STUDIES, portfolioStudyBySlug } =
@@ -179,10 +172,7 @@ if (cameFrom.has(STUDIES)) {
   )
 }
 
-if (failures) {
-  console.error(`portfolio-split: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `portfolio-split: ${PORTFOLIO_PROJECTS.length} entries and ${PORTFOLIO_STUDIES.length} studies agree on every slug ` +

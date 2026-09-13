@@ -1,17 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Gauge } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
+import CheckScope from '@components/conversion/CheckScope'
 import CheckStage from '@components/conversion/CheckStage'
 import CtaSection from '@components/conversion/CtaSection'
 import Mesh from '@components/mesh/Mesh'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
-import { GROUNDS } from '@constants/grounds'
 import { breadcrumbSchema } from '@constants/seo'
-import { TICK_MS } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { STAGES, runSpeedCheck, speedCheckErrorMessage, stageIndex } from '@data/leads/speedCheck'
 import { isValidEmail } from '@utils/validation'
+import { GROUND, RUN_FAULT } from './lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
+import { useElapsed } from './lib/useElapsed'
 
 /**
  * The reading a site gets asked for by the person who owns it.
@@ -28,10 +30,6 @@ import { isValidEmail } from '@utils/validation'
  * place, as the panel that stood there before the run started. Nothing on the
  * page moves when the reading lands except that box's contents.
  */
-
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
-const FAULT = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
-const GROUND = GROUNDS.paper
 
 const STAGE_LABELS = STAGES.map(stage => stage.label)
 
@@ -210,22 +208,12 @@ export default function SpeedCheck() {
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
   const [stage, setStage] = useState(STAGES[0].id)
-  const [elapsed, setElapsed] = useState(0)
   const [reading, setReading] = useState(null)
   const [fault, setFault] = useState(null)
-  const startedAt = useRef(0)
 
   const running = status === 'reading'
 
-  // The elapsed count is what tells a reader the page has not died on them, so
-  // it runs off a clock rather than off the stages: it keeps moving whatever
-  // Google is doing, and it goes on being true past the point the last stage
-  // stops saying anything new.
-  useEffect(() => {
-    if (!running) return undefined
-    const tick = setInterval(() => setElapsed(Date.now() - startedAt.current), TICK_MS)
-    return () => clearInterval(tick)
-  }, [running])
+  const { elapsed, restart } = useElapsed(running)
 
   const change = field => event => {
     const next = { ...values, [field]: event.target.value }
@@ -264,8 +252,7 @@ export default function SpeedCheck() {
     setFault(null)
     setReading(null)
     setStage(STAGES[0].id)
-    startedAt.current = Date.now()
-    setElapsed(0)
+    restart()
 
     try {
       const answered = await runSpeedCheck(values, { onStage: setStage })
@@ -319,26 +306,23 @@ export default function SpeedCheck() {
                   ground={GROUND}
                 />
               ) : (
-                <div className={`p-8 ${GROUND.shell}`}>
-                  <p className="section-label-sm text-accent">What Gets Measured</p>
-                  <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                    <li>How the page performs on a throttled phone, scored out of a hundred.</li>
-                    <li>
-                      Accessibility, build quality, and search readiness from the same report.
-                    </li>
-                    <li>The five timings the performance score is built from.</li>
-                    <li>What the page looked like when it finished loading.</li>
-                  </ul>
-                  <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
-                    This measures speed. Rankings and competitor data are not part of it.
-                  </p>
-                </div>
+                <CheckScope
+                  title="What Gets Measured"
+                  items={[
+                    'How the page performs on a throttled phone, scored out of a hundred.',
+                    'Accessibility, build quality, and search readiness from the same report.',
+                    'The five timings the performance score is built from.',
+                    'What the page looked like when it finished loading.',
+                  ]}
+                  note="This measures speed. Rankings and competitor data are not part of it."
+                  ground={GROUND}
+                />
               )
             }
           >
             <form onSubmit={run} className="space-y-6" noValidate>
               <div>
-                <label htmlFor={FIELDS.site} className={LABEL}>
+                <label htmlFor={FIELDS.site} className={FIELD_LABEL}>
                   Web address
                 </label>
                 <input
@@ -357,14 +341,14 @@ export default function SpeedCheck() {
                   placeholder="yourbusiness.com"
                 />
                 {errors.site && (
-                  <p id={`${FIELDS.site}-error`} className={FAULT} role="alert">
+                  <p id={`${FIELDS.site}-error`} className={FIELD_FAULT} role="alert">
                     {errors.site}
                   </p>
                 )}
               </div>
 
               <div>
-                <label htmlFor={FIELDS.email} className={LABEL}>
+                <label htmlFor={FIELDS.email} className={FIELD_LABEL}>
                   Email address
                 </label>
                 <input
@@ -383,7 +367,7 @@ export default function SpeedCheck() {
                   placeholder="you@yourbusiness.com"
                 />
                 {errors.email ? (
-                  <p id={`${FIELDS.email}-error`} className={FAULT} role="alert">
+                  <p id={`${FIELDS.email}-error`} className={FIELD_FAULT} role="alert">
                     {errors.email}
                   </p>
                 ) : (
@@ -402,11 +386,7 @@ export default function SpeedCheck() {
                 {running ? 'Checking…' : 'Run the Check'}
               </button>
 
-              {fault && (
-                <p className="text-[14px] leading-snug text-[color:var(--danger-on-paper)]">
-                  {fault}
-                </p>
-              )}
+              {fault && <p className={RUN_FAULT}>{fault}</p>}
             </form>
           </CheckStage>
 

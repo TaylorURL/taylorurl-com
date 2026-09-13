@@ -303,7 +303,7 @@ const TEXAS = /^(?:tx|texas)(?:\s+\d{5}(?:-\d{4})?)?$/i
  * the row. Where the address names nothing readable, the search's own town is
  * the best claim there is and stands.
  */
-export function townOf(address, searched) {
+function townOf(address, searched) {
   const parts = String(address ?? '')
     .split(',')
     .map(part => part.trim())

@@ -1,6 +1,5 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { fullCount } from '../../../analytics/lib/format'
-import { TooltipCard } from '../../../analytics/ChartTooltip'
+import { ShareTooltip } from '../../../analytics/ChartTooltip'
 import { ANIMATE, CHART_HEIGHT, frame } from '../../../analytics/chartKit'
 
 /**
@@ -51,22 +50,7 @@ export function ChannelDonut({ rows, total, fill, height = CHART_HEIGHT.traffic 
               <Cell key={row.name} fill={row.color} />
             ))}
           </Pie>
-          <Tooltip
-            content={({ active, payload }) =>
-              active && payload?.length ? (
-                <TooltipCard
-                  title={payload[0].name}
-                  rows={[
-                    { label: 'Sessions', value: fullCount(payload[0].value) },
-                    {
-                      label: 'Share',
-                      value: total ? `${Math.round((payload[0].value / total) * 100)}%` : '—',
-                    },
-                  ]}
-                />
-              ) : null
-            }
-          />
+          <Tooltip content={<ShareTooltip total={total} />} />
         </PieChart>
       </ResponsiveContainer>
     </div>

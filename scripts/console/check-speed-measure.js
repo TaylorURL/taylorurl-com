@@ -24,25 +24,16 @@
  *   npm run check:speed-measure
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
+import { cases, expect as check, finish } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const HOOK = 'src/app/hooks/console/useSpeedFeed.js'
+const REQUESTS = 'src/app/hooks/console/endpoint.js'
 const ENDPOINT = 'api/site-speed.js'
 
 const hook = read(HOOK)
+const requests = read(REQUESTS)
 const endpoint = read(ENDPOINT)
-
-const faults = []
-let checks = 0
-function check(ok, complaint) {
-  checks += 1
-  if (!ok) faults.push(complaint)
-}
 
 // Both readings are still taken. A fix that dropped one would pass every check
 // about request shape and quietly leave the desktop column empty forever.
@@ -51,13 +42,13 @@ check(
   `${HOOK} no longer names both strategies, so a site is measured on one of the two figures the table shows`
 )
 
-const posts = hook.match(/method: 'POST'/g) || []
+const posts = hook.match(/writeEndpoint\(/g) || []
 check(
-  posts.length === 1,
+  posts.length === 1 && /method: 'POST'/.test(requests),
   `${HOOK} sends ${posts.length} kinds of measurement request rather than one, so what the endpoint is asked for depends on which one ran`
 )
 
-const body = hook.match(/body: JSON\.stringify\(([^)]*)\)/)
+const body = hook.match(/writeEndpoint\(token, SPEED_PATH, \{([^}]*)\}\)/)
 check(
   Boolean(body) && /\bstrategy\b/.test(body[1]),
   `${HOOK} posts no strategy, so the endpoint measures both in one call and the run is killed over the wall clock rather than answered`
@@ -71,7 +62,7 @@ check(
 // request inside the loop rather than the loop inside the request.
 const loop = hook.indexOf('for (const strategy of STRATEGIES)')
 check(
-  loop > -1 && loop < hook.indexOf("method: 'POST'"),
+  loop > -1 && loop < hook.indexOf('writeEndpoint('),
   `${HOOK} sends its measurement outside the loop over the strategies, so both go in one call again`
 )
 
@@ -93,17 +84,12 @@ check(
   `${ENDPOINT} gives up before one strategy can finish, so a slow page is reported as an endpoint that went quiet`
 )
 
-if (faults.length) {
-  console.error('check-speed-measure: failed')
-  for (const fault of faults) console.error(`  ${fault}`)
-  console.error(
-    '  one strategy per request; two in one call is a worker killed over the wall clock'
-  )
-  process.exit(1)
-}
+await finish({
+  hint: 'one strategy per request; two in one call is a worker killed over the wall clock',
+})
 
 console.log(
-  `check-speed-measure: ${checks} checks hold - a measurement pressed in the console goes out as ` +
+  `check-speed-measure: ${cases.length} checks hold - a measurement pressed in the console goes out as ` +
     'one request per strategy, each bounded by a single PageSpeed run, and the row stays busy ' +
     'across both'
 )

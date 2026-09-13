@@ -1,7 +1,7 @@
 import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
-import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
+import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema, faqSchema } from '@constants/seo'
 import {
   BUILD_PRICE,
   INCLUDED_COUNT,
@@ -111,15 +111,7 @@ export default function Pricing() {
             areaServed: AREA_SERVED,
             offers: PRICE_OFFERS,
           },
-          {
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: QUESTIONS.map(item => ({
-              '@type': 'Question',
-              name: item.q,
-              acceptedAnswer: { '@type': 'Answer', text: item.a },
-            })),
-          },
+          faqSchema(QUESTIONS),
         ]}
       />
       {/* The studio's own two figures and nothing else. What anybody else

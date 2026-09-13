@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronsUpDown, Eye, LogOut, Search, Settings, SunMoon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { useDismiss } from '@hooks/chrome/useDismiss'
 import { SiteIcon } from '../SiteIcon'
 
 /**
@@ -66,25 +67,7 @@ export function ConsoleAccount({
   const [filter, setFilter] = useState('')
   const holder = useRef(null)
 
-  // A panel left open behind a click elsewhere is one the reader dismisses
-  // twice. Escape closes it and hands focus back to the control that opened it.
-  useEffect(() => {
-    if (!open) return undefined
-    const away = event => {
-      if (!holder.current?.contains(event.target)) setOpen(false)
-    }
-    const key = event => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      holder.current?.querySelector('.console-account-button')?.focus()
-    }
-    document.addEventListener('pointerdown', away)
-    document.addEventListener('keydown', key)
-    return () => {
-      document.removeEventListener('pointerdown', away)
-      document.removeEventListener('keydown', key)
-    }
-  }, [open])
+  useDismiss(open, holder, '.console-account-button', () => setOpen(false))
 
   // A filter left behind from the last open is a list that comes back missing
   // rows for a reason nothing on screen explains.

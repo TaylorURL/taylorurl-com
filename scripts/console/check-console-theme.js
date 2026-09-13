@@ -24,9 +24,11 @@
  * whatever the reader has chosen.
  */
 
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { cases, check, finish, same } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -46,22 +48,8 @@ const FIXED = {
   '.console-qr': 'a code read by a camera rather than by the reader',
 }
 
-const cases = []
-const check = (name, run) => cases.push([name, run])
-const same = (got, want, what) => {
-  if (got !== want) {
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-  }
-}
-
 function sources(dir) {
-  const found = []
-  for (const entry of readdirSync(join(ROOT, dir))) {
-    const rel = join(dir, entry)
-    if (statSync(join(ROOT, rel)).isDirectory()) found.push(...sources(rel))
-    else if (/\.(jsx?|css)$/.test(entry)) found.push(rel)
-  }
-  return found
+  return filesUnder(join(ROOT, dir), /\.(jsx?|css)$/).map(file => relative(ROOT, file))
 }
 
 const FILES = SCANNED.flatMap(sources)
@@ -289,19 +277,6 @@ check('anything the console opens on the body carries the scope with it', () => 
   same(escaped.join('\n'), '', `portals drawn outside the console palette\n${escaped.join('\n')}\n`)
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`console theme: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`console theme: all ${cases.length} cases pass across ${FILES.length} files`)

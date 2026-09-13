@@ -12,6 +12,7 @@
  */
 
 import { readAll, PAGE_ROWS } from '../../lib/db/rows.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 /** A query builder over `total` rows, counting the requests it takes. */
 function table(total, { fail = null } = {}) {
@@ -26,15 +27,6 @@ function table(total, { fail = null } = {}) {
     },
   })
   return { build, calls }
-}
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
 }
 
 check('a table under one page is read in one request', async () => {
@@ -98,19 +90,6 @@ check('a refused read raises rather than answering short', async () => {
   same(raised?.code, '42P01', 'the driver code survives')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`row paging: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`row paging: all ${cases.length} cases pass`)

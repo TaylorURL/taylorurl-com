@@ -21,24 +21,11 @@
  */
 
 import { authorizeAdmin } from '../../lib/db/clients.js'
+import { cases, check, finish, same } from '../harness/checks.js'
+import { token } from './token-fixture.js'
 
 const ADMIN = 'account-admin'
 const CLIENT = 'account-client'
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
-
-/** A token that states an account, signed by nobody. */
-function token(sub) {
-  const part = value => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url')
-  return `Bearer ${part({ alg: 'HS256' })}.${part({ sub })}.not-a-signature`
-}
 
 /**
  * A stand-in for the two clients, recording what was asked and in what order.
@@ -160,15 +147,5 @@ check('a request carrying no session touches the database at all', async () => {
   same(read.length, 0, 'nothing read for a request with no token')
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    await run()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`FAIL  ${name}\n      ${cause.message}`)
-  }
-}
-console.log(`\nadmin door: ${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\nadmin door: ${passed}/${cases.length} passed`)

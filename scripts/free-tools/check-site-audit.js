@@ -16,6 +16,7 @@
  */
 import { target } from '../../api/site-audit.js'
 import { enquiryLines, reportFor } from '../../src/app/tools/lib/findings.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 // Addresses that must never reach a fetch: the loopback and metadata hosts, the
 // ranges that are not routed, the schemes that are not the web, and the
@@ -125,14 +126,6 @@ const BROKEN = {
 // A site Google answered for but whose own page never arrived.
 const UNREADABLE = { ...CLEAN, page: null, hosts: { reachable: false } }
 
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
-
 for (const address of MUST_REFUSE) {
   const answer = target(address)
   check(Boolean(answer.fault), `guard let through ${JSON.stringify(address)}`)
@@ -173,10 +166,7 @@ for (const finding of [...clean.findings, ...broken.findings]) {
   check(PAGES.has(finding.fixes), `${finding.id} points at ${finding.fixes}`)
 }
 
-if (failures) {
-  console.error(`site-audit: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `site-audit: ${MUST_REFUSE.length} addresses refused, ${MUST_ALLOW.length} allowed, report honest on clean, broken and unreadable readings`
 )

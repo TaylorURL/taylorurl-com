@@ -25,35 +25,20 @@
  *   npm run check:api-gate
  */
 import { execFileSync } from 'node:child_process'
-import { readFileSync, readdirSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
 
 import { SITES } from '../../lib/site/sites.js'
 import { SITE_KEYS } from '../../lib/site/registry.js'
+import { expect as check, fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const API = join(ROOT, 'api')
 
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
-
 /** Every handler file under api/, at any depth. */
-function handlers(dir) {
-  return readdirSync(dir).flatMap(entry => {
-    const path = join(dir, entry)
-    if (statSync(path).isDirectory()) return handlers(path)
-    return path.endsWith('.js') ? [path] : []
-  })
-}
-
-const files = handlers(API)
+const files = filesUnder(API, /\.js$/)
 check(files.length > 0, 'no handlers found under api/')
 
 for (const path of files) {
@@ -208,12 +193,7 @@ const SERVED_THERE = ['/api/contact', '/api/contact/', '/api/contact?utm_source=
 const missing = SERVED_THERE.filter(url => !asSecondSite([url]).length)
 check(missing.length === 0, `the subsidiary refused ${missing.join(', ')}, which it must serve`)
 
-if (failed) {
-  console.error(
-    `\n${failed} problem(s). Both deployments serve every file in api/; only the code says otherwise.`
-  )
-  process.exit(1)
-}
+await finish({ hint: 'Both deployments serve every file in api/; only the code says otherwise.' })
 
 console.log(
   `api gate holds: ${files.length} handlers ask before acting and none asks late, the ` +

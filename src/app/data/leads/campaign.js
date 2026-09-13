@@ -19,6 +19,8 @@
  * it came first would put the count on the wrong opener.
  */
 
+import { browserStore } from '../../utils/storage.js'
+
 /** Where the held campaign lives. */
 const KEY = 'tu_campaign'
 
@@ -55,7 +57,7 @@ export const CAMPAIGN_FIELDS = [
  * the address the reader opened, the router replaces that address on the first
  * navigation, and a buyer reaches the payment page several pages later.
  */
-export const CLICK_FIELDS = ['gclid', 'gbraid', 'wbraid', 'fbclid']
+const CLICK_FIELDS = ['gclid', 'gbraid', 'wbraid', 'fbclid']
 
 /** Everything an arrival is worth keeping, tags and click identifiers alike. */
 const HELD_FIELDS = [...CAMPAIGN_FIELDS, ...CLICK_FIELDS]
@@ -65,17 +67,6 @@ const HELD_FIELDS = [...CAMPAIGN_FIELDS, ...CLICK_FIELDS]
  * column and a log line, and their length is not something the visitor chose.
  */
 const LIMIT = 200
-
-/** The browser's own store, where there is one. */
-function browserStore() {
-  try {
-    return typeof localStorage === 'undefined' ? null : localStorage
-  } catch {
-    // A browser set to block site data throws on the accessor itself rather
-    // than answering empty, so reaching it is what has to be guarded.
-    return null
-  }
-}
 
 /** One tag, flattened to a single line and cut to its limit. */
 function tag(value) {
@@ -128,7 +119,10 @@ export function campaignIn(search) {
  * @param {{now?: number, store?: object}} [where]
  * @returns {object|null} What was written, or null where nothing was.
  */
-export function rememberCampaign(search, { now = Date.now(), store = browserStore() } = {}) {
+export function rememberCampaign(
+  search,
+  { now = Date.now(), store = browserStore('localStorage') } = {}
+) {
   const found = campaignIn(search)
   if (!found || !store) return null
   try {
@@ -147,7 +141,7 @@ export function rememberCampaign(search, { now = Date.now(), store = browserStor
  * @param {{now?: number, store?: object}} [where]
  * @returns {object|null}
  */
-export function campaignHeld({ now = Date.now(), store = browserStore() } = {}) {
+export function campaignHeld({ now = Date.now(), store = browserStore('localStorage') } = {}) {
   if (!store) return null
   let held
   try {

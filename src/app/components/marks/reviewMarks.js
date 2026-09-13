@@ -21,7 +21,7 @@ import {
  * review stars are gold, and the green Trustpilot fills a star tile with is a
  * shape rather than something type can sit on.
  */
-export const REVIEW_SOURCE_DRAWING = {
+const REVIEW_SOURCE_DRAWING = {
   bbb: { mark: MarkBbb, ink: 'var(--bbb-blue)', fill: 'var(--bbb-fill)' },
   trustpilot: { mark: MarkTrustpilot, ink: 'var(--tp-ink)', fill: 'var(--tp-fill)' },
   google: {

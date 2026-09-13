@@ -27,6 +27,7 @@ import {
   SITE_URL,
   TOOL_ROUTES,
 } from '../../vite/site-routes.js'
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 const ROUTES = SITEMAP_ROUTES
 
@@ -36,20 +37,11 @@ let FILE
 try {
   FILE = llmsText(ROUTES)
 } catch (cause) {
-  console.error(`FAIL ${cause.message}`)
+  fail(cause.message)
   process.exit(1)
 }
 
 const EMOJI = /\p{Extended_Pictographic}/u
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
 
 /** Every page the file links, in the order it lists them. */
 const linked = [...FILE.matchAll(/^- \[([^\]]+)]\(([^)]+)\)(?::\s*(.+))?$/gm)].map(match => ({
@@ -166,10 +158,7 @@ check(FILE.endsWith('\n'), 'the file does not end in a newline')
   refuses([...ROUTES, first], 'listed twice')
 }
 
-if (failed) {
-  console.error(`\n${failed} llms.txt ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 const sections = [...FILE.matchAll(/^## (.+)$/gm)].length
 console.log(

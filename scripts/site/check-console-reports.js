@@ -38,23 +38,43 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { cases, expect as check, fail, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const PAGE = readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 
-const failures = []
-let checks = 0
-function check(condition, complaint) {
-  checks += 1
-  if (!condition) failures.push(complaint)
-}
-
 const scripts = [...PAGE.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match => match[1])
 const reporter = scripts.find(source => source.includes('/report'))
 if (!reporter) {
-  console.error('check-console-reports: failed')
-  console.error('  the page no longer carries an inline script that names the collector')
+  fail('the page no longer carries an inline script that names the collector')
   process.exit(1)
+}
+
+/*
+ * A phone takes a page away in two shapes. A tab sent behind something hides
+ * the document and may never fire `pagehide`; a page navigated away from, or
+ * frozen into the back/forward cache, fires both. Each sandbox below hands its
+ * page these moves, over the listeners that page has registered with it.
+ */
+
+function hideDocument(sandbox, watching) {
+  sandbox.document.visibilityState = 'hidden'
+  for (const handler of watching.visibilitychange || []) handler({})
+}
+
+function showDocument(sandbox, watching) {
+  sandbox.document.visibilityState = 'visible'
+  for (const handler of watching.visibilitychange || []) handler({})
+}
+
+function leavePage(sandbox, watching, listeners) {
+  hideDocument(sandbox, watching)
+  for (const handler of listeners.pagehide || []) handler({})
+}
+
+/** An `addEventListener` that keeps each handler under its event, for these moves to call. */
+const registering = handlers => (type, handler) => {
+  ;(handlers[type] = handlers[type] || []).push(handler)
 }
 
 /**
@@ -103,14 +123,10 @@ function collector(scriptTags, siteTags) {
       },
     },
     localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
-    addEventListener(type, handler) {
-      ;(listeners[type] = listeners[type] || []).push(handler)
-    },
+    addEventListener: registering(listeners),
     document: {
       visibilityState: 'visible',
-      addEventListener(type, handler) {
-        ;(watching[type] = watching[type] || []).push(handler)
-      },
+      addEventListener: registering(watching),
       // What the page has fetched from elsewhere, which is what the reporter
       // reads to say where a muted throw could have come from.
       getElementsByTagName: () => scriptTags || [],
@@ -148,22 +164,11 @@ function collector(scriptTags, siteTags) {
     held() {
       return sandbox.window.__reporter.replay()
     },
-    /* The document going away and coming back, in the two shapes a phone does
-     * it in. Backgrounding hides the tab and may never fire `pagehide`;
-     * freezing the page into the back/forward cache fires both. */
-    hidden() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
-    shown() {
-      sandbox.document.visibilityState = 'visible'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
-    frozen() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-      for (const handler of listeners.pagehide || []) handler({})
-    },
+    // The document going away and coming back, as a backgrounded tab and as a
+    // page frozen into the back/forward cache.
+    hidden: () => hideDocument(sandbox, watching),
+    shown: () => showDocument(sandbox, watching),
+    frozen: () => leavePage(sandbox, watching, listeners),
     thawed() {
       sandbox.document.visibilityState = 'visible'
       for (const handler of listeners.pageshow || []) handler({})
@@ -515,8 +520,7 @@ check(
 // the one report on this host that was ever worth having.
 const loader = scripts.find(source => source.includes('__siteTags = []'))
 if (!loader) {
-  console.error('check-console-reports: failed')
-  console.error('  the page no longer carries the block that writes its tags')
+  fail('the page no longer carries the block that writes its tags')
   process.exit(1)
 }
 
@@ -536,16 +540,12 @@ function tagLoader(search = '') {
     Date,
     URL,
     setTimeout() {},
-    addEventListener(type, handler) {
-      ;(listeners[type] = listeners[type] || []).push(handler)
-    },
+    addEventListener: registering(listeners),
     removeEventListener() {},
     location: { search },
     document: {
       visibilityState: 'visible',
-      addEventListener(type, handler) {
-        ;(watching[type] = watching[type] || []).push(handler)
-      },
+      addEventListener: registering(watching),
       createElement() {
         const node = { async: false, src: '', crossOrigin: null, on: {} }
         node.addEventListener = (type, handler) => {
@@ -577,23 +577,12 @@ function tagLoader(search = '') {
   return {
     filed,
     kept,
-    // The reader tapping through, locking the screen or switching apps. The
-    // tab going behind something hides the document and may never fire
-    // `pagehide`; a navigation fires both.
-    hides() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
-    leaves() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-      for (const handler of listeners.pagehide || []) handler({})
-    },
+    // The reader tapping through, locking the screen or switching apps, and
+    // the reader navigating away.
+    hides: () => hideDocument(sandbox, watching),
+    leaves: () => leavePage(sandbox, watching, listeners),
     // And back again, with everything on screen saying they never went.
-    shows() {
-      sandbox.document.visibilityState = 'visible'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
+    shows: () => showDocument(sandbox, watching),
     written: sandbox.__siteTags,
     fetched: appended.map(node => node.src),
     // The oldest ask to that host nobody has answered yet. A tag refused for
@@ -931,15 +920,12 @@ check(
     'so the guard has widened off transport failures and onto the site’s own faults'
 )
 
-if (failures.length) {
-  console.error('check-console-reports: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error('  a line an extension wrote is the browser talking; only the site answers here')
-  process.exit(1)
-}
+await finish({
+  hint: 'a line an extension wrote is the browser talking; only the site answers here',
+})
 
 console.log(
-  `check-console-reports: ${checks} checks hold — the console path files with the frames it ` +
+  `check-console-reports: ${cases.length} checks hold — the console path files with the frames it ` +
     'came from, an extension writing to it is ruled the browser rather than the site, a throw ' +
     'the browser refused to describe is held rather than filed, and the output the site writes ' +
     'itself still reports'

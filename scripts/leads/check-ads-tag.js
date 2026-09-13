@@ -26,6 +26,7 @@ import { withSiteHead } from '../../vite/site-head-plugin.js'
 import { taylorurl, taylorwebsite } from '../../lib/site/registry.js'
 import { adsSendTo } from '../../src/app/data/leads/conversion.js'
 import { counted } from '../../src/app/views/analytics/lib/counted.js'
+import { fail, finish, is } from '../harness/checks.js'
 
 const TEMPLATE = readFileSync(new URL('../../index.html', import.meta.url), 'utf8')
 const PRIVACY = readFileSync(
@@ -35,16 +36,6 @@ const PRIVACY = readFileSync(
 
 /** Every field on a record that names the ad account or an action in it. */
 const ADS_FIELDS = ['adsId', 'adsLeadSendTo', 'adsCallSendTo', 'adsCheckoutSendTo']
-
-let failed = 0
-function fail(message) {
-  failed += 1
-  console.error(`FAIL ${message}`)
-}
-
-function is(where, got, want) {
-  if (got !== want) fail(`${where}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
 
 function has(where, haystack, needle) {
   if (!haystack.includes(needle)) fail(`${where}: ${JSON.stringify(needle)} is not there`)
@@ -233,10 +224,7 @@ for (const phrase of [
   has('the privacy policy', PRIVACY, phrase)
 }
 
-if (failed) {
-  console.error(`\n${failed} ads tag ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `ads tag: ${studio.adsId} is configured on the built head beside ${studio.gaId}, ` +

@@ -8,9 +8,17 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { compactCount, fullCount } from '../../../analytics/lib/format'
+import { fullCount } from '../../../analytics/lib/format'
 import { TooltipCard } from '../../../analytics/ChartTooltip'
-import { ANIMATE, AXIS, CHART_HEIGHT, CHART_INSET, frame, GRID } from '../../../analytics/chartKit'
+import {
+  ANIMATE,
+  AXIS,
+  CHART_HEIGHT,
+  CHART_INSET,
+  COUNT_AXIS,
+  frame,
+  GRID,
+} from '../../../analytics/chartKit'
 
 /**
  * The one chart the landing section draws that no other section needs: the
@@ -46,14 +54,7 @@ export function WeekdayChart({ days, fill }) {
             axisLine={{ stroke: GRID }}
             interval={0}
           />
-          <YAxis
-            tick={AXIS}
-            tickLine={false}
-            axisLine={false}
-            width="auto"
-            tickFormatter={compactCount}
-            allowDecimals={false}
-          />
+          <YAxis {...COUNT_AXIS} />
           <Tooltip
             cursor={{ fill: 'var(--paper-hairline)' }}
             content={({ active, payload }) =>

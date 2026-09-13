@@ -1,18 +1,19 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { AlertTriangle, Check, Minus, Search } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
+import CheckScope from '@components/conversion/CheckScope'
 import CheckStage from '@components/conversion/CheckStage'
 import StepFlow from '../start/steps/StepFlow'
 import ToolEnquiry from './ToolEnquiry'
 import { enquiryLines, reportFor } from '@app/tools/lib/findings'
 import { NAV_GROUPS } from '@constants/navigation'
-import { STAGES, TICK_MS, stageAt } from '@app/tools/lib/progress'
+import { STAGES, stageAt } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultFromResponse, faultMessage } from '@utils/faults'
-import { GROUND } from './lib/ground'
-
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
+import { GROUND, RUN_FAULT } from './lib/ground'
+import { FIELD_LABEL } from '@constants/grounds'
+import { useElapsed } from './lib/useElapsed'
 
 // What a reading that did not land says when nothing better came back with it.
 // It names the address rather than whatever failed behind it, because the
@@ -73,23 +74,13 @@ export default function GooglePresenceCheck({ tool }) {
   const toast = useToast()
   const [address, setAddress] = useState('')
   const [status, setStatus] = useState('idle')
-  const [elapsed, setElapsed] = useState(0)
   const [reading, setReading] = useState(null)
   const [fault, setFault] = useState(null)
-  const startedAt = useRef(0)
 
   const report = reading ? reportFor(reading) : null
   const running = status === 'reading'
 
-  // The elapsed count is what tells a reader the page has not died on them, so
-  // it runs off a clock rather than off the stages: it keeps moving whatever
-  // Google is doing, and it goes on being true past the point the estimate
-  // stops being.
-  useEffect(() => {
-    if (!running) return undefined
-    const tick = setInterval(() => setElapsed(Date.now() - startedAt.current), TICK_MS)
-    return () => clearInterval(tick)
-  }, [running])
+  const { elapsed, restart } = useElapsed(running)
 
   // A failure here ends a wait of most of a minute, so it is said in two places
   // rather than one. The notice is what reaches somebody still watching the
@@ -110,8 +101,7 @@ export default function GooglePresenceCheck({ tool }) {
     setStatus('reading')
     setFault(null)
     setReading(null)
-    startedAt.current = Date.now()
-    setElapsed(0)
+    restart()
 
     try {
       const response = await fetch(`/api/site-audit?site=${encodeURIComponent(address.trim())}`)
@@ -149,25 +139,23 @@ export default function GooglePresenceCheck({ tool }) {
                 ground={GROUND}
               />
             ) : (
-              <div className={`p-8 ${GROUND.shell}`}>
-                <p className="section-label-sm text-accent">What Gets Checked</p>
-                <ul className={`mt-5 space-y-3 text-[15px] leading-relaxed ${GROUND.body}`}>
-                  <li>How long the page takes to become usable on a phone.</li>
-                  <li>Whether your business details are in a form Google reads.</li>
-                  <li>What your link looks like when somebody shares it.</li>
-                  <li>Whether the address answers one way rather than two.</li>
-                </ul>
-                <p className={`mt-6 text-[14px] leading-relaxed ${GROUND.meta}`}>
-                  Rankings, review counts and what competitors are doing cannot be measured for
-                  free, so they are not in this report.
-                </p>
-              </div>
+              <CheckScope
+                title="What Gets Checked"
+                items={[
+                  'How long the page takes to become usable on a phone.',
+                  'Whether your business details are in a form Google reads.',
+                  'What your link looks like when somebody shares it.',
+                  'Whether the address answers one way rather than two.',
+                ]}
+                note="Rankings, review counts and what competitors are doing cannot be measured for free, so they are not in this report."
+                ground={GROUND}
+              />
             )
           }
         >
           <form onSubmit={run} className="space-y-6">
             <div>
-              <label htmlFor="check-site" className={LABEL}>
+              <label htmlFor="check-site" className={FIELD_LABEL}>
                 Web address
               </label>
               <div className="flex flex-col gap-3 sm:flex-row">
@@ -197,11 +185,7 @@ export default function GooglePresenceCheck({ tool }) {
                 stands here is a run that did not finish, which is as often the
                 measurement as the address, and telling a screen reader the
                 field is invalid would name the wrong one. */}
-            {fault && (
-              <p className="text-[14px] leading-snug text-[color:var(--danger-on-paper)]">
-                {fault}
-              </p>
-            )}
+            {fault && <p className={RUN_FAULT}>{fault}</p>}
           </form>
         </CheckStage>
       ),

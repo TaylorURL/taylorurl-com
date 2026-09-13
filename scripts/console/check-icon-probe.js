@@ -26,9 +26,11 @@
  * committed but never drawn, or named but missing.
  */
 
-import { readFileSync, readdirSync } from 'node:fs'
+import { readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { expect as check, finish } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -36,16 +38,6 @@ const ICON = 'src/app/views/console/SiteIcon.jsx'
 const COLLECTOR = 'index.html'
 const REGISTRY = 'src/app/data/console/siteIcons.js'
 const ICONS = 'public/site-icons'
-
-const read = where => readFileSync(join(ROOT, where), 'utf8')
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 // The component marks its guesses.
 const component = read(ICON)
@@ -103,10 +95,7 @@ for (const host of committed) {
   )
 }
 
-if (failures) {
-  console.error(`icon probe: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `icon probe: guesses marked and held rather than filed; ${listed.size} captured marks all committed and registered`
 )

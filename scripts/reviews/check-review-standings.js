@@ -24,18 +24,13 @@ import { REVIEW_SOURCES, reviewSource } from '../../src/app/data/reputation/revi
 import {
   REVIEW_STANDINGS,
   REVIEW_STANDING_MAX_AGE_DAYS,
-  committedStandings,
+  committedStanding,
   standingShows,
 } from '../../src/app/data/reputation/review-standings.js'
 import { dayIn } from '../../lib/time/zone.js'
+import { fail, finish } from '../harness/checks.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-
-let failed = 0
-function fail(message) {
-  failed += 1
-  console.error(`FAIL ${message}`)
-}
 
 const today = Date.parse(`${dayIn()}T00:00:00Z`)
 
@@ -120,7 +115,9 @@ if (bbb?.seal && bbb.seal.src !== BBB_SEAL_SRC) {
 
 // The rail draws the registry's order and skips whatever has nothing published
 // on it yet, so what a reader is shown is decided here rather than in markup.
-const showing = committedStandings().map(standing => standing.key)
+const showing = REVIEW_SOURCES.filter(source => committedStanding(source.key)).map(
+  source => source.key
+)
 const expected = REVIEW_SOURCES.filter(source => standingShows(REVIEW_STANDINGS[source.key])).map(
   source => source.key
 )
@@ -142,12 +139,10 @@ if (/'(bbb|google|yelp|facebook)'/.test(badge)) {
   fail('the badge names a network of its own rather than drawing whatever it is handed')
 }
 
-if (failed) {
-  console.error(`\n${failed} review standing ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
-const drawn = committedStandings()
+const drawn = REVIEW_SOURCES.map(source => committedStanding(source.key))
+  .filter(Boolean)
   .map(standing =>
     `${standing.key} ${standing.verdict ?? standing.rating ?? standing.reviewCount}`.trim()
   )

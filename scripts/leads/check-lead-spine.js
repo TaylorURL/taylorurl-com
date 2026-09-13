@@ -23,23 +23,10 @@
  *   npm run check:lead-spine
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import { MOMENTS, SOURCES, SPINE, ownAddress, phoneDigits } from '../../lib/leads/spine.js'
 import { callMakesLead } from '../../lib/outreach/prospects/calls.js'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
+import { cases, check, finish, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const ADMIN = 'api/leads-admin.js'
 const CONSOLE = 'src/app/views/console/pages/studio/LeadsPage.jsx'
@@ -162,20 +149,7 @@ check('one person written two ways is one lead', () => {
   same(phoneDigits(null), null, 'nothing is not a number')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`lead spine: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `lead spine: all ${cases.length} cases pass; ${Object.keys(SOURCES).length} doors write to ${SPINE}, ` +

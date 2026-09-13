@@ -28,6 +28,7 @@ import {
   SidePanel,
   SkeletonList,
   SkeletonRows,
+  SplitRow,
   ViewNav,
 } from '../../ui'
 import { Figures } from '../../Figures'
@@ -222,25 +223,11 @@ function Fact({ label, value }) {
 
 /** One lead in the column: who, where from, how far, and whether they wait. */
 function LeadRow({ lead, open, onOpen }) {
-  const state = stage(lead)
   return (
-    <li className="border-hair-paper border-t first:border-t-0">
-      <button
-        type="button"
-        aria-current={open ? 'true' : undefined}
-        onClick={onOpen}
-        className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition-colors duration-150 ease-out-soft hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
-      >
-        <span className="grid min-w-0 gap-0.5">
-          <span className="truncate text-[13px] font-medium text-ink-paper">{who(lead)}</span>
-          <span className="text-paper-faint truncate text-[12px]">
-            {DOORS[lead.source] || lead.source} · {when(lead.first_seen)}
-            {lead.due_at ? ` · owed ${onDay(lead.due_at)}` : ''}
-          </span>
-        </span>
-        <Badge tone={state.tone}>{state.label}</Badge>
-      </button>
-    </li>
+    <SplitRow name={who(lead)} badge={stage(lead)} open={open} onOpen={onOpen}>
+      {DOORS[lead.source] || lead.source} · {when(lead.first_seen)}
+      {lead.due_at ? ` · owed ${onDay(lead.due_at)}` : ''}
+    </SplitRow>
   )
 }
 
@@ -519,6 +506,23 @@ function Reading({ lead, team, messages, messagesError, saving, onMark, onCompos
   )
 }
 
+/** A letter's subject line, as the composer and the draft editor both take it. */
+function SubjectField({ value, onChange }) {
+  return (
+    <label className="grid gap-1.5">
+      <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
+      <input
+        required
+        type="text"
+        maxLength={TEMPLATE_LIMITS.subject}
+        value={value}
+        onChange={event => onChange(event.target.value)}
+        className={FIELD}
+      />
+    </label>
+  )
+}
+
 /**
  * The composer: a draft picked, the blanks filled from the lead, and the
  * whole message read before it goes.
@@ -598,17 +602,7 @@ function Composer({ open, lead, templates, sending, onSend, onClose }) {
             with the lead's own details already in the blanks.
           </p>
         )}
-        <label className="grid gap-1.5">
-          <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
-          <input
-            required
-            type="text"
-            maxLength={TEMPLATE_LIMITS.subject}
-            value={subject}
-            onChange={event => setSubject(event.target.value)}
-            className={FIELD}
-          />
-        </label>
+        <SubjectField value={subject} onChange={setSubject} />
         <label className="grid gap-1.5">
           <span className={`${MONO_LABEL} text-paper-faint`}>Message</span>
           <textarea
@@ -800,17 +794,7 @@ function DraftEditor({ open, draft, busy, onSave, onDelete, onClose }) {
             className={FIELD}
           />
         </label>
-        <label className="grid gap-1.5">
-          <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
-          <input
-            required
-            type="text"
-            maxLength={TEMPLATE_LIMITS.subject}
-            value={subject}
-            onChange={event => setSubject(event.target.value)}
-            className={FIELD}
-          />
-        </label>
+        <SubjectField value={subject} onChange={setSubject} />
         <label className="grid gap-1.5">
           <span className={`${MONO_LABEL} text-paper-faint`}>Body</span>
           <textarea

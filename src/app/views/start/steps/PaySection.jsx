@@ -1,8 +1,9 @@
-import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import BbbSeal from '@components/reviews/BbbSeal'
-import { FIELD_FAULT, FIELD_LABEL, GROUND, PANEL_EYEBROW, PANEL_TITLE } from '../lib/ground'
+import SendButton from '@components/conversion/SendButton'
+import { GROUND, PANEL_EYEBROW, PANEL_TITLE } from '../lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 /**
  * What the payment starts, in the order it happens.
@@ -254,15 +255,9 @@ export default function PaySection({
 
           <div className="border-hair-paper flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-              <button type="submit" disabled={sending} className="btn btn-primary group">
-                {sending ? 'Opening Checkout…' : `Pay ${BUILD_PRICE} and Start`}
-                {!sending && (
-                  <ArrowUpRight
-                    className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                    aria-hidden="true"
-                  />
-                )}
-              </button>
+              <SendButton sending={sending} pending="Opening Checkout…">
+                {`Pay ${BUILD_PRICE} and Start`}
+              </SendButton>
               {/* The answers travel with the visitor rather than being left
                   behind on a page they are walking away from. Five steps of
                   picking, and the contact form used to open empty: the one

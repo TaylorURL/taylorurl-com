@@ -60,6 +60,7 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { field, uuid } from '../lib/db/fields.js'
+import { runWrite } from '../lib/db/writes.js'
 
 const SHOTS_BUCKET = 'project-shots'
 
@@ -302,11 +303,6 @@ export default async function handler(request, response) {
     return response.status(200).json(signed)
   }
 
-  // The four writes answer the same way, so they are read off one table rather
-  // than written out as four near-identical blocks: the difference between them
-  // is the function and its arguments, the sentence a failed call gets, and
-  // nothing else. The sentence sits here rather than at the call because only
-  // this table knows which of the writes was asked for.
   const writes = {
     stage: () => {
       const project = uuid(body.project_id)
@@ -409,18 +405,7 @@ export default async function handler(request, response) {
     },
   }
 
-  const chosen = writes[body.action]
-  if (!chosen) return response.status(400).json({ error: 'Unknown action.' })
-
-  const call = chosen()
-  if (call.fault) return response.status(400).json({ error: call.fault })
-
-  const { data, error } = await wired.db.rpc(call.name, call.args)
-  if (error) return response.status(500).json(faulted(error, call.failed))
-  // The function's own refusal is the answer a person needs to read, and it
-  // arrives as a value rather than as an error: waiting on a client is not the
-  // database going wrong.
-  if (data?.error) return response.status(400).json({ error: data.error })
-
-  return response.status(200).json(data ?? { ok: true })
+  const ran = await runWrite(wired.db, writes, body.action, faulted)
+  if (ran.body) return response.status(ran.status).json(ran.body)
+  return response.status(200).json(ran.data ?? { ok: true })
 }

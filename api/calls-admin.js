@@ -26,10 +26,9 @@
  * the place and the score of the business it belonged to.
  *
  * Two verbs. GET answers the list. POST records one call - an outcome, a note
- * in whoever's own words, and a time to ring back where one was named - or
- * hands a business from one caller to another. Nothing composes a note, and
- * nothing sends anything: the whole point of this section is that a person
- * picks up a phone.
+ * in whoever's own words, and a time to ring back where one was named. Nothing
+ * composes a note, and nothing sends anything: the whole point of this section
+ * is that a person picks up a phone.
  *
  * A recorded call also settles who the business belongs to, where nobody holds
  * it yet. That write is here rather than anywhere else because it is the same
@@ -68,11 +67,10 @@ import {
   TRADE_FLOOR,
   triesRun,
 } from '../lib/outreach/prospects/calls.js'
-// The page sizes, the score floors and the orders are the console's own
-// controls, and they are read from the same module the console draws them from
-// rather than written out again here. Two copies is how an endpoint quietly
-// refuses an option a dropdown is still offering: the control moves, the
-// caller picks it, and the list comes back exactly as it was.
+// The page sizes, the score floors and the orders are the ones a caller's saved
+// setup is held to, and they are read from that module rather than written out
+// again here. Two copies is how an endpoint quietly refuses a value the desk
+// has already stored for somebody, and the list comes back exactly as it was.
 import {
   CALL_SCORE_FLOORS,
   CALL_TAKES,
@@ -132,9 +130,6 @@ const LIST_UNREAD = 'The call list could not be read. Try again in a moment.'
 
 /** What is said when a call will not go on the record. */
 const NOT_RECORDED = 'That call could not be saved. Try again in a moment.'
-
-/** And when a business will not change hands. */
-const NOT_HANDED = 'That business could not be handed over. Try again in a moment.'
 
 /**
  * What a driver said, turned into an answer the console can print.
@@ -232,11 +227,8 @@ async function callsByProspect(db) {
  * The people a business can belong to.
  *
  * Everybody who can reach this endpoint at all, which is the same set the role
- * check lets through, so a picker cannot offer somebody the write would then
- * refuse. It is three rows and it is read on every list, because the console
- * needs a name against an id in three places - the column, the chip and the
- * hand-over - and a page that knows an id and not a name draws a business as
- * belonging to nobody.
+ * check lets through. It is three rows and it is read on every list, because a
+ * page that knows an id and not a name draws a business as belonging to nobody.
  */
 async function callers(db) {
   const { data, error } = await db
@@ -737,8 +729,8 @@ async function carry(db, prospect, body, callbackAt, interested) {
  *
  * A failure here is not a failure of the call. The call is on the record and
  * the caller is owed the confirmation for it; who the business belongs to is
- * settled by the next call, or by hand. So it is logged and the answer says
- * nobody was claimed rather than telling somebody their call did not save.
+ * settled by the next call. So it is logged and the answer says nobody was
+ * claimed rather than telling somebody their call did not save.
  */
 async function claim(db, prospectId, userId) {
   const { data, error } = await db
@@ -753,55 +745,6 @@ async function claim(db, prospectId, userId) {
     return null
   }
   return data?.assigned_to ?? null
-}
-
-/**
- * One business handed from whoever holds it to somebody else, or to nobody.
- *
- * Every other change of hands in this file is automatic and conditional. This
- * one is a person deciding, so it is unconditional: it takes a business off
- * the caller who has had it since the first call, which is exactly the thing
- * `claim` above refuses to do on its own.
- *
- * `to` may be null, which puts the business back in the pool. That is the only
- * way back to unheld, and it is worth having: a caller who leaves, or a
- * business claimed by a wrong number, would otherwise stay in a name nobody
- * can act on.
- */
-async function assign(db, body) {
-  const prospectId = uuid(body.id)
-  if (!prospectId) return { status: 400, body: { error: 'Pick the business to hand over.' } }
-
-  const to = body.to === null || body.to === '' ? null : uuid(body.to)
-  if (body.to && !to) return { status: 400, body: { error: 'Pick who it goes to.' } }
-
-  // Only somebody who can work the list at all. Without this an id from
-  // anywhere would put a business in the name of an account that will never
-  // see it, and it would read on every screen exactly like a real hand-over.
-  if (to) {
-    const people = await callers(db)
-    if (!people.some(one => one.id === to)) {
-      return { status: 400, body: { error: 'That person does not work the call list.' } }
-    }
-  }
-
-  const written = await db
-    .from(PROSPECTS)
-    .update({ assigned_to: to, assigned_at: to ? new Date().toISOString() : null })
-    .eq('id', prospectId)
-    .select('id, assigned_to, assigned_at')
-    .maybeSingle()
-  if (written.error) return refusal(written.error, NOT_HANDED)
-  if (!written.data) return { status: 404, body: { error: 'That business is no longer on file.' } }
-
-  return {
-    status: 200,
-    body: {
-      ok: true,
-      assigned_to: written.data.assigned_to,
-      assigned_at: written.data.assigned_at,
-    },
-  }
 }
 
 export default async function handler(request, response) {
@@ -827,25 +770,10 @@ export default async function handler(request, response) {
 
     let answer
     try {
-      const body = request.body ?? {}
-      const handing = request.method === 'POST' && 'assign' in body
-      // Reading the list and recording a call are what a representative is
-      // here to do. Deciding whose business it is in the first place is not,
-      // and the role that hired them keeps it: a list somebody can move rows
-      // off is a list they can empty of the calls they do not want.
-      if (handing && account.role !== 'admin') {
-        return response.status(403).json({ error: 'Only an admin can hand a business over.' })
-      }
       answer =
         request.method === 'GET'
           ? await list(wired.db, request.query ?? {}, account)
-          : // A hand-over and a recorded call are both POSTs to this endpoint
-            // and they are told apart by what the body carries, because they
-            // are the same thing happening to the same business and splitting
-            // them across two addresses would say otherwise.
-            handing
-            ? await assign(wired.db, body.assign ?? {})
-            : await record(wired.db, body, account)
+          : await record(wired.db, request.body ?? {}, account)
     } catch (cause) {
       answer = refusal(cause, request.method === 'POST' ? NOT_RECORDED : LIST_UNREAD)
     }

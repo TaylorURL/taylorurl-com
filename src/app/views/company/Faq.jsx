@@ -7,7 +7,7 @@ import Seo from '@components/Seo'
 import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import { PORTFOLIO_AVERAGES } from '@data/portfolio'
 import { EASE, fadeInUp, staggerChild } from '@constants/animations'
-import { breadcrumbSchema } from '@constants/seo'
+import { breadcrumbSchema, faqSchema } from '@constants/seo'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 
 const FAQ_CATEGORIES = [
@@ -155,20 +155,7 @@ export default function Faq() {
             { name: 'Home', path: '/' },
             { name: 'FAQ', path: '/faq' },
           ]),
-          {
-            '@context': 'https://schema.org',
-            '@type': 'FAQPage',
-            mainEntity: FAQ_CATEGORIES.flatMap(cat =>
-              cat.questions.map(item => ({
-                '@type': 'Question',
-                name: item.q,
-                acceptedAnswer: {
-                  '@type': 'Answer',
-                  text: item.a,
-                },
-              }))
-            ),
-          },
+          faqSchema(FAQ_CATEGORIES.flatMap(cat => cat.questions)),
         ]}
       />
       <PageHero

@@ -31,20 +31,11 @@ import {
   STANDING_MAX_AGE_DAYS,
   TRUSTPILOT_STANDING,
 } from '../../src/app/data/reputation/trustpilot-standing.js'
+import { fail, finish, is } from '../harness/checks.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const NOW = Date.parse(`${TRUSTPILOT_STANDING.capturedAt}T12:00:00Z`)
 const AGED_OUT = NOW + (STANDING_MAX_AGE_DAYS + 1) * DAY_MS
-
-let failed = 0
-function fail(message) {
-  failed += 1
-  console.error(`FAIL ${message}`)
-}
-
-function is(where, got, want) {
-  if (got !== want) fail(`${where}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
 
 /** The payload the TrustBox endpoint serves, with the aggregate overridable. */
 function trustbox(numberOfReviews, unit = {}) {
@@ -266,10 +257,7 @@ if (collector) {
   }
 }
 
-if (failed) {
-  console.error(`\n${failed} Trustpilot ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `Trustpilot endpoint holds across ${CASES.length} answers, ` +

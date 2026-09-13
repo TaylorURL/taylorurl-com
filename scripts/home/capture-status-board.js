@@ -23,19 +23,10 @@
  * those. `status-board-shot.swift` runs the page through WebKit instead, which
  * is compiled here on first use and left beside the source for later runs.
  */
-import { execFile } from 'node:child_process'
-import { access, mkdir, rm, stat } from 'node:fs/promises'
+import { rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { promisify } from 'node:util'
-
-const run = promisify(execFile)
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SOURCE = join(ROOT, 'scripts', 'home', 'status-board-shot.swift')
-const BINARY = join(ROOT, 'scripts', 'home', '.status-board-shot')
-const OUT_DIR = join(ROOT, 'public', 'home')
+import { join } from 'node:path'
+import { BINARY, OUT_DIR, encode, prepare, run } from './shot-renderer.js'
 
 /** The palettes captured, and the file each one is committed as. */
 const SHOTS = [
@@ -52,36 +43,8 @@ const WIDTH = 1200
 const HEIGHT = 750
 const SCALE = 3
 
-/** Whether the compiled tool is present and newer than the source it came from. */
-async function compiled() {
-  try {
-    const [binary, source] = await Promise.all([stat(BINARY), stat(SOURCE)])
-    return binary.mtimeMs > source.mtimeMs
-  } catch {
-    return false
-  }
-}
-
-async function build() {
-  if (await compiled()) return
-  try {
-    await run('swiftc', ['-O', SOURCE, '-o', BINARY])
-  } catch (error) {
-    throw new Error(
-      `swiftc could not build the capture tool — install the Xcode command line tools with \`xcode-select --install\`.\n${error.message}`
-    )
-  }
-}
-
 async function main() {
-  try {
-    await run('cwebp', ['-version'])
-  } catch {
-    throw new Error('cwebp not found on PATH — install it with `brew install webp`.')
-  }
-  await access(SOURCE)
-  await build()
-  await mkdir(OUT_DIR, { recursive: true })
+  await prepare()
 
   const origin = process.argv[2] ?? DEFAULT_ORIGIN
 
@@ -105,18 +68,7 @@ async function main() {
       ])
       // cwebp resizes rather than the renderer, so the detail the extra density
       // bought is spent on the committed pixels instead of thrown away early.
-      await run('cwebp', [
-        '-q',
-        '88',
-        '-m',
-        '6',
-        '-resize',
-        String(WIDTH),
-        String(HEIGHT),
-        temp,
-        '-o',
-        output,
-      ])
+      await encode(temp, output, WIDTH, HEIGHT)
       const { size } = await stat(output)
       console.log(
         `captured ${origin}${PATH} in ${shot.theme} at ${stdout.trim()}, written to ${shot.file} as ${size} bytes`

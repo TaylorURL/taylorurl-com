@@ -23,6 +23,7 @@ import { join } from 'node:path'
 import { CARDS, landingFor } from '../../lib/social/cards.js'
 import { PORTFOLIO_PROJECTS } from '../../src/app/data/portfolio.js'
 import { STATIC_ROUTES } from '../../vite/site-routes.js'
+import { cases, check, finish } from '../harness/checks.js'
 
 const FOLDER = join(process.cwd(), 'public', 'social')
 
@@ -41,14 +42,6 @@ const RATIO = 1080 / 1350
 
 /** How far from 4:5 a card may sit before Instagram would crop it. */
 const RATIO_TOLERANCE = 0.01
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
-}
 
 /**
  * A PNG's pixel dimensions, read off the IHDR chunk rather than decoded.
@@ -164,11 +157,8 @@ for (const card of CARDS) {
 check('the catalogue holds cards', CARDS.length > 0)
 check('every card key is its own', new Set(CARDS.map(one => one.key)).size === CARDS.length)
 
-if (failures.length) {
-  for (const failure of failures) console.error(`social assets: ${failure}`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
-  `social assets holds ${checks} checks: ${CARDS.length} cards served, 4:5, and naming no client`
+  `social assets holds ${cases.length} checks: ${CARDS.length} cards served, 4:5, and naming no client`
 )

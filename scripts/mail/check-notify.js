@@ -41,7 +41,6 @@
  * npm run check:notify
  */
 
-import { createHash } from 'node:crypto'
 import { INBOX, notice, sendNotice, URGENT_HEADERS } from '../../lib/mail/notice.js'
 import { confirmationBodies } from '../../lib/mail/message.js'
 import { htmlBody } from '../../api/contact.js'
@@ -53,10 +52,11 @@ import {
   clientNotice,
   envelopeFor,
   floorsReached,
-  reaches,
   readNotification,
   recipientsFor,
 } from '../../lib/mail/notify.js'
+import { expect as check, finish, quietly } from '../harness/checks.js'
+import { SETUP, answerTo, digestOf, sameIgnoringCase } from './notify-fixture.js'
 
 // The credentials the endpoint reads at load. Neither opens anything: the
 // provider is a recorder in every case that reaches one, and no Supabase client
@@ -68,14 +68,6 @@ process.env.CRON_SECRET = CRON_SECRET
 
 const { deliver, resolve } = await import('../../api/notify.js')
 const notifyHandler = (await import('../../api/notify.js')).default
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 /* ── The sheet ──────────────────────────────────────────────────────────── */
 
@@ -151,8 +143,6 @@ check(STUDIO_NOTICE.html.includes('#1a4ed8'), 'a studio notice lost its own acce
 
 /* ── The project a credential resolves to ───────────────────────────────── */
 
-const digestOf = value => createHash('sha256').update(value).digest('hex')
-
 const DESK_SECRET = 'a-project-secret-for-the-cases'
 const SHOP_SECRET = 'another-project-secret-for-the-cases'
 
@@ -189,15 +179,9 @@ const SHOP = {
   site_url: 'https://www.example.org',
 }
 
-/** How a value compares in a column that does not care about case. */
-const same = (held, value) =>
-  typeof held === 'string' && typeof value === 'string'
-    ? held.toLowerCase() === value.toLowerCase()
-    : held === value
-
 function passes(row, [kind, column, a, b]) {
-  if (kind === 'eq') return same(row[column], a)
-  if (kind === 'in') return a.some(value => same(row[column], value))
+  if (kind === 'eq') return sameIgnoringCase(row[column], a)
+  if (kind === 'in') return a.some(value => sameIgnoringCase(row[column], value))
   if (kind === 'gte') return String(row[column]) >= String(a)
   if (kind === 'lt') return String(row[column]) < String(a)
   if (kind === 'is') return a === null ? row[column] === null || row[column] === undefined : false
@@ -221,7 +205,7 @@ function holds(row, clause) {
     if (operator === 'is') return value === 'null' ? row[column] == null : Boolean(row[column])
     if (operator === 'lt') return String(row[column] ?? '') < value
     if (operator === 'gte') return String(row[column] ?? '') >= value
-    if (operator === 'eq') return same(String(row[column] ?? ''), value)
+    if (operator === 'eq') return sameIgnoringCase(String(row[column] ?? ''), value)
     return false
   }
   return read(clause.slice(at + 1))
@@ -252,7 +236,7 @@ function stubDb(state) {
         if (mode === 'insert') {
           if (
             unique &&
-            rows.some(row => unique.every(column => same(row[column], payload[column])))
+            rows.some(row => unique.every(column => sameIgnoringCase(row[column], payload[column])))
           ) {
             return { data: null, error: { code: '23505', message: 'duplicate key value' } }
           }
@@ -457,10 +441,19 @@ check(CAPS.subject === 140 && CAPS.body === 4000, 'the published field caps chan
 
 /* ── The ladder ─────────────────────────────────────────────────────────── */
 
-check(reaches('urgent', 'info'), 'an urgent notification did not reach a seat taking everything')
-check(!reaches('info', 'urgent'), 'a quiet notification woke a seat that asked for urgent alone')
-check(reaches('warning', 'warning'), 'a notification did not reach its own floor')
-check(!reaches('info', 'nonsense'), 'a floor nobody recognises was mailed anyway')
+check(
+  floorsReached('urgent').includes('info'),
+  'an urgent notification did not reach a seat taking everything'
+)
+check(
+  !floorsReached('info').includes('urgent'),
+  'a quiet notification woke a seat that asked for urgent alone'
+)
+check(floorsReached('warning').includes('warning'), 'a notification did not reach its own floor')
+check(
+  !SEVERITIES.some(severity => floorsReached(severity).includes('nonsense')),
+  'a floor nobody recognises was mailed anyway'
+)
 check(floorsReached('warning').join(',') === 'info,warning', 'the floors an alert reaches changed')
 
 /* ── The provider ───────────────────────────────────────────────────────── */
@@ -483,25 +476,7 @@ globalThis.fetch = async (url, options) => {
 async function run(db, project, body) {
   const read = readNotification(body, project)
   if (read.error) throw new Error(read.error)
-  const said = console.error
-  console.error = () => {}
-  try {
-    return await deliver(db, project, read.notification)
-  } finally {
-    console.error = said
-  }
-}
-
-const SETUP = {
-  subject: 'A+ short setup on US30',
-  severity: 'urgent',
-  lines: [
-    ['Instrument', 'US30'],
-    ['Side', 'SELL'],
-  ],
-  body: 'Bearish order block swept the high and closed back inside.',
-  link: { url: 'https://www.example.com/app/signals' },
-  idempotency_key: 'signal:9f3c1d20-4a77-4a1e-9a8e-6d2b0c5f1e33',
+  return quietly(() => deliver(db, project, read.notification))
 }
 
 /* One notification, sent once. */
@@ -748,30 +723,7 @@ const SETUP = {
 /* ── The door itself ────────────────────────────────────────────────────── */
 
 async function callHandler(request) {
-  const answer = { status: 0, body: null, headers: {} }
-  // Several of these are refusals the endpoint is right to log, and a passing
-  // run should read as a passing run.
-  const said = console.error
-  console.error = () => {}
-  const response = {
-    setHeader(name, value) {
-      answer.headers[String(name).toLowerCase()] = value
-    },
-    status(code) {
-      answer.status = code
-      return response
-    },
-    json(payload) {
-      answer.body = payload
-      return response
-    },
-  }
-  try {
-    await notifyHandler({ headers: {}, ...request }, response)
-  } finally {
-    console.error = said
-  }
-  return answer
+  return answerTo(notifyHandler, { headers: {}, ...request })
 }
 
 {
@@ -818,10 +770,7 @@ async function callHandler(request) {
   check(said.reply_to === 'someone@example.com', 'a studio notice lost its reply address')
 }
 
-if (failures) {
-  console.error(`notify: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   'notify: the four senders that speak for the studio draw the same masthead byte for byte, a ' +

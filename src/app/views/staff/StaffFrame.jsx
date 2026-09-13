@@ -6,15 +6,9 @@ import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
 import { useSession } from '@hooks/session/useSession'
 import { supabase } from '@data/supabase/supabaseClient'
 import { StaffContext } from './lib/context'
-import { PortalNav } from './lib/nav'
+import { PortalNav, STANDALONE } from './lib/nav'
 import { headFor } from './lib/heads'
 import './staff.css'
-
-/**
- * The four addresses this portal publishes, and how a screen on one reaches
- * another.
- */
-const SURFACES = Object.freeze(['portal', 'calls', 'management', 'resources'])
 
 /**
  * The ground the four staff surfaces sit on, and the gate in front of them.
@@ -73,23 +67,7 @@ export default function StaffFrame() {
   // screen reads it, and the address is the address, so a link pasted into a
   // phone opens on the business it names.
   const opened = params.get('on')
-  const nav = useMemo(
-    () => ({
-      surfaces: SURFACES,
-      hrefFor: (key, extra) => {
-        const path = key === 'portal' ? '/staff' : `/staff/${key}`
-        const query = new URLSearchParams(
-          Object.entries(extra ?? {}).filter(([, value]) => value)
-        ).toString()
-        return query ? `${path}?${query}` : path
-      },
-      openedOn: opened || null,
-      // A representative reads the figures their shift is measured against and
-      // never moves them. The console's portal is where they are set.
-      sets: false,
-    }),
-    [opened]
-  )
+  const nav = useMemo(() => ({ ...STANDALONE, openedOn: opened || null }), [opened])
 
   if (checking) {
     return (

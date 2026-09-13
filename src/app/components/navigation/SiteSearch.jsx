@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowUpRight, CornerDownLeft, Search } from 'lucide-react'
 import { SEARCH_ENTRIES, SEARCH_STARTERS } from '@data/pages/searchIndex'
+import { useScrollLock } from '@hooks/scroll/useScrollLock'
 import { rankEntries, splitMatch } from '@utils/search'
 
 // Eight rows is what fits over the fold on a phone with the field above them.
@@ -82,22 +83,8 @@ export default function SiteSearch({ onClose }) {
     }
   }, [])
 
-  // The page holds still under the dialog, and is put back exactly where it
-  // was. The root is what scrolls here, so the root is what is held; releasing
-  // the clamp without restoring the offset drops the reader wherever it left
-  // them, which is a jump they did not ask for on the way out of a search.
-  useEffect(() => {
-    const held = window.scrollY
-    const root = document.documentElement
-    const heldOverflow = root.style.overflow
-    root.style.overflow = 'hidden'
-    document.body.style.overflow = 'hidden'
-    return () => {
-      root.style.overflow = heldOverflow
-      document.body.style.overflow = ''
-      window.scrollTo({ top: held, behavior: 'instant' })
-    }
-  }, [])
+  // The page holds still under the dialog, and is put back exactly where it was.
+  useScrollLock()
 
   // The row a press would open is kept in view. `nearest` rather than a scroll
   // to centre, so walking down a list only moves it when the cursor has reached

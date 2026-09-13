@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, ChevronDown, Keyboard, LogIn, Menu, Search, SunMoon, X } from 'lucide-react'
+import { useDismiss } from '@hooks/chrome/useDismiss'
 import { ConsoleScope } from './ConsoleScope'
 import { useModifierLabel } from '../lib/useConsoleShortcuts'
 
@@ -51,23 +52,7 @@ function WindowPicker({ days, onPick }) {
   const holder = useRef(null)
   const here = WINDOWS.find(option => option.days === days) || WINDOWS[1]
 
-  useEffect(() => {
-    if (!open) return undefined
-    const away = event => {
-      if (!holder.current?.contains(event.target)) setOpen(false)
-    }
-    const key = event => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      holder.current?.querySelector('.console-window-mini')?.focus()
-    }
-    document.addEventListener('pointerdown', away)
-    document.addEventListener('keydown', key)
-    return () => {
-      document.removeEventListener('pointerdown', away)
-      document.removeEventListener('keydown', key)
-    }
-  }, [open])
+  useDismiss(open, holder, '.console-window-mini', () => setOpen(false))
 
   const pick = next => {
     onPick(next)

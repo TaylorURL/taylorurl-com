@@ -21,7 +21,6 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { homedir } from 'node:os'
-import { registerHooks } from 'node:module'
 import {
   CADENCE,
   connect,
@@ -36,6 +35,7 @@ import { CARDS, assetFor, card, landingFor, leastRecentlyUsed } from '../../lib/
 import { announce } from '../../lib/social/announce.js'
 import { summary, watch } from '../../lib/social/watch.js'
 import { misquotedPrices } from '../../lib/social/voice.js'
+import { allowExtensionlessImports } from '../harness/extensionless-imports.js'
 
 const CREDENTIAL = 'buffer-personal-key-taylorurl'
 
@@ -160,19 +160,12 @@ const BLOG = new URL('../../src/app/data/blog/index.js', import.meta.url)
 /**
  * One published article, read from the blog's own data.
  *
- * The article files import each other the way the bundler resolves them, which
- * Node on its own does not, so the extension is supplied on the way through.
- * Registered here rather than at the top of the file so the commands that never
- * read an article are not resolving imports through a hook.
+ * The article files import each other without extensions. The hook that lets
+ * Node read them is installed here rather than at the top of the file, so the
+ * commands that never read an article are not resolving imports through it.
  */
 async function articleBySlug(slug) {
-  registerHooks({
-    resolve(specifier, context, nextResolve) {
-      const relative = specifier.startsWith('.')
-      const spelled = relative && !/\.[a-z]+$/i.test(specifier) ? `${specifier}.js` : specifier
-      return nextResolve(spelled, context)
-    },
-  })
+  allowExtensionlessImports()
 
   const { BLOG_POSTS } = await import(BLOG.href)
   const article = BLOG_POSTS.find(candidate => candidate.slug === slug)

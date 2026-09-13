@@ -76,7 +76,7 @@
  * the console reads that sentence out to whoever opened the section.
  */
 import { servedHereOr404 } from '../lib/http/guard.js'
-import { countOf, readAll } from '../lib/db/rows.js'
+import { countOf, readAll, tableMissing } from '../lib/db/rows.js'
 import { bounceRecord } from '../lib/outreach/sending/bounces.js'
 import { hostOf } from '../lib/outreach/prospects/platforms.js'
 import {
@@ -92,7 +92,7 @@ import {
   followUpColumns,
   variantSettings,
 } from '../lib/outreach/sending/queue.js'
-import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
+import { loadHeldDomains, squash } from '../lib/outreach/prospects/exclusions.js'
 import {
   HOLDOUTS,
   VARIANTS,
@@ -107,6 +107,7 @@ import {
 } from '../lib/outreach/variants.js'
 import { segmentOf } from '../lib/outreach/segments.js'
 import { isYoung } from '../lib/outreach/prospects/youth.js'
+import { STAGES } from '../lib/outreach/prospects/stages.js'
 import { ranksAhead } from '../lib/outreach/sending/rank.js'
 import { storedShot } from '../lib/outreach/audit/shot.js'
 import { compose, deliverProof, sender } from './outreach/send.js'
@@ -168,19 +169,6 @@ const wentAt = row => Date.parse(row.sent_at || row.created_at) || 0
 // when both it and the console's switch are open.
 const ARMED = process.env.OUTREACH_SEND_ARMED === 'true'
 
-const STAGES = [
-  'found',
-  'enriched',
-  'audited',
-  'queued',
-  'contacted',
-  'replied',
-  'unsubscribed',
-  'bounced',
-  'unreachable',
-  'undeliverable',
-  'skipped',
-]
 const JOBS = ['source', 'enrich', 'audit', 'send', 'watch', 'ramp']
 
 // The stages a business stands at while it is still owed a first letter, which
@@ -274,13 +262,6 @@ const NO_TABLES =
   'The outreach tables are not in this database yet. Apply the outreach migration to the ' +
   'project, then reload this section.'
 
-/** Postgres and PostgREST each have their own way of saying a table is absent. */
-function absent(error) {
-  const code = error?.code || ''
-  if (code === '42P01' || code === 'PGRST205' || code === 'PGRST106') return true
-  return /does not exist|could not find the table/i.test(error?.message || '')
-}
-
 /** What is said when the board itself will not come back. */
 const BOARD_UNREAD = 'The outreach board could not be read. Try again in a moment.'
 
@@ -303,7 +284,7 @@ const VARIANT_FAILED = 'That letter could not be saved. Try again in a moment.'
  * board did not happen.
  */
 function refusal(error, said = BOARD_UNREAD) {
-  if (absent(error)) return { status: 503, body: { error: NO_TABLES } }
+  if (tableMissing(error)) return { status: 503, body: { error: NO_TABLES } }
   console.error('outreach-admin: %s', error?.message || error)
   return { status: 500, body: { error: said } }
 }
@@ -976,6 +957,18 @@ function describeVariants(rows) {
 /** The variants and the holdouts together, as the console has set them. */
 const everything = rows => [...withSettings(VARIANTS, rows), ...withSettings(HOLDOUTS, rows)]
 
+/** A row of counts with the rates they come to, each against what was sent. */
+function withRates(row) {
+  const rate = part => (row.sent && part !== null ? (part / row.sent) * 100 : null)
+  return {
+    ...row,
+    open_rate: rate(row.opened),
+    click_rate: rate(row.clicked),
+    reply_rate: rate(row.replied),
+    enquiry_rate: rate(row.enquired),
+  }
+}
+
 /**
  * What went out under each variant, and what came back.
  *
@@ -1031,15 +1024,7 @@ export function variantResults(variants, messages, prospects = []) {
     if (row.enquired_at) counts.enquired += 1
   }
 
-  const rate = (part, whole) => (whole && part !== null ? (part / whole) * 100 : null)
-  const result = (about, counts) => ({
-    ...about,
-    ...counts,
-    open_rate: rate(counts.opened, counts.sent),
-    click_rate: rate(counts.clicked, counts.sent),
-    reply_rate: rate(counts.replied, counts.sent),
-    enquiry_rate: rate(counts.enquired, counts.sent),
-  })
+  const result = (about, counts) => withRates({ ...about, ...counts })
 
   const rows = variants.map(variant => result(describeVariant(variant), bucket(variant.id)))
   const known = new Set(variants.map(variant => variant.id))
@@ -1094,7 +1079,7 @@ const COUNTED = ['assigned', 'sent', 'opened', 'clicked', 'replied', 'enquired']
  * @returns {Array<object>} One row per letter, in the order the names first
  *   appear.
  */
-export function lettersByName(rows) {
+function lettersByName(rows) {
   const under = new Map()
   const order = []
   for (const row of rows) {
@@ -1123,14 +1108,7 @@ export function lettersByName(rows) {
     for (const column of COUNTED) held[column] = (held[column] ?? 0) + (row[column] ?? 0)
   }
 
-  const rate = (part, whole) => (whole && part !== null ? (part / whole) * 100 : null)
-  return order.map(row => ({
-    ...row,
-    open_rate: rate(row.opened, row.sent),
-    click_rate: rate(row.clicked, row.sent),
-    reply_rate: rate(row.replied, row.sent),
-    enquiry_rate: rate(row.enquired, row.sent),
-  }))
+  return order.map(row => withRates(row))
 }
 
 /**
@@ -1358,13 +1336,6 @@ async function skip(db, body) {
   return { status: 200, body: { ok: true, skipped: id } }
 }
 
-/** A name or a town flattened to what two spellings of it have in common. */
-function plain(value) {
-  return String(value ?? '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '')
-}
-
 /**
  * The endings a business registers under and a person writing it down leaves
  * off.
@@ -1480,13 +1451,13 @@ async function alreadyOnFile(db, { email, host, name, town }) {
   const seen = await rows
   if (seen.error) throw seen.error
 
-  const wanted = plain(name)
-  const where = plain(town)
+  const wanted = squash(name)
+  const where = squash(town)
   // A town missing on either side is not a business somewhere else. The sweep
   // fills the column from the search that produced the row, so a name added
   // without one is the same business as the row that carries one.
-  const nearby = row => !where || !plain(row.town) || plain(row.town) === where
-  return seen.data.find(row => sameName(plain(row.name), wanted) && nearby(row)) ?? null
+  const nearby = row => !where || !squash(row.town) || squash(row.town) === where
+  return seen.data.find(row => sameName(squash(row.name), wanted) && nearby(row)) ?? null
 }
 
 /**

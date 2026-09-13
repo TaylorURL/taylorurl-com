@@ -38,11 +38,9 @@ import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { openBuyerAccount, claimSpent, spendClaim } from '../lib/auth/buyer.js'
 import { claimHolds, withinClaimWindow } from '../lib/stripe/claim.js'
+import { buyerEmail, readSession } from '../lib/stripe/session.js'
 
-const STRIPE_ENDPOINT = 'https://api.stripe.com/v1/checkout/sessions'
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
-
-const TIMEOUT_MS = 10000
 
 // Stripe's own ids for a checkout session. Tested before the id is put in a
 // URL so a crafted value cannot reach for another of Stripe's endpoints by
@@ -61,11 +59,6 @@ const claimWindow = callerWindow({ limit: 20, windowMs: 10 * 60 * 1000 })
 const held = value =>
   typeof value === 'string' && value.trim() ? value.trim().slice(0, 120) : null
 
-/** The address the receipt went to, whichever field Stripe filled in. */
-function buyerEmail(session) {
-  return session?.customer_details?.email || session?.customer_email || null
-}
-
 /**
  * One paid session, or null.
  *
@@ -73,19 +66,9 @@ function buyerEmail(session) {
  * way on purpose: neither says whether the id was real.
  */
 async function paidSession(id) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-  try {
-    const read = await fetch(`${STRIPE_ENDPOINT}/${id}`, {
-      signal: controller.signal,
-      headers: { Authorization: `Bearer ${SECRET_KEY}` },
-    })
-    const session = await read.json()
-    if (!read.ok || session?.payment_status !== 'paid') return null
-    return session
-  } finally {
-    clearTimeout(timer)
-  }
+  const { answer: read, session } = await readSession(id, SECRET_KEY)
+  if (!read.ok || session?.payment_status !== 'paid') return null
+  return session
 }
 
 /**

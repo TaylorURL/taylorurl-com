@@ -1,15 +1,16 @@
 import { useState } from 'react'
-import { ArrowUpRight, Check } from 'lucide-react'
+import { Check } from 'lucide-react'
 import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
+import EnquirySend from '@components/conversion/EnquirySend'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { useToast } from '@hooks/chrome/useToast'
+import { useFormFields } from '@hooks/useFormFields'
 import { faultMessage } from '@utils/faults'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { submitEnquiry } from '@data/leads/sendEnquiry'
 import { GROUND } from './lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
-const LABEL = 'section-label-sm mb-2 block text-paper-faint'
-const FAULT = 'mt-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]'
 const EMPTY = { name: '', email: '', contactMethod: 'either', phone: '', message: '' }
 
 // What a message that did not leave says. It names the message rather than what
@@ -38,20 +39,8 @@ const ASKED = QUESTIONS.tools
  */
 export default function ToolEnquiry({ summary, projectType, idPrefix, placeholder }) {
   const toast = useToast()
-  const [fields, setFields] = useState(EMPTY)
-  const [errors, setErrors] = useState({})
+  const { fields, setFields, errors, setErrors, change } = useFormFields(EMPTY)
   const [status, setStatus] = useState('idle')
-
-  const change = event => {
-    const { name, value } = event.target
-    setFields(held => ({ ...held, [name]: value }))
-    setErrors(current => {
-      if (!current[name]) return current
-      const rest = { ...current }
-      delete rest[name]
-      return rest
-    })
-  }
 
   // The same rules the endpoint applies, so a fault is named here rather than
   // arriving as a refusal after the round trip.
@@ -128,7 +117,7 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
     <form onSubmit={submit} className="space-y-7">
       <div className="grid gap-6 sm:grid-cols-2">
         <div>
-          <label htmlFor={`${idPrefix}-name`} className={LABEL}>
+          <label htmlFor={`${idPrefix}-name`} className={FIELD_LABEL}>
             {ASKED.name}
           </label>
           <input
@@ -145,13 +134,13 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
             placeholder="Your name"
           />
           {errors.name && (
-            <p id={`${idPrefix}-name-error`} className={FAULT} role="alert">
+            <p id={`${idPrefix}-name-error`} className={FIELD_FAULT} role="alert">
               {errors.name}
             </p>
           )}
         </div>
         <div>
-          <label htmlFor={`${idPrefix}-email`} className={LABEL}>
+          <label htmlFor={`${idPrefix}-email`} className={FIELD_LABEL}>
             {ASKED.email}
           </label>
           <input
@@ -168,7 +157,7 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
             placeholder="you@yourbusiness.com"
           />
           {errors.email && (
-            <p id={`${idPrefix}-email-error`} className={FAULT} role="alert">
+            <p id={`${idPrefix}-email-error`} className={FIELD_FAULT} role="alert">
               {errors.email}
             </p>
           )}
@@ -176,7 +165,7 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
       </div>
 
       <div>
-        <label htmlFor={`${idPrefix}-message`} className={LABEL}>
+        <label htmlFor={`${idPrefix}-message`} className={FIELD_LABEL}>
           {ASKED.message}
         </label>
         <textarea
@@ -192,7 +181,7 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
           placeholder={placeholder}
         />
         {errors.message && (
-          <p id={`${idPrefix}-message-error`} className={FAULT} role="alert">
+          <p id={`${idPrefix}-message-error`} className={FIELD_FAULT} role="alert">
             {errors.message}
           </p>
         )}
@@ -222,24 +211,7 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
       )}
 
       <div className={`border-t pt-6 ${GROUND.rule}`}>
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <button
-            type="submit"
-            disabled={status === 'submitting'}
-            className="btn btn-primary group"
-          >
-            {status === 'submitting' ? 'Sending…' : 'Get a Plan and a Price'}
-            {status !== 'submitting' && (
-              <ArrowUpRight
-                className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                aria-hidden="true"
-              />
-            )}
-          </button>
-          <p className="section-label-sm text-paper-faint">
-            Free, and usually answered within the hour
-          </p>
-        </div>
+        <EnquirySend sending={status === 'submitting'}>Get a Plan and a Price</EnquirySend>
       </div>
     </form>
   )

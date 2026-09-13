@@ -39,7 +39,7 @@ function held(read) {
 
 export const threadHeld = () => held(store => store.getItem(THREAD_KEY))
 
-export const holdThread = id => held(store => store.setItem(THREAD_KEY, id))
+const holdThread = id => held(store => store.setItem(THREAD_KEY, id))
 
 export const dropThread = () => held(store => store.removeItem(THREAD_KEY))
 

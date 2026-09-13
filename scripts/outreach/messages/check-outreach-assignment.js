@@ -18,10 +18,6 @@
  *   npm run check:outreach-assignment
  */
 
-process.env.OUTREACH_SMTP_USER = 'studio@example.com'
-process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
-process.env.OUTREACH_SEND_ARMED = 'true'
-
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import {
   HOLDOUTS,
@@ -32,41 +28,21 @@ import {
   variantById,
 } from '../../../lib/outreach/variants.js'
 import { CANDIDATE_COLUMNS, queueFor } from '../../../lib/outreach/sending/queue.js'
+import { answersFrom, captureOnFile, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
+import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
+import { OFFLINE } from '../../harness/offline.js'
 
 installFixtureHeldDomains()
 
 // Nothing here may reach the network. The address check is settled below
-// against a resolver that answers from here, and the capture is found already
+// against the send fixture's resolver, and the capture is found already
 // stored, so a path that reaches this is a path that was not stubbed.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
-const nodemailer = (await import('nodemailer')).default
-const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
+const { forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { compose, work: sendWork } = await import('../../../api/outreach/send.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
-
-/** The reason a call refused, or nothing where it did not refuse. */
-async function refusal(run) {
-  try {
-    await run()
-  } catch (cause) {
-    return cause.message
-  }
-  return null
-}
 
 // ── The rows ─────────────────────────────────────────────────────────────
 
@@ -93,8 +69,8 @@ const SOCIAL = {
 
 // Each business answers on its own address. The queue writes one message per
 // address however many listings carry it, so two businesses sharing one would
-// reach the sender as one. Every address sits at the one domain the resolver
-// below is settled for.
+// reach the sender as one. Every address sits at the one domain the address
+// check below is settled for.
 
 /** A business whose slow site was measured. */
 const SCORED = {
@@ -423,16 +399,7 @@ check('a business nothing fits is refused rather than sent an empty message', ()
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, where: [] }
@@ -464,19 +431,8 @@ function stubDb(plan) {
     return chain
   }
 
-  const storage = {
-    from: () => ({
-      list: async (_, { search }) => ({ data: [{ name: search }], error: null }),
-      getPublicUrl: path => ({ data: { publicUrl: `https://shots.example.com/${path}` } }),
-      upload: async () => ({ error: null }),
-    }),
-  }
-
-  return { db: { from, storage }, asked, writes }
+  return { db: { from, storage: captureOnFile }, asked, writes }
 }
-
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
 
 /** The row a drafted message reads back as. */
 const drafted = {
@@ -517,46 +473,8 @@ const sendPlan = (candidates, extra = {}) => ({
   ...extra,
 })
 
-/** The instant every send case is run at, and the one the address is settled at. */
-const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
-
-/** The clock the send path is run against, held inside the sending window. */
-async function atMidAfternoon(run) {
-  const Real = Date
-  const fixed = AFTERNOON
-  class Frozen extends Real {
-    constructor(...args) {
-      return args.length ? new Real(...args) : new Real(fixed)
-    }
-    static now() {
-      return fixed
-    }
-  }
-  globalThis.Date = Frozen
-  try {
-    return await run()
-  } finally {
-    globalThis.Date = Real
-  }
-}
-
-/** A transport that answers like a mail server and reaches no network. */
-const TRANSPORT = (() => {
-  const sent = []
-  nodemailer.createTransport = () => ({
-    sendMail: async message => {
-      sent.push(message)
-      return { messageId: '<delivered-1@example.com>' }
-    },
-  })
-  return { sent, clear: () => sent.splice(0, sent.length) }
-})()
-
 forgetDomains()
-await checkAddress(null, 'owner@example.com', {
-  now: AFTERNOON,
-  resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-})
+await settleAddress('owner@example.com')
 
 /** Sending closed, so every run writes drafts and reaches no transport. */
 const DRAFTING = {
@@ -813,19 +731,6 @@ check('a business already held out is written to like any other', async () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach assignment checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach assignment: ${cases.length} checks passed`)

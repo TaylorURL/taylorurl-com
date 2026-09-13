@@ -10,6 +10,7 @@ import {
 } from '../../../analytics/lib/format'
 import {
   ConsolePage,
+  EmptyFill,
   Metric,
   Panel,
   PanelBody,
@@ -138,6 +139,27 @@ function digest({ series, totals, grain }) {
 }
 
 /**
+ * A chart's box in the three states the window's read puts it in: waiting,
+ * drawn, and a window with no traffic in it.
+ *
+ * The plot is inset from the card rather than the card being padded, so the
+ * head's rule still meets both edges above it.
+ */
+function ChartBox({ minHeight, loading, drawn, children }) {
+  return (
+    <PanelFill minHeight={minHeight}>
+      {loading ? (
+        <SkeletonBox height="100%" className="px-2 py-3" />
+      ) : drawn ? (
+        <div className="px-2 py-3">{children}</div>
+      ) : (
+        <EmptyFill>No traffic in this window.</EmptyFill>
+      )}
+    </PanelFill>
+  )
+}
+
+/**
  * One reading of the figure above it, in the block its card closes on.
  *
  * A chart says where the peak sits and never what it was worth, so the figure
@@ -154,19 +176,6 @@ function Reading({ label, value, note, loading }) {
       )}
       {!loading && note && <span className={`${MONO_LABEL} text-paper-faint`}>{note}</span>}
     </span>
-  )
-}
-
-/**
- * What a chart's box says when there is no chart to draw in it. It takes the
- * box rather than its own padding, so the card stays the height its
- * neighbours are whichever of them has figures behind it.
- */
-function EmptyFill({ children }) {
-  return (
-    <div className="flex items-center justify-center px-5">
-      <p className="text-center text-[13px] text-paper-soft">{children}</p>
-    </div>
   )
 }
 
@@ -264,19 +273,9 @@ export default function OverviewPage() {
         aside={`pageviews and sessions · ${grain === 'hour' ? 'hourly' : 'daily'}`}
         loading={loading}
       >
-        {/* The plot is inset from the card rather than the card being padded,
-            so the head's rule still meets both edges above it. */}
-        <PanelFill minHeight={CHART_HEIGHT.traffic}>
-          {loading ? (
-            <SkeletonBox height="100%" className="px-2 py-3" />
-          ) : series.length ? (
-            <div className="px-2 py-3">
-              <TrafficChart series={series} grain={grain} fill />
-            </div>
-          ) : (
-            <EmptyFill>No traffic in this window.</EmptyFill>
-          )}
-        </PanelFill>
+        <ChartBox minHeight={CHART_HEIGHT.traffic} loading={loading} drawn={series.length > 0}>
+          <TrafficChart series={series} grain={grain} fill />
+        </ChartBox>
       </Panel>
 
       <ReadingNow area="now" />
@@ -284,17 +283,9 @@ export default function OverviewPage() {
       {/* The same traffic folded a different way round: the hour chart folds
           the window onto one day and the day chart folds it onto one week. */}
       <Panel area="hour" title="By Hour" aside="your timezone" busy={loading}>
-        <PanelFill minHeight={CHART_HEIGHT.hour}>
-          {loading ? (
-            <SkeletonBox height="100%" className="px-2 py-3" />
-          ) : hours.length ? (
-            <div className="px-2 py-3">
-              <HourChart hours={hours} fill />
-            </div>
-          ) : (
-            <EmptyFill>No traffic in this window.</EmptyFill>
-          )}
-        </PanelFill>
+        <ChartBox minHeight={CHART_HEIGHT.hour} loading={loading} drawn={hours.length > 0}>
+          <HourChart hours={hours} fill />
+        </ChartBox>
         <PanelFoot>
           <Reading
             label="Busiest"
@@ -314,17 +305,9 @@ export default function OverviewPage() {
       <Panel area="day" title="By Day" aside="gathered over the window" busy={loading}>
         {comparingDays ? (
           <>
-            <PanelFill minHeight={CHART_HEIGHT.hour}>
-              {loading ? (
-                <SkeletonBox height="100%" className="px-2 py-3" />
-              ) : weekdays.length ? (
-                <div className="px-2 py-3">
-                  <WeekdayChart days={weekdays} fill />
-                </div>
-              ) : (
-                <EmptyFill>No traffic in this window.</EmptyFill>
-              )}
-            </PanelFill>
+            <ChartBox minHeight={CHART_HEIGHT.hour} loading={loading} drawn={weekdays.length > 0}>
+              <WeekdayChart days={weekdays} fill />
+            </ChartBox>
             <PanelFoot>
               <Reading
                 label="Busiest"

@@ -25,6 +25,8 @@
  *   npm run check:payment-link
  */
 
+import { cases, check, finish, same } from '../harness/checks.js'
+
 // Read before either endpoint is imported: both fix these at module load, and
 // a product id or a site URL differing between the two would show up as a
 // difference in the bodies that has nothing to do with either file.
@@ -47,13 +49,6 @@ const { openArgs } = await import('../../api/stripe-webhook.js')
 const { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } =
   await import('../../src/app/data/checkout/pricing.js')
 const { claimHolds } = await import('../../lib/stripe/claim.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
 
 const BUYER = 'prospect@example.com'
 const BUSINESS = 'Lawton Park'
@@ -343,6 +338,32 @@ check('a session saying something unusable falls back rather than guessing', () 
   }
 })
 
+/** A successful answer carrying `payload`, from any service the endpoint reaches. */
+const answer = payload => ({
+  ok: true,
+  status: 200,
+  headers: new Headers({ 'content-type': 'application/json' }),
+  text: async () => JSON.stringify(payload),
+  json: async () => payload,
+})
+
+/** A response for the endpoint to answer into, and the status and body it sent. */
+function recorder() {
+  const sent = { status: null, body: null }
+  const response = {
+    setHeader() {},
+    status(code) {
+      sent.status = code
+      return this
+    },
+    json(payload) {
+      sent.body = payload
+      return this
+    },
+  }
+  return { sent, response }
+}
+
 /**
  * The endpoint run as an admin, with everything it talks to answered here.
  *
@@ -358,13 +379,6 @@ async function runAsAdmin(body) {
   globalThis.fetch = async input => {
     const url = String(input)
     asked.push(url)
-    const answer = payload => ({
-      ok: true,
-      status: 200,
-      headers: new Headers({ 'content-type': 'application/json' }),
-      text: async () => JSON.stringify(payload),
-      json: async () => payload,
-    })
 
     // Who is asking. The endpoint hands the bearer token straight to the auth
     // server, and this is the account it comes back as.
@@ -384,18 +398,7 @@ async function runAsAdmin(body) {
     throw new Error(`the endpoint reached somewhere unexpected: ${url}`)
   }
 
-  const sent = { status: null, body: null }
-  const response = {
-    setHeader() {},
-    status(code) {
-      sent.status = code
-      return this
-    },
-    json(payload) {
-      sent.body = payload
-      return this
-    },
-  }
+  const { sent, response } = recorder()
 
   try {
     await linkHandler(
@@ -445,13 +448,6 @@ check('a caller with no admin role is refused before anything is priced', async 
   let reachedStripe = false
   globalThis.fetch = async input => {
     const url = String(input)
-    const answer = payload => ({
-      ok: true,
-      status: 200,
-      headers: new Headers({ 'content-type': 'application/json' }),
-      text: async () => JSON.stringify(payload),
-      json: async () => payload,
-    })
     if (url.includes('/auth/v1/user')) {
       return answer({
         id: '00000000-0000-4000-8000-000000000002',
@@ -465,18 +461,7 @@ check('a caller with no admin role is refused before anything is priced', async 
     return answer({})
   }
 
-  const sent = { status: null, body: null }
-  const response = {
-    setHeader() {},
-    status(code) {
-      sent.status = code
-      return this
-    },
-    json(payload) {
-      sent.body = payload
-      return this
-    },
-  }
+  const { sent, response } = recorder()
 
   try {
     await linkHandler(
@@ -507,20 +492,7 @@ function floor(cents) {
   return { floor: cents, ceiling: cents * 50, what: 'build' }
 }
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`payment link: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `payment link: all ${cases.length} cases pass; a link with nothing quoted sends what /start sends`

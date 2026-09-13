@@ -26,21 +26,15 @@
  * looks at. There is no allowlist: a message worth showing is worth naming as
  * a fallback, which is an argument to `faultMessage` and passes.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { FALLBACK_FAULT, faultMessage, readsAsWritten } from '../../src/app/utils/faults.js'
+import { cases, check, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const FAULTS = path.join(ROOT, 'src/app/utils/faults.js')
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
-}
 
 /* ----------------------------------------------------------------------- *
  * The door: what a service says, and what a reader is told instead.
@@ -297,16 +291,7 @@ const LOGGED = /console\.(?:error|warn|log|debug|info)\s*\(/
  */
 const LENGTH_GATE = /\.(?:message|error)\??\.?length\s*(?:&&|<|<=)/
 
-function filesUnder(dir, out = []) {
-  for (const entry of readdirSync(dir)) {
-    const full = path.join(dir, entry)
-    if (statSync(full).isDirectory()) filesUnder(full, out)
-    else if (/\.jsx?$/.test(entry)) out.push(full)
-  }
-  return out
-}
-
-const swept = filesUnder(path.join(ROOT, 'src/app'))
+const swept = filesUnder(path.join(ROOT, 'src/app'), /\.jsx?$/)
 const leaks = []
 for (const file of swept) {
   const shown = path.relative(ROOT, file)
@@ -324,25 +309,19 @@ for (const file of swept) {
   })
 }
 
-checks += 1
-if (leaks.length) {
-  failures.push(`${leaks.length} caught values reach a reader unread`)
-  for (const leak of leaks) failures.push(`  ${leak}`)
-}
+check(
+  [`${leaks.length} caught values reach a reader unread`, ...leaks].join('\n      '),
+  leaks.length === 0
+)
 
 check('the sweep read the whole app', swept.length > 200)
 
-if (failures.length) {
-  console.error('check-faults: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error(
-    '  every failure a reader sees goes through faultMessage in src/app/utils/faults.js'
-  )
-  process.exit(1)
-}
+await finish({
+  hint: 'every failure a reader sees goes through faultMessage in src/app/utils/faults.js',
+})
 
 console.log(
-  `check-faults: ${checks} checks hold — ${MACHINE_SAID.length} real machine messages are all ` +
+  `check-faults: ${cases.length} checks hold — ${MACHINE_SAID.length} real machine messages are all ` +
     `replaced, ${NAMED.length} named causes keep their own sentence, ${written.length} sentences ` +
     `in the module read as written, and ${swept.length} files carry no unread failure`
 )

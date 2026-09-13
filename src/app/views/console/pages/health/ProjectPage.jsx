@@ -3,6 +3,7 @@ import { useConsole } from '../../lib/context'
 import {
   Area,
   ConsolePage,
+  ContactLine,
   Panel,
   PanelBody,
   PanelFoot,
@@ -10,7 +11,7 @@ import {
   SkeletonBox,
   SkeletonList,
 } from '../../ui'
-import { STAGES, currentProject, stageOf, stageRank } from '../../lib/stages'
+import { STAGES, clientAsks, currentProject, stageOf, stageRank } from '../../lib/stages'
 import ProjectAsks from '../../intake/ProjectAsks'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { ZONE } from '@lib/time/zone.js'
@@ -119,19 +120,7 @@ export default function ProjectPage() {
                 Signing in with that address will bring it up. If that is the address you used, tell
                 us and we will move it across in a minute.
               </p>
-              <p>
-                {phone ? (
-                  <>
-                    <a className="console-link" href={`tel:${phone.replace(/[^0-9+]/g, '')}`}>
-                      {phone}
-                    </a>
-                    {' or '}
-                  </>
-                ) : null}
-                <a className="console-link" href={`mailto:${SUPPORT_EMAIL}`}>
-                  {SUPPORT_EMAIL}
-                </a>
-              </p>
+              <ContactLine phone={phone} />
             </div>
           )}
         </Panel>
@@ -148,9 +137,7 @@ export default function ProjectPage() {
   // and a cell held for it would be a hole beside the updates until then. It
   // is asked the same question it asks itself, so the page knows whether the
   // card will stand before laying out around it.
-  const asked = (project.tasks || []).some(
-    task => task.owner === 'client' && stageRank(task.stage) <= reached
-  )
+  const asked = clientAsks(project).length > 0
 
   return (
     <ConsolePage

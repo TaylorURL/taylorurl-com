@@ -1,12 +1,8 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
+import HeroEyebrow from './HeroEyebrow'
 
 // The column rule the type is set against. Twelve columns at the rail width,
 // drawn as one gradient rather than twelve elements, and pale enough that it
@@ -26,10 +22,7 @@ export default function HeroSheet() {
       </div>
 
       <div className="container-rail relative pb-20">
-        <m.p {...rise(0)} className="section-label-sm flex items-center gap-3 text-ink-mute">
-          <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />
-          TaylorURL LLC · Baytown, TX
-        </m.p>
+        <HeroEyebrow />
 
         <h1 className="display-1 mt-8 font-semibold leading-[0.88] tracking-tightest text-ink [text-wrap:balance]">
           <m.span {...rise(0.08)} className="block">

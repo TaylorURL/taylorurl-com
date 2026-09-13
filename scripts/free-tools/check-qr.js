@@ -14,6 +14,7 @@
  */
 import { encodeQr, maximumBytes } from '../../src/app/tools/lib/qr.js'
 import { qrSvg } from '../../src/app/tools/lib/qrRender.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 const EXPECTED = [
   {
@@ -69,14 +70,6 @@ function digestOf(grid) {
   return hash.toString(16)
 }
 
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
-
 for (const expected of EXPECTED) {
   const grid = encodeQr(expected.text, { level: expected.level })
   const name = `${expected.level} ${expected.bytes}B`
@@ -115,8 +108,5 @@ check(
   'the SVG lost its quiet zone'
 )
 
-if (failures) {
-  console.error(`qr: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(`qr: ${EXPECTED.length} grids match their verified values, capacities and refusal hold`)

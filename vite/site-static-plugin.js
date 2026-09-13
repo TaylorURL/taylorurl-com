@@ -91,7 +91,7 @@ const STRAY = /^[ \t]*# \/?site:[a-zA-Z]+$/m
  * @param {boolean} fenced Whether this file's syntax can carry fence markers.
  * @returns {string}
  */
-export function withSiteValues(text, name, site = SITE, fenced = true) {
+function withSiteValues(text, name, site = SITE, fenced = true) {
   const table = values(site)
 
   const cut = fenced ? text.replace(FENCE, (whole, flag, body) => (site[flag] ? body : '')) : text

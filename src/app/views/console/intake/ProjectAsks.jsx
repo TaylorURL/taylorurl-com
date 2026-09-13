@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Panel, PanelFoot } from '../ui'
-import { stageOf, stageRank } from '../lib/stages'
+import { clientAsks, stageOf } from '../lib/stages'
 
 /**
  * The client's half of the build, and the place they actually hand it over.
@@ -143,10 +143,7 @@ function FileAsk({ task, onSend, onRemove, busy, acting }) {
 }
 
 export default function ProjectAsks({ project, onTick, onAnswer, onSend, onRemove, acting }) {
-  const reached = stageRank(project?.stage)
-  const mine = (project?.tasks || []).filter(
-    task => task.owner === 'client' && stageRank(task.stage) <= reached
-  )
+  const mine = clientAsks(project)
 
   if (!mine.length) return null
 

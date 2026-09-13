@@ -130,3 +130,19 @@ export function breadcrumbSchema(crumbs) {
     })),
   }
 }
+
+/**
+ * Build an FAQPage JSON-LD node from question-and-answer pairs, each `{ q, a }`,
+ * in the order the page asks them.
+ */
+export function faqSchema(items) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: items.map(item => ({
+      '@type': 'Question',
+      name: item.q,
+      acceptedAnswer: { '@type': 'Answer', text: item.a },
+    })),
+  }
+}

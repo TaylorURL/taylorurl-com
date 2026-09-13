@@ -97,8 +97,10 @@
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { randomUUID } from 'node:crypto'
 import nodemailer from 'nodemailer'
-import { runJob, wait } from '../../lib/outreach/runtime.js'
+import { runJob } from '../../lib/outreach/runtime.js'
+import { wait } from '../../lib/time/wait.js'
 import { field } from '../../lib/db/fields.js'
+import { columnMissing } from '../../lib/db/rows.js'
 import {
   FOLLOW_UP_DAYS,
   FOLLOW_UPS_PER_RUN,
@@ -419,6 +421,32 @@ export async function deliverProof({ from, to, subject, text, html }, transport 
 }
 
 /**
+ * A letter for a prospect, as the columns of the message row that carries it.
+ *
+ * The token is minted here rather than taken from a stored row, because the
+ * message quotes it in its own images and its own links and is therefore
+ * written before the row it belongs to exists. Both halves carry the one the
+ * row is then filed under.
+ */
+function lettered(prospect, from, shot, variant, chain) {
+  const track = randomUUID()
+  const { subject, text, html } = compose(prospect, shot, track, variant, {
+    prior: chain.prior ?? null,
+  })
+  return {
+    subject,
+    body_text: text,
+    body_html: html,
+    from_address: from.address,
+    to_address: String(prospect.email).toLowerCase(),
+    track_token: track,
+    variant_id: variant.id,
+    // Which letter of the chain this is, once the column is there to say.
+    ...(chain.ready ? { step: chain.step ?? 1 } : {}),
+  }
+}
+
+/**
  * The drafted row for a prospect, written before anything is handed anywhere.
  *
  * The variant goes on the message row, and then on the prospect if the
@@ -429,36 +457,15 @@ export async function deliverProof({ from, to, subject, text, html }, transport 
  * run that read the row before another wrote it from overturning the first.
  */
 async function draft(db, prospect, from, shot, variant, chain = {}) {
-  // The token is minted here rather than taken from the stored row, because
-  // the message quotes it in its own images and its own links and is therefore
-  // written before the row it belongs to exists. Both halves carry the one the
-  // row is then filed under.
-  const track = randomUUID()
-  const step = chain.step ?? 1
-  const { subject, text, html } = compose(prospect, shot, track, variant, {
-    prior: chain.prior ?? null,
-  })
+  const letter = lettered(prospect, from, shot, variant, chain)
   const { data, error } = await db
     .from('outreach_messages')
-    .insert({
-      prospect_id: prospect.id,
-      direction: 'outbound',
-      subject,
-      body_text: text,
-      body_html: html,
-      from_address: from.address,
-      to_address: String(prospect.email).toLowerCase(),
-      status: 'drafted',
-      track_token: track,
-      variant_id: variant.id,
-      // Which letter of the chain this is, once the column is there to say.
-      ...(chain.ready ? { step } : {}),
-    })
+    .insert({ prospect_id: prospect.id, direction: 'outbound', status: 'drafted', ...letter })
     .select('id, subject, body_text, body_html, to_address')
     .single()
   if (error) throw new Error(error.message)
 
-  await stamp(db, prospect, variant, step)
+  await stamp(db, prospect, variant, chain.step ?? 1)
   return data
 }
 
@@ -500,23 +507,10 @@ async function stamp(db, prospect, variant, step) {
  * message that went, and goes on the record as it went.
  */
 async function redraft(db, held, prospect, from, shot, variant, chain = {}) {
-  const track = randomUUID()
-  const step = chain.step ?? 1
-  const { subject, text, html } = compose(prospect, shot, track, variant, {
-    prior: chain.prior ?? null,
-  })
+  const letter = lettered(prospect, from, shot, variant, chain)
   const { data, error } = await db
     .from('outreach_messages')
-    .update({
-      subject,
-      body_text: text,
-      body_html: html,
-      from_address: from.address,
-      to_address: String(prospect.email).toLowerCase(),
-      track_token: track,
-      variant_id: variant.id,
-      ...(chain.ready ? { step } : {}),
-    })
+    .update(letter)
     .eq('id', held.id)
     .eq('status', 'drafted')
     .select('id, subject, body_text, body_html, to_address')
@@ -524,7 +518,7 @@ async function redraft(db, held, prospect, from, shot, variant, chain = {}) {
   if (error) throw new Error(error.message)
   if (!data) return held
 
-  await stamp(db, prospect, variant, step)
+  await stamp(db, prospect, variant, chain.step ?? 1)
   return data
 }
 
@@ -660,6 +654,15 @@ async function markSent(db, message, providerId, at) {
   throw new Error(refusal.message)
 }
 
+/** Files a message the transport refused, with the reason it refused it for. */
+async function markFailed(db, message, refused) {
+  const marked = await db
+    .from('outreach_messages')
+    .update({ status: 'failed', error: String(refused.message).slice(0, 1000) })
+    .eq('id', message.id)
+  if (marked.error) throw new Error(marked.error.message)
+}
+
 /**
  * Asks the screenshot service for a prospect's page before the message quoting
  * it can be opened.
@@ -694,13 +697,6 @@ async function warmShot(db, prospect, letter = null) {
   // and the opener it gets shows no capture, so there is nothing to take.
   if (prospect.site_kind === 'social' || !prospect.website) return null
   return ensureShot(db, prospect, { budgetMs: SHOT_WARM_MS })
-}
-
-/** Postgres and PostgREST each have their own way of saying a column is absent. */
-function columnMissing(error) {
-  const code = error?.code || ''
-  if (code === '42703' || code === 'PGRST204') return true
-  return /column .* does not exist|could not find the .* column/i.test(error?.message || '')
 }
 
 /**
@@ -1022,11 +1018,7 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
 
     if (refused) {
       console.error('outreach send: %s failed: %s', message.to_address, refused.message)
-      const marked = await db
-        .from('outreach_messages')
-        .update({ status: 'failed', error: String(refused.message).slice(0, 1000) })
-        .eq('id', message.id)
-      if (marked.error) throw new Error(marked.error.message)
+      await markFailed(db, message, refused)
       // A refusal at the transport is the guard catching an address the queue
       // did not, so the row is filed by its verdict rather than sent back to
       // wait for the same answer. Anything else is a send that failed, and the
@@ -1197,11 +1189,7 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
         message.to_address,
         refused.message
       )
-      const marked = await db
-        .from('outreach_messages')
-        .update({ status: 'failed', error: String(refused.message).slice(0, 1000) })
-        .eq('id', message.id)
-      if (marked.error) throw new Error(marked.error.message)
+      await markFailed(db, message, refused)
       if (refused instanceof Undeliverable) {
         await markAddress(db, prospect, refused)
         await closeChain(db, prospect)

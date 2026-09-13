@@ -20,11 +20,11 @@
  * against the route table of the site that actually serves each one. A path is
  * good if that site publishes it and there is no third answer.
  *
- * It also holds the two records' sibling fields to each other. `siblingOrigin`
- * and `siblingShortName` are written by hand on both records because the map in
- * `sites.js` must not reach a browser chunk, and a value written twice is a
- * value that can disagree with itself. `check-site-key.js` asserts the fields
- * are present on both; only this asserts they are right.
+ * It also holds the two records' sibling origins to each other. `siblingOrigin`
+ * is written by hand on both records because the map in `sites.js` must not
+ * reach a browser chunk, and a value written twice is a value that can disagree
+ * with itself. `check-site-key.js` asserts the field is present on both; only
+ * this asserts it is right.
  *
  * Nothing here touches the network or the built output, so it runs anywhere and
  * needs no build first.
@@ -39,11 +39,7 @@ import { CROSS_LINKS } from '../../lib/site/cross-links.js'
 import { SITES } from '../../lib/site/sites.js'
 import { SITE_KEYS } from '../../lib/site/registry.js'
 import { STATIC_ROUTES as TAYLORWEBSITE_ROUTES } from '../../lib/site/routes/taylorwebsite.js'
-
-const problems = []
-const check = (condition, message) => {
-  if (!condition) problems.push(message)
-}
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 /**
  * The paths a site publishes, keyed by site.
@@ -59,13 +55,8 @@ const check = (condition, message) => {
  * works, and the subsidiary is imported directly because it costs nothing.
  */
 const PROBE = `
-import { registerHooks } from 'node:module'
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const relative = specifier.startsWith('.')
-    return nextResolve(relative && !/\\.[a-z]+$/i.test(specifier) ? specifier + '.js' : specifier, context)
-  },
-})
+import { allowExtensionlessImports } from './scripts/harness/extensionless-imports.js'
+allowExtensionlessImports()
 const { PRERENDER_ROUTES } = await import('./vite/site-routes.js')
 console.log(JSON.stringify(PRERENDER_ROUTES))
 `
@@ -94,7 +85,7 @@ const published = key => {
 // a third site quietly point at whichever one was written down first.
 check(
   SITE_KEYS.length === 2,
-  `the sibling fields describe a pair, and there are now ${SITE_KEYS.length} sites ` +
+  `the sibling origin describes a pair, and there are now ${SITE_KEYS.length} sites ` +
     `(${SITE_KEYS.join(', ')}) — siblingOrigin cannot name one of several`
 )
 
@@ -107,11 +98,6 @@ if (SITE_KEYS.length === 2) {
       record.siblingOrigin === other.origin,
       `${key}: siblingOrigin is "${record.siblingOrigin}" but ${other.key} serves "${other.origin}" ` +
         '— every cross-site link on this site would be built on the wrong host'
-    )
-    check(
-      record.siblingShortName === other.shortName,
-      `${key}: siblingShortName is "${record.siblingShortName}" but ${other.key} calls itself ` +
-        `"${other.shortName}" — the chrome would print a name the other site does not answer to`
     )
   }
 }
@@ -128,7 +114,7 @@ if (SITE_KEYS.length === 2) {
  * `serves` is null where the route table could not be read; the path assertion is
  * skipped rather than guessed at, and the read failure is reported on its own.
  */
-export function rowProblems(entry, serves, siteKeys = SITE_KEYS) {
+function rowProblems(entry, serves, siteKeys = SITE_KEYS) {
   const found = []
   const where = entry.key || entry.path
 
@@ -169,14 +155,12 @@ for (const entry of CROSS_LINKS) {
     try {
       routes.set(entry.site, published(entry.site))
     } catch (cause) {
-      problems.push(
-        `could not read the routes ${entry.site} publishes (${cause.message.split('\n')[0]})`
-      )
+      fail(`could not read the routes ${entry.site} publishes (${cause.message.split('\n')[0]})`)
       routes.set(entry.site, null)
     }
   }
 
-  problems.push(...rowProblems(entry, routes.get(entry.site) ?? null))
+  for (const problem of rowProblems(entry, routes.get(entry.site) ?? null)) fail(problem)
 }
 
 // --- self test --------------------------------------------------------------
@@ -187,12 +171,13 @@ for (const entry of CROSS_LINKS) {
 if (process.argv.includes('--self-test')) {
   const serves = new Set(['/', '/about'])
   const good = { key: 'ok', site: SITE_KEYS[0], path: '/about', label: 'About' }
-  const faults = []
 
   const expect = (entry, serving, wanted) => {
     const found = rowProblems(entry, serving)
     if ((found.length === 0) !== (wanted === 0)) {
-      faults.push(`${entry.key}: expected ${wanted ? 'a problem' : 'none'}, got ${found.length}`)
+      fail(
+        `self test: ${entry.key}: expected ${wanted ? 'a problem' : 'none'}, got ${found.length}`
+      )
     }
   }
 
@@ -206,24 +191,14 @@ if (process.argv.includes('--self-test')) {
   // fail every honest row and get switched off.
   expect({ ...good, key: 'root', path: '/' }, serves, 0)
 
-  if (faults.length) {
-    for (const fault of faults) console.error('SELF-TEST FAIL %s', fault)
-    process.exit(1)
-  }
+  await finish()
   console.log(
     'self test: an unpublished path, an unrooted one, one carrying its own origin and an ' +
       'unlabelled row are all caught, and two good rows are not.'
   )
 }
 
-if (problems.length) {
-  for (const problem of problems) console.error('FAIL %s', problem)
-  console.error(
-    '\n%d problem(s). A cross-site link is the one link in the tree that no other check reads.',
-    problems.length
-  )
-  process.exit(1)
-}
+await finish({ hint: 'A cross-site link is the one link in the tree that no other check reads.' })
 
 console.log(
   'cross links hold: %d row(s) across %d sites, each resolving to a page the naming site ' +

@@ -51,9 +51,10 @@ import {
   textBody,
 } from '../../api/contact.js'
 import { QUESTIONS, questionsFor } from '../../lib/enquiry/questions.js'
-import { escapeHtml } from '../../lib/mail/frame.js'
+import { escapeHtml } from '../../lib/mail/escape.js'
 import { campaignUrl } from '../../lib/mail/emailTemplate.js'
 import { SITE } from '../../lib/site/current.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -73,15 +74,6 @@ const OUTREACH_SEARCH = `?utm_source=outreach&utm_medium=email&utm_campaign=cold
 // The arrival the tags cannot describe: Google's search partner network, which
 // is where the enquiry that read as Direct had actually come from.
 const REFERRER = 'https://syndicatedsearch.goog/'
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
 
 /** A store that answers like `localStorage` and can be made to refuse. */
 function store({ refuse = false } = {}) {
@@ -976,20 +968,7 @@ check('an empty address claims nothing', () => {
   same(claimLead('start', '   ', { store: held, here: seen }), false, 'spaces')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`lead attribution: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `lead attribution: all ${cases.length} cases pass - the campaign is held for ` +

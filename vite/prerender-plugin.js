@@ -200,7 +200,7 @@ export default function prerenderPlugin() {
         const { render, viewSourcesFor } = await ssrServer.ssrLoadModule('/src/entry-server.jsx')
         const inline = inliner(outDir, base)
         for (const route of routes) {
-          const routeCss = cssForSources(bundle || {}, viewSourcesFor(route)).filter(
+          const routeCss = cssForSources(bundle, viewSourcesFor(route)).filter(
             file => !headInner.includes(file)
           )
           const head =
@@ -208,7 +208,7 @@ export default function prerenderPlugin() {
             routeCss
               .map(file => `<link rel="stylesheet" crossorigin href="${base}${file}">`)
               .join('')
-          const rendered = render(route, head, null).replace(
+          const rendered = render(route, head).replace(
             BODY_CLOSE_TAG,
             `${bodyTail}${BODY_CLOSE_TAG}`
           )

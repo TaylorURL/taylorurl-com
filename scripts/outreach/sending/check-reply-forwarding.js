@@ -39,6 +39,9 @@
  * was handed.
  */
 
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { bounceReport, inbound } from '../inbound-fixture.js'
+
 process.env.OUTREACH_SMTP_USER = 'studio@example.com'
 process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
 process.env.RESEND_API_KEY = 'not-a-key'
@@ -54,17 +57,6 @@ const {
   textOfHtml,
 } = await import('../../../api/outreach/watch.js')
 const { ANNOTATION, WORDMARK } = await import('../../../lib/mail/identity.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -167,23 +159,6 @@ const PROSPECT = {
   stage: 'contacted',
   replied_at: null,
 }
-
-/** One inbound message, shaped the way the mailbox reader hands them over. */
-const inbound = (body, over = {}) => ({
-  uid: 1,
-  envelope: {
-    messageId: '<reply-1@example.com>',
-    subject: 'Re: your website',
-    from: [{ address: 'owner@example.com' }],
-    to: [{ address: 'studio@example.com' }],
-    date: '2026-08-29T15:00:00.000Z',
-    ...(over.envelope ?? {}),
-  },
-  headerText: '',
-  bounce: false,
-  body,
-  ...over,
-})
 
 /** A run of the reader over one mailbox, against a database that accepts. */
 const run = (messages, plan = {}) => {
@@ -305,16 +280,7 @@ check('a refused notice leaves an unmatched message to the next run', async () =
 })
 
 check('a bounce is acted on rather than forwarded', async () => {
-  const report = inbound('Final-Recipient: rfc822; owner@example.com\nStatus: 5.1.1\n', {
-    bounce: true,
-    envelope: {
-      messageId: '<bounce-1@example.com>',
-      subject: 'Delivery Status Notification (Failure)',
-      from: [{ address: 'mailer-daemon@example.com' }],
-      to: [{ address: 'studio@example.com' }],
-      date: '2026-08-29T15:00:00.000Z',
-    },
-  })
+  const report = bounceReport()
 
   const { go } = run([report])
   const sent = await withMail(accepted, go)
@@ -786,16 +752,5 @@ check('a person who says stop through a desk is still heard', async () => {
   ok(asked.includes('upsert:suppression'), 'somebody who asked to stop was not suppressed')
 })
 
-let failed = 0
-for (const [name, runCase] of cases) {
-  try {
-    await runCase()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${cause.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

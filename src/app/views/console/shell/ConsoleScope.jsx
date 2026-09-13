@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Check, ChevronDown, Search } from 'lucide-react'
+import { useDismiss } from '@hooks/chrome/useDismiss'
 import { SiteIcon } from '../SiteIcon'
 
 // Below this a filter field is furniture: the whole list is on screen and
@@ -42,27 +43,10 @@ export function ConsoleScope({ sites, siteIds, label, onPickSite, onToggleSite }
     [needle, sites]
   )
 
+  useDismiss(open, holder, '.console-scope-button', () => setOpen(false))
+
   useEffect(() => {
-    if (!open) {
-      setFilter('')
-      return undefined
-    }
-    const away = event => {
-      if (!holder.current?.contains(event.target)) setOpen(false)
-    }
-    const key = event => {
-      if (event.key !== 'Escape') return
-      setOpen(false)
-      // Closing with the keyboard puts the reader back on the control they
-      // opened, rather than at the top of the document.
-      holder.current?.querySelector('.console-scope-button')?.focus()
-    }
-    document.addEventListener('pointerdown', away)
-    document.addEventListener('keydown', key)
-    return () => {
-      document.removeEventListener('pointerdown', away)
-      document.removeEventListener('keydown', key)
-    }
+    if (!open) setFilter('')
   }, [open])
 
   // The arrows walk the rows the eye is already walking. Without them the list

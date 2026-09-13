@@ -1,15 +1,15 @@
-import { Link, useParams } from 'react-router-dom'
-import { Check } from 'lucide-react'
+import { useParams } from 'react-router-dom'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import RuledSection from '@components/page-bands/RuledSection'
-import Mesh from '@components/mesh/Mesh'
+import NeedMesh from '@components/mesh/NeedMesh'
 import ToolMesh from '@components/mesh/ToolMesh'
 import TradeMesh from '@components/mesh/TradeMesh'
 import WorkMesh from '@components/mesh/WorkMesh'
 import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
 import FactMesh from '../services/FactMesh'
+import TownChips from './TownChips'
 import { toolsForTrade, tradeById } from '@data/towns-and-trades/trades'
 import { groupForIndustry, INDUSTRY_SLUGS } from '@data/towns-and-trades/industries'
 import { industryCopyFor } from '@data/towns-and-trades/industryDetail'
@@ -20,10 +20,6 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 // How many client sites the work block holds before it stops reading as proof
 // and starts reading as a directory.
 const WORK_LIMIT = 3
-
-// The jobs a visitor turns up to get done sit two to a row from the first
-// breakpoint with room for the pair, and every trade names four of them.
-const NEEDS_COLUMNS = { base: 1, sm: 2 }
 
 // The bands alternate down the page, so a trade with siblings to show takes a
 // different arrangement from one without and the closing panel follows
@@ -133,21 +129,7 @@ export default function Industry() {
         description={copy.needsDescription}
         meta={trade.name}
       >
-        <Mesh items={trade.needs} ground="paper" columns={NEEDS_COLUMNS} as="ul">
-          {(need, needIndex, cell) => (
-            <li
-              key={need}
-              className={`flex items-start gap-4 p-6 text-[15px] leading-snug text-ink-paper ${cell}`}
-            >
-              <Check
-                className="mt-0.5 h-4 w-4 flex-shrink-0 text-accent"
-                strokeWidth={2}
-                aria-hidden="true"
-              />
-              {need}
-            </li>
-          )}
-        </Mesh>
+        <NeedMesh needs={trade.needs} />
       </RuledSection>
 
       <RuledSection
@@ -204,15 +186,7 @@ export default function Industry() {
         description={copy.townsDescription}
         meta={`${AREAS.length} towns`}
       >
-        <ul className="flex flex-wrap gap-x-3 gap-y-2">
-          {AREAS.map(area => (
-            <li key={area.slug}>
-              <Link to={`/areas/${area.slug}`} className="chip">
-                {area.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <TownChips />
       </RuledSection>
 
       <CtaSection

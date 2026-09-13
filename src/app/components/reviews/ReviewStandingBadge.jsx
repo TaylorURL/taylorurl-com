@@ -45,7 +45,7 @@ const GLYPH = 'flex shrink-0 items-center'
  * nothing moves when a rating lands. The bars stand in for the two lines of
  * text at the heights those lines actually take.
  */
-export function StandingPlaceholder() {
+function StandingPlaceholder() {
   const bar = 'bg-[color:var(--wash-paper-strong)]'
   return (
     <div className={SHELL} data-loading="" aria-hidden="true">

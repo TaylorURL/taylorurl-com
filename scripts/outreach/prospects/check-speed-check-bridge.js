@@ -30,96 +30,20 @@ import {
   prospectFromCheck,
 } from '../../../lib/outreach/prospects/bridge.js'
 import { ASKED_SOURCE, ranksAhead } from '../../../lib/outreach/sending/rank.js'
+import { asked, filtered, rows, stubDb } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, quietly, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
 /**
- * A client that answers each query from a plan and keeps what it was asked.
+ * A run of the bridge over a planned table, with every query it made.
  *
- * Every filter is recorded rather than applied, because the filters are what
- * these checks are about: a write reaching the right row for the wrong reason
- * is the failure, and a stand-in that filtered its own fixtures would answer
- * correctly while the guard it is meant to prove was missing.
- *
- * Answers are keyed on the operation and the table, and a list of them is
- * handed out in order, which is how the three reads the bridge makes against
- * one table are told apart.
+ * The bridge reads the table three times - the replay guard, the address match
+ * and the site match - and the plan answers them in that order.
  */
-function stubDb(plan) {
-  const queries = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
-
-  const from = table => {
-    const query = { table, op: 'select', payload: null, filters: [] }
-    const chain = new Proxy(
-      {},
-      {
-        get(_, prop) {
-          if (prop === 'then') {
-            query.key = `${query.op}:${query.table}`
-            queries.push(query)
-            const answer = answerFor(query.key)
-            return (resolve, reject) => Promise.resolve(answer).then(resolve, reject)
-          }
-          return (...args) => {
-            if (query.op === 'select' && ['insert', 'update', 'upsert', 'delete'].includes(prop)) {
-              query.op = prop
-              query.payload = args[0] ?? null
-            } else if (
-              ['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'in', 'is', 'not', 'or', 'ilike'].includes(
-                prop
-              )
-            ) {
-              query.filters.push([prop, ...args])
-            }
-            return chain
-          }
-        },
-      }
-    )
-    return chain
-  }
-
-  return { db: { from }, queries }
-}
-
-/** Every query the stand-in was asked, of one kind against one table. */
-const asked = (queries, key) => queries.filter(query => query.key === key)
-
-/** Whether a query carried a filter naming this column, at this operator. */
-const filtered = (query, op, column, value) =>
-  query.filters.some(
-    ([kind, ...args]) =>
-      kind === op && args[0] === column && (value === undefined || args[1] === value)
-  )
-
-/** A page of rows, shaped the way a Supabase read answers with one. */
-const rows = data => ({ data, error: null, count: data.length })
-
-/** A run of the bridge over a planned table, with every query it made. */
 async function bridgeOver(reading, plan = {}) {
   const { db, queries } = stubDb({
     'select:outreach_prospects': [
@@ -132,17 +56,6 @@ async function bridgeOver(reading, plan = {}) {
   })
   const result = await bridge(db, reading)
   return { result, queries }
-}
-
-/** Run something with the log silenced, for the paths that report a fault. */
-async function quietly(run) {
-  const real = console.error
-  console.error = () => {}
-  try {
-    return await run()
-  } finally {
-    console.error = real
-  }
 }
 
 /** One row of `public.speed_checks`, the way api/speed-check.js closes one. */
@@ -598,19 +511,6 @@ check('a refusal never says which mailbox it was about', async () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} speed check bridge checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`speed check bridge: ${cases.length} checks passed`)

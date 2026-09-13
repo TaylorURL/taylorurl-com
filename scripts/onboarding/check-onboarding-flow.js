@@ -37,35 +37,20 @@ import {
   FIXED_PAGES,
   STEPS,
   answeredField,
-  nextUnfinished,
-  onboardingComplete,
   onboardingPercent,
   optionsFor,
   pagesForTrade,
   prefill,
-  stepOf,
   stepProgress,
   stepRank,
   withAnswer,
 } from '../../src/app/views/console/lib/onboarding.js'
+import { cases, check, finish, report, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
 
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
 /** Every fault a rule found, not the first, so one pass reports one pass. */
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
 
 const ENDPOINT = 'api/onboarding.js'
 const ASSIST = 'api/onboarding-assist.js'
@@ -140,7 +125,6 @@ check('the register opens and closes on a screen with nothing to answer', () => 
   same(STEPS[STEPS.length - 1].fields?.length ?? 0, 0, 'the last screen asks nothing')
   same(stepRank(STEPS[0].id), 1, 'the first step ranks first')
   same(stepRank('nonsense'), 0, 'a step nothing uses ranks below every real one')
-  same(stepOf('nonsense').id, STEPS[0].id, 'an unknown step falls to the first')
 })
 
 /** The register's own required fields, answered with something that counts. */
@@ -194,8 +178,7 @@ function sampleFor(field) {
 
 check('a hundred means every required field is answered, and nothing less does', () => {
   const whole = answeredWhole()
-  same(onboardingComplete(whole), true, 'a wholly answered brief reads as complete')
-  same(onboardingPercent(whole), 100, 'and reads a hundred')
+  same(onboardingPercent(whole), 100, 'a wholly answered brief reads a hundred')
 
   // One field at a time, taken back out. Every one of them has to be able to
   // stop the figure on its own, or a client is offered the handover control
@@ -208,23 +191,13 @@ check('a hundred means every required field is answered, and nothing less does',
       if (onboardingPercent(short) === 100) {
         faults.push(`${field.key} can be empty and the bar still reads a hundred`)
       }
-      if (onboardingComplete(short)) {
-        faults.push(`${field.key} can be empty and the brief still reads as finished`)
-      }
     }
   }
   report(faults)
 })
 
-check('an empty brief reads zero and points at the first thing owed', () => {
+check('an empty brief reads zero', () => {
   same(onboardingPercent({}), 0, 'nothing answered is nothing')
-  same(onboardingComplete({}), false, 'and is not finished')
-  // The welcome screen owes nothing, so the first thing outstanding is behind
-  // it. A form that opened on its own front page every time would make a
-  // client walk past it on every visit.
-  const at = nextUnfinished({})
-  same(at >= 0 && at < STEPS.length, true, 'an unfinished brief names a step in the register')
-  same(STEPS[at].fields?.length > 0, true, 'and names one that actually asks something')
 })
 
 check('the figure only ever rises as answers go in', () => {
@@ -338,7 +311,7 @@ check('the two fields with no list of their own are given one to draw', () => {
   // form is broken. `answeredField` reads both fields without their lists, so
   // nothing else in the flow notices.
   const faults = []
-  const fields = stepOf('pages').fields
+  const fields = STEPS.find(step => step.id === 'pages').fields
   const switches = fields.find(field => field.key === 'pages.chosen')
   const hero = fields.find(field => field.key === 'pages.hero_page')
 
@@ -581,16 +554,5 @@ check('the logo goes where the build already asks for one', () => {
   report(faults)
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)
