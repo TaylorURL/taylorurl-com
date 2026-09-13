@@ -28,6 +28,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
 
@@ -43,17 +44,6 @@ const { checkAddress, forgetDomains } = await import('../../../lib/outreach/pros
 const { work: watchWork } = await import('../../../api/outreach/watch.js')
 const { work: sendWork } = await import('../../../api/outreach/send.js')
 const { renderText, renderHtml } = await import('../../../lib/outreach/message.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 /** The reason a call refused, or nothing where it did not refuse. */
 async function refusal(run) {
@@ -694,19 +684,6 @@ check('the send route neither reads the variable nor names an address', () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach write checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach writes: ${cases.length} checks passed`)

@@ -33,19 +33,9 @@ import {
   variantById,
 } from '../../../lib/outreach/variants.js'
 import { CANDIDATE_COLUMNS } from '../../../lib/outreach/sending/queue.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const { compose, unsubscribeUrl } = await import('../../../api/outreach/send.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 const UNSUB = '11111111-1111-4111-8111-111111111111'
 const TRACK = '5f3a1c9e-2b44-4a0d-9f11-8c2b7de6a301'
@@ -555,19 +545,6 @@ check('a plain letter greets the half of the day it is written for', () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach variant checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach variants: ${cases.length} checks passed`)

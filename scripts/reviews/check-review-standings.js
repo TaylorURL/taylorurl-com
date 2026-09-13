@@ -28,14 +28,9 @@ import {
   standingShows,
 } from '../../src/app/data/reputation/review-standings.js'
 import { dayIn } from '../../lib/time/zone.js'
+import { fail, finish } from '../harness/checks.js'
 
 const DAY_MS = 24 * 60 * 60 * 1000
-
-let failed = 0
-function fail(message) {
-  failed += 1
-  console.error(`FAIL ${message}`)
-}
 
 const today = Date.parse(`${dayIn()}T00:00:00Z`)
 
@@ -144,10 +139,7 @@ if (/'(bbb|google|yelp|facebook)'/.test(badge)) {
   fail('the badge names a network of its own rather than drawing whatever it is handed')
 }
 
-if (failed) {
-  console.error(`\n${failed} review standing ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 const drawn = REVIEW_SOURCES.map(source => committedStanding(source.key))
   .filter(Boolean)

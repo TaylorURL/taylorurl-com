@@ -44,6 +44,8 @@
  * npm run check:notify-door
  */
 
+import { expect as check, finish } from '../harness/checks.js'
+
 /* ── The world the endpoint runs in ─────────────────────────────────────── */
 
 // Read once at load by the modules under test, so they are set before the
@@ -66,14 +68,6 @@ const RESEND_ENDPOINT = 'https://api.resend.com/emails'
 const SEAT = 'trenton@taylorurl.com'
 const SECOND_SEAT = 'trenton+second@taylorurl.com'
 const OTHER_TENANT_SEAT = 'trenton+other@taylorurl.com'
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 /* ── The database, as PostgREST answers ─────────────────────────────────── */
 
@@ -946,10 +940,7 @@ function open(built) {
 
 check(stray.length === 0, `something was asked of ${stray.join(', ')}`)
 
-if (failures) {
-  console.error(`notify-door: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   'notify-door: the endpoint answers a good post by reaching every seat on the project one ' +

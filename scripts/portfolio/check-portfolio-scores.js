@@ -39,16 +39,9 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { cases, check, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
-}
 
 const read = file => readFileSync(path.join(ROOT, file), 'utf8')
 
@@ -220,12 +213,7 @@ for (const surface of SURFACES) {
 
 /* ------------------------------------------------------------------------ */
 
-if (failures.length) {
-  console.error('check-portfolio-scores: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error('  the figures live in src/app/data/portfolio.js')
-  process.exit(1)
-}
+await finish({ hint: 'the figures live in src/app/data/portfolio.js' })
 
 if (stale.length) {
   console.warn(
@@ -234,7 +222,7 @@ if (stale.length) {
 }
 
 console.log(
-  `check-portfolio-scores: ${checks} checks hold across ${PORTFOLIO_PROJECTS.length} entries — ` +
+  `check-portfolio-scores: ${cases.length} checks hold across ${PORTFOLIO_PROJECTS.length} entries — ` +
     `every stored figure is a score, the client sites average ${PORTFOLIO_AVERAGES.mobile} mobile ` +
     `and ${PORTFOLIO_AVERAGES.desktop} desktop, and all ${SURFACES.length} surfaces that quote a ` +
     `score read it from the data`

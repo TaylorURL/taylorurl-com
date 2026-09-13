@@ -61,6 +61,7 @@ import {
 } from '../../lib/mail/audience.js'
 import { DRAFT, READY, SENT, blocksFor, hasContentFor, sendRefusal } from '../../lib/mail/issues.js'
 import { renderIssueEmail, renderIssueHtml, renderIssueText } from '../../lib/mail/emailTemplate.js'
+import { cases, check, finish, ok, same } from '../harness/checks.js'
 
 // Placeholders for the credentials the endpoints read at load. Neither of the
 // first two opens anything: the provider is a recorder in every case that
@@ -99,18 +100,6 @@ const SUBSCRIBER = {
   id: 'sub-1',
   email: 'reader@example.com',
   unsub_token: '11111111-2222-4333-8444-555555555555',
-}
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
 }
 
 /** Runs `act` and returns the message it raised, or null when it did not. */
@@ -998,19 +987,6 @@ check('no schedule fires the send path any more', () => {
   )
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`newsletter send: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`newsletter send: all ${cases.length} cases pass`)

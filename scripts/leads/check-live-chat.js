@@ -25,19 +25,12 @@ import { LIMITS, overCeiling, retryAfter } from '../../lib/live-chat/limits.js'
 import { answering, why } from '../../api/live-chat.js'
 import { addressesFor } from '../../lib/http/reach.js'
 import { ASK_GAPS_MS, assistantUp } from '../../src/app/data/liveChat.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 // Nothing here is allowed to reach the network. An unstubbed path fails loudly
 // rather than passing for the wrong reason.
 globalThis.fetch = () => {
   throw new Error('a check reached the network')
-}
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
 }
 
 /* Ordinary visitors. Every one of these must reach the assistant. */
@@ -414,9 +407,7 @@ check(
  * closes that, so what is checked here is that it is made and that the widget
  * still answers no either way. */
 // The reporter reads `console.error`, so the probe is run with that held and
-// every answer collected before anything is judged. Nothing is checked while it
-// is held, because `check` writes a failure the same way and would file its own
-// complaint into the evidence.
+// every answer collected before anything is judged.
 const reports = []
 const answers = []
 const realError = console.error
@@ -596,10 +587,7 @@ globalThis.fetch = () => {
 check(!/\bAI\b|bot|violat|abuse|attempt/i.test(REFUSAL), 'the refusal accuses the visitor')
 check(/\bteam\b/i.test(REFUSAL), 'the refusal does not name the way through')
 
-if (failures) {
-  console.error(`live-chat: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `live-chat: ${ORDINARY.length} ordinary visitors reach the assistant, ${ATTACKS.length} attempts are refused before a turn is spent, probes are watched and reported, leaks are caught, contact details are read and the studio's own number is not one, every ceiling holds and names the way through, and the widget appears only where a turn would be answered`

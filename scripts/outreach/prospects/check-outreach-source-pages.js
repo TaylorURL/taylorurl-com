@@ -23,20 +23,11 @@
  * against, and the client is a plan of answers that records what was written.
  */
 
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+
 process.env.GOOGLE_PLACES_API_KEY = 'a-places-key'
 
 const { work } = await import('../../../api/outreach/source.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The endpoint ─────────────────────────────────────────────────────────
 
@@ -487,19 +478,6 @@ check('a database without the first-count column is still swept', async () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} source paging checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach source pages: ${cases.length} checks passed`)

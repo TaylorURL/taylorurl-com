@@ -11,17 +11,7 @@
  */
 import { USER_AGENT, findSite } from '../../../lib/outreach/prospects/site-search.js'
 import { ensureShot } from '../../../lib/outreach/audit/shot.js'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const PROSPECT = { name: 'Baytown Plumbing', town: 'Baytown', phone: '281-555-0134' }
 
@@ -187,19 +177,6 @@ check('the signal is sized to the budget, not to the service', async () => {
   ok(Date.now() - started < 2000, 'the signal did not fire at the budget it was given')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach timeout checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach timeouts: ${cases.length} checks passed`)

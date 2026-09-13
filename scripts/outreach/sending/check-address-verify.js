@@ -33,20 +33,9 @@ import {
 import { queueFor } from '../../../lib/outreach/sending/queue.js'
 import { deliver } from '../../../api/outreach/send.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 /** A resolver answering with one mail server, counting how often it was asked. */
 function resolves(exchange = 'mx.example.net') {
@@ -456,19 +445,6 @@ check('two listings sharing a mailbox get one letter between them', () => {
   same(queue[0].id, 'branch-a', 'the row that survived is not the one that sorted first')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} address verification checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`address verification: ${cases.length} checks passed`)

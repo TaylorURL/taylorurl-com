@@ -38,22 +38,15 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import vm from 'node:vm'
+import { cases, expect as check, fail, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const PAGE = readFileSync(path.join(ROOT, 'index.html'), 'utf8')
 
-const failures = []
-let checks = 0
-function check(condition, complaint) {
-  checks += 1
-  if (!condition) failures.push(complaint)
-}
-
 const scripts = [...PAGE.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(match => match[1])
 const reporter = scripts.find(source => source.includes('/report'))
 if (!reporter) {
-  console.error('check-console-reports: failed')
-  console.error('  the page no longer carries an inline script that names the collector')
+  fail('the page no longer carries an inline script that names the collector')
   process.exit(1)
 }
 
@@ -515,8 +508,7 @@ check(
 // the one report on this host that was ever worth having.
 const loader = scripts.find(source => source.includes('__siteTags = []'))
 if (!loader) {
-  console.error('check-console-reports: failed')
-  console.error('  the page no longer carries the block that writes its tags')
+  fail('the page no longer carries the block that writes its tags')
   process.exit(1)
 }
 
@@ -931,15 +923,12 @@ check(
     'so the guard has widened off transport failures and onto the site’s own faults'
 )
 
-if (failures.length) {
-  console.error('check-console-reports: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error('  a line an extension wrote is the browser talking; only the site answers here')
-  process.exit(1)
-}
+await finish({
+  hint: 'a line an extension wrote is the browser talking; only the site answers here',
+})
 
 console.log(
-  `check-console-reports: ${checks} checks hold — the console path files with the frames it ` +
+  `check-console-reports: ${cases.length} checks hold — the console path files with the frames it ` +
     'came from, an extension writing to it is ruled the browser rather than the site, a throw ' +
     'the browser refused to describe is held rather than filed, and the output the site writes ' +
     'itself still reports'

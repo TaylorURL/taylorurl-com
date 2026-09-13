@@ -26,16 +26,9 @@ import {
   countedPages,
   withCountedPages,
 } from '../../src/app/views/analytics/lib/counted.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 // One rule, both readers.
 const html = readFileSync(join(ROOT, 'index.html'), 'utf8')
@@ -131,10 +124,7 @@ check(
   'a payload with nothing to drop came back as a new object'
 )
 
-if (failures) {
-  console.error(`traffic-ignore: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `traffic-ignore: one rule "${IGNORE_RULE}" on the tag and in the console, ` +
     `${PATHS.length} paths judged, and only this site's rows filtered`

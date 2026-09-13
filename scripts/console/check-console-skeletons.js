@@ -20,6 +20,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { answerFor, NOTHING_HELD } from '../../src/app/hooks/console/feedState.js'
+import { cases, check, finish, report, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 // Everything a reader of the console actually looks at. Scanning the sections
@@ -36,23 +37,10 @@ const SCANNED = [
   'src/app/views/status',
 ]
 
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
 /**
  * Every fault a rule found, not the first. One rule holding sixteen sections
  * that reports one of them turns a single pass into sixteen.
  */
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
 
 // -- the feed's rule ---------------------------------------------------------
 
@@ -258,15 +246,5 @@ check('no section decides which site it is answering for from the window', () =>
   report(faults)
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`FAIL  ${name}\n      ${cause.message}`)
-  }
-}
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

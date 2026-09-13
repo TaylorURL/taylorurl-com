@@ -40,6 +40,7 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join, relative } from 'node:path'
 
 import { SITE } from '../../lib/site/current.js'
+import { fail, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const DIST = join(ROOT, 'dist')
@@ -91,7 +92,7 @@ export function deadLinks(pages, answers, origin) {
  * bug it exists to catch. So it is handed a page with one good link and one
  * dead one and has to come back with the dead one alone.
  */
-function selfTest() {
+async function selfTest() {
   const served = new Set(['/', '/contact'])
   const pages = [
     {
@@ -104,21 +105,17 @@ function selfTest() {
   ]
   const found = deadLinks(pages, target => served.has(target), 'https://taylor.website')
 
-  const problems = []
-  if (!found.has('/pricing')) problems.push('a dead internal link was not reported')
+  if (!found.has('/pricing')) fail('self-test: a dead internal link was not reported')
   if (!found.has('/gone'))
-    problems.push("an absolute link to this site's own missing page was not reported")
-  if (found.has('/contact')) problems.push('a served link was reported dead')
+    fail("self-test: an absolute link to this site's own missing page was not reported")
+  if (found.has('/contact')) fail('self-test: a served link was reported dead')
   if (found.size !== 2) {
-    problems.push(
-      `reported ${found.size} dead targets; a foreign host, a fragment and a mailto are not links this owns`
+    fail(
+      `self-test: reported ${found.size} dead targets; a foreign host, a fragment and a mailto are not links this owns`
     )
   }
 
-  if (problems.length) {
-    for (const problem of problems) console.error(`FAIL self-test: ${problem}`)
-    process.exit(1)
-  }
+  await finish()
   console.log(
     'internal links self-test holds: a dead path and a dead self-canonical are both caught, ' +
       'and a served path, another host, a fragment and a mailto are not.'
@@ -126,12 +123,12 @@ function selfTest() {
 }
 
 if (process.argv.includes('--self-test')) {
-  selfTest()
+  await selfTest()
   process.exit(0)
 }
 
 if (!existsSync(DIST)) {
-  console.error('FAIL dist/ is not there; this reads the built pages. Run the build first.')
+  fail('dist/ is not there; this reads the built pages. Run the build first.')
   process.exit(1)
 }
 
@@ -155,7 +152,7 @@ function builtPages(dir = DIST) {
 
 const built = builtPages()
 if (built.length === 0) {
-  console.error('FAIL dist/ holds no pages')
+  fail('dist/ holds no pages')
   process.exit(1)
 }
 
@@ -177,21 +174,19 @@ const isFile = href => {
 
 const dead = deadLinks(built, target => served.has(target) || isFile(target), SITE.origin)
 
-if (dead.size) {
-  console.error(`FAIL ${dead.size} link target(s) on ${SITE.key} go nowhere this build serves:\n`)
-  for (const [target, on] of [...dead].sort()) {
-    const naming = [...on].sort()
-    const shown = naming.slice(0, 6).join(' ')
-    const rest = naming.length > 6 ? ` (+${naming.length - 6} more)` : ''
-    console.error(`  ${target}\n    linked from ${shown}${rest}`)
-  }
-  console.error(
-    '\nEach is a 404 a reader reaches by clicking. Either the page belongs in this ' +
-      "site's route table, or the link belongs behind the check that asks whether this " +
-      'site serves it - `serves()` in `@constants/navigation`.'
-  )
-  process.exit(1)
+for (const [target, on] of [...dead].sort()) {
+  const naming = [...on].sort()
+  const shown = naming.slice(0, 6).join(' ')
+  const rest = naming.length > 6 ? ` (+${naming.length - 6} more)` : ''
+  fail(`${target} goes nowhere ${SITE.key} serves\n  linked from ${shown}${rest}`)
 }
+
+await finish({
+  hint:
+    'Each is a 404 a reader reaches by clicking. Either the page belongs in this ' +
+    "site's route table, or the link belongs behind the check that asks whether this " +
+    'site serves it - `serves()` in `@constants/navigation`.',
+})
 
 console.log(
   `internal links hold: every href across ${built.length} built pages on ${SITE.key} ` +

@@ -20,19 +20,10 @@
  * write checks are driven against.
  */
 
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+
 const { addProspect } = await import('../../../api/outreach-admin.js')
 const { SOURCE: PLACES, prospect: placeRow } = await import('../../../api/outreach/source.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -579,19 +570,6 @@ check('a table that is not there names itself', async () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} hand-added prospect checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach add: ${cases.length} checks passed`)

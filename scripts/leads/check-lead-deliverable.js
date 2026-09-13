@@ -27,17 +27,10 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { deliverable } from '../../lib/leads/record.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
 
 // Every reserved name, at the second level and as a bare top-level domain,
 // plus a subdomain of each - RFC 2606 and RFC 6761 reserve the names and
@@ -132,20 +125,7 @@ check('the run reports what it passed over', () => {
   same(job.includes('undeliverable: skipped'), true, 'the count is in the answer')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`lead deliverable: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `lead deliverable: all ${cases.length} cases pass; ${RESERVED.length} reserved addresses are refused before a code is cut and ${REAL.length} real ones that resemble them are kept`

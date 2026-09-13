@@ -13,18 +13,10 @@
  */
 
 import { NO_ANSWER, sessionGate } from '../../src/app/hooks/session/sessionGate.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 const ACCOUNT = 'account-1'
 const OTHER = 'account-2'
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
 
 /** The answer once assurance has run for an account. */
 function answered(userId, { pending, factorId = null }) {
@@ -144,15 +136,5 @@ check('a sign-in with a factor never reports a decidable state early', () => {
   )
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`FAIL  ${name}\n      ${cause.message}`)
-  }
-}
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

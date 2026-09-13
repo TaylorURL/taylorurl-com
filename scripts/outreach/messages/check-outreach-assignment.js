@@ -33,6 +33,7 @@ import {
 } from '../../../lib/outreach/variants.js'
 import { CANDIDATE_COLUMNS, queueFor } from '../../../lib/outreach/sending/queue.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
 
@@ -46,17 +47,6 @@ globalThis.fetch = () => {
 const nodemailer = (await import('nodemailer')).default
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { compose, work: sendWork } = await import('../../../api/outreach/send.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 /** The reason a call refused, or nothing where it did not refuse. */
 async function refusal(run) {
@@ -813,19 +803,6 @@ check('a business already held out is written to like any other', async () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach assignment checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach assignment: ${cases.length} checks passed`)

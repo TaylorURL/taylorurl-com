@@ -35,20 +35,9 @@ import { mailboxKind, shapeOf } from '../../../lib/outreach/prospects/address.js
 import { contactFor, contactIn, linkedPages } from '../../../api/outreach/enrich.js'
 import { queueFor } from '../../../lib/outreach/sending/queue.js'
 import { HELD_FIXTURE, installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // -- the held list, which a person wrote by hand ----------------------------
 
@@ -791,19 +780,6 @@ check('the queue shows nothing the rules would stop', () => {
   same(queue.map(row => row.id).join(','), 'c,a', 'the rows left, worst score first')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach exclusion checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach exclusions: ${cases.length} checks passed`)

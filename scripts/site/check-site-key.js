@@ -29,17 +29,9 @@ import { dirname, join } from 'node:path'
 import { DEFAULT_SITE_KEY, SITE_KEYS } from '../../lib/site/registry.js'
 import { SITES } from '../../lib/site/sites.js'
 import { SITE, ownsSchedules } from '../../lib/site/current.js'
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
 
 // A record's shape is the union of every field any record declares, so a field
 // added to one site is a field the other must answer for — with null where the
@@ -220,12 +212,7 @@ check(
 const env = readFileSync(join(ROOT, '.env.example'), 'utf8')
 check(/^SITE=/m.test(env) || /\bSITE\b/.test(env), 'SITE is undocumented in .env.example')
 
-if (failed) {
-  console.error(
-    `\n${failed} problem(s). One tree builds two sites; the key is what tells them apart.`
-  )
-  process.exit(1)
-}
+await finish({ hint: 'One tree builds two sites; the key is what tells them apart.' })
 
 console.log(
   `site key holds: ${SITE_KEYS.length} records answer the same fields, origins are distinct and slash-free, ` +

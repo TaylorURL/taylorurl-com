@@ -56,6 +56,7 @@ import {
   readNotification,
   recipientsFor,
 } from '../../lib/mail/notify.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 // The credentials the endpoint reads at load. Neither opens anything: the
 // provider is a recorder in every case that reaches one, and no Supabase client
@@ -67,14 +68,6 @@ process.env.CRON_SECRET = CRON_SECRET
 
 const { deliver, resolve } = await import('../../api/notify.js')
 const notifyHandler = (await import('../../api/notify.js')).default
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 /* ── The sheet ──────────────────────────────────────────────────────────── */
 
@@ -826,10 +819,7 @@ async function callHandler(request) {
   check(said.reply_to === 'someone@example.com', 'a studio notice lost its reply address')
 }
 
-if (failures) {
-  console.error(`notify: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   'notify: the four senders that speak for the studio draw the same masthead byte for byte, a ' +

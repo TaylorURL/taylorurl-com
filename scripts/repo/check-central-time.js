@@ -17,15 +17,7 @@
 import { execFileSync } from 'node:child_process'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 // The zones a render is compared across. One either side of Central and one
 // far enough round that a day boundary falls inside a working afternoon.
@@ -140,10 +132,7 @@ for (const root of ROOTS) {
   }
 }
 
-if (failed) {
-  console.error(`\n${failed} problem(s). Every date a person reads is written in one zone.`)
-  process.exit(1)
-}
+await finish({ hint: 'Every date a person reads is written in one zone.' })
 
 console.log(
   'Central time holds: the day key, a rendered instant and the sending day all read ' +

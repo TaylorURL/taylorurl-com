@@ -45,24 +45,12 @@ import {
   stepRank,
   withAnswer,
 } from '../../src/app/views/console/lib/onboarding.js'
+import { cases, check, finish, report, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
 
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
 /** Every fault a rule found, not the first, so one pass reports one pass. */
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
 
 const ENDPOINT = 'api/onboarding.js'
 const ASSIST = 'api/onboarding-assist.js'
@@ -566,16 +554,5 @@ check('the logo goes where the build already asks for one', () => {
   report(faults)
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

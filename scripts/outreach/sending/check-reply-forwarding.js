@@ -39,6 +39,8 @@
  * was handed.
  */
 
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+
 process.env.OUTREACH_SMTP_USER = 'studio@example.com'
 process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
 process.env.RESEND_API_KEY = 'not-a-key'
@@ -54,17 +56,6 @@ const {
   textOfHtml,
 } = await import('../../../api/outreach/watch.js')
 const { ANNOTATION, WORDMARK } = await import('../../../lib/mail/identity.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -786,16 +777,5 @@ check('a person who says stop through a desk is still heard', async () => {
   ok(asked.includes('upsert:suppression'), 'somebody who asked to stop was not suppressed')
 })
 
-let failed = 0
-for (const [name, runCase] of cases) {
-  try {
-    await runCase()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${cause.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

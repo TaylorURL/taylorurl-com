@@ -31,19 +31,9 @@ import {
 } from '../../../lib/outreach/prospects/bridge.js'
 import { ASKED_SOURCE, ranksAhead } from '../../../lib/outreach/sending/rank.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -598,19 +588,6 @@ check('a refusal never says which mailbox it was about', async () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} speed check bridge checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`speed check bridge: ${cases.length} checks passed`)

@@ -50,6 +50,7 @@ import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { bootSource } from '../../vite/boot-source.js'
 import { SHEET_HANDLER, sheetRecovery, sheetSource } from '../../vite/sheet-source.js'
+import { cases, expect as check, fail, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const APP = path.join(ROOT, 'src/app')
@@ -61,21 +62,14 @@ const ROUTES = 'src/app/views.js'
 // Where the retry is built, and the only place `lazy` itself belongs.
 const RETRY = 'src/app/utils/lazyWithRetry.js'
 
-const failures = []
-let checks = 0
 let read = 0
-
-function check(ok, complaint) {
-  checks += 1
-  if (!ok) failures.push(complaint)
-}
 
 // The line rules run over every line of the app, and counting each one as a
 // check reports a number nobody can read. They are three rules however many
 // lines they are asked about.
 function sweep(ok, complaint) {
   read += 1
-  if (!ok) failures.push(complaint)
+  if (!ok) fail(complaint)
 }
 
 function filesUnder(dir, out = []) {
@@ -941,15 +935,10 @@ check(
   `the reporter does not name ${SHEET_HANDLER}, so it cannot tell a sheet under recovery from one with nothing behind it`
 )
 
-if (failures.length) {
-  console.error('check-chunk-recovery: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error('  a chunk that has gone is the deploy working; the page it was on carries on')
-  process.exit(1)
-}
+await finish({ hint: 'a chunk that has gone is the deploy working; the page it was on carries on' })
 
 console.log(
-  `check-chunk-recovery: ${checks} checks hold and ${read} lines across ${swept.length} files ` +
+  `check-chunk-recovery: ${cases.length} checks hold and ${read} lines across ${swept.length} files ` +
     'ask for every chunk through the retry, hold every warm-up, and fail a piece of chrome ' +
     'without the page, and a sheet that did not arrive is asked for again rather than left ' +
     'as the styling for the rest of the visit'

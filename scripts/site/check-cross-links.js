@@ -39,11 +39,7 @@ import { CROSS_LINKS } from '../../lib/site/cross-links.js'
 import { SITES } from '../../lib/site/sites.js'
 import { SITE_KEYS } from '../../lib/site/registry.js'
 import { STATIC_ROUTES as TAYLORWEBSITE_ROUTES } from '../../lib/site/routes/taylorwebsite.js'
-
-const problems = []
-const check = (condition, message) => {
-  if (!condition) problems.push(message)
-}
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 /**
  * The paths a site publishes, keyed by site.
@@ -169,14 +165,12 @@ for (const entry of CROSS_LINKS) {
     try {
       routes.set(entry.site, published(entry.site))
     } catch (cause) {
-      problems.push(
-        `could not read the routes ${entry.site} publishes (${cause.message.split('\n')[0]})`
-      )
+      fail(`could not read the routes ${entry.site} publishes (${cause.message.split('\n')[0]})`)
       routes.set(entry.site, null)
     }
   }
 
-  problems.push(...rowProblems(entry, routes.get(entry.site) ?? null))
+  for (const problem of rowProblems(entry, routes.get(entry.site) ?? null)) fail(problem)
 }
 
 // --- self test --------------------------------------------------------------
@@ -187,12 +181,13 @@ for (const entry of CROSS_LINKS) {
 if (process.argv.includes('--self-test')) {
   const serves = new Set(['/', '/about'])
   const good = { key: 'ok', site: SITE_KEYS[0], path: '/about', label: 'About' }
-  const faults = []
 
   const expect = (entry, serving, wanted) => {
     const found = rowProblems(entry, serving)
     if ((found.length === 0) !== (wanted === 0)) {
-      faults.push(`${entry.key}: expected ${wanted ? 'a problem' : 'none'}, got ${found.length}`)
+      fail(
+        `self test: ${entry.key}: expected ${wanted ? 'a problem' : 'none'}, got ${found.length}`
+      )
     }
   }
 
@@ -206,24 +201,14 @@ if (process.argv.includes('--self-test')) {
   // fail every honest row and get switched off.
   expect({ ...good, key: 'root', path: '/' }, serves, 0)
 
-  if (faults.length) {
-    for (const fault of faults) console.error('SELF-TEST FAIL %s', fault)
-    process.exit(1)
-  }
+  await finish()
   console.log(
     'self test: an unpublished path, an unrooted one, one carrying its own origin and an ' +
       'unlabelled row are all caught, and two good rows are not.'
   )
 }
 
-if (problems.length) {
-  for (const problem of problems) console.error('FAIL %s', problem)
-  console.error(
-    '\n%d problem(s). A cross-site link is the one link in the tree that no other check reads.',
-    problems.length
-  )
-  process.exit(1)
-}
+await finish({ hint: 'A cross-site link is the one link in the tree that no other check reads.' })
 
 console.log(
   'cross links hold: %d row(s) across %d sites, each resolving to a page the naming site ' +

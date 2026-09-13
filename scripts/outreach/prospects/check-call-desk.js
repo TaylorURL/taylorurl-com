@@ -71,18 +71,7 @@ import {
   ownerOf,
   PULLS,
 } from '../../../lib/outreach/prospects/calls.js'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const NOW = new Date('2026-09-08T15:00:00Z')
 
@@ -480,17 +469,5 @@ check('the clock an answer was taken on is never a reason to redraw', () => {
   ok(settleDesk(DESK, beat) === DESK, 'a later clock alone changes nothing')
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failed += 1
-    console.error(`FAIL  ${name}\n      ${cause.message}`)
-  }
-}
-if (failed) {
-  console.error(`\ncall desk: ${failed} of ${cases.length} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(`call desk: ${cases.length} checks passed`)

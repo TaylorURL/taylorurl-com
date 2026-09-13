@@ -14,17 +14,7 @@
  */
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import { hasNoSiteOfItsOwn, opportunityBand } from '../../../src/app/utils/outreachOpportunity.js'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 /** A row the way the table and the send queue both carry one. */
 const row = over => ({
@@ -197,19 +187,6 @@ check('every shape of row reads as exactly one of the five, and as the two readi
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach segment checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach segments: ${cases.length} checks passed`)

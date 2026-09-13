@@ -33,6 +33,7 @@ import {
   wouldEmptySegment,
 } from '../../../lib/outreach/variants.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
 
@@ -45,17 +46,6 @@ const nodemailer = (await import('nodemailer')).default
 const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { FOLLOW_UP_COLUMNS } = await import('../../../lib/outreach/sending/queue.js')
 const { dueAfter, work: sendWork } = await import('../../../api/outreach/send.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -959,19 +949,6 @@ check('a draft written under a retired family is written again before it goes', 
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach follow-up checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach follow-ups: ${cases.length} checks passed`)

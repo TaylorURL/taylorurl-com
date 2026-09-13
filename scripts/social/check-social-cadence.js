@@ -24,6 +24,7 @@ import {
   freeSlots,
 } from '../../lib/social/buffer.js'
 import { ZONE } from '../../lib/outreach/sending/schedule.js'
+import { fail, finish } from '../harness/checks.js'
 
 // One date on each side of the daylight saving change. The slot is written in
 // local time and Buffer is told an instant, so the two disagree by an hour for
@@ -70,12 +71,6 @@ function localReading(iso) {
     weekday: at('weekday').toLowerCase(),
     date: `${at('year')}-${at('month')}-${at('day')}`,
   }
-}
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
 }
 
 for (const [service, cadence] of Object.entries(CADENCE)) {
@@ -167,10 +162,7 @@ for (const [service, cadence] of Object.entries(CADENCE)) {
   }
 }
 
-if (failed) {
-  console.error(`\n${failed} cadence ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 const summary = Object.entries(CADENCE)
   .map(([service, cadence]) => `${service} ${cadenceInWords(cadence)}`)

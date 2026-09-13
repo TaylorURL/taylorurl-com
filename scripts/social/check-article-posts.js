@@ -19,6 +19,7 @@
 import { CADENCE } from '../../lib/social/buffer.js'
 import { HELD, articleUrl, hasCopy, plan, postText } from '../../lib/social/announce.js'
 import { ZONE } from '../../lib/outreach/sending/schedule.js'
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 const ARTICLE = {
   slug: 'what-a-plumbers-website-has-to-do',
@@ -69,15 +70,6 @@ const channel = (service, extra = {}) => ({
 })
 
 const NOW = new Date('2026-08-29T18:00:00Z')
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
 
 /** The hour, weekday and date an instant falls on, on the clock in Baytown. */
 function localReading(iso) {
@@ -293,10 +285,7 @@ for (const [service, cadence] of Object.entries(CADENCE)) {
   )
 }
 
-if (failed) {
-  console.error(`\n${failed} article post ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 const written = Object.entries(CADENCE)
   .map(([service, cadence]) =>

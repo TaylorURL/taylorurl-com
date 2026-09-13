@@ -27,6 +27,7 @@ import { PORTFOLIO_PROJECTS } from '../../src/app/data/portfolio.js'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { fail, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -131,8 +132,6 @@ const tracked = execFileSync('git', ['ls-files'], { cwd: ROOT, encoding: 'utf8' 
   .split('\n')
   .filter(name => READABLE.test(name) && name !== 'package-lock.json')
 
-const faults = []
-
 /** A live Stripe identifier names one record in the account. */
 const STRIPE_ID = /\b(cus|sub|in|pi|cs|prod|price|ch|card|pm)_[A-Za-z0-9]{14,}\b/g
 
@@ -154,7 +153,7 @@ for (const name of tracked) {
       // A fixture says so in the id itself, which is the only way to write one
       // that is plainly not an account record.
       if (/sample|fixture|example|test|fake|xxxx/i.test(id)) continue
-      faults.push(`${where}: a Stripe identifier, ${id}`)
+      fail(`${where}: a Stripe identifier, ${id}`)
     }
 
     for (const [address, ,] of line.matchAll(ADDRESS)) {
@@ -166,20 +165,16 @@ for (const name of tracked) {
       if (VENDORS.has(domain)) continue
       if (FIXTURES.has(domain)) continue
       if (PORTFOLIO.has(domain)) continue
-      faults.push(`${where}: an address at a domain the studio does not own, ${address}`)
+      fail(`${where}: an address at a domain the studio does not own, ${address}`)
     }
   })
 }
 
-if (faults.length) {
-  console.error('This tree names people it may not name in public:\n')
-  for (const fault of faults) console.error(`  ${fault}`)
-  console.error(
-    '\nA customer fact belongs in the database. A fixture belongs on example.com or a\n' +
-      'reserved top level, which nobody can register.'
-  )
-  process.exit(1)
-}
+await finish({
+  hint:
+    'This tree names people it may not name in public. A customer fact belongs in the database.\n' +
+    'A fixture belongs on example.com or a reserved top level, which nobody can register.',
+})
 
 console.log(
   `public repo: ${tracked.length} tracked files carry no Stripe identifier and no address ` +

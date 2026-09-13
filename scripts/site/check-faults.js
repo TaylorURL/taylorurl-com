@@ -30,17 +30,10 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { FALLBACK_FAULT, faultMessage, readsAsWritten } from '../../src/app/utils/faults.js'
+import { cases, check, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const FAULTS = path.join(ROOT, 'src/app/utils/faults.js')
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
-}
 
 /* ----------------------------------------------------------------------- *
  * The door: what a service says, and what a reader is told instead.
@@ -324,25 +317,19 @@ for (const file of swept) {
   })
 }
 
-checks += 1
-if (leaks.length) {
-  failures.push(`${leaks.length} caught values reach a reader unread`)
-  for (const leak of leaks) failures.push(`  ${leak}`)
-}
+check(
+  [`${leaks.length} caught values reach a reader unread`, ...leaks].join('\n      '),
+  leaks.length === 0
+)
 
 check('the sweep read the whole app', swept.length > 200)
 
-if (failures.length) {
-  console.error('check-faults: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error(
-    '  every failure a reader sees goes through faultMessage in src/app/utils/faults.js'
-  )
-  process.exit(1)
-}
+await finish({
+  hint: 'every failure a reader sees goes through faultMessage in src/app/utils/faults.js',
+})
 
 console.log(
-  `check-faults: ${checks} checks hold — ${MACHINE_SAID.length} real machine messages are all ` +
+  `check-faults: ${cases.length} checks hold — ${MACHINE_SAID.length} real machine messages are all ` +
     `replaced, ${NAMED.length} named causes keep their own sentence, ${written.length} sentences ` +
     `in the module read as written, and ${swept.length} files carry no unread failure`
 )

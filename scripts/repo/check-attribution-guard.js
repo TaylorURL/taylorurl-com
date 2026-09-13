@@ -28,17 +28,10 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { cases, check, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const HOOKS = path.join(ROOT, '.githooks')
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
-}
 
 /**
  * One commit attempted in a throwaway repository, and what came of it.
@@ -212,15 +205,12 @@ for (const wanted of [
   check(`${wanted} is tracked, so a fresh clone has it`, tracked.includes(wanted))
 }
 
-if (failures.length) {
-  console.error('check-attribution-guard: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error('  the hooks live in .githooks/, the wall behind them in .github/workflows/ci.yml')
-  process.exit(1)
-}
+await finish({
+  hint: 'the hooks live in .githooks/, the wall behind them in .github/workflows/ci.yml',
+})
 
 console.log(
-  `check-attribution-guard: ${checks} checks hold — an AI identity cannot commit, the trailers are ` +
+  `check-attribution-guard: ${cases.length} checks hold — an AI identity cannot commit, the trailers are ` +
     `taken out of the message, prose naming a vendor is untouched, and the hooks still enforce the ` +
     `patterns the workflow does`
 )

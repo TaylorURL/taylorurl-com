@@ -38,19 +38,9 @@ import {
   rowRuleWrote,
 } from '../../../lib/outreach/prospects/exclusions.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -667,19 +657,6 @@ check('a first reading is written whatever the row has since become', async () =
   ok(!filtered(write, 'eq', 'stage'), 'a first reading was held to a stage')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach lifecycle checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach lifecycle: ${cases.length} checks passed`)

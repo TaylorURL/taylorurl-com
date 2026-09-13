@@ -18,24 +18,11 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { cases, check, finish, report, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../..')
 const read = path => readFileSync(join(ROOT, path), 'utf8')
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
 
 /** Every file under `src`, which is everything a visitor can end up reading. */
 function everySource(from = 'src', held = []) {
@@ -156,16 +143,5 @@ check('the checkout opens the subscription with the build on its first invoice',
   report(faults)
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

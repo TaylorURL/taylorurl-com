@@ -37,19 +37,10 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { currentProject, inOnboarding, stageRank } from '../../src/app/views/console/lib/stages.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
 
 const FRAME = 'src/app/views/console/ConsoleFrame.jsx'
 const SECTIONS = 'src/app/views/console/lib/sections.js'
@@ -170,16 +161,5 @@ check('the dock is drawn only where there is something to draw', () => {
   same(stageRank('nonsense'), 0, 'a stage nothing uses ranks below every real one')
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

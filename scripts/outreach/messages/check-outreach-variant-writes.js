@@ -29,6 +29,7 @@ import {
 } from '../../../lib/outreach/variants.js'
 import { STUDIO_INBOX } from '../../../lib/outreach/message.js'
 import { variantSettings } from '../../../lib/outreach/sending/queue.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 // Nothing here may reach the network.
 globalThis.fetch = () => {
@@ -37,17 +38,6 @@ globalThis.fetch = () => {
 
 const { preview, proof, setVariant, variantResults } =
   await import('../../../api/outreach-admin.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -892,19 +882,6 @@ check('the row for the messages before ids carries no count of businesses', () =
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach variant write checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach variant writes: ${cases.length} checks passed`)

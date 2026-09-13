@@ -75,20 +75,9 @@ import {
   uncallableReason,
   waitHoursFor,
 } from '../../../lib/outreach/prospects/calls.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 /** A row the way the table carries one, callable unless the case says otherwise. */
 const row = over => ({
@@ -793,19 +782,6 @@ check('the calls that reached somebody become leads unless they said no', () => 
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} call list checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`call list: ${cases.length} checks passed`)

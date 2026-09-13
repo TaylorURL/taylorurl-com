@@ -16,6 +16,7 @@
  *   npm run check:social-metadata
  */
 import { CADENCE } from '../../lib/social/buffer.js'
+import { cases, check, finish } from '../harness/checks.js'
 
 /** The call-to-action values Buffer's `GoogleBusinessPostActionType` accepts. */
 const GOOGLE_BUTTONS = new Set(['book', 'call', 'learn_more', 'none', 'order', 'shop', 'signup'])
@@ -47,14 +48,6 @@ const GOOGLE_DETAILS = {
   event: 'detailsEvent',
   offer: 'detailsOffer',
   whats_new: 'detailsWhatsNew',
-}
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
 }
 
 for (const [name, cadence] of Object.entries(CADENCE)) {
@@ -106,9 +99,8 @@ for (const [name, cadence] of Object.entries(CADENCE)) {
   }
 }
 
-if (failures.length) {
-  for (const failure of failures) console.error(`social metadata: ${failure}`)
-  process.exit(1)
-}
+await finish()
 
-console.log(`social metadata holds ${checks} checks: every cadence carries a shape an edit accepts`)
+console.log(
+  `social metadata holds ${cases.length} checks: every cadence carries a shape an edit accepts`
+)

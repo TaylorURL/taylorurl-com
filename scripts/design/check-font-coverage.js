@@ -35,16 +35,9 @@ import { brotliDecompressSync } from 'node:zlib'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { expect as check, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 /*
  * The table tags a WOFF2 directory refers to by index rather than by name, in
@@ -404,10 +397,7 @@ for (const [family, size] of sizes) {
   check(size < 48_000, `${family} is ${size} bytes, which is not a subset`)
 }
 
-if (failures) {
-  console.error(`font-coverage: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `font-coverage: ${checkedCharacters} characters written across the source tree and ${insuredCovered} ` +

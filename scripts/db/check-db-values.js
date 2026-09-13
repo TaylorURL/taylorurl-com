@@ -36,6 +36,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { loadSnapshot, readValueList } from './db-constraints.js'
+import { fail, finish } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../..')
@@ -46,7 +47,6 @@ const ROUTES = ['api', 'lib', 'src']
 /** The calls that carry a row. A select carries none and is not read. */
 const WRITES = ['insert', 'update', 'upsert']
 
-const failures = []
 let checked = 0
 let dynamic = 0
 
@@ -285,7 +285,7 @@ for (const [table, byColumn] of Object.entries(raw.columns ?? {})) {
       again.allows.length === held.allows.length &&
       again.allows.every(value => held.allows.includes(value))
     if (!agrees) {
-      failures.push(
+      fail(
         `${table}.${column}: the snapshot's list does not follow from the definition beside it. ` +
           `Refresh it rather than editing it: npm run refresh:db-constraints`
       )
@@ -332,7 +332,7 @@ for (const [table, byColumn] of Object.entries(raw.columns ?? {})) {
         for (const value of literals) {
           checked += 1
           if (held.allows.includes(value)) continue
-          failures.push(
+          fail(
             `${where}: ${table}.${entry.key} is written '${value}', which ${held.constraint} refuses. ` +
               `It takes ${held.allows.map(one => `'${one}'`).join(', ')}.`
           )
@@ -352,28 +352,21 @@ if (process.argv.includes('--self-test')) {
   const writes = literalsIn("asked.optOut ? 'opt_out' : machine.auto ? 'auto_reply' : null")
   const refused = writes.filter(value => !before.allows.includes(value))
   if (refused.join() !== 'auto_reply') {
-    console.error(`self-test: expected 'auto_reply' to be refused, got ${JSON.stringify(refused)}`)
-    process.exit(1)
+    fail(`self-test: expected 'auto_reply' to be refused, got ${JSON.stringify(refused)}`)
   }
   const now = readValueList(
     "CHECK (((intent IS NULL) OR (intent = ANY (ARRAY['opt_out'::text, 'auto_reply'::text]))))"
   )
   if (writes.some(value => !now.allows.includes(value))) {
-    console.error('self-test: the widened constraint should accept both values')
-    process.exit(1)
+    fail('self-test: the widened constraint should accept both values')
   }
+  await finish()
   console.log(
     'check-db-values self-test: the constraint as it stood refuses auto_reply; as widened it does not.'
   )
 }
 
-if (failures.length > 0) {
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error(
-    `\ncheck-db-values: ${failures.length} write${failures.length === 1 ? '' : 's'} the schema would refuse.`
-  )
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `check-db-values: ${checked} written values across ${columns.size} constrained columns all stand, ` +

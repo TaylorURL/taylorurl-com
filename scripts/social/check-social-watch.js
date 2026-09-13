@@ -36,6 +36,7 @@ import {
   watch,
 } from '../../lib/social/watch.js'
 import { CADENCE, RATE_LIMITED, connect, coversDays } from '../../lib/social/buffer.js'
+import { cases, check, finish, ok, same } from '../harness/checks.js'
 
 const OFFLINE = () => {
   throw new Error('a check reached the network')
@@ -44,18 +45,6 @@ globalThis.fetch = OFFLINE
 
 process.env.CRON_SECRET = 'a-cron-secret'
 process.env.BUFFER_API_KEY = 'a-key'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 const sameList = (got, want, what) => same(got.join(', '), want.join(', '), what)
 
@@ -653,20 +642,7 @@ check('the summary names the queue whether or not it found anything', () => {
 
 // ---------------------------------------------------------------------------
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    console.error(`FAIL ${name}\n     ${cause.message}`)
-    failed += 1
-  }
-}
-
-if (failed) {
-  console.error(`\n${failed} social watch ${failed === 1 ? 'check' : 'checks'} failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `social watch holds ${cases.length} checks: runway floor ${RUNWAY_FLOOR_DAYS} days at ` +

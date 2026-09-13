@@ -27,6 +27,7 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { cases, expect as check, finish } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
@@ -38,13 +39,6 @@ const ENDPOINT = 'api/site-speed.js'
 const hook = read(HOOK)
 const requests = read(REQUESTS)
 const endpoint = read(ENDPOINT)
-
-const faults = []
-let checks = 0
-function check(ok, complaint) {
-  checks += 1
-  if (!ok) faults.push(complaint)
-}
 
 // Both readings are still taken. A fix that dropped one would pass every check
 // about request shape and quietly leave the desktop column empty forever.
@@ -95,17 +89,12 @@ check(
   `${ENDPOINT} gives up before one strategy can finish, so a slow page is reported as an endpoint that went quiet`
 )
 
-if (faults.length) {
-  console.error('check-speed-measure: failed')
-  for (const fault of faults) console.error(`  ${fault}`)
-  console.error(
-    '  one strategy per request; two in one call is a worker killed over the wall clock'
-  )
-  process.exit(1)
-}
+await finish({
+  hint: 'one strategy per request; two in one call is a worker killed over the wall clock',
+})
 
 console.log(
-  `check-speed-measure: ${checks} checks hold - a measurement pressed in the console goes out as ` +
+  `check-speed-measure: ${cases.length} checks hold - a measurement pressed in the console goes out as ` +
     'one request per strategy, each bounded by a single PageSpeed run, and the row stays busy ' +
     'across both'
 )

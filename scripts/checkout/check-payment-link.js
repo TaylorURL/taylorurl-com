@@ -25,6 +25,8 @@
  *   npm run check:payment-link
  */
 
+import { cases, check, finish, same } from '../harness/checks.js'
+
 // Read before either endpoint is imported: both fix these at module load, and
 // a product id or a site URL differing between the two would show up as a
 // difference in the bodies that has nothing to do with either file.
@@ -47,13 +49,6 @@ const { openArgs } = await import('../../api/stripe-webhook.js')
 const { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } =
   await import('../../src/app/data/checkout/pricing.js')
 const { claimHolds } = await import('../../lib/stripe/claim.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
 
 const BUYER = 'prospect@example.com'
 const BUSINESS = 'Lawton Park'
@@ -507,20 +502,7 @@ function floor(cents) {
   return { floor: cents, ceiling: cents * 50, what: 'build' }
 }
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`payment link: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `payment link: all ${cases.length} cases pass; a link with nothing quoted sends what /start sends`
