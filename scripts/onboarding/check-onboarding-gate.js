@@ -161,7 +161,8 @@ check('the dock is drawn only where there is something to draw', () => {
   // a later stage is not on the list.
   const dock = read('src/app/views/console/intake/ProjectChecklist.jsx')
   same(
-    dock.includes('stageRank(task.stage) <= reached'),
+    dock.includes('clientAsks(project)') &&
+      read('src/app/views/console/lib/stages.js').includes('stageRank(task.stage) <= reached'),
     true,
     'only what has been reached is asked for'
   )

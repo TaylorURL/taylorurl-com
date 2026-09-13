@@ -10,6 +10,7 @@ import {
   STEPS,
   answerAt,
   answeredField,
+  applicable,
   onboardingPercent,
   optionsFor,
   prefill,
@@ -85,18 +86,6 @@ const DAYS = {
   fri: 'Friday',
   sat: 'Saturday',
   sun: 'Sunday',
-}
-
-/**
- * Whether a field is in the running for this set of answers.
- *
- * The model's own rule, which lives on the field rather than in an export: a
- * conditional field whose condition is false is not asked for, not counted and
- * not read back, so the review has to ask the same question the percent does or
- * it lists a logo picker at a client who said they have no logo.
- */
-function applies(field, answers) {
-  return typeof field.applies === 'function' ? field.applies(answers) === true : true
 }
 
 /** One row of a list field, in a few words. */
@@ -266,7 +255,7 @@ function Review({ answers, brief }) {
   const groups = STEPS.filter(step => step.fields.length).map(step => ({
     step,
     rows: step.fields
-      .filter(field => applies(field, answers))
+      .filter(field => applicable(field, answers))
       .map(field => {
         const value = answerAt(answers, field.key)
         return { field, text: readable(field, value), answered: answeredField(field, value) }
@@ -358,7 +347,7 @@ function StepFields({ step, answers, onChange, disabled, assist, files, trade })
   return (
     <div className="flex flex-col gap-6">
       {step.fields
-        .filter(field => applies(field, answers))
+        .filter(field => applicable(field, answers))
         .map(field => (
           <OnboardingFields
             key={field.key}

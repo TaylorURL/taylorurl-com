@@ -1198,9 +1198,11 @@ export function answeredField(field, value) {
  *
  * A conditional field whose condition is false is in neither the numerator nor
  * the denominator, which is the only way a client who has no logo can reach a
- * hundred without being asked for one.
+ * hundred without being asked for one. It is not read back either, so the
+ * review asks the same question the percent does, or it lists a logo picker at
+ * a client who said they have no logo.
  */
-function applicable(field, answers) {
+export function applicable(field, answers) {
   return typeof field.applies === 'function' ? field.applies(answers) === true : true
 }
 

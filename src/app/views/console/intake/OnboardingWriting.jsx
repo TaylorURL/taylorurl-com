@@ -273,6 +273,16 @@ function namesAStretch(text) {
   return /\b(19|20)\d{2}\b/.test(text) || mentions(text, ['since', 'year', 'decade', 'generation'])
 }
 
+/** The work itself, in the verbs anybody reaches for or in the trade's own words. */
+function namesTheWork(text, trade) {
+  return mentions(text, WORK_WORDS) || mentions(text, trade.words)
+}
+
+/** How many words the text runs to. */
+function wordCount(text) {
+  return text.trim().split(/\s+/).filter(Boolean).length
+}
+
 /**
  * The written questions this control is used for.
  *
@@ -300,10 +310,7 @@ const ASKS = {
       'We work in ',
     ],
     cover: [
-      {
-        point: 'the work itself',
-        held: (text, trade) => mentions(text, WORK_WORDS) || mentions(text, trade.words),
-      },
+      { point: 'the work itself', held: namesTheWork },
       { point: 'who it is for', held: text => mentions(text, PEOPLE_WORDS) },
       { point: 'where you work', held: namesAPlace },
       { point: 'how long you have been at it', held: namesAStretch },
@@ -374,15 +381,9 @@ const ASKS = {
     starters: ['The people you call for ', 'Since ', 'Across '],
     seeded: 'trade',
     cover: [
-      {
-        point: 'what you do',
-        held: (text, trade) => mentions(text, WORK_WORDS) || mentions(text, trade.words),
-      },
+      { point: 'what you do', held: namesTheWork },
       { point: 'where you do it', held: namesAPlace },
-      {
-        point: 'short enough to read in one glance',
-        held: text => text.trim().split(/\s+/).filter(Boolean).length <= 12,
-      },
+      { point: 'short enough to read in one glance', held: text => wordCount(text) <= 12 },
     ],
     band: { floorChars: 20, floorSentences: 1, ceilingChars: 90, ceilingSentences: 1 },
   },
@@ -413,10 +414,7 @@ const GENERAL = {
   label: null,
   starters: ['The short version is ', 'What matters most here is ', 'For example, '],
   cover: [
-    {
-      point: 'what you mean, in a whole sentence',
-      held: text => text.trim().split(/\s+/).filter(Boolean).length >= 8,
-    },
+    { point: 'what you mean, in a whole sentence', held: text => wordCount(text) >= 8 },
     { point: 'something specific rather than something general', held: namesSomething },
   ],
   band: { floorChars: 60, floorSentences: 1, ceilingChars: 600, ceilingSentences: 6 },

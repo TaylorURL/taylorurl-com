@@ -11,7 +11,7 @@ import {
   SkeletonBox,
   SkeletonList,
 } from '../../ui'
-import { STAGES, currentProject, stageOf, stageRank } from '../../lib/stages'
+import { STAGES, clientAsks, currentProject, stageOf, stageRank } from '../../lib/stages'
 import ProjectAsks from '../../intake/ProjectAsks'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { ZONE } from '@lib/time/zone.js'
@@ -137,9 +137,7 @@ export default function ProjectPage() {
   // and a cell held for it would be a hole beside the updates until then. It
   // is asked the same question it asks itself, so the page knows whether the
   // card will stand before laying out around it.
-  const asked = (project.tasks || []).some(
-    task => task.owner === 'client' && stageRank(task.stage) <= reached
-  )
+  const asked = clientAsks(project).length > 0
 
   return (
     <ConsolePage

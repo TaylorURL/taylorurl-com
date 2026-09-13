@@ -53,7 +53,7 @@ export const PORTAL_SURFACES = Object.freeze([
 ])
 
 /** What the standalone portal publishes: four addresses, one per screen. */
-const STANDALONE = Object.freeze({
+export const STANDALONE = Object.freeze({
   surfaces: Object.freeze(['portal', 'calls', 'management', 'resources']),
   hrefFor: (key, params) => {
     const path = key === 'portal' ? '/staff' : `/staff/${key}`
@@ -63,6 +63,8 @@ const STANDALONE = Object.freeze({
     return query ? `${path}?${query}` : path
   },
   openedOn: null,
+  // A representative reads the figures their shift is measured against and
+  // never moves them. The console's portal is where they are set.
   sets: false,
 })
 
