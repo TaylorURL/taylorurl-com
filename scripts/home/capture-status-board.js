@@ -23,14 +23,10 @@
  * those. `status-board-shot.swift` runs the page through WebKit instead, which
  * is compiled here on first use and left beside the source for later runs.
  */
-import { access, mkdir, rm, stat } from 'node:fs/promises'
+import { rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { dirname, join, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
-import { BINARY, SOURCE, build, run } from './shot-renderer.js'
-
-const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const OUT_DIR = join(ROOT, 'public', 'home')
+import { join } from 'node:path'
+import { BINARY, OUT_DIR, encode, prepare, run } from './shot-renderer.js'
 
 /** The palettes captured, and the file each one is committed as. */
 const SHOTS = [
@@ -48,14 +44,7 @@ const HEIGHT = 750
 const SCALE = 3
 
 async function main() {
-  try {
-    await run('cwebp', ['-version'])
-  } catch {
-    throw new Error('cwebp not found on PATH — install it with `brew install webp`.')
-  }
-  await access(SOURCE)
-  await build()
-  await mkdir(OUT_DIR, { recursive: true })
+  await prepare()
 
   const origin = process.argv[2] ?? DEFAULT_ORIGIN
 
@@ -79,18 +68,7 @@ async function main() {
       ])
       // cwebp resizes rather than the renderer, so the detail the extra density
       // bought is spent on the committed pixels instead of thrown away early.
-      await run('cwebp', [
-        '-q',
-        '88',
-        '-m',
-        '6',
-        '-resize',
-        String(WIDTH),
-        String(HEIGHT),
-        temp,
-        '-o',
-        output,
-      ])
+      await encode(temp, output, WIDTH, HEIGHT)
       const { size } = await stat(output)
       console.log(
         `captured ${origin}${PATH} in ${shot.theme} at ${stdout.trim()}, written to ${shot.file} as ${size} bytes`
