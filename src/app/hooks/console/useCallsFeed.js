@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
-import { answerFor, NOTHING_HELD } from './feedState'
+import { readEndpoint, writeEndpoint } from './endpoint'
+import { answerFor, NOTHING_HELD, queryOf } from './feedState'
+import { useAlive } from './useAlive'
 
 const CALLS_PATH = '/api/calls-admin'
 
@@ -71,33 +73,17 @@ export function useCallsFeed({ token, enabled, filters }) {
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
   const toast = useToast()
-  const alive = useRef(true)
+  const alive = useAlive()
 
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
-
-  // The query string is the identity of this read. An object literal rebuilt
-  // on every render is not.
-  const query = useMemo(() => {
-    const search = new URLSearchParams()
-    for (const [key, value] of Object.entries(filters || {})) {
-      if (value) search.set(key, String(value))
-    }
-    return search.toString()
-  }, [filters])
+  const query = queryOf(filters)
 
   const load = useCallback(async () => {
     if (!token || !enabled) return
     try {
-      const response = await fetch(`${CALLS_PATH}?${query}&t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(
+        token,
+        `${CALLS_PATH}?${query}&t=${Date.now()}`
+      )
       if (!alive.current) return
       if (!response.ok) {
         setFailed({ key: query, value: faultFromResponse(response, payload, NO_READ) })
@@ -108,7 +94,7 @@ export function useCallsFeed({ token, enabled, filters }) {
     } catch (cause) {
       if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_READ) })
     }
-  }, [token, enabled, query])
+  }, [token, enabled, query, alive])
 
   useEffect(() => {
     load()
@@ -137,12 +123,7 @@ export function useCallsFeed({ token, enabled, filters }) {
       if (!token) return null
       setSaving(true)
       try {
-        const response = await fetch(CALLS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(call),
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await writeEndpoint(token, CALLS_PATH, call)
         if (!response.ok) {
           if (alive.current) toast(faultFromResponse(response, payload, NO_RECORD), 'error')
           return null
@@ -156,7 +137,7 @@ export function useCallsFeed({ token, enabled, filters }) {
         if (alive.current) setSaving(false)
       }
     },
-    [token, load, toast]
+    [token, load, toast, alive]
   )
 
   // Filed under the filter that asked for it: a new town, trade or page is a

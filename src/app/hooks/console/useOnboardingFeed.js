@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { readEndpoint, writeEndpoint } from './endpoint'
 import { answerFor, NOTHING_HELD } from './feedState'
+import { useAlive } from './useAlive'
 
 /**
  * The one address a brief is read and written at.
@@ -177,7 +179,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
-  const alive = useRef(true)
+  const alive = useAlive()
 
   // The record as the client has it, and whether the record behind it has been
   // told. Both are refs because every writer below reads them: held in state,
@@ -192,13 +194,6 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
   // the flow draws its skeleton rather than a client's answers under a preview
   // strip.
   const source = preview ? 'preview' : projectId || null
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
 
   /** Hold a record, in both the place callbacks read and the place React draws. */
   const put = useCallback(
@@ -239,19 +234,18 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       if (!token || !projectId || !enabled) return false
       if (alive.current) setSaving(true)
       try {
-        const response = await fetch(ONBOARDING_PATH, {
-          method: 'POST',
-          keepalive,
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const { response, payload } = await writeEndpoint(
+          token,
+          ONBOARDING_PATH,
+          {
             action: 'save',
             project_id: projectId,
             answers: outgoing.answers,
             step: outgoing.step,
             percent: outgoing.percent,
-          }),
-        })
-        const payload = await response.json().catch(() => ({}))
+          },
+          { keepalive }
+        )
         if (!response.ok) {
           if (alive.current) setFailed({ key: source, value: NOT_SAVED })
           return false
@@ -277,7 +271,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
         if (alive.current) setSaving(false)
       }
     },
-    [preview, token, projectId, enabled, source, put]
+    [preview, token, projectId, enabled, source, put, alive]
   )
 
   // The flush everything else reaches for, kept current rather than named as a
@@ -310,11 +304,10 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
 
     if (!token || !projectId || !enabled) return
     try {
-      const response = await fetch(
-        `${ONBOARDING_PATH}?project=${encodeURIComponent(projectId)}&t=${Date.now()}`,
-        { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } }
+      const { response, payload } = await readEndpoint(
+        token,
+        `${ONBOARDING_PATH}?project=${encodeURIComponent(projectId)}&t=${Date.now()}`
       )
-      const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
         // A build nobody has answered anything on is not an error and never
@@ -341,7 +334,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     } catch (cause) {
       if (alive.current) setFailed({ key: source, value: faultMessage(cause, NOT_READ) })
     }
-  }, [preview, token, projectId, enabled, source, put])
+  }, [preview, token, projectId, enabled, source, put, alive])
 
   useEffect(() => {
     load()
@@ -418,12 +411,10 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     if (!token || !projectId || !enabled) return false
     setSaving(true)
     try {
-      const response = await fetch(ONBOARDING_PATH, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'submit', project_id: projectId }),
+      const { response, payload } = await writeEndpoint(token, ONBOARDING_PATH, {
+        action: 'submit',
+        project_id: projectId,
       })
-      const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
         if (alive.current) setFailed({ key: source, value: NOT_SENT })
         return false
@@ -444,7 +435,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     } finally {
       if (alive.current) setSaving(false)
     }
-  }, [preview, token, projectId, enabled, source, put])
+  }, [preview, token, projectId, enabled, source, put, alive])
 
   /**
    * The two ways a flow ends without anybody pressing anything.

@@ -32,9 +32,11 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
 
 const HOOK = 'src/app/hooks/console/useSpeedFeed.js'
+const REQUESTS = 'src/app/hooks/console/endpoint.js'
 const ENDPOINT = 'api/site-speed.js'
 
 const hook = read(HOOK)
+const requests = read(REQUESTS)
 const endpoint = read(ENDPOINT)
 
 const faults = []
@@ -51,13 +53,13 @@ check(
   `${HOOK} no longer names both strategies, so a site is measured on one of the two figures the table shows`
 )
 
-const posts = hook.match(/method: 'POST'/g) || []
+const posts = hook.match(/writeEndpoint\(/g) || []
 check(
-  posts.length === 1,
+  posts.length === 1 && /method: 'POST'/.test(requests),
   `${HOOK} sends ${posts.length} kinds of measurement request rather than one, so what the endpoint is asked for depends on which one ran`
 )
 
-const body = hook.match(/body: JSON\.stringify\(([^)]*)\)/)
+const body = hook.match(/writeEndpoint\(token, SPEED_PATH, \{([^}]*)\}\)/)
 check(
   Boolean(body) && /\bstrategy\b/.test(body[1]),
   `${HOOK} posts no strategy, so the endpoint measures both in one call and the run is killed over the wall clock rather than answered`
@@ -71,7 +73,7 @@ check(
 // request inside the loop rather than the loop inside the request.
 const loop = hook.indexOf('for (const strategy of STRATEGIES)')
 check(
-  loop > -1 && loop < hook.indexOf("method: 'POST'"),
+  loop > -1 && loop < hook.indexOf('writeEndpoint('),
   `${HOOK} sends its measurement outside the loop over the strategies, so both go in one call again`
 )
 

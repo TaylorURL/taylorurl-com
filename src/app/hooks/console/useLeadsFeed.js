@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { readEndpoint, writeEndpoint } from './endpoint'
 import { answerFor, NOTHING_HELD } from './feedState'
+import { useAlive } from './useAlive'
 import { usePulse } from './usePulse'
 
 const LEADS_PATH = '/api/leads-admin'
@@ -55,23 +57,12 @@ export function useLeadsFeed({ token, enabled, openId }) {
   // for, so the last lead's letters are never read as this one's.
   const [held, setHeld] = useState(NOTHING_HELD)
   const [heldFault, setHeldFault] = useState(NOTHING_HELD)
-  const alive = useRef(true)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
+  const alive = useAlive()
 
   const load = useCallback(async () => {
     if (!token || !enabled) return false
     try {
-      const response = await fetch(`${LEADS_PATH}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(token, `${LEADS_PATH}?t=${Date.now()}`)
       if (!alive.current) return false
       if (!response.ok) {
         setError(faultFromResponse(response, payload, NO_READ))
@@ -84,7 +75,7 @@ export function useLeadsFeed({ token, enabled, openId }) {
       if (alive.current) setError(faultMessage(cause, NO_READ))
       return false
     }
-  }, [token, enabled])
+  }, [token, enabled, alive])
 
   useEffect(() => {
     load()
@@ -104,11 +95,10 @@ export function useLeadsFeed({ token, enabled, openId }) {
     let stale = false
     const ask = async () => {
       try {
-        const response = await fetch(`${LEADS_PATH}?lead=${encodeURIComponent(openId)}`, {
-          cache: 'no-store',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await readEndpoint(
+          token,
+          `${LEADS_PATH}?lead=${encodeURIComponent(openId)}`
+        )
         if (stale || !alive.current) return
         if (!response.ok) {
           setHeldFault({ key: openId, value: faultFromResponse(response, payload, NO_READ) })
@@ -125,7 +115,7 @@ export function useLeadsFeed({ token, enabled, openId }) {
     return () => {
       stale = true
     }
-  }, [token, enabled, openId])
+  }, [token, enabled, openId, alive])
 
   /** One lead's row, put back where it stands in the list. */
   const place = useCallback(lead => {
@@ -142,12 +132,12 @@ export function useLeadsFeed({ token, enabled, openId }) {
       if (!token || !id) return false
       setSaving(id)
       try {
-        const response = await fetch(LEADS_PATH, {
-          method: 'PATCH',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id, ...change }),
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await writeEndpoint(
+          token,
+          LEADS_PATH,
+          { id, ...change },
+          { method: 'PATCH' }
+        )
         if (!alive.current) return false
         if (!response.ok || !payload?.lead) {
           setError(faultFromResponse(response, payload, NO_MARK))
@@ -163,18 +153,13 @@ export function useLeadsFeed({ token, enabled, openId }) {
         if (alive.current) setSaving(null)
       }
     },
-    [token, place]
+    [token, place, alive]
   )
 
   /** One POST, shared by the send and the two draft verbs. */
   const act = useCallback(
     async body => {
-      const response = await fetch(LEADS_PATH, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await writeEndpoint(token, LEADS_PATH, body)
       if (!response.ok) {
         return { ok: false, error: faultFromResponse(response, payload, NO_SEND) }
       }
@@ -219,7 +204,7 @@ export function useLeadsFeed({ token, enabled, openId }) {
         if (alive.current) setSending(false)
       }
     },
-    [token, act, place]
+    [token, act, place, alive]
   )
 
   /** Keeps one draft, and writes the answer into the list the composer reads. */
@@ -250,7 +235,7 @@ export function useLeadsFeed({ token, enabled, openId }) {
         if (alive.current) setTemplateBusy(false)
       }
     },
-    [token, act]
+    [token, act, alive]
   )
 
   /** Takes one draft out of the set the composer offers. */
@@ -275,7 +260,7 @@ export function useLeadsFeed({ token, enabled, openId }) {
         if (alive.current) setTemplateBusy(false)
       }
     },
-    [token, act]
+    [token, act, alive]
   )
 
   // The first read is the only one that leaves the page with nothing to draw.

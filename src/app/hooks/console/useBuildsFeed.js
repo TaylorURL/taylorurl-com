@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
+import { putSigned, readEndpoint, writeEndpoint } from './endpoint'
+import { useAlive } from './useAlive'
 import { usePulse } from './usePulse'
 
 const BUILDS_PATH = '/api/projects-admin'
@@ -58,14 +60,7 @@ export function useBuildsFeed({ token, enabled }) {
   const [error, setError] = useState(null)
   const [acting, setActing] = useState(null)
   const toast = useToast()
-  const alive = useRef(true)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
+  const alive = useAlive()
 
   /**
    * One read, with a refusal thrown rather than returned.
@@ -79,11 +74,7 @@ export function useBuildsFeed({ token, enabled }) {
    */
   const ask = useCallback(
     async (query, fallback) => {
-      const response = await fetch(`${BUILDS_PATH}${query}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(token, `${BUILDS_PATH}${query}`)
       if (!response.ok) throw new Error(faultFromResponse(response, payload, fallback))
       return payload
     },
@@ -100,7 +91,7 @@ export function useBuildsFeed({ token, enabled }) {
     } catch (cause) {
       if (alive.current) setError(faultMessage(cause, NO_LIST))
     }
-  }, [ask, token, enabled])
+  }, [ask, token, enabled, alive])
 
   useEffect(() => {
     load()
@@ -126,7 +117,7 @@ export function useBuildsFeed({ token, enabled }) {
         if (alive.current) setError(faultMessage(cause, NO_BUILD))
       }
     },
-    [ask, token]
+    [ask, token, alive]
   )
 
   /**
@@ -152,12 +143,7 @@ export function useBuildsFeed({ token, enabled }) {
       if (!token) return null
       setActing(key)
       try {
-        const response = await fetch(BUILDS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await writeEndpoint(token, BUILDS_PATH, body)
         if (!response.ok) {
           if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return null
@@ -172,7 +158,7 @@ export function useBuildsFeed({ token, enabled }) {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, open, readUpdates, toast]
+    [token, load, open, readUpdates, toast, alive]
   )
 
   /**
@@ -187,49 +173,31 @@ export function useBuildsFeed({ token, enabled }) {
       if (!token || !file) return false
       setActing(key)
       try {
-        const signed = await fetch(BUILDS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'upload',
-            project_id: open,
-            content_type: file.type,
-          }),
+        const { response: signed, payload: place } = await writeEndpoint(token, BUILDS_PATH, {
+          action: 'upload',
+          project_id: open,
+          content_type: file.type,
         })
-        const place = await signed.json().catch(() => ({}))
         if (!signed.ok) {
           if (alive.current) toast(faultFromResponse(signed, place, NO_SEND), 'error')
           return false
         }
 
-        const put = await fetch(place.url, {
-          method: 'PUT',
-          headers: { 'Content-Type': file.type },
-          body: file,
-        })
-        // The bucket answers a refused upload with its own XML rather than
-        // anything a reader could use, so the status is the whole of what is
-        // known here - and a status on its own is a case the door already
-        // answers, which is why nothing is read off this response.
-        if (!put.ok) {
-          if (alive.current) toast(faultFromResponse(put, null, NO_UPLOAD), 'error')
+        const refused = await putSigned(place.url, file, NO_UPLOAD)
+        if (refused) {
+          if (alive.current) toast(refused, 'error')
           return false
         }
 
         const size = await measure(file)
-        const recorded = await fetch(BUILDS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'media',
-            update_id: updateId,
-            path: place.path,
-            caption,
-            width: size.width,
-            height: size.height,
-          }),
+        const { response: recorded, payload: kept } = await writeEndpoint(token, BUILDS_PATH, {
+          action: 'media',
+          update_id: updateId,
+          path: place.path,
+          caption,
+          width: size.width,
+          height: size.height,
         })
-        const kept = await recorded.json().catch(() => ({}))
         if (!recorded.ok) {
           if (alive.current) toast(faultFromResponse(recorded, kept, NO_ATTACH), 'error')
           return false
@@ -244,7 +212,7 @@ export function useBuildsFeed({ token, enabled }) {
         if (alive.current) setActing(null)
       }
     },
-    [token, open, readUpdates, toast]
+    [token, open, readUpdates, toast, alive]
   )
 
   // The record again on a beat: the list, and the open build's own reads with

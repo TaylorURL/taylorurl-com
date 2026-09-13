@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { answerFor, NOTHING_HELD } from './feedState'
+import { usePoll } from './usePulse'
 
 const ANALYTICS_PATH = '/api/analytics'
 
@@ -9,11 +10,6 @@ const NO_FIGURES = 'The traffic figures could not be read. Try again in a moment
 
 /** And when the account is signed in but has not been given the figures. */
 const REFUSED = 'This account cannot read the traffic figures.'
-
-// A failed read is usually a redeploy or a blip a couple of seconds wide.
-// Waiting a full interval to find that out leaves the console showing an error
-// it no longer has, so a failure retries soon and backs off if it persists.
-const RETRY_MS = [3_000, 6_000, 15_000]
 
 /**
  * Polls one analytics view and keeps the last good payload through a failure,
@@ -45,7 +41,6 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [rejected, setRejected] = useState(false)
   const [fetchedAt, setFetchedAt] = useState(null)
-  const timer = useRef(null)
   const failures = useRef(0)
 
   // The query string is the identity of this feed: a new site or window has to
@@ -100,34 +95,7 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
     }
   }, [token, query])
 
-  useEffect(() => {
-    if (!token || !enabled) return undefined
-    let cancelled = false
-    let first = true
-
-    const tick = async () => {
-      if (cancelled) return
-      // The first read always runs so the console never sits on its shell;
-      // only the repeat polling waits for the tab to be visible.
-      let ok = true
-      if (first || document.visibilityState === 'visible') ok = await load()
-      first = false
-      if (cancelled) return
-      const wait = ok ? intervalMs : RETRY_MS[Math.min(failures.current - 1, RETRY_MS.length - 1)]
-      timer.current = window.setTimeout(tick, wait)
-    }
-    tick()
-
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') load()
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => {
-      cancelled = true
-      window.clearTimeout(timer.current)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
-  }, [token, enabled, intervalMs, load])
+  usePoll(load, { enabled: Boolean(token) && enabled, intervalMs, failures })
 
   // Both are read through the query they were filed under, so a payload or a
   // failure belonging to the previous question is invisible to the page rather

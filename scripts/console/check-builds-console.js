@@ -120,11 +120,13 @@ check('the console offers every stage the database allows', () => {
 check('a capture goes up in two steps rather than through the request body', () => {
   same(read(ENDPOINT).includes('createSignedUploadUrl'), true, 'the endpoint signs an upload')
   const hook = read(HOOK)
-  same(hook.includes("method: 'PUT'"), true, 'the browser writes the file itself')
+  const upload = read('src/app/hooks/console/endpoint.js')
+  same(hook.includes('putSigned(place.url, file,'), true, 'the browser writes the file itself')
+  same(upload.includes("method: 'PUT'"), true, 'the browser writes the file itself')
   // The file is the body of that request rather than a field inside a JSON
   // one, which keeps a full-page capture clear of a request cap that has
   // nothing to do with how big a screenshot ought to be.
-  same(/\n\s*body: file,/.test(hook), true, 'the file is the body of the upload')
+  same(/\n\s*body: file,/.test(upload), true, 'the file is the body of the upload')
 })
 
 let failed = 0

@@ -5,6 +5,7 @@ import { fadeInUp } from '@constants/animations'
 import { faultFromResponse, faultMessage, readsAsWritten } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { useSession } from '@hooks/session/useSession'
+import { writeEndpoint } from '@hooks/console/endpoint'
 import { useOutreachFeed } from '@hooks/console/useOutreachFeed'
 import {
   auditScore,
@@ -3069,12 +3070,10 @@ export default function OutreachPage() {
     setAdding(true)
     setAddFault(null)
     try {
-      const response = await fetch(ADD_PATH, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add', ...business }),
+      const { response, payload } = await writeEndpoint(token, ADD_PATH, {
+        action: 'add',
+        ...business,
       })
-      const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
         const said = faultFromResponse(response, payload, NOT_ADDED)
         if (REFUSED.has(response.status)) setAddFault({ field: fieldOf(said), said })

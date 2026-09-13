@@ -3,6 +3,8 @@ import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { normalizePrefs } from '@lib/outreach/prospects/callPrefs.js'
 import { BEAT_MS, heldNumbers, settleDesk } from '@lib/outreach/prospects/callPresence.js'
+import { readEndpoint, writeEndpoint } from './endpoint'
+import { useAlive } from './useAlive'
 
 const DESK_PATH = '/api/calls-desk'
 
@@ -92,17 +94,10 @@ export function useCallDesk({ token, userId, enabled }) {
     setHint(readHint(userId))
   }, [userId])
   const toast = useToast()
-  const alive = useRef(true)
+  const alive = useAlive()
   // What this console believes it is holding. A ref rather than state, because
   // the beat reads it and would otherwise restart on every claim and release.
   const holding = useRef(null)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
 
   /** What a landed answer does to what is on screen, wherever it came from. */
   const land = useCallback(payload => {
@@ -117,14 +112,10 @@ export function useCallDesk({ token, userId, enabled }) {
     async (body, { keepalive = false, quiet = false } = {}) => {
       if (!token || !enabled) return null
       try {
-        const response = await fetch(DESK_PATH, {
-          method: 'POST',
+        const { response, payload } = await writeEndpoint(token, DESK_PATH, body, {
           keepalive,
           cache: 'no-store',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
         })
-        const payload = await response.json().catch(() => ({}))
         if (!alive.current) return null
         // A refused claim answers with the board as well as the reason, so a
         // console that met one redraws whatever refused it rather than sitting
@@ -142,7 +133,7 @@ export function useCallDesk({ token, userId, enabled }) {
         return null
       }
     },
-    [token, enabled, toast, land]
+    [token, enabled, toast, land, alive]
   )
 
   // The beat, and the release, both reach the current send without making
@@ -160,11 +151,7 @@ export function useCallDesk({ token, userId, enabled }) {
     let stop = false
     ;(async () => {
       try {
-        const response = await fetch(`${DESK_PATH}?t=${Date.now()}`, {
-          cache: 'no-store',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await readEndpoint(token, `${DESK_PATH}?t=${Date.now()}`)
         if (stop || !alive.current) return
         if (!response.ok) {
           setError(faultFromResponse(response, payload, NO_DESK))
@@ -179,7 +166,7 @@ export function useCallDesk({ token, userId, enabled }) {
     return () => {
       stop = true
     }
-  }, [token, enabled, land])
+  }, [token, enabled, land, alive])
 
   useEffect(() => {
     if (!token || !enabled) return undefined
@@ -238,7 +225,7 @@ export function useCallDesk({ token, userId, enabled }) {
       if (!saved && alive.current) toast(NO_SAVE, 'error')
       return Boolean(saved)
     },
-    [send, toast]
+    [send, toast, alive]
   )
 
   const presence = useMemo(() => desk?.presence || [], [desk])

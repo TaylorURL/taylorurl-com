@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { readEndpoint } from './endpoint'
+import { useAlive } from './useAlive'
 import { usePulse } from './usePulse'
 
 const PAYMENTS_PATH = '/api/payments-admin'
@@ -34,23 +36,12 @@ const NO_READ = 'The payments could not be read. Try again in a moment.'
 export function usePaymentsFeed({ token, enabled }) {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
-  const alive = useRef(true)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
+  const alive = useAlive()
 
   const load = useCallback(async () => {
     if (!token || !enabled) return false
     try {
-      const response = await fetch(`${PAYMENTS_PATH}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(token, `${PAYMENTS_PATH}?t=${Date.now()}`)
       if (!alive.current) return false
       if (!response.ok) {
         setError(faultFromResponse(response, payload, NO_READ))
@@ -63,7 +54,7 @@ export function usePaymentsFeed({ token, enabled }) {
       if (alive.current) setError(faultMessage(cause, NO_READ))
       return false
     }
-  }, [token, enabled])
+  }, [token, enabled, alive])
 
   useEffect(() => {
     load()
