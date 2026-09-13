@@ -1,6 +1,7 @@
 import { PORTFOLIO_PROJECTS } from '../portfolio.js'
 import { BBB_EVALUATE_URL, BBB_PROFILE_URL, bbbAccredited } from './bbb.js'
 import { FACEBOOK_PAGE_URL } from './facebook.js'
+import { REVIEW_MARKS } from './review-marks.js'
 import { TRUSTPILOT_EVALUATE_URL, TRUSTPILOT_PROFILE_URL } from './trustpilot.js'
 
 /**
@@ -305,14 +306,18 @@ export function reviewFor(displayUrl) {
 }
 
 /**
- * Where a reviewer's logo is committed, given the site it belongs to.
+ * Where a reviewer's mark is committed, given the site it belongs to.
  *
- * The capture script writes to this path and the card reads from it, so a file
- * cannot land somewhere the page is not looking.
+ * The name comes from the manifest the capture script writes, because the file
+ * is held under the hash of its own bytes and nothing but that script knows
+ * what the hash is. A site with no captured mark gets nothing, and the card
+ * draws initials in its place rather than asking for a file that is not there.
  *
  * @param {string} displayUrl The site the review is about.
- * @returns {string} Path from the site root.
+ * @returns {string | null} Path from the site root, or null where no mark was
+ *   captured.
  */
 export function reviewLogoSrc(displayUrl) {
-  return `/images/reviews/${displayUrl.replace(/[^a-z0-9]+/gi, '-')}.png`
+  const mark = REVIEW_MARKS[displayUrl]
+  return mark ? `/images/reviews/${mark}` : null
 }

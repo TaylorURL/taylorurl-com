@@ -149,7 +149,7 @@ const NOT_SERVED = {
     'home',
     'images/reviews',
     'images/email',
-    'images/bbb-accredited-business.png',
+    'images/bbb-accredited-business-black.png',
     'images/trenton-taylor-email.jpg',
     'og.png',
   ],
