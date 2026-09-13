@@ -165,8 +165,6 @@ If we refuse a request you can appeal it by replying and saying so. An appeal is
       content: `This policy will change as the business does. A change that affects what is collected, who it is shared with, or what you can ask for is a material change: the effective date at the top moves, and clients are told by email before it takes effect. Corrections that do not change the substance take effect when they are posted.`,
     },
   ],
-
-  footerHeading: 'Asking About Your Data',
 }
 
 export const TERMS = {
@@ -348,6 +346,4 @@ Nothing here waives or limits a right you have under state or federal consumer p
 These terms, together with your own agreement and the Privacy page, are the whole of the arrangement between us, and they replace anything said before them.`,
     },
   ],
-
-  footerHeading: 'Questions About These Terms',
 }
