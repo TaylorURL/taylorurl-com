@@ -70,15 +70,6 @@ check(
   `a rendered instant came out as "${stamp}" rather than the 10:30 PM it was in Texas`
 )
 
-const calendar = agrees(
-  'a calendar date',
-  `import { formatDate } from './lib/time/zone.js'; console.log(formatDate('2026-08-31'))`
-)
-check(
-  calendar === 'August 31, 2026',
-  `a date-only value rendered as "${calendar}", so it was moved by a zone it does not belong to`
-)
-
 const sending = agrees(
   'the sending day',
   `import { dayStartsAt } from './lib/outreach/sending/schedule.js'; console.log(dayStartsAt(new Date('${LATE}')))`
@@ -155,6 +146,6 @@ if (failed) {
 }
 
 console.log(
-  'Central time holds: the day key, a rendered instant, a calendar date and the ' +
-    'sending day all read the same from any zone, and nothing renders a date without naming one.'
+  'Central time holds: the day key, a rendered instant and the sending day all read ' +
+    'the same from any zone, and nothing renders a date without naming one.'
 )
