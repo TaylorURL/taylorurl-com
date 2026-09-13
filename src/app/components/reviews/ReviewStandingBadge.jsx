@@ -1,7 +1,7 @@
 import { ThumbsUp } from 'lucide-react'
 import ReviewStars from '@components/reviews/ReviewStars'
 import TrustpilotLogo from '@components/marks/TrustpilotLogo'
-import { reviewSourceFill, reviewSourceMark } from '@components/marks/reviewMarks'
+import { reviewSourceFill, reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
 import { reviewSource } from '@data/reputation/reviews'
 
 /** The wrapper geometry, shared by the placeholder and every badge, so none of
@@ -58,11 +58,6 @@ function StandingPlaceholder() {
   )
 }
 
-/** How tall a seal is drawn. Wide enough that the lockup is still the shape
-    BBB issued, and near enough the two lines beside it that the badge is the
-    same height as every other one on the rail. */
-const SEAL_HEIGHT = 30
-
 /**
  * The standing, drawn the way the network that holds it draws its own.
  *
@@ -71,12 +66,14 @@ const SEAL_HEIGHT = 30
  * loose stars. The other two do not score out of five at all, and neither gets
  * five stars invented for it.
  *
- * BBB issues a seal instead, and the seal is the drawing: it is shown whole,
- * unaltered and at its own proportions, because that is the condition it is
- * licensed on and because a lockup redrawn to fit stops being the thing a
- * reader recognises. Facebook publishes no artwork and no score, only whether
- * somebody recommends a business, so it gets a chip in its own blue carrying
- * the mark that question is asked with.
+ * BBB issues a seal instead of a score. The seal is held, and holding it is
+ * what makes the claim beside it legal; what is drawn here is the network's
+ * torch, at the size the stars are drawn and in the network's own ink, with
+ * the claim in the words beside it. The lockup itself carries its own white
+ * panel and its own black box, and on this page that is a sticker in a row of
+ * marks. Facebook publishes no artwork and no score, only whether somebody
+ * recommends a business, so it gets a chip in its own blue carrying the mark
+ * that question is asked with.
  *
  * @param {{ standing: object }} props A standing carrying the network's key.
  */
@@ -86,34 +83,14 @@ function StandingRating({ standing }) {
     return <ReviewStars rating={stars ?? rating} source={key} size={18} />
   }
   if (seal) {
+    const Mark = reviewSourceMark(key)
+    if (!Mark) return null
     return (
-      // On a white tile in both settings rather than on the card, which is the
-      // rule the footer already ships this artwork under and the reason it
-      // gives: the lockup is drawn for a light ground, it carries its own
-      // lettering and its own blue, and on the dark setting's near-black field
-      // its teal half falls to under three to one against what it sits on. The
-      // tile is also what keeps one mark from reading two ways on one page.
-      //
-      // It hugs the seal and takes the seal's own corner, which is the other
-      // half of that rule. A tile wider than the artwork is white the network
-      // did not issue, and on a dark card it is the lit thing in a row of
-      // muted ones - the badge beside it draws five stars and nothing behind
-      // them. Cutting the tile to the file's own curve leaves the seal reading
-      // as the seal rather than as a sticker on the rail.
-      <span
-        className="flex bg-white"
-        style={{ borderRadius: `${(SEAL_HEIGHT * seal.radius) / seal.height}px` }}
-      >
-        <img
-          src={seal.src}
-          alt=""
-          width={seal.width}
-          height={seal.height}
-          loading="lazy"
-          decoding="async"
-          style={{ height: `${SEAL_HEIGHT}px`, width: 'auto' }}
-        />
-      </span>
+      <Mark
+        className="h-[18px] w-[18px] shrink-0"
+        style={{ color: reviewSourceInk(key) }}
+        aria-hidden="true"
+      />
     )
   }
   return (

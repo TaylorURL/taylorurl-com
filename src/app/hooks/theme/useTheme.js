@@ -35,11 +35,13 @@ function systemTheme() {
 /**
  * The setting a reader who has never picked one gets.
  *
- * Light rather than system: the site is drawn light first, and a visitor whose
- * machine turns dark at sunset has not asked this site for anything. System
- * stays on the control for anyone who does want it followed.
+ * System rather than light: a visitor whose machine is dark has asked every
+ * site for dark, and a site that answers with light is refusing a setting the
+ * reader already made. Light and dark stay on the control for anyone who wants
+ * this site to differ from the machine, and the choice is kept once it is
+ * pressed.
  */
-const DEFAULT_THEME = 'light'
+const DEFAULT_THEME = 'system'
 
 function storedChoice() {
   try {
@@ -113,7 +115,8 @@ const readers = new Set()
 let state = null
 
 // What the prerender pass stands on. It has no window to read a preference from
-// and paints nothing, so it takes the default and the browser corrects it.
+// and paints nothing, so it takes the default, resolves it to light, and the
+// browser corrects it.
 const SERVER_STATE = Object.freeze({ choice: DEFAULT_THEME, resolved: 'light' })
 
 function snapshot() {

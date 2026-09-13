@@ -15,20 +15,20 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <!-- The browser's own chrome, standing on the ground the page paints under
          it. A meta tag cannot read a custom property, so the two values are
-         held here by hand: #f6f6f5 is --paper on the light setting and #0b0c0f
+         held here by hand: #f0eee6 is --paper on the light setting and #262624
          is --paper on the dark one, both in src/index.css, and a change to
          either token is a change to the line beside it here. -->
     <meta
       name="theme-color"
       data-setting="light"
       media="(prefers-color-scheme: light)"
-      content="#f6f6f5"
+      content="#f0eee6"
     />
     <meta
       name="theme-color"
       data-setting="dark"
       media="(prefers-color-scheme: dark)"
-      content="#0b0c0f"
+      content="#262624"
     />
     <!-- The reader's light or dark setting, stamped on <html> before the first
          paint so the page never shows one palette and then the other. It reads
@@ -57,7 +57,11 @@
           stored = window.localStorage.getItem('taylorurl_theme')
         } catch (ignored) {}
         var choice = stored === 'light' || stored === 'dark' ? stored : null
-        if (!choice && stored === 'system') {
+        // A first visit follows the machine, the same as a reader who picked
+        // "system": the preference is a setting they already made, and a site
+        // that answered it with light would be refusing it.
+        var follows = !choice
+        if (follows) {
           try {
             choice = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
           } catch (ignored) {}
@@ -66,7 +70,7 @@
           choice = 'light'
         }
         document.documentElement.setAttribute('data-theme', choice)
-        if (stored === 'system') return
+        if (follows) return
         var chrome = document.querySelectorAll('meta[name="theme-color"]')
         for (var i = chrome.length - 1; i >= 0; i -= 1) {
           if (chrome[i].getAttribute('data-setting') === choice) {
