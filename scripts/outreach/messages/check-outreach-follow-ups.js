@@ -25,12 +25,11 @@ import {
   HOLDOUTS,
   VARIANTS,
   pickVariant,
-  shareOf,
   liveAhead,
+  sendsAt,
   stepOf,
   familyHeld,
   familyOf,
-  stepRegistered,
   wouldEmptySegment,
 } from '../../../lib/outreach/variants.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
@@ -165,7 +164,10 @@ check('a chain has no step it runs out at', () => {
   // step and the chain ends only when the reader ends it.
   for (const segment of SEGMENTS) {
     for (const step of [1, 2, 5, 40, 500]) {
-      ok(stepRegistered(VARIANTS, segment, step), `${segment} has nothing at step ${step}`)
+      ok(
+        VARIANTS.some(entry => entry.segment === segment && sendsAt(entry, step)),
+        `${segment} has nothing at step ${step}`
+      )
       ok(liveAhead(VARIANTS, segment, step, 'introduction'), `${segment} runs out at step ${step}`)
     }
   }
@@ -194,7 +196,14 @@ check('nothing is drawn into a holdout at any step', () => {
 
 check('the one letter takes the whole share of its segment', () => {
   for (const segment of SEGMENTS) {
-    same(shareOf(VARIANTS, `${segment}-intro`), 100, `the share of the ${segment} letter`)
+    const drawn = VARIANTS.filter(
+      entry =>
+        entry.segment === segment &&
+        stepOf(entry) === 1 &&
+        entry.status === 'live' &&
+        entry.weight > 0
+    )
+    same(drawn.map(entry => entry.id).join(), `${segment}-intro`, `the ${segment} letters drawn`)
   }
 })
 
@@ -204,14 +213,17 @@ check('every segment opens on the one voice that still writes', () => {
   // retired letter that finds its way back onto the draw is the one change
   // here nobody would notice from the outside.
   for (const segment of SEGMENTS) {
-    const first = VARIANTS.filter(entry => entry.segment === segment && stepOf(entry) === 1)
-    const share = family =>
-      first
-        .filter(entry => familyOf(entry) === family)
-        .reduce((sum, entry) => sum + (shareOf(VARIANTS, entry.id) ?? 0), 0)
-    same(Math.round(share('designed')), 0, `the designed share of ${segment}`)
-    same(Math.round(share('plain')), 0, `the plain share of ${segment}`)
-    same(Math.round(share('introduction')), 100, `the introduction share of ${segment}`)
+    const drawn = VARIANTS.filter(
+      entry =>
+        entry.segment === segment &&
+        stepOf(entry) === 1 &&
+        entry.status === 'live' &&
+        entry.weight > 0
+    )
+    ok(drawn.length, `${segment} opens on nothing`)
+    for (const entry of drawn) {
+      same(familyOf(entry), 'introduction', `the family ${entry.id} opens ${segment} on`)
+    }
   }
 })
 

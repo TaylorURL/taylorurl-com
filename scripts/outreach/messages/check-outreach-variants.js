@@ -30,7 +30,6 @@ import {
   speedOpener,
   sendsAt,
   stepOf,
-  stepRegistered,
   variantById,
 } from '../../../lib/outreach/variants.js'
 import { CANDIDATE_COLUMNS } from '../../../lib/outreach/sending/queue.js'
@@ -232,7 +231,10 @@ check('every segment that sends has a first letter to open on', () => {
 check('the letter that sends stands at every step, so a chain never runs out', () => {
   for (const segment of SENDING) {
     for (const step of [1, 2, 3, 12, 60]) {
-      ok(stepRegistered(VARIANTS, segment, step), `${segment} has nothing at step ${step}`)
+      ok(
+        VARIANTS.some(entry => entry.segment === segment && sendsAt(entry, step)),
+        `${segment} has nothing at step ${step}`
+      )
       const live = VARIANTS.filter(
         entry => entry.segment === segment && entry.status === 'live' && sendsAt(entry, step)
       )
