@@ -84,7 +84,6 @@ function writeHint(userId, prefs) {
 export function useCallDesk({ token, userId, enabled }) {
   const [desk, setDesk] = useState(null)
   const [error, setError] = useState(null)
-  const [claiming, setClaiming] = useState(false)
   // The setup this browser saw last time, read once so the list can be asked
   // for in the same breath as the board rather than after it. It is a head
   // start and never an authority: `desk` replaces it the moment it lands.
@@ -219,14 +218,7 @@ export function useCallDesk({ token, userId, enabled }) {
   }, [token, enabled])
 
   const takeNumber = useCallback(
-    async prospectId => {
-      setClaiming(true)
-      try {
-        return Boolean(await send({ on_phone: prospectId }))
-      } finally {
-        if (alive.current) setClaiming(false)
-      }
-    },
+    async prospectId => Boolean(await send({ on_phone: prospectId })),
     [send]
   )
 
@@ -251,32 +243,15 @@ export function useCallDesk({ token, userId, enabled }) {
 
   const presence = useMemo(() => desk?.presence || [], [desk])
   const held = useMemo(() => heldNumbers(presence, new Date()), [presence])
-  const you = desk?.you ?? null
-  // Which number this console is on, read off the board rather than off the
-  // ref the beat uses: the ref is what the beat needs and changing it does not
-  // redraw anything, and the row that says whether the Hang Up control is on
-  // screen has to.
-  const onCall = useMemo(
-    () => presence.find(row => row.user_id === you)?.prospect_id ?? null,
-    [presence, you]
-  )
 
   return {
     // The setup to draw the list from: the account's own the moment it lands,
     // and until then whatever this browser saw last time. Both are a real
     // setup, so the list can be read from either.
     prefs: desk?.prefs ?? hint,
-    // Whether that is the account speaking or this browser remembering. The
-    // page seeds its controls from the hint and seeds them again from the
-    // account, because somebody who changed a filter at their desk should not
-    // be handed a laptop's stale copy of it.
-    settled: Boolean(desk),
-    you,
     presence,
     held,
-    onCall,
     error,
-    claiming,
     // The board is still waiting whatever the hint says. A hint carries a
     // setup and nothing about who is on a call, and "nobody is on a call"
     // drawn from a guess is the one sentence that would make somebody dial.

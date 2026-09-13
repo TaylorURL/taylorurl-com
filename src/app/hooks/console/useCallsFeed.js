@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
-import { feedShows, NOTHING_HELD } from './feedState'
+import { answerFor, NOTHING_HELD } from './feedState'
 
 const CALLS_PATH = '/api/calls-admin'
 
@@ -10,9 +10,6 @@ const NO_READ = 'The call list could not be read. Try again in a moment.'
 
 /** And when a call does not get written down. */
 const NO_RECORD = 'That call could not be recorded. Try it again.'
-
-/** And when a business will not change hands. */
-const NO_HAND = 'That business could not be handed over. Try it again.'
 
 /**
  * How often the list re-reads itself while somebody is looking at it.
@@ -53,15 +50,6 @@ const LIVE_MS = 30_000
  * and moves three of the five figures above it, so patching would mean
  * recomputing a ranking the page does not hold.
  *
- * What a re-read never does is empty the screen. A payload is filed under the
- * question it answered and reads back as nothing under any other, which is
- * right - last question's rows are not this question's answer - but "not the
- * answer" was being drawn as "no answer", so every filter, every sort, every
- * page and every recorded call replaced a correct table with placeholder bars
- * until the endpoint had re-ranked fifteen hundred businesses. The rows stay
- * up and `reading` says they are one question behind. Placeholders are kept
- * for the one case that has no rows to keep: the first read of all.
- *
  * The two failures go to different places. A read that does not land leaves
  * the section with nothing to draw, so it is held in `error` and stands where
  * the rows would have been; a notice that faded after eight seconds would
@@ -75,17 +63,13 @@ const LIVE_MS = 30_000
  *   filters: {view: string, state: string, pull: string, min_score: string,
  *     town: string, trade: string, assigned: string, sort: string,
  *     search: string, take: number, page: number}}} options
- * @returns {{data: object|null, retained: object|null, error: string|null,
- *   shown: object|null, loading: boolean, behind: boolean,
- *   saving: boolean, readAt: Date|null,
- *   record: (call: object) => Promise<object|null>,
- *   hand: (id: string, to: string|null) => Promise<object|null>}}
+ * @returns {{data: object|null, error: string|null, loading: boolean, saving: boolean,
+ *   record: (call: object) => Promise<object|null>}}
  */
 export function useCallsFeed({ token, enabled, filters }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
-  const [readAt, setReadAt] = useState(null)
   const toast = useToast()
   const alive = useRef(true)
 
@@ -121,7 +105,6 @@ export function useCallsFeed({ token, enabled, filters }) {
       }
       setHeld({ key: query, value: payload })
       setFailed(NOTHING_HELD)
-      setReadAt(new Date())
     } catch (cause) {
       if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_READ) })
     }
@@ -176,58 +159,16 @@ export function useCallsFeed({ token, enabled, filters }) {
     [token, load, toast]
   )
 
-  /**
-   * One business put in somebody else's name, or in nobody's.
-   *
-   * It re-reads for the same reason recording a call does: who holds a business
-   * is one of the things the list can be narrowed by, so a hand-over made while
-   * the list is filtered to one person changes which rows belong on the page.
-   */
-  const hand = useCallback(
-    async (id, to) => {
-      if (!token) return null
-      setSaving(true)
-      try {
-        const response = await fetch(CALLS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ assign: { id, to: to ?? null } }),
-        })
-        const payload = await response.json().catch(() => ({}))
-        if (!response.ok) {
-          if (alive.current) toast(faultFromResponse(response, payload, NO_HAND), 'error')
-          return null
-        }
-        await load()
-        return payload
-      } catch (cause) {
-        if (alive.current) toast(faultMessage(cause, NO_HAND), 'error')
-        return null
-      } finally {
-        if (alive.current) setSaving(false)
-      }
-    },
-    [token, load, toast]
-  )
-
   // Filed under the filter that asked for it: a new town, trade or page is a
-  // different question, and the list on screen is not its answer - but it is
-  // still the last true answer, so it stays up rather than being replaced by
-  // grey bars. The three states and the rule behind them live in `feedState`,
-  // because every console feed re-reads and every one of them had this to get
-  // right.
-  const { data, error, retained, loading, behind, shown } = feedShows(held, failed, query)
+  // different question, and the list on screen is not its answer.
+  const data = answerFor(held, query)
+  const error = answerFor(failed, query)
 
   return {
     data,
-    shown,
-    retained,
     error,
-    loading,
-    behind,
+    loading: !data && !error,
     saving,
-    readAt,
     record,
-    hand,
   }
 }

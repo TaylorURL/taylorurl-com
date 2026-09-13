@@ -13,18 +13,13 @@
  * or a new filter reports as loading again rather than handing back the last
  * answer. The scan is the section's: every list, table and counted aside has
  * to consult a loading flag before it draws.
- *
- * The rule cuts the other way once, and the third block is that. Placeholders
- * are the truth on the first read of all, where there is nothing to keep; they
- * are a table being emptied on every read after it, and a correct table coming
- * down for the second an endpoint takes is the same flinch by the other route.
  */
 
 import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { answerFor, feedShows, NOTHING_HELD } from '../../src/app/hooks/console/feedState.js'
+import { answerFor, NOTHING_HELD } from '../../src/app/hooks/console/feedState.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 // Everything a reader of the console actually looks at. Scanning the sections
@@ -90,56 +85,6 @@ check('loading is the absence of both, which reopens on every new query', () => 
   const loadingFor = key => !answerFor(held, key) && !answerFor(NOTHING_HELD, key)
   same(loadingFor('view=overview&days=7'), false, 'answered')
   same(loadingFor('view=overview&days=30'), true, 'asking again')
-})
-
-// -- what the section draws while a re-read is out ---------------------------
-
-const ROWS = { rows: [{ id: 'a' }], matched: 1 }
-const MORE = { rows: [{ id: 'a' }, { id: 'b' }], matched: 2 }
-
-check('the first read of all has nothing to keep, so it draws placeholders', () => {
-  const first = feedShows(NOTHING_HELD, NOTHING_HELD, 'view=calling')
-  same(first.loading, true, 'loading')
-  same(first.behind, false, 'not behind')
-  same(first.shown, null, 'nothing to show')
-})
-
-check('a re-read keeps the rows up rather than emptying a correct table', () => {
-  // The filter moved. The fifty rows on screen answer the old question and are
-  // out of date, but taking them down for the second the endpoint takes is
-  // what made every filter, sort and page blink through skeleton bars.
-  const held = { key: 'view=calling', value: ROWS }
-  const during = feedShows(held, NOTHING_HELD, 'view=queued')
-  same(during.loading, false, 'never loading again')
-  same(during.behind, true, 'says it is a question out of date')
-  same(during.shown, ROWS, 'the rows stay up')
-})
-
-check('the answer replaces the rows the moment it lands', () => {
-  const landed = { key: 'view=queued', value: MORE }
-  const after = feedShows(landed, NOTHING_HELD, 'view=queued')
-  same(after.loading, false, 'answered')
-  same(after.behind, false, 'no longer behind')
-  same(after.shown, MORE, 'this question own answer')
-})
-
-check('a re-read that fails says so instead of leaving the old rows passing for new', () => {
-  // Rows filed under the last question are not a worse answer to this one,
-  // they are an answer to a different one, so a failure is what to report.
-  const held = { key: 'view=calling', value: ROWS }
-  const failed = { key: 'view=queued', value: new Error('the list is down') }
-  const broke = feedShows(held, failed, 'view=queued')
-  same(broke.shown, null, 'nothing passes for the answer')
-  same(broke.behind, false, 'not waiting, refused')
-  same(Boolean(broke.error), true, 'the failure reads back')
-})
-
-check('a failure from the last question never stops this one being drawn', () => {
-  const held = { key: 'view=queued', value: MORE }
-  const failed = { key: 'view=calling', value: new Error('the list was down') }
-  const now = feedShows(held, failed, 'view=queued')
-  same(now.error, null, 'the old failure is not this one')
-  same(now.shown, MORE, 'drawn')
 })
 
 // -- the sections' rule ------------------------------------------------------
