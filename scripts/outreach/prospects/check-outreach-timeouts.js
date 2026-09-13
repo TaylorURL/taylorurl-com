@@ -39,25 +39,30 @@ function storage() {
   }
 }
 
+/** An answer from the capture service, carrying an image of `type` made of `bytes`. */
+const image = (type, bytes) => () => ({
+  ok: true,
+  headers: { get: () => type },
+  arrayBuffer: async () => new Uint8Array(bytes).buffer,
+})
+
 /** What the service answers with before it has rendered a URL it has not seen. */
-const holding = () => ({
-  ok: true,
-  headers: { get: () => 'image/gif' },
-  arrayBuffer: async () => new Uint8Array([71, 73, 70]).buffer,
-})
+const holding = image('image/gif', [71, 73, 70])
 
-const capture = () => ({
-  ok: true,
-  headers: { get: () => 'image/png' },
-  arrayBuffer: async () => new Uint8Array([137, 80, 78, 71]).buffer,
-})
+const capture = image('image/png', [137, 80, 78, 71])
 
-check('findSite gives every candidate a signal', async () => {
+/** How `findSite` asked for each candidate, when none of them answered. */
+async function candidateRequests() {
   const inits = []
   await findSite(PROSPECT, async (url, init) => {
     inits.push(init)
     throw new Error('did not answer')
   })
+  return inits
+}
+
+check('findSite gives every candidate a signal', async () => {
+  const inits = await candidateRequests()
   same(inits.length, 6, 'candidates tried')
   for (const init of inits) {
     ok(init?.signal instanceof AbortSignal, 'a candidate was fetched with no signal')
@@ -70,11 +75,7 @@ check('findSite says who it is on every candidate', async () => {
   // host that does not exist answers, and the search cannot tell the two
   // apart. Every wall it meets anonymous is read as a business with no site,
   // which is the one reading it exists to keep honest.
-  const inits = []
-  await findSite(PROSPECT, async (url, init) => {
-    inits.push(init)
-    throw new Error('did not answer')
-  })
+  const inits = await candidateRequests()
   for (const init of inits) {
     same(init?.headers?.['User-Agent'], USER_AGENT, 'the client a candidate was asked as')
     ok(init?.headers?.Accept?.includes('text/html'), 'a candidate asked for no particular page')
