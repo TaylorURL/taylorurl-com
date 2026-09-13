@@ -42,18 +42,11 @@ import {
   page,
   rule,
 } from '../lib/mail/frame.js'
-
-const RESEND_ENDPOINT = 'https://api.resend.com/emails'
+import { block, line, sendNotice } from '../lib/mail/notice.js'
+import { CAMPAIGN_FIELDS } from '../src/app/data/leads/campaign.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gujgtjqqurildqurpffh.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
-
-// Resend accepts a From address only on a domain verified against the account,
-// so the sender is fixed here rather than taken from the submission.
-const FROM = 'TaylorURL Website <website@taylorurl.com>'
-const INBOX = process.env.CONTACT_INBOX || 'trenton@taylorurl.com'
-
-const TIMEOUT_MS = 10000
 
 // What one address may send inside one window: enough to stop a form loop or a
 // script hammering the endpoint, and cheap enough to cost a legitimate sender
@@ -83,9 +76,6 @@ const LIMITS = {
 const FORMS = new Set(['contact', 'start', 'tools'])
 const DEFAULT_FORM = 'contact'
 
-// The campaign tags a tagged arrival carries, in the spelling the column uses.
-const CAMPAIGN_FIELDS = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']
-
 // The shape of a message token, which is what `utm_content` holds on an
 // outreach link. Anything else under that source is dropped rather than
 // stored: the column is joined against outreach_messages and read in a log,
@@ -105,22 +95,6 @@ export const METHOD_LABELS = {
 }
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-
-/**
- * A single-line field. Line breaks come out because these values reach the
- * subject and the Reply-To header, where a break is a way to write a header of
- * one's own.
- */
-function line(value, limit) {
-  if (typeof value !== 'string') return ''
-  return value.replace(/\s+/g, ' ').trim().slice(0, limit)
-}
-
-/** The message body, which keeps its paragraphs and loses its stray returns. */
-function block(value, limit) {
-  if (typeof value !== 'string') return ''
-  return value.replace(/\r\n?/g, '\n').trim().slice(0, limit)
-}
 
 /**
  * The campaign the enquiry arrived on, as the page held it.
@@ -276,41 +250,21 @@ export function htmlBody(enquiry) {
 }
 
 /**
- * Hands the enquiry to Resend. The key travels in the request header and is
- * scrubbed out of anything the endpoint says back, so a refusal that quotes
- * the credential reaches neither the log nor the sender. The refusal itself is
- * logged rather than returned: an upstream message names account details that
- * belong on this side of the request.
+ * Hands the enquiry to the inbox. The refusal is logged rather than returned:
+ * an upstream message names account details that belong on this side of the
+ * request.
  */
-async function deliver(enquiry, key) {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
-  try {
-    const upstream = await fetch(RESEND_ENDPOINT, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: FROM,
-        to: [INBOX],
-        reply_to: enquiry.email,
-        subject: `Website enquiry from ${enquiry.name} (${METHOD_LABELS[enquiry.contactMethod]})`,
-        text: textBody(enquiry),
-        html: htmlBody(enquiry),
-      }),
-    })
-
-    if (!upstream.ok) {
-      const said = await upstream.text().catch(() => '')
-      const detail = said.replaceAll(key, '[redacted]').slice(0, 300)
-      throw new Error(`resend returned ${upstream.status} ${detail}`.trim())
-    }
-  } finally {
-    clearTimeout(timer)
-  }
+function deliver(enquiry, key) {
+  return sendNotice(
+    {
+      subject: `Website enquiry from ${enquiry.name} (${METHOD_LABELS[enquiry.contactMethod]})`,
+      text: textBody(enquiry),
+      html: htmlBody(enquiry),
+      replyTo: enquiry.email,
+    },
+    key,
+    { urgent: false }
+  )
 }
 
 /**

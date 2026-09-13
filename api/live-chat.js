@@ -25,12 +25,11 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { readBody } from '../lib/http/body.js'
 import { reach } from '../lib/http/reach.js'
-import { createHash } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
-import { callerAddress, callerWindow } from '../lib/http/rate.js'
+import { callerAddress, callerHash, callerWindow } from '../lib/http/rate.js'
 import { countOf } from '../lib/db/rows.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
-import { LIMITS, overCeiling, retryAfter } from '../lib/live-chat/limits.js'
+import { overCeiling, retryAfter } from '../lib/live-chat/limits.js'
 import { contactIn, leaked, REFUSAL, screen } from '../lib/live-chat/screen.js'
 
 export const config = { maxDuration: 60 }
@@ -120,21 +119,6 @@ function connect() {
   return createClient(SUPABASE_URL, SERVICE_KEY, {
     auth: { persistSession: false, autoRefreshToken: false },
   })
-}
-
-/**
- * The caller's connection, as something that tells two callers apart and says
- * nothing else about either.
- *
- * A bare digest of an IPv4 address is a lookup table away from the address, so
- * it is peppered with a secret the deployment already holds. Without one there
- * is nothing safe to store and the row carries no connection at all.
- */
-function callerHash(address) {
-  const pepper =
-    process.env.LIVE_CHAT_PEPPER || process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET || ''
-  if (!pepper) return null
-  return createHash('sha256').update(`${pepper}:${address}`).digest('hex').slice(0, 32)
 }
 
 /** Visitor messages from one caller since a moment. */
@@ -303,7 +287,7 @@ async function tell(notice) {
 }
 
 /** The notice for a thread that left a way to answer it. */
-export function leadNotice({ email, phone, entryPath, transcript, session }) {
+function leadNotice({ email, phone, entryPath, transcript, session }) {
   const rows = [
     ['Email', email || 'not given'],
     ['Phone', phone || 'not given'],
@@ -320,7 +304,7 @@ export function leadNotice({ email, phone, entryPath, transcript, session }) {
 }
 
 /** The notice for a thread that tried something on the assistant. */
-export function abuseNotice({ labels, entryPath, message, session, caller }) {
+function abuseNotice({ labels, entryPath, message, session, caller }) {
   const rows = [
     ['Caught', labels.join(', ')],
     ['Started on', entryPath || 'unknown'],
@@ -336,7 +320,7 @@ export function abuseNotice({ labels, entryPath, message, session, caller }) {
 }
 
 /** The notice for an assistant that stopped answering. */
-export function outageNotice(said) {
+function outageNotice(said) {
   const rows = [
     ['Service', 'the live chat assistant'],
     ['Reached', AGENT_URL || '(no host configured)'],
@@ -352,6 +336,18 @@ export function outageNotice(said) {
     rows,
     body,
   })
+}
+
+/**
+ * Mails on an address a visitor left in a turn the table does not hold, once
+ * per address for the life of the instance.
+ */
+async function mailUnrecorded(message, { entryPath, transcript, session }) {
+  const left = contactIn(message)
+  const mark = left.email || left.phone
+  if (!mark || MAILED.has(mark)) return
+  MAILED.add(mark)
+  await tell(leadNotice({ email: left.email, phone: left.phone, entryPath, transcript, session }))
 }
 
 export default async function handler(request, response) {
@@ -432,7 +428,10 @@ export default async function handler(request, response) {
   }
 
   const entryPath = String(body.path || '').slice(0, 200) || null
-  const caller = callerHash(address)
+  const caller = callerHash(
+    address,
+    process.env.LIVE_CHAT_PEPPER || process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET
+  )
 
   try {
     const [callerHour, callerDay, day, sessionTurns] = await Promise.all([
@@ -501,20 +500,11 @@ export default async function handler(request, response) {
     }
     // The thread cannot be written down without an id from upstream, so an
     // address left during an outage travels by mail rather than by row.
-    const left = contactIn(message)
-    const mark = left.email || left.phone
-    if (mark && !MAILED.has(mark)) {
-      MAILED.add(mark)
-      await tell(
-        leadNotice({
-          email: left.email,
-          phone: left.phone,
-          entryPath,
-          transcript: `Visitor: ${message}\n\nThe assistant was offline when this arrived.`,
-          session: asked || 'none',
-        })
-      )
-    }
+    await mailUnrecorded(message, {
+      entryPath,
+      transcript: `Visitor: ${message}\n\nThe assistant was offline when this arrived.`,
+      session: asked || 'none',
+    })
     response.setHeader('Cache-Control', 'private, no-store')
     response.status(200).json({ reply: OFFLINE, session: asked, offline: true })
     return
@@ -566,20 +556,11 @@ export default async function handler(request, response) {
   // attach, so the address travels on what this turn holds and the instance
   // remembers it rather than the table.
   if (!stored) {
-    const left = contactIn(message)
-    const mark = left.email || left.phone
-    if (mark && !MAILED.has(mark)) {
-      MAILED.add(mark)
-      await tell(
-        leadNotice({
-          email: left.email,
-          phone: left.phone,
-          entryPath,
-          transcript: `Visitor: ${message}\n\nAssistant: ${reply}\n\nThe exchange itself was not recorded.`,
-          session: answer.session,
-        })
-      )
-    }
+    await mailUnrecorded(message, {
+      entryPath,
+      transcript: `Visitor: ${message}\n\nAssistant: ${reply}\n\nThe exchange itself was not recorded.`,
+      session: answer.session,
+    })
   }
 
   response.setHeader('Cache-Control', 'private, no-store')
@@ -676,5 +657,3 @@ async function threadOf(db, session) {
     .map(row => `${row.role === 'visitor' ? 'Visitor' : 'Assistant'}: ${row.body}`)
     .join('\n\n')
 }
-
-export { LIMITS, OFFLINE }

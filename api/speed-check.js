@@ -39,9 +39,8 @@
 
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { readBody } from '../lib/http/body.js'
-import { createHash } from 'node:crypto'
 import { countOf } from '../lib/db/rows.js'
-import { callerAddress, callerWindow } from '../lib/http/rate.js'
+import { callerAddress, callerHash, callerWindow } from '../lib/http/rate.js'
 import { target } from '../lib/http/target.js'
 import { connect } from '../lib/db/clients.js'
 import { measure, reading } from '../lib/outreach/audit/pagespeed.js'
@@ -84,21 +83,6 @@ const USER_AGENT =
 // for the length of one instance, which is enough to keep a script hammering
 // one connection from reaching the database at all.
 const BURST = callerWindow({ limit: 6, windowMs: 10 * 60 * 1000 })
-
-/**
- * The caller's connection, as something that tells two callers apart and says
- * nothing else about either.
- *
- * A bare digest of an IPv4 address is a lookup table away from the address, so
- * the digest is peppered with a secret the deployment already holds. Without
- * one there is nothing safe to store, and the row carries no connection at all
- * rather than a digest that reverses.
- */
-function callerHash(address) {
-  const pepper = process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET || ''
-  if (!pepper) return null
-  return createHash('sha256').update(`${pepper}:${address}`).digest('hex').slice(0, 32)
-}
 
 /** How many rows match, since a moment. */
 function countSince(db, from, narrow) {
@@ -310,7 +294,7 @@ export default async function handler(request, response) {
   const { url } = chosen
   const { email } = asked
   const host = url.hostname.toLowerCase()
-  const caller = callerHash(address)
+  const caller = callerHash(address, process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET)
   const now = Date.now()
 
   let fresh = null

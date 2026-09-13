@@ -166,13 +166,13 @@ const LEAK_MARKERS = [
  * @param {number} status
  * @returns {boolean}
  */
-export function assistAnswering(status) {
+function assistAnswering(status) {
   if (status === 401 || status === 403 || status === 404) return false
   return status < 500
 }
 
 /** Whether a reply is reciting the instructions instead of following them. */
-export function assistLeaked(text) {
+function assistLeaked(text) {
   const flat = String(text).replace(/\s+/g, ' ').trim().toLowerCase()
   return LEAK_MARKERS.some(marker => flat.includes(marker))
 }
@@ -308,7 +308,7 @@ function toldAlready(account, now = Date.now()) {
 }
 
 /** The notice for a request that tried something on the writing help. */
-export function screenedNotice({ labels, email, project, action, text }) {
+function screenedNotice({ labels, email, project, action, text }) {
   const rows = [
     ['Caught', labels.join(', ')],
     ['Account', email || 'not known'],
@@ -324,7 +324,7 @@ export function screenedNotice({ labels, email, project, action, text }) {
 }
 
 /** The notice for a reply reciting the instructions rather than following them. */
-export function leakNotice({ email, project, text }) {
+function leakNotice({ email, project, text }) {
   const rows = [
     ['Caught', 'leak'],
     ['Account', email || 'not known'],
@@ -339,7 +339,7 @@ export function leakNotice({ email, project, text }) {
 }
 
 /** The notice for a writing help that stopped answering. */
-export function outageNotice(said) {
+function outageNotice(said) {
   const rows = [
     ['Service', 'the writing help in the console'],
     ['Reached', AGENT_URL || '(no host configured)'],
@@ -581,5 +581,3 @@ export default async function handler(request, response) {
     note: null,
   })
 }
-
-export { BUSY, NOTHING, OFFLINE, SPENT, TOO_LONG, TOO_MANY, UNCHANGED }
