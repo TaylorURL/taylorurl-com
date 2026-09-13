@@ -41,7 +41,6 @@
  * npm run check:notify
  */
 
-import { createHash } from 'node:crypto'
 import { INBOX, notice, sendNotice, URGENT_HEADERS } from '../../lib/mail/notice.js'
 import { confirmationBodies } from '../../lib/mail/message.js'
 import { htmlBody } from '../../api/contact.js'
@@ -57,7 +56,7 @@ import {
   recipientsFor,
 } from '../../lib/mail/notify.js'
 import { expect as check, finish, quietly } from '../harness/checks.js'
-import { answerTo } from './notify-fixture.js'
+import { SETUP, answerTo, digestOf, sameIgnoringCase } from './notify-fixture.js'
 
 // The credentials the endpoint reads at load. Neither opens anything: the
 // provider is a recorder in every case that reaches one, and no Supabase client
@@ -144,8 +143,6 @@ check(STUDIO_NOTICE.html.includes('#1a4ed8'), 'a studio notice lost its own acce
 
 /* ── The project a credential resolves to ───────────────────────────────── */
 
-const digestOf = value => createHash('sha256').update(value).digest('hex')
-
 const DESK_SECRET = 'a-project-secret-for-the-cases'
 const SHOP_SECRET = 'another-project-secret-for-the-cases'
 
@@ -182,15 +179,9 @@ const SHOP = {
   site_url: 'https://www.example.org',
 }
 
-/** How a value compares in a column that does not care about case. */
-const same = (held, value) =>
-  typeof held === 'string' && typeof value === 'string'
-    ? held.toLowerCase() === value.toLowerCase()
-    : held === value
-
 function passes(row, [kind, column, a, b]) {
-  if (kind === 'eq') return same(row[column], a)
-  if (kind === 'in') return a.some(value => same(row[column], value))
+  if (kind === 'eq') return sameIgnoringCase(row[column], a)
+  if (kind === 'in') return a.some(value => sameIgnoringCase(row[column], value))
   if (kind === 'gte') return String(row[column]) >= String(a)
   if (kind === 'lt') return String(row[column]) < String(a)
   if (kind === 'is') return a === null ? row[column] === null || row[column] === undefined : false
@@ -214,7 +205,7 @@ function holds(row, clause) {
     if (operator === 'is') return value === 'null' ? row[column] == null : Boolean(row[column])
     if (operator === 'lt') return String(row[column] ?? '') < value
     if (operator === 'gte') return String(row[column] ?? '') >= value
-    if (operator === 'eq') return same(String(row[column] ?? ''), value)
+    if (operator === 'eq') return sameIgnoringCase(String(row[column] ?? ''), value)
     return false
   }
   return read(clause.slice(at + 1))
@@ -245,7 +236,7 @@ function stubDb(state) {
         if (mode === 'insert') {
           if (
             unique &&
-            rows.some(row => unique.every(column => same(row[column], payload[column])))
+            rows.some(row => unique.every(column => sameIgnoringCase(row[column], payload[column])))
           ) {
             return { data: null, error: { code: '23505', message: 'duplicate key value' } }
           }
@@ -486,18 +477,6 @@ async function run(db, project, body) {
   const read = readNotification(body, project)
   if (read.error) throw new Error(read.error)
   return quietly(() => deliver(db, project, read.notification))
-}
-
-const SETUP = {
-  subject: 'A+ short setup on US30',
-  severity: 'urgent',
-  lines: [
-    ['Instrument', 'US30'],
-    ['Side', 'SELL'],
-  ],
-  body: 'Bearish order block swept the high and closed back inside.',
-  link: { url: 'https://www.example.com/app/signals' },
-  idempotency_key: 'signal:9f3c1d20-4a77-4a1e-9a8e-6d2b0c5f1e33',
 }
 
 /* One notification, sent once. */
