@@ -158,12 +158,12 @@ function campaignParams(held) {
 }
 
 /** The parameters Google's event carries, keyed as the campaign fields are named. */
-export function leadEventParams(form, held) {
+function leadEventParams(form, held) {
   return { form, ...campaignParams(held) }
 }
 
 /** The same, for a tap on the number, which names a place rather than a form. */
-export function callEventParams(where, held) {
+function callEventParams(where, held) {
   return { where, ...campaignParams(held) }
 }
 

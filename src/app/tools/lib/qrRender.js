@@ -10,7 +10,7 @@
  */
 
 /** Modules of clear ground the specification asks for on every side. */
-export const QUIET_MODULES = 4
+const QUIET_MODULES = 4
 
 /**
  * The SVG source for a grid.
@@ -69,7 +69,7 @@ export function qrSvg(
  * @param {string} [options.light] - Ground colour, or 'none' to leave it clear.
  * @returns {HTMLCanvasElement} A canvas holding the code.
  */
-export function qrCanvas(
+function qrCanvas(
   grid,
   { width = 1024, quiet = QUIET_MODULES, dark = '#000000', light = '#ffffff' } = {}
 ) {

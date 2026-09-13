@@ -5,7 +5,7 @@ import { useMotionValueEvent, useScroll } from 'framer-motion'
  * Fired by a section that has changed the ground beneath the fixed chrome
  * without the page moving. Anything sampling the background listens for it.
  */
-export const GROUND_CHANGE = 'taylorurl:ground-change'
+const GROUND_CHANGE = 'taylorurl:ground-change'
 
 /** Announce a ground change once the swap has finished painting. */
 export function announceGroundChange() {

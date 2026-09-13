@@ -27,9 +27,9 @@
 import { hostOf, platformOf } from '../../../lib/outreach/prospects/platforms.js'
 
 /** The floor of the middle band, where a site stops being slow. */
-export const FAIR_FLOOR = 50
+const FAIR_FLOOR = 50
 /** The floor of the weakest band, where a site is fast enough to leave alone. */
-export const WEAK_FLOOR = 90
+const WEAK_FLOOR = 90
 
 /** The bands a prospect can sit in, strongest lead first. */
 export const OPPORTUNITY_BANDS = ['strong', 'fair', 'weak', 'none']

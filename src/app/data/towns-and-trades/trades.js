@@ -52,7 +52,7 @@ import {
  * A site works alongside these; none of them is a partnership, an endorsement,
  * or an official integration.
  */
-export const TOOLS = {
+const TOOLS = {
   stripe: { name: 'Stripe', mark: ToolStripe },
   square: { name: 'Square', mark: ToolSquare },
   paypal: { name: 'PayPal', mark: ToolPaypal },
