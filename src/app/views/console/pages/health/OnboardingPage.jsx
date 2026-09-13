@@ -7,6 +7,7 @@ import { currentProject } from '../../lib/stages'
 import {
   BRIEF_LABELS,
   CONTEXT_LABELS,
+  DAY_NAMES,
   STEPS,
   answerAt,
   answeredField,
@@ -77,22 +78,11 @@ const NOT_HANDED_OVER = 'Your brief did not go over. Everything you typed is sav
  */
 const NOTHING = {}
 
-/** The days a week of opening hours is read back in. */
-const DAYS = {
-  mon: 'Monday',
-  tue: 'Tuesday',
-  wed: 'Wednesday',
-  thu: 'Thursday',
-  fri: 'Friday',
-  sat: 'Saturday',
-  sun: 'Sunday',
-}
-
 /** One row of a list field, in a few words. */
 function rowText(item) {
   if (!item || typeof item !== 'object') return null
   if (item.day) {
-    const day = DAYS[item.day] || item.day
+    const day = DAY_NAMES[item.day] || item.day
     if (item.closed) return `${day} closed`
     return item.open && item.close ? `${day} ${item.open} to ${item.close}` : null
   }

@@ -1706,6 +1706,20 @@ function Reach({ row }) {
   )
 }
 
+/** Which step a message that left was, and the letter it went under where it had one. */
+function SentUnder({ step, row, letters, onOpenLetter }) {
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <Chip tone={step > 1 ? 'accent' : 'plain'}>{stepLabel(step)}</Chip>
+      {row.variant_id ? (
+        <LetterLink id={row.variant_id} letters={letters} onOpen={onOpenLetter} />
+      ) : (
+        <span className="text-paper-faint text-[13px]">before the letters</span>
+      )}
+    </span>
+  )
+}
+
 /** A message that has already left, which letter it was, and what became of it. */
 function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
   const status = MESSAGE_STATUS[row.status]
@@ -1734,14 +1748,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
           <span className={`${MONO_LABEL} text-paper-faint block truncate`}>
             {row.to_address || '—'}
           </span>
-          <span className="flex flex-wrap items-center gap-2">
-            <Chip tone={step > 1 ? 'accent' : 'plain'}>{stepLabel(step)}</Chip>
-            {row.variant_id ? (
-              <LetterLink id={row.variant_id} letters={letters} onOpen={onOpenLetter} />
-            ) : (
-              <span className="text-paper-faint text-[13px]">before the letters</span>
-            )}
-          </span>
+          <SentUnder step={step} row={row} letters={letters} onOpenLetter={onOpenLetter} />
           <span className="md:hidden">{row.status === 'sent' ? <Reach row={row} /> : null}</span>
         </span>
       </td>
@@ -1761,14 +1768,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
         )}
       </td>
       <td className={`${CELL} ${FROM_2XL}`}>
-        <span className="flex flex-wrap items-center gap-2">
-          <Chip tone={step > 1 ? 'accent' : 'plain'}>{stepLabel(step)}</Chip>
-          {row.variant_id ? (
-            <LetterLink id={row.variant_id} letters={letters} onOpen={onOpenLetter} />
-          ) : (
-            <span className="text-paper-faint text-[13px]">before the letters</span>
-          )}
-        </span>
+        <SentUnder step={step} row={row} letters={letters} onOpenLetter={onOpenLetter} />
       </td>
       <td className={CELL}>
         <Chip tone={status ? status.tone : 'muted'}>{status ? status.label : row.status}</Chip>

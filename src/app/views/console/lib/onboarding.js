@@ -101,6 +101,17 @@ const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 /** The seven rows the hours field always holds, in the order a week runs. */
 const DAYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
 
+/** The same seven, written out. The catalogue stores the three-letter id. */
+export const DAY_NAMES = {
+  mon: 'Monday',
+  tue: 'Tuesday',
+  wed: 'Wednesday',
+  thu: 'Thursday',
+  fri: 'Friday',
+  sat: 'Saturday',
+  sun: 'Sunday',
+}
+
 /**
  * Monday to Friday, eight to five, closed at the weekend.
  *

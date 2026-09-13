@@ -205,6 +205,24 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
   )
 
   /**
+   * What a write the record accepted brings back in. Only the figure and the
+   * moment: the answers on screen are the client's own and are newer than
+   * anything a reply to a request already sent can carry.
+   */
+  const accept = useCallback(
+    brief => {
+      const row = recordFrom(brief)
+      put({
+        ...latest.current,
+        percent: Math.max(latest.current.percent, row.percent),
+        submittedAt: row.submittedAt,
+      })
+      setFailed(NOTHING_HELD)
+    },
+    [put]
+  )
+
+  /**
    * Put whatever is unsent up, and answer whether it landed.
    *
    * `keepalive` is for the two calls made while the page is going away. A
@@ -251,18 +269,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
           return false
         }
         if (latest.current === outgoing) unsent.current = false
-        if (alive.current) {
-          // Only the figure and the moment come back in. The answers on screen
-          // are the client's own and are newer than anything a reply to a
-          // request made 800ms ago can carry.
-          const row = recordFrom(payload.brief)
-          put({
-            ...latest.current,
-            percent: Math.max(latest.current.percent, row.percent),
-            submittedAt: row.submittedAt,
-          })
-          setFailed(NOTHING_HELD)
-        }
+        if (alive.current) accept(payload.brief)
         return true
       } catch {
         if (alive.current) setFailed({ key: source, value: NOT_SAVED })
@@ -271,7 +278,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
         if (alive.current) setSaving(false)
       }
     },
-    [preview, token, projectId, enabled, source, put, alive]
+    [preview, token, projectId, enabled, source, accept, alive]
   )
 
   // The flush everything else reaches for, kept current rather than named as a
@@ -419,15 +426,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
         if (alive.current) setFailed({ key: source, value: NOT_SENT })
         return false
       }
-      if (alive.current) {
-        const row = recordFrom(payload.brief)
-        put({
-          ...latest.current,
-          percent: Math.max(latest.current.percent, row.percent),
-          submittedAt: row.submittedAt,
-        })
-        setFailed(NOTHING_HELD)
-      }
+      if (alive.current) accept(payload.brief)
       return true
     } catch {
       if (alive.current) setFailed({ key: source, value: NOT_SENT })
@@ -435,7 +434,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     } finally {
       if (alive.current) setSaving(false)
     }
-  }, [preview, token, projectId, enabled, source, put, alive])
+  }, [preview, token, projectId, enabled, source, put, accept, alive])
 
   /**
    * The two ways a flow ends without anybody pressing anything.

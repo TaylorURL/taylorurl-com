@@ -156,14 +156,21 @@ export function useLeadsFeed({ token, enabled, openId }) {
     [token, place, alive]
   )
 
-  /** One POST, shared by the send and the two draft verbs. */
+  /**
+   * One POST, shared by the send and the two draft verbs. A request that never
+   * lands answers the way a refusal does, as a sentence rather than a throw.
+   */
   const act = useCallback(
     async body => {
-      const { response, payload } = await writeEndpoint(token, LEADS_PATH, body)
-      if (!response.ok) {
-        return { ok: false, error: faultFromResponse(response, payload, NO_SEND) }
+      try {
+        const { response, payload } = await writeEndpoint(token, LEADS_PATH, body)
+        if (!response.ok) {
+          return { ok: false, error: faultFromResponse(response, payload, NO_SEND) }
+        }
+        return { ok: true, ...payload }
+      } catch (cause) {
+        return { ok: false, error: faultMessage(cause, NO_SEND) }
       }
-      return { ok: true, ...payload }
     },
     [token]
   )
@@ -198,8 +205,6 @@ export function useLeadsFeed({ token, enabled, openId }) {
           }
         }
         return answer
-      } catch (cause) {
-        return { ok: false, error: faultMessage(cause, NO_SEND) }
       } finally {
         if (alive.current) setSending(false)
       }
@@ -229,8 +234,6 @@ export function useLeadsFeed({ token, enabled, openId }) {
           })
         }
         return answer
-      } catch (cause) {
-        return { ok: false, error: faultMessage(cause, NO_SEND) }
       } finally {
         if (alive.current) setTemplateBusy(false)
       }
@@ -254,8 +257,6 @@ export function useLeadsFeed({ token, enabled, openId }) {
           )
         }
         return answer
-      } catch (cause) {
-        return { ok: false, error: faultMessage(cause, NO_SEND) }
       } finally {
         if (alive.current) setTemplateBusy(false)
       }
