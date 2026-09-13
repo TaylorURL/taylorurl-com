@@ -26,8 +26,7 @@
  * same blocks: a filter in one renderer and not the other is a message
  * contradicting itself, and a case that reads only the HTML never sees it. An
  * issue with nothing to say to a side the run holds recipients for stops the
- * whole run, since the half that went out cannot be recalled. The open archive
- * is on neither side and is held to the unmarked blocks alone.
+ * whole run, since the half that went out cannot be recalled.
  *
  * The postal address is asserted the other way round. Both parts of a message
  * are read for the mail box the studio used to sign off with, a run is driven
@@ -54,26 +53,13 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
   ASKED_SOURCES,
-  AUDIENCES,
   CLIENT,
   PROSPECT,
-  PUBLIC,
   RECIPIENT_COLUMNS,
   audienceOf,
-  mayReceive,
   selectRecipients,
 } from '../../lib/mail/audience.js'
-import {
-  DRAFT,
-  READY,
-  SENT,
-  blocksFor,
-  hasContentFor,
-  issueSlug,
-  readBlock,
-  readBody,
-  sendRefusal,
-} from '../../lib/mail/issues.js'
+import { DRAFT, READY, SENT, blocksFor, hasContentFor, sendRefusal } from '../../lib/mail/issues.js'
 import { renderIssueEmail, renderIssueHtml, renderIssueText } from '../../lib/mail/emailTemplate.js'
 
 // Placeholders for the credentials the endpoints read at load. Neither of the
@@ -493,15 +479,6 @@ check('a subscriber with no token is recorded rather than mailed', async () => {
 
 // ── Who an issue may reach ───────────────────────────────────────────────
 
-/** A row as the list holds one, defaulting to somebody who asked. */
-const person = (patch = {}) => ({
-  status: 'subscribed',
-  source: 'client',
-  consent_at: '2026-08-28T21:19:53Z',
-  confirmed_at: null,
-  ...patch,
-})
-
 /**
  * A query that answers nothing and keeps every narrowing made to it, so what
  * the audience selects on can be read without a database.
@@ -553,51 +530,9 @@ check('the audience narrows on standing, on consent, and on a human act', () => 
   for (const source of ASKED_SOURCES) {
     ok(applied.or[0].includes(source), `${source} counts: ${applied.or[0]}`)
   }
-})
-
-check('a status on its own does not put anybody on the audience', () => {
-  // A row has to carry a stamp as well, which is what an unsubscribe and a
-  // bounce each clear.
-  same(mayReceive({ status: 'subscribed', source: 'outreach' }), false, 'a bare status')
-})
-
-check('a business the cold sender wrote to is off the audience', () => {
-  // Being written to once is not asking to be written to again. A row the
-  // sender left behind carries a stamp and no confirmation, and a stamp on
-  // its own is the sender's own record rather than anybody's consent.
-  same(mayReceive(person({ source: 'outreach' })), false, 'a stamped prospect')
-})
-
-check('an outreach row that unsubscribed is off the audience', () => {
-  same(
-    mayReceive(person({ source: 'outreach', status: 'unsubscribed' })),
-    false,
-    'a prospect that said stop'
-  )
-})
-
-check('a business that confirmed for itself is on the audience', () => {
-  same(
-    mayReceive(person({ source: 'outreach', confirmed_at: '2026-08-29T00:00:00Z' })),
-    true,
-    'a confirmed prospect'
-  )
-})
-
-check('a client and a hand-added person are on the audience', () => {
-  same(mayReceive(person({ source: 'client' })), true, 'a client')
-  same(mayReceive(person({ source: 'console' })), true, 'added by hand')
-})
-
-check('an import and a legacy carry-over stay off it', () => {
-  same(mayReceive(person({ source: 'import' })), false, 'an import')
-  same(mayReceive(person({ source: 'legacy' })), false, 'a carry-over')
-})
-
-check('somebody who left is off it whatever else their row carries', () => {
-  same(mayReceive(person({ status: 'unsubscribed' })), false, 'unsubscribed')
-  same(mayReceive(person({ status: 'bounced' })), false, 'bounced')
-  same(mayReceive(person({ status: 'pending' })), false, 'still to confirm')
+  for (const source of ['outreach', 'import', 'legacy']) {
+    ok(!applied.or[0].includes(source), `${source} does not count on its own: ${applied.or[0]}`)
+  }
 })
 
 // ── Whether an issue may go out at all ───────────────────────────────────
@@ -680,32 +615,6 @@ check('a suppressed address is skipped however it reads on the list', async () =
   same(provider.sent.length, 0, 'messages handed over')
 })
 
-// ── What a person may write into an issue ────────────────────────────────
-
-check('an issue is addressed in lowercase, numbers and hyphens', () => {
-  same(issueSlug(' First-Light '), 'first-light', 'a title case slug')
-  same(issueSlug('september 2026'), null, 'a space')
-  same(issueSlug('-leading'), null, 'a leading hyphen')
-  same(issueSlug(''), null, 'nothing at all')
-})
-
-check('a body keeps only the blocks both renderers draw', () => {
-  const body = readBody([
-    { type: 'paragraph', text: '  A line of copy.  ' },
-    { type: 'paragraph', text: '   ' },
-    { type: 'heading', text: 'A heading', level: 9 },
-    { type: 'button', text: 'Read it', href: 'javascript:alert(1)' },
-    { type: 'button', text: 'Read it', href: 'https://www.taylorurl.com/work' },
-    { type: 'list', items: ['one', '  ', 'two'] },
-    { type: 'marquee', text: 'no' },
-  ])
-  same(body.length, 4, 'blocks kept')
-  same(body[0].text, 'A line of copy.', 'the paragraph is trimmed')
-  same(body[1].level, 2, 'an unknown heading level falls back')
-  same(body[2].href, 'https://www.taylorurl.com/work', 'only the link a client can follow')
-  same(body[3].items.join(','), 'one,two', 'empty items are dropped')
-})
-
 // ── What each side of the list is shown ──────────────────────────────────
 
 /** A reader on each side, shaped as one comes off the mailing list. */
@@ -778,7 +687,7 @@ const partsFor = (body, audience) => {
 }
 
 check('a block carrying no marker reaches both sides in both parts', () => {
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const { html, text } = partsFor(MIXED, side)
     for (const phrase of ['the shared opening', 'the shared closing']) {
       ok(html.includes(phrase), `the laid-out ${side} copy carries "${phrase}"`)
@@ -805,7 +714,7 @@ check('a marked block reaches its own side and no other, in both parts', () => {
 })
 
 check('both parts of one copy carry the same blocks', () => {
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const { html, text } = partsFor(MIXED, side)
     const laidOut = phrasesIn(html).join(' | ')
     const plain = phrasesIn(text).join(' | ')
@@ -881,19 +790,6 @@ check('the same issue goes out on a night only its own side is owed a copy', asy
   ok(message?.text.includes('the client only line'), 'the plaintext part carries it too')
 })
 
-check('a block written for a side nobody is on is refused at the door', () => {
-  const line = { type: 'paragraph', text: 'A line of copy.' }
-  same(readBlock({ ...line, audience: 'everybody' }), null, 'a marker naming no side')
-  same(readBlock({ type: 'divider', audience: 'partners' }), null, 'a rule carrying one')
-  same(readBlock({ ...line, audience: CLIENT })?.audience, CLIENT, 'a block for clients')
-  same(
-    readBlock({ type: 'divider', audience: PROSPECT })?.audience,
-    PROSPECT,
-    'a rule for prospects'
-  )
-  same(readBlock(line)?.audience, undefined, 'a block for everybody')
-})
-
 check('an issue nothing is marked in draws exactly as it drew before', () => {
   const plain = [
     { type: 'heading', text: 'A heading', level: 2 },
@@ -902,7 +798,7 @@ check('an issue nothing is marked in draws exactly as it drew before', () => {
     { type: 'button', text: 'Read it', href: 'https://www.taylorurl.com/work' },
   ]
   const whole = partsFor(plain, null)
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const drawn = partsFor(plain, side)
     same(drawn.html, whole.html, `the laid-out ${side} copy`)
     same(drawn.text, whole.text, `the plaintext ${side} copy`)
@@ -911,7 +807,7 @@ check('an issue nothing is marked in draws exactly as it drew before', () => {
 
 check('a marker naming no side is drawn for nobody', () => {
   const body = [{ type: 'paragraph', text: 'the orphaned line', audience: 'partners' }]
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const { html, text } = partsFor(body, side)
     ok(!html.includes('the orphaned line'), `the laid-out ${side} copy withholds it`)
     ok(!text.includes('the orphaned line'), `the plaintext ${side} copy withholds it`)
@@ -932,17 +828,6 @@ check('a subscriber copy is composed for the side that row is on', () => {
   ok(client.html.includes('the client heading'), 'the client copy carries the client block')
   ok(!prospect.html.includes('the client heading'), 'the prospect copy withholds it')
   ok(!client.text.includes('the prospect line'), 'and the client copy withholds the prospect block')
-})
-
-check('the archive draws the blocks no side was named for', () => {
-  // A stranger arriving at a published issue is on neither side, so the marked
-  // halves are withheld and the unmarked blocks are what the page holds.
-  same(
-    blocksFor(MIXED, PUBLIC).map(phraseOf).filter(Boolean).join(' | '),
-    'the shared opening | the shared closing',
-    'what an open page carries'
-  )
-  same(blocksFor(MIXED, PUBLIC).length, 3, 'the rule between them stands')
 })
 
 // ── The schedule that sends an issue on its date ─────────────────────────

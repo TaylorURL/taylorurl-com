@@ -53,7 +53,6 @@ import {
   clientNotice,
   envelopeFor,
   floorsReached,
-  reaches,
   readNotification,
   recipientsFor,
 } from '../../lib/mail/notify.js'
@@ -457,10 +456,19 @@ check(CAPS.subject === 140 && CAPS.body === 4000, 'the published field caps chan
 
 /* ── The ladder ─────────────────────────────────────────────────────────── */
 
-check(reaches('urgent', 'info'), 'an urgent notification did not reach a seat taking everything')
-check(!reaches('info', 'urgent'), 'a quiet notification woke a seat that asked for urgent alone')
-check(reaches('warning', 'warning'), 'a notification did not reach its own floor')
-check(!reaches('info', 'nonsense'), 'a floor nobody recognises was mailed anyway')
+check(
+  floorsReached('urgent').includes('info'),
+  'an urgent notification did not reach a seat taking everything'
+)
+check(
+  !floorsReached('info').includes('urgent'),
+  'a quiet notification woke a seat that asked for urgent alone'
+)
+check(floorsReached('warning').includes('warning'), 'a notification did not reach its own floor')
+check(
+  !SEVERITIES.some(severity => floorsReached(severity).includes('nonsense')),
+  'a floor nobody recognises was mailed anyway'
+)
 check(floorsReached('warning').join(',') === 'info,warning', 'the floors an alert reaches changed')
 
 /* ── The provider ───────────────────────────────────────────────────────── */

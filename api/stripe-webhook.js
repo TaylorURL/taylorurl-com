@@ -168,7 +168,7 @@ function idOf(object) {
  * Stripe, and the only thing worth passing to a database function is a string
  * that could be the id it claims to be.
  */
-export function briefId(session) {
+function briefId(session) {
   const held = session?.metadata?.brief_id
   return typeof held === 'string' && UUID_PATTERN.test(held.trim()) ? held.trim() : null
 }
@@ -405,7 +405,7 @@ function currencyOf(session) {
  * @param {object} session
  * @returns {{field: string, value: string}|null}
  */
-export function googleClick(session) {
+function googleClick(session) {
   for (const field of GOOGLE_CLICK_FIELDS) {
     const value = stamped(session, field)
     if (value) return { field, value }
@@ -431,7 +431,7 @@ export function googleClick(session) {
  * @param {number} cents What the card was charged.
  * @param {number} at Unix seconds the payment landed.
  */
-export function metaPurchase(session, email, cents, at) {
+function metaPurchase(session, email, cents, at) {
   const person = { em: [hashedEmail(email)] }
   const browser = stamped(session, 'fbp')
   const click = stamped(session, 'fbc')
@@ -464,7 +464,7 @@ export function metaPurchase(session, email, cents, at) {
  * @param {number} cents What the card was charged.
  * @param {number} at Unix seconds the payment landed.
  */
-export function adsPurchase(session, click, cents, at) {
+function adsPurchase(session, click, cents, at) {
   const conversion = {
     conversionAction: `customers/${ADS_CUSTOMER_ID}/conversionActions/${ADS_PURCHASE_ACTION}`,
     conversionDateTime: adsDateTime(at),

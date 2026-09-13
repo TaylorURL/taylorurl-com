@@ -1087,7 +1087,7 @@ const COUNTED = ['assigned', 'sent', 'opened', 'clicked', 'replied', 'enquired']
  * @returns {Array<object>} One row per letter, in the order the names first
  *   appear.
  */
-export function lettersByName(rows) {
+function lettersByName(rows) {
   const under = new Map()
   const order = []
   for (const row of rows) {
