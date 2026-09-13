@@ -213,14 +213,7 @@ export default function Terms() {
         ])}
       />
       <LegalPage
-        title={DOC.title}
-        description={DOC.description}
-        eyebrow={DOC.eyebrow}
-        effectiveDate={DOC.effectiveDate}
-        appliesTo={DOC.appliesTo}
-        summary={DOC.summary}
-        introText={DOC.introText}
-        sections={DOC.sections}
+        {...DOC}
         footer={{
           heading: 'Questions About These Terms',
           body: (

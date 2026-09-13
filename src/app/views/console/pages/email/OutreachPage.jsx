@@ -5,6 +5,7 @@ import { fadeInUp } from '@constants/animations'
 import { faultFromResponse, faultMessage, readsAsWritten } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { useSession } from '@hooks/session/useSession'
+import { writeEndpoint } from '@hooks/console/endpoint'
 import { useOutreachFeed } from '@hooks/console/useOutreachFeed'
 import {
   auditScore,
@@ -23,6 +24,7 @@ import { ZONE } from '@lib/time/zone.js'
 import { DELIVERS_A_DAY } from '@lib/outreach/sending/schedule.js'
 import { SEGMENTS, segmentOf } from '@lib/outreach/segments.js'
 import { isYoung, youthOf } from '@lib/outreach/prospects/youth.js'
+import { STAGES } from '@lib/outreach/prospects/stages.js'
 import { ASKED_SOURCE } from '@lib/outreach/sending/rank.js'
 import {
   Area,
@@ -131,13 +133,7 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  * those rules are worked through.
  */
 
-/**
- * The eleven stages a prospect moves through, in the order it moves through
- * them.
- *
- * The last six are where one stops. `unsubscribed` is the only stage no job
- * may walk a prospect out of, because what put it there was a person asking.
- */
+/** How each stage in `STAGES` reads: its label, its tone and what it means. */
 const STAGE = {
   found: { label: 'Found', tone: 'plain', caption: 'sourced, nothing looked up yet' },
   enriched: { label: 'Enriched', tone: 'plain', caption: 'an email address was found' },
@@ -169,20 +165,6 @@ const STAGE = {
   skipped: { label: 'Skipped', tone: 'muted', caption: 'taken out of the pipeline by hand' },
 }
 
-const STAGE_ORDER = [
-  'found',
-  'enriched',
-  'audited',
-  'queued',
-  'contacted',
-  'replied',
-  'unsubscribed',
-  'bounced',
-  'unreachable',
-  'undeliverable',
-  'skipped',
-]
-
 /**
  * The three opportunity bands, and the row nothing has been measured on.
  *
@@ -196,7 +178,7 @@ const STAGE_ORDER = [
  * and is told apart by having no figure to show.
  *
  * The cut points are the ones the score itself is banded at, which
- * `outreachOpportunity` holds.
+ * `lib/outreach/audit/bands.js` holds.
  */
 const OPPORTUNITY = {
   strong: {
@@ -338,7 +320,6 @@ const VARIANT_STATUS = {
   paused: { label: 'Paused', tone: 'muted' },
   draft: { label: 'Draft', tone: 'plain' },
 }
-const VARIANT_STATUS_ORDER = ['live', 'paused', 'draft']
 
 /** The sentence that says which way the scale runs, wherever a score is shown. */
 const SCALE =
@@ -1585,6 +1566,20 @@ function QueueLetter({ row, step, letters, onOpenLetter }) {
   )
 }
 
+/** A business's name at the head of a row, and the way into its record. */
+function ProspectName({ name, onOpen }) {
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      title={name || 'Unnamed business'}
+      className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
+    >
+      {name || 'Unnamed business'}
+    </button>
+  )
+}
+
 /**
  * A business about to be written to: when, its place in the line, the kind
  * it reads as, the letter it gets and where the letter goes.
@@ -1623,14 +1618,7 @@ function NextRow({ row, place, letters, onOpenProspect, onOpenLetter }) {
         {place === null ? '—' : fullCount(place + 1)}
       </td>
       <td className={CELL}>
-        <button
-          type="button"
-          onClick={() => onOpenProspect(row.prospect_id)}
-          title={row.name || 'Unnamed business'}
-          className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
-        >
-          {row.name || 'Unnamed business'}
-        </button>
+        <ProspectName name={row.name} onOpen={() => onOpenProspect(row.prospect_id)} />
         <span className={`${MONO_LABEL} text-paper-faint block truncate`}>
           {[row.town, row.trade].filter(Boolean).join(' · ') || '—'}
         </span>
@@ -1699,6 +1687,20 @@ function Reach({ row }) {
   )
 }
 
+/** Which step a message that left was, and the letter it went under where it had one. */
+function SentUnder({ step, row, letters, onOpenLetter }) {
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <Chip tone={step > 1 ? 'accent' : 'plain'}>{stepLabel(step)}</Chip>
+      {row.variant_id ? (
+        <LetterLink id={row.variant_id} letters={letters} onOpen={onOpenLetter} />
+      ) : (
+        <span className="text-paper-faint text-[13px]">before the letters</span>
+      )}
+    </span>
+  )
+}
+
 /** A message that has already left, which letter it was, and what became of it. */
 function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
   const status = MESSAGE_STATUS[row.status]
@@ -1713,14 +1715,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
         {stamp(row.sent_at || row.created_at)}
       </td>
       <td className={CELL}>
-        <button
-          type="button"
-          onClick={() => onOpenProspect(row.prospect_id)}
-          title={row.name || 'Unnamed business'}
-          className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
-        >
-          {row.name || 'Unnamed business'}
-        </button>
+        <ProspectName name={row.name} onOpen={() => onOpenProspect(row.prospect_id)} />
         <span className={`${MONO_LABEL} text-paper-faint block truncate`}>{row.town || '—'}</span>
         {/* What the dropped columns were carrying, folded back under the name
             at the widths they are gone. */}
@@ -1734,14 +1729,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
           <span className={`${MONO_LABEL} text-paper-faint block truncate`}>
             {row.to_address || '—'}
           </span>
-          <span className="flex flex-wrap items-center gap-2">
-            <Chip tone={step > 1 ? 'accent' : 'plain'}>{stepLabel(step)}</Chip>
-            {row.variant_id ? (
-              <LetterLink id={row.variant_id} letters={letters} onOpen={onOpenLetter} />
-            ) : (
-              <span className="text-paper-faint text-[13px]">before the letters</span>
-            )}
-          </span>
+          <SentUnder step={step} row={row} letters={letters} onOpenLetter={onOpenLetter} />
           <span className="md:hidden">{row.status === 'sent' ? <Reach row={row} /> : null}</span>
         </span>
       </td>
@@ -1761,14 +1749,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
         )}
       </td>
       <td className={`${CELL} ${FROM_2XL}`}>
-        <span className="flex flex-wrap items-center gap-2">
-          <Chip tone={step > 1 ? 'accent' : 'plain'}>{stepLabel(step)}</Chip>
-          {row.variant_id ? (
-            <LetterLink id={row.variant_id} letters={letters} onOpen={onOpenLetter} />
-          ) : (
-            <span className="text-paper-faint text-[13px]">before the letters</span>
-          )}
-        </span>
+        <SentUnder step={step} row={row} letters={letters} onOpenLetter={onOpenLetter} />
       </td>
       <td className={CELL}>
         <Chip tone={status ? status.tone : 'muted'}>{status ? status.label : row.status}</Chip>
@@ -1890,14 +1871,7 @@ function ProspectRow({ row, onOpenProspect }) {
   return (
     <tr className="border-hair-paper border-t align-top">
       <td className={CELL}>
-        <button
-          type="button"
-          onClick={() => onOpenProspect(row.id)}
-          title={row.name || 'Unnamed business'}
-          className="block w-full truncate text-left font-medium text-ink-paper transition-colors duration-150 hover:text-accent"
-        >
-          {row.name || 'Unnamed business'}
-        </button>
+        <ProspectName name={row.name} onOpen={() => onOpenProspect(row.id)} />
         <span className={`${MONO_LABEL} text-paper-faint block truncate`} title={place}>
           {place || '—'}
         </span>
@@ -2807,7 +2781,7 @@ export default function OutreachPage() {
   const pages = Math.max(1, Math.ceil(paged / pageSize))
   const filtering = Boolean(stage || town || trade || band || search)
   const narrowing = Boolean(stage || town || trade || band)
-  const peak = Math.max(1, ...STAGE_ORDER.map(name => counts[name] || 0))
+  const peak = Math.max(1, ...STAGES.map(name => counts[name] || 0))
   // The stage counts, the strong-lead figure and the two filter lists are
   // taken over the whole table unless it is long enough to have been read to a
   // ceiling. Saying so is what keeps a breakdown over part of the table from
@@ -3070,12 +3044,10 @@ export default function OutreachPage() {
     setAdding(true)
     setAddFault(null)
     try {
-      const response = await fetch(ADD_PATH, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'add', ...business }),
+      const { response, payload } = await writeEndpoint(token, ADD_PATH, {
+        action: 'add',
+        ...business,
       })
-      const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
         const said = faultFromResponse(response, payload, NOT_ADDED)
         if (REFUSED.has(response.status)) setAddFault({ field: fieldOf(said), said })
@@ -3134,7 +3106,7 @@ export default function OutreachPage() {
         className={SELECT}
       >
         <option value="">Every Stage</option>
-        {STAGE_ORDER.map(name => (
+        {STAGES.map(name => (
           <option key={name} value={name}>
             {STAGE[name].label}
           </option>
@@ -3288,7 +3260,7 @@ export default function OutreachPage() {
                   which is the order the pipeline runs in. Picking a stage
                   opens the businesses on file narrowed to it. */}
               <ul className="sm:grid sm:grid-flow-col sm:grid-rows-6">
-                {STAGE_ORDER.map(name => (
+                {STAGES.map(name => (
                   <StageRow
                     key={name}
                     name={name}
@@ -3319,7 +3291,7 @@ export default function OutreachPage() {
                   What the Stages Mean
                 </summary>
                 <dl className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                  {STAGE_ORDER.map(name => (
+                  {STAGES.map(name => (
                     <div key={name} className="grid gap-0.5">
                       <dt className={`${MONO_LABEL} text-ink-paper`}>{STAGE[name].label}</dt>
                       <dd className="text-[13px] leading-relaxed text-paper-soft">

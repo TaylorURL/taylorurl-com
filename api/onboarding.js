@@ -44,6 +44,7 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { authorizeAccount, connect } from '../lib/db/clients.js'
 import { field, uuid } from '../lib/db/fields.js'
+import { runWrite } from '../lib/db/writes.js'
 
 /**
  * The largest the answers may be, measured on the JSON that would be stored.
@@ -158,11 +159,6 @@ export default async function handler(request, response) {
 
   const body = request.body || {}
 
-  // The writes answer the same way, so they are read off one table rather than
-  // written out as two near-identical blocks: the difference between them is
-  // the function and its arguments, the sentence a failed call gets, and
-  // nothing else. The sentence sits here rather than at the call because only
-  // this table knows which of the two things the client asked for.
   const writes = {
     save: () => {
       const project = uuid(body.project_id)
@@ -200,15 +196,8 @@ export default async function handler(request, response) {
     },
   }
 
-  const chosen = writes[body.action]
-  if (!chosen) return response.status(400).json({ error: 'Unknown action.' })
-
-  const call = chosen()
-  if (call.fault) return response.status(400).json({ error: call.fault })
-
-  const { data, error } = await wired.db.rpc(call.name, call.args)
-  if (error) return response.status(500).json(faulted(error, call.failed))
-  if (data?.error) return response.status(400).json({ error: data.error })
+  const ran = await runWrite(wired.db, writes, body.action, faulted)
+  if (ran.body) return response.status(ran.status).json(ran.body)
 
   // The stored row rather than an acknowledgement, because what the browser
   // sent and what the row now holds are not the same thing: the figure is
@@ -216,5 +205,5 @@ export default async function handler(request, response) {
   // that drew its own arithmetic back would be drawing something nobody else
   // can see.
   response.setHeader('Cache-Control', 'no-store')
-  return response.status(200).json({ brief: data })
+  return response.status(200).json({ brief: ran.data })
 }

@@ -20,30 +20,10 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { answer, readToken } from '../lib/http/unsubscribe.js'
 import { connect } from '../lib/db/clients.js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
 import { LEADS } from '../lib/leads/record.js'
-
-/** The page a click lands on, which reports what the request settled. */
-const LANDING = '/unsubscribe'
-
-/** The token, from the query string or from a one-click body. */
-function readToken(request) {
-  const fromQuery = request.query?.token
-  if (typeof fromQuery === 'string' && fromQuery.trim()) return fromQuery.trim()
-  const fromBody = request.body?.token
-  return typeof fromBody === 'string' ? fromBody.trim() : ''
-}
-
-/** What the caller is told, in whichever form the caller can read. */
-function answer(request, response, { state, status = 200 }) {
-  if (request.method === 'POST') {
-    const ok = state === 'done' || state === 'already'
-    response.status(ok ? 200 : status).json({ ok, already: state === 'already', state })
-    return
-  }
-  response.redirect(302, `${LANDING}?state=${state}`)
-}
 
 /**
  * Takes one lead off the list.

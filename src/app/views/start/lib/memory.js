@@ -25,19 +25,10 @@
  * which is the restore doing nothing at all.
  */
 
+import { browserStore } from '@utils/storage'
+
 /** Where the held configuration lives. */
 const KEY = 'tu_start'
-
-/** The browser's own store, where there is one. */
-function store() {
-  try {
-    return typeof sessionStorage === 'undefined' ? null : sessionStorage
-  } catch {
-    // A browser set to block site data throws on the accessor itself rather
-    // than answering empty, so reaching it is what has to be guarded.
-    return null
-  }
-}
 
 const strings = value =>
   Array.isArray(value) ? value.filter(item => typeof item === 'string') : []
@@ -53,7 +44,7 @@ const text = value => (typeof value === 'string' ? value : null)
  * answers they would have lost anyway.
  */
 export function recalledStart() {
-  const held = store()
+  const held = browserStore('sessionStorage')
   if (!held) return null
 
   try {
@@ -89,7 +80,7 @@ export function recalledStart() {
 
 /** Records the configuration as it stands. */
 export function rememberStart(configuration) {
-  const held = store()
+  const held = browserStore('sessionStorage')
   if (!held) return
 
   try {

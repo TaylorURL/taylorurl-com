@@ -33,23 +33,9 @@
  *   npm run check:onboarding-gate
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
 import { currentProject, inOnboarding, stageRank } from '../../src/app/views/console/lib/stages.js'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
+import { cases, check, finish, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const FRAME = 'src/app/views/console/ConsoleFrame.jsx'
 const SECTIONS = 'src/app/views/console/lib/sections.js'
@@ -161,7 +147,8 @@ check('the dock is drawn only where there is something to draw', () => {
   // a later stage is not on the list.
   const dock = read('src/app/views/console/intake/ProjectChecklist.jsx')
   same(
-    dock.includes('stageRank(task.stage) <= reached'),
+    dock.includes('clientAsks(project)') &&
+      read('src/app/views/console/lib/stages.js').includes('stageRank(task.stage) <= reached'),
     true,
     'only what has been reached is asked for'
   )
@@ -169,16 +156,5 @@ check('the dock is drawn only where there is something to draw', () => {
   same(stageRank('nonsense'), 0, 'a stage nothing uses ranks below every real one')
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

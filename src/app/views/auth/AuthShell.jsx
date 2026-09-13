@@ -143,6 +143,17 @@ export default function AuthShell({
   business,
   children,
 }) {
+  const wordmark = (
+    <img
+      src="/images/taylorurl-wordmark.png"
+      alt="TaylorURL"
+      width="874"
+      height="262"
+      className="auth-back-logo"
+      draggable={false}
+    />
+  )
+
   return (
     <ConsoleShell>
       <div className="auth-frame">
@@ -155,26 +166,10 @@ export default function AuthShell({
                 a reader who has decided not to sign in actually looks for. */}
             <div className="auth-head">
               {bought ? (
-                <span className="auth-back">
-                  <img
-                    src="/images/taylorurl-wordmark.png"
-                    alt="TaylorURL"
-                    width="874"
-                    height="262"
-                    className="auth-back-logo"
-                    draggable={false}
-                  />
-                </span>
+                <span className="auth-back">{wordmark}</span>
               ) : (
                 <Link to="/" className="auth-back" aria-label="TaylorURL home">
-                  <img
-                    src="/images/taylorurl-wordmark.png"
-                    alt="TaylorURL"
-                    width="874"
-                    height="262"
-                    className="auth-back-logo"
-                    draggable={false}
-                  />
+                  {wordmark}
                 </Link>
               )}
               {!bought && (

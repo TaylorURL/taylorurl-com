@@ -15,17 +15,7 @@ import {
   PSI_RETRY_PAUSE_MS,
   measure,
 } from '../../../lib/outreach/audit/pagespeed.js'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
+import { cases, check, finish, ok, raised, same } from '../../harness/checks.js'
 
 const contains = (got, want, what) => {
   if (!String(got).includes(want)) throw new Error(`${what}: ${want} missing from ${got}`)
@@ -55,16 +45,6 @@ const report = () => ({
   status: 200,
   json: async () => ({ lighthouseResult: { categories: { performance: { score: 0.67 } } } }),
 })
-
-/** What a call raised, or null when it did not. */
-async function raised(run) {
-  try {
-    await run()
-    return null
-  } catch (cause) {
-    return cause
-  }
-}
 
 check('a report Google failed on its own side is taken again', async () => {
   const asked = []
@@ -168,19 +148,6 @@ check('a report is bounded by what is left of the budget', async () => {
   ok(Date.now() - started < 5000, 'the signal did not fire at the budget it was given')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} pagespeed retry checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`pagespeed retry: ${cases.length} checks passed`)

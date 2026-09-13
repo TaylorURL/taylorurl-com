@@ -78,7 +78,7 @@ function slugSeed(slug) {
  * @param {string} text - The heading exactly as the article writes it.
  * @returns {string} A lowercase hyphenated id.
  */
-export function anchorId(text) {
+function anchorId(text) {
   return text
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
@@ -99,7 +99,7 @@ export function anchorId(text) {
  *   One entry per h2, carrying its anchor, its position in the article's own
  *   numbering, and the index of the block it came from.
  */
-export function articleSections(post) {
+function articleSections(post) {
   const taken = new Map()
   const sections = []
 
@@ -129,7 +129,7 @@ export function articleSections(post) {
  * @param {{ content: Array<{ text: string }> }} post - The article.
  * @returns {number} The word count of the body.
  */
-export function articleWords(post) {
+function articleWords(post) {
   return post.content.reduce((total, block) => {
     const words = plainText(block.text)
     return total + (words ? words.split(' ').length : 0)
@@ -158,7 +158,7 @@ export function articleWords(post) {
  *   the block it was taken from, and the block index the aside stands in front
  *   of. Nothing where no sentence in the article qualifies.
  */
-export function articleQuote(post, sections) {
+function articleQuote(post, sections) {
   // Both the line and the place it stands are read off the second section, so
   // an article without one has nowhere to put an aside and gets none.
   if (sections.length < 2) return null
@@ -201,7 +201,7 @@ export function articleQuote(post, sections) {
  * @param {number} sectionCount - How many sections it carries.
  * @returns {string} One of the frame constants above.
  */
-export function articleLayout(post, sectionCount) {
+function articleLayout(post, sectionCount) {
   if (sectionCount < RAIL_MIN_SECTIONS) return DECK
   return slugSeed(post.slug) % 5 < LEFT_IN_FIVE ? RAIL_LEFT : RAIL_RIGHT
 }

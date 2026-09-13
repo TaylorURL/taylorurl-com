@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { readEndpoint } from './endpoint'
+import { useAlive } from './useAlive'
 import { usePulse } from './usePulse'
 
 const SERVER_FEED_PATH = '/api/server-feed'
@@ -41,23 +43,12 @@ export function useServerFeed({ token, enabled }) {
   const [server, setServer] = useState(null)
   const [error, setError] = useState(null)
   const [fetchedAt, setFetchedAt] = useState(null)
-  const alive = useRef(true)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
+  const alive = useAlive()
 
   const load = useCallback(async () => {
     if (!token) return false
     try {
-      const response = await fetch(`${SERVER_FEED_PATH}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(token, `${SERVER_FEED_PATH}?t=${Date.now()}`)
       if (!response.ok) throw new Error(faultFromResponse(response, payload, UNREACHABLE))
       // A body with no routines in it is not a thinner answer, it is a
       // different endpoint answering - a relay's own error page, most likely -
@@ -72,7 +63,7 @@ export function useServerFeed({ token, enabled }) {
       if (alive.current) setError(faultMessage(cause, UNREACHABLE))
       return false
     }
-  }, [token])
+  }, [token, alive])
 
   useEffect(() => {
     if (!enabled || !token) return

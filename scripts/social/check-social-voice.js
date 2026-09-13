@@ -29,6 +29,7 @@ import {
   sentenceCount,
 } from '../../lib/social/voice.js'
 import { BUILD_PRICE, MONTHLY_PRICE } from '../../src/app/data/checkout/pricing.js'
+import { cases, check, finish } from '../harness/checks.js'
 
 // The same article the post checks compose against, so a failure here and a
 // failure there are about the same post rather than about two different ones.
@@ -38,14 +39,6 @@ const ARTICLE = {
   excerpt:
     'A plumber wins work in the hour after somebody finds water where it should not be. ' +
     'The site either answers that call or it loses it to the next one down the page.',
-}
-
-const failures = []
-let checks = 0
-
-function check(what, ok) {
-  checks += 1
-  if (!ok) failures.push(what)
 }
 
 /** A post held to all three rules at once, named by where it came from. */
@@ -172,13 +165,9 @@ for (const [service, cadence] of Object.entries(CADENCE)) {
   }
 }
 
-if (failures.length) {
-  for (const failure of failures) console.error(`FAIL ${failure}`)
-  console.error(`\n${failures.length} of ${checks} social voice checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
-  `social voice: ${checks} checks, ${CARDS.length} cards, ceiling ${MAX_SENTENCES}, ` +
+  `social voice: ${cases.length} checks, ${CARDS.length} cards, ceiling ${MAX_SENTENCES}, ` +
     `price ${BUILD_PRICE} and ${MONTHLY_PRICE}`
 )

@@ -31,6 +31,7 @@ import {
 } from '../../../lib/outreach/sending/schedule.js'
 import { SEND_PER_RUN_MAX } from '../../../lib/outreach/sending/limits.js'
 import { sendWindow } from '../../../lib/outreach/sending/queue.js'
+import { fail, finish } from '../../harness/checks.js'
 
 // The largest cap a day finishes in full. The tail holds slots out of the last
 // stretch of the window, which costs the day the run that would have drained
@@ -77,7 +78,6 @@ function walk(cap, [year, month, day]) {
   return sent
 }
 
-let failed = 0
 for (const { label, date } of DAYS) {
   // A closed day owes nothing, so what it should deliver is nothing. Asserting
   // the zero rather than skipping the day is what makes a Sunday that starts
@@ -87,8 +87,7 @@ for (const { label, date } of DAYS) {
     const sent = walk(cap, date)
     const wanted = open ? cap : 0
     if (sent !== wanted) {
-      failed += 1
-      console.error(`${label} cap ${cap}: delivered ${sent}, wanted ${wanted}`)
+      fail(`${label} cap ${cap}: delivered ${sent}, wanted ${wanted}`)
     }
   }
 
@@ -100,14 +99,10 @@ for (const { label, date } of DAYS) {
   for (const cap of [FILLS + 1, FILLS * 2, FILLS * 10]) {
     const sent = walk(cap, date)
     if (sent > DELIVERS_A_DAY) {
-      failed += 1
-      console.error(
-        `${label} cap ${cap}: delivered ${sent}, past the ${DELIVERS_A_DAY} a day holds`
-      )
+      fail(`${label} cap ${cap}: delivered ${sent}, past the ${DELIVERS_A_DAY} a day holds`)
     }
     if (sent < FILLS) {
-      failed += 1
-      console.error(`${label} cap ${cap}: delivered ${sent}, under the ${FILLS} a full day lands`)
+      fail(`${label} cap ${cap}: delivered ${sent}, under the ${FILLS} a full day lands`)
     }
   }
 }
@@ -145,8 +140,7 @@ const MOVE_DAY = [2026, 8, 31]
 // schedule, and the day still stops at the new cap.
 const raised = walkMoved(20, 40, MOVE_DAY, MOVED_AT)
 if (raised <= 20 || raised > 40) {
-  failed += 1
-  console.error(
+  fail(
     `cap raised 20 to 40 mid-afternoon: delivered ${raised}, wanted more than 20 and no more\n` +
       '  than 40 - check the walk still models the send job'
   )
@@ -158,10 +152,7 @@ if (raised <= 20 || raised > 40) {
 // is the case that proves it.
 const far = walkMoved(20, FILLS * 4, MOVE_DAY, MOVED_AT)
 if (far > DELIVERS_A_DAY) {
-  failed += 1
-  console.error(
-    `cap raised 20 to ${FILLS * 4} mid-afternoon: delivered ${far}, past what a day holds`
-  )
+  fail(`cap raised 20 to ${FILLS * 4} mid-afternoon: delivered ${far}, past what a day holds`)
 }
 
 // Lowering mid-afternoon is the direction somebody reaches for to slow sending
@@ -169,8 +160,7 @@ if (far > DELIVERS_A_DAY) {
 // rather than unsending anything.
 const lowered = walkMoved(40, 12, MOVE_DAY, MOVED_AT)
 if (lowered < 12) {
-  failed += 1
-  console.error(`cap lowered 40 to 12 mid-afternoon: delivered ${lowered}, under the 12 asked for`)
+  fail(`cap lowered 40 to 12 mid-afternoon: delivered ${lowered}, under the 12 asked for`)
 }
 
 // The reach has to end before the window does, or the console offers a time no
@@ -184,8 +174,7 @@ for (let minute = 13 * 60; minute <= 22 * 60; minute += 1) {
   const next = Math.ceil(minute / TICK_MINUTES) * TICK_MINUTES
   const run = new Date(Date.UTC(MOVE_DAY[0], MOVE_DAY[1] - 1, MOVE_DAY[2], 0, next))
   if (!sendWindow(run).open) {
-    failed += 1
-    console.error(`reachesMore is true at ${minute} UTC minutes with no run left inside the window`)
+    fail(`reachesMore is true at ${minute} UTC minutes with no run left inside the window`)
     break
   }
 }
@@ -193,14 +182,10 @@ for (let minute = 13 * 60; minute <= 22 * 60; minute += 1) {
 // A Sunday reaches nothing, whatever the hour says.
 const sunday = new Date(Date.UTC(2026, 11, 13, 18))
 if (reachesMore(sunday)) {
-  failed += 1
-  console.error('reachesMore is true on a Sunday, when the day delivers nothing at all')
+  fail('reachesMore is true on a Sunday, when the day delivers nothing at all')
 }
 
-if (failed) {
-  console.error(`\n${failed} check(s) do not match what the day owes`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `every cap from 1 to ${FILLS} delivers in full at ${SEND_PER_RUN_MAX} a run, on both sides\n` +
     '  of the clock change and on a Saturday, and a Sunday delivers nothing at all; a cap\n' +

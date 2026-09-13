@@ -1,14 +1,9 @@
-import { useCallback, useState } from 'react'
-import {
-  PORTFOLIO_AVERAGES,
-  PORTFOLIO_PROJECTS,
-  formatMeasuredDate,
-  portfolioPreviewSrc,
-} from '@data/portfolio'
+import { PORTFOLIO_AVERAGES, PORTFOLIO_PROJECTS, formatMeasuredDate } from '@data/portfolio'
 import { PROCESS_TIMELINE } from '@data/pages/home'
 import PaletteShot from '@components/mockups/PaletteShot'
 import Reveal from '@components/page-bands/Reveal'
 import { Card, Foot, Plane } from './CapabilityCard'
+import CaptureShot from './CaptureShot'
 
 /**
  * What the studio does, shown rather than described.
@@ -31,50 +26,6 @@ const MEASURED = 'djrxexcellence.com'
 const projectFor = displayUrl => PORTFOLIO_PROJECTS.find(entry => entry.displayUrl === displayUrl)
 
 /**
- * One committed capture on the plane.
- *
- * A capture that does not arrive leaves the plane, because the browser's own
- * mark for a missing image is a torn page and a line of alt text, and these two
- * sit in the middle of the first card under a heading that says every site on
- * the page is live. A claim can stand on its own; it must never stand beside a
- * broken picture of itself. The frames in `DevicePreview` and the step in
- * `HowItWorksSection` settle the same failure the same way, and all three draw
- * the same captures at the same addresses, so the three agree about what a lost
- * one looks like.
- *
- * The two shots are held separately rather than together, so one that is lost
- * takes only itself off the plane.
- *
- * `complete` with no width is read at mount as well as caught on the event. An
- * image that finished before React attached its handlers fired into nothing,
- * and this page is prerendered, so the fetch starts while the markup is being
- * parsed and that race is lost often rather than rarely.
- */
-function CaptureShot({ project, device, width, height, className }) {
-  const [lost, setLost] = useState(false)
-
-  const readSettledImage = useCallback(node => {
-    if (node && node.complete && node.naturalWidth === 0) setLost(true)
-  }, [])
-
-  if (lost) return null
-
-  return (
-    <img
-      ref={readSettledImage}
-      src={portfolioPreviewSrc(project, device)}
-      alt={`The ${project.name} website on a ${device === 'phone' ? 'phone' : 'desktop'}`}
-      width={width}
-      height={height}
-      loading="lazy"
-      decoding="async"
-      onError={() => setLost(true)}
-      className={className}
-    />
-  )
-}
-
-/**
  * The client's own site on the plane, in the two shapes it has to work in.
  *
  * The desktop capture is laid out wider than the card and pushed off the right
@@ -82,6 +33,9 @@ function CaptureShot({ project, device, width, height, className }) {
  * frame rather than a screenshot centred in a margin. The phone stands in front
  * of it at its own height, which is what makes the pair read as two objects on
  * one surface instead of two pictures on one background.
+ *
+ * The two shots are held separately rather than together, so one that is lost
+ * takes only itself off the plane.
  */
 function SitePreview({ project }) {
   return (
@@ -90,15 +44,13 @@ function SitePreview({ project }) {
         <CaptureShot
           project={project}
           device="desktop"
-          width="1200"
-          height="750"
+          alt={`The ${project.name} website on a desktop`}
           className="plane-shot block w-[150%] max-w-none sm:w-[135%]"
         />
         <CaptureShot
           project={project}
           device="phone"
-          width="390"
-          height="844"
+          alt={`The ${project.name} website on a phone`}
           className="plane-shot-near absolute -left-[18%] bottom-[-2.5rem] w-[26%] sm:-left-[20%] sm:w-[24%]"
         />
       </div>

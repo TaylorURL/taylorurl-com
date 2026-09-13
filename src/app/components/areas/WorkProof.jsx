@@ -1,16 +1,8 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
-import {
-  formatMeasuredDate,
-  portfolioPreviewSrc,
-  portfolioScreenshotServiceUrl,
-} from '@data/portfolio'
+import PortfolioPreview from '@components/mockups/PortfolioPreview'
+import { formatMeasuredDate } from '@data/portfolio'
 import { GROUNDS } from '@constants/grounds'
-
-// The stage a capture fills, stated on the element as well as in its class so
-// the space is held from the markup alone.
-const PREVIEW_BOX = { width: 1280, height: 800 }
 
 /**
  * What a site measured, and when. The figures are the ones the portfolio and
@@ -74,28 +66,13 @@ function Measured({ pagespeed, tone }) {
  */
 export default function WorkProof({ project, ground = 'paper', showIdentity = true }) {
   const tone = GROUNDS[ground]
-  // A site whose capture has not been taken yet falls back to a screenshot of
-  // the page itself, so the panel always shows the real thing.
-  const [useFallback, setUseFallback] = useState(false)
-  const src = useFallback
-    ? portfolioScreenshotServiceUrl(project, 'desktop')
-    : portfolioPreviewSrc(project, 'desktop')
 
   return (
     <article className={`grid lg:grid-cols-[1.35fr_1fr] ${tone.shell}`}>
       <div
         className={`bg-surface-1 aspect-[16/10] overflow-hidden border-b lg:border-b-0 lg:border-r ${tone.rule}`}
       >
-        <img
-          src={src}
-          alt={`${project.name} website`}
-          width={PREVIEW_BOX.width}
-          height={PREVIEW_BOX.height}
-          loading="lazy"
-          decoding="async"
-          onError={() => setUseFallback(true)}
-          className="h-full w-full object-cover object-top"
-        />
+        <PortfolioPreview project={project} />
       </div>
 
       <div className="flex flex-col gap-5 p-6 sm:p-8 lg:justify-center lg:p-10">

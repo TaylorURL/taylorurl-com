@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { isValidEmail } from '@utils/validation'
 import BlockHead from './BlockHead'
-import { FIELD_FAULT, FIELD_LABEL, GROUND } from '../lib/ground'
+import { GROUND } from '../lib/ground'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 /**
  * The address the configuration belongs to, asked on the first step.

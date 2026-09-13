@@ -31,6 +31,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { readBody } from '../lib/http/body.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
@@ -50,18 +51,6 @@ const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 // behind one carrier, arrive here as one caller, and a limit tight enough to
 // be interesting is a limit that silently stops recording the second of them.
 const recordWindow = callerWindow({ limit: 60, windowMs: 10 * 60 * 1000 })
-
-/** The posted JSON, however the platform hands the body over. */
-function readBody(request) {
-  const body = request.body
-  if (!body) return {}
-  if (typeof body !== 'string') return body
-  try {
-    return JSON.parse(body)
-  } catch {
-    return {}
-  }
-}
 
 /**
  * How far the visitor had reached, as the configurator counts its steps.

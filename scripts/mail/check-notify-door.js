@@ -44,6 +44,9 @@
  * npm run check:notify-door
  */
 
+import { expect as check, finish } from '../harness/checks.js'
+import { SETUP, answerTo, digestOf, sameIgnoringCase } from './notify-fixture.js'
+
 /* ── The world the endpoint runs in ─────────────────────────────────────── */
 
 // Read once at load by the modules under test, so they are set before the
@@ -56,7 +59,6 @@ process.env.SUPABASE_ANON_KEY = 'an-anon-key-for-the-cases'
 process.env.RESEND_API_KEY = 'a-resend-key-for-the-cases'
 process.env.CRON_SECRET = 'a-cron-secret-for-the-cases'
 
-const { createHash } = await import('node:crypto')
 const { CAPS } = await import('../../lib/mail/notify.js')
 
 const REST = `${SUPABASE_URL}/rest/v1/`
@@ -67,23 +69,7 @@ const SEAT = 'trenton@taylorurl.com'
 const SECOND_SEAT = 'trenton+second@taylorurl.com'
 const OTHER_TENANT_SEAT = 'trenton+other@taylorurl.com'
 
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
-
 /* ── The database, as PostgREST answers ─────────────────────────────────── */
-
-const digestOf = value => createHash('sha256').update(value).digest('hex')
-
-/** How a value compares in a column that does not care about case. */
-const same = (held, value) =>
-  typeof held === 'string' && typeof value === 'string'
-    ? held.toLowerCase() === value.toLowerCase()
-    : held === value
 
 /**
  * One `column.operator.value` clause, as it arrives in a query string.
@@ -99,13 +85,13 @@ function matches(row, column, expression) {
   const operator = at === -1 ? expression : expression.slice(0, at)
   const value = at === -1 ? '' : expression.slice(at + 1)
 
-  if (operator === 'eq') return same(String(row[column] ?? ''), value)
+  if (operator === 'eq') return sameIgnoringCase(String(row[column] ?? ''), value)
   if (operator === 'is') return value === 'null' ? row[column] == null : Boolean(row[column])
   if (operator === 'in') {
     return value
       .replace(/^\(|\)$/g, '')
       .split(',')
-      .some(one => same(String(row[column] ?? ''), one.replace(/^"|"$/g, '')))
+      .some(one => sameIgnoringCase(String(row[column] ?? ''), one.replace(/^"|"$/g, '')))
   }
   if (operator === 'gte') return String(row[column] ?? '') >= value
   if (operator === 'lt') return String(row[column] ?? '') < value
@@ -200,7 +186,10 @@ function database(url, request) {
   if (request.method === 'POST') {
     const posted = JSON.parse(request.body)
     const unique = live.unique[table]
-    if (unique && rows.some(row => unique.every(column => same(row[column], posted[column])))) {
+    if (
+      unique &&
+      rows.some(row => unique.every(column => sameIgnoringCase(row[column], posted[column])))
+    ) {
       return answer(409, {
         code: '23505',
         message: `duplicate key value violates unique constraint "${table}_key"`,
@@ -323,18 +312,6 @@ function seat(slug, email, extra = {}) {
   }
 }
 
-const SETUP = {
-  subject: 'A+ short setup on US30',
-  severity: 'urgent',
-  lines: [
-    ['Instrument', 'US30'],
-    ['Side', 'SELL'],
-  ],
-  body: 'Bearish order block swept the high and closed back inside.',
-  link: { url: 'https://www.example.com/app/signals' },
-  idempotency_key: 'signal:9f3c1d20-4a77-4a1e-9a8e-6d2b0c5f1e33',
-}
-
 /* ── The door ───────────────────────────────────────────────────────────── */
 
 const handler = (await import('../../api/notify.js')).default
@@ -355,29 +332,7 @@ async function call({ method = 'POST', secret, slug, body, headers = {}, address
     ...headers,
   }
 
-  const answered = { status: 0, body: null, headers: {} }
-  const response = {
-    setHeader: (name, value) => (answered.headers[String(name).toLowerCase()] = value),
-    status(code) {
-      answered.status = code
-      return response
-    },
-    json(payload) {
-      answered.body = payload
-      return response
-    },
-  }
-
-  // Several of these are refusals the endpoint is right to log, and a passing
-  // run should read as a passing run.
-  const said = console.error
-  console.error = () => {}
-  try {
-    await handler({ method, headers: sent, body: body === undefined ? '' : body }, response)
-  } finally {
-    console.error = said
-  }
-  return answered
+  return answerTo(handler, { method, headers: sent, body: body === undefined ? '' : body })
 }
 
 /** One posted notification, as a caller would put it on the wire. */
@@ -946,10 +901,7 @@ function open(built) {
 
 check(stray.length === 0, `something was asked of ${stray.join(', ')}`)
 
-if (failures) {
-  console.error(`notify-door: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   'notify-door: the endpoint answers a good post by reaching every seat on the project one ' +

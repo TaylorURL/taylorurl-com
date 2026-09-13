@@ -1,10 +1,10 @@
 import { m, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { useEffect, useRef } from 'react'
-import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
+import { useRef } from 'react'
+import { useAnnounceGround } from '@hooks/theme/useOnDarkBackground'
 import BlurText from '@reactbits/BlurText/BlurText'
 import { LazyParticles } from '@reactbits/LazyBg'
 import { useThemeTokens } from '@hooks/theme/useThemeTokens'
-import { fadeInUpMount, settleIn } from '@constants/animations'
+import { fadeInUpMount, rise, settleIn } from '@constants/animations'
 import { SITE } from '../../../../lib/site/current.js'
 
 // How far apart the headline's words start, and how early the run is tripped.
@@ -31,10 +31,7 @@ export default function PageHero({ title, description, eyebrow }) {
   // Canvas takes colour values, not CSS, so the accent steps are resolved first.
   const tone = useThemeTokens(['--accent', '--accent-hi', '--accent-pale'])
   const reduced = useReducedMotion()
-
-  // The bar above reads the ground by sampling the page, and a view that
-  // arrives in its own chunk lands after that reading was taken. This says so.
-  useEffect(() => announceGroundChange(), [])
+  useAnnounceGround()
 
   const ref = useRef(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
@@ -86,8 +83,7 @@ export default function PageHero({ title, description, eyebrow }) {
         </m.p>
 
         <m.h1
-          {...fadeInUpMount}
-          transition={{ ...fadeInUpMount.transition, delay: 0.05 }}
+          {...rise(0.05)}
           className="display-1 max-w-3xl font-semibold leading-[0.98] tracking-tightest text-ink [text-wrap:balance]"
         >
           {typeof title === 'string' ? (
@@ -106,8 +102,7 @@ export default function PageHero({ title, description, eyebrow }) {
 
         {description && (
           <m.p
-            {...fadeInUpMount}
-            transition={{ ...fadeInUpMount.transition, delay: 0.12 }}
+            {...rise(0.12)}
             className="mt-8 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
           >
             {description}

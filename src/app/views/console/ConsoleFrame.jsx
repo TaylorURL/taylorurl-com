@@ -442,6 +442,8 @@ export default function ConsoleFrame() {
       })
   }, [refused, session, signOut, refresh, toast])
 
+  // One control cycles the three rather than opening a second menu inside the
+  // account panel, which is a panel a reader has to close twice.
   const cycleTheme = () => setChoice(THEMES[(THEMES.indexOf(choice) + 1) % THEMES.length])
 
   const shortcuts = useConsoleShortcuts({
@@ -852,6 +854,8 @@ export default function ConsoleFrame() {
               canPreview={signedInRole === 'admin'}
               preview={preview}
               onPreview={enterPreview}
+              theme={choice}
+              onCycleTheme={cycleTheme}
             />
           </div>
           <button

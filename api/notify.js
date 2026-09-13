@@ -304,6 +304,18 @@ function describe(cause) {
   return 'the provider was unreachable'
 }
 
+/** How many notifications this project has posted in the last day. */
+function sentToday(db, project) {
+  const since = new Date(Date.now() - DAY_MS).toISOString()
+  return countOf(
+    db
+      .from(DELIVERIES)
+      .select('id', { count: 'exact', head: true })
+      .eq('project_id', project.id)
+      .gte('created_at', since)
+  )
+}
+
 /**
  * One notification, from the day's ceiling through to the answer.
  *
@@ -317,14 +329,7 @@ function describe(cause) {
  */
 export async function deliver(db, project, notification) {
   const daily = project.daily_limit ?? DEFAULT_DAILY
-  const since = new Date(Date.now() - DAY_MS).toISOString()
-  const today = await countOf(
-    db
-      .from(DELIVERIES)
-      .select('id', { count: 'exact', head: true })
-      .eq('project_id', project.id)
-      .gte('created_at', since)
-  )
+  const today = await sentToday(db, project)
   if (today >= daily) {
     return {
       status: 429,
@@ -459,7 +464,6 @@ export async function resolve(db, authorization, named) {
  * deployment, which is a machine rather than a person.
  */
 async function record(db, project) {
-  const since = new Date(Date.now() - DAY_MS).toISOString()
   const [recipients, sent] = await Promise.all([
     countOf(
       db
@@ -468,13 +472,7 @@ async function record(db, project) {
         .eq('project_id', project.id)
         .eq('active', true)
     ),
-    countOf(
-      db
-        .from(DELIVERIES)
-        .select('id', { count: 'exact', head: true })
-        .eq('project_id', project.id)
-        .gte('created_at', since)
-    ),
+    sentToday(db, project),
   ])
 
   return {

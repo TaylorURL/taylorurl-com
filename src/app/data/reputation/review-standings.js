@@ -5,7 +5,6 @@ import {
   BBB_SEAL_WIDTH,
   bbbAccredited,
 } from './bbb.js'
-import { REVIEW_SOURCES } from './reviews.js'
 
 /**
  * What each network currently publishes about this business, for the networks
@@ -97,14 +96,4 @@ export function standingShows(standing) {
 export function committedStanding(key) {
   const standing = REVIEW_STANDINGS[key]
   return standingShows(standing) ? { key, ...standing } : null
-}
-
-/**
- * The hand-read standings, in the order a reader meets them.
- *
- * @returns {object[]} One entry per network holding a showable standing, in
- *   registry order, each carrying the key of the network it belongs to.
- */
-export function committedStandings() {
-  return REVIEW_SOURCES.map(source => committedStanding(source.key)).filter(Boolean)
 }

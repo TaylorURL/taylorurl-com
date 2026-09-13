@@ -1,4 +1,5 @@
 import { lazy } from 'react'
+import { wait } from '@lib/time/wait.js'
 
 const DEFAULT_RETRIES = 2
 const DEFAULT_DELAY_MS = 350
@@ -22,8 +23,6 @@ const DEFAULT_DELAY_MS = 350
 // and short enough that the reader is still on the page.
 const DEFAULT_WAITS = 1
 const WAIT_MS = 5000
-
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 // How many retried addresses this page has already spent. Counted for the whole
 // document rather than per pass, because the module map that makes a repeated

@@ -37,6 +37,7 @@ import {
   outcomeTakesCallback,
 } from '../../lib/outreach/prospects/calls.js'
 import { headFor } from '../../src/app/views/staff/lib/heads.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -47,11 +48,6 @@ const SURFACES = Object.freeze([
   { path: '/staff/management', key: 'StaffManagement' },
   { path: '/staff/resources', key: 'StaffResources' },
 ])
-
-const problems = []
-const check = (condition, message) => {
-  if (!condition) problems.push(message)
-}
 
 // ── Every address mounts its own screen ────────────────────────────────────
 
@@ -192,11 +188,7 @@ for (const outcome of CALL_OUTCOMES) {
   )
 }
 
-if (problems.length) {
-  for (const problem of problems) console.error(`FAIL  ${problem}`)
-  console.error(`\nstaff portal: ${problems.length} problem${problems.length === 1 ? '' : 's'}`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `staff portal holds: ${SURFACES.length} addresses, each mounted, prerendered, out of the sitemap, ` +
     `disallowed in ${blocks} agent blocks and bare of the marketing chrome. ` +

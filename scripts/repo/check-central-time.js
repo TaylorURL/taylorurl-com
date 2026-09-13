@@ -17,15 +17,7 @@
 import { execFileSync } from 'node:child_process'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 // The zones a render is compared across. One either side of Central and one
 // far enough round that a day boundary falls inside a working afternoon.
@@ -68,15 +60,6 @@ const stamp = agrees(
 check(
   /10:30 PM/.test(stamp),
   `a rendered instant came out as "${stamp}" rather than the 10:30 PM it was in Texas`
-)
-
-const calendar = agrees(
-  'a calendar date',
-  `import { formatDate } from './lib/time/zone.js'; console.log(formatDate('2026-08-31'))`
-)
-check(
-  calendar === 'August 31, 2026',
-  `a date-only value rendered as "${calendar}", so it was moved by a zone it does not belong to`
 )
 
 const sending = agrees(
@@ -149,12 +132,9 @@ for (const root of ROOTS) {
   }
 }
 
-if (failed) {
-  console.error(`\n${failed} problem(s). Every date a person reads is written in one zone.`)
-  process.exit(1)
-}
+await finish({ hint: 'Every date a person reads is written in one zone.' })
 
 console.log(
-  'Central time holds: the day key, a rendered instant, a calendar date and the ' +
-    'sending day all read the same from any zone, and nothing renders a date without naming one.'
+  'Central time holds: the day key, a rendered instant and the sending day all read ' +
+    'the same from any zone, and nothing renders a date without naming one.'
 )

@@ -28,6 +28,7 @@ import { createClient } from '@supabase/supabase-js'
 import { SENT, contentRefusal, sendRefusal } from '../lib/mail/issues.js'
 import { audienceOf, selectRecipients } from '../lib/mail/audience.js'
 import { readAll } from '../lib/db/rows.js'
+import { wait } from '../lib/time/wait.js'
 import { renderIssueEmail, unsubscribeUrl } from '../lib/mail/emailTemplate.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gujgtjqqurildqurpffh.supabase.co'
@@ -65,8 +66,6 @@ const SEND_TIMEOUT_MS = 10000
 const UNIQUE_VIOLATION = '23505'
 
 export const config = { maxDuration: 60 }
-
-const wait = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 /**
  * The client every read and write of a send goes through.

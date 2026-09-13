@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { EASE } from '@constants/animations'
 import { Panel, PanelBody, PanelFoot, SkeletonBar } from '../ui'
 import { BUTTON, MONO_LABEL, QUIET } from '../lib/tokens'
+import { useStepTravel } from '../../start/lib/useStepTravel'
+import StepFrame from '../../start/steps/StepFrame'
 import { formatInstant } from '@lib/time/zone.js'
 
 /**
@@ -25,25 +25,12 @@ import { formatInstant } from '@lib/time/zone.js'
  * step is in front of the client, and whether the control that moves them on
  * is live.
  *
- * Movement is the same idiom throughout. A step arrives from the side the
- * client is travelling and the one it replaces leaves the other way, the card
- * eases between the two heights rather than snapping so the controls stay
- * under the hand that reached for them, and reduced motion collapses both to a
- * swap. Every move puts focus on the new step's heading, which is what puts a
- * screen reader at the top of the step rather than wherever the last control
- * left it.
+ * Movement is the same idiom throughout, because it is the configurator's own:
+ * the step is drawn through `StepFrame` and moved by `useStepTravel`.
  */
-
-const DURATION = 0.42
 
 /** How far a step travels. Far enough to read as a sideways move, short enough to stay legible. */
 const SHIFT = 40
-
-const PANEL = {
-  enter: direction => ({ opacity: 0, x: direction < 0 ? -SHIFT : SHIFT }),
-  center: { opacity: 1, x: 0 },
-  exit: direction => ({ opacity: 0, x: direction < 0 ? SHIFT : -SHIFT }),
-}
 
 /** A step's number, as the trail and the counter both write it. */
 const ordinal = index => String(index + 1).padStart(2, '0')
@@ -230,10 +217,6 @@ export default function OnboardingFlow({
   error = null,
   area,
 }) {
-  const reduced = useReducedMotion()
-  const [index, setIndex] = useState(0)
-  const [direction, setDirection] = useState(1)
-  const [height, setHeight] = useState(null)
   // The furthest step this client has stood on. A brief is answered over days
   // rather than in one sitting, so a step opened once stays open: emptying a
   // field on step two must not shut the four steps behind it and throw
@@ -242,8 +225,6 @@ export default function OnboardingFlow({
   // step is actually reported, and the trail is what a client uses to go and
   // fix it.
   const [furthest, setFurthest] = useState(0)
-  const panelRef = useRef(null)
-  const travelled = useRef(false)
 
   // What the answers alone open up, which is every step behind the first one
   // still missing something. The high-water mark can only raise it.
@@ -253,8 +234,7 @@ export default function OnboardingFlow({
   }
   const reach = Math.max(answeredThrough, furthest, resumeAt ?? 0)
 
-  const active = Math.min(index, reach, steps.length - 1)
-  const step = steps[active]
+  const { active, step, direction, open } = useStepTravel({ steps, reach, resumeAt, onStep })
   const previous = steps[active - 1]
   const last = active === steps.length - 1
   // Read strictly, so a step that never says it is answered holds the handover
@@ -263,55 +243,10 @@ export default function OnboardingFlow({
   // something upstream has stopped answering - which is a control that stays
   // dark and gets reported, rather than a brief sent and refused.
   const complete = steps.every(one => one.answered)
-  const transition = { duration: reduced ? 0 : DURATION, ease: EASE }
-
-  // The height the card holds, taken from the step standing in it. The step on
-  // its way out is out of the flow by then, and a step that grows as it is
-  // answered - a list gaining a row, a file arriving - moves the frame with it.
-  useEffect(() => {
-    const element = panelRef.current
-    if (!element) return undefined
-    const measure = () => setHeight(element.offsetHeight)
-    measure()
-    const observer = new ResizeObserver(measure)
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [active])
-
-  useEffect(() => {
-    if (!travelled.current) return
-    document.getElementById(`${step.id}-title`)?.focus()
-  }, [step.id])
 
   useEffect(() => {
     setFurthest(held => Math.max(held, active))
   }, [active])
-
-  // The step the stored brief was left on, taken once it lands. It is clamped
-  // by `active` like any other, so a stale number cannot open a step that is
-  // not there.
-  useEffect(() => {
-    if (resumeAt === null) return
-    setDirection(1)
-    setIndex(resumeAt)
-  }, [resumeAt])
-
-  useEffect(() => {
-    onStep?.(active)
-  }, [active, onStep])
-
-  // The panel on its way out releases its node after the one arriving has
-  // claimed the slot, so only a mounting node is taken.
-  const holdPanel = node => {
-    if (node) panelRef.current = node
-  }
-
-  const open = target => {
-    if (target === active || target > reach || target < 0) return
-    travelled.current = true
-    setDirection(target > active ? 1 : -1)
-    setIndex(target)
-  }
 
   return (
     <Panel
@@ -325,52 +260,30 @@ export default function OnboardingFlow({
       <StepTrail steps={steps} active={active} reach={reach} onOpen={open} />
 
       <PanelBody>
-        <p role="status" className="sr-only">
-          {`Step ${active + 1} of ${steps.length}. ${step.label}.`}
-        </p>
-
-        <m.div
-          initial={false}
-          animate={height === null ? {} : { height }}
-          transition={transition}
-          // The clip the height animation needs would also cut the focus ring
-          // off any control standing against the edge of the step, because a
-          // field paints its ring outside its own box. The negative margin and
-          // the padding cancel, so the content stays where it was and the ring
-          // has somewhere to land.
-          className="relative -mx-1 overflow-hidden px-1"
+        <StepFrame
+          steps={steps}
+          active={active}
+          direction={direction}
+          shift={SHIFT}
+          className="px-5 py-4"
         >
-          <AnimatePresence initial={false} mode="popLayout" custom={direction}>
-            <m.div
-              key={step.id}
-              ref={holdPanel}
-              custom={direction}
-              variants={PANEL}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={transition}
-              className="px-5 py-4"
+          <header className="border-hair-paper mb-6 border-b pb-4">
+            <p className={`${MONO_LABEL} mb-1.5 text-accent`}>{step.eyebrow}</p>
+            <h3
+              id={`${step.id}-title`}
+              tabIndex={-1}
+              className="max-w-2xl text-[20px] font-semibold leading-snug tracking-tight text-ink-paper"
             >
-              <header className="border-hair-paper mb-6 border-b pb-4">
-                <p className={`${MONO_LABEL} mb-1.5 text-accent`}>{step.eyebrow}</p>
-                <h3
-                  id={`${step.id}-title`}
-                  tabIndex={-1}
-                  className="max-w-2xl text-[20px] font-semibold leading-snug tracking-tight text-ink-paper"
-                >
-                  {step.title}
-                </h3>
-                {step.description ? (
-                  <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-paper-soft">
-                    {step.description}
-                  </p>
-                ) : null}
-              </header>
-              {step.content}
-            </m.div>
-          </AnimatePresence>
-        </m.div>
+              {step.title}
+            </h3>
+            {step.description ? (
+              <p className="mt-2 max-w-2xl text-[13px] leading-relaxed text-paper-soft">
+                {step.description}
+              </p>
+            ) : null}
+          </header>
+          {step.content}
+        </StepFrame>
       </PanelBody>
 
       <PanelFoot>

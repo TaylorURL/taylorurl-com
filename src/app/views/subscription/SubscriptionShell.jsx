@@ -1,10 +1,7 @@
-import { useEffect } from 'react'
 import { m } from 'framer-motion'
-import { Link } from 'react-router-dom'
-import { ArrowUpRight } from 'lucide-react'
-import Magnet from '@reactbits/Magnet/Magnet'
-import { fadeInUpMount } from '@constants/animations'
-import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
+import WaysOnward from '@components/conversion/WaysOnward'
+import { fadeInUpMount, rise } from '@constants/animations'
+import { useAnnounceGround } from '@hooks/theme/useOnDarkBackground'
 
 /**
  * The frame both list pages report into.
@@ -22,9 +19,7 @@ import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
  *   has to do, set between the detail and the two ways onward
  */
 export default function SubscriptionShell({ eyebrow, heading, body, children }) {
-  // The bar above reads the ground by sampling the page, and a view that
-  // arrives in its own chunk lands after that reading was taken. This says so.
-  useEffect(() => announceGroundChange(), [])
+  useAnnounceGround()
 
   return (
     <div
@@ -42,38 +37,14 @@ export default function SubscriptionShell({ eyebrow, heading, body, children }) 
         </m.h1>
 
         {body && (
-          <m.p
-            {...fadeInUpMount}
-            transition={{ ...fadeInUpMount.transition, delay: 0.08 }}
-            className="mt-5 max-w-xl text-[16px] leading-relaxed text-ink-soft"
-          >
+          <m.p {...rise(0.08)} className="mt-5 max-w-xl text-[16px] leading-relaxed text-ink-soft">
             {body}
           </m.p>
         )}
 
-        {children && (
-          <m.div {...fadeInUpMount} transition={{ ...fadeInUpMount.transition, delay: 0.16 }}>
-            {children}
-          </m.div>
-        )}
+        {children && <m.div {...rise(0.16)}>{children}</m.div>}
 
-        <m.div
-          {...fadeInUpMount}
-          transition={{ ...fadeInUpMount.transition, delay: 0.24 }}
-          className="mt-10 flex flex-wrap gap-4"
-        >
-          <Magnet padding={60} magnetStrength={5}>
-            <Link to="/" className="btn btn-primary group">
-              Return to Home
-              <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </Link>
-          </Magnet>
-          <Magnet padding={60} magnetStrength={5}>
-            <Link to="/contact" className="btn btn-secondary">
-              Get in Touch
-            </Link>
-          </Magnet>
-        </m.div>
+        <WaysOnward delay={0.24} />
       </div>
     </div>
   )

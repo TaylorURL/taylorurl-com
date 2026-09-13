@@ -24,12 +24,8 @@
  * difference in what the message opens on rather than in how strong the lead
  * is.
  */
+import { FAIR_FLOOR, GOOD_FLOOR } from '../../../lib/outreach/audit/bands.js'
 import { hostOf, platformOf } from '../../../lib/outreach/prospects/platforms.js'
-
-/** The floor of the middle band, where a site stops being slow. */
-export const FAIR_FLOOR = 50
-/** The floor of the weakest band, where a site is fast enough to leave alone. */
-export const WEAK_FLOOR = 90
 
 /** The bands a prospect can sit in, strongest lead first. */
 export const OPPORTUNITY_BANDS = ['strong', 'fair', 'weak', 'none']
@@ -74,7 +70,7 @@ export function opportunityBand(prospect) {
   if (hasNoSiteOfItsOwn(prospect)) return 'strong'
   const score = auditScore(prospect)
   if (score === null) return 'none'
-  if (score >= WEAK_FLOOR) return 'weak'
+  if (score >= GOOD_FLOOR) return 'weak'
   if (score >= FAIR_FLOOR) return 'fair'
   return 'strong'
 }

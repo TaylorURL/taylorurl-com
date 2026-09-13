@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
+import { putSigned, readEndpoint, writeEndpoint } from './endpoint'
+import { useAlive } from './useAlive'
 
 const PROJECTS_PATH = '/api/projects'
 
@@ -70,23 +72,12 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
   const [error, setError] = useState(null)
   const [acting, setActing] = useState(null)
   const toast = useToast()
-  const alive = useRef(true)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
+  const alive = useAlive()
 
   const load = useCallback(async () => {
     if (!token || !enabled) return
     try {
-      const response = await fetch(`${PROJECTS_PATH}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(token, `${PROJECTS_PATH}?t=${Date.now()}`)
       if (!alive.current) return
       if (!response.ok) {
         // A signed-in account with no project is not an error and never
@@ -100,7 +91,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
     } catch (cause) {
       if (alive.current) setError(faultMessage(cause, NO_READ))
     }
-  }, [token, enabled])
+  }, [token, enabled, alive])
 
   useEffect(() => {
     load()
@@ -126,12 +117,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
       if (!token) return false
       setActing(key)
       try {
-        const response = await fetch(PROJECTS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await writeEndpoint(token, PROJECTS_PATH, body)
         if (!response.ok) {
           if (alive.current && fallback)
             toast(faultFromResponse(response, payload, fallback), 'error')
@@ -146,7 +132,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, toast]
+    [token, load, toast, alive]
   )
 
   const tick = useCallback(
@@ -183,42 +169,28 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
       }
       setActing(taskId)
       try {
-        const signed = await fetch(PROJECTS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'upload', task_id: taskId, content_type: file.type }),
+        const { response: signed, payload: place } = await writeEndpoint(token, PROJECTS_PATH, {
+          action: 'upload',
+          task_id: taskId,
+          content_type: file.type,
         })
-        const place = await signed.json().catch(() => ({}))
         if (!signed.ok) {
           if (alive.current) toast(faultFromResponse(signed, place, NO_SEND), 'error')
           return false
         }
 
-        const put = await fetch(place.url, {
-          method: 'PUT',
-          headers: { 'Content-Type': file.type },
-          body: file,
-        })
-        // The bucket answers a refused upload with its own XML rather than
-        // anything a reader could use, so the status is the whole of what is
-        // known here - and a status on its own is a case the door already
-        // answers, which is why nothing is read off this response.
-        if (!put.ok) {
-          if (alive.current) toast(faultFromResponse(put, null, NO_UPLOAD), 'error')
+        const refused = await putSigned(place.url, file, NO_UPLOAD)
+        if (refused) {
+          if (alive.current) toast(refused, 'error')
           return false
         }
 
-        const recorded = await fetch(PROJECTS_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'attach',
-            task_id: taskId,
-            path: place.path,
-            name: file.name,
-          }),
+        const { response: recorded, payload: kept } = await writeEndpoint(token, PROJECTS_PATH, {
+          action: 'attach',
+          task_id: taskId,
+          path: place.path,
+          name: file.name,
         })
-        const kept = await recorded.json().catch(() => ({}))
         if (!recorded.ok) {
           if (alive.current) toast(faultFromResponse(recorded, kept, NO_ATTACH), 'error')
           return false
@@ -233,7 +205,7 @@ export function useProjectFeed({ token, enabled, intervalMs = 60000 }) {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, toast]
+    [token, load, toast, alive]
   )
 
   // No sentence, because nobody asked for this one: it is the tracker

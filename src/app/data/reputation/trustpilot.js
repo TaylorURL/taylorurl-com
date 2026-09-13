@@ -12,7 +12,7 @@
  * which is why the id below is held here rather than derived.
  */
 
-export const TRUSTPILOT_DOMAIN = 'taylorurl.com'
+const TRUSTPILOT_DOMAIN = 'taylorurl.com'
 export const TRUSTPILOT_PROFILE_URL = `https://www.trustpilot.com/review/${TRUSTPILOT_DOMAIN}`
 export const TRUSTPILOT_EVALUATE_URL = `https://www.trustpilot.com/evaluate/${TRUSTPILOT_DOMAIN}`
 

@@ -20,6 +20,16 @@ const DAY_TO = 17
 
 const HEIGHT = 150
 
+/** What either chart says over one bar: what the bar is, and how many calls. */
+function CallsTooltip({ active, payload }) {
+  return active && payload?.length ? (
+    <TooltipCard
+      title={payload[0].payload.name}
+      rows={[{ label: 'Calls', value: String(payload[0].value) }]}
+    />
+  ) : null
+}
+
 /**
  * One caller's calls by hour of the Central day.
  *
@@ -31,26 +41,16 @@ export function HourChart({ hours }) {
   const to = Math.max(DAY_TO, ...busy)
   const data = hours
     .filter(slot => slot.hour >= from && slot.hour <= to)
-    .map(slot => ({ ...slot, label: hourLabel(slot.hour) }))
+    .map(slot => ({ ...slot, name: hourLabel(slot.hour) }))
 
   return (
     <div {...frame(false, HEIGHT)}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: CHART_INSET, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={GRID} vertical={false} />
-          <XAxis dataKey="label" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
+          <XAxis dataKey="name" tick={AXIS} tickLine={false} axisLine={{ stroke: GRID }} />
           <YAxis tick={AXIS} tickLine={false} axisLine={false} width={24} allowDecimals={false} />
-          <Tooltip
-            cursor={{ fill: 'var(--paper-hairline)' }}
-            content={({ active, payload }) =>
-              active && payload?.length ? (
-                <TooltipCard
-                  title={payload[0].payload.label}
-                  rows={[{ label: 'Calls', value: String(payload[0].value) }]}
-                />
-              ) : null
-            }
-          />
+          <Tooltip cursor={{ fill: 'var(--paper-hairline)' }} content={CallsTooltip} />
           <Bar
             dataKey="calls"
             fill="var(--accent)"
@@ -103,17 +103,7 @@ export function OutcomeChart({ outcomes }) {
             width={96}
             interval={0}
           />
-          <Tooltip
-            cursor={{ fill: 'var(--paper-hairline)' }}
-            content={({ active, payload }) =>
-              active && payload?.length ? (
-                <TooltipCard
-                  title={payload[0].payload.name}
-                  rows={[{ label: 'Calls', value: String(payload[0].value) }]}
-                />
-              ) : null
-            }
-          />
+          <Tooltip cursor={{ fill: 'var(--paper-hairline)' }} content={CallsTooltip} />
           <Bar
             dataKey="calls"
             fill="var(--accent)"

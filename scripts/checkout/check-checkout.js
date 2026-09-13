@@ -23,6 +23,7 @@ import {
   MONTHLY_PRICE,
   MONTHLY_PRICE_CENTS,
 } from '../../src/app/data/checkout/pricing.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 const SECRET = 'whsec_this_is_not_a_real_secret_it_is_a_test'
 
@@ -35,13 +36,6 @@ function sign(body, { stamp = Math.floor(Date.now() / 1000), secret = SECRET, ex
 /** The figure a page prints, read back as cents. */
 function centsOf(printed) {
   return Math.round(Number(printed.replace(/[^0-9.]/g, '')) * 100)
-}
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
 }
 
 const BODY = JSON.stringify({ type: 'checkout.session.completed', data: { object: {} } })
@@ -127,20 +121,7 @@ check('the charge is the figure the site prints', () => {
   same(MONTHLY_PRICE_CENTS, centsOf(MONTHLY_PRICE), `${MONTHLY_PRICE} a month`)
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`checkout: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `checkout: all ${cases.length} cases pass; ${BUILD_PRICE} charged as ${BUILD_PRICE_CENTS} cents`

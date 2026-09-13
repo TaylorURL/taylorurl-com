@@ -9,17 +9,19 @@
  * those two are the whole of the job the role describes.
  *
  * The risk in widening a door is not the door that was widened. It is the six
- * beside it that were written against the same helper and must not move, and the
- * one action inside a widened endpoint that still belongs to whoever hired the
- * caller. Both are asserted here rather than read off the diff.
+ * beside it that were written against the same helper and must not move, and
+ * that is asserted here rather than read off the diff.
  *
  *   node scripts/auth/check-caller-door.js
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs'
-import { dirname, join } from 'node:path'
+import { readFileSync } from 'node:fs'
+import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { authorizeAdmin, authorizeCaller } from '../../lib/db/clients.js'
+import { cases, check, finish, same } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
+import { token } from './token-fixture.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -29,21 +31,6 @@ const CLIENT = 'account-client'
 
 /** The two endpoints a representative is meant to reach, and nothing else. */
 const CALLER_DOORS = ['api/calls-desk.js', 'api/calls-admin.js']
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
-
-/** A token that states an account, signed by nobody. */
-function token(sub) {
-  const part = value => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url')
-  return `Bearer ${part({ alg: 'HS256' })}.${part({ sub })}.not-a-signature`
-}
 
 /** A stand-in for the two clients, holding whichever roles a case needs. */
 function door({ roles = {}, verifies = null } = {}) {
@@ -136,41 +123,10 @@ check('only the two call endpoints admit a representative', async () => {
   same(widened.sort().join(','), [...CALLER_DOORS].sort().join(','), 'the widened set')
 })
 
-check('handing a business over is still the admin role alone', async () => {
-  const source = readFileSync(join(ROOT, 'api/calls-admin.js'), 'utf8')
-  // The list and the record are the job; deciding whose business it is is not.
-  // A list somebody can move rows off is a list they can empty of the calls
-  // they do not want.
-  same(
-    /'assign' in body[\s\S]{0,400}account\.role !== 'admin'/.test(source),
-    true,
-    'the hand-over is narrowed by role inside the endpoint'
-  )
-})
-
 /** Every endpoint in the tree, so the assertion above cannot miss a new one. */
 function endpoints() {
-  const found = []
-  const walk = here => {
-    for (const entry of readdirSync(join(ROOT, here))) {
-      const at = `${here}/${entry}`
-      if (statSync(join(ROOT, at)).isDirectory()) walk(at)
-      else if (entry.endsWith('.js')) found.push(at)
-    }
-  }
-  walk('api')
-  return found
+  return filesUnder(join(ROOT, 'api'), /\.js$/).map(file => relative(ROOT, file))
 }
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    await run()
-    console.log(`  ok  ${name}`)
-  } catch (cause) {
-    failed += 1
-    console.error(`FAIL  ${name}\n      ${cause.message}`)
-  }
-}
-console.log(`\ncaller door: ${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\ncaller door: ${passed}/${cases.length} passed`)

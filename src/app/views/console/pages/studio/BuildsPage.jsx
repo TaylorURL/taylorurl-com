@@ -19,6 +19,7 @@ import {
   SidePanel,
   SkeletonList,
   SkeletonRows,
+  SplitRow,
   ViewNav,
 } from '../../ui'
 import { useView } from '../../lib/views'
@@ -494,22 +495,14 @@ function BuildRow({ project, open, onOpen }) {
     .join(' · ')
 
   return (
-    <li className="border-hair-paper border-t first:border-t-0">
-      <button
-        type="button"
-        aria-current={open ? 'true' : undefined}
-        onClick={onOpen}
-        className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition-colors duration-150 ease-out-soft hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
-      >
-        <span className="grid min-w-0 gap-0.5">
-          <span className="truncate text-[13px] font-medium text-ink-paper">
-            {project.business_name || project.email}
-          </span>
-          <span className="text-paper-faint truncate text-[12px]">{facts}</span>
-        </span>
-        <Badge tone={badge.tone}>{badge.label}</Badge>
-      </button>
-    </li>
+    <SplitRow
+      name={project.business_name || project.email}
+      badge={badge}
+      open={open}
+      onOpen={onOpen}
+    >
+      {facts}
+    </SplitRow>
   )
 }
 

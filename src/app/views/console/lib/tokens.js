@@ -47,14 +47,6 @@ export const CELL_TIGHT = 'px-3 py-3 text-[14px]'
 export const TH_END = `${MONO_LABEL} text-paper-faint whitespace-nowrap pl-1 pr-3 py-2.5 text-right`
 export const CELL_END = 'pl-1 pr-3 py-3 text-[14px] text-right'
 
-// One line a row, for a table somebody is working down rather than reading.
-//
-// A row that carries a second line under each figure is easier to understand
-// and there are half as many of them on the screen. Which of those two a person
-// wants is not a fact about the table, so both are here and the section that
-// has a reader with a preference lets them keep it.
-export const CELL_PACKED = 'px-3 py-1.5 text-[13px]'
-
 // Every chart reserves its box before recharts measures the container, so a
 // panel does not grow under the reader when the series arrives. The heights sit
 // beside the other measures so a chart and the placeholder standing in for it
@@ -97,17 +89,6 @@ export const ROW_HEIGHT = {
   statusSite: '73px',
   statusIssue: '100px',
   statusFixed: '125px',
-  // The call list at its roomy setting: two lines in four of its columns - the
-  // business over its trade and town, the trade reading over the counts behind
-  // it, the state over when it comes back - a bar under the score, and two to
-  // four chips stacked in the reasons column. The mean over the whole table at
-  // 1280px rather than the height of its shortest row, which would leave the
-  // first paint short and move everything under it down as the feed lands.
-  calls: '77.5px',
-  // The same table with the second line out of every cell. Only a first visit
-  // reads either figure: after one, the placeholder is the size of the rows
-  // this reader last saw, at the density they last read them at.
-  callsTight: '38px',
   // The Server section's routines: a routine's name over the sentence saying
   // what it does, a badge over its cadence, and a relative time over the clock
   // time in each of the last two columns - so every row is two lines and some
@@ -136,20 +117,9 @@ export const SELECT = `${MONO_LABEL} ${CONTROL_H} border-hair-paper-strong curso
 // A row of six dropdowns is six values to read before a reader knows why the
 // business they expected is not on screen, and every one of them looks
 // identical whether it is narrowing anything or not. The one that is holding
-// something back says so: it carries the accent its own chip carries, so a
-// glance across the row finds it without reading a word.
+// something back says so: it carries the accent, so a glance across the row
+// finds it without reading a word.
 export const SELECT_ON = `${SELECT} border-[color:var(--accent)] text-accent`
-
-// One narrowing, with the way to take it off.
-//
-// Read as a group under the controls, so what the list is actually narrowed to
-// is one line rather than six values scattered along a row of boxes.
-export const CHIP = `${MONO_LABEL} border-hair-paper text-paper-soft inline-flex min-h-[28px] items-center gap-1.5 rounded-full border px-2.5 transition-colors duration-150 ease-out-soft`
-
-export const CHIP_BUTTON = `${CHIP} cursor-pointer hover:border-[color:var(--accent)] hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`
-
-// A chip that is on: the saved view being read right now.
-export const CHIP_ON = `${CHIP_BUTTON} border-[color:var(--accent)] bg-[color:var(--wash-accent)] text-accent`
 
 // Hover deepens the ground rather than fading it, which is the one hover
 // vocabulary the rest of the console uses.

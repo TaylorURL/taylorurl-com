@@ -29,25 +29,15 @@ import {
 } from '../../../lib/outreach/variants.js'
 import { STUDIO_INBOX } from '../../../lib/outreach/message.js'
 import { variantSettings } from '../../../lib/outreach/sending/queue.js'
+import { answersFrom, answersInItsOwnWords, refused } from '../database-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { OFFLINE } from '../../harness/offline.js'
 
 // Nothing here may reach the network.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
 const { preview, proof, setVariant, variantResults } =
   await import('../../../api/outreach-admin.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -77,29 +67,14 @@ const prospectRead = state => {
  * storage bucket answers that nothing is on file, so a preview renders with no
  * capture and fetches none.
  *
- * A plan is keyed by operation and table - `select:outreach_variants` - and a
- * read of the businesses may be keyed one step further, by which of the reads
- * behind a sample it answers: `select:outreach_prospects:filed` is the whole
- * file's own fixture, and `prospectRead` above says how each read is recognised.
- * An entry under the plain key answers any read the named keys leave over. An
- * array under either is served an element per call, the last standing for the
- * rest.
+ * A read of the businesses is answered by which of the reads behind a sample
+ * it is: `select:outreach_prospects:filed` is the whole file's own fixture, and
+ * `prospectRead` above says how each read is recognised.
  */
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = (key, role) => {
-    const named = role === null ? null : `${key}:${role}`
-    const at = named !== null && plan[named] !== undefined ? named : key
-    const planned = plan[at]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const call = pending.get(at) ?? 0
-    pending.set(at, call + 1)
-    return planned[Math.min(call, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, options: null, where: [], order: [] }
@@ -147,9 +122,6 @@ function stubDb(plan) {
 
   return { db: { from, storage }, asked, writes }
 }
-
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
 
 /** The answer a database without the table gives. */
 const ABSENT = {
@@ -445,14 +417,7 @@ check('a refused write is answered rather than reported as saved', async () => {
   // A proof is the one write that answers differently, because its whole
   // purpose is to report what the mail server said.
   same(answer.status, 500, 'the status')
-  ok(
-    !answer.body.error.includes('upsert refused'),
-    `the driver is not quoted: ${answer.body.error}`
-  )
-  ok(
-    /^[A-Z].*[.?]$/.test(answer.body.error),
-    `the reason reads as a sentence: ${answer.body.error}`
-  )
+  answersInItsOwnWords(answer, 'upsert refused')
 })
 
 check('a database without the table names the migration', async () => {
@@ -892,19 +857,6 @@ check('the row for the messages before ids carries no count of businesses', () =
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach variant write checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach variant writes: ${cases.length} checks passed`)

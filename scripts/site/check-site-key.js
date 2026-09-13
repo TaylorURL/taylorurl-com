@@ -28,18 +28,10 @@ import { dirname, join } from 'node:path'
 
 import { DEFAULT_SITE_KEY, SITE_KEYS } from '../../lib/site/registry.js'
 import { SITES } from '../../lib/site/sites.js'
-import { SITE, SITE_KEY, ownsSchedules } from '../../lib/site/current.js'
+import { SITE, ownsSchedules } from '../../lib/site/current.js'
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-
-let failed = 0
-const fail = message => {
-  console.error(`FAIL ${message}`)
-  failed += 1
-}
-const check = (condition, message) => {
-  if (!condition) fail(message)
-}
 
 // A record's shape is the union of every field any record declares, so a field
 // added to one site is a field the other must answer for — with null where the
@@ -102,7 +94,7 @@ check(
 
 // The assertion this file was written for. The suite runs with SITE unset, so if
 // the default ever stops owning the schedules, this is the only thing that says so.
-check(SITE_KEY === DEFAULT_SITE_KEY, `an unset SITE resolved to "${SITE_KEY}"`)
+check(SITE.key === DEFAULT_SITE_KEY, `an unset SITE resolved to "${SITE.key}"`)
 check(ownsSchedules(), 'an unset SITE does not own the schedules; every cron would 204')
 check(
   SITE.origin === SITES[DEFAULT_SITE_KEY].origin,
@@ -125,8 +117,8 @@ const resolves = value =>
     [
       '--input-type=module',
       '-e',
-      "import { SITE, SITE_KEY, ownsSchedules, PUBLISHES_REVIEWS, HAS_LOCAL_SEO } from './lib/site/current.js';" +
-        'console.log(JSON.stringify({ key: SITE_KEY, origin: SITE.origin, owns: ownsSchedules(), ' +
+      "import { SITE, ownsSchedules, PUBLISHES_REVIEWS, HAS_LOCAL_SEO } from './lib/site/current.js';" +
+        'console.log(JSON.stringify({ key: SITE.key, origin: SITE.origin, owns: ownsSchedules(), ' +
         'reviews: PUBLISHES_REVIEWS, localSeo: HAS_LOCAL_SEO }))',
     ],
     {
@@ -220,12 +212,7 @@ check(
 const env = readFileSync(join(ROOT, '.env.example'), 'utf8')
 check(/^SITE=/m.test(env) || /\bSITE\b/.test(env), 'SITE is undocumented in .env.example')
 
-if (failed) {
-  console.error(
-    `\n${failed} problem(s). One tree builds two sites; the key is what tells them apart.`
-  )
-  process.exit(1)
-}
+await finish({ hint: 'One tree builds two sites; the key is what tells them apart.' })
 
 console.log(
   `site key holds: ${SITE_KEYS.length} records answer the same fields, origins are distinct and slash-free, ` +

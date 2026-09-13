@@ -28,7 +28,6 @@ whatever is already committed rather than losing its icon to one bad morning.
 
 import argparse
 import io
-import json
 import re
 import sys
 import urllib.error

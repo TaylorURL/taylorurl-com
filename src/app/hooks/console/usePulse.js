@@ -66,3 +66,51 @@ export function usePulse(tick, { enabled, intervalMs, holdWhile = false }) {
     }
   }, [enabled, intervalMs])
 }
+
+/**
+ * Makes a feed's first read and then polls it, for a feed that has no read of
+ * its own to begin after.
+ *
+ * The first read always runs, even in a background tab, so the page never sits
+ * on its loading shell; only the repeat polling waits for the tab to be
+ * visible. Unlike the beat above, it starts over whenever the read changes, so
+ * a feed asked a different question - another window, another site - is read
+ * again at once rather than a beat later.
+ *
+ * The count of failures belongs to the read rather than to this, because the
+ * read is also what a returning tab and a pressed refresh call, and a failure
+ * either of those meets is one the next poll should back off from.
+ *
+ * @param {() => Promise<boolean>} load The feed's read, resolving whether it landed.
+ * @param {{enabled?: boolean, intervalMs: number, retryMs?: number[],
+ *   failures: {current: number}}} options
+ */
+export function usePoll(load, { enabled = true, intervalMs, retryMs = RETRY_MS, failures }) {
+  useEffect(() => {
+    if (!enabled) return undefined
+    let cancelled = false
+    let first = true
+    let timer = null
+
+    const tick = async () => {
+      if (cancelled) return
+      let ok = true
+      if (first || document.visibilityState === 'visible') ok = await load()
+      first = false
+      if (cancelled) return
+      const wait = ok ? intervalMs : retryMs[Math.min(failures.current - 1, retryMs.length - 1)]
+      timer = window.setTimeout(tick, wait)
+    }
+    tick()
+
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') load()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    return () => {
+      cancelled = true
+      window.clearTimeout(timer)
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+  }, [enabled, intervalMs, retryMs, failures, load])
+}

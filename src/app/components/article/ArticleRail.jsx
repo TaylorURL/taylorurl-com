@@ -2,13 +2,12 @@ import { ChevronDown } from 'lucide-react'
 import ShareBar from '@components/article/ShareBar'
 import {
   ArticleContents,
+  FurtherReading,
+  GaugeBar,
   PulledLine,
   RailPanel,
-  ReadNext,
   ReadingGauge,
-  SeriesStanding,
 } from '@components/article/ArticleControls'
-import { seriesNote } from '@utils/articleLayout'
 
 /**
  * The two arrangements an article's controls are put in.
@@ -84,17 +83,7 @@ export function ArticleRail({ post, series, sections, reading, quote, related, c
         </RailPanel>
       )}
 
-      {series && (
-        <RailPanel label="Series" note={seriesNote(series, post)}>
-          <SeriesStanding series={series} post={post} />
-        </RailPanel>
-      )}
-
-      {related.length > 0 && (
-        <RailPanel label={series ? 'More from the Series' : 'Read Next'}>
-          <ReadNext posts={related} />
-        </RailPanel>
-      )}
+      <FurtherReading post={post} series={series} related={related} />
     </aside>
   )
 }
@@ -167,16 +156,7 @@ export function ArticleStatus({ reading, sections, className = '' }) {
       className={`panel-static bg-surface-1 sticky top-[calc(var(--nav-height)+0.5rem)] z-[var(--z-sticky)] flex items-center gap-3 px-4 py-3 sm:gap-4 sm:px-5 ${className}`}
     >
       <p className="section-label-sm text-ink-paper">Reading</p>
-      <div
-        className="article-gauge flex-1"
-        role="progressbar"
-        aria-label="How far through the article"
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-valuenow={percent}
-      >
-        <span style={{ transform: `scaleX(${reading.progress})` }} />
-      </div>
+      <GaugeBar progress={reading.progress} className="flex-1" />
       <span className="text-paper-faint font-mono text-[11px] tabular-nums">{percent}%</span>
       <span className="bg-hair-paper h-3 w-px" aria-hidden="true" />
       <span className="text-paper-faint font-mono text-[11px] tabular-nums">

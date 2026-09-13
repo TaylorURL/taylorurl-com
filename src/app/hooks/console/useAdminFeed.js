@@ -1,6 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
+import { readEndpoint, writeEndpoint } from './endpoint'
+import { useAlive } from './useAlive'
 import { usePulse } from './usePulse'
 
 const ADMIN_PATH = '/api/console-admin'
@@ -46,23 +48,12 @@ export function useAdminFeed({ token, enabled }) {
   const [error, setError] = useState(null)
   const [acting, setActing] = useState(null)
   const toast = useToast()
-  const alive = useRef(true)
-
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
+  const alive = useAlive()
 
   const load = useCallback(async () => {
     if (!token || !enabled) return
     try {
-      const response = await fetch(`${ADMIN_PATH}?t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(token, `${ADMIN_PATH}?t=${Date.now()}`)
       if (!alive.current) return
       if (!response.ok) {
         setError(faultFromResponse(response, payload, NO_READ))
@@ -73,7 +64,7 @@ export function useAdminFeed({ token, enabled }) {
     } catch (cause) {
       if (alive.current) setError(faultMessage(cause, NO_READ))
     }
-  }, [token, enabled])
+  }, [token, enabled, alive])
 
   useEffect(() => {
     load()
@@ -92,12 +83,7 @@ export function useAdminFeed({ token, enabled }) {
       if (!token) return false
       setActing(key)
       try {
-        const response = await fetch(ADMIN_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await writeEndpoint(token, ADMIN_PATH, body)
         if (!response.ok) {
           if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return false
@@ -111,7 +97,7 @@ export function useAdminFeed({ token, enabled }) {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, toast]
+    [token, load, toast, alive]
   )
 
   return { data, error, loading: !data && !error, acting, refresh: load, act }

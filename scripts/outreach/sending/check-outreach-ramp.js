@@ -22,6 +22,7 @@ import {
 import { decide, RAMP_CEILING, stepTo } from '../../../lib/outreach/sending/ramp.js'
 import { BOUNCE_DAYS } from '../../../lib/outreach/sending/bounces.js'
 import { DELIVERS_A_DAY, localDay } from '../../../lib/outreach/sending/schedule.js'
+import { fail, finish, is as expect } from '../../harness/checks.js'
 
 // How far up the sweep below goes. Nothing bounds the cap a person may set, so
 // this is a figure of the check's own: comfortably past what a day's runs can
@@ -68,15 +69,6 @@ function state(over = {}) {
     now: NOW,
     ...over,
   }
-}
-
-let failed = 0
-
-/** Records a mismatch against the run's exit code and names what was wanted. */
-function expect(label, got, want) {
-  if (got === want) return
-  failed += 1
-  console.error(`${label}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
 }
 
 // A clean window steps, and it steps by a share of where it is rather than by
@@ -178,8 +170,7 @@ for (const sent of [0, 13, RAMP_MIN_SENDS - 1]) {
   for (let cap = 0; cap <= SWEEP_TO; cap += 1) {
     const next = stepTo(cap)
     if (next > RAMP_CEILING) {
-      failed += 1
-      console.error(`cap ${cap} steps to ${next}, past the ${RAMP_CEILING} ceiling`)
+      fail(`cap ${cap} steps to ${next}, past the ${RAMP_CEILING} ceiling`)
     }
     // A cap already past the ceiling was put there by hand and is left there:
     // the ramp declines to climb, and declining to climb is not a licence to
@@ -187,12 +178,10 @@ for (const sent of [0, 13, RAMP_MIN_SENDS - 1]) {
     // raising one, rather than one being high.
     const at = decide({ ...state({ cap, floor: cap }), record: clean })
     if (at.cap > cap && at.cap > RAMP_CEILING) {
-      failed += 1
-      console.error(`a clean window raised cap ${cap} to ${at.cap}, past the ceiling`)
+      fail(`a clean window raised cap ${cap} to ${at.cap}, past the ceiling`)
     }
     if (cap >= RAMP_CEILING && (at.action !== 'hold' || at.cap !== cap)) {
-      failed += 1
-      console.error(`cap ${cap} is at or past the ceiling and did not hold where it was`)
+      fail(`cap ${cap} is at or past the ceiling and did not hold where it was`)
     }
   }
 
@@ -241,20 +230,15 @@ for (const shut of [{ enabled: false }, { sending: false }]) {
   for (const each of cases) {
     const at = decide({ ...each, record: record({ sent: 200, bounced: 0 }) })
     if (!at.note || at.note.length < 20) {
-      failed += 1
-      console.error(`a ${at.action} came back with no note`)
+      fail(`a ${at.action} came back with no note`)
     }
     if (at.reading.sent === undefined || at.reading.cap_before === undefined) {
-      failed += 1
-      console.error(`a ${at.action} came back with no reading`)
+      fail(`a ${at.action} came back with no reading`)
     }
   }
 }
 
-if (failed) {
-  console.error(`\n${failed} ramp decision(s) are wrong`)
-  process.exit(1)
-}
+await finish()
 console.log(
   `the ramp steps under ${BOUNCE_STEPS_UNDER}%, holds to ${BOUNCE_ROLLS_BACK_OVER}%, rolls back\n` +
     `  over it, refuses a window under ${RAMP_MIN_SENDS} sends, ignores today and holds through\n` +

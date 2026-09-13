@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { m } from 'framer-motion'
 import { fadeInUp } from '@constants/animations'
 import { useSession } from '@hooks/session/useSession'
+import { ago, useNow } from '@hooks/console/useNow'
 import { useServerFeed } from '@hooks/console/useServerFeed'
 import { formatInstant } from '@lib/time/zone.js'
 import {
@@ -87,29 +88,6 @@ const FROM_SM = 'hidden sm:table-cell'
 
 // The cells of the table in the order its head declares them.
 const ROUTINE_CELLS = [CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, `${CELL_TIGHT} ${FROM_SM}`]
-
-/** A clock that ticks, so "3 min ago" does not sit there saying "just now". */
-function useNow(intervalMs) {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), intervalMs)
-    return () => window.clearInterval(id)
-  }, [intervalMs])
-  return now
-}
-
-/** How long ago, in the coarsest unit that still says something useful. */
-function ago(value, now) {
-  if (!value) return null
-  const seconds = Math.max(0, Math.round((now - new Date(value).getTime()) / 1000))
-  if (seconds < 10) return 'just now'
-  if (seconds < 60) return `${seconds}s ago`
-  const minutes = Math.round(seconds / 60)
-  if (minutes < 60) return `${minutes} min ago`
-  const hours = Math.round(minutes / 60)
-  if (hours < 48) return `${hours}h ago`
-  return `${Math.round(hours / 24)}d ago`
-}
 
 /** How long until, in the same units, for something that has not happened yet. */
 function until(value, now) {

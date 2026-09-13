@@ -16,6 +16,7 @@
 
 import { createHmac } from 'node:crypto'
 import { apply, signed } from '../../api/newsletter-events.js'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 const SECRET = 'whsec_dGhpcyBpcyBub3QgYSByZWFsIHNlY3JldCwgaXQgaXMgYSB0ZXN0'
 
@@ -68,12 +69,6 @@ function stub({ send = null, subscriber = null } = {}) {
   return { db: { from: table }, writes }
 }
 
-const cases = []
-const check = (name, run) => cases.push([name, run])
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
 const patchFor = (writes, table) =>
   writes.find(w => w.table === table && w.kind === 'update')?.patch
 
@@ -212,19 +207,6 @@ check('an event this endpoint has no use for writes nothing', async () => {
   same(writes.length, 0, 'writes')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`email events: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`email events: all ${cases.length} cases pass`)

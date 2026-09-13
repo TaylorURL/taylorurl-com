@@ -10,8 +10,8 @@
  *
  * Every body here is rendered by the code that sends it — `compose` for
  * outreach, `renderIssueEmail` for the newsletter, and the confirmation module
- * put through the same resolver its deployment uses. Nothing is retyped, so a
- * preview that looks right is the message being right.
+ * for the confirmation. Nothing is retyped, so a preview that looks right is the
+ * message being right.
  *
  * Usage:
  *   node scripts/mail/preview-emails.mjs --dry-run [--out DIR]
@@ -127,18 +127,6 @@ function issuePreviews(issue) {
  */
 function fromBuild(html, origin) {
   return html.split(`${ASSET_ORIGIN}/images/`).join(`${origin.replace(/\/$/, '')}/images/`)
-}
-
-/**
- * The confirmation bodies, built by the edge module rather than by a copy of
- * it. The endpoint around it reaches for Deno's environment on load, which is
- * why the bodies live in a module of their own.
- */
-function confirmation() {
-  return confirmationBodies(
-    'https://www.taylorurl.com/subscribe/confirm?token=preview',
-    'https://www.taylorurl.com/unsubscribe?token=preview'
-  )
 }
 
 /** Every message, rendered by the code that sends it. */

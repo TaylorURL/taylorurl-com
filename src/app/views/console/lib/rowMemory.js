@@ -71,28 +71,6 @@ export function rememberRows(key, body) {
   }
 }
 
-/** The same, for a block whose placeholder is one box rather than a row count. */
-export function recalledHeight(key, fallback) {
-  try {
-    const stored = Number(window.sessionStorage.getItem(key))
-    if (Number.isFinite(stored) && stored > 0) return `${stored}px`
-  } catch {
-    // Private browsing refuses the read; the fallback still applies.
-  }
-  return fallback
-}
-
-/** Records a block's rendered height, for the next load. */
-export function rememberHeight(key, node) {
-  if (!node) return
-  try {
-    const height = node.getBoundingClientRect().height
-    if (height > 0) window.sessionStorage.setItem(key, String(height))
-  } catch {
-    // Nothing to do - the placeholder falls back to its default next time.
-  }
-}
-
 /**
  * The same trick for a list, which has no `rows` to count.
  *

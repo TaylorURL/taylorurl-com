@@ -37,92 +37,13 @@ import {
   ownedReason,
   rowRuleWrote,
 } from '../../../lib/outreach/prospects/exclusions.js'
+import { asked, filtered, rows, stubDb } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 installFixtureHeldDomains()
 
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
-
 // ── The database stand-in ────────────────────────────────────────────────
-
-/**
- * A client that answers each query from a plan and keeps what it was asked.
- *
- * Every filter is recorded rather than applied, because what these checks are
- * about is the filters themselves: a write that reaches the right rows for the
- * wrong reason is the failure, and a stand-in that filtered its own fixtures
- * would answer correctly while the guard it is meant to prove was missing.
- *
- * A read's column list is recorded for the same reason and answered the same
- * way. The fixture is handed back whole whatever was asked for, so a column
- * the job forgot to select is a column the job still receives here, and the
- * behaviour that depends on it goes on working in the check long after it has
- * stopped working in production. The list is asserted instead.
- *
- * Answers are keyed on the operation and the table, and a list of them is
- * handed out in order, which is how the several reads and writes one sweep
- * makes against a single table are told apart.
- */
-function stubDb(plan) {
-  const queries = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
-
-  const from = table => {
-    const query = { table, op: 'select', payload: null, filters: [] }
-    const chain = new Proxy(
-      {},
-      {
-        get(_, prop) {
-          if (prop === 'then') {
-            query.key = `${query.op}:${query.table}`
-            queries.push(query)
-            const answer = answerFor(query.key)
-            return (resolve, reject) => Promise.resolve(answer).then(resolve, reject)
-          }
-          return (...args) => {
-            if (query.op === 'select' && ['insert', 'update', 'upsert', 'delete'].includes(prop)) {
-              query.op = prop
-              query.payload = args[0] ?? null
-            } else if (prop === 'select' && query.op === 'select') {
-              query.columns = String(args[0] ?? '')
-                .split(',')
-                .map(column => column.trim())
-            } else if (
-              ['eq', 'neq', 'lt', 'lte', 'gt', 'gte', 'in', 'is', 'not', 'or'].includes(prop)
-            ) {
-              query.filters.push([prop, ...args])
-            }
-            return chain
-          }
-        },
-      }
-    )
-    return chain
-  }
-
-  return { db: { from }, queries }
-}
-
-/** Every query the stand-in was asked, of one kind against one table. */
-const asked = (queries, key) => queries.filter(query => query.key === key)
 
 /**
  * The prospect writes the sweep made, which is every one except the retry.
@@ -140,16 +61,6 @@ const sweptWrites = queries =>
   asked(queries, 'update:outreach_prospects').filter(
     query => !filtered(query, 'eq', 'stage', 'unreachable')
   )
-
-/** Whether a query carried a filter naming this column, at this operator. */
-const filtered = (query, op, column, value) =>
-  query.filters.some(
-    ([kind, ...args]) =>
-      kind === op && args[0] === column && (value === undefined || args[1] === value)
-  )
-
-/** A page of rows, shaped the way a Supabase read answers with one. */
-const rows = data => ({ data, error: null, count: data.length })
 
 // ── What a rule wrote, and what a person did ─────────────────────────────
 
@@ -667,19 +578,6 @@ check('a first reading is written whatever the row has since become', async () =
   ok(!filtered(write, 'eq', 'stage'), 'a first reading was held to a stage')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach lifecycle checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach lifecycle: ${cases.length} checks passed`)

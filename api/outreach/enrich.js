@@ -766,7 +766,7 @@ async function sweep(db, rows, chains) {
  * site's own domain is the platform's, so the test inverts: an address at any
  * platform is the platform's and every other one is the business's.
  */
-export function profileContact(html) {
+function profileContact(html) {
   let best = null
   for (const email of addressesIn(html, true)) {
     if (platformOf(email.slice(email.indexOf('@') + 1))) continue

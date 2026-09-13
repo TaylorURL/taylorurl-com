@@ -48,6 +48,7 @@
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { rawBody } from '../lib/http/body.js'
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto'
 import { createClient } from '@supabase/supabase-js'
 import { UUID_PATTERN } from '../lib/db/fields.js'
@@ -55,6 +56,7 @@ import { notice, sendNotice } from '../lib/mail/notice.js'
 import { markLead } from '../lib/leads/record.js'
 import { markLead as markSpineLead } from '../lib/leads/spine.js'
 import { openBuyerAccount } from '../lib/auth/buyer.js'
+import { buyerEmail } from '../lib/stripe/session.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { SITE } from '../lib/site/current.js'
 import { timedFetch } from '../lib/http/timed.js'
@@ -118,13 +120,6 @@ const REPORT_TIMEOUT_MS = 8000
 // wider window is a wider replay window and nothing else.
 const TOLERANCE_SECONDS = 300
 
-/** The raw bytes of the request, read straight off the stream. */
-async function rawBody(request) {
-  const chunks = []
-  for await (const chunk of request) chunks.push(Buffer.from(chunk))
-  return Buffer.concat(chunks).toString('utf8')
-}
-
 /**
  * Whether the signature Stripe sent matches the body that arrived.
  *
@@ -158,27 +153,12 @@ export function signed(header, body, secret) {
   })
 }
 
-/** The address the receipt went to, whichever field Stripe filled in. */
-function buyerEmail(session) {
-  return session?.customer_details?.email || session?.customer_email || null
-}
-
-/** A payment intent id, whether Stripe expanded the object or sent the id. */
-function paymentIntentId(session) {
-  const intent = session?.payment_intent
-  return typeof intent === 'string' ? intent : intent?.id || null
-}
-
-/** A customer id, on the same terms. */
-function customerId(session) {
-  const customer = session?.customer
-  return typeof customer === 'string' ? customer : customer?.id || null
-}
-
-/** The subscription the session opened, on the same terms. */
-function subscriptionId(session) {
-  const subscription = session?.subscription
-  return typeof subscription === 'string' ? subscription : subscription?.id || null
+/**
+ * The id of an object a session points at - its payment intent, its customer,
+ * the subscription it opened - whether Stripe expanded the object or sent the id.
+ */
+function idOf(object) {
+  return typeof object === 'string' ? object : object?.id || null
 }
 
 /**
@@ -188,7 +168,7 @@ function subscriptionId(session) {
  * Stripe, and the only thing worth passing to a database function is a string
  * that could be the id it claims to be.
  */
-export function briefId(session) {
+function briefId(session) {
   const held = session?.metadata?.brief_id
   return typeof held === 'string' && UUID_PATTERN.test(held.trim()) ? held.trim() : null
 }
@@ -241,10 +221,10 @@ export function openArgs(session, email) {
   const args = {
     p_email: email,
     p_business_name: session?.metadata?.business_name || null,
-    p_customer: customerId(session),
-    p_payment_intent: paymentIntentId(session),
+    p_customer: idOf(session?.customer),
+    p_payment_intent: idOf(session?.payment_intent),
     p_session: typeof session?.id === 'string' ? session.id : null,
-    p_subscription: subscriptionId(session),
+    p_subscription: idOf(session?.subscription),
   }
   const build = quoted(session, 'build_cents')
   if (build !== null) args.p_deposit_cents = build
@@ -425,7 +405,7 @@ function currencyOf(session) {
  * @param {object} session
  * @returns {{field: string, value: string}|null}
  */
-export function googleClick(session) {
+function googleClick(session) {
   for (const field of GOOGLE_CLICK_FIELDS) {
     const value = stamped(session, field)
     if (value) return { field, value }
@@ -451,7 +431,7 @@ export function googleClick(session) {
  * @param {number} cents What the card was charged.
  * @param {number} at Unix seconds the payment landed.
  */
-export function metaPurchase(session, email, cents, at) {
+function metaPurchase(session, email, cents, at) {
   const person = { em: [hashedEmail(email)] }
   const browser = stamped(session, 'fbp')
   const click = stamped(session, 'fbc')
@@ -484,7 +464,7 @@ export function metaPurchase(session, email, cents, at) {
  * @param {number} cents What the card was charged.
  * @param {number} at Unix seconds the payment landed.
  */
-export function adsPurchase(session, click, cents, at) {
+function adsPurchase(session, click, cents, at) {
   const conversion = {
     conversionAction: `customers/${ADS_CUSTOMER_ID}/conversionActions/${ADS_PURCHASE_ACTION}`,
     conversionDateTime: adsDateTime(at),

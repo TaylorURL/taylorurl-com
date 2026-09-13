@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useSyncExternalStore } from 'react'
 
 /** Where the choice is kept, and the key the pre-paint script in the page head reads. */
-export const THEME_KEY = 'taylorurl_theme'
+const THEME_KEY = 'taylorurl_theme'
 
 /**
  * Fired on the window when the stamped theme changes, so anything reading a
@@ -39,7 +39,7 @@ function systemTheme() {
  * machine turns dark at sunset has not asked this site for anything. System
  * stays on the control for anyone who does want it followed.
  */
-export const DEFAULT_THEME = 'light'
+const DEFAULT_THEME = 'light'
 
 function storedChoice() {
   try {
@@ -86,7 +86,7 @@ function paintChrome() {
  * @param {'light'|'dark'|'system'} choice
  * @returns {'light'|'dark'} what the document now carries
  */
-export function applyTheme(choice) {
+function applyTheme(choice) {
   const resolved = choice === 'system' ? systemTheme() : choice
   document.documentElement.setAttribute('data-theme', resolved)
   paintChrome()

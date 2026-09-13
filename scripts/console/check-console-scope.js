@@ -18,6 +18,7 @@ import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
+import { cases, check, finish, same } from '../harness/checks.js'
 
 // The catalogue names the drawing beside each label, so it imports the marks
 // through the alias the app is built with. The rules under test are pure, but
@@ -40,14 +41,6 @@ await build({
 })
 const { menuSections, SECTIONS } = await import(bundle)
 rmSync(out, { recursive: true, force: true })
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-const same = (got, want, what) => {
-  if (got !== want) {
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-  }
-}
 
 const has = (rows, id) => rows.some(section => section.id === id)
 
@@ -137,19 +130,6 @@ check('exactly one section answers only across more than one site', () => {
   same(marked.join(','), 'sites', 'which sections')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`console scope: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`console scope: all ${cases.length} cases pass`)

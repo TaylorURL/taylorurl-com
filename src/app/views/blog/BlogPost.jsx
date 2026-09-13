@@ -10,12 +10,7 @@ import ShareBar from '@components/article/ShareBar'
 import SocialLinks from '@components/article/SocialLinks'
 import ArticleBody from '@components/article/ArticleBody'
 import { ArticleDeck, ArticleRail, ArticleStatus } from '@components/article/ArticleRail'
-import {
-  ArticleFigures,
-  RailPanel,
-  ReadNext,
-  SeriesStanding,
-} from '@components/article/ArticleControls'
+import { ArticleFigures, FurtherReading } from '@components/article/ArticleControls'
 import { BLOG_POSTS, findSeries, relatedPosts } from '@data/blog'
 import { articleFrame, DECK, RAIL_LEFT, RAIL_RIGHT, seriesNote } from '@utils/articleLayout'
 import { useReadingProgress } from '@hooks/reading/useReadingProgress'
@@ -256,16 +251,7 @@ function Article({ post }) {
               </div>
 
               <div className="mt-14 grid gap-4 md:grid-cols-2">
-                {series && (
-                  <RailPanel label="Series" note={seriesNote(series, post)}>
-                    <SeriesStanding series={series} post={post} />
-                  </RailPanel>
-                )}
-                {related.length > 0 && (
-                  <RailPanel label={series ? 'More from the Series' : 'Read Next'}>
-                    <ReadNext posts={related} />
-                  </RailPanel>
-                )}
+                <FurtherReading post={post} series={series} related={related} />
               </div>
             </>
           )}

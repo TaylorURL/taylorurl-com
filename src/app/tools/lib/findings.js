@@ -31,6 +31,12 @@ const DESCRIPTION_MIN = 70
 
 const RANK = { fail: 0, warn: 1, pass: 2, unknown: 3 }
 
+// What each check that reads the page answers when the page did not come back.
+const PAGE_NOT_READ = {
+  state: 'unknown',
+  detail: 'The page did not come back. Run the check again in a minute.',
+}
+
 const seconds = ms => `${(ms / 1000).toFixed(1)} seconds`
 
 /** The reading a finding should speak from: real visitors where Google holds
@@ -84,11 +90,7 @@ const CHECKS = [
     damage: 1,
     fixes: SEO,
     read(reading) {
-      if (!reading.page)
-        return {
-          state: 'unknown',
-          detail: 'The page did not come back. Run the check again in a minute.',
-        }
+      if (!reading.page) return PAGE_NOT_READ
       const carries = reading.page.schemaCarries || {}
 
       // What decides this is whether the business is described, not which word
@@ -129,11 +131,7 @@ const CHECKS = [
     damage: 2,
     fixes: SEO,
     read(reading) {
-      if (!reading.page)
-        return {
-          state: 'unknown',
-          detail: 'The page did not come back. Run the check again in a minute.',
-        }
+      if (!reading.page) return PAGE_NOT_READ
       if (reading.page.ogImage) {
         return {
           state: 'pass',
@@ -155,11 +153,7 @@ const CHECKS = [
     damage: 3,
     fixes: SEO,
     read(reading) {
-      if (!reading.page)
-        return {
-          state: 'unknown',
-          detail: 'The page did not come back. Run the check again in a minute.',
-        }
+      if (!reading.page) return PAGE_NOT_READ
       const title = reading.page.title
       if (!title) {
         return {
@@ -196,11 +190,7 @@ const CHECKS = [
     damage: 4,
     fixes: SEO,
     read(reading) {
-      if (!reading.page)
-        return {
-          state: 'unknown',
-          detail: 'The page did not come back. Run the check again in a minute.',
-        }
+      if (!reading.page) return PAGE_NOT_READ
       const description = reading.page.description
       if (!description) {
         return {
@@ -298,11 +288,7 @@ const CHECKS = [
     damage: 7,
     fixes: SEO,
     read(reading) {
-      if (!reading.page)
-        return {
-          state: 'unknown',
-          detail: 'The page did not come back. Run the check again in a minute.',
-        }
+      if (!reading.page) return PAGE_NOT_READ
       const count = reading.page.h1Count
       if (count === 1) {
         return {
@@ -402,11 +388,7 @@ const CHECKS = [
     damage: 10,
     fixes: SEO,
     read(reading) {
-      if (!reading.page)
-        return {
-          state: 'unknown',
-          detail: 'The page did not come back. Run the check again in a minute.',
-        }
+      if (!reading.page) return PAGE_NOT_READ
       const { imageCount, imagesWithAlt } = reading.page
       if (imageCount === 0) {
         return { state: 'unknown', detail: 'The page carries no pictures to check.' }

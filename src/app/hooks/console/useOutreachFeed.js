@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
-import { answerFor, NOTHING_HELD } from './feedState'
+import { readEndpoint, writeEndpoint } from './endpoint'
+import { answerFor, NOTHING_HELD, queryOf } from './feedState'
+import { useAlive } from './useAlive'
 import { usePulse } from './usePulse'
 
 const OUTREACH_PATH = '/api/outreach-admin'
@@ -93,33 +95,17 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   const [acting, setActing] = useState(null)
   const [running, setRunning] = useState([])
   const toast = useToast()
-  const alive = useRef(true)
+  const alive = useAlive()
 
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
-
-  // The query string is the identity of this read: a new filter or a new page
-  // is a new request, but an object literal rebuilt on every render is not.
-  const query = useMemo(() => {
-    const search = new URLSearchParams()
-    for (const [key, value] of Object.entries(filters || {})) {
-      if (value) search.set(key, String(value))
-    }
-    return search.toString()
-  }, [filters])
+  const query = queryOf(filters)
 
   const load = useCallback(async () => {
     if (!token || !enabled) return
     try {
-      const response = await fetch(`${OUTREACH_PATH}?${query}&t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(
+        token,
+        `${OUTREACH_PATH}?${query}&t=${Date.now()}`
+      )
       if (!alive.current) return
       if (!response.ok) {
         setFailed({ key: query, value: faultFromResponse(response, payload, NO_BOARD) })
@@ -130,7 +116,7 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
     } catch (cause) {
       if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_BOARD) })
     }
-  }, [token, enabled, query])
+  }, [token, enabled, query, alive])
 
   useEffect(() => {
     load()
@@ -139,11 +125,10 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   const loadProfile = useCallback(async () => {
     if (!token || !enabled || !openId) return
     try {
-      const response = await fetch(
-        `${OUTREACH_PATH}?view=prospect&id=${encodeURIComponent(openId)}&t=${Date.now()}`,
-        { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } }
+      const { response, payload } = await readEndpoint(
+        token,
+        `${OUTREACH_PATH}?view=prospect&id=${encodeURIComponent(openId)}&t=${Date.now()}`
       )
-      const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
         setProfileError(faultFromResponse(response, payload, NO_PROSPECT))
@@ -154,7 +139,7 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
     } catch (cause) {
       if (alive.current) setProfileError(faultMessage(cause, NO_PROSPECT))
     }
-  }, [token, enabled, openId])
+  }, [token, enabled, openId, alive])
 
   useEffect(() => {
     // Closing a prospect clears what was read for it, so opening the next one
@@ -167,11 +152,10 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   const loadMail = useCallback(async () => {
     if (!token || !enabled) return
     try {
-      const response = await fetch(`${OUTREACH_PATH}?view=mail&t=${Date.now()}`, {
-        cache: 'no-store',
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      const payload = await response.json().catch(() => ({}))
+      const { response, payload } = await readEndpoint(
+        token,
+        `${OUTREACH_PATH}?view=mail&t=${Date.now()}`
+      )
       if (!alive.current) return
       if (!response.ok) {
         setMailError(faultFromResponse(response, payload, NO_QUEUE))
@@ -182,7 +166,7 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
     } catch (cause) {
       if (alive.current) setMailError(faultMessage(cause, NO_QUEUE))
     }
-  }, [token, enabled])
+  }, [token, enabled, alive])
 
   useEffect(() => {
     loadMail()
@@ -193,12 +177,7 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
       if (!token) return null
       setActing(key)
       try {
-        const response = await fetch(OUTREACH_PATH, {
-          method: 'POST',
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify(body),
-        })
-        const payload = await response.json().catch(() => ({}))
+        const { response, payload } = await writeEndpoint(token, OUTREACH_PATH, body)
         if (!response.ok) {
           if (alive.current) toast(faultFromResponse(response, payload, NO_CHANGE), 'error')
           return null
@@ -212,7 +191,7 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
         if (alive.current) setActing(null)
       }
     },
-    [token, load, loadProfile, loadMail, toast]
+    [token, load, loadProfile, loadMail, toast, alive]
   )
 
   const run = useCallback(
@@ -237,18 +216,17 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
         await Promise.all([load(), loadMail()])
       }
     },
-    [token, load, loadMail, toast]
+    [token, load, loadMail, toast, alive]
   )
 
   const preview = useCallback(
     async variant => {
       if (!token) return { error: 'Sign in to render a preview.' }
       try {
-        const response = await fetch(
-          `${OUTREACH_PATH}?view=preview&variant=${encodeURIComponent(variant)}&t=${Date.now()}`,
-          { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } }
+        const { response, payload } = await readEndpoint(
+          token,
+          `${OUTREACH_PATH}?view=preview&variant=${encodeURIComponent(variant)}&t=${Date.now()}`
         )
-        const payload = await response.json().catch(() => ({}))
         if (!response.ok) return { error: faultFromResponse(response, payload, NO_PREVIEW) }
         return payload
       } catch (cause) {

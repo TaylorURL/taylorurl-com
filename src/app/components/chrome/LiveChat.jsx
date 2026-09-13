@@ -9,6 +9,8 @@ import {
 } from '@constants/navigation'
 import { assistantUp, dropThread, sendTurn, threadHeld } from '@app/data/liveChat'
 import { EASE } from '@constants/animations'
+import { useScrollLock } from '@hooks/scroll/useScrollLock'
+import { useMediaQuery } from '@hooks/useMediaQuery'
 import { faultMessage } from '@utils/faults'
 
 /**
@@ -57,19 +59,7 @@ const HANDHELD = '(max-width: 639px)'
  * there costs nothing.
  */
 function useHandheld() {
-  const [small, setSmall] = useState(() =>
-    typeof window === 'undefined' ? false : window.matchMedia(HANDHELD).matches
-  )
-
-  useEffect(() => {
-    const query = window.matchMedia(HANDHELD)
-    const sync = () => setSmall(query.matches)
-    sync()
-    query.addEventListener('change', sync)
-    return () => query.removeEventListener('change', sync)
-  }, [])
-
-  return small
+  return useMediaQuery(HANDHELD, { readWhileRendering: true })
 }
 
 /**
@@ -613,23 +603,8 @@ export default function LiveChat({ startOpen = false }) {
   }, [open])
 
   // A sheet over the whole screen holds the page still under it, the way the
-  // site menu does, and hands back the place it was opened from. The root is
-  // what scrolls here, so the root is what is held; releasing it without
-  // putting the offset back drops the reader wherever the clamp left them,
-  // which is a jump nobody asked for on the way out of a chat.
-  useEffect(() => {
-    if (!open || !handheld) return undefined
-    const held = window.scrollY
-    const root = document.documentElement
-    const heldOverflow = root.style.overflow
-    root.style.overflow = 'hidden'
-    document.body.style.overflow = 'hidden'
-    return () => {
-      root.style.overflow = heldOverflow
-      document.body.style.overflow = ''
-      window.scrollTo({ top: held, behavior: 'instant' })
-    }
-  }, [open, handheld])
+  // site menu does, and hands back the place it was opened from.
+  useScrollLock(open && handheld)
 
   // The box is measured off what it holds rather than off the keystroke that
   // changed it, so it is the same height for a line typed in, a line put back

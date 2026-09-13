@@ -28,15 +28,11 @@ import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SITE_KEYS } from '../../lib/site/registry.js'
+import { expect as check, fail, finish } from '../harness/checks.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const VIEWS = 'src/app/views.js'
 const SECOND = 'lib/site/routes/taylorwebsite.js'
-
-const problems = []
-const check = (condition, message) => {
-  if (!condition) problems.push(message)
-}
 
 /**
  * Keys whose paths are not knowable without the network, so a run without
@@ -47,13 +43,8 @@ const UNREACHABLE_WITHOUT_DATABASE = new Set(['NotesIssue'])
 
 // The router reads SITE once at import, so each site is asked in its own child.
 const PROBE = `
-import { registerHooks } from 'node:module'
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const relative = specifier.startsWith('.')
-    return nextResolve(relative && !/\\.[a-z]+$/i.test(specifier) ? specifier + '.js' : specifier, context)
-  },
-})
+import { allowExtensionlessImports } from './scripts/harness/extensionless-imports.js'
+allowExtensionlessImports()
 const { PRERENDER_ROUTES } = await import('./vite/site-routes.js')
 const { ROUTE_DEFINITIONS, matchViewKeys } = await import('./src/app/constants/routes.js')
 const mounted = []
@@ -82,7 +73,7 @@ for (const key of SITE_KEYS) {
   try {
     site = ask(key)
   } catch (cause) {
-    problems.push(`SITE=${key}: could not resolve its routes (${cause.message.split('\n')[0]})`)
+    fail(`SITE=${key}: could not resolve its routes (${cause.message.split('\n')[0]})`)
     continue
   }
 
@@ -160,15 +151,9 @@ check(
     'chunks ship to a site that has no page for them'
 )
 
-if (problems.length) {
-  for (const problem of problems) console.error('FAIL %s', problem)
-  console.error(
-    '\n%d problem(s). A page with no route, a route with no page, and a route with no view all ' +
-      'build clean.',
-    problems.length
-  )
-  process.exit(1)
-}
+await finish({
+  hint: 'A page with no route, a route with no page, and a route with no view all build clean.',
+})
 
 console.log(
   'route coverage holds: across %d sites every published page is mounted by a route, /404 reaches ' +

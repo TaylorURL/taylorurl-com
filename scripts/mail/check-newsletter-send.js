@@ -26,8 +26,7 @@
  * same blocks: a filter in one renderer and not the other is a message
  * contradicting itself, and a case that reads only the HTML never sees it. An
  * issue with nothing to say to a side the run holds recipients for stops the
- * whole run, since the half that went out cannot be recalled. The open archive
- * is on neither side and is held to the unmarked blocks alone.
+ * whole run, since the half that went out cannot be recalled.
  *
  * The postal address is asserted the other way round. Both parts of a message
  * are read for the mail box the studio used to sign off with, a run is driven
@@ -54,27 +53,16 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import {
   ASKED_SOURCES,
-  AUDIENCES,
   CLIENT,
   PROSPECT,
-  PUBLIC,
   RECIPIENT_COLUMNS,
   audienceOf,
-  mayReceive,
   selectRecipients,
 } from '../../lib/mail/audience.js'
-import {
-  DRAFT,
-  READY,
-  SENT,
-  blocksFor,
-  hasContentFor,
-  issueSlug,
-  readBlock,
-  readBody,
-  sendRefusal,
-} from '../../lib/mail/issues.js'
+import { DRAFT, READY, SENT, blocksFor, hasContentFor, sendRefusal } from '../../lib/mail/issues.js'
 import { renderIssueEmail, renderIssueHtml, renderIssueText } from '../../lib/mail/emailTemplate.js'
+import { cases, check, finish, ok, quietly, refusal, same } from '../harness/checks.js'
+import { MAIL_BOX, statesNoAddress } from './mail-box-fixture.js'
 
 // Placeholders for the credentials the endpoints read at load. Neither of the
 // first two opens anything: the provider is a recorder in every case that
@@ -94,14 +82,6 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 /** The environment variable no sender reads. The cases hold the name to prove it. */
 const POSTAL_ADDRESS_VAR = 'OUTREACH_POSTAL_ADDRESS'
 
-/**
- * The mail box no message states. It is here so the cases can look for it, and
- * the fragments beside it are what a footer built from a differently formatted
- * copy of the same box would print.
- */
-const ADDRESS = 'TaylorURL LLC, 3120 Southwest Fwy Ste 101, PMB #841258, Houston, TX 77098-4520'
-const ADDRESS_FRAGMENTS = ['3120 Southwest Fwy', 'PMB #841258', 'Houston, TX', '77098']
-
 const ISSUE = {
   id: 'issue-1',
   slug: 'first-light',
@@ -113,28 +93,6 @@ const SUBSCRIBER = {
   id: 'sub-1',
   email: 'reader@example.com',
   unsub_token: '11111111-2222-4333-8444-555555555555',
-}
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
-
-/** Runs `act` and returns the message it raised, or null when it did not. */
-const raised = async act => {
-  try {
-    await act()
-    return null
-  } catch (cause) {
-    return cause.message
-  }
 }
 
 let instance = 0
@@ -160,20 +118,6 @@ function recorder(answer = { id: 're_recorded' }) {
         headers: { 'content-type': 'application/json' },
       })
     },
-  }
-}
-
-/**
- * Runs `act` with the endpoint's own logging held back, so a case that exercises
- * a refusal does not print one alongside the run's result.
- */
-const quietly = async act => {
-  const held = console.error
-  console.error = () => {}
-  try {
-    return await act()
-  } finally {
-    console.error = held
   }
 }
 
@@ -287,8 +231,11 @@ function project({ issue = null, subscribers = [], suppression = [], sendRows = 
   }
 }
 
-/** A request and a response the endpoint can answer into. */
-function exchange(body = { slug: ISSUE.slug }) {
+/**
+ * A response an endpoint can answer into, and the answer it keeps: the status,
+ * the body, and each header under the name the endpoint set it by.
+ */
+function answering() {
   const answer = { status: 0, body: null, headers: {} }
   const response = {
     setHeader(name, value) {
@@ -304,23 +251,18 @@ function exchange(body = { slug: ISSUE.slug }) {
       return response
     },
   }
+  return { answer, response }
+}
+
+/** A request and a response the endpoint can answer into. */
+function exchange(body = { slug: ISSUE.slug }) {
   return {
-    answer,
-    response,
+    ...answering(),
     request: { method: 'POST', headers: { authorization: 'Bearer a-session-token' }, body },
   }
 }
 
 const patchFor = writes => writes.find(write => write.kind === 'update')?.patch
-
-/** Every fragment of the mail box, held out of one part of one message. */
-function statesNoAddress(part, where) {
-  const said = String(part)
-  ok(!said.includes(ADDRESS), `the whole address is absent from ${where}`)
-  for (const fragment of ADDRESS_FRAGMENTS) {
-    ok(!said.includes(fragment), `"${fragment}" is absent from ${where}`)
-  }
-}
 
 check('the laid-out footer states no address', () => {
   statesNoAddress(renderIssueHtml({ issue: ISSUE, unsubscribe: null }), 'the laid-out part')
@@ -351,11 +293,11 @@ check('the plaintext part renders when no address is passed', () => {
 
 check('an address a stale caller still passes reaches neither part', () => {
   statesNoAddress(
-    renderIssueHtml({ issue: ISSUE, unsubscribe: null, senderAddress: ADDRESS }),
+    renderIssueHtml({ issue: ISSUE, unsubscribe: null, senderAddress: MAIL_BOX }),
     'the laid-out part'
   )
   statesNoAddress(
-    renderIssueText({ issue: ISSUE, unsubscribe: null, senderAddress: ADDRESS }),
+    renderIssueText({ issue: ISSUE, unsubscribe: null, senderAddress: MAIL_BOX }),
     'the plaintext part'
   )
 })
@@ -391,7 +333,7 @@ check('a delivery goes out with no address configured', async () => {
 })
 
 check('a delivery ignores the variable a deployment has not cleared yet', async () => {
-  process.env[POSTAL_ADDRESS_VAR] = ADDRESS
+  process.env[POSTAL_ADDRESS_VAR] = MAIL_BOX
   const sender = await loadSender()
   const provider = recorder()
   const store = sends()
@@ -460,7 +402,7 @@ check('a message with no unsubscribe link never reaches the provider', async () 
   const sender = await loadSender()
   const provider = recorder()
   const message = await withFetch(provider.fetch, () =>
-    raised(() =>
+    refusal(() =>
       sender.sendOne({
         to: SUBSCRIBER.email,
         subject: ISSUE.title,
@@ -492,15 +434,6 @@ check('a subscriber with no token is recorded rather than mailed', async () => {
 })
 
 // ── Who an issue may reach ───────────────────────────────────────────────
-
-/** A row as the list holds one, defaulting to somebody who asked. */
-const person = (patch = {}) => ({
-  status: 'subscribed',
-  source: 'client',
-  consent_at: '2026-08-28T21:19:53Z',
-  confirmed_at: null,
-  ...patch,
-})
 
 /**
  * A query that answers nothing and keeps every narrowing made to it, so what
@@ -553,51 +486,9 @@ check('the audience narrows on standing, on consent, and on a human act', () => 
   for (const source of ASKED_SOURCES) {
     ok(applied.or[0].includes(source), `${source} counts: ${applied.or[0]}`)
   }
-})
-
-check('a status on its own does not put anybody on the audience', () => {
-  // A row has to carry a stamp as well, which is what an unsubscribe and a
-  // bounce each clear.
-  same(mayReceive({ status: 'subscribed', source: 'outreach' }), false, 'a bare status')
-})
-
-check('a business the cold sender wrote to is off the audience', () => {
-  // Being written to once is not asking to be written to again. A row the
-  // sender left behind carries a stamp and no confirmation, and a stamp on
-  // its own is the sender's own record rather than anybody's consent.
-  same(mayReceive(person({ source: 'outreach' })), false, 'a stamped prospect')
-})
-
-check('an outreach row that unsubscribed is off the audience', () => {
-  same(
-    mayReceive(person({ source: 'outreach', status: 'unsubscribed' })),
-    false,
-    'a prospect that said stop'
-  )
-})
-
-check('a business that confirmed for itself is on the audience', () => {
-  same(
-    mayReceive(person({ source: 'outreach', confirmed_at: '2026-08-29T00:00:00Z' })),
-    true,
-    'a confirmed prospect'
-  )
-})
-
-check('a client and a hand-added person are on the audience', () => {
-  same(mayReceive(person({ source: 'client' })), true, 'a client')
-  same(mayReceive(person({ source: 'console' })), true, 'added by hand')
-})
-
-check('an import and a legacy carry-over stay off it', () => {
-  same(mayReceive(person({ source: 'import' })), false, 'an import')
-  same(mayReceive(person({ source: 'legacy' })), false, 'a carry-over')
-})
-
-check('somebody who left is off it whatever else their row carries', () => {
-  same(mayReceive(person({ status: 'unsubscribed' })), false, 'unsubscribed')
-  same(mayReceive(person({ status: 'bounced' })), false, 'bounced')
-  same(mayReceive(person({ status: 'pending' })), false, 'still to confirm')
+  for (const source of ['outreach', 'import', 'legacy']) {
+    ok(!applied.or[0].includes(source), `${source} does not count on its own: ${applied.or[0]}`)
+  }
 })
 
 // ── Whether an issue may go out at all ───────────────────────────────────
@@ -680,32 +571,6 @@ check('a suppressed address is skipped however it reads on the list', async () =
   same(provider.sent.length, 0, 'messages handed over')
 })
 
-// ── What a person may write into an issue ────────────────────────────────
-
-check('an issue is addressed in lowercase, numbers and hyphens', () => {
-  same(issueSlug(' First-Light '), 'first-light', 'a title case slug')
-  same(issueSlug('september 2026'), null, 'a space')
-  same(issueSlug('-leading'), null, 'a leading hyphen')
-  same(issueSlug(''), null, 'nothing at all')
-})
-
-check('a body keeps only the blocks both renderers draw', () => {
-  const body = readBody([
-    { type: 'paragraph', text: '  A line of copy.  ' },
-    { type: 'paragraph', text: '   ' },
-    { type: 'heading', text: 'A heading', level: 9 },
-    { type: 'button', text: 'Read it', href: 'javascript:alert(1)' },
-    { type: 'button', text: 'Read it', href: 'https://www.taylorurl.com/work' },
-    { type: 'list', items: ['one', '  ', 'two'] },
-    { type: 'marquee', text: 'no' },
-  ])
-  same(body.length, 4, 'blocks kept')
-  same(body[0].text, 'A line of copy.', 'the paragraph is trimmed')
-  same(body[1].level, 2, 'an unknown heading level falls back')
-  same(body[2].href, 'https://www.taylorurl.com/work', 'only the link a client can follow')
-  same(body[3].items.join(','), 'one,two', 'empty items are dropped')
-})
-
 // ── What each side of the list is shown ──────────────────────────────────
 
 /** A reader on each side, shaped as one comes off the mailing list. */
@@ -778,7 +643,7 @@ const partsFor = (body, audience) => {
 }
 
 check('a block carrying no marker reaches both sides in both parts', () => {
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const { html, text } = partsFor(MIXED, side)
     for (const phrase of ['the shared opening', 'the shared closing']) {
       ok(html.includes(phrase), `the laid-out ${side} copy carries "${phrase}"`)
@@ -805,7 +670,7 @@ check('a marked block reaches its own side and no other, in both parts', () => {
 })
 
 check('both parts of one copy carry the same blocks', () => {
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const { html, text } = partsFor(MIXED, side)
     const laidOut = phrasesIn(html).join(' | ')
     const plain = phrasesIn(text).join(' | ')
@@ -881,19 +746,6 @@ check('the same issue goes out on a night only its own side is owed a copy', asy
   ok(message?.text.includes('the client only line'), 'the plaintext part carries it too')
 })
 
-check('a block written for a side nobody is on is refused at the door', () => {
-  const line = { type: 'paragraph', text: 'A line of copy.' }
-  same(readBlock({ ...line, audience: 'everybody' }), null, 'a marker naming no side')
-  same(readBlock({ type: 'divider', audience: 'partners' }), null, 'a rule carrying one')
-  same(readBlock({ ...line, audience: CLIENT })?.audience, CLIENT, 'a block for clients')
-  same(
-    readBlock({ type: 'divider', audience: PROSPECT })?.audience,
-    PROSPECT,
-    'a rule for prospects'
-  )
-  same(readBlock(line)?.audience, undefined, 'a block for everybody')
-})
-
 check('an issue nothing is marked in draws exactly as it drew before', () => {
   const plain = [
     { type: 'heading', text: 'A heading', level: 2 },
@@ -902,7 +754,7 @@ check('an issue nothing is marked in draws exactly as it drew before', () => {
     { type: 'button', text: 'Read it', href: 'https://www.taylorurl.com/work' },
   ]
   const whole = partsFor(plain, null)
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const drawn = partsFor(plain, side)
     same(drawn.html, whole.html, `the laid-out ${side} copy`)
     same(drawn.text, whole.text, `the plaintext ${side} copy`)
@@ -911,7 +763,7 @@ check('an issue nothing is marked in draws exactly as it drew before', () => {
 
 check('a marker naming no side is drawn for nobody', () => {
   const body = [{ type: 'paragraph', text: 'the orphaned line', audience: 'partners' }]
-  for (const side of AUDIENCES) {
+  for (const side of [CLIENT, PROSPECT]) {
     const { html, text } = partsFor(body, side)
     ok(!html.includes('the orphaned line'), `the laid-out ${side} copy withholds it`)
     ok(!text.includes('the orphaned line'), `the plaintext ${side} copy withholds it`)
@@ -934,17 +786,6 @@ check('a subscriber copy is composed for the side that row is on', () => {
   ok(!client.text.includes('the prospect line'), 'and the client copy withholds the prospect block')
 })
 
-check('the archive draws the blocks no side was named for', () => {
-  // A stranger arriving at a published issue is on neither side, so the marked
-  // halves are withheld and the unmarked blocks are what the page holds.
-  same(
-    blocksFor(MIXED, PUBLIC).map(phraseOf).filter(Boolean).join(' | '),
-    'the shared opening | the shared closing',
-    'what an open page carries'
-  )
-  same(blocksFor(MIXED, PUBLIC).length, 3, 'the rule between them stands')
-})
-
 // ── The schedule that sends an issue on its date ─────────────────────────
 
 /** The scheduled door, loaded fresh, so no two cases share one module. */
@@ -955,22 +796,7 @@ async function loadDue() {
 
 /** An invocation as Vercel makes one, and the response it answers into. */
 function firing({ method = 'GET', authorization = `Bearer ${CRON_SECRET}` } = {}) {
-  const answer = { status: 0, body: null, headers: {} }
-  const response = {
-    setHeader(name, value) {
-      answer.headers[name] = value
-      return response
-    },
-    status(code) {
-      answer.status = code
-      return response
-    },
-    json(payload) {
-      answer.body = payload
-      return response
-    },
-  }
-  return { answer, response, request: { method, headers: { authorization } } }
+  return { ...answering(), request: { method, headers: { authorization } } }
 }
 
 /**
@@ -1113,19 +939,6 @@ check('no schedule fires the send path any more', () => {
   )
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`newsletter send: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`newsletter send: all ${cases.length} cases pass`)

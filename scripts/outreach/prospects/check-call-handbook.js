@@ -34,10 +34,6 @@
  *
  *   npm run check:call-handbook
  */
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import {
   CLOSING,
   FACTS,
@@ -50,22 +46,8 @@ import {
 } from '../../../lib/outreach/prospects/handbook.js'
 import { BUILD_PRICE, MONTHLY_PRICE } from '../../../src/app/data/checkout/pricing.js'
 import { PORTFOLIO_AVERAGES } from '../../../src/app/data/portfolio.js'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../../..')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: got ${JSON.stringify(got)}, wanted ${JSON.stringify(want)}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
-
-const read = path => readFileSync(join(ROOT, path), 'utf8')
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { read } from '../../harness/files.js'
 
 /**
  * The one screen the handbook is drawn on.
@@ -542,19 +524,6 @@ check('every folded answer can be opened and shut without twenty presses', () =>
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} call handbook checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`call handbook: ${cases.length} checks passed`)

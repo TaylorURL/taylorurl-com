@@ -1,13 +1,8 @@
-import { useState } from 'react'
 import { ArrowUpRight } from 'lucide-react'
 import Mesh from '@components/mesh/Mesh'
-import { portfolioPreviewSrc, portfolioScreenshotServiceUrl } from '@data/portfolio'
+import PortfolioPreview from '@components/mockups/PortfolioPreview'
 import { GROUNDS } from '@constants/grounds'
 import { meshLadder, meshSpans } from '@constants/mesh'
-
-// The stage a capture fills, stated on the element as well as on its box so
-// the space is held from the markup alone.
-const PREVIEW_BOX = { width: 1280, height: 800 }
 
 /**
  * How a card is arranged at a breakpoint where it covers more than one column,
@@ -60,10 +55,7 @@ function arrangement(spans, part) {
 }
 
 /**
- * A live client site, shown as the answer to whether this work exists. The
- * committed capture is the source; a site whose capture has not been taken
- * falls back to a server-rendered screenshot of the page itself, so the card
- * always shows the real thing.
+ * A live client site, shown as the answer to whether this work exists.
  *
  * The card is the hover target and the capture is what answers it, which is
  * why both carry a class the stylesheet names: a pointer anywhere on the card
@@ -72,10 +64,6 @@ function arrangement(spans, part) {
  */
 function WorkCard({ project, tone, cell, spans, feature, headingTag }) {
   const Heading = headingTag
-  const [useFallback, setUseFallback] = useState(false)
-  const src = useFallback
-    ? portfolioScreenshotServiceUrl(project, 'desktop')
-    : portfolioPreviewSrc(project, 'desktop')
 
   return (
     <article className={`work-card grid ${tone.surface} ${cell} ${arrangement(spans, 'article')}`}>
@@ -85,14 +73,8 @@ function WorkCard({ project, tone, cell, spans, feature, headingTag }) {
           'frame'
         )}`}
       >
-        <img
-          src={src}
-          alt={`${project.name} website`}
-          width={PREVIEW_BOX.width}
-          height={PREVIEW_BOX.height}
-          loading="lazy"
-          decoding="async"
-          onError={() => setUseFallback(true)}
+        <PortfolioPreview
+          project={project}
           className="work-capture h-full w-full object-cover object-top transition-transform duration-200 ease-out-soft"
         />
       </div>

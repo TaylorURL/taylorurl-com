@@ -16,7 +16,7 @@ import { BUILD_PRICE, MONTHLY_PRICE, PRICE_OFFERS } from '@data/checkout/pricing
 import { EXTRA_SERVICES, otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
-import ServiceCards from './ServiceCards'
+import MoreServices from './MoreServices'
 import SectionLink from './SectionLink'
 
 /**
@@ -394,18 +394,7 @@ export default function OnlineTools() {
         )}
       </ServiceSection>
 
-      <ServiceSection
-        id="more"
-        ground="paper"
-        eyebrow="The Rest of It"
-        title="Everything else on offer."
-      >
-        <ServiceCards
-          pages={[...otherServices(SLUG), ...EXTRA_SERVICES]}
-          ground="paper"
-          columns={{ base: 1, sm: 2, lg: 3 }}
-        />
-      </ServiceSection>
+      <MoreServices pages={[...otherServices(SLUG), ...EXTRA_SERVICES]} />
 
       <CtaBanner
         eyebrow="Let’s Talk"

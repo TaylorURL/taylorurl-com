@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
+import { usePoll } from './usePulse'
 
 const STATUS_FEED_PATH = '/api/status-feed'
 const POLL_MS = 30_000
@@ -18,7 +19,6 @@ export function useStatusFeed() {
   const [data, setData] = useState(null)
   const [error, setError] = useState(null)
   const [fetchedAt, setFetchedAt] = useState(null)
-  const timer = useRef(null)
   const failures = useRef(0)
 
   const load = useCallback(async () => {
@@ -39,31 +39,7 @@ export function useStatusFeed() {
     }
   }, [])
 
-  useEffect(() => {
-    let cancelled = false
-    let first = true
-    const tick = async () => {
-      if (cancelled) return
-      // The first load always runs, even in a background tab, so the page never
-      // sits on its loading shell; only the repeat polling waits for visibility.
-      let ok = true
-      if (first || document.visibilityState === 'visible') ok = await load()
-      first = false
-      if (cancelled) return
-      const wait = ok ? POLL_MS : RETRY_MS[Math.min(failures.current - 1, RETRY_MS.length - 1)]
-      timer.current = window.setTimeout(tick, wait)
-    }
-    tick()
-    const onVisible = () => {
-      if (document.visibilityState === 'visible') load()
-    }
-    document.addEventListener('visibilitychange', onVisible)
-    return () => {
-      cancelled = true
-      window.clearTimeout(timer.current)
-      document.removeEventListener('visibilitychange', onVisible)
-    }
-  }, [load])
+  usePoll(load, { intervalMs: POLL_MS, retryMs: RETRY_MS, failures })
 
   return { data, error, fetchedAt, loading: !data && !error, refresh: load }
 }

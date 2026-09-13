@@ -1,3 +1,5 @@
+import { fullCount } from './lib/format'
+
 /**
  * The card a chart's tooltip draws, so every chart in the console answers a
  * hover the same way: the bucket on one line, then a row per series with its
@@ -26,4 +28,23 @@ export function TooltipCard({ title, rows }) {
       </ul>
     </div>
   )
+}
+
+/**
+ * What a ring of sessions says over one slice: its name, its sessions, and its
+ * share of the total the ring was handed.
+ */
+export function ShareTooltip({ active, payload, total }) {
+  return active && payload?.length ? (
+    <TooltipCard
+      title={payload[0].name}
+      rows={[
+        { label: 'Sessions', value: fullCount(payload[0].value) },
+        {
+          label: 'Share',
+          value: total ? `${Math.round((payload[0].value / total) * 100)}%` : '—',
+        },
+      ]}
+    />
+  ) : null
 }

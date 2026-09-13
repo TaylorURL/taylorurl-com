@@ -21,6 +21,7 @@ import { useSearchShortcut } from '@hooks/chrome/useSearchShortcut'
 import { useToast } from '@hooks/chrome/useToast'
 import { useSessionGlimpse } from '@hooks/session/useSessionGlimpse'
 import { announceGroundChange, useOnDarkBackground } from '@hooks/theme/useOnDarkBackground'
+import { useScrollLock } from '@hooks/scroll/useScrollLock'
 import { useScrolledPast } from '@hooks/scroll/useScrolledPast'
 import { useTheme } from '@hooks/theme/useTheme'
 import { SITE } from '../../../../lib/site/current.js'
@@ -260,24 +261,8 @@ export default function Navigation() {
   }, [location.pathname])
 
   // The drawer holds the page still under it, and hands back the place it was
-  // opened from. The root is what scrolls here, so it is the root that is held;
-  // releasing it without putting the offset back drops the reader wherever the
-  // clamp left them, which is a jump they did not ask for on the way out of a
-  // menu. The restore is instant on purpose - the page is already where it was
-  // and gliding there would animate a move that never happened.
-  useEffect(() => {
-    if (!mobileOpen) return undefined
-    const held = window.scrollY
-    const root = document.documentElement
-    const heldOverflow = root.style.overflow
-    root.style.overflow = 'hidden'
-    document.body.style.overflow = 'hidden'
-    return () => {
-      root.style.overflow = heldOverflow
-      document.body.style.overflow = ''
-      window.scrollTo({ top: held, behavior: 'instant' })
-    }
-  }, [mobileOpen])
+  // opened from.
+  useScrollLock(mobileOpen)
 
   // Escape closes whichever layer is open, wherever focus sits - the panel's
   // own handler only hears it while focus is inside the shell. Focus goes back

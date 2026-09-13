@@ -25,12 +25,10 @@
  *   npm run check:buyer-path
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import { claimHolds, claimReturnUrl, mintClaim, withinClaimWindow } from '../../lib/stripe/claim.js'
 import { claimSpent } from '../../lib/auth/buyer.js'
+import { cases, check, finish, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 // Read before the endpoint is imported: it fixes the Stripe key at module load
 // and answers 503 without one, and the database client fixes its own pair the
@@ -43,10 +41,6 @@ process.env.SUPABASE_ANON_KEY = 'anon_not_a_real_key'
 
 const { default: claimEndpoint } = await import('../../api/checkout-claim.js')
 
-const HERE = dirname(fileURLToPath(import.meta.url))
-const ROOT = join(HERE, '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
-
 const WELCOME = 'src/app/views/auth/Welcome.jsx'
 const LOGIN = 'src/app/views/auth/Login.jsx'
 const SHELL = 'src/app/views/auth/AuthShell.jsx'
@@ -58,13 +52,6 @@ const LINK = 'api/checkout-link.js'
 const WEBHOOK = 'api/stripe-webhook.js'
 const FORGOT = 'src/app/views/auth/ForgotPassword.jsx'
 const ROUTES = 'src/app/constants/routes.js'
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: expected ${want}, got ${got}`)
-}
 
 /* ----------------------------------------------------------------------- *
  * The endpoint, run rather than read.
@@ -479,19 +466,6 @@ check('a lookup that fails costs a buyer nothing', () => {
   same(/\bthrow new\b/.test(reader), false, 'the reader raises nothing of its own')
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`buyer path: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`buyer path: all ${cases.length} cases pass; a payment ends inside the console`)

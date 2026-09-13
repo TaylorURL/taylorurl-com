@@ -20,10 +20,6 @@
  *   npm run check:lead-capture
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
 import {
   PAYMENT_PATH,
   PAY_STEP,
@@ -31,17 +27,8 @@ import {
   STEP_COUNT,
   fromPaymentPage,
 } from '../../lib/leads/paths.js'
-
-const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
-const read = path => readFileSync(join(ROOT, path), 'utf8')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
+import { cases, check, finish, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
 
 const PAYMENT = 'src/app/views/start/Payment.jsx'
 const START = 'src/app/views/start/Start.jsx'
@@ -263,20 +250,7 @@ check('the console reads a payment lead as a page rather than as a step', () => 
   )
 })
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const line of failures) console.error(line)
-  console.error(`lead capture: ${failures.length} of ${cases.length} cases failed`)
-  process.exit(1)
-}
+await finish()
 
 const schedule = (JSON.parse(read('vercel.json')).crons || []).find(
   entry => entry.path === '/api/start-followup'

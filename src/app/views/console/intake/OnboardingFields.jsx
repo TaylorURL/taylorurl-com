@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { CONTROL_H, FIELD, MONO_LABEL, QUIET, SELECT } from '../lib/tokens'
+import { DAY_NAMES } from '../lib/onboarding'
 import OnboardingWriting from './OnboardingWriting'
 
 /**
@@ -111,17 +112,6 @@ const CHIP =
   'inline-flex items-center gap-2 rounded-full border border-hair-paper-strong bg-[color:var(--paper-field)] py-1 pl-3 pr-1.5 text-[13px] text-ink-paper'
 const CHIP_DROP =
   'flex h-5 w-5 flex-shrink-0 cursor-pointer items-center justify-center rounded-full text-[13px] leading-none text-paper-faint transition-colors duration-150 ease-out-soft hover:text-[color:var(--danger-on-paper)] disabled:cursor-not-allowed disabled:opacity-50'
-
-/** The days of the week, written out. The catalogue stores the three-letter id. */
-const DAY_NAMES = {
-  mon: 'Monday',
-  tue: 'Tuesday',
-  wed: 'Wednesday',
-  thu: 'Thursday',
-  fri: 'Friday',
-  sat: 'Saturday',
-  sun: 'Sunday',
-}
 
 /**
  * What each column of a list is, by the name the catalogue gives it.

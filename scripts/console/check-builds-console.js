@@ -20,26 +20,9 @@
  * shell.
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
+import { cases, check, finish, report, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
+import { asksForAdmin, sectionEntry, unregistered } from './section-wiring.js'
 
 const ENDPOINT = 'api/projects-admin.js'
 const PAGE = 'src/app/views/console/pages/studio/BuildsPage.jsx'
@@ -69,13 +52,7 @@ check('every admin project function has a caller', () => {
 })
 
 check('the endpoint asks for the admin role rather than for a session', () => {
-  const endpoint = read(ENDPOINT)
-  same(endpoint.includes('authorizeAdmin'), true, 'authorizeAdmin is the door')
-  same(
-    /authorizeAccount\s*\(/.test(endpoint),
-    false,
-    'no plain session check stands in for the role check'
-  )
+  asksForAdmin(ENDPOINT)
 })
 
 check("the client's own endpoint knows none of the admin functions", () => {
@@ -87,23 +64,11 @@ check("the client's own endpoint knows none of the admin functions", () => {
 })
 
 check('the builds section is registered everywhere a section is registered', () => {
-  const faults = []
-  const places = [
-    ['src/app/views/console/lib/sections.js', "id: 'builds'"],
-    ['src/app/constants/routes.js', "key: 'ConsoleBuilds', path: 'builds'"],
-    ['src/app/views.js', 'ConsoleBuilds:'],
-    ['vite/site-routes.js', "'/console/builds'"],
-  ]
-  for (const [path, needle] of places) {
-    if (!read(path).includes(needle)) faults.push(`${path} does not carry the builds section`)
-  }
-  report(faults)
+  report(unregistered({ id: 'builds', key: 'ConsoleBuilds', called: 'builds' }))
 })
 
 check('the section is admin-only and asks for no site in scope', () => {
-  const sections = read('src/app/views/console/lib/sections.js')
-  const entry = sections.slice(sections.indexOf("id: 'builds'"))
-  const body = entry.slice(0, entry.indexOf('},'))
+  const body = sectionEntry('builds')
   same(/admin: true/.test(body), true, 'admin only')
   same(/scope: false/.test(body), true, 'no site in scope')
 })
@@ -120,23 +85,14 @@ check('the console offers every stage the database allows', () => {
 check('a capture goes up in two steps rather than through the request body', () => {
   same(read(ENDPOINT).includes('createSignedUploadUrl'), true, 'the endpoint signs an upload')
   const hook = read(HOOK)
-  same(hook.includes("method: 'PUT'"), true, 'the browser writes the file itself')
+  const upload = read('src/app/hooks/console/endpoint.js')
+  same(hook.includes('putSigned(place.url, file,'), true, 'the browser writes the file itself')
+  same(upload.includes("method: 'PUT'"), true, 'the browser writes the file itself')
   // The file is the body of that request rather than a field inside a JSON
   // one, which keeps a full-page capture clear of a request cap that has
   // nothing to do with how big a screenshot ought to be.
-  same(/\n\s*body: file,/.test(hook), true, 'the file is the body of the upload')
+  same(/\n\s*body: file,/.test(upload), true, 'the file is the body of the upload')
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

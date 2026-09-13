@@ -53,6 +53,18 @@ export function stageOf(id) {
 }
 
 /**
+ * What a build has asked its client for so far: the client's own items, up to
+ * and including the stage the work has reached. An item from a stage further
+ * on is work the client cannot usefully do yet, so it is not asked for.
+ */
+export function clientAsks(project) {
+  const reached = stageRank(project?.stage)
+  return (project?.tasks || []).filter(
+    task => task.owner === 'client' && stageRank(task.stage) <= reached
+  )
+}
+
+/**
  * Which project the tracker should be showing.
  *
  * The one still being built, and the oldest of those when somebody is having

@@ -34,26 +34,9 @@
  *   npm run check:server-console
  */
 
-import { readFileSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const HERE = dirname(fileURLToPath(import.meta.url))
-const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
-
-const cases = []
-function check(name, run) {
-  cases.push([name, run])
-}
-
-function same(got, want, what) {
-  if (got !== want)
-    throw new Error(`${what}: expected ${JSON.stringify(want)}, got ${JSON.stringify(got)}`)
-}
-
-function report(faults) {
-  if (faults.length) throw new Error(faults.join('\n      '))
-}
+import { cases, check, finish, report, same } from '../harness/checks.js'
+import { read } from '../harness/files.js'
+import { asksForAdmin, sectionEntry, unregistered } from './section-wiring.js'
 
 const ENDPOINT = 'api/server-feed.js'
 const PAGE = 'src/app/views/console/pages/health/ServerPage.jsx'
@@ -72,23 +55,11 @@ const FRAME = 'src/app/views/console/ConsoleFrame.jsx'
 const STATES = ['operational', 'degraded', 'down']
 
 check('the section is registered everywhere a section is registered', () => {
-  const faults = []
-  const places = [
-    [SECTIONS, "id: 'server'"],
-    ['src/app/constants/routes.js', "key: 'ConsoleServer', path: 'server'"],
-    ['src/app/views.js', 'ConsoleServer:'],
-    ['vite/site-routes.js', "'/console/server'"],
-  ]
-  for (const [path, needle] of places) {
-    if (!read(path).includes(needle)) faults.push(`${path} does not carry the Server section`)
-  }
-  report(faults)
+  report(unregistered({ id: 'server', key: 'ConsoleServer', called: 'Server' }))
 })
 
 check('the section is admin-only, and offers no scope, window or traffic strip', () => {
-  const sections = read(SECTIONS)
-  const entry = sections.slice(sections.indexOf("id: 'server'"))
-  const body = entry.slice(0, entry.indexOf('},'))
+  const body = sectionEntry('server')
   same(/admin: true/.test(body), true, 'admin only')
   // One machine that hosts none of the sites. A site chooser narrows nothing
   // on it, a date window has nothing to put over a temperature, and the
@@ -120,13 +91,7 @@ check('a reader who is not an admin cannot open the section by typing its addres
 })
 
 check('the endpoint asks for the admin role rather than for a session', () => {
-  const endpoint = read(ENDPOINT)
-  same(endpoint.includes('authorizeAdmin'), true, 'authorizeAdmin is the door')
-  same(
-    /authorizeAccount\s*\(/.test(endpoint),
-    false,
-    'no plain session check stands in for the role check'
-  )
+  asksForAdmin(ENDPOINT)
 })
 
 check('nothing is read from the server before the caller has been checked', () => {
@@ -304,16 +269,5 @@ check('the machine is called the Sunday Server wherever a reader sees it', () =>
   report(faults)
 })
 
-let failed = 0
-for (const [name, run] of cases) {
-  try {
-    run()
-    console.log(`  ok  ${name}`)
-  } catch (error) {
-    failed += 1
-    console.error(`  no  ${name}\n      ${error.message}`)
-  }
-}
-
-console.log(`\n${cases.length - failed}/${cases.length} passed`)
-if (failed) process.exit(1)
+const passed = await finish({ listed: true })
+console.log(`\n${passed}/${cases.length} passed`)

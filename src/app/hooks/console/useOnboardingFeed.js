@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { browserStore } from '@utils/storage'
+import { readEndpoint, writeEndpoint } from './endpoint'
 import { answerFor, NOTHING_HELD } from './feedState'
+import { useAlive } from './useAlive'
 
 /**
  * The one address a brief is read and written at.
@@ -66,17 +69,6 @@ const NOT_SENT =
 
 /** A read is the other way round, and this is where one that failed lands. */
 const NOT_READ = 'Your brief could not be read.'
-
-/** The browser's own store, where there is one. */
-function store() {
-  try {
-    return typeof sessionStorage === 'undefined' ? null : sessionStorage
-  } catch {
-    // A browser set to block site data throws on the accessor itself rather
-    // than answering empty, so reaching it is what has to be guarded.
-    return null
-  }
-}
 
 /**
  * A record in the shape the console holds one, whatever it was read out of.
@@ -177,7 +169,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
-  const alive = useRef(true)
+  const alive = useAlive()
 
   // The record as the client has it, and whether the record behind it has been
   // told. Both are refs because every writer below reads them: held in state,
@@ -193,13 +185,6 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
   // strip.
   const source = preview ? 'preview' : projectId || null
 
-  useEffect(() => {
-    alive.current = true
-    return () => {
-      alive.current = false
-    }
-  }, [])
-
   /** Hold a record, in both the place callbacks read and the place React draws. */
   const put = useCallback(
     record => {
@@ -207,6 +192,24 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       setHeld({ key: source, value: record })
     },
     [source]
+  )
+
+  /**
+   * What a write the record accepted brings back in. Only the figure and the
+   * moment: the answers on screen are the client's own and are newer than
+   * anything a reply to a request already sent can carry.
+   */
+  const accept = useCallback(
+    brief => {
+      const row = recordFrom(brief)
+      put({
+        ...latest.current,
+        percent: Math.max(latest.current.percent, row.percent),
+        submittedAt: row.submittedAt,
+      })
+      setFailed(NOTHING_HELD)
+    },
+    [put]
   )
 
   /**
@@ -230,7 +233,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       if (!unsent.current || !outgoing) return true
 
       if (preview) {
-        const kept = store()
+        const kept = browserStore('sessionStorage')
         if (kept) kept.setItem(PREVIEW_KEY, JSON.stringify(outgoing))
         if (latest.current === outgoing) unsent.current = false
         return true
@@ -239,36 +242,24 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       if (!token || !projectId || !enabled) return false
       if (alive.current) setSaving(true)
       try {
-        const response = await fetch(ONBOARDING_PATH, {
-          method: 'POST',
-          keepalive,
-          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const { response, payload } = await writeEndpoint(
+          token,
+          ONBOARDING_PATH,
+          {
             action: 'save',
             project_id: projectId,
             answers: outgoing.answers,
             step: outgoing.step,
             percent: outgoing.percent,
-          }),
-        })
-        const payload = await response.json().catch(() => ({}))
+          },
+          { keepalive }
+        )
         if (!response.ok) {
           if (alive.current) setFailed({ key: source, value: NOT_SAVED })
           return false
         }
         if (latest.current === outgoing) unsent.current = false
-        if (alive.current) {
-          // Only the figure and the moment come back in. The answers on screen
-          // are the client's own and are newer than anything a reply to a
-          // request made 800ms ago can carry.
-          const row = recordFrom(payload.brief)
-          put({
-            ...latest.current,
-            percent: Math.max(latest.current.percent, row.percent),
-            submittedAt: row.submittedAt,
-          })
-          setFailed(NOTHING_HELD)
-        }
+        if (alive.current) accept(payload.brief)
         return true
       } catch {
         if (alive.current) setFailed({ key: source, value: NOT_SAVED })
@@ -277,7 +268,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
         if (alive.current) setSaving(false)
       }
     },
-    [preview, token, projectId, enabled, source, put]
+    [preview, token, projectId, enabled, source, accept, alive]
   )
 
   // The flush everything else reaches for, kept current rather than named as a
@@ -298,7 +289,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       // them believes it is holding.
       let stored = null
       try {
-        stored = JSON.parse(store()?.getItem(PREVIEW_KEY) || 'null')
+        stored = JSON.parse(browserStore('sessionStorage')?.getItem(PREVIEW_KEY) || 'null')
       } catch {
         stored = null
       }
@@ -310,11 +301,10 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
 
     if (!token || !projectId || !enabled) return
     try {
-      const response = await fetch(
-        `${ONBOARDING_PATH}?project=${encodeURIComponent(projectId)}&t=${Date.now()}`,
-        { cache: 'no-store', headers: { Authorization: `Bearer ${token}` } }
+      const { response, payload } = await readEndpoint(
+        token,
+        `${ONBOARDING_PATH}?project=${encodeURIComponent(projectId)}&t=${Date.now()}`
       )
-      const payload = await response.json().catch(() => ({}))
       if (!alive.current) return
       if (!response.ok) {
         // A build nobody has answered anything on is not an error and never
@@ -341,7 +331,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     } catch (cause) {
       if (alive.current) setFailed({ key: source, value: faultMessage(cause, NOT_READ) })
     }
-  }, [preview, token, projectId, enabled, source, put])
+  }, [preview, token, projectId, enabled, source, put, alive])
 
   useEffect(() => {
     load()
@@ -409,7 +399,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
       const now = latest.current
       if (!now) return false
       const record = { ...now, percent: 100, submittedAt: new Date().toISOString() }
-      const kept = store()
+      const kept = browserStore('sessionStorage')
       if (kept) kept.setItem(PREVIEW_KEY, JSON.stringify(record))
       put(record)
       return true
@@ -418,25 +408,15 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     if (!token || !projectId || !enabled) return false
     setSaving(true)
     try {
-      const response = await fetch(ONBOARDING_PATH, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'submit', project_id: projectId }),
+      const { response, payload } = await writeEndpoint(token, ONBOARDING_PATH, {
+        action: 'submit',
+        project_id: projectId,
       })
-      const payload = await response.json().catch(() => ({}))
       if (!response.ok) {
         if (alive.current) setFailed({ key: source, value: NOT_SENT })
         return false
       }
-      if (alive.current) {
-        const row = recordFrom(payload.brief)
-        put({
-          ...latest.current,
-          percent: Math.max(latest.current.percent, row.percent),
-          submittedAt: row.submittedAt,
-        })
-        setFailed(NOTHING_HELD)
-      }
+      if (alive.current) accept(payload.brief)
       return true
     } catch {
       if (alive.current) setFailed({ key: source, value: NOT_SENT })
@@ -444,7 +424,7 @@ export function useOnboardingFeed({ token, projectId, enabled, preview }) {
     } finally {
       if (alive.current) setSaving(false)
     }
-  }, [preview, token, projectId, enabled, source, put])
+  }, [preview, token, projectId, enabled, source, put, accept, alive])
 
   /**
    * The two ways a flow ends without anybody pressing anything.

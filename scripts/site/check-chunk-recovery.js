@@ -45,11 +45,14 @@
  * `sheetSource` is the recovery and `sheetRecovery` is what attaches it, and
  * the section after the boot runs both.
  */
-import { readdirSync, readFileSync, statSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { wait } from '../../lib/time/wait.js'
 import { bootSource } from '../../vite/boot-source.js'
 import { SHEET_HANDLER, sheetRecovery, sheetSource } from '../../vite/sheet-source.js'
+import { cases, expect as check, fail, finish } from '../harness/checks.js'
+import { filesUnder } from '../harness/files.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 const APP = path.join(ROOT, 'src/app')
@@ -61,33 +64,17 @@ const ROUTES = 'src/app/views.js'
 // Where the retry is built, and the only place `lazy` itself belongs.
 const RETRY = 'src/app/utils/lazyWithRetry.js'
 
-const failures = []
-let checks = 0
 let read = 0
-
-function check(ok, complaint) {
-  checks += 1
-  if (!ok) failures.push(complaint)
-}
 
 // The line rules run over every line of the app, and counting each one as a
 // check reports a number nobody can read. They are three rules however many
 // lines they are asked about.
 function sweep(ok, complaint) {
   read += 1
-  if (!ok) failures.push(complaint)
+  if (!ok) fail(complaint)
 }
 
-function filesUnder(dir, out = []) {
-  for (const entry of readdirSync(dir)) {
-    const full = path.join(dir, entry)
-    if (statSync(full).isDirectory()) filesUnder(full, out)
-    else if (/\.jsx?$/.test(entry)) out.push(full)
-  }
-  return out
-}
-
-const swept = filesUnder(APP).map(file => ({
+const swept = filesUnder(APP, /\.jsx?$/).map(file => ({
   name: path.relative(ROOT, file),
   source: readFileSync(file, 'utf8'),
 }))
@@ -537,7 +524,7 @@ async function runBoot(
   // A macrotask boundary, which is where every microtask the chain is made of
   // has finished: the wait between attempts is a stub that runs at once, so
   // nothing here is left in a real timer.
-  await new Promise(resolve => setTimeout(resolve, 0))
+  await wait(0)
   return { asked, reloads, session, shown }
 }
 
@@ -648,7 +635,7 @@ check(
   'a browser that refuses the boot storage loses the reload and the late attempt both, so nothing recovers it'
 )
 
-await new Promise(resolve => setTimeout(resolve, 0))
+await wait(0)
 const before = filed.length
 
 // The client #525 and #532 both came from: an engine years older than `?.`,
@@ -670,7 +657,7 @@ check(
   old.shown.length === 1 && /too old/.test(old.shown[0].textContent),
   'the notice for a browser that cannot run the page does not say that is what happened'
 )
-await new Promise(resolve => setTimeout(resolve, 0))
+await wait(0)
 check(
   filed.length === before,
   'a browser the site has never supported is filed as a fault against the site, under a fresh fingerprint on every visit because the message is what groups them'
@@ -685,7 +672,7 @@ check(
   'a build that shipped broken syntax tells every reader their browser is out of date'
 )
 
-await new Promise(resolve => setTimeout(resolve, 0))
+await wait(0)
 process.off('unhandledRejection', collect)
 
 check(
@@ -941,15 +928,10 @@ check(
   `the reporter does not name ${SHEET_HANDLER}, so it cannot tell a sheet under recovery from one with nothing behind it`
 )
 
-if (failures.length) {
-  console.error('check-chunk-recovery: failed')
-  for (const failure of failures) console.error(`  ${failure}`)
-  console.error('  a chunk that has gone is the deploy working; the page it was on carries on')
-  process.exit(1)
-}
+await finish({ hint: 'a chunk that has gone is the deploy working; the page it was on carries on' })
 
 console.log(
-  `check-chunk-recovery: ${checks} checks hold and ${read} lines across ${swept.length} files ` +
+  `check-chunk-recovery: ${cases.length} checks hold and ${read} lines across ${swept.length} files ` +
     'ask for every chunk through the retry, hold every warm-up, and fail a piece of chrome ' +
     'without the page, and a sheet that did not arrive is asked for again rather than left ' +
     'as the styling for the rest of the visit'

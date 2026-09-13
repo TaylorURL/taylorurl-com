@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, m } from 'framer-motion'
 import { ChevronDown } from 'lucide-react'
 import { EASE } from '@constants/animations'
-import { stageRank } from '../lib/stages'
+import { clientAsks } from '../lib/stages'
 
 /**
  * What the client still owes, docked in the corner of every screen.
@@ -32,10 +32,7 @@ import { stageRank } from '../lib/stages'
 export default function ProjectChecklist({ project, onTick, acting }) {
   const [open, setOpen] = useState(true)
 
-  const reached = stageRank(project?.stage)
-  const mine = (project?.tasks || []).filter(
-    task => task.owner === 'client' && stageRank(task.stage) <= reached
-  )
+  const mine = clientAsks(project)
   const outstanding = mine.filter(task => !task.done_at)
 
   // Nothing to ask for is nothing to draw. A finished list that keeps its

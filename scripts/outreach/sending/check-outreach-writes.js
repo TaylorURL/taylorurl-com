@@ -27,43 +27,22 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
+import { answersFrom, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { bounceReport, inbound } from '../inbound-fixture.js'
+import { atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
+import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
+import { MAIL_BOX, statesNoAddress } from '../../mail/mail-box-fixture.js'
 
 installFixtureHeldDomains()
-
-process.env.OUTREACH_SMTP_USER = 'studio@example.com'
-process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
-process.env.OUTREACH_SEND_ARMED = 'true'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '../../..')
 
-const nodemailer = (await import('nodemailer')).default
-const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
+const { forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { work: watchWork } = await import('../../../api/outreach/watch.js')
 const { work: sendWork } = await import('../../../api/outreach/send.js')
 const { renderText, renderHtml } = await import('../../../lib/outreach/message.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
-
-/** The reason a call refused, or nothing where it did not refuse. */
-async function refusal(run) {
-  try {
-    await run()
-  } catch (cause) {
-    return cause.message
-  }
-  return null
-}
 
 // ── The database stand-in ────────────────────────────────────────────────
 
@@ -71,8 +50,7 @@ async function refusal(run) {
  * A client that answers every query from a plan, and records what was asked.
  *
  * The plan is keyed on the operation and the table, since that pair is what
- * names a write in either route. A value may be a single answer or a list of
- * them, which is how two reads of one table in a single run are told apart.
+ * names a write in either route.
  *
  * The operation is fixed by the first mutating call in a chain rather than by
  * the last, so the `.select()` an insert takes to read its own row back leaves
@@ -81,16 +59,7 @@ async function refusal(run) {
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = key => {
-    const planned = plan[key]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const at = pending.get(key) ?? 0
-    pending.set(key, at + 1)
-    return planned[Math.min(at, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null }
@@ -133,31 +102,12 @@ function stubDb(plan) {
   return { db: { from, rpc }, asked, writes }
 }
 
-/** A refusal shaped the way a Supabase client reports one. */
-const refused = what => ({ data: null, error: { message: what } })
-
 // ── What the watch route is handed ───────────────────────────────────────
 
 const PROSPECT = { id: 'p1', email: 'owner@example.com', stage: 'contacted', replied_at: null }
 
 /** The lead row a carried reply lands on, as the merge function answers with one. */
 const LEAD_ID = 'l1'
-
-/** One inbound message, shaped the way the mailbox reader hands them over. */
-const inbound = (body, over = {}) => ({
-  uid: 1,
-  envelope: {
-    messageId: '<reply-1@example.com>',
-    subject: 'Re: your website',
-    from: [{ address: 'owner@example.com' }],
-    to: [{ address: 'studio@example.com' }],
-    date: '2026-08-29T15:00:00.000Z',
-  },
-  headerText: '',
-  bounce: false,
-  body,
-  ...over,
-})
 
 // ── The static invariant ─────────────────────────────────────────────────
 
@@ -248,17 +198,7 @@ check('watch fails the run when the opt-out suppression is refused', async () =>
 })
 
 check('watch fails the run when the bounce suppression is refused', async () => {
-  const report = inbound('', {
-    bounce: true,
-    body: 'Final-Recipient: rfc822; owner@example.com\nStatus: 5.1.1\n',
-    envelope: {
-      messageId: '<bounce-1@example.com>',
-      subject: 'Delivery Status Notification (Failure)',
-      from: [{ address: 'mailer-daemon@example.com' }],
-      to: [{ address: 'studio@example.com' }],
-      date: '2026-08-29T15:00:00.000Z',
-    },
-  })
+  const report = bounceReport()
 
   const { db, asked } = stubDb({
     'select:outreach_messages': { data: [], error: null },
@@ -335,60 +275,8 @@ check('a person answering a cold letter becomes a lead', () => {
 
 // ── Send: the writes around the transport ────────────────────────────────
 
-/**
- * The clock the send path is run against.
- *
- * The window opens at eight and closes at five in Texas, and a run outside it
- * composes without delivering, so a check of what happens after the transport
- * would turn on the hour it was run at. The instant below is an afternoon
- * inside the window, held for the length of one case.
- */
-async function atMidAfternoon(run) {
-  const Real = Date
-  const fixed = AFTERNOON
-  class Frozen extends Real {
-    constructor(...args) {
-      return args.length ? new Real(...args) : new Real(fixed)
-    }
-    static now() {
-      return fixed
-    }
-  }
-  globalThis.Date = Frozen
-  try {
-    return await run()
-  } finally {
-    globalThis.Date = Real
-  }
-}
-
-/**
- * A transport that answers like a mail server and reaches no network.
- *
- * The route builds its transport once per process and holds it, so this is
- * installed once and read between cases rather than swapped in around each of
- * them. Installing it before the first case is also what guarantees no case can
- * open a socket.
- */
-const TRANSPORT = (() => {
-  const sent = []
-  nodemailer.createTransport = () => ({
-    sendMail: async message => {
-      sent.push(message)
-      return { messageId: '<delivered-1@example.com>' }
-    },
-  })
-  return { sent, clear: () => sent.splice(0, sent.length) }
-})()
-
-/** The instant every send case is run at, and the one the address is settled at. */
-const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
-
 forgetDomains()
-await checkAddress(null, 'owner@example.com', {
-  now: AFTERNOON,
-  resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-})
+await settleAddress('owner@example.com')
 
 const SETTINGS = {
   sending_enabled: true,
@@ -575,10 +463,6 @@ check('send counts a message only once every one of its writes has landed', asyn
 
 // ── The postal address ───────────────────────────────────────────────────
 
-/** The Houston mail box, and the fragments a footer built from it would print. */
-const MAIL_BOX = 'TaylorURL LLC, 3120 Southwest Fwy Ste 101, PMB #841258, Houston, TX 77098-4520'
-const MAIL_BOX_FRAGMENTS = ['3120 Southwest Fwy', 'PMB #841258', 'Houston, TX', '77098']
-
 /** One message, in the shape both halves take. */
 const message = (contact = {}) => ({
   subject: 'Your website',
@@ -602,14 +486,6 @@ const message = (contact = {}) => ({
   track: null,
   contact: { phone: '', unsubscribe: 'https://example.com/u/1', ...contact },
 })
-
-function statesNoAddress(part, where) {
-  const said = String(part)
-  ok(!said.includes(MAIL_BOX), `the whole address is absent from ${where}`)
-  for (const fragment of MAIL_BOX_FRAGMENTS) {
-    ok(!said.includes(fragment), `"${fragment}" is absent from ${where}`)
-  }
-}
 
 // ── The way to check the figure ──────────────────────────────────────────
 
@@ -694,19 +570,6 @@ check('the send route neither reads the variable nor names an address', () => {
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach write checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach writes: ${cases.length} checks passed`)

@@ -1,11 +1,10 @@
 import Mesh from '@components/mesh/Mesh'
+import { CELL_FOCUS } from '@constants/grounds'
 import { TRADES } from '@data/towns-and-trades/trades'
+import { CELL_CHECKED, CELL_UNCHECKED } from '../lib/ground'
 
 const CELL =
   'flex h-full w-full flex-col justify-between gap-8 p-5 transition duration-200 ease-out-soft'
-
-const FOCUS =
-  'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'
 
 /**
  * The columns the opening control runs at. The trades are a fixed register
@@ -43,13 +42,7 @@ export default function TradeGrid({ selected, labelledBy, onSelect }) {
                 onChange={() => onSelect(trade.id)}
                 className="peer sr-only"
               />
-              <span
-                className={`${CELL} ${FOCUS} ${
-                  checked
-                    ? 'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)] peer-focus-visible:outline-[color:var(--on-accent)]'
-                    : 'bg-paper text-ink-paper hover:bg-[color:var(--wash-paper)] peer-focus-visible:outline-accent'
-                }`}
-              >
+              <span className={`${CELL} ${CELL_FOCUS} ${checked ? CELL_CHECKED : CELL_UNCHECKED}`}>
                 <span className="flex items-center justify-between">
                   <Mark
                     className={`h-5 w-5 ${checked ? '' : 'text-accent'}`}

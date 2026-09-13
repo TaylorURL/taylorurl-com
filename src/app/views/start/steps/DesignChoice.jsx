@@ -1,8 +1,9 @@
 import { PenLine } from 'lucide-react'
 import Mesh from '@components/mesh/Mesh'
+import { CELL_FOCUS } from '@constants/grounds'
 import { meshLadder, meshSpans } from '@constants/mesh'
 import BlockHead from './BlockHead'
-import PortfolioPreview from './PortfolioPreview'
+import PortfolioPreview from '@components/mockups/PortfolioPreview'
 import { GROUND } from '../lib/ground'
 
 /** The answer a visitor gives when the design they want is not on the wall. */
@@ -10,9 +11,6 @@ export const SOMETHING_DIFFERENT = 'something-different'
 
 /** The rungs the compact ladder the wall runs on names, narrowest first. */
 const RUNGS = ['base', 'sm', 'lg', 'xl']
-
-const CELL_FOCUS =
-  'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'
 
 const CHECKED = 'bg-[color:var(--accent-fill)] peer-focus-visible:outline-[color:var(--on-accent)]'
 const UNCHECKED = 'bg-paper hover:bg-[color:var(--wash-paper)] peer-focus-visible:outline-accent'

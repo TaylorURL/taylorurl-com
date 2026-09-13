@@ -15,48 +15,33 @@
  *   npm run check:outreach-follow-ups
  */
 
-process.env.OUTREACH_SMTP_USER = 'studio@example.com'
-process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
-process.env.OUTREACH_SEND_ARMED = 'true'
-
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import { FOLLOW_UP_DAYS } from '../../../lib/outreach/sending/limits.js'
 import {
   HOLDOUTS,
   VARIANTS,
   pickVariant,
-  shareOf,
   liveAhead,
+  sendsAt,
   stepOf,
   familyHeld,
   familyOf,
-  stepRegistered,
   wouldEmptySegment,
 } from '../../../lib/outreach/variants.js'
+import { answersFrom, captureOnFile } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { AFTERNOON, atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
+import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { OFFLINE } from '../../harness/offline.js'
 
 installFixtureHeldDomains()
 
 // Nothing here may reach the network.
-globalThis.fetch = () => {
-  throw new Error('a check reached the network')
-}
+globalThis.fetch = OFFLINE
 
-const nodemailer = (await import('nodemailer')).default
-const { checkAddress, forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
+const { forgetDomains } = await import('../../../lib/outreach/prospects/address.js')
 const { FOLLOW_UP_COLUMNS } = await import('../../../lib/outreach/sending/queue.js')
 const { dueAfter, work: sendWork } = await import('../../../api/outreach/send.js')
-
-const cases = []
-const check = (name, run) => cases.push([name, run])
-
-const same = (got, want, what) => {
-  if (got !== want) throw new Error(`${what}: got ${got}, wanted ${want}`)
-}
-
-const ok = (condition, what) => {
-  if (!condition) throw new Error(what)
-}
 
 const DAY_MS = 24 * 60 * 60 * 1000
 
@@ -137,6 +122,16 @@ const inSegment = segment => {
   return row
 }
 
+/** The letters a business in `segment` can be drawn for its first message. */
+const drawnFirst = segment =>
+  VARIANTS.filter(
+    entry =>
+      entry.segment === segment &&
+      stepOf(entry) === 1 &&
+      entry.status === 'live' &&
+      entry.weight > 0
+  )
+
 check('every step draws the same letter, in every segment', () => {
   // The chain is one letter arriving again rather than a sequence of different
   // ones, so what is owed next month is what arrived this month. A step that
@@ -165,7 +160,10 @@ check('a chain has no step it runs out at', () => {
   // step and the chain ends only when the reader ends it.
   for (const segment of SEGMENTS) {
     for (const step of [1, 2, 5, 40, 500]) {
-      ok(stepRegistered(VARIANTS, segment, step), `${segment} has nothing at step ${step}`)
+      ok(
+        VARIANTS.some(entry => entry.segment === segment && sendsAt(entry, step)),
+        `${segment} has nothing at step ${step}`
+      )
       ok(liveAhead(VARIANTS, segment, step, 'introduction'), `${segment} runs out at step ${step}`)
     }
   }
@@ -194,7 +192,8 @@ check('nothing is drawn into a holdout at any step', () => {
 
 check('the one letter takes the whole share of its segment', () => {
   for (const segment of SEGMENTS) {
-    same(shareOf(VARIANTS, `${segment}-intro`), 100, `the share of the ${segment} letter`)
+    const drawn = drawnFirst(segment)
+    same(drawn.map(entry => entry.id).join(), `${segment}-intro`, `the ${segment} letters drawn`)
   }
 })
 
@@ -204,14 +203,11 @@ check('every segment opens on the one voice that still writes', () => {
   // retired letter that finds its way back onto the draw is the one change
   // here nobody would notice from the outside.
   for (const segment of SEGMENTS) {
-    const first = VARIANTS.filter(entry => entry.segment === segment && stepOf(entry) === 1)
-    const share = family =>
-      first
-        .filter(entry => familyOf(entry) === family)
-        .reduce((sum, entry) => sum + (shareOf(VARIANTS, entry.id) ?? 0), 0)
-    same(Math.round(share('designed')), 0, `the designed share of ${segment}`)
-    same(Math.round(share('plain')), 0, `the plain share of ${segment}`)
-    same(Math.round(share('introduction')), 100, `the introduction share of ${segment}`)
+    const drawn = drawnFirst(segment)
+    ok(drawn.length, `${segment} opens on nothing`)
+    for (const entry of drawn) {
+      same(familyOf(entry), 'introduction', `the family ${entry.id} opens ${segment} on`)
+    }
   }
 })
 
@@ -295,28 +291,14 @@ const prospectRead = state => {
  * The same stand-in the assignment check drives the job against, with the
  * `or` filter kept as well, since that is how the cap leaves follow-ups out.
  *
- * A plan is keyed by operation and table - `select:outreach_messages` - and a
- * read of the businesses may be keyed one step further, by which of the run's
- * reads it answers: `select:outreach_prospects:due` is the follow-up read's own
- * fixture, and `prospectRead` above says how each read is recognised. An entry
- * under the plain key answers any read the named keys leave over. An array
- * under either is served an element per call, the last standing for the rest.
+ * A read of the businesses is answered by which of the run's reads it is:
+ * `select:outreach_prospects:due` is the follow-up read's own fixture, and
+ * `prospectRead` above says how each read is recognised.
  */
 function stubDb(plan) {
   const asked = []
   const writes = []
-  const pending = new Map()
-
-  const answerFor = (key, role) => {
-    const named = role === null ? null : `${key}:${role}`
-    const at = named !== null && plan[named] !== undefined ? named : key
-    const planned = plan[at]
-    if (planned === undefined) return { data: [], error: null, count: 0 }
-    if (!Array.isArray(planned)) return planned
-    const call = pending.get(at) ?? 0
-    pending.set(at, call + 1)
-    return planned[Math.min(call, planned.length - 1)]
-  }
+  const answerFor = answersFrom(plan)
 
   const from = table => {
     const state = { table, op: 'select', payload: null, where: [], order: [], columns: null }
@@ -370,15 +352,7 @@ function stubDb(plan) {
     return chain
   }
 
-  const storage = {
-    from: () => ({
-      list: async (_, { search }) => ({ data: [{ name: search }], error: null }),
-      getPublicUrl: path => ({ data: { publicUrl: `https://shots.example.com/${path}` } }),
-      upload: async () => ({ error: null }),
-    }),
-  }
-
-  return { db: { from, storage }, asked, writes }
+  return { db: { from, storage: captureOnFile }, asked, writes }
 }
 
 /** The row a drafted message reads back as. */
@@ -422,47 +396,14 @@ const plan = ({
   'update:outreach_prospects': { error: null },
 })
 
-/** The instant every run is held at: mid-afternoon on a sending day. */
-const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
-
-async function atMidAfternoon(run) {
-  const Real = Date
-  class Frozen extends Real {
-    constructor(...args) {
-      return args.length ? new Real(...args) : new Real(AFTERNOON)
-    }
-    static now() {
-      return AFTERNOON
-    }
-  }
-  globalThis.Date = Frozen
-  try {
-    return await run()
-  } finally {
-    globalThis.Date = Real
-  }
-}
-
-/** A transport that answers like a mail server and reaches no network. */
-const TRANSPORT = (() => {
-  const sent = []
-  nodemailer.createTransport = () => ({
-    sendMail: async message => {
-      sent.push(message)
-      return { messageId: '<delivered-2@example.com>' }
-    },
-  })
-  return { sent, clear: () => sent.splice(0, sent.length) }
-})()
-
 forgetDomains()
-await checkAddress(null, 'maria@example.com', {
-  now: AFTERNOON,
-  resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-})
+await settleAddress('maria@example.com')
 
 const inserted = writes => writes.filter(write => write.key === 'insert:outreach_messages')
 const prospectWrites = writes => writes.filter(write => write.key === 'update:outreach_prospects')
+
+/** Whether a write is of one kind against one table, and sets `column`. */
+const sets = (key, column) => write => write.key === key && column in (write.payload ?? {})
 
 // ── The send job ─────────────────────────────────────────────────────────
 
@@ -490,7 +431,7 @@ check(
     same(draft.payload.variant_id, CONTACTED.variant_id, 'the letter drawn')
     same(mail.subject, 'Trenton Taylor, TaylorURL', `the subject: ${mail.subject}`)
 
-    const moved = prospectWrites(writes).find(write => 'step' in (write.payload ?? {}))
+    const moved = writes.find(sets('update:outreach_prospects', 'step'))
     ok(moved, 'the business was not moved on')
     same(moved.payload.step, 2, 'the step on the business')
     same(
@@ -499,7 +440,7 @@ check(
       'when the next letter is owed'
     )
     ok(
-      !prospectWrites(writes).some(write => 'variant_id' in (write.payload ?? {})),
+      !writes.some(sets('update:outreach_prospects', 'variant_id')),
       'a follow-up stamped the business with a letter'
     )
 
@@ -533,7 +474,7 @@ check('a business deep into its chain is still owed the next one', async () => {
   same(answer.followed, 1, 'follow-ups sent')
   same(answer.closed, 0, 'chains closed')
   same(TRANSPORT.sent.length, 1, 'messages handed to the transport')
-  const moved = prospectWrites(writes).find(write => 'step' in (write.payload ?? {}))
+  const moved = writes.find(sets('update:outreach_prospects', 'step'))
   same(moved.payload.step, 13, 'the step on the business')
   same(
     moved.payload.next_due_at,
@@ -698,10 +639,7 @@ check(
       audit_score: 67,
     }))
     for (const row of owed) {
-      await checkAddress(null, row.email, {
-        now: AFTERNOON,
-        resolveMx: async () => [{ exchange: 'mx.example.com', priority: 10 }],
-      })
+      await settleAddress(row.email)
     }
     const { db } = stubDb(
       plan({
@@ -760,9 +698,7 @@ check('a draft written before the letters existed is drafted again under one', a
 
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
-  const rewritten = writes.find(
-    write => write.key === 'update:outreach_messages' && 'variant_id' in (write.payload ?? {})
-  )
+  const rewritten = writes.find(sets('update:outreach_messages', 'variant_id'))
   ok(rewritten, 'the draft was not written again')
   ok(
     rewritten.where.some(clause => clause.column === 'id' && clause.value === stale.id),
@@ -775,7 +711,7 @@ check('a draft written before the letters existed is drafted again under one', a
   same(stepOf(VARIANTS.find(entry => entry.id === rewritten.payload.variant_id)), 1, 'the letter')
   same(rewritten.payload.step, 1, 'the step on the row')
   ok(rewritten.payload.body_text !== stale.body_text, 'the words were kept')
-  const given = prospectWrites(writes).find(write => 'variant_id' in (write.payload ?? {}))
+  const given = writes.find(sets('update:outreach_prospects', 'variant_id'))
   ok(given, 'the business was not given its letter')
   ok(!given.payload.variant_id.endsWith('-holdout'), 'a drafted business was held out')
 })
@@ -825,9 +761,7 @@ check('a draft written under a letter, on the day it goes, goes as it was writte
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
   ok(
-    !writes.some(
-      write => write.key === 'update:outreach_messages' && 'body_text' in (write.payload ?? {})
-    ),
+    !writes.some(sets('update:outreach_messages', 'body_text')),
     'a reviewed draft was written over'
   )
   same(TRANSPORT.sent[0]?.text, kept.body_text, 'the words handed to the transport')
@@ -874,9 +808,7 @@ check('a draft held past its own day is written again before it goes', async () 
 
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
-  const rewritten = writes.find(
-    write => write.key === 'update:outreach_messages' && 'body_text' in (write.payload ?? {})
-  )
+  const rewritten = writes.find(sets('update:outreach_messages', 'body_text'))
   ok(rewritten, 'a draft written yesterday went out with yesterday’s words')
   // The letter is live, so this is the same letter said again rather than a
   // fresh pick. A business does not change letters because a day turned.
@@ -920,9 +852,7 @@ check('a draft written under a retired family is written again before it goes', 
 
   same(answer.sent, 1, 'first letters sent')
   same(inserted(writes).length, 0, 'message rows written afresh')
-  const rewritten = writes.find(
-    write => write.key === 'update:outreach_messages' && 'variant_id' in (write.payload ?? {})
-  )
+  const rewritten = writes.find(sets('update:outreach_messages', 'variant_id'))
   ok(rewritten, 'the draft was not written again')
   ok(rewritten.payload.variant_id !== laid.variant_id, 'the retired letter was written again')
   same(
@@ -934,9 +864,7 @@ check('a draft written under a retired family is written again before it goes', 
 
   // Both rows say the same letter, or the results count one and the follow-up
   // opens in another's family.
-  const given = writes.find(
-    write => write.key === 'update:outreach_prospects' && 'variant_id' in (write.payload ?? {})
-  )
+  const given = writes.find(sets('update:outreach_prospects', 'variant_id'))
   ok(given, 'the business kept the retired letter on its row')
   same(given.payload.variant_id, rewritten.payload.variant_id, 'the letter on the business')
   ok(
@@ -947,19 +875,6 @@ check('a draft written under a retired family is written again before it goes', 
 
 // ── Run them ────────────────────────────────────────────────────────────
 
-const failures = []
-for (const [name, run] of cases) {
-  try {
-    await run()
-  } catch (cause) {
-    failures.push(`${name}: ${cause.message}`)
-  }
-}
-
-if (failures.length) {
-  for (const failure of failures) console.error(failure)
-  console.error(`\n${failures.length} of ${cases.length} outreach follow-up checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(`outreach follow-ups: ${cases.length} checks passed`)

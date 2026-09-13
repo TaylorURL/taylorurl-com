@@ -12,7 +12,7 @@ import { TRUSTPILOT_EVALUATE_URL, TRUSTPILOT_PROFILE_URL } from './trustpilot.js
  * waits on before anything is drawn. The tab is built from it rather than
  * written out again, so a page that moves takes both with it.
  */
-export const FACEBOOK_REVIEWS_URL = `${FACEBOOK_PAGE_URL}&sk=reviews`
+const FACEBOOK_REVIEWS_URL = `${FACEBOOK_PAGE_URL}&sk=reviews`
 
 /**
  * The Yelp listing, keyed on the name its page ends in the way Trustpilot's is
@@ -27,8 +27,8 @@ export const FACEBOOK_REVIEWS_URL = `${FACEBOOK_PAGE_URL}&sk=reviews`
  * is renamed to, so it survives the listing being corrected. The listing is
  * unclaimed, which is why it is absent from the `sameAs` in `index.html`.
  */
-export const YELP_BUSINESS = 'taylor-url-houston'
-export const YELP_PROFILE_URL = `https://www.yelp.com/biz/${YELP_BUSINESS}`
+const YELP_BUSINESS = 'taylor-url-houston'
+const YELP_PROFILE_URL = `https://www.yelp.com/biz/${YELP_BUSINESS}`
 
 /**
  * The Google listing, and the box a review is written in.
@@ -44,8 +44,8 @@ export const YELP_PROFILE_URL = `https://www.yelp.com/biz/${YELP_BUSINESS}`
  * The two addresses are one address with `/review` on the end, which opens the
  * write box rather than the profile it sits behind.
  */
-export const GOOGLE_PROFILE_URL = 'https://g.page/r/CTlYcg1CXgG7EAI'
-export const GOOGLE_EVALUATE_URL = `${GOOGLE_PROFILE_URL}/review`
+const GOOGLE_PROFILE_URL = 'https://g.page/r/CTlYcg1CXgG7EAI'
+const GOOGLE_EVALUATE_URL = `${GOOGLE_PROFILE_URL}/review`
 
 /**
  * Every place this business is reviewed, held once.
@@ -250,7 +250,7 @@ export const CLIENT_REVIEWS = {
  * @param {string} displayUrl The site the review is about.
  * @returns {string} A city, or the sector for something with no city.
  */
-export function reviewPlace(displayUrl) {
+function reviewPlace(displayUrl) {
   const project = PORTFOLIO_PROJECTS.find(entry => entry.displayUrl === displayUrl)
   const town = project?.town ?? project?.location?.split(',')[0].trim()
   if (town) return town
@@ -316,5 +316,3 @@ export function reviewFor(displayUrl) {
 export function reviewLogoSrc(displayUrl) {
   return `/images/reviews/${displayUrl.replace(/[^a-z0-9]+/gi, '-')}.png`
 }
-
-export { BBB_EVALUATE_URL, BBB_PROFILE_URL, TRUSTPILOT_EVALUATE_URL, TRUSTPILOT_PROFILE_URL }

@@ -35,7 +35,7 @@ const ENDPOINT = '/api/onboarding-assist'
  * the moment the tool is worth the most. Every other action is a rewrite of
  * something, and a rewrite of nothing is a request nobody meant to make.
  */
-export const ASSIST_ACTIONS = ['start', 'expand', 'tighten', 'plain']
+const ASSIST_ACTIONS = ['start', 'expand', 'tighten', 'plain']
 
 /**
  * The longest answer the assistant takes, matching the endpoint's own cap and
@@ -45,7 +45,7 @@ export const ASSIST_ACTIONS = ['start', 'expand', 'tighten', 'plain']
  * of them rather than by a request that travels the length of the country to
  * be refused.
  */
-export const ASSIST_MAX_CHARS = 6000
+const ASSIST_MAX_CHARS = 6000
 
 /**
  * The sentences a person reads, which are the endpoint's own.

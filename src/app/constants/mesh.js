@@ -14,7 +14,7 @@
  */
 
 /** The breakpoints a ladder names, narrowest first. */
-export const BREAKPOINTS = ['base', 'sm', 'md', 'lg', 'xl']
+const BREAKPOINTS = ['base', 'sm', 'md', 'lg', 'xl']
 
 /** The widest a mesh runs, and the widest a cell spans. */
 const WIDEST = 6
@@ -115,7 +115,7 @@ const SPAN_CLASS = {
  * `cols` is the count a rung runs at, and `upto` the widest it takes in
  * exchange for dividing the items exactly.
  */
-export const MESH_SCALES = {
+const MESH_SCALES = {
   compact: [
     { at: 'base', cols: 2, upto: 2 },
     { at: 'sm', cols: 3, upto: 3 },

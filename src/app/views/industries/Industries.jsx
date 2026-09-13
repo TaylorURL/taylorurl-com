@@ -1,9 +1,9 @@
-import { Link } from 'react-router-dom'
 import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import RuledSection from '@components/page-bands/RuledSection'
 import TradeMesh from '@components/mesh/TradeMesh'
 import Seo from '@components/Seo'
+import TownChips from './TownChips'
 import { TRADES } from '@data/towns-and-trades/trades'
 import { groupsWith, INDUSTRY_SLUGS } from '@data/towns-and-trades/industries'
 import { AREAS } from '@data/towns-and-trades/areas'
@@ -80,15 +80,7 @@ export default function Industries() {
         description="Every town has a page of its own carrying the work already live there and the trades it most often calls for."
         meta={`${AREAS.length} towns`}
       >
-        <ul className="flex flex-wrap gap-x-3 gap-y-2">
-          {AREAS.map(area => (
-            <li key={area.slug}>
-              <Link to={`/areas/${area.slug}`} className="chip">
-                {area.name}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <TownChips />
       </RuledSection>
 
       <CtaSection

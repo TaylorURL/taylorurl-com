@@ -27,6 +27,7 @@ import path from 'node:path'
 import { registerHooks } from 'node:module'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { rankEntries, scoreEntry, splitMatch } from '../../src/app/utils/search.js'
+import { expect as check, finish } from '../harness/checks.js'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -56,14 +57,6 @@ registerHooks({
     return nextResolve(specifier, context)
   },
 })
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
 
 const top = (entries, query) => rankEntries(entries, query)[0]?.label
 const labels = (entries, query) => rankEntries(entries, query).map(row => row.label)
@@ -243,10 +236,7 @@ check(
 check(AREAS.length >= 8, `only ${AREAS.length} towns reachable by search`)
 check(BLOG_POSTS.length >= 20, `only ${BLOG_POSTS.length} articles reachable by search`)
 
-if (failures) {
-  console.error(`site-search: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 
 console.log(
   `site-search: a weight cannot put a page in the list, two words narrow rather than widen, a page is found by the word its address uses as well as the word it prints, names outrank descriptions, the cap holds, repeated queries agree, matched words are marked, and the index still reaches ${AREAS.length} towns, ${BLOG_POSTS.length} articles, ${PORTFOLIO_STUDIES.length} case studies, ${SERVICE_LINES.length} service lines and ${TOOLS_INDEX.length} tools`

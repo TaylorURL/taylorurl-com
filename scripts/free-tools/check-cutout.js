@@ -19,14 +19,7 @@ import {
   trim,
 } from '../../src/app/tools/lib/cutout.js'
 import { crc32, zip } from '../../src/app/tools/lib/zip.js'
-
-let failures = 0
-const check = (ok, said) => {
-  if (!ok) {
-    failures += 1
-    console.error(`  FAIL ${said}`)
-  }
-}
+import { expect as check, finish } from '../harness/checks.js'
 
 /** A blank canvas of one colour. */
 function canvas(width, height, [r, g, b], a = 255) {
@@ -222,10 +215,7 @@ check(
   'CRC-32 is wrong on the standard check value'
 )
 
-if (failures) {
-  console.error(`cutout: ${failures} checks failed`)
-  process.exit(1)
-}
+await finish()
 console.log(
   'cutout: wordmark, badge, antialiased edge and transparent art all handled; archive reads back whole'
 )

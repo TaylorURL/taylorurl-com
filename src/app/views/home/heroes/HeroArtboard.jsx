@@ -1,12 +1,7 @@
 import { m } from 'framer-motion'
-import { EASE, fadeInUpMount } from '@constants/animations'
+import { EASE, rise } from '@constants/animations'
 import { AccentGradient } from '@reactbits/kit'
 import HeroActions from './HeroActions'
-
-const rise = delay => ({
-  ...fadeInUpMount,
-  transition: { ...fadeInUpMount.transition, delay },
-})
 
 // The ruler's ticks: a short mark every 10px and a tall one every 50px, drawn
 // as two gradients on one strip so the whole ruler is a single element.
