@@ -92,7 +92,7 @@ import {
   followUpColumns,
   variantSettings,
 } from '../lib/outreach/sending/queue.js'
-import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
+import { loadHeldDomains, squash } from '../lib/outreach/prospects/exclusions.js'
 import {
   HOLDOUTS,
   VARIANTS,
@@ -107,6 +107,7 @@ import {
 } from '../lib/outreach/variants.js'
 import { segmentOf } from '../lib/outreach/segments.js'
 import { isYoung } from '../lib/outreach/prospects/youth.js'
+import { STAGES } from '../lib/outreach/prospects/stages.js'
 import { ranksAhead } from '../lib/outreach/sending/rank.js'
 import { storedShot } from '../lib/outreach/audit/shot.js'
 import { compose, deliverProof, sender } from './outreach/send.js'
@@ -168,19 +169,6 @@ const wentAt = row => Date.parse(row.sent_at || row.created_at) || 0
 // when both it and the console's switch are open.
 const ARMED = process.env.OUTREACH_SEND_ARMED === 'true'
 
-const STAGES = [
-  'found',
-  'enriched',
-  'audited',
-  'queued',
-  'contacted',
-  'replied',
-  'unsubscribed',
-  'bounced',
-  'unreachable',
-  'undeliverable',
-  'skipped',
-]
 const JOBS = ['source', 'enrich', 'audit', 'send', 'watch', 'ramp']
 
 // The stages a business stands at while it is still owed a first letter, which
@@ -1348,13 +1336,6 @@ async function skip(db, body) {
   return { status: 200, body: { ok: true, skipped: id } }
 }
 
-/** A name or a town flattened to what two spellings of it have in common. */
-function plain(value) {
-  return String(value ?? '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '')
-}
-
 /**
  * The endings a business registers under and a person writing it down leaves
  * off.
@@ -1470,13 +1451,13 @@ async function alreadyOnFile(db, { email, host, name, town }) {
   const seen = await rows
   if (seen.error) throw seen.error
 
-  const wanted = plain(name)
-  const where = plain(town)
+  const wanted = squash(name)
+  const where = squash(town)
   // A town missing on either side is not a business somewhere else. The sweep
   // fills the column from the search that produced the row, so a name added
   // without one is the same business as the row that carries one.
-  const nearby = row => !where || !plain(row.town) || plain(row.town) === where
-  return seen.data.find(row => sameName(plain(row.name), wanted) && nearby(row)) ?? null
+  const nearby = row => !where || !squash(row.town) || squash(row.town) === where
+  return seen.data.find(row => sameName(squash(row.name), wanted) && nearby(row)) ?? null
 }
 
 /**

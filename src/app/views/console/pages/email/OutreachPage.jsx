@@ -24,6 +24,7 @@ import { ZONE } from '@lib/time/zone.js'
 import { DELIVERS_A_DAY } from '@lib/outreach/sending/schedule.js'
 import { SEGMENTS, segmentOf } from '@lib/outreach/segments.js'
 import { isYoung, youthOf } from '@lib/outreach/prospects/youth.js'
+import { STAGES } from '@lib/outreach/prospects/stages.js'
 import { ASKED_SOURCE } from '@lib/outreach/sending/rank.js'
 import {
   Area,
@@ -132,13 +133,7 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  * those rules are worked through.
  */
 
-/**
- * The eleven stages a prospect moves through, in the order it moves through
- * them.
- *
- * The last six are where one stops. `unsubscribed` is the only stage no job
- * may walk a prospect out of, because what put it there was a person asking.
- */
+/** How each stage in `STAGES` reads: its label, its tone and what it means. */
 const STAGE = {
   found: { label: 'Found', tone: 'plain', caption: 'sourced, nothing looked up yet' },
   enriched: { label: 'Enriched', tone: 'plain', caption: 'an email address was found' },
@@ -170,20 +165,6 @@ const STAGE = {
   skipped: { label: 'Skipped', tone: 'muted', caption: 'taken out of the pipeline by hand' },
 }
 
-const STAGE_ORDER = [
-  'found',
-  'enriched',
-  'audited',
-  'queued',
-  'contacted',
-  'replied',
-  'unsubscribed',
-  'bounced',
-  'unreachable',
-  'undeliverable',
-  'skipped',
-]
-
 /**
  * The three opportunity bands, and the row nothing has been measured on.
  *
@@ -197,7 +178,7 @@ const STAGE_ORDER = [
  * and is told apart by having no figure to show.
  *
  * The cut points are the ones the score itself is banded at, which
- * `outreachOpportunity` holds.
+ * `lib/outreach/audit/bands.js` holds.
  */
 const OPPORTUNITY = {
   strong: {
@@ -2800,7 +2781,7 @@ export default function OutreachPage() {
   const pages = Math.max(1, Math.ceil(paged / pageSize))
   const filtering = Boolean(stage || town || trade || band || search)
   const narrowing = Boolean(stage || town || trade || band)
-  const peak = Math.max(1, ...STAGE_ORDER.map(name => counts[name] || 0))
+  const peak = Math.max(1, ...STAGES.map(name => counts[name] || 0))
   // The stage counts, the strong-lead figure and the two filter lists are
   // taken over the whole table unless it is long enough to have been read to a
   // ceiling. Saying so is what keeps a breakdown over part of the table from
@@ -3125,7 +3106,7 @@ export default function OutreachPage() {
         className={SELECT}
       >
         <option value="">Every Stage</option>
-        {STAGE_ORDER.map(name => (
+        {STAGES.map(name => (
           <option key={name} value={name}>
             {STAGE[name].label}
           </option>
@@ -3279,7 +3260,7 @@ export default function OutreachPage() {
                   which is the order the pipeline runs in. Picking a stage
                   opens the businesses on file narrowed to it. */}
               <ul className="sm:grid sm:grid-flow-col sm:grid-rows-6">
-                {STAGE_ORDER.map(name => (
+                {STAGES.map(name => (
                   <StageRow
                     key={name}
                     name={name}
@@ -3310,7 +3291,7 @@ export default function OutreachPage() {
                   What the Stages Mean
                 </summary>
                 <dl className="mt-3 grid gap-2.5 sm:grid-cols-2">
-                  {STAGE_ORDER.map(name => (
+                  {STAGES.map(name => (
                     <div key={name} className="grid gap-0.5">
                       <dt className={`${MONO_LABEL} text-ink-paper`}>{STAGE[name].label}</dt>
                       <dd className="text-[13px] leading-relaxed text-paper-soft">
