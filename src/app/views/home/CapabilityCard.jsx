@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowUpRight } from 'lucide-react'
+import Reveal from '@components/page-bands/Reveal'
 
 /**
  * The card the home page's second section is laid out in, and the two surfaces
@@ -24,10 +25,16 @@ import { ArrowUpRight } from 'lucide-react'
  * The corner mark is the card's affordance and not a second control: it belongs
  * to the same link the label does, so the card offers one tab stop and one
  * destination however many places the pointer can find it.
+ *
+ * The card is also the thing that arrives when the band is scrolled to, and
+ * the arrival is on the article itself rather than on a wrapper: a wrapper in
+ * a grid is a cell the grid has to be told about, and the wide card's span
+ * would have had to move onto it.
  */
 export function Card({ title, blurb, to, cta, children, wide }) {
   return (
-    <article
+    <Reveal
+      as="article"
       className={`card-lift group/card relative flex flex-col overflow-hidden bg-paper ${
         wide ? 'md:col-span-2' : ''
       }`}
@@ -51,7 +58,7 @@ export function Card({ title, blurb, to, cta, children, wide }) {
         </Link>
       </div>
       {children}
-    </article>
+    </Reveal>
   )
 }
 

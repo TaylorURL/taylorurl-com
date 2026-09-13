@@ -27,12 +27,12 @@ import WorkDeck from './WorkDeck'
 export default function SmallTeamSection() {
   return (
     <section className="section-y-lg border-hair-paper relative isolate overflow-x-clip border-t bg-paper">
-      <Reveal className="container-rail relative">
+      <div className="container-rail relative">
         {/* The claim on the left and the qualification on the right, so the
             headline keeps a measure it can be set at and the paragraph is not
             one line of eighty characters underneath it. */}
         <div className="xl:grid xl:grid-cols-[1.15fr_0.85fr] xl:items-end xl:gap-16">
-          <div>
+          <Reveal>
             <p className="section-label mb-5 flex items-center gap-3 text-accent">
               <span className="h-1.5 w-1.5 flex-shrink-0 bg-accent" aria-hidden="true" />
               Who Builds It
@@ -40,9 +40,9 @@ export default function SmallTeamSection() {
             <h2 className="display-3 max-w-[17ch] font-semibold leading-[1.04] tracking-tightest text-ink-paper [text-wrap:balance]">
               {ABOUT.hero.title}
             </h2>
-          </div>
+          </Reveal>
 
-          <div className="mt-7 xl:mt-0 xl:pb-2">
+          <Reveal className="mt-7 xl:mt-0 xl:pb-2">
             <p className="max-w-[46ch] text-[16px] leading-relaxed text-paper-soft sm:text-[17px]">
               {ABOUT.hero.description}
             </p>
@@ -53,13 +53,13 @@ export default function SmallTeamSection() {
               See the Work
               <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
             </Link>
-          </div>
+          </Reveal>
         </div>
 
-        <div className="mt-12 lg:mt-16">
+        <Reveal className="mt-12 lg:mt-16">
           <WorkDeck projects={CLIENT_PROJECTS} />
-        </div>
-      </Reveal>
+        </Reveal>
+      </div>
     </section>
   )
 }
