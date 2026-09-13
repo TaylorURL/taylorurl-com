@@ -72,6 +72,11 @@ function leavePage(sandbox, watching, listeners) {
   for (const handler of listeners.pagehide || []) handler({})
 }
 
+/** An `addEventListener` that keeps each handler under its event, for these moves to call. */
+const registering = handlers => (type, handler) => {
+  ;(handlers[type] = handlers[type] || []).push(handler)
+}
+
 /**
  * Stands the reporter up on its own and returns what it posts. Nothing here
  * offers a `Worker`, and the `fetch` it does offer never answers on its own, so
@@ -118,14 +123,10 @@ function collector(scriptTags, siteTags) {
       },
     },
     localStorage: { getItem: () => null, setItem() {}, removeItem() {} },
-    addEventListener(type, handler) {
-      ;(listeners[type] = listeners[type] || []).push(handler)
-    },
+    addEventListener: registering(listeners),
     document: {
       visibilityState: 'visible',
-      addEventListener(type, handler) {
-        ;(watching[type] = watching[type] || []).push(handler)
-      },
+      addEventListener: registering(watching),
       // What the page has fetched from elsewhere, which is what the reporter
       // reads to say where a muted throw could have come from.
       getElementsByTagName: () => scriptTags || [],
@@ -539,16 +540,12 @@ function tagLoader(search = '') {
     Date,
     URL,
     setTimeout() {},
-    addEventListener(type, handler) {
-      ;(listeners[type] = listeners[type] || []).push(handler)
-    },
+    addEventListener: registering(listeners),
     removeEventListener() {},
     location: { search },
     document: {
       visibilityState: 'visible',
-      addEventListener(type, handler) {
-        ;(watching[type] = watching[type] || []).push(handler)
-      },
+      addEventListener: registering(watching),
       createElement() {
         const node = { async: false, src: '', crossOrigin: null, on: {} }
         node.addEventListener = (type, handler) => {
