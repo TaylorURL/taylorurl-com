@@ -14,6 +14,7 @@ import { Figures } from '../console/Figures'
 import { CELL_TIGHT, MONO_LABEL, ROW_HEIGHT, TH_TIGHT } from '../console/lib/tokens'
 import { recalledRows, rememberRows } from '../console/lib/rowMemory'
 import { bareDomain, displayDomain } from '@utils/domains'
+import { ago, useNow } from '@hooks/console/useNow'
 import { SiteIcon } from '../console/SiteIcon'
 import { clockIn, ZONE } from '@lib/time/zone.js'
 
@@ -74,29 +75,6 @@ function formatClock(date) {
   const hour = at.hour % 12 || 12
   const minute = at.minute.toString().padStart(2, '0')
   return `${hour}:${minute} ${at.hour >= 12 ? 'PM' : 'AM'}`
-}
-
-/** How long ago, in the coarsest unit that still says something useful. */
-function relative(from, now) {
-  if (!from) return ''
-  const seconds = Math.max(0, Math.round((now - from) / 1000))
-  if (seconds < 10) return 'just now'
-  if (seconds < 60) return `${seconds}s ago`
-  const minutes = Math.round(seconds / 60)
-  if (minutes < 60) return `${minutes} min ago`
-  const hours = Math.round(minutes / 60)
-  if (hours < 48) return `${hours}h ago`
-  return `${Math.round(hours / 24)}d ago`
-}
-
-/** A clock that ticks, so "3 min ago" does not sit there saying "just now". */
-function useNow(intervalMs) {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const id = window.setInterval(() => setNow(Date.now()), intervalMs)
-    return () => window.clearInterval(id)
-  }, [intervalMs])
-  return now
 }
 
 function formatDay(value) {
@@ -790,7 +768,7 @@ export function StatusBoard({ feed, scope }) {
                         <p className="mt-1 leading-relaxed text-paper-soft">{incident.summary}</p>
                         <p className={`${MONO_LABEL} text-paper-faint mt-1.5 font-mono`}>
                           {formatWhen(incident.opened_at)} ·{' '}
-                          {relative(new Date(incident.opened_at), now)}
+                          {ago(new Date(incident.opened_at), now)}
                         </p>
                         {incident.updates?.length > 1 && (
                           <p className={`${MONO_LABEL} text-paper-faint mt-1 font-mono`}>
@@ -880,7 +858,7 @@ export function StatusBoard({ feed, scope }) {
                         className={`${CELL_TIGHT} whitespace-nowrap text-right font-mono text-paper-soft`}
                       >
                         {incident.resolved_at
-                          ? relative(
+                          ? ago(
                               new Date(incident.opened_at),
                               new Date(incident.resolved_at)
                             ).replace(' ago', '')
