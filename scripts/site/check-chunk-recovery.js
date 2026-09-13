@@ -48,6 +48,7 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { wait } from '../../lib/time/wait.js'
 import { bootSource } from '../../vite/boot-source.js'
 import { SHEET_HANDLER, sheetRecovery, sheetSource } from '../../vite/sheet-source.js'
 import { cases, expect as check, fail, finish } from '../harness/checks.js'
@@ -523,7 +524,7 @@ async function runBoot(
   // A macrotask boundary, which is where every microtask the chain is made of
   // has finished: the wait between attempts is a stub that runs at once, so
   // nothing here is left in a real timer.
-  await new Promise(resolve => setTimeout(resolve, 0))
+  await wait(0)
   return { asked, reloads, session, shown }
 }
 
@@ -634,7 +635,7 @@ check(
   'a browser that refuses the boot storage loses the reload and the late attempt both, so nothing recovers it'
 )
 
-await new Promise(resolve => setTimeout(resolve, 0))
+await wait(0)
 const before = filed.length
 
 // The client #525 and #532 both came from: an engine years older than `?.`,
@@ -656,7 +657,7 @@ check(
   old.shown.length === 1 && /too old/.test(old.shown[0].textContent),
   'the notice for a browser that cannot run the page does not say that is what happened'
 )
-await new Promise(resolve => setTimeout(resolve, 0))
+await wait(0)
 check(
   filed.length === before,
   'a browser the site has never supported is filed as a fault against the site, under a fresh fingerprint on every visit because the message is what groups them'
@@ -671,7 +672,7 @@ check(
   'a build that shipped broken syntax tells every reader their browser is out of date'
 )
 
-await new Promise(resolve => setTimeout(resolve, 0))
+await wait(0)
 process.off('unhandledRejection', collect)
 
 check(

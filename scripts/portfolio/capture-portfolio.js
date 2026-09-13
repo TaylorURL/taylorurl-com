@@ -32,6 +32,7 @@ import {
   portfolioPreviewSrc,
   portfolioScreenshotServiceUrl,
 } from '../../src/app/data/portfolio.js'
+import { wait } from '../../lib/time/wait.js'
 
 const run = promisify(execFile)
 
@@ -64,8 +65,6 @@ const DESKTOP_STAGE_RATIO = 10 / 16
 const EMAIL_JPEG_WIDTH = 1084
 const EMAIL_JPEG_QUALITY = 62
 
-const sleep = ms => new Promise(resolveSleep => setTimeout(resolveSleep, ms))
-
 const isSpinnerGif = bytes =>
   bytes.length >= 4 &&
   bytes[0] === 0x47 &&
@@ -89,7 +88,7 @@ async function fetchScreenshot(project, device) {
       if (!response.ok) throw new Error(`thum.io responded ${response.status}`)
       const bytes = new Uint8Array(await response.arrayBuffer())
       if (isSpinnerGif(bytes)) {
-        await sleep(POLL_DELAY_MS)
+        await wait(POLL_DELAY_MS)
         continue
       }
       if (bytes.length >= MIN_IMAGE_BYTES) return bytes
