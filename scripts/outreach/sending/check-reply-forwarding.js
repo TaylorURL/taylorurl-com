@@ -40,6 +40,7 @@
  */
 
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
+import { inbound } from '../inbound-fixture.js'
 
 process.env.OUTREACH_SMTP_USER = 'studio@example.com'
 process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
@@ -158,23 +159,6 @@ const PROSPECT = {
   stage: 'contacted',
   replied_at: null,
 }
-
-/** One inbound message, shaped the way the mailbox reader hands them over. */
-const inbound = (body, over = {}) => ({
-  uid: 1,
-  envelope: {
-    messageId: '<reply-1@example.com>',
-    subject: 'Re: your website',
-    from: [{ address: 'owner@example.com' }],
-    to: [{ address: 'studio@example.com' }],
-    date: '2026-08-29T15:00:00.000Z',
-    ...(over.envelope ?? {}),
-  },
-  headerText: '',
-  bounce: false,
-  body,
-  ...over,
-})
 
 /** A run of the reader over one mailbox, against a database that accepts. */
 const run = (messages, plan = {}) => {

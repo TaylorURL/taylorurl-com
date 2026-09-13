@@ -29,6 +29,7 @@ import { dirname, join } from 'node:path'
 import { execFileSync } from 'node:child_process'
 import { answersFrom, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
+import { inbound } from '../inbound-fixture.js'
 import { AFTERNOON, atMidAfternoon, TRANSPORT } from '../send-fixture.js'
 import { cases, check, finish, ok, refusal, same } from '../../harness/checks.js'
 import { MAIL_BOX, statesNoAddress } from '../../mail/mail-box-fixture.js'
@@ -107,22 +108,6 @@ const PROSPECT = { id: 'p1', email: 'owner@example.com', stage: 'contacted', rep
 
 /** The lead row a carried reply lands on, as the merge function answers with one. */
 const LEAD_ID = 'l1'
-
-/** One inbound message, shaped the way the mailbox reader hands them over. */
-const inbound = (body, over = {}) => ({
-  uid: 1,
-  envelope: {
-    messageId: '<reply-1@example.com>',
-    subject: 'Re: your website',
-    from: [{ address: 'owner@example.com' }],
-    to: [{ address: 'studio@example.com' }],
-    date: '2026-08-29T15:00:00.000Z',
-  },
-  headerText: '',
-  bounce: false,
-  body,
-  ...over,
-})
 
 // ── The static invariant ─────────────────────────────────────────────────
 
