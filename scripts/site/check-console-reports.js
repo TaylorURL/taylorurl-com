@@ -50,6 +50,28 @@ if (!reporter) {
   process.exit(1)
 }
 
+/*
+ * A phone takes a page away in two shapes. A tab sent behind something hides
+ * the document and may never fire `pagehide`; a page navigated away from, or
+ * frozen into the back/forward cache, fires both. Each sandbox below hands its
+ * page these moves, over the listeners that page has registered with it.
+ */
+
+function hideDocument(sandbox, watching) {
+  sandbox.document.visibilityState = 'hidden'
+  for (const handler of watching.visibilitychange || []) handler({})
+}
+
+function showDocument(sandbox, watching) {
+  sandbox.document.visibilityState = 'visible'
+  for (const handler of watching.visibilitychange || []) handler({})
+}
+
+function leavePage(sandbox, watching, listeners) {
+  hideDocument(sandbox, watching)
+  for (const handler of listeners.pagehide || []) handler({})
+}
+
 /**
  * Stands the reporter up on its own and returns what it posts. Nothing here
  * offers a `Worker`, and the `fetch` it does offer never answers on its own, so
@@ -141,22 +163,11 @@ function collector(scriptTags, siteTags) {
     held() {
       return sandbox.window.__reporter.replay()
     },
-    /* The document going away and coming back, in the two shapes a phone does
-     * it in. Backgrounding hides the tab and may never fire `pagehide`;
-     * freezing the page into the back/forward cache fires both. */
-    hidden() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
-    shown() {
-      sandbox.document.visibilityState = 'visible'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
-    frozen() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-      for (const handler of listeners.pagehide || []) handler({})
-    },
+    // The document going away and coming back, as a backgrounded tab and as a
+    // page frozen into the back/forward cache.
+    hidden: () => hideDocument(sandbox, watching),
+    shown: () => showDocument(sandbox, watching),
+    frozen: () => leavePage(sandbox, watching, listeners),
     thawed() {
       sandbox.document.visibilityState = 'visible'
       for (const handler of listeners.pageshow || []) handler({})
@@ -569,23 +580,12 @@ function tagLoader(search = '') {
   return {
     filed,
     kept,
-    // The reader tapping through, locking the screen or switching apps. The
-    // tab going behind something hides the document and may never fire
-    // `pagehide`; a navigation fires both.
-    hides() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
-    leaves() {
-      sandbox.document.visibilityState = 'hidden'
-      for (const handler of watching.visibilitychange || []) handler({})
-      for (const handler of listeners.pagehide || []) handler({})
-    },
+    // The reader tapping through, locking the screen or switching apps, and
+    // the reader navigating away.
+    hides: () => hideDocument(sandbox, watching),
+    leaves: () => leavePage(sandbox, watching, listeners),
     // And back again, with everything on screen saying they never went.
-    shows() {
-      sandbox.document.visibilityState = 'visible'
-      for (const handler of watching.visibilitychange || []) handler({})
-    },
+    shows: () => showDocument(sandbox, watching),
     written: sandbox.__siteTags,
     fetched: appended.map(node => node.src),
     // The oldest ask to that host nobody has answered yet. A tag refused for

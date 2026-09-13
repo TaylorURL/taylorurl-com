@@ -23,18 +23,13 @@
  * those. `status-board-shot.swift` runs the page through WebKit instead, which
  * is compiled here on first use and left beside the source for later runs.
  */
-import { execFile } from 'node:child_process'
 import { access, mkdir, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { promisify } from 'node:util'
-
-const run = promisify(execFile)
+import { BINARY, SOURCE, build, run } from './shot-renderer.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SOURCE = join(ROOT, 'scripts', 'home', 'status-board-shot.swift')
-const BINARY = join(ROOT, 'scripts', 'home', '.status-board-shot')
 const OUT_DIR = join(ROOT, 'public', 'home')
 
 /** The palettes captured, and the file each one is committed as. */
@@ -51,27 +46,6 @@ const PATH = '/console/status'
 const WIDTH = 1200
 const HEIGHT = 750
 const SCALE = 3
-
-/** Whether the compiled tool is present and newer than the source it came from. */
-async function compiled() {
-  try {
-    const [binary, source] = await Promise.all([stat(BINARY), stat(SOURCE)])
-    return binary.mtimeMs > source.mtimeMs
-  } catch {
-    return false
-  }
-}
-
-async function build() {
-  if (await compiled()) return
-  try {
-    await run('swiftc', ['-O', SOURCE, '-o', BINARY])
-  } catch (error) {
-    throw new Error(
-      `swiftc could not build the capture tool — install the Xcode command line tools with \`xcode-select --install\`.\n${error.message}`
-    )
-  }
-}
 
 async function main() {
   try {

@@ -11,18 +11,10 @@
  *   npm run check:feed
  */
 import { readFile } from 'node:fs/promises'
-import { registerHooks } from 'node:module'
 import { expect as check, fail, finish } from '../harness/checks.js'
+import { allowExtensionlessImports } from '../harness/extensionless-imports.js'
 
-// The data modules import each other without extensions, which the bundler
-// resolves and bare Node does not.
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const relative = specifier.startsWith('.')
-    const spelled = relative && !/\.[a-z]+$/i.test(specifier) ? `${specifier}.js` : specifier
-    return nextResolve(spelled, context)
-  },
-})
+allowExtensionlessImports()
 
 const { BLOG_ROUTES, publishedAt, SITE_URL, SITEMAP_ROUTES } =
   await import('../../vite/site-routes.js')

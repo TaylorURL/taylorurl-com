@@ -57,6 +57,7 @@ import {
   recipientsFor,
 } from '../../lib/mail/notify.js'
 import { expect as check, finish } from '../harness/checks.js'
+import { answerTo } from './notify-fixture.js'
 
 // The credentials the endpoint reads at load. Neither opens anything: the
 // provider is a recorder in every case that reaches one, and no Supabase client
@@ -749,30 +750,7 @@ const SETUP = {
 /* ── The door itself ────────────────────────────────────────────────────── */
 
 async function callHandler(request) {
-  const answer = { status: 0, body: null, headers: {} }
-  // Several of these are refusals the endpoint is right to log, and a passing
-  // run should read as a passing run.
-  const said = console.error
-  console.error = () => {}
-  const response = {
-    setHeader(name, value) {
-      answer.headers[String(name).toLowerCase()] = value
-    },
-    status(code) {
-      answer.status = code
-      return response
-    },
-    json(payload) {
-      answer.body = payload
-      return response
-    },
-  }
-  try {
-    await notifyHandler({ headers: {}, ...request }, response)
-  } finally {
-    console.error = said
-  }
-  return answer
+  return answerTo(notifyHandler, { headers: {}, ...request })
 }
 
 {

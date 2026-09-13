@@ -43,13 +43,8 @@ const UNREACHABLE_WITHOUT_DATABASE = new Set(['NotesIssue'])
 
 // The router reads SITE once at import, so each site is asked in its own child.
 const PROBE = `
-import { registerHooks } from 'node:module'
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const relative = specifier.startsWith('.')
-    return nextResolve(relative && !/\\.[a-z]+$/i.test(specifier) ? specifier + '.js' : specifier, context)
-  },
-})
+import { allowExtensionlessImports } from './scripts/harness/extensionless-imports.js'
+allowExtensionlessImports()
 const { PRERENDER_ROUTES } = await import('./vite/site-routes.js')
 const { ROUTE_DEFINITIONS, matchViewKeys } = await import('./src/app/constants/routes.js')
 const mounted = []

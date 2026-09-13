@@ -22,15 +22,10 @@
 
 import { authorizeAdmin } from '../../lib/db/clients.js'
 import { cases, check, finish, same } from '../harness/checks.js'
+import { token } from './token-fixture.js'
 
 const ADMIN = 'account-admin'
 const CLIENT = 'account-client'
-
-/** A token that states an account, signed by nobody. */
-function token(sub) {
-  const part = value => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url')
-  return `Bearer ${part({ alg: 'HS256' })}.${part({ sub })}.not-a-signature`
-}
 
 /**
  * A stand-in for the two clients, recording what was asked and in what order.

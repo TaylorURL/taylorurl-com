@@ -22,6 +22,7 @@ import { fileURLToPath } from 'node:url'
 import { authorizeAdmin, authorizeCaller } from '../../lib/db/clients.js'
 import { cases, check, finish, same } from '../harness/checks.js'
 import { filesUnder } from '../harness/files.js'
+import { token } from './token-fixture.js'
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -31,12 +32,6 @@ const CLIENT = 'account-client'
 
 /** The two endpoints a representative is meant to reach, and nothing else. */
 const CALLER_DOORS = ['api/calls-desk.js', 'api/calls-admin.js']
-
-/** A token that states an account, signed by nobody. */
-function token(sub) {
-  const part = value => Buffer.from(JSON.stringify(value), 'utf8').toString('base64url')
-  return `Bearer ${part({ alg: 'HS256' })}.${part({ sub })}.not-a-signature`
-}
 
 /** A stand-in for the two clients, holding whichever roles a case needs. */
 function door({ roles = {}, verifies = null } = {}) {

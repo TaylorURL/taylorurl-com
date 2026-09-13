@@ -262,8 +262,11 @@ function project({ issue = null, subscribers = [], suppression = [], sendRows = 
   }
 }
 
-/** A request and a response the endpoint can answer into. */
-function exchange(body = { slug: ISSUE.slug }) {
+/**
+ * A response an endpoint can answer into, and the answer it keeps: the status,
+ * the body, and each header under the name the endpoint set it by.
+ */
+function answering() {
   const answer = { status: 0, body: null, headers: {} }
   const response = {
     setHeader(name, value) {
@@ -279,9 +282,13 @@ function exchange(body = { slug: ISSUE.slug }) {
       return response
     },
   }
+  return { answer, response }
+}
+
+/** A request and a response the endpoint can answer into. */
+function exchange(body = { slug: ISSUE.slug }) {
   return {
-    answer,
-    response,
+    ...answering(),
     request: { method: 'POST', headers: { authorization: 'Bearer a-session-token' }, body },
   }
 }
@@ -829,22 +836,7 @@ async function loadDue() {
 
 /** An invocation as Vercel makes one, and the response it answers into. */
 function firing({ method = 'GET', authorization = `Bearer ${CRON_SECRET}` } = {}) {
-  const answer = { status: 0, body: null, headers: {} }
-  const response = {
-    setHeader(name, value) {
-      answer.headers[name] = value
-      return response
-    },
-    status(code) {
-      answer.status = code
-      return response
-    },
-    json(payload) {
-      answer.body = payload
-      return response
-    },
-  }
-  return { answer, response, request: { method, headers: { authorization } } }
+  return { ...answering(), request: { method, headers: { authorization } } }
 }
 
 /**

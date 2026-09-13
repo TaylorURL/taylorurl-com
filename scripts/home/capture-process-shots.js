@@ -33,18 +33,13 @@
  * same engine the board's own shot is taken with, because the screenshot
  * service the portfolio uses never loads a lazily-loaded image.
  */
-import { execFile } from 'node:child_process'
 import { access, mkdir, rm, stat } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { promisify } from 'node:util'
-
-const run = promisify(execFile)
+import { BINARY, SOURCE, build, run } from './shot-renderer.js'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..')
-const SOURCE = join(ROOT, 'scripts', 'home', 'status-board-shot.swift')
-const BINARY = join(ROOT, 'scripts', 'home', '.status-board-shot')
 const OUT_DIR = join(ROOT, 'public', 'home')
 
 /**
@@ -82,27 +77,6 @@ const NARROW = WIDTH
 
 /** What a palette's file is called. The light one carries no suffix. */
 const fileFor = (name, palette) => `${name}${palette === 'dark' ? '-dark' : ''}.webp`
-
-/** Whether the compiled renderer is present and newer than the source it came from. */
-async function compiled() {
-  try {
-    const [binary, source] = await Promise.all([stat(BINARY), stat(SOURCE)])
-    return binary.mtimeMs > source.mtimeMs
-  } catch {
-    return false
-  }
-}
-
-async function build() {
-  if (await compiled()) return
-  try {
-    await run('swiftc', ['-O', SOURCE, '-o', BINARY])
-  } catch (error) {
-    throw new Error(
-      `swiftc could not build the capture tool — install the Xcode command line tools with \`xcode-select --install\`.\n${error.message}`
-    )
-  }
-}
 
 async function main() {
   try {

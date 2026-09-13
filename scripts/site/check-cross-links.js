@@ -55,13 +55,8 @@ import { expect as check, fail, finish } from '../harness/checks.js'
  * works, and the subsidiary is imported directly because it costs nothing.
  */
 const PROBE = `
-import { registerHooks } from 'node:module'
-registerHooks({
-  resolve(specifier, context, nextResolve) {
-    const relative = specifier.startsWith('.')
-    return nextResolve(relative && !/\\.[a-z]+$/i.test(specifier) ? specifier + '.js' : specifier, context)
-  },
-})
+import { allowExtensionlessImports } from './scripts/harness/extensionless-imports.js'
+allowExtensionlessImports()
 const { PRERENDER_ROUTES } = await import('./vite/site-routes.js')
 console.log(JSON.stringify(PRERENDER_ROUTES))
 `

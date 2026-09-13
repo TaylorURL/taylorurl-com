@@ -45,6 +45,7 @@
  */
 
 import { expect as check, finish } from '../harness/checks.js'
+import { answerTo } from './notify-fixture.js'
 
 /* ── The world the endpoint runs in ─────────────────────────────────────── */
 
@@ -349,29 +350,7 @@ async function call({ method = 'POST', secret, slug, body, headers = {}, address
     ...headers,
   }
 
-  const answered = { status: 0, body: null, headers: {} }
-  const response = {
-    setHeader: (name, value) => (answered.headers[String(name).toLowerCase()] = value),
-    status(code) {
-      answered.status = code
-      return response
-    },
-    json(payload) {
-      answered.body = payload
-      return response
-    },
-  }
-
-  // Several of these are refusals the endpoint is right to log, and a passing
-  // run should read as a passing run.
-  const said = console.error
-  console.error = () => {}
-  try {
-    await handler({ method, headers: sent, body: body === undefined ? '' : body }, response)
-  } finally {
-    console.error = said
-  }
-  return answered
+  return answerTo(handler, { method, headers: sent, body: body === undefined ? '' : body })
 }
 
 /** One posted notification, as a caller would put it on the wire. */
