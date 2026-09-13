@@ -1,13 +1,6 @@
-import { GROUNDS } from '@constants/grounds'
+import { CELL_FOCUS, GROUNDS } from '@constants/grounds'
 import { meshLadder, meshLayout } from '@constants/mesh'
 import { TOOL_NOTE } from '@data/towns-and-trades/trades'
-
-// The control a keyboard lands on is the hidden checkbox, so the ring is drawn
-// on the face beside it rather than by the base rule. It is turned inward
-// because the mesh sits in a clipping shell and a ring standing off an edge
-// cell would be cut in half by it.
-const CELL_FOCUS =
-  'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'
 
 const MARK_CELL =
   'flex h-full w-full items-center gap-3.5 p-5 transition duration-200 ease-out-soft'

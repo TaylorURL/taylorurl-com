@@ -1,10 +1,8 @@
 import Mesh from '@components/mesh/Mesh'
+import { CELL_FOCUS } from '@constants/grounds'
 import { EMAIL_PROVIDERS } from '@data/towns-and-trades/trades'
 import BlockHead from './BlockHead'
-import { BLOCK_LABEL, GROUND } from '../lib/ground'
-
-const CELL_FOCUS =
-  'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'
+import { BLOCK_LABEL, CELL_CHECKED, CELL_UNCHECKED, GROUND } from '../lib/ground'
 
 // The four parts of the email service sit two to a row from the first
 // breakpoint with room for the pair, and four divides that exactly.
@@ -78,9 +76,7 @@ export default function EmailSection({ provider, onSelect }) {
                   />
                   <span
                     className={`${CELL_FOCUS} flex w-full items-center gap-3.5 px-4 py-3.5 transition duration-200 ease-out-soft ${
-                      checked
-                        ? 'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)] peer-focus-visible:outline-[color:var(--on-accent)]'
-                        : 'bg-paper text-ink-paper hover:bg-[color:var(--wash-paper)] peer-focus-visible:outline-accent'
+                      checked ? CELL_CHECKED : CELL_UNCHECKED
                     }`}
                   >
                     <Mark className="h-5 w-5 flex-shrink-0" aria-hidden="true" />

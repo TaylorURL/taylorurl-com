@@ -93,3 +93,14 @@ export const GROUNDS = {
     ...DARK_CLASSES,
   },
 }
+
+/**
+ * The focus ring of a control drawn as a cell.
+ *
+ * The control a keyboard lands on is a hidden input, so the ring is drawn on
+ * the face beside it rather than by the base rule. It is turned inward because
+ * the cell sits in a clipping shell and a ring standing off an edge cell would
+ * be cut in half by it.
+ */
+export const CELL_FOCUS =
+  'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'

@@ -1,14 +1,7 @@
 import BlockHead from './BlockHead'
-import { GROUND } from '../lib/ground'
+import { CELL_FOCUS } from '@constants/grounds'
+import { CELL_CHECKED, CELL_UNCHECKED, GROUND } from '../lib/ground'
 import { BRAND_STATES, FEEL_LIMIT, FEELINGS, PHOTO_STATES, VOICE_STEPS } from '../lib/look'
-
-const CELL_FOCUS =
-  'peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:-outline-offset-2'
-
-const CHECKED =
-  'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)] peer-focus-visible:outline-[color:var(--on-accent)]'
-const UNCHECKED =
-  'bg-paper text-ink-paper hover:bg-[color:var(--wash-paper)] peer-focus-visible:outline-accent'
 
 /**
  * One answer, drawn as a cell of its question's mesh. The input is taken out
@@ -31,7 +24,7 @@ function OptionCell({ type, group, option, checked, disabled, onPick }) {
       />
       <span
         className={`${CELL_FOCUS} flex min-h-[56px] w-full items-center p-5 text-[14px] leading-snug transition duration-200 ease-out-soft ${
-          checked ? CHECKED : UNCHECKED
+          checked ? CELL_CHECKED : CELL_UNCHECKED
         } ${disabled ? 'opacity-40' : ''}`}
       >
         {option.name}
