@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUpRight } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import SendButton from '@components/conversion/SendButton'
 import BbbSeal from '@components/reviews/BbbSeal'
 import PageHero from '@components/page-bands/PageHero'
 import Seo from '@components/Seo'
@@ -384,15 +384,9 @@ export default function Payment() {
               )}
 
               <div className="border-hair-paper flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-                <button type="submit" disabled={sending} className="btn btn-primary group">
-                  {sending ? 'Opening Checkout…' : `Pay ${BUILD_PRICE} and Start`}
-                  {!sending && (
-                    <ArrowUpRight
-                      className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                      aria-hidden="true"
-                    />
-                  )}
-                </button>
+                <SendButton sending={sending} pending="Opening Checkout…">
+                  {`Pay ${BUILD_PRICE} and Start`}
+                </SendButton>
                 <p className="section-label-sm text-paper-faint">No card is typed on this site</p>
               </div>
             </form>
