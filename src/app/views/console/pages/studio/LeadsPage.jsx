@@ -28,6 +28,7 @@ import {
   SidePanel,
   SkeletonList,
   SkeletonRows,
+  SplitRow,
   ViewNav,
 } from '../../ui'
 import { Figures } from '../../Figures'
@@ -222,25 +223,11 @@ function Fact({ label, value }) {
 
 /** One lead in the column: who, where from, how far, and whether they wait. */
 function LeadRow({ lead, open, onOpen }) {
-  const state = stage(lead)
   return (
-    <li className="border-hair-paper border-t first:border-t-0">
-      <button
-        type="button"
-        aria-current={open ? 'true' : undefined}
-        onClick={onOpen}
-        className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition-colors duration-150 ease-out-soft hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
-      >
-        <span className="grid min-w-0 gap-0.5">
-          <span className="truncate text-[13px] font-medium text-ink-paper">{who(lead)}</span>
-          <span className="text-paper-faint truncate text-[12px]">
-            {DOORS[lead.source] || lead.source} · {when(lead.first_seen)}
-            {lead.due_at ? ` · owed ${onDay(lead.due_at)}` : ''}
-          </span>
-        </span>
-        <Badge tone={state.tone}>{state.label}</Badge>
-      </button>
-    </li>
+    <SplitRow name={who(lead)} badge={stage(lead)} open={open} onOpen={onOpen}>
+      {DOORS[lead.source] || lead.source} · {when(lead.first_seen)}
+      {lead.due_at ? ` · owed ${onDay(lead.due_at)}` : ''}
+    </SplitRow>
   )
 }
 

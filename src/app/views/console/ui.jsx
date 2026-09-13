@@ -657,6 +657,34 @@ export function ConsoleSplit({ list, children, area }) {
 }
 
 /**
+ * One entry in a split's list: what it is, a line of what is known about it,
+ * and where it stands.
+ *
+ * The whole row is the button. The entry open beside the list carries
+ * `aria-current`, and that attribute is also what draws the ground and the
+ * accent down its edge, so the mark a screen reader announces and the one a
+ * reader sees cannot disagree about which row is open.
+ */
+export function SplitRow({ name, badge, open, onOpen, children }) {
+  return (
+    <li className="border-hair-paper border-t first:border-t-0">
+      <button
+        type="button"
+        aria-current={open ? 'true' : undefined}
+        onClick={onOpen}
+        className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition-colors duration-150 ease-out-soft hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
+      >
+        <span className="grid min-w-0 gap-0.5">
+          <span className="truncate text-[13px] font-medium text-ink-paper">{name}</span>
+          <span className="text-paper-faint truncate text-[12px]">{children}</span>
+        </span>
+        <Badge tone={badge.tone}>{badge.label}</Badge>
+      </button>
+    </li>
+  )
+}
+
+/**
  * The views a section splits into, as a row of tabs under its figures.
  *
  * A section with more than one thing to show - a queue, a list, a set of
