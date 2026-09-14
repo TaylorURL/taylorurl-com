@@ -55,6 +55,7 @@ import {
   medianOf,
   outcomeAsksInterest,
   outcomeEnds,
+  outcomeTakesCallback,
   OUTCOME_IDS,
   ownerOf,
   placeCalls,
@@ -117,6 +118,21 @@ const COLUMNS = [
   'created_at',
   'assigned_to',
   'assigned_at',
+  'email',
+  // The audit, which is what the second call is about. A caller walks the owner
+  // through these four numbers, so the reading has to arrive with the business
+  // rather than being fetched again once somebody is on the phone.
+  'audit_score',
+  'accessibility_score',
+  'best_practices_score',
+  'seo_score',
+  'audit_at',
+  'audit_raw',
+  // And whether the audit has already been sent, because two callers work one
+  // queue and the second one must not send it again.
+  'audit_emailed_at',
+  'audit_emailed_by',
+  'audit_emailed_to',
 ].join(', ')
 
 /** A note is a person's own sentence, and the column holds this much of one. */
@@ -328,6 +344,28 @@ function proofWork(row, kind) {
 }
 
 /**
+ * The audit report, cut to what is read off it.
+ *
+ * The stored report is a Lighthouse run kept whole, because the audit job that
+ * wrote it has its own reasons to keep it. The call screen reads two things
+ * out of it: the address the reading was actually taken on, and the savings it
+ * named, which become the sentences a caller says out loud. Everything else -
+ * the diagnostics, the screenshots, the timings behind each metric - is weight
+ * on a response that already carries fifty businesses.
+ *
+ * A report that is not an object reads as no report rather than as an empty
+ * one, so a row written before the column held anything draws the same as a
+ * row that was never measured.
+ */
+function auditCarried(raw) {
+  if (!raw || typeof raw !== 'object') return null
+  return {
+    final_url: raw.final_url ?? null,
+    opportunities: Array.isArray(raw.opportunities) ? raw.opportunities : [],
+  }
+}
+
+/**
  * One business as the list draws it: the row, what its trade says about it,
  * what it scores and why, where it sits, when it comes back, and every call
  * placed to it.
@@ -353,6 +391,15 @@ function drawn(row, { medians, calls, proof, now, named }) {
     // The name beside the id, so a row can say whose it is without the console
     // holding a second index and joining it per render.
     assigned_name: ownerOf(row) ? (named.get(ownerOf(row)) ?? null) : null,
+    // The same, for whoever sent the audit. A caller looking at a business
+    // somebody already emailed needs the name to know who to ask about it, and
+    // an id is not a name.
+    audit_emailed_by_name: row.audit_emailed_by ? (named.get(row.audit_emailed_by) ?? null) : null,
+    // The report, cut to the two things read off it. The whole blob is a
+    // Lighthouse run - tens of kilobytes of diagnostics per row - and this
+    // answer carries a page of rows, so sending all of it would spend most of
+    // the response on audits nobody opens.
+    audit_raw: auditCarried(row.audit_raw),
     pull: pullBand(row, median),
     pull_ratio: pullOf(row, median),
     trade_median: median,
@@ -612,7 +659,9 @@ async function record(db, body, account) {
   // only ways past a required field are a time somebody invented or an outcome
   // that is not what happened.
   const ringBack =
-    outcome === 'callback' && !callback.at ? defaultCallbackAt().toISOString() : callback.at
+    outcomeTakesCallback(outcome) && !callback.at
+      ? defaultCallbackAt(new Date(), outcome).toISOString()
+      : callback.at
   // A business that is off the list does not come back to one, so an ending
   // outcome may not carry a time. Without this a mis-keyed Booked with a
   // callback still on the form would file a promise nothing will ever read.

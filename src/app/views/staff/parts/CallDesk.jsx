@@ -5,13 +5,14 @@ import { useCallDesk } from '@hooks/console/useCallDesk'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
 import { isTyping } from '@utils/keyboard'
 import {
-  CALLBACK_LENGTHS,
+  callbackLengthsFor,
   CALL_OUTCOMES,
   callBody,
   dialHref,
   outcomeAsksInterest,
   outcomeTakesCallback,
 } from '@lib/outreach/prospects/calls.js'
+import { auditReading } from '@lib/outreach/audit/reading.js'
 import { heldByOther } from '@lib/outreach/prospects/callPresence.js'
 import { DEFAULT_GOALS } from '@lib/outreach/prospects/callShift.js'
 import { scriptFor } from '@lib/outreach/prospects/handbook.js'
@@ -24,6 +25,29 @@ import { NOTE_STAMPS, callDay, callLine, callMoment, marksFor } from '../lib/cal
 // never pages, so the page size is only how far ahead this screen can see when
 // the rows above the one on screen are all held by somebody else.
 const FILTERS = Object.freeze({ view: 'list', take: 50 })
+
+// How many of the audit's faults are worth reading out. The reading hands back
+// what it found largest first, and a caller walking an owner through their own
+// site names three or four things and then stops - a list of nine is a list
+// nobody finishes and the owner stops hearing after the first two.
+const ISSUES_SHOWN = 4
+
+/**
+ * Whether an address is worth sending to.
+ *
+ * The door does the real checking and refuses what it cannot deliver to. This
+ * only decides whether the control that opens the confirmation is live, so it
+ * asks the one question a caller typing into the field can answer: is there a
+ * name, a sign and a domain with a dot in it. A stricter rule here would be a
+ * second opinion about deliverability held in a browser, and the addresses it
+ * would turn away are the unusual ones that work.
+ */
+function plausibleAddress(address) {
+  const sign = address.indexOf('@')
+  if (sign < 1 || /\s/.test(address)) return false
+  const domain = address.slice(sign + 1)
+  return domain.indexOf('.') > 0 && !domain.endsWith('.')
+}
 
 /**
  * The only screen a representative controls.
@@ -44,6 +68,21 @@ const FILTERS = Object.freeze({ view: 'list', take: 50 })
  * outcomes and a comment box to somebody who has not dialed yet reads as a form
  * to fill in rather than a call to make, and the height it takes is height the
  * script wanted.
+ *
+ * The audit stands with the facts, because on the second call it is the
+ * subject: the owner said yes to a free reading of their site, and this is the
+ * reading, four numbers and the handful of faults behind them. Most of the
+ * list has none - a business with no site of its own is why it is on the list
+ * at all - so where there is nothing the part says which nothing it is in one
+ * sentence and draws no cells. Four zeros in a band of red is a reading, and
+ * it is a reading of a site that does not exist.
+ *
+ * Sending the audit is the one thing on this screen that leaves the building
+ * and cannot be taken back, so it is asked twice: an address to check, and
+ * then the address said back. Once it has gone, the part says when it went and
+ * who sent it instead of offering the control again, because the queue is
+ * worked by more than one person and the second one to open the business has
+ * no other way to know.
  *
  * On a desk the script is a column of its own and always open. On a phone it
  * folds, because a representative reads it once in the first week and after
@@ -85,6 +124,16 @@ export default function CallDesk({ Shell }) {
   // press arms it and the second files it. Anything else the caller does
   // disarms it.
   const [armed, setArmed] = useState(false)
+  // Where the send has got to: null for the control on its own, 'address' for
+  // the field, 'confirm' for the address said back. Two steps rather than one
+  // because a mistyped address sends a stranger somebody else's audit, and
+  // there is no second chance at it.
+  const [emailStep, setEmailStep] = useState(null)
+  const [emailTo, setEmailTo] = useState('')
+  // A second press before the first request settles would send the audit
+  // twice. The flag in the closure is what stops it, because a piece of state
+  // set in the same tick is not read back in time to refuse the second press.
+  const emailing = useRef(false)
 
   const rows = useMemo(() => feed.data?.rows ?? [], [feed.data])
   const shift = feed.data?.shift ?? null
@@ -159,6 +208,8 @@ export default function CallDesk({ Shell }) {
     setInterest(null)
     setNote('')
     setArmed(false)
+    setEmailStep(null)
+    setEmailTo('')
   }, [])
 
   // Arriving at a business clears what was answered about the last one. Carrying
@@ -214,6 +265,45 @@ export default function CallDesk({ Shell }) {
     await desk.dropNumber()
     onward()
   }, [current, armed, feed, desk, onward])
+
+  // The business's audit as the caller reads it out. The row carries the four
+  // scores and a trimmed copy of the report; this is the only place that turns
+  // them into sentences, and the email that carries the same reading turns
+  // them into the same ones.
+  const reading = useMemo(() => (current ? auditReading(current) : null), [current])
+
+  // Whether a callback the owner has not yet had is on file. The audit email
+  // says when the studio rings, so it cannot go out before that time exists,
+  // and a time already behind them is no better than none.
+  const callAhead = Boolean(
+    current?.callback_at && new Date(current.callback_at).getTime() > Date.now()
+  )
+
+  const askAudit = useCallback(() => {
+    setEmailTo(current?.email || '')
+    setEmailStep('address')
+  }, [current])
+
+  const dropAudit = useCallback(() => {
+    setEmailStep(null)
+    setEmailTo('')
+  }, [])
+
+  const sendAudit = useCallback(async () => {
+    if (!current || emailing.current) return
+    emailing.current = true
+    try {
+      const sent = await feed.emailAudit({ id: current.id, email: emailTo.trim() })
+      // A refusal is almost always the address, and the reason for it is
+      // already on screen as a notice. So the panel goes back to the field
+      // with what was typed still in it rather than closing and asking the
+      // caller to remember what they had.
+      if (sent) dropAudit()
+      else setEmailStep('address')
+    } finally {
+      emailing.current = false
+    }
+  }, [current, emailTo, feed, dropAudit])
 
   // The keys, for the hand that is not holding a handset. They are only live once
   // the call is marked, because until then there is nothing on screen they
@@ -385,6 +475,115 @@ export default function CallDesk({ Shell }) {
                 </dd>
               </div>
             </dl>
+
+            <div className="staff-part staff-audit" key={`${current.id}-audit`}>
+              <h3>Audit</h3>
+              {!reading.measured ? (
+                <p className="staff-read">{reading.why}</p>
+              ) : (
+                <>
+                  <dl className="staff-scores">
+                    {reading.scores.map(score => (
+                      <div key={score.column} data-band={score.band}>
+                        {/* A category the report answered nothing for says so.
+                            A nought in its place is a reading, and the reading
+                            it gives is the worst one there is. */}
+                        <dt>{score.label}</dt>
+                        <dd>{score.value === null ? 'Not read' : score.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <p className="staff-read">
+                    {reading.age
+                      ? `${reading.age.said}, ${callDay(reading.at)}`
+                      : callDay(reading.at)}
+                  </p>
+                  {reading.issues.length > 0 && (
+                    <ul className="staff-issues">
+                      {reading.issues.slice(0, ISSUES_SHOWN).map(issue => (
+                        <li key={issue.id}>{issue.text}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {current.audit_emailed_at ? (
+                    <p className="staff-read">
+                      {`Audit emailed ${callMoment(current.audit_emailed_at)} by ${current.audit_emailed_by_name || 'somebody'}`}
+                      {current.audit_emailed_to ? `, to ${current.audit_emailed_to}` : ''}.
+                    </p>
+                  ) : !callAhead ? (
+                    // The message closes on the time the caller booked, so
+                    // the button waits for a callback to be logged rather
+                    // than sending a report with nothing at the end of it.
+                    <p className="staff-read">
+                      Log the callback first. The audit email tells them when you ring.
+                    </p>
+                  ) : emailStep === null ? (
+                    <button type="button" className="staff-btn" onClick={askAudit}>
+                      Email Client This Audit
+                    </button>
+                  ) : (
+                    <div className="staff-confirm">
+                      {emailStep === 'address' ? (
+                        <>
+                          <input
+                            className="staff-input"
+                            type="email"
+                            required
+                            aria-label="Email Address"
+                            placeholder="name@example.com"
+                            value={emailTo}
+                            onChange={event => setEmailTo(event.target.value)}
+                          />
+                          <p className="staff-read">The audit goes to this address.</p>
+                          <div className="staff-confirm-keys">
+                            <button
+                              type="button"
+                              className="staff-quiet"
+                              onClick={dropAudit}
+                              disabled={feed.sending}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="staff-btn"
+                              onClick={() => setEmailStep('confirm')}
+                              disabled={feed.sending || !plausibleAddress(emailTo.trim())}
+                            >
+                              Send the Audit
+                            </button>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <p className="staff-read">
+                            Send the audit to <b>{emailTo.trim()}</b>?
+                          </p>
+                          <div className="staff-confirm-keys">
+                            <button
+                              type="button"
+                              className="staff-quiet"
+                              onClick={dropAudit}
+                              disabled={feed.sending}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              type="button"
+                              className="staff-btn"
+                              onClick={sendAudit}
+                              disabled={feed.sending}
+                            >
+                              {feed.sending ? 'Sending' : 'Yes, Send It'}
+                            </button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
           </div>
 
           <div className="staff-desk">
@@ -411,7 +610,7 @@ export default function CallDesk({ Shell }) {
                     <div className="staff-range">
                       <p className="staff-label">Call Back In</p>
                       <div className="staff-tags">
-                        {CALLBACK_LENGTHS.map(length => (
+                        {callbackLengthsFor(picked.id).map(length => (
                           <button
                             key={length.hours}
                             type="button"

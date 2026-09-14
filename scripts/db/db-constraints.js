@@ -83,6 +83,20 @@ export function readValueList(definition) {
   if (found.size !== 1) return null
   const [column, values] = [...found][0]
   if (values.length === 0) return null
+
+  // A clause about any other column makes the definition a rule about the
+  // pair rather than a list for this one. `(direction = 'inbound') OR
+  // (prospect_id IS NOT NULL)` names one value for `direction` and is not a
+  // list of what `direction` takes: it says an outbound row needs a prospect.
+  // Read as a list it would refuse every outbound write in the tree.
+  const named = new Set()
+  for (const [, other] of definition.matchAll(/\b(\w+)\s+IS\s+(?:NOT\s+)?NULL/g)) named.add(other)
+  for (const [, other] of definition.matchAll(/\b(\w+)\s*(?:<>|>=|<=|=|<|>)\s*(?:'|ANY|\d)/g)) {
+    named.add(other)
+  }
+  named.delete(column)
+  if (named.size > 0) return null
+
   return { column, allows: [...new Set(values)] }
 }
 

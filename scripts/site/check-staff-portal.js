@@ -30,8 +30,10 @@ import {
   CALLBACK_LENGTHS,
   CALL_OUTCOMES,
   OUTCOME_IDS,
+  SAME_DAY_LENGTHS,
   callBody,
   callbackIn,
+  callbackLengthsFor,
   outcomeAsksInterest,
   outcomeEnds,
   outcomeTakesCallback,
@@ -129,9 +131,9 @@ check(
   'two outcomes answer to the same key, so one of them cannot be pressed'
 )
 
-// Every length a representative can pick is a step on the ladder the list
-// already waits by, so a time picked here and a time the list would have come
-// back on its own are the same interval.
+// Every length on the ladder a representative can pick is a step on the ladder
+// the list already waits by, so a time picked here and a time the list would
+// have come back on its own are the same interval.
 check(
   CALLBACK_LENGTHS.length === ATTEMPT_HOURS.length,
   'the callback lengths are not the attempt ladder'
@@ -141,13 +143,34 @@ for (const length of CALLBACK_LENGTHS) {
   check(Boolean(length.label), `a callback length of ${length.hours} hours has no label`)
 }
 
+// The same day set is the one thing that is deliberately not on that ladder.
+// The ladder's shortest rung is tomorrow, and tomorrow is the one time a booked
+// audit must not be: the owner agreed to be walked through it today. So these
+// are held to the day instead of to the ladder, because a length of nought is a
+// time already past and a length of a day is the rung they exist to undercut.
+for (const length of SAME_DAY_LENGTHS) {
+  check(length.hours > 0, `${length.label} is not a length at all`)
+  check(length.hours < 24, `${length.label} is not inside the day it is offered for`)
+  check(Boolean(length.label), `a same day length of ${length.hours} hours has no label`)
+}
+
 // A callback time the endpoint would refuse is a call a representative files and
-// loses: it takes a time still to come, and no more than a year out.
+// loses: it takes a time still to come, and no more than a year out. Asked of
+// every outcome that keeps the business, because the screen draws the set the
+// outcome names rather than one fixed set, and a length reachable from only one
+// tile is a refusal nobody would find until that tile was pressed.
 const now = Date.now()
-for (const length of CALLBACK_LENGTHS) {
-  const at = callbackIn(length.hours, new Date(now)).getTime()
-  check(at > now, `${length.label} lands in the past`)
-  check(at - now <= 365 * 24 * 3600 * 1000, `${length.label} lands more than a year out`)
+for (const outcome of CALL_OUTCOMES.filter(one => outcomeTakesCallback(one.id))) {
+  const lengths = callbackLengthsFor(outcome.id)
+  check(lengths.length > 0, `${outcome.label} offers no length to ring back in`)
+  for (const length of lengths) {
+    const at = callbackIn(length.hours, new Date(now)).getTime()
+    check(at > now, `${outcome.label}: ${length.label} lands in the past`)
+    check(
+      at - now <= 365 * 24 * 3600 * 1000,
+      `${outcome.label}: ${length.label} lands more than a year out`
+    )
+  }
 }
 
 // ── The body the screen files is the body the endpoint takes ──────────────
@@ -192,5 +215,6 @@ await finish()
 console.log(
   `staff portal holds: ${SURFACES.length} addresses, each mounted, prerendered, out of the sitemap, ` +
     `disallowed in ${blocks} agent blocks and bare of the marketing chrome. ` +
-    `${CALL_OUTCOMES.length} outcomes the column takes and ${CALLBACK_LENGTHS.length} callback lengths off the attempt ladder.`
+    `${CALL_OUTCOMES.length} outcomes the column takes, ${CALLBACK_LENGTHS.length} callback lengths off the attempt ladder ` +
+    `and ${SAME_DAY_LENGTHS.length} inside the day for an audit.`
 )

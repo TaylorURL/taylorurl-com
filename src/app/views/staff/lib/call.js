@@ -9,8 +9,16 @@ import { outcomeOf, placeOf } from '@lib/outreach/prospects/calls.js'
  * read by whoever picks the business up next - so the press writes the line and
  * leaves the cursor in it, for the half of these that want a name or a time
  * after them.
+ *
+ * Six is the ceiling and it is the reason there is no stamp for an audit wanted
+ * by email: the row of tiles is read at a glance while somebody is still on the
+ * line, and a seventh press that has to be hunted for costs more than typing
+ * the words. An email is what most of them ask for anyway, so the stamp already
+ * here covers it and the one added is for the other half, who want a text.
  */
 export const NOTE_STAMPS = Object.freeze([
+  'Audit booked.',
+  'Wants the audit by text.',
   'Price objection.',
   'Call back after hours.',
   'Already has someone.',

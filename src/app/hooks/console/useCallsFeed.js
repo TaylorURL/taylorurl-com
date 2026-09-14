@@ -7,11 +7,17 @@ import { useAlive } from './useAlive'
 
 const CALLS_PATH = '/api/calls-admin'
 
+/** Where the audit is sent from, which is its own door and its own refusals. */
+const AUDIT_EMAIL_PATH = '/api/calls-audit-email'
+
 /** What a reader is told when the read behind the section does not land. */
 const NO_READ = 'The call list could not be read. Try again in a moment.'
 
 /** And when a call does not get written down. */
 const NO_RECORD = 'That call could not be recorded. Try it again.'
+
+/** And when the audit does not go out. */
+const NO_AUDIT_EMAIL = 'The audit could not be sent. Try it again.'
 
 /**
  * How often the list re-reads itself while somebody is looking at it.
@@ -61,17 +67,25 @@ const LIVE_MS = 30_000
  * over rows that are still right. `error` belongs to the read alone for that
  * reason.
  *
+ * Sending a business its audit re-reads for the same reason a call does. The
+ * send stamps three columns on the row - when it went, who sent it and where
+ * to - and those columns are the whole of what stops a second caller sending
+ * it again an hour later. Patching them on screen would leave that promise
+ * living in one browser.
+ *
  * @param {{token: string|null, enabled: boolean,
  *   filters: {view: string, state: string, pull: string, min_score: string,
  *     town: string, trade: string, assigned: string, sort: string,
  *     search: string, take: number, page: number}}} options
  * @returns {{data: object|null, error: string|null, loading: boolean, saving: boolean,
- *   record: (call: object) => Promise<object|null>}}
+ *   sending: boolean, record: (call: object) => Promise<object|null>,
+ *   emailAudit: (ask: {id: string, email: string}) => Promise<object|null>}}
  */
 export function useCallsFeed({ token, enabled, filters }) {
   const [held, setHeld] = useState(NOTHING_HELD)
   const [failed, setFailed] = useState(NOTHING_HELD)
   const [saving, setSaving] = useState(false)
+  const [sending, setSending] = useState(false)
   const toast = useToast()
   const alive = useAlive()
 
@@ -140,6 +154,33 @@ export function useCallsFeed({ token, enabled, filters }) {
     [token, load, toast, alive]
   )
 
+  const emailAudit = useCallback(
+    async ({ id, email }) => {
+      if (!token) return null
+      setSending(true)
+      try {
+        const { response, payload } = await writeEndpoint(token, AUDIT_EMAIL_PATH, { id, email })
+        if (!response.ok) {
+          if (alive.current) toast(faultFromResponse(response, payload, NO_AUDIT_EMAIL), 'error')
+          // A refusal naming when it already went out is the door saying
+          // somebody else sent it, which is news the row on screen does not
+          // carry yet. Reading again is what puts their name under the button
+          // instead of leaving the caller to press it a third time.
+          if (payload?.audit_emailed_at) await load()
+          return null
+        }
+        await load()
+        return payload
+      } catch (cause) {
+        if (alive.current) toast(faultMessage(cause, NO_AUDIT_EMAIL), 'error')
+        return null
+      } finally {
+        if (alive.current) setSending(false)
+      }
+    },
+    [token, load, toast, alive]
+  )
+
   // Filed under the filter that asked for it: a new town, trade or page is a
   // different question, and the list on screen is not its answer.
   const data = answerFor(held, query)
@@ -150,6 +191,8 @@ export function useCallsFeed({ token, enabled, filters }) {
     error,
     loading: !data && !error,
     saving,
+    sending,
     record,
+    emailAudit,
   }
 }
