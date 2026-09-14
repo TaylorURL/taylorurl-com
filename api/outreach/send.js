@@ -165,16 +165,51 @@ const ARMED = process.env.OUTREACH_SEND_ARMED === 'true'
 // unset variable falls back to the studio's own number rather than to nothing.
 const REPLY_PHONE = process.env.OUTREACH_REPLY_PHONE || BIO_PHONE
 
-/** The wait between two sends, which is what keeps a run from arriving as a burst. */
-const SPACING_MS = 20_000
+/**
+ * The widest and narrowest wait between two sends, which is what keeps a run
+ * from arriving as a burst. A run of first letters is spaced between the two by
+ * how many it carries; a reminder always waits the widest.
+ */
+const SPACING_MAX_MS = 20_000
+const SPACING_MIN_MS = 3_000
 const SEND_TIMEOUT_MS = 20_000
+
+/**
+ * The stretch of a run its first letters are spread across, and what one
+ * delivery takes on an ordinary day.
+ *
+ * The stretch stops short of the run's budget so the reminders after it still
+ * have time. The delivery figure is the SMTP handoff and the writes either side
+ * of it as they run in production, a few seconds, and it is only used to space
+ * letters evenly: the deadline check below asks the worst case, not this.
+ */
+const FIRST_LETTERS_SPAN_MS = 200_000
+const DELIVERY_MS = 4_000
+
+/**
+ * The wait after each first letter of a run that carries `count` of them.
+ *
+ * A run carrying a few is spaced as widely as it ever is. A run carrying more,
+ * because the cap is higher or a missed run left a backlog, closes the gaps so
+ * the whole of what is due fits inside the run rather than being left for the
+ * next one, down to the floor.
+ *
+ * @param {number} count Letters this run is about to send.
+ * @returns {number} Milliseconds.
+ */
+export function spacingFor(count) {
+  if (count <= 1) return SPACING_MAX_MS
+  const even = Math.floor(FIRST_LETTERS_SPAN_MS / count) - DELIVERY_MS
+  return Math.min(SPACING_MAX_MS, Math.max(SPACING_MIN_MS, even))
+}
+
 /**
  * How long a capture is given before the run stops holding a socket open for it.
  *
  * The whole warm answers to this, not each of its attempts: the service is
  * asked again when it replies with its holding image, and three of those plus
  * the pauses between them is far more than a message's turn can afford out of a
- * five minute invocation that also spaces its sends twenty seconds apart. This
+ * five minute invocation that also spaces its sends up to twenty seconds apart. This
  * figure is one of the four SEND_PER_RUN_MAX is derived from.
  */
 const SHOT_WARM_MS = 25_000
@@ -222,10 +257,11 @@ const RUN_BUDGET_MS = 250_000
  * any left at all, because a message begun with ten seconds to go is a message
  * the platform interrupts somewhere inside the transport. Both figures are the
  * worst case: the address check is two resolver tries at four seconds, and
- * every send is a timeout and the spacing that follows it.
+ * every send is a timeout and the spacing that follows it. A first letter's
+ * spacing depends on the run, so its figure is asked with that spacing.
  */
-const FIRST_LETTER_NEEDS_MS = 8_000 + SEND_TIMEOUT_MS + SPACING_MS
-const FOLLOW_UP_NEEDS_MS = SEND_TIMEOUT_MS + SPACING_MS
+const firstLetterNeedsMs = spacing => 8_000 + SEND_TIMEOUT_MS + spacing
+const FOLLOW_UP_NEEDS_MS = SEND_TIMEOUT_MS + SPACING_MAX_MS
 
 /**
  * Where a prospect's own unsubscribe link points.
@@ -873,6 +909,7 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
   const queue = queueFor({ candidates: rows, held, written: alreadyWritten, messages, sending })
 
   const run = queue.slice(0, allowance)
+  const spacing = spacingFor(run.length)
   const tally = {
     drafted: 0,
     sent: 0,
@@ -893,7 +930,7 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
     // queue exactly as it found it, and the next run ten minutes later reads
     // the same order and carries on; a run the platform stops instead leaves
     // whatever it was holding claimed.
-    if (sending && Date.now() + FIRST_LETTER_NEEDS_MS > endsAt) {
+    if (sending && Date.now() + firstLetterNeedsMs(spacing) > endsAt) {
       tally.postponed += run.length - position
       break
     }
@@ -1057,7 +1094,7 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
       tally.sent += 1
     }
 
-    if (position + 1 < run.length) await wait(SPACING_MS)
+    if (position + 1 < run.length) await wait(spacing)
   }
 
   return { sending, allowance, due, already, queue: queue.length, window, ...tally }
@@ -1165,7 +1202,7 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
       prior: prior ? { subject: prior.subject } : null,
     })
 
-    if (handed) await wait(SPACING_MS)
+    if (handed) await wait(SPACING_MAX_MS)
     handed += 1
 
     let providerId = null
