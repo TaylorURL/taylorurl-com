@@ -32,7 +32,7 @@ const DETAIL = {
     mark: MarkFrame,
     eyebrow: 'New Builds',
     description:
-      'A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team, and quoted for the job before work starts.',
+      'A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team. We quote the job before work starts.',
     lede: 'Design, writing, build, domain, and launch all happen here, whether you have never had a site or you have a page somebody set up years ago and walked away from.',
     covers: [
       {
@@ -63,7 +63,7 @@ const DETAIL = {
     timeline:
       'Two to four weeks from the first call to launch day, in the six steps the process page sets out.',
     running:
-      'One fee to build it, paid once before the work begins, then a monthly to host it, watch it, change it, and carry on the search work. What moves both is how big the whole project is, so they are quoted for your project and you agree to the numbers before anything starts.',
+      'One fee to build it, paid once before the work begins, then a monthly to host it, watch it, change it, and carry on the search work. What moves both is how big the whole project is, so you get the two figures in writing and agree to them before anything starts.',
   },
   redesign: {
     mark: MarkRefit,
@@ -99,7 +99,7 @@ const DETAIL = {
     ],
     timeline: 'Two to four weeks. A redesign takes about as long as a new site, because it is one.',
     running:
-      'One fee to rebuild it, paid once before the work begins, then a monthly to run it. Priced the same way a new build is, and quoted before the work starts.',
+      'One fee to rebuild it, paid once before the work begins, then a monthly to run it. We price it the way we price a new build.',
   },
   /**
    * The one line whose page is not the shared shape.
@@ -147,7 +147,7 @@ const DETAIL = {
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',
-    running: 'One monthly figure, the same whether one change is asked for or ten.',
+    running: 'One monthly fee, the same whether you ask for one change or ten.',
   },
 }
 

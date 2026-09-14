@@ -180,7 +180,7 @@ const STUDIO = {
   band: {
     eyebrow: 'Comes with Every Site',
     heading: 'Six things you never have to ask for.',
-    link: { to: '/contact', label: 'Ask About Yours' },
+    link: { to: '/contact', label: 'Get a Plan for Yours' },
     items: [
       { icon: Smartphone, label: 'Works on every phone' },
       { icon: Search, label: 'Built for Google to read' },
@@ -196,7 +196,7 @@ const STUDIO = {
     accentText: 'and a price.',
     description:
       'Tell us what the business needs. We answer ourselves, usually within the hour, and you get the plan and the price before any work starts.',
-    secondary: { label: 'Get in Touch', to: '/contact' },
+    secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
 

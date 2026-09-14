@@ -138,7 +138,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'What Does Spending Once Look Like?' },
       {
         type: 'p',
-        text: 'A custom site loads fast, ranks, turns visitors into calls, and does not need rebuilding when the business changes. Ours are quoted for the project, with a written plan and price before any work begins, so the number you agree to is the number you pay. The real cost of a cheap website is every customer it fails to convert and every hour you spend fixing it.',
+        text: 'A custom site loads fast, ranks, turns visitors into calls, and does not need rebuilding when the business changes. We quote ours for the project, with a written plan and price before any work begins, so the number you agree to is the number you pay. The real cost of a cheap website is every customer it fails to convert and every hour you spend fixing it.',
       },
     ],
   },

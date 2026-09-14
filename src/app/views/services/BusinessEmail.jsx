@@ -153,7 +153,7 @@ export default function BusinessEmail() {
         description="Business email is set up alongside the site. Tell us what the business runs on now and we will handle the move."
         primaryLabel="Start a Project"
         primaryTo="/start"
-        secondaryLabel="Get in Touch"
+        secondaryLabel="Ask a Question"
         secondaryTo="/contact"
       />
     </div>

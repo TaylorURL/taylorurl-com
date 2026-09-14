@@ -352,7 +352,7 @@ const STUDIO_NAV_GROUPS = [
     feature: {
       to: '/services',
       label: 'All Services',
-      summary: 'What each one covers, how it runs, and how long it takes.',
+      summary: 'What each one covers, what keeps it running, and how long it takes.',
       mark: MarkIndex,
     },
   },

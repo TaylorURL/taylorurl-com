@@ -173,7 +173,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: 'The tools, the tracking, the sending domain, and the monitoring are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so it is quoted for your project and you agree to the number before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.',
+    body: 'The tools, the tracking, the sending domain, and the monitoring are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so you get the number in writing and agree to it before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.',
   },
 ]
 
@@ -400,7 +400,7 @@ export default function OnlineTools() {
         description="Tell us what the business runs on now and what you want to be able to turn on later. You get the plan and the price before any work starts."
         primaryLabel={START_LINK.label}
         primaryTo={START_LINK.to}
-        secondaryLabel="Get in Touch"
+        secondaryLabel="Ask a Question"
         secondaryTo="/contact"
       />
     </div>

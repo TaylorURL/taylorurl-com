@@ -170,7 +170,7 @@ function useAssistant() {
 function openerFor(pathname) {
   const path = pathname || '/'
   if (path.startsWith('/start')) {
-    return 'Happy to talk through what a site would involve while you fill that in. What does the business do?'
+    return 'Happy to talk through what a site would involve while you fill in the form. What does the business do?'
   }
   if (path.startsWith('/work') || path.startsWith('/portfolio')) {
     return 'Ask me anything about the work on this page, or about a site for your own shop.'
