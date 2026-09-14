@@ -31,6 +31,7 @@ import {
 } from '../../../lib/outreach/sending/schedule.js'
 import { SEND_PER_RUN_MAX } from '../../../lib/outreach/sending/limits.js'
 import { sendWindow } from '../../../lib/outreach/sending/queue.js'
+import { spacingFor } from '../../../api/outreach/send.js'
 import { fail, finish } from '../../harness/checks.js'
 
 // The largest cap a day finishes in full. The tail holds slots out of the last
@@ -52,6 +53,22 @@ const TICK_MINUTES = 10
 // differently: Saturday delivers a full cap and Sunday delivers none. The slot
 // arithmetic reads neither, so the pair is really a test of the gate the walk
 // asks before every tick.
+// The caps the walk checks in full. Every one where a single message moves the
+// grid by a whole run, then a stride through the rest that lands on the top of
+// the range. Walking every cap to the top costs a walk per cap and each walk
+// grows with its cap, which past a few hundred is minutes of CI for the same
+// arithmetic checked again at the next integer.
+const DENSE_TO = 60
+const STRIDE = 29
+const CAPS = [
+  ...Array.from({ length: DENSE_TO }, (_, index) => index + 1),
+  ...Array.from(
+    { length: Math.floor((FILLS - DENSE_TO) / STRIDE) },
+    (_, index) => DENSE_TO + STRIDE * (index + 1)
+  ),
+  FILLS,
+]
+
 const DAYS = [
   { label: 'CDT', date: [2026, 8, 28] },
   { label: 'CST', date: [2026, 12, 15] },
@@ -83,7 +100,7 @@ for (const { label, date } of DAYS) {
   // the zero rather than skipping the day is what makes a Sunday that starts
   // sending again a failure here instead of a Sunday morning somebody notices.
   const open = sendsOn(new Date(Date.UTC(date[0], date[1] - 1, date[2], 18)))
-  for (let cap = 1; cap <= FILLS; cap += 1) {
+  for (const cap of CAPS) {
     const sent = walk(cap, date)
     const wanted = open ? cap : 0
     if (sent !== wanted) {
@@ -185,9 +202,30 @@ if (reachesMore(sunday)) {
   fail('reachesMore is true on a Sunday, when the day delivers nothing at all')
 }
 
+// The walk assumes a run delivers everything it is allowed, and the spacing is
+// what makes that true. A run's letters are spread across the stretch set aside
+// for them, so a full run of the ceiling has to fit it at an ordinary delivery,
+// the gaps never close past the floor, and a light run is spaced no wider than
+// it ever was.
+const SPAN_MS = 200_000
+const DELIVERY_MS = 4_000
+for (let count = 1; count <= SEND_PER_RUN_MAX; count += 1) {
+  const spacing = spacingFor(count)
+  if (spacing < 3_000 || spacing > 20_000) {
+    fail(`a run of ${count} is spaced ${spacing}ms apart, outside 3000 to 20000`)
+  }
+  if (count > 1 && count * (spacing + DELIVERY_MS) > SPAN_MS) {
+    fail(`a run of ${count} spaced ${spacing}ms apart takes past the ${SPAN_MS}ms it is given`)
+  }
+}
+if (spacingFor(5) !== 20_000) {
+  fail(`a run of 5 is spaced ${spacingFor(5)}ms apart, closer than the 20000 a light run keeps`)
+}
+
 await finish()
 console.log(
-  `every cap from 1 to ${FILLS} delivers in full at ${SEND_PER_RUN_MAX} a run, on both sides\n` +
+  `every cap from 1 to ${DENSE_TO}, and every ${STRIDE}th to ${FILLS}, delivers in full at up to\n` +
+    `  ${SEND_PER_RUN_MAX} a run, on both sides\n` +
     '  of the clock change and on a Saturday, and a Sunday delivers nothing at all; a cap\n' +
     `  above it ends the day at ${FILLS} rather than running past ${DELIVERS_A_DAY}; a cap\n` +
     '  moved mid-afternoon lands on the same day in either direction without a run carrying\n' +
