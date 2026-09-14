@@ -78,6 +78,20 @@ const PROSPECT = {
   },
 }
 
+/**
+ * The call the caller logged before pressing send, carrying the time the
+ * owner named. Six in the evening UTC on the day of the cases, which is four
+ * in the afternoon Central: the message says the Central hour, and the check
+ * reads it back in those words.
+ */
+const CALL = {
+  id: 'call-1',
+  prospect_id: PROSPECT.id,
+  outcome: 'audit_booked',
+  callback_at: '2026-09-14T21:00:00Z',
+  called_at: '2026-09-14T14:30:00Z',
+}
+
 /** A domain reading as `outreach_domains` holds one, fresh enough to stand. */
 const domainRow = (domain, verdict, reason = null) => ({
   domain,
@@ -110,8 +124,7 @@ function clauseOf(expression) {
  */
 function reading(rows, counting) {
   const filters = []
-  const matching = () =>
-    rows.filter(row => filters.every(pass => pass(row))).map(row => ({ ...row }))
+  let matching = () => rows.filter(row => filters.every(pass => pass(row))).map(row => ({ ...row }))
   const api = {
     eq(column, value) {
       filters.push(row => String(row[column] ?? '') === String(value))
@@ -123,6 +136,27 @@ function reading(rows, counting) {
     },
     gte(column, value) {
       filters.push(row => row[column] != null && String(row[column]) >= String(value))
+      return api
+    },
+    not(column, operator, value) {
+      if (operator !== 'is' || value !== null) {
+        throw new Error(`the endpoint used a not() these cases do not know: ${operator} ${value}`)
+      }
+      filters.push(row => row[column] != null)
+      return api
+    },
+    order(column, { ascending = true } = {}) {
+      const before = matching
+      matching = () =>
+        before().sort((one, two) => {
+          const flip = ascending ? 1 : -1
+          return String(one[column] ?? '').localeCompare(String(two[column] ?? '')) * flip
+        })
+      return api
+    },
+    limit(count) {
+      const before = matching
+      matching = () => before().slice(0, count)
       return api
     },
     async maybeSingle() {
@@ -181,9 +215,16 @@ function writing(table, rows, patch, writes) {
  * back afterwards, so what the endpoint wrote is checked against the table
  * rather than against what the answer claimed.
  */
-function world({ prospects = [PROSPECT], suppression = [], domains = [], profiles = [] } = {}) {
+function world({
+  prospects = [PROSPECT],
+  calls = [CALL],
+  suppression = [],
+  domains = [],
+  profiles = [],
+} = {}) {
   const tables = {
     outreach_prospects: prospects.map(row => ({ ...row })),
+    outreach_calls: calls.map(row => ({ ...row })),
     suppression,
     outreach_domains: domains,
     profiles,
@@ -387,6 +428,56 @@ check('a deployment with no mail key refuses before claiming anything', async ()
   same(stage.writes.length, 0, 'nothing was written')
 })
 
+check('a business with no callback logged is refused, and told to log one', async () => {
+  forgetDomains()
+  const stage = world({ calls: [], domains: [domainRow('example.com', 'deliverable')] })
+  const { handed, transport } = recorder()
+  const answer = await press(stage, { body: { id: PROSPECT.id, email: OWNER }, transport })
+  same(answer.status, 409, 'refused')
+  ok(/Log the callback first/.test(answer.body.error), `the sentence reads: "${answer.body.error}"`)
+  same(handed.length, 0, 'nothing was handed to the transport')
+  same(stage.writes.length, 0, 'nothing was written')
+})
+
+check('a callback already behind them is refused the same way', async () => {
+  forgetDomains()
+  const stage = world({
+    calls: [{ ...CALL, callback_at: '2026-09-14T14:00:00Z' }],
+    domains: [domainRow('example.com', 'deliverable')],
+  })
+  const { handed, transport } = recorder()
+  const answer = await press(stage, { body: { id: PROSPECT.id, email: OWNER }, transport })
+  same(answer.status, 409, 'refused')
+  ok(/has passed/.test(answer.body.error), `the sentence reads: "${answer.body.error}"`)
+  same(handed.length, 0, 'nothing was handed to the transport')
+})
+
+check('the newest logged time is the one the message says, not the first', async () => {
+  forgetDomains()
+  const stage = world({
+    calls: [
+      {
+        ...CALL,
+        id: 'call-1',
+        callback_at: '2026-09-14T19:00:00Z',
+        called_at: '2026-09-14T13:00:00Z',
+      },
+      {
+        ...CALL,
+        id: 'call-2',
+        callback_at: '2026-09-14T21:00:00Z',
+        called_at: '2026-09-14T14:30:00Z',
+      },
+    ],
+    domains: [domainRow('example.com', 'deliverable')],
+  })
+  const { handed, transport } = recorder()
+  await press(stage, { body: { id: PROSPECT.id, email: OWNER }, transport })
+  const { text } = handed[0].message
+  ok(text.includes('4:00 PM Central'), 'the newest time is not the one said')
+  ok(!text.includes('2:00 PM Central'), 'the older time is still in the message')
+})
+
 /* ── The message ────────────────────────────────────────────────────────── */
 
 check('one press sends one message, and the row records it', async () => {
@@ -435,7 +526,7 @@ check("the message escapes what a person typed into the business's name", async 
   ok(html.includes('&quot;Sons&quot;'), 'the quotes were not escaped')
 })
 
-check('both halves carry the four scores, the date and the way to start', async () => {
+check('both halves carry the four scores, the date and the next call', async () => {
   forgetDomains()
   const stage = world({ domains: [domainRow('example.com', 'deliverable')] })
   const { handed, transport } = recorder()
@@ -452,8 +543,20 @@ check('both halves carry the four scores, the date and the way to start', async 
   }
   ok(/September 12, 2026/.test(html), 'the laid-out half does not say when it was measured')
   ok(/September 12, 2026/.test(text), 'the plain half does not say when it was measured')
-  ok(html.includes('/start'), 'the laid-out half does not point at /start')
-  ok(text.includes('/start'), 'the plain half does not point at /start')
+  // The message closes on the call the caller booked, said in the Central
+  // hour the owner heard on the phone, and on nothing else: no button, no
+  // link onto the site, because the reader already said yes to the call.
+  ok(
+    html.includes('Monday, September 14 at 4:00 PM Central'),
+    'the laid-out half does not say when we ring'
+  )
+  ok(
+    text.includes('Monday, September 14 at 4:00 PM Central'),
+    'the plain half does not say when we ring'
+  )
+  ok(!html.includes('/start'), 'the laid-out half still points at /start')
+  ok(!text.includes('/start'), 'the plain half still points at /start')
+  ok(!/Start a Project/i.test(html), 'the laid-out half still carries the button')
   ok(html.includes('pagespeed.web.dev'), 'the reader is not given the test to run themselves')
   ok(text.includes('pagespeed.web.dev'), 'the plain half leaves the test out')
 })

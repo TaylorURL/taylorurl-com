@@ -631,6 +631,18 @@ check('the screen offers the audit to the client in so many words', () => {
   ok(SCREEN.includes('Email Client This Audit'), 'the control that sends the audit is gone')
 })
 
+check('the button waits for a callback ahead of now, and says so', () => {
+  // The audit email closes on the time the caller booked, so the screen holds
+  // the button until a callback is on file and still ahead, and tells the
+  // caller what to do instead of showing nothing where the button was.
+  ok(
+    /callback_at[\s\S]{0,200}Date\.now\(\)/.test(SCREEN),
+    'the screen does not read the callback against now'
+  )
+  ok(SCREEN.includes('Log the callback first'), 'the screen does not say to log the callback')
+  ok(!SCREEN.includes('/start'), 'the screen still points at /start')
+})
+
 check('the send is asked twice, in two different words, and both are refusable', () => {
   // One label used for both steps is one step: a caller who reads the same
   // control twice presses it twice without reading it the second time.

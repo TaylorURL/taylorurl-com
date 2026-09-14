@@ -356,6 +356,13 @@ check('the close says how the audit is emailed, and that the address is read bac
     /on file/i.test(named(button)),
     'the close does not say the button only works where there is an audit to send'
   )
+  // The message closes on the time the caller booked, so the entry has to say
+  // the callback is logged before the button is pressed, or a caller reads
+  // the refusal on the screen with the owner already off the line.
+  ok(
+    /log the callback first/i.test(named(button)),
+    'the close does not say the callback is logged before the audit is emailed'
+  )
 })
 
 /**

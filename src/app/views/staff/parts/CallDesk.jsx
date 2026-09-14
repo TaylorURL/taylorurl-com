@@ -272,6 +272,13 @@ export default function CallDesk({ Shell }) {
   // them into the same ones.
   const reading = useMemo(() => (current ? auditReading(current) : null), [current])
 
+  // Whether a callback the owner has not yet had is on file. The audit email
+  // says when the studio rings, so it cannot go out before that time exists,
+  // and a time already behind them is no better than none.
+  const callAhead = Boolean(
+    current?.callback_at && new Date(current.callback_at).getTime() > Date.now()
+  )
+
   const askAudit = useCallback(() => {
     setEmailTo(current?.email || '')
     setEmailStep('address')
@@ -502,6 +509,13 @@ export default function CallDesk({ Shell }) {
                     <p className="staff-read">
                       {`Audit emailed ${callMoment(current.audit_emailed_at)} by ${current.audit_emailed_by_name || 'somebody'}`}
                       {current.audit_emailed_to ? `, to ${current.audit_emailed_to}` : ''}.
+                    </p>
+                  ) : !callAhead ? (
+                    // The message closes on the time the caller booked, so
+                    // the button waits for a callback to be logged rather
+                    // than sending a report with nothing at the end of it.
+                    <p className="staff-read">
+                      Log the callback first. The audit email tells them when you ring.
                     </p>
                   ) : emailStep === null ? (
                     <button type="button" className="staff-btn" onClick={askAudit}>

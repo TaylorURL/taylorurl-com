@@ -52,7 +52,6 @@ import { callerWindow } from '../lib/http/rate.js'
 import { authorizeCaller, connect } from '../lib/db/clients.js'
 import { countOf, tableMissing } from '../lib/db/rows.js'
 import { uuid } from '../lib/db/fields.js'
-import { SITE } from '../lib/site/current.js'
 import { auditEmail } from '../lib/mail/audit.js'
 import { sendNotice } from '../lib/mail/notice.js'
 import { AUDIT_COLUMNS, measured } from '../lib/outreach/audit/reading.js'
@@ -63,6 +62,7 @@ import { STUDIO_INBOX } from '../lib/outreach/message.js'
 
 const PROSPECTS = 'outreach_prospects'
 const PROFILES = 'profiles'
+const CALLS = 'outreach_calls'
 
 /** Where the audit email leaves from, and where a reply goes by default. */
 const AUDIT_FROM = process.env.AUDIT_FROM || 'TaylorURL <audits@taylorurl.com>'
@@ -103,6 +103,12 @@ const DAY_CEILING = 60
 
 /** What is said when the row itself will not read. */
 const NOT_READ = 'That business could not be read. Try again in a moment.'
+
+/** And when the button is pressed before the callback the message closes on is logged. */
+const NO_CALLBACK = 'Log the callback first. The message tells them when you ring.'
+
+/** And when the one on file is already behind them. */
+const CALLBACK_PASSED = 'The callback on file has passed. Log the next one, then send.'
 
 /** And when the send was made and the record of it will not save. */
 const NOT_SAVED = 'That could not be saved. Try again in a moment.'
@@ -281,6 +287,37 @@ async function releaseClaim(db, id, row) {
   if (error) console.error('calls-audit-email: the claim would not release: %s', error.message)
 }
 
+/**
+ * When the caller booked the next call for, which is what the message closes
+ * on.
+ *
+ * The newest call logged against the business that carries a time, read the
+ * same way the call list reads its promise. A business with no time logged
+ * has nothing for the message to close on, and one whose time has already
+ * gone by would be told about a call that is not coming, so both come back
+ * as the sentence the screen shows rather than as a message.
+ *
+ * @param {object} db A service-role client.
+ * @param {string} id The prospect.
+ * @param {Date} now
+ * @returns {Promise<{at: Date}|{status: number, body: object}>}
+ */
+export async function nextCallOf(db, id, now) {
+  const { data, error } = await db
+    .from(CALLS)
+    .select('callback_at, called_at')
+    .eq('prospect_id', id)
+    .not('callback_at', 'is', null)
+    .order('called_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  const at = data?.callback_at ? new Date(data.callback_at) : null
+  if (!at || Number.isNaN(at.getTime())) return { status: 409, body: { error: NO_CALLBACK } }
+  if (at.getTime() <= now.getTime()) return { status: 409, body: { error: CALLBACK_PASSED } }
+  return { at }
+}
+
 /** The caller's name, for the sentence the console draws under the button. */
 async function namedCaller(db, userId) {
   const { data, error } = await db.from(PROFILES).select('full_name').eq('id', userId).maybeSingle()
@@ -370,6 +407,14 @@ export async function send({
   const refused = refusalFor(row, now)
   if (refused) return refused
 
+  let nextCall
+  try {
+    nextCall = await nextCallOf(db, id, now)
+  } catch (cause) {
+    return refusal(cause, NOT_READ)
+  }
+  if (nextCall.status) return nextCall
+
   try {
     const held = await suppressed(db, [email])
     if (held.has(email)) {
@@ -430,8 +475,9 @@ export async function send({
   // No unsubscribe link and no one-click header. This is not a list: the owner
   // asked for the report on the phone an hour ago and one copy goes to them.
   // What the message honours instead is the stop already on record, above,
-  // which is refused before anything is drawn.
-  const drawn = auditEmail({ prospect: row, startUrl: `${SITE.origin}/start`, now })
+  // which is refused before anything is drawn. And no button: the message
+  // closes on the call the caller booked before pressing send.
+  const drawn = auditEmail({ prospect: row, nextCall: nextCall.at, now })
 
   try {
     await transport({ ...drawn, replyTo: replyAddress(account) }, key, {
