@@ -29,8 +29,8 @@ const STUDIO = {
     heading: 'Tell us what',
     accentText: 'you need.',
     description:
-      'Say what the business does and what the site has to do. We read it and answer it ourselves, usually within the hour, and you get the plan and the price before any work starts.',
-    secondary: { label: 'Get in Touch', to: '/contact' },
+      'Say what the business does and what the site has to do. We read every message and answer it ourselves, usually within the hour, and you get the plan and the price before any work starts.',
+    secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
 

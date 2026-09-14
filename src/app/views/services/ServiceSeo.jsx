@@ -100,7 +100,7 @@ export default function ServiceSeo() {
       <PageHero
         eyebrow="Getting Found"
         title="Getting found on Google, every month."
-        description="The search work sits inside the monthly. There is no separate SEO bill, and no promise about where you land."
+        description="The search work sits inside the monthly fee that keeps the site running. There is no separate SEO bill, and no promise about where you land."
       />
 
       <ServiceSection
@@ -138,7 +138,7 @@ export default function ServiceSeo() {
       >
         <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
         <div className="mt-8">
-          <SectionLink to="/contact" label="Ask What Yours Would Run" ground="band" />
+          <SectionLink to="/contact" label="Ask What a Site Would Run" ground="band" />
         </div>
       </ServiceSection>
 
@@ -153,7 +153,7 @@ export default function ServiceSeo() {
         description="Tell us about the business and the towns it serves. The search work starts with the build and does not stop at launch."
         primaryLabel="Start a Project"
         primaryTo="/start"
-        secondaryLabel="Get in Touch"
+        secondaryLabel="Ask a Question"
         secondaryTo="/contact"
       />
     </div>

@@ -69,7 +69,7 @@ export default function Start() {
   const faultIn = held => {
     if (!hasMinLength(held.name, 2)) return { field: 'name', fault: 'Add your name.' }
     if (!hasMinLength(held.company, 2)) {
-      return { field: 'company', fault: 'Add the name the business trades under.' }
+      return { field: 'company', fault: 'Add the name of the business.' }
     }
     if (!isValidEmail(held.email)) {
       return { field: 'email', fault: 'Check the email address. The reply has nowhere else to go.' }
@@ -119,8 +119,8 @@ export default function Start() {
   return (
     <div>
       <Seo
-        title="Start a Project with TaylorURL"
-        description="Tell a small Baytown web team what the business does and what the site has to do. You get a reply by email, and a plan and a price for the project."
+        title="Start Your Small Business Website Project"
+        description="Tell us what the business does and what the site has to do. A small Baytown web team reads it and replies by email, usually within the hour."
         path="/start"
         schema={[
           breadcrumbSchema([
@@ -137,8 +137,8 @@ export default function Start() {
       />
       <PageHero
         eyebrow="Start a Project"
-        title="Tell us what you need built."
-        description="Write down what the business does and what the site has to do. You get a reply by email with anything we still need to know, then a plan and a price for the project."
+        title="Tell us about the website you need built."
+        description="Tell us what the business does and what the site has to do. We read it ourselves and reply by email with anything we still need to know, then a plan and a price for the project."
       />
 
       <section {...GROUND.attrs} className={`section-y relative overflow-hidden ${GROUND.section}`}>

@@ -15,7 +15,7 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'What does a website cost?',
-        a: 'It depends on the project. A site is one fee to build, paid once before the work begins, and a monthly that covers hosting and everything after launch. Booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site rather than billed on top of it, so what moves the price is how big the whole project is. Send us a line about the business and you get both figures in writing before any work starts. Nothing is charged to find out.',
+        a: 'It depends on the project. A site is one fee to build, paid once before the work begins, and a monthly that covers hosting and everything after launch. Booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site rather than billed on top of it, so what moves the price is how big the whole project is. Send us a line about the business and you get both figures in writing before any work starts. You pay nothing to ask.',
       },
       {
         q: 'Who do you build websites for?',

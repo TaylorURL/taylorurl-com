@@ -73,7 +73,7 @@ function artefactFor(index, launched) {
   if (index === 0)
     return <PageShot shot="step-enquiry" alt="The enquiry form, with the fields it asks for" />
   if (index === 1)
-    return <PageShot shot="step-plan" alt="The plan and price step, and what each side does" />
+    return <PageShot shot="step-plan" alt="The plan and price step, with your part and ours" />
   return launched ? (
     <CaptureShot
       project={launched}
