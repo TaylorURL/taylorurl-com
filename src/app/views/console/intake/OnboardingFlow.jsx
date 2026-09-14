@@ -2,22 +2,21 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import { Panel, PanelBody, PanelFoot, SkeletonBar } from '../ui'
 import { BUTTON, MONO_LABEL, QUIET } from '../lib/tokens'
-import { useStepTravel } from '../../start/lib/useStepTravel'
-import StepFrame from '../../start/steps/StepFrame'
+import { useStepTravel } from '@hooks/useStepTravel'
+import StepFrame from '@components/steps/StepFrame'
 import { formatInstant } from '@lib/time/zone.js'
 
 /**
  * The frame the brief is answered in: one step held in a console card, the
  * trail of them across the top, and the two controls that move between them.
  *
- * It is the configurator's shape rather than the configurator itself. The
- * marketing frame is a section of a page, sized by the page's own rhythm and
- * free to be as tall as its longest step. This
- * one is a card in a dashboard: it takes the cell it is given, its head keeps
- * the reading, its foot keeps the controls, and the step in the middle is the
- * only part that scrolls. A reader who has already learned the console reads
- * this without learning anything, and a reader who came through the
- * configurator before they paid recognises how it moves.
+ * It is the marketing frame's shape rather than that frame itself. `StepFlow`
+ * is a section of a page, sized by the page's own rhythm and free to be as
+ * tall as its longest step. This one is a card in a dashboard: it takes the
+ * cell it is given, its head keeps the reading, its foot keeps the controls,
+ * and the step in the middle is the only part that scrolls. A reader who has
+ * already learned the console reads this without learning anything, and a
+ * reader who worked through one of the free tools recognises how it moves.
  *
  * What it does not hold is any answer. The steps arrive drawn, each saying
  * whether it has what it needs, and everything about what an answer is worth
@@ -25,8 +24,8 @@ import { formatInstant } from '@lib/time/zone.js'
  * step is in front of the client, and whether the control that moves them on
  * is live.
  *
- * Movement is the same idiom throughout, because it is the configurator's own:
- * the step is drawn through `StepFrame` and moved by `useStepTravel`.
+ * Movement is the same idiom every stepped surface on the site uses: the step
+ * is drawn through `StepFrame` and moved by `useStepTravel`.
  */
 
 /** How far a step travels. Far enough to read as a sideways move, short enough to stay legible. */

@@ -26,8 +26,8 @@ const ASKED = QUESTIONS.tools
  *
  * What the tool worked out rides on the message rather than being asked for
  * again, so the reply is written by somebody who can already see the findings.
- * The summary above the button is what the message will say, which is the same
- * arrangement the configurator ends on.
+ * The summary above the button is what the message will say, so nothing leaves
+ * the page that the sender has not read.
  *
  * @param {object} props
  * @param {Array<{ label: string, value: string }>} props.summary - What the

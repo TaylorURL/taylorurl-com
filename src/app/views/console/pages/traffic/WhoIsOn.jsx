@@ -26,7 +26,7 @@ const FROM_MD = 'hidden md:table-cell'
  * which places they are in. This is the one card that answers for a person -
  * the page they have open, what sent them, where they are, and how long they
  * have been reading - and those four together are what turns a number into
- * somebody arriving from a search and opening the pricing page.
+ * somebody arriving from a search and opening the start page.
  *
  * Newest arrival first, because on a live board the news is who just turned
  * up. A row leaves when their session drops out of the presence window, which

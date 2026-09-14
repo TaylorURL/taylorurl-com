@@ -2,7 +2,6 @@ import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SERVICE_AREAS, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { MONTHLY_PRICE } from '@data/checkout/pricing'
 import { EXTRA_SERVICES, SERVICE_PAGES } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
@@ -63,7 +62,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs',
-    body: `Nothing on top. It sits inside the monthly, from ${MONTHLY_PRICE}, beside hosting, monitoring, backups, and changes.`,
+    body: 'Nothing on top. It sits inside the monthly, beside hosting, monitoring, backups, and changes.',
   },
 ]
 
@@ -95,14 +94,13 @@ export default function ServiceSeo() {
               'Pages built to be found, local search signals, structured data, and page speed, carried out every month a site is under care.',
             provider: { '@id': BUSINESS_ID },
             areaServed: AREA_SERVED,
-            isRelatedTo: { '@id': `${SITE_URL}/pricing#offer` },
           },
         ]}
       />
       <PageHero
         eyebrow="Getting Found"
         title="Getting found on Google, every month."
-        description={`The search work sits inside the monthly, from ${MONTHLY_PRICE}. There is no separate SEO bill, and no promise about where you land.`}
+        description="The search work sits inside the monthly. There is no separate SEO bill, and no promise about where you land."
       />
 
       <ServiceSection
@@ -140,7 +138,7 @@ export default function ServiceSeo() {
       >
         <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
         <div className="mt-8">
-          <SectionLink to="/pricing" label="The Whole Price" ground="band" />
+          <SectionLink to="/contact" label="Ask What Yours Would Run" ground="band" />
         </div>
       </ServiceSection>
 
@@ -155,8 +153,8 @@ export default function ServiceSeo() {
         description="Tell us about the business and the towns it serves. The search work starts with the build and does not stop at launch."
         primaryLabel="Start a Project"
         primaryTo="/start"
-        secondaryLabel="See the Price"
-        secondaryTo="/pricing"
+        secondaryLabel="Get in Touch"
+        secondaryTo="/contact"
       />
     </div>
   )

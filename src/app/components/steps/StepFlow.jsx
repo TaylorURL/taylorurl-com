@@ -1,7 +1,11 @@
 import { ArrowLeft, ArrowRight } from 'lucide-react'
-import { GROUND } from '../lib/ground'
-import { useStepTravel } from '../lib/useStepTravel'
+import { GROUNDS } from '@constants/grounds'
+import { useStepTravel } from '@hooks/useStepTravel'
 import StepFrame from './StepFrame'
+
+// The frame stands on the page's own ground, the way every ruled section on a
+// marketing page does.
+const GROUND = GROUNDS.paper
 
 // How far a step travels on its way in and out. Far enough to read as a
 // sideways move, short enough that the words stay legible the whole way.
@@ -71,8 +75,8 @@ function StepTrail({ steps, active, reach, onOpen, label }) {
 }
 
 /**
- * The configurator frame: one step in it at a time, the trail above it, and
- * the controls that move between them below.
+ * The step frame: one step in it at a time, the trail above it, and the
+ * controls that move between them below.
  *
  * The frame keeps its place on the page, and a step moves through it the way
  * `StepFrame` describes.
@@ -91,19 +95,19 @@ function StepTrail({ steps, active, reach, onOpen, label }) {
  * @param {Array<{ id: string, label: string, eyebrow: string, title: string,
  *   description?: string, meta?: React.ReactNode, answered?: boolean,
  *   missing?: string | null, content: React.ReactNode }>} props.steps
- * @param {boolean} [props.atTop] - The configurator is the first thing on the
- *   page rather than something under a hero. It then owes what the hero owed:
+ * @param {boolean} [props.atTop] - The sequence is the first thing on the page
+ *   rather than something under a hero. It then owes what the hero owed:
  *   clearance under the fixed bar, no rule against it, and the page's one h1.
  * @param {string} [props.label] - What the trail is called to a screen reader.
- *   The frame carries the configurator and each of the free tools, so the name
- *   belongs to whoever mounted it rather than to the frame.
+ *   The frame carries each of the free tools, so the name belongs to whoever
+ *   mounted it rather than to the frame.
  * @param {number|null} [props.resumeAt] - The step to open on, once. A mount
  *   that restores answers made before a reload arrives at this as a number,
  *   and the frame moves to it rather than opening on a first question the
  *   visitor has already answered.
  * @param {(step: number) => void} [props.onStep] - Told which step the frame is
- *   holding, so a caller that writes the configuration down can write the place
- *   in it too.
+ *   holding, so a caller that writes its answers down can write the place in
+ *   them too.
  * @param {React.ReactNode} [props.aside] - Something that stands under the
  *   steps on the frame's own rail without being one of them. The caller
  *   decides which steps it appears on, because what belongs beside a sequence
@@ -116,7 +120,7 @@ function StepTrail({ steps, active, reach, onOpen, label }) {
 export default function StepFlow({
   steps,
   atTop,
-  label = 'Configurator steps',
+  label = 'Steps',
   resumeAt = null,
   onStep,
   aside = null,

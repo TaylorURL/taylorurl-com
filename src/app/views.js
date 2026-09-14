@@ -26,7 +26,6 @@ const loaders = {
         BusinessEmail: () => import('@views/services/BusinessEmail'),
         ServiceSeo: () => import('@views/services/ServiceSeo'),
         OnlineTools: () => import('@views/services/OnlineTools'),
-        Pricing: () => import('@views/pricing/Pricing'),
       }),
   Contact: () => import('@views/company/Contact'),
   ...(IS_SECOND_SITE
@@ -34,7 +33,6 @@ const loaders = {
     : {
         Live: () => import('@views/company/Live'),
         Start: () => import('@views/start/Start'),
-        Payment: () => import('@views/start/Payment'),
       }),
   Privacy: () => import('@views/legal/Privacy'),
   Terms: () => import('@views/legal/Terms'),

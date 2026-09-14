@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Download, ImageUp, Undo2 } from 'lucide-react'
-import StepFlow from '../start/steps/StepFlow'
+import StepFlow from '@components/steps/StepFlow'
 import {
   REACHES,
   backgroundOf,

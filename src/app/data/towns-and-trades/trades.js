@@ -1,7 +1,6 @@
 import {
   Activity,
   Anchor,
-  AtSign,
   Building2,
   Bug,
   Calculator,
@@ -10,7 +9,6 @@ import {
   Fence,
   HardHat,
   Layers,
-  Mail,
   MoreHorizontal,
   Package,
   Printer,
@@ -27,8 +25,6 @@ import {
 } from 'lucide-react'
 import {
   ToolDoorDash,
-  ToolGoogle,
-  ToolMicrosoft,
   ToolPaypal,
   ToolQuickBooks,
   ToolSquare,
@@ -117,31 +113,18 @@ export const TOOL_NOTE =
   'Your site works alongside the software you already pay for. Product names and marks belong to their owners, and none of it is a partnership or an official integration.'
 
 /**
- * The mailboxes the email service is set up on. The two named platforms cover
- * most of what a small business already pays for; the third is every other
- * host, and the fourth is a business still running mail through a free
- * address.
- */
-export const EMAIL_PROVIDERS = [
-  { id: 'google-workspace', name: 'Google Workspace', mark: ToolGoogle },
-  { id: 'microsoft-365', name: 'Microsoft 365', mark: ToolMicrosoft },
-  { id: 'another-provider', name: 'Another Provider', mark: AtSign },
-  { id: 'no-provider', name: 'Nothing Set Up Yet', mark: Mail },
-]
-
-/**
- * Every trade the configurator offers, in the order the grid lays them out.
+ * Every trade with a page of its own, in the order the index lays them out.
  *
- * - `id`     Slug the grid, the inquiry, and `PORTFOLIO_PROJECTS.trades` join
- *            on. A client site becomes this trade's proof by carrying the same
- *            slug in the portfolio data.
- * - `name`   The label on the control.
- * - `mark`   The icon drawn on the control.
+ * - `id`     Slug the index, the trade page, and `PORTFOLIO_PROJECTS.trades`
+ *            join on. A client site becomes this trade's proof by carrying the
+ *            same slug in the portfolio data.
+ * - `name`   The label on the card.
+ * - `mark`   The icon drawn on the card.
  * - `needs`  What a site for this trade has to do, in this trade's own terms.
  * - `tools`  Keys into `TOOLS`, naming the software this trade runs on. The
  *            payment processors reach every set, so no trade lists one.
  *
- * `something-else` closes the grid and carries the generic path. The trades
+ * `something-else` closes the list and carries the generic path. The trades
  * above it are the ones common enough around Baytown to be worth naming, and
  * every other business answers there.
  */

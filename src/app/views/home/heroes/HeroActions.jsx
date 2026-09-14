@@ -12,16 +12,16 @@ import { COMPANY_PHONE, COMPANY_PHONE_HREF, START_LINK } from '@constants/naviga
  * which of the two grounds the hero showing it chose.
  *
  * The leading button is `START_LINK` rather than a written destination. The
- * studio's is the configurator at /start; the second site has no /start in its
- * route table and nothing prerenders one, so the same button written out here
- * was a link to a 404 on the first screen of that site's home page. Both sites
- * serve /services, so the second button is the same on either.
+ * studio's is the form at /start; the second site has no /start in its route
+ * table and nothing prerenders one, so the same button written out here was a
+ * link to a 404 on the first screen of that site's home page. Both sites serve
+ * /services, so the second button is the same on either.
  *
  * The number is here on a phone and nowhere else. A trade owner reading this
- * on a phone is holding the thing that places the call, and the configurator
- * is five screens of picking — the wrong ask of somebody who wants to say what
- * they need out loud. On a desktop the number is a string to copy rather than
- * a control, so the pair stands as it did and the bar keeps the number.
+ * on a phone is holding the thing that places the call, and a form is the
+ * wrong ask of somebody who wants to say what they need out loud. On a desktop
+ * the number is a string to copy rather than a control, so the pair stands as
+ * it did.
  */
 export default function HeroActions() {
   return (

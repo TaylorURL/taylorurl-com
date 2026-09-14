@@ -4,6 +4,7 @@ import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { Phone, Search, UserRound } from 'lucide-react'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, NAV_DURATION, NAV_EASE } from '@constants/navigation'
 import { HAS_ACCOUNTS } from '@constants/routes'
+import { useBusinessHours } from '@hooks/chrome/useBusinessHours'
 import { useDismiss } from '@hooks/chrome/useDismiss'
 import { useModifierLabel } from '@utils/keyboard'
 import { warm } from '@utils/lazyWithRetry'
@@ -136,6 +137,11 @@ function NavAccount({ signedIn, firstName, checking, open, onToggle, onClose, on
  * The number is the segment that grows: below the wide step it is the mark
  * alone, because a phone is dialled from the phone and a desk reader is
  * reaching for the form. It comes back as digits once there is room for them.
+ *
+ * It is there only while somebody is at the desk to answer it. A number in the
+ * bar is an offer to pick up, and one dialled on a Sunday morning rings out;
+ * the footer, the contact page and the ways onward all still carry it for the
+ * reader who wants it either way.
  */
 export function NavUtility({
   signedIn,
@@ -147,6 +153,8 @@ export function NavUtility({
   onSignOut,
   onOpenSearch,
 }) {
+  const open = useBusinessHours()
+
   return (
     <div className="nav-cluster">
       <NavSearchButton
@@ -156,14 +164,16 @@ export function NavUtility({
         shortcut
         onOpen={onOpenSearch}
       />
-      <a
-        href={COMPANY_PHONE_HREF}
-        className="nav-cluster-item"
-        aria-label={`Call ${COMPANY_PHONE}`}
-      >
-        <Phone className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
-        <span className="hidden xl:inline">{COMPANY_PHONE}</span>
-      </a>
+      {open && (
+        <a
+          href={COMPANY_PHONE_HREF}
+          className="nav-cluster-item"
+          aria-label={`Call ${COMPANY_PHONE}`}
+        >
+          <Phone className="h-[18px] w-[18px] shrink-0" strokeWidth={1.75} aria-hidden="true" />
+          <span className="hidden xl:inline">{COMPANY_PHONE}</span>
+        </a>
+      )}
       {/* Not drawn at all where there is nothing to sign in to, rather than
           drawn and hidden: a mark that opens a menu offering Log In is the bar
           making a claim, and the claim is contradicted by this site's own

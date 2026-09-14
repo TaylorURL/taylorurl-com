@@ -35,7 +35,7 @@ const PRIVACY = readFileSync(
 )
 
 /** Every field on a record that names the ad account or an action in it. */
-const ADS_FIELDS = ['adsId', 'adsLeadSendTo', 'adsCallSendTo', 'adsCheckoutSendTo']
+const ADS_FIELDS = ['adsId', 'adsLeadSendTo', 'adsCallSendTo']
 
 function has(where, haystack, needle) {
   if (!haystack.includes(needle)) fail(`${where}: ${JSON.stringify(needle)} is not there`)
@@ -140,18 +140,18 @@ for (const field of ADS_FIELDS.slice(1)) {
   is(`${field} label`, label.length > 0, true)
 }
 
-// Three distinct actions, because the report that matters is the one that
+// Two distinct actions, because the report that matters is the one that
 // separates them. Two fields holding one label is a conversion column that
 // reads as twice the leads and half the calls.
 const labels = new Set(ADS_FIELDS.slice(1).map(field => studio[field]))
-is('distinct actions', labels.size, 3)
+is('distinct actions', labels.size, 2)
 
 // -- Every form the site sends reaches one of them ----------------------------
 
-// The forms as `sendEnquiry` and `startCheckout` name them. A fifth form added
-// later reaches the lead action by default, which is the right default; a form
-// reaching nothing is the failure, and it happens when a record loses a field.
-for (const form of ['contact', 'start', 'tools', 'checkout']) {
+// The forms as `sendEnquiry` names them. A fourth form added later reaches the
+// lead action by default, which is the right default; a form reaching nothing is
+// the failure, and it happens when a record loses a field.
+for (const form of ['contact', 'start', 'tools']) {
   is(`the ${form} form`, typeof adsSendTo(form, studio), 'string')
   is(`the ${form} form on a site with no account`, adsSendTo(form, subsidiary), null)
 }
@@ -159,7 +159,7 @@ for (const form of ['contact', 'start', 'tools', 'checkout']) {
 // -- The subsidiary is told nothing -------------------------------------------
 
 // A `send_to` naming the studio's account on the second site's domain would
-// file a second site's leads against the studio's bidding. The four nulls are
+// file a second site's leads against the studio's bidding. The three nulls are
 // what keep it out, and the fence is what keeps the head off that domain.
 for (const field of ADS_FIELDS) {
   is(`${field} on ${subsidiary.key}`, subsidiary[field], null)
@@ -228,6 +228,6 @@ await finish()
 
 console.log(
   `ads tag: ${studio.adsId} is configured on the built head beside ${studio.gaId}, ` +
-    'three distinct actions each name it, a paid arrival fetches the tag rather than ' +
+    'two distinct actions each name it, a paid arrival fetches the tag rather than ' +
     `waiting for it, ${subsidiary.key} carries none of it, and the policy discloses it`
 )

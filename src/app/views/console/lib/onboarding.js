@@ -1,4 +1,4 @@
-import { BRAND_STATES, FEELINGS, PHOTO_STATES, VOICE_STEPS } from '../../start/lib/look.js'
+import { BRAND_STATES, FEELINGS, PHOTO_STATES, VOICE_STEPS } from './look.js'
 
 /**
  * The questions a client answers before their site is drawn, and the whole of
@@ -49,8 +49,7 @@ import { BRAND_STATES, FEELINGS, PHOTO_STATES, VOICE_STEPS } from '../../start/l
  * The nine rows the pay form writes into `project_briefs.answers`.
  *
  * Named here rather than typed into each prefill, because the label is the
- * join: `lookSummary` and the configurator write these exact strings and this
- * file matches on them. A row renamed on one side and not the other is a
+ * join: a brief carries these exact strings and this file matches on them. A row renamed on one side and not the other is a
  * prefill that silently stops filling, which reads as a client who answered
  * nothing rather than as a bug.
  */
@@ -78,7 +77,7 @@ export const BRIEF_LABELS = {
 export const CONTEXT_LABELS = [BRIEF_LABELS.designs, BRIEF_LABELS.tools, BRIEF_LABELS.provider]
 
 /**
- * The three answers the configurator writes when a question was left alone.
+ * The three answers a brief carries when a question was left alone.
  *
  * They are sentences rather than empty strings, because the inquiry message
  * they were written for reads better saying a question is open than leaving a
@@ -127,7 +126,7 @@ const HOURS_SEED = DAYS.map(day => {
 
 /**
  * How somebody takes money, which is not the same list as the software they
- * run. The first three carry the names the configurator's tool list writes, so
+ * run. The first three carry the names a brief's tool list holds, so
  * the 'Tools in Use' row resolves against this list directly and everything in
  * it that is software rather than money resolves to nothing and is dropped.
  */
@@ -1297,7 +1296,7 @@ function slugOf(name) {
 /**
  * One row out of the brief, or an empty string.
  *
- * The three sentinels the configurator writes for an unanswered question mean
+ * The three sentinels a brief carries for an unanswered question mean
  * nothing was chosen, so they come back empty and no prefill happens. A row
  * that is absent entirely comes back the same way, which is what every project
  * opened before the brief existed looks like from here.

@@ -287,8 +287,8 @@ export default function About() {
       </section>
 
       {/* The studio's closing band has one thing to do next and sends the
-          reader to /start. The second site has no /start — every page there
-          ends at the enquiry form — so it closes on the band whose buttons are
+          reader to /start. The second site has no /start, and every page there
+          ends at the enquiry form, so it closes on the band whose buttons are
           addressable rather than on a link to a route that is not built. */}
       {IS_SECOND_SITE ? (
         <CtaBanner

@@ -9,7 +9,6 @@ import {
 import { SERVICE_LINES } from '@data/pages/services'
 import { SERVICE_PAGES as TAYLORWEBSITE_PAGES } from '../taylorwebsite/serviceDetailTaylorwebsite.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
-import { BUILD_PRICE, MONTHLY_PRICE, PRICE_OFFERS } from '@data/checkout/pricing'
 
 /**
  * What each service line's own page says, keyed by the slug the line already
@@ -23,17 +22,17 @@ import { BUILD_PRICE, MONTHLY_PRICE, PRICE_OFFERS } from '@data/checkout/pricing
  * - `lede`     The paragraph under the title on the page itself.
  * - `covers`   What the work includes.
  * - `timeline` How long it takes.
- * - `running`  What it costs to run, in the two figures every service shares.
- * - `beside`   One page of this service's own, shown beside the price and the
- *              process that every service page links. Optional, and only where
- *              a service has a neighbour a reader would otherwise confuse it
- *              with.
+ * - `running`  What it takes to keep running, and how the figure is arrived at.
+ * - `beside`   One page of this service's own, shown beside the process page
+ *              every service page links. Optional, and only where a service
+ *              has a neighbour a reader would otherwise confuse it with.
  */
 const DETAIL = {
   'new-website': {
     mark: MarkFrame,
     eyebrow: 'New Builds',
-    description: `A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team. From ${BUILD_PRICE} up front and ${MONTHLY_PRICE} a month to run.`,
+    description:
+      'A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team, and quoted for the job before work starts.',
     lede: 'Design, writing, build, domain, and launch all happen here, whether you have never had a site or you have a page somebody set up years ago and walked away from.',
     covers: [
       {
@@ -63,7 +62,8 @@ const DETAIL = {
     ],
     timeline:
       'Two to four weeks from the first call to launch day, in the six steps the process page sets out.',
-    running: `From ${BUILD_PRICE} to build, paid once before the work begins. Then from ${MONTHLY_PRICE} a month to host it, watch it, change it, and carry on the search work. What moves the price is how big the whole project is, and you agree to that number before anything starts.`,
+    running:
+      'One fee to build it, paid once before the work begins, then a monthly to host it, watch it, change it, and carry on the search work. What moves both is how big the whole project is, so they are quoted for your project and you agree to the numbers before anything starts.',
   },
   redesign: {
     mark: MarkRefit,
@@ -98,7 +98,8 @@ const DETAIL = {
       },
     ],
     timeline: 'Two to four weeks. A redesign takes about as long as a new site, because it is one.',
-    running: `From ${BUILD_PRICE} to rebuild, paid once before the work begins, then from ${MONTHLY_PRICE} a month to run it. The same two figures as a new build.`,
+    running:
+      'One fee to rebuild it, paid once before the work begins, then a monthly to run it. Priced the same way a new build is, and quoted before the work starts.',
   },
   /**
    * The one line whose page is not the shared shape.
@@ -116,8 +117,9 @@ const DETAIL = {
   care: {
     mark: MarkGuard,
     eyebrow: 'After Launch',
-    description: `Hosting, backups, security, changes any time, and realtime error monitoring. The monthly, from ${MONTHLY_PRICE}, is what keeps the site online. No per-change fee.`,
-    lede: `What the monthly, from ${MONTHLY_PRICE}, pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.`,
+    description:
+      'Hosting, backups, security, changes any time, and realtime error monitoring. The monthly is what keeps the site online. No per-change fee.',
+    lede: 'What the monthly pays for. Hosting, backups, security, monitoring, and any change you want, for as long as the site runs.',
     covers: [
       {
         title: 'Hosting and Backups',
@@ -145,7 +147,7 @@ const DETAIL = {
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',
-    running: `From ${MONTHLY_PRICE} a month, the same figure whether one change is asked for or ten.`,
+    running: 'One monthly figure, the same whether one change is asked for or ten.',
   },
 }
 
@@ -153,11 +155,10 @@ const DETAIL = {
  * Every service line with its page content attached, for whichever site is
  * building.
  *
- * `offers` is what the page's service node publishes, and it is the same pair
- * for all four studio lines: the studio sells one build and one monthly, and a
- * line is a thing that build covers rather than a price of its own. The
+ * The studio's lines publish no offer node, because the studio quotes each
+ * project rather than listing a figure a crawler could read back. The
  * subsidiary's pages each carry their own, because there the three are priced
- * separately and two of the three carry no monthly at all.
+ * separately and stated on the page.
  *
  * The studio's pages are built inside the branch rather than in a const above
  * it. A `const` holding a `.map()` call reads as possibly side-effecting, so the
@@ -167,7 +168,7 @@ const DETAIL = {
  */
 export const SERVICE_PAGES = IS_SECOND_SITE
   ? TAYLORWEBSITE_PAGES
-  : SERVICE_LINES.map(line => ({ ...line, ...DETAIL[line.slug], offers: PRICE_OFFERS }))
+  : SERVICE_LINES.map(line => ({ ...line, ...DETAIL[line.slug] }))
 
 /**
  * The two services that are not one of the four lines. Both are real work with

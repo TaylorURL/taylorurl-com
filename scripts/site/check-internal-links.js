@@ -2,13 +2,13 @@
  * Every internal link on every built page goes somewhere this build serves.
  *
  * One tree builds two sites off one set of views, and the views were all
- * written for the studio. The studio serves `/start`, `/pricing`, `/process`,
- * `/portfolio`, `/speed-check` and the console; the subsidiary serves nine
- * pages and none of those. Nothing about writing `<Link to="/pricing">` says
- * which sites have a pricing page, the route table and the markup are two
- * lists, and only one of them decides what exists - so a link written once for
- * the studio became a 404 in the chrome of every page of the other site, on the
- * home page, the services page and all three service pages at once.
+ * written for the studio. The studio serves `/start`, `/process`, `/portfolio`,
+ * `/speed-check` and the console; the subsidiary serves nine pages and none of
+ * those. Nothing about writing `<Link to="/portfolio">` says which sites have a
+ * portfolio, the route table and the markup are two lists, and only one of them
+ * decides what exists - so a link written once for the studio became a 404 in
+ * the chrome of every page of the other site, on the home page, the services
+ * page and all three service pages at once.
  *
  * That failure is invisible everywhere it could have been caught. It builds. It
  * lints. It prerenders. The page renders perfectly and the link is a normal
@@ -99,14 +99,14 @@ async function selfTest() {
     {
       route: '/',
       html:
-        '<a href="/contact">a</a><a href="/pricing">b</a>' +
-        '<a href="https://example.com/pricing">c</a><a href="#top">d</a>' +
+        '<a href="/contact">a</a><a href="/nowhere">b</a>' +
+        '<a href="https://example.com/nowhere">c</a><a href="#top">d</a>' +
         '<a href="mailto:x@y.z">e</a><link rel="canonical" href="https://taylor.website/gone"/>',
     },
   ]
   const found = deadLinks(pages, target => served.has(target), 'https://taylor.website')
 
-  if (!found.has('/pricing')) fail('self-test: a dead internal link was not reported')
+  if (!found.has('/nowhere')) fail('self-test: a dead internal link was not reported')
   if (!found.has('/gone'))
     fail("self-test: an absolute link to this site's own missing page was not reported")
   if (found.has('/contact')) fail('self-test: a served link was reported dead')

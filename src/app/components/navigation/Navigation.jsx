@@ -17,6 +17,7 @@ import { HAS_ACCOUNTS } from '@constants/routes'
 import { NavBarLink, NavPanelViewport, NavTrigger } from './NavMenu'
 import { NavSearchButton, NavUtility } from './NavUtility'
 import ThemePicker from '@components/navigation/ThemePicker'
+import { useBusinessHours } from '@hooks/chrome/useBusinessHours'
 import { useSearchShortcut } from '@hooks/chrome/useSearchShortcut'
 import { useToast } from '@hooks/chrome/useToast'
 import { useSessionGlimpse } from '@hooks/session/useSessionGlimpse'
@@ -120,6 +121,12 @@ export default function Navigation() {
   const scrolled = useScrolledPast(SCROLL_SURFACE_THRESHOLD)
   const onDark = useOnDarkBackground(probeRef, [navRef])
   const toast = useToast()
+  // The bar offers the number only while somebody is at the desk to pick it up.
+  // Every other place the number stands - the footer, the contact page, the
+  // ways onward at the foot of a page - carries it whatever the hour, because
+  // those are a reader looking the number up rather than the chrome putting it
+  // in front of them.
+  const deskOpen = useBusinessHours()
 
   const openPanel = NAV_GROUPS.find(group => group.key === openGroup) || null
 
@@ -415,13 +422,15 @@ export default function Navigation() {
                 in here would be a way in a reader has to open the menu to
                 reach, which is the hunt the search is for. */}
             <div className="flex shrink-0 items-center gap-1 lg:hidden">
-              <a
-                href={COMPANY_PHONE_HREF}
-                className="nav-toggle"
-                aria-label={`Call ${COMPANY_PHONE}`}
-              >
-                <Phone className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
-              </a>
+              {deskOpen && (
+                <a
+                  href={COMPANY_PHONE_HREF}
+                  className="nav-toggle"
+                  aria-label={`Call ${COMPANY_PHONE}`}
+                >
+                  <Phone className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" />
+                </a>
+              )}
               <NavSearchButton
                 className="nav-toggle"
                 labelClass="sr-only"
@@ -641,14 +650,16 @@ export default function Navigation() {
                     )}
                   </div>
                 )}
-                <a
-                  className="btn btn-secondary mb-3 w-full"
-                  href={COMPANY_PHONE_HREF}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <Phone className="h-4 w-4" strokeWidth={1.5} />
-                  <span>{COMPANY_PHONE}</span>
-                </a>
+                {deskOpen && (
+                  <a
+                    className="btn btn-secondary mb-3 w-full"
+                    href={COMPANY_PHONE_HREF}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <Phone className="h-4 w-4" strokeWidth={1.5} />
+                    <span>{COMPANY_PHONE}</span>
+                  </a>
+                )}
                 <Link
                   className="btn btn-primary group w-full"
                   to={START_LINK.to}
