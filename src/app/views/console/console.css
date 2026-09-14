@@ -1216,18 +1216,30 @@
   @apply font-normal normal-case;
 }
 
+/* The line a tile grows by while it is being considered, and the room it
+   takes for it. A tile in a grid row grows the row, the row grows the strip,
+   and at a desk the section under the strip is sized to whatever is left, so
+   one card growing a line was every card on the screen moving. The tile takes
+   the same line back off its own foot: the row and the strip keep their
+   height, and the card reaches over the gap under it instead. It paints above
+   its neighbours because it now overlaps them. */
 .figures-tile {
+  --open-h: 14px;
+  --open-gap: 0.375rem;
   @apply block w-full min-w-0 cursor-pointer px-4 pb-3 pt-2.5 text-left;
   border-radius: var(--console-radius);
   background-color: var(--console-card-bg);
   box-shadow: var(--console-card-shadow);
   transition:
     transform var(--nav-duration) var(--ease-out-soft),
-    box-shadow var(--nav-duration) var(--ease-out-soft);
+    box-shadow var(--nav-duration) var(--ease-out-soft),
+    margin-bottom var(--nav-duration) var(--ease-out-soft);
 }
 
 .figures-tile:hover,
 .figures-tile:focus-visible {
+  z-index: 1;
+  margin-bottom: calc(-1 * (var(--open-h) + var(--open-gap)));
   transform: translateY(-2px);
   box-shadow: var(--console-card-shadow), var(--console-float-shadow);
 }
@@ -1271,7 +1283,9 @@
 
 .figures-tile:hover .figures-tile-open,
 .figures-tile:focus-visible .figures-tile-open {
-  @apply mt-1.5 h-[14px] opacity-100;
+  @apply opacity-100;
+  height: var(--open-h);
+  margin-top: var(--open-gap);
 }
 
 /* ---- what the two shapes share ---- */
