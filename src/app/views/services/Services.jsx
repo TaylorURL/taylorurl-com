@@ -147,9 +147,10 @@ const BAND = GROUNDS.band
  * Everything here is a claim about the offer rather than about the layout: what
  * the page is called in a search result, what the service node publishes, what
  * holds on every job, and where the page sends a reader next. The studio sells
- * websites to the towns around Baytown and has a pricing page to send them to;
- * the subsidiary sells three services to companies anywhere, states each price
- * on the service's own page, and ends at the enquiry form.
+ * websites to the towns around Baytown and quotes each one, so it sends a
+ * reader to the conversation; the subsidiary sells three services to companies
+ * anywhere, states each price on the service's own page, and ends at the
+ * enquiry form.
  *
  * `IS_SECOND_SITE` folds to a literal at build time, so the record that loses
  * is dropped from the bundle rather than shipped inside the other site.
@@ -179,7 +180,7 @@ const STUDIO = {
   band: {
     eyebrow: 'Comes with Every Site',
     heading: 'Six things you never have to ask for.',
-    link: { to: '/pricing', label: 'What It Costs' },
+    link: { to: '/contact', label: 'Get a Plan for Yours' },
     items: [
       { icon: Smartphone, label: 'Works on every phone' },
       { icon: Search, label: 'Built for Google to read' },
@@ -195,7 +196,7 @@ const STUDIO = {
     accentText: 'and a price.',
     description:
       'Tell us what the business needs. We answer ourselves, usually within the hour, and you get the plan and the price before any work starts.',
-    secondary: { label: 'See the Price', to: '/pricing' },
+    secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
 

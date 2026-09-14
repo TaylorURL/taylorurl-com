@@ -4,7 +4,7 @@
  *
  * `vercel.json` carries no `functions` block and is read by the platform before
  * any build runs, so it cannot be keyed: every Vercel project built from this
- * repo deploys the whole `api/` tree and registers all nine crons, whatever the
+ * repo deploys the whole `api/` tree and registers every cron, whatever the
  * site's route table says. The only thing that can tell the two deployments
  * apart is the code, and the only thing that can tell whether the code still
  * does is this.
@@ -19,8 +19,8 @@
  * The allowlist is asserted rather than merely present, because the expensive
  * mistakes are additions to it. `notify` is the relay every client deployment
  * posts through with that URL compiled in; the outreach endpoints and the
- * newsletter are a warmed sending domain that must have exactly one sender;
- * checkout and the webhook take money.
+ * newsletter are a warmed sending domain that must have exactly one sender; the
+ * payment link and the webhook take money.
  *
  *   npm run check:api-gate
  */
@@ -77,7 +77,6 @@ const SCHEDULED = [
   'api/newsletter-due.js',
   'api/social-queue.js',
   'api/social-watch.js',
-  'api/start-followup.js',
 ]
 
 for (const name of SCHEDULED) {
@@ -103,7 +102,7 @@ for (const key of SITE_KEYS) {
 
   // Each of these is a decision with a cost behind it, so changing one should
   // mean changing this line too rather than sliding through.
-  for (const endpoint of ['notify', 'stripe-webhook', 'checkout', 'newsletter-send']) {
+  for (const endpoint of ['notify', 'stripe-webhook', 'checkout-link', 'newsletter-send']) {
     check(
       !allowed.includes(endpoint),
       `${key} claims "${endpoint}". That endpoint takes money, sends mail as the studio, or is the ` +
@@ -135,7 +134,7 @@ const fakeResponse = () => ({
 const serves = url => servedHereOr404({ url }, fakeResponse())
 
 // Under an unset SITE this file runs as the studio, whose allowlist is null.
-for (const url of ['/api/contact', '/api/notify', '/api/checkout', '/api/outreach/send']) {
+for (const url of ['/api/contact', '/api/notify', '/api/checkout-link', '/api/outreach/send']) {
   check(serves(url), `the studio refused ${url}; its allowlist is null and it serves everything`)
 }
 check(serves('/api/contact?utm_source=x'), 'a query string changed the answer')
@@ -163,7 +162,7 @@ const asSecondSite = urls =>
 
 const REFUSED_THERE = [
   '/api/notify',
-  '/api/checkout',
+  '/api/checkout-link',
   '/api/stripe-webhook',
   '/api/newsletter-send',
   '/api/newsletter-due',

@@ -50,18 +50,11 @@ const ALL_ROUTES = [
   // an argument about the machinery a build installs that the other three do
   // not make.
   { key: 'OnlineTools', path: 'services/online-tools' },
-  // The price, on a page of its own rather than only at the end of the
-  // configurator.
-  { key: 'Pricing', path: 'pricing' },
   { key: 'Contact', path: 'contact' },
-  // The configurator every Start a Project button opens: one page that fills
-  // in around the trade a visitor picks and finishes on the three ways to
-  // start.
+  // The form every Start a Project button opens: one screen that takes a name,
+  // a business, an address and what the site has to do, and sends it to the
+  // same inbox the contact page reaches.
   { key: 'Start', path: 'start' },
-  // The same sale with the argument taken out, for a build agreed in person.
-  // Noindex, in no menu, and reached by being handed the address; the
-  // configurator above is the way in for everybody who was not.
-  { key: 'Payment', path: 'payment' },
   { key: 'Privacy', path: 'privacy' },
   { key: 'Terms', path: 'terms' },
   { key: 'License', path: 'license' },

@@ -169,8 +169,8 @@ function useAssistant() {
 /** What the assistant leads with, given where the visitor opened it. */
 function openerFor(pathname) {
   const path = pathname || '/'
-  if (path.startsWith('/pricing') || path.startsWith('/start')) {
-    return 'Happy to talk through what a site would involve. What does the business do?'
+  if (path.startsWith('/start')) {
+    return 'Happy to talk through what a site would involve while you fill in the form. What does the business do?'
   }
   if (path.startsWith('/work') || path.startsWith('/portfolio')) {
     return 'Ask me anything about the work on this page, or about a site for your own shop.'

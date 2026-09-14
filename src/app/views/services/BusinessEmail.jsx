@@ -75,8 +75,8 @@ const TERMS = [
 
 /**
  * Business email on its own page. It is real work with its own decisions, and
- * the only other place it appears is a step inside the configurator, where it
- * is asked as a question rather than explained.
+ * the pages that mention it elsewhere name it in a list rather than explain
+ * it.
  */
 export default function BusinessEmail() {
   return (
@@ -138,7 +138,7 @@ export default function BusinessEmail() {
       >
         <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
         <div className="mt-8">
-          <SectionLink to="/pricing" label="The Whole Price" ground="band" />
+          <SectionLink to="/contact" label="Ask What Yours Would Run" ground="band" />
         </div>
       </ServiceSection>
 
@@ -153,8 +153,8 @@ export default function BusinessEmail() {
         description="Business email is set up alongside the site. Tell us what the business runs on now and we will handle the move."
         primaryLabel="Start a Project"
         primaryTo="/start"
-        secondaryLabel="See the Price"
-        secondaryTo="/pricing"
+        secondaryLabel="Ask a Question"
+        secondaryTo="/contact"
       />
     </div>
   )

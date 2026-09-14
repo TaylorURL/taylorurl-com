@@ -12,7 +12,6 @@ import { staggerChild } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
 import { START_LINK, serves } from '@constants/navigation'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { BUILD_PRICE, MONTHLY_PRICE, PRICE_OFFERS } from '@data/checkout/pricing'
 import { EXTRA_SERVICES, otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
@@ -132,7 +131,7 @@ const SYSTEMS = [
 ]
 
 /**
- * The accounts the work is done inside, drawn the way the configurator draws
+ * The accounts the work is done inside, drawn the way a trade page draws
  * the software a trade runs on: a mark where the vendor publishes one, the name
  * alone everywhere else. `ToolMesh` carries the note about whose trademarks
  * these are, which is the sentence that has to sit under any page naming this
@@ -174,14 +173,13 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: `From ${BUILD_PRICE} for the site and from ${MONTHLY_PRICE} a month to run it, with the tools, the tracking, the sending domain, and the monitoring built into that price. What moves the price is how big the whole project is, and you agree to that number before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.`,
+    body: 'The tools, the tracking, the sending domain, and the monitoring are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so you get the number in writing and agree to it before anything starts. What a payment processor, an ad platform, or a sending service charges is billed by them, not through us.',
   },
 ]
 
 // A link written into this page by hand still has to be a page this site
 // serves, so the route table answers for it rather than whoever edits the list.
 const ASIDES = [
-  { to: '/pricing', label: 'The Whole Price' },
   { to: '/process', label: 'How a Build Runs' },
   { to: '/tools', label: 'The Free Tools' },
 ].filter(aside => serves(aside.to))
@@ -312,7 +310,6 @@ export default function OnlineTools() {
               'Booking, ordering, payment, and customer accounts built onto a small business website, with advertising tracking, outbound email, and monitoring wired in during the build.',
             provider: { '@id': BUSINESS_ID },
             areaServed: AREA_SERVED,
-            offers: PRICE_OFFERS,
           },
         ]}
       />
@@ -403,8 +400,8 @@ export default function OnlineTools() {
         description="Tell us what the business runs on now and what you want to be able to turn on later. You get the plan and the price before any work starts."
         primaryLabel={START_LINK.label}
         primaryTo={START_LINK.to}
-        secondaryLabel="See the Price"
-        secondaryTo="/pricing"
+        secondaryLabel="Ask a Question"
+        secondaryTo="/contact"
       />
     </div>
   )

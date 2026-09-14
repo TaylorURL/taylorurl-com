@@ -16,24 +16,21 @@ import { IS_SECOND_SITE, SITE } from '../../../../lib/site/current.js'
  * The page around one service's content, for whichever site is building.
  *
  * The studio's build is a one-off fee and a monthly that keeps the site
- * published, so its time-and-cost section asks what the thing runs and sends a
- * reader on to the whole price and the six steps a build takes. The subsidiary
- * quotes each service on its own page, has no pricing page and no process page
- * to send anyone to, and ends at the enquiry form.
+ * published, both quoted for the project, so its time-and-cost section asks
+ * what the thing runs and sends a reader on to the six steps a build takes.
+ * The subsidiary quotes each service on its own page, has no process page to
+ * send anyone to, and ends at the enquiry form.
  */
 const STUDIO = {
   termsTitle: 'How long it takes, and what it runs.',
   costTitle: 'What It Costs to Run',
-  asides: [
-    { to: '/pricing', label: 'The Whole Price' },
-    { to: '/process', label: 'How a Build Runs' },
-  ],
+  asides: [{ to: '/process', label: 'How a Build Runs' }],
   cta: {
     heading: 'Tell us what',
     accentText: 'you need.',
     description:
-      'Pick your trade and the page fills in around it, price included. Or send a message. We read it and answer it ourselves, usually within the hour.',
-    secondary: { label: 'See the Price', to: '/pricing' },
+      'Say what the business does and what the site has to do. We read every message and answer it ourselves, usually within the hour, and you get the plan and the price before any work starts.',
+    secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
 
@@ -55,8 +52,8 @@ const DOC = IS_SECOND_SITE ? SECOND_SITE : STUDIO
 const CTA_SECONDARY = DOC.cta.secondary && serves(DOC.cta.secondary.to) ? DOC.cta.secondary : null
 
 /**
- * One service line's own page. The lines share a shape — what the work covers,
- * how long it takes, what it costs — so they share a view and differ only in the
+ * One service line's own page. The lines share a shape - what the work covers,
+ * how long it takes, what it runs - so they share a view and differ only in the
  * content `@data/serviceDetail` holds against their slug.
  *
  * A slug no line carries reaches the 404 page. Only the lines this site sells

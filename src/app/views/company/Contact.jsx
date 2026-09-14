@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useLocation } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Check, ChevronDown, Clock, Mail, Phone } from 'lucide-react'
 import BbbSeal from '@components/reviews/BbbSeal'
@@ -51,39 +50,6 @@ const BLANK = {
 // it did is what makes somebody close the tab rather than press again.
 const NOT_SENT = 'That message did not send. Nothing you typed was lost, so try it again.'
 
-// What a carried brief may be worth, so a crafted history entry cannot fill
-// the box with a page of someone else's text.
-const BRIEF_ROWS = 12
-const BRIEF_LABEL = 60
-const BRIEF_VALUE = 300
-
-/**
- * The configuration a visitor arrives holding, written out as the message they
- * would otherwise have typed.
- *
- * The configurator asks five screens of questions and its pay step offers a
- * way here instead. What was picked has to come along, or the visitor who told
- * the site the most about their business is the one who arrives at this form
- * with nothing in it.
- *
- * It is read through its own shape rather than trusted. What arrives is
- * whatever is in the browser's history entry, it lands in a box a person is
- * about to send under their own name, and a row that is not a label and a
- * value is not part of a brief.
- *
- * @param {*} carried Whatever the route was entered with.
- * @returns {string} The message to open on, or empty where there is no brief.
- */
-function briefText(carried) {
-  if (!Array.isArray(carried)) return ''
-  const rows = carried
-    .filter(row => row && typeof row.label === 'string' && typeof row.value === 'string')
-    .slice(0, BRIEF_ROWS)
-    .map(row => `${row.label.slice(0, BRIEF_LABEL)}: ${row.value.slice(0, BRIEF_VALUE)}`)
-  if (!rows.length) return ''
-  return ['Here is what I picked on the start page:', '', ...rows, ''].join('\n')
-}
-
 // What this form asks, written once and read by both sides: the labels below
 // and the notice the endpoint sends come from the same words, so rewording a
 // field here rewords the inbox with it.
@@ -112,10 +78,7 @@ function Confirmation({ title, body }) {
 
 export default function Contact() {
   const toast = useToast()
-  const { state } = useLocation()
-  // Read once, on the mount the visitor arrived on. The box is theirs to edit
-  // from that point, and a re-read would take back an edit they had made.
-  const [formData, setFormData] = useState(() => ({ ...BLANK, message: briefText(state?.brief) }))
+  const [formData, setFormData] = useState(BLANK)
 
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')

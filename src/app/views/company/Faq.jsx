@@ -4,7 +4,6 @@ import { Plus } from 'lucide-react'
 import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
-import { BUILD_PRICE, MONTHLY_PRICE } from '@data/checkout/pricing'
 import { PORTFOLIO_AVERAGES } from '@data/portfolio'
 import { EASE, fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema, faqSchema } from '@constants/seo'
@@ -16,7 +15,7 @@ const FAQ_CATEGORIES = [
     questions: [
       {
         q: 'What does a website cost?',
-        a: `Builds start at ${BUILD_PRICE}, paid once before the work begins. The monthly starts at ${MONTHLY_PRICE} and covers hosting and everything after launch. Most sites land there. Booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site rather than billed on top of it. What moves the price is how big the whole project is, and you agree to that figure before any work starts. Nothing is charged to get the plan and the price.`,
+        a: 'It depends on the project. A site is one fee to build, paid once before the work begins, and a monthly that covers hosting and everything after launch. Booking, ordering, a shop, the tools behind them, the ad tracking, and the monitoring are built as part of the site rather than billed on top of it, so what moves the price is how big the whole project is. Send us a line about the business and you get both figures in writing before any work starts. You pay nothing to ask.',
       },
       {
         q: 'Who do you build websites for?',
@@ -78,7 +77,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'Can I stop the monthly?',
-        a: `Yes, any time. There is no annual term to sign, no notice period, and no cancellation fee. The ${MONTHLY_PRICE} is what keeps the site hosted, backed up and watched, so it is part of the cost of having the site rather than an add-on to it: the site stays online to the end of the period you have paid for and comes offline after that. If the monthly ever changes you hear about it in writing well before it is charged. Your domain is yours to move anywhere, and the content you gave us is yours to take.`,
+        a: 'Yes, any time. There is no annual term to sign, no notice period, and no cancellation fee. The monthly is what keeps the site hosted, backed up and watched, so it is part of the cost of having the site rather than an add-on to it: the site stays online to the end of the period you have paid for and comes offline after that. If the monthly ever changes you hear about it in writing well before it is charged. Your domain is yours to move anywhere, and the content you gave us is yours to take.',
       },
     ],
   },

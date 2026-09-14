@@ -49,7 +49,7 @@ This matters more than it sounds. A stock photograph used without a license is a
 
 The monthly fee is what pays for hosting, monitoring, maintenance and the ongoing work that keeps a site published. It is a condition of the site staying online rather than an optional extra, and it runs for as long as the site is published. Charges for things bought on your behalf, such as a domain name, a paid integration or advertising spend, are passed through at cost and shown separately.
 
-Where you bought through the checkout on this site, the figures shown there are the terms: the one-off build fee, the monthly fee, and the day of the month it recurs.`,
+The figures on the payment link we send you are the ones that apply: the one-off build fee, the monthly fee, and the day of the month the monthly recurs.`,
   },
   {
     title: 'Late Payment And Suspension',

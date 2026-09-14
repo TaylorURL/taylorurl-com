@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download } from 'lucide-react'
-import StepFlow from '../start/steps/StepFlow'
+import StepFlow from '@components/steps/StepFlow'
 import { LEVELS, encodeQr, maximumBytes } from '@app/tools/lib/qr'
 import { qrPngBlob, qrSvg, qrSvgBlob } from '@app/tools/lib/qrRender'
 import { useToast } from '@hooks/chrome/useToast'

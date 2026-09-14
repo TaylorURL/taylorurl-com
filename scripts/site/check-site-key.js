@@ -8,7 +8,7 @@
  *
  * A record missing a field the other one carries reads as `undefined` at a call
  * site expecting a string, and a page renders the word instead of refusing. An
- * origin with a trailing slash produces `https://taylor.website//pricing` in
+ * origin with a trailing slash produces `https://taylor.website//contact` in
  * every canonical, sitemap entry and og:url on the site, none of which throws. A
  * second deployment answering true to `ownsSchedules()` runs a second outreach
  * pipeline from the same warmed domain on the same ten-minute cron. And the worst

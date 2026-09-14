@@ -29,7 +29,6 @@ import {
   MarkSquare,
   MarkStack,
   MarkSteps,
-  MarkTag,
   MarkTalk,
   MarkTrade,
 } from '@components/marks/marks'
@@ -339,13 +338,13 @@ const STUDIO_NAV_GROUPS = [
       { head: 'Websites', items: SERVICE_ENTRIES.slice(0, 2) },
       { head: 'Beyond the Site', items: SERVICE_ENTRIES.slice(2) },
       {
-        head: 'What It Costs',
+        head: 'Where to Start',
         items: [
           {
-            to: '/pricing',
-            label: 'Pricing',
-            summary: 'A site from $1,000 up front, and $250 a month to keep it running.',
-            mark: MarkTag,
+            to: '/contact',
+            label: 'Talk It Through',
+            summary: 'Say what you need built, and you get a plan and a price for it.',
+            mark: MarkTalk,
           },
         ],
       },
@@ -353,7 +352,7 @@ const STUDIO_NAV_GROUPS = [
     feature: {
       to: '/services',
       label: 'All Services',
-      summary: 'What each one covers, what it costs to run, and how long it takes.',
+      summary: 'What each one covers, what keeps it running, and how long it takes.',
       mark: MarkIndex,
     },
   },
@@ -529,7 +528,6 @@ const STUDIO_NAV_GROUPS = [
 const STUDIO_DRAWER_LINKS = [
   { to: '/services', label: 'Services', mark: MarkFrame },
   { to: '/portfolio', label: 'Work', mark: MarkStack },
-  { to: '/pricing', label: 'Pricing', mark: MarkTag },
   { to: '/tools', label: 'Free Tools', mark: MarkPanel },
   { to: '/about', label: 'About', mark: MarkSquare },
   { to: '/contact', label: 'Contact', mark: MarkTalk },
@@ -546,7 +544,6 @@ const STUDIO_DRAWER_LINKS = [
 const STUDIO_PRIMARY_LINKS = [
   { to: '/', label: 'Home' },
   { to: '/services', label: 'Services' },
-  { to: '/pricing', label: 'Pricing' },
   { to: '/industries', label: 'Industries' },
   { to: '/areas', label: 'Service Areas' },
   { to: '/portfolio', label: 'Portfolio' },
@@ -733,11 +730,11 @@ export const SIBLING_LINKS = CROSS_LINKS.filter(entry => entry.site !== SITE.key
  * The bar's, the drawer's and the footer's call to action, in one place.
  *
  * Three components draw this button and every one of them had the destination
- * written into it. On the studio that is right: /start is the checkout, and
- * "Start a Project" is what it does. The second site has no /start - it is not
- * in its route table and nothing prerenders it - so all three buttons were
- * links to a 404 sitting in the chrome of every page. It sells nothing on the
- * site either, so the enquiry form is where the same intent goes.
+ * written into it. On the studio that is right: /start is the form that starts
+ * a project, and "Start a Project" is what it does. The second site has no
+ * /start - it is not in its route table and nothing prerenders it - so all
+ * three buttons were links to a 404 sitting in the chrome of every page, and
+ * its own enquiry form is where the same intent goes.
  *
  * One record rather than three conditionals, because the failure was three
  * copies of an answer and only some of them being corrected.

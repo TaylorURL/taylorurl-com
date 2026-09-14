@@ -34,21 +34,21 @@
  *                  capture files.
  * - `tagline`      Short category / stack chip surfaced above the heading.
  * - `trades`       Trade slugs from `@data/towns-and-trades/trades` this site is proof for. The
- *                  configurator on /start joins on them, so naming a slug here
- *                  is the whole of what makes a client the worked example for
- *                  that trade. Slugs with no control in the grid yet — welding,
- *                  industrial, recreation, youth-sports — are carried so a
- *                  trade added to the grid arrives with its proof already
- *                  attached. An empty array is a site offered as general work.
+ *                  trade and town pages join on them, so naming a slug here is
+ *                  the whole of what makes a client the worked example for that
+ *                  trade. Slugs with no page of their own yet, such as welding,
+ *                  industrial, recreation and youth-sports, are carried so a
+ *                  trade added later arrives with its proof already attached.
+ *                  An empty array is a site offered as general work.
  * - `town`         Where the client trades, for the entries whose reach is one
  *                  place. Sites working a region rather than a town carry none.
  * - `alsoIn`       Further towns the work runs in, for a site whose reach is
  *                  wider than the one town it is filed under. A town page shows
  *                  these under its own work, and nothing else reads them: the
  *                  entry stays filed under `town`, so the row prints one place
- *                  and the /start configurator still joins on one.
+ *                  and a town page still joins on one.
  * - `location`     Where the business trades, where its own site states one.
- *                  Separate from `town`, which the /start configurator reads.
+ *                  Separate from `town`, which the town pages read.
  * - `description`  One- or two-sentence pitch summarising the project.
  * - `hasStudy`     Whether `@data/portfolioStudies` carries a case study for
  *                  this entry, which is what the index row reads to decide

@@ -1,35 +1,30 @@
 /**
- * Proves that a link opened by hand sells the same thing the pricing page
- * sells, and that a link opened against a quote records what it charged.
+ * Proves that a link opened by hand charges the figure that was agreed, hands
+ * the buyer back a way into the account it opens, and records what it charged.
  *
- * Two endpoints now open a checkout, and they will drift. Somebody changes how
- * the pricing page's checkout collects an address, or which payment methods it
- * offers, or where it sends a buyer afterwards, and the other one keeps doing
- * what it did. The failure is invisible from either file: both work, both take
- * money, and the difference only shows up as one customer out of thirty
- * landing somewhere nobody meant them to.
+ * One endpoint opens a checkout and it is the only way a build is sold, so
+ * every failure here is a failure nobody else catches. The body it puts on the
+ * wire decides what a card is charged, where a buyer lands afterwards, what the
+ * subscription is called in a year, and whether the project the webhook opens
+ * records the figure or the floor.
  *
- * So this does not read the two files and compare them by eye. It runs the
- * pricing page's checkout against a stubbed Stripe, catches the exact body it
- * puts on the wire, and holds it beside the body the other endpoint builds for
- * the same buyer with nothing overridden. Every field has to match. The only
- * additions allowed are the ones this file names, and a new one appearing on
- * either side fails the suite until somebody says which it is.
+ * So the body is built and read field by field rather than trusted. The figures
+ * are held to the floor module, the return address is held to the key it is
+ * supposed to carry, and the quote is followed from the override through the
+ * session metadata to the arguments the project is opened with.
  *
- * The brief is the one intended difference. A buyer off the pricing page has
- * answered six screens by the time they reach Stripe; a prospect handed a link
- * in an email has answered nothing, and a checkout without a brief is a case
- * the pricing page's own endpoint already handles. Both bodies here carry no
- * brief, which is what makes them comparable.
+ * The endpoint is also the one place on the site that takes a price from its
+ * caller, so the cases below run it as an admin and as a signed-in client, and
+ * the client has to be refused before Stripe is reached at all.
  *
  *   npm run check:payment-link
  */
 
 import { cases, check, finish, same } from '../harness/checks.js'
 
-// Read before either endpoint is imported: both fix these at module load, and
-// a product id or a site URL differing between the two would show up as a
-// difference in the bodies that has nothing to do with either file.
+// Read before the endpoint is imported: it fixes these at module load, so a
+// product id or a site URL named afterwards would not reach the body under
+// test.
 process.env.STRIPE_SECRET_KEY = 'sk_test_not_a_real_key'
 process.env.STRIPE_PRODUCT_BUILD = 'prod_build_test'
 process.env.STRIPE_PRODUCT_CARE = 'prod_care_test'
@@ -43,7 +38,6 @@ process.env.SUPABASE_URL = 'https://project.supabase.test'
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service_role_not_a_real_key'
 process.env.SUPABASE_ANON_KEY = 'anon_not_a_real_key'
 
-const { default: startCheckout } = await import('../../api/checkout.js')
 const { default: linkHandler, linkFields, quotedCents } = await import('../../api/checkout-link.js')
 const { openArgs } = await import('../../api/stripe-webhook.js')
 const { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } =
@@ -53,66 +47,6 @@ const { claimHolds } = await import('../../lib/stripe/claim.js')
 const BUYER = 'prospect@example.com'
 const BUSINESS = 'Lawton Park'
 const WEBSITE = 'https://lawtonpark.example'
-
-/**
- * What the pricing page's checkout actually sends Stripe for this buyer.
- *
- * The endpoint is run rather than read. Stripe is replaced for the duration by
- * something that keeps the body and answers the way Stripe answers, so what
- * comes back is the bytes a real buyer's checkout would have been opened with.
- */
-async function bodyFromStart() {
-  const original = globalThis.fetch
-  let sent = null
-  // The endpoint reaches the database as well as Stripe - it stores the brief
-  // and stamps the lead the address belongs to - so the stub answers both and
-  // keeps the body of the one this is about. A stub that captured whatever went
-  // out last would be testing whichever call happened to be written last.
-  globalThis.fetch = async (url, options) => {
-    const stripe = String(url).includes('api.stripe.com')
-    if (stripe) sent = options.body
-    return {
-      ok: true,
-      status: 200,
-      headers: new Headers({ 'content-type': 'application/json' }),
-      text: async () => '[]',
-      json: async () =>
-        stripe ? { id: 'cs_test_start', url: 'https://checkout.stripe.com/c/pay/cs_test' } : [],
-    }
-  }
-
-  const response = {
-    setHeader() {},
-    status() {
-      return this
-    },
-    json() {
-      return this
-    },
-  }
-
-  try {
-    await startCheckout(
-      {
-        method: 'POST',
-        body: {
-          email: BUYER,
-          business_name: BUSINESS,
-          website: WEBSITE,
-          // The endpoint refuses a checkout that carries no agreement, so a
-          // body caught without this would be no body at all.
-          terms_accepted: true,
-        },
-      },
-      response
-    )
-  } finally {
-    globalThis.fetch = original
-  }
-
-  if (!sent) throw new Error('the pricing page checkout sent nothing to Stripe')
-  return sent
-}
 
 /** The same buyer, through the endpoint a link is opened from, nothing quoted. */
 function bodyFromLink(overrides = {}) {
@@ -130,87 +64,29 @@ function bodyFromLink(overrides = {}) {
 }
 
 /**
- * What a link may carry that the pricing page's checkout does not.
+ * What a link must never claim.
  *
- * The figures, because a subscription session's total cannot be taken apart
- * afterwards and the project has to record what the card was charged. The
- * expiry, because a link is handed to somebody rather than clicked on the spot.
- * Nothing else, and nothing here changes what is charged or where the buyer
- * ends up.
+ * Nobody ticks anything on a link handed over in an email, so a session stamped
+ * with an agreement would be recording one that was never given, which is worse
+ * than recording none. A code field is the same shape of fault: a link already
+ * carries a figure somebody quoted on purpose, and a code applied on top of it
+ * is a discount nobody agreed to and a total that can land under the floor the
+ * endpoint refuses to quote beneath.
  */
-const ALLOWED_EXTRA = new Set([
-  'metadata[build_cents]',
-  'metadata[monthly_cents]',
-  'subscription_data[metadata][build_cents]',
-  'subscription_data[metadata][monthly_cents]',
-  'expires_at',
-])
-
-/**
- * What the pricing page's checkout carries that a link must not.
- *
- * A buyer off the pricing page ticked the terms on the page before anything
- * opened, and the moment they did is written onto the session. Nobody ticks
- * anything on a link handed over in an email, so a link stamped the same way
- * would be recording an agreement that was never given, which is worse than
- * recording none.
- *
- * The code field is the same shape of difference. The pricing page charges the
- * figures `pricing.js` holds and a code is the only way any of them moves; a
- * link already carries a figure somebody quoted on purpose, and a code applied
- * on top of a negotiated price is a discount nobody agreed to and a total that
- * can land under the floor the endpoint refuses to quote beneath.
- */
-const ONLY_ON_START = new Set([
+const NEVER_ON_A_LINK = [
   'metadata[terms_agreed_at]',
   'subscription_data[metadata][terms_agreed_at]',
   'allow_promotion_codes',
-])
+]
 
-/**
- * The two fields that are a fresh secret on every checkout.
- *
- * Each session is opened with its own one-use key: the token goes out in the
- * return address and only its hash is left on the session, which is what stops
- * the session id - a string that rides back in the address bar and gets pasted
- * into support threads - from being enough to sign anybody in. Two checkouts
- * therefore differ in these two fields by design, and comparing them as strings
- * would fail for the one reason that is not a drift.
- *
- * So they are held to each other with the key normalised out, and the key
- * itself is checked for the property that matters: that the token in the
- * address is the one the hash on the session recognises, on both endpoints.
- */
-const MINTED_PER_CHECKOUT = new Set(['metadata[claim]', 'success_url'])
-
-/** A return address with whichever key it happens to carry taken out. */
-const lessKey = url => String(url).replace(/([?&]claim=)[^&]*/, '$1')
-
-const started = await bodyFromStart()
-
-check('a link with nothing quoted sends what the pricing page sends', () => {
+check('a link claims no agreement and opens no discount', () => {
   const link = bodyFromLink()
-  for (const [key, value] of started.entries()) {
-    if (ONLY_ON_START.has(key) || MINTED_PER_CHECKOUT.has(key)) continue
-    same(link.get(key), value, `${key}, which the pricing page sends`)
-  }
-})
-
-check('the agreement and the code field belong to the pricing page alone', () => {
-  const link = bodyFromLink()
-  for (const key of ONLY_ON_START) {
-    same(Boolean(started.get(key)), true, `${key}, which the pricing page sends`)
+  for (const key of NEVER_ON_A_LINK) {
     same(link.get(key), null, `${key}, which a link cannot honestly claim`)
   }
 })
 
-check('a link adds nothing to the checkout but the figures and the expiry', () => {
-  const link = bodyFromLink()
-  const extra = [...link.keys()].filter(key => !started.has(key) && !ALLOWED_EXTRA.has(key))
-  same(extra.join(', ') || 'none', 'none', 'fields only the link sends')
-})
-
-check('a link with nothing quoted charges the two published figures', () => {
+check('a link with nothing quoted charges the two figures the floor holds', () => {
   const link = bodyFromLink()
   same(
     link.get('line_items[0][price_data][unit_amount]'),
@@ -224,32 +100,33 @@ check('a link with nothing quoted charges the two published figures', () => {
   )
 })
 
-check('a buyer off a link lands where a buyer off the pricing page lands', () => {
+check('a paid buyer lands on the screen that signs them in, and a lapsed one can write in', () => {
   const link = bodyFromLink()
-  same(
-    lessKey(link.get('success_url')),
-    lessKey(started.get('success_url')),
-    'where a paid checkout returns to'
-  )
-  same(link.get('cancel_url'), started.get('cancel_url'), 'where an abandoned one returns to')
+  same(new URL(link.get('success_url')).pathname, '/welcome', 'where a paid checkout returns to')
+  same(new URL(link.get('cancel_url')).pathname, '/contact', 'where an abandoned one returns to')
   same(link.get('mode'), 'subscription', 'the mode that opens the monthly with the build')
 })
 
-check('both checkouts hand the buyer a key the session alone cannot forge', () => {
+/**
+ * The key is a fresh secret on every checkout.
+ *
+ * The token goes out in the return address and only its hash is left on the
+ * session, which is what stops the session id - a string that rides back in the
+ * address bar and gets pasted into support threads - from being enough to sign
+ * anybody in. So the pair is checked for the property that matters rather than
+ * against a fixed string.
+ */
+check('a checkout hands the buyer a key the session alone cannot forge', () => {
   const faults = []
-  for (const [what, body] of [
-    ['the pricing page', started],
-    ['a link', bodyFromLink()],
-  ]) {
-    const carried = new URL(body.get('success_url')).searchParams.get('claim')
-    if (!carried) faults.push(`${what} sends a buyer back with no key`)
-    else if (!claimHolds(body.get('metadata[claim]'), carried)) {
-      faults.push(`${what} leaves a hash on the session that does not know its own key`)
-    }
-    // The session must carry the hash and never the token, or anything that can
-    // read the session can mint a sign-in from it.
-    if (body.get('metadata[claim]') === carried) faults.push(`${what} put the key on the session`)
+  const body = bodyFromLink()
+  const carried = new URL(body.get('success_url')).searchParams.get('claim')
+  if (!carried) faults.push('a link sends a buyer back with no key')
+  else if (!claimHolds(body.get('metadata[claim]'), carried)) {
+    faults.push('a link leaves a hash on the session that does not know its own key')
   }
+  // The session must carry the hash and never the token, or anything that can
+  // read the session can mint a sign-in from it.
+  if (body.get('metadata[claim]') === carried) faults.push('a link put the key on the session')
   if (faults.length) throw new Error(faults.join('; '))
 })
 
@@ -275,11 +152,11 @@ check('a quote rides on the subscription, not just the session', () => {
 
 check('an ordinary sale claims nobody negotiated it', () => {
   const link = bodyFromLink()
-  same(link.get('metadata[quoted_by]'), null, 'no quoter on a checkout at the published price')
+  same(link.get('metadata[quoted_by]'), null, 'no quoter on a checkout written at the floor')
   same(link.get('metadata[quoted_at]'), null, 'no quote date either')
 })
 
-check('an absent override is the published figure', () => {
+check('an absent override is the floor', () => {
   same(quotedCents(undefined, floor(BUILD_PRICE_CENTS)).cents, BUILD_PRICE_CENTS, 'the build floor')
   same(quotedCents(undefined, floor(BUILD_PRICE_CENTS)).quoted, false, 'not a quote')
   same(
@@ -289,7 +166,7 @@ check('an absent override is the published figure', () => {
   )
 })
 
-check('an override below the published figure is refused', () => {
+check('an override below the floor is refused', () => {
   const under = quotedCents(100, floor(BUILD_PRICE_CENTS))
   same(Boolean(under.error), true, 'a dollar for a thousand dollar build')
   same(
@@ -299,7 +176,7 @@ check('an override below the published figure is refused', () => {
   )
 })
 
-check('the published figure itself is accepted and is not a quote', () => {
+check('the floor itself is accepted and is stated rather than defaulted', () => {
   const exact = quotedCents(BUILD_PRICE_CENTS, floor(BUILD_PRICE_CENTS))
   same(exact.cents, BUILD_PRICE_CENTS, 'the floor, stated outright')
   same(exact.quoted, true, 'stated rather than defaulted')
@@ -323,7 +200,7 @@ check('a session says what it charged and the project records that', () => {
   same(quoted.p_deposit_cents, 180000, 'the build that was actually agreed')
 })
 
-check('a session that says nothing is the published figure, as it always was', () => {
+check('a session that says nothing is the floor, as it always was', () => {
   const plain = openArgs({ id: 'cs_2', mode: 'subscription' }, BUYER)
   same(plain.p_deposit_cents, BUILD_PRICE_CENTS, 'every checkout opened before any of this')
 })
@@ -424,14 +301,14 @@ check('a preview says what it would charge and creates nothing', async () => {
   same(run.body.build_cents, 180000, 'the build it would charge')
   same(run.body.monthly_cents, MONTHLY_PRICE_CENTS, 'the monthly it would charge')
   same(run.body.build_quoted, true, 'the build as a quote')
-  same(run.body.monthly_quoted, false, 'the monthly left at the published figure')
+  same(run.body.monthly_quoted, false, 'the monthly left at the floor')
   same(run.body.url, undefined, 'a preview hands back no link')
 })
 
-check('a preview of an ordinary sale is the two published figures', async () => {
+check('a preview of an ordinary sale is the two figures the floor holds', async () => {
   const run = await runAsAdmin({ email: BUYER, business_name: BUSINESS, preview: true })
-  same(run.body.build_cents, BUILD_PRICE_CENTS, 'the build the pricing page prints')
-  same(run.body.monthly_cents, MONTHLY_PRICE_CENTS, 'the monthly the pricing page prints')
+  same(run.body.build_cents, BUILD_PRICE_CENTS, 'the build it would charge')
+  same(run.body.monthly_cents, MONTHLY_PRICE_CENTS, 'the monthly it would charge')
   same(run.body.build_quoted, false, 'nothing quoted')
 })
 
@@ -495,5 +372,5 @@ function floor(cents) {
 await finish()
 
 console.log(
-  `payment link: all ${cases.length} cases pass; a link with nothing quoted sends what /start sends`
+  `payment link: all ${cases.length} cases pass; a link with nothing quoted charges the floor`
 )

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * Which step a frame that holds one at a time is showing, and the moves
- * between them. The configurator, the free tools and the brief a client fills
- * in all move this way; what each of them opens is its own business, and
+ * between them. The free tools and the brief a client fills in both move this
+ * way; what each of them opens is its own business, and
  * arrives here as `reach`.
  *
  * The step asked for is clamped by `reach` and by the steps there are, so a

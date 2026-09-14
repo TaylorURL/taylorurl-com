@@ -76,7 +76,7 @@ It is not about your business, your content, or your customers. The short versio
   },
   {
     title: 'When The License Ends',
-    content: `The license runs with the monthly fee. If the fee stops, the site comes offline and the right to use the platform ends with it, which is the same thing the Terms page and the pricing page both say. What you own does not end with it: the domain stays yours to point anywhere, and the content you supplied stays yours to take. Ask at ${SUPPORT_EMAIL} and you will get copies of it, whatever the reason for stopping.`,
+    content: `The license runs with the monthly fee. If the fee stops, the site comes offline and the right to use the platform ends with it, which is the same thing the Terms page says. What you own does not end with it: the domain stays yours to point anywhere, and the content you supplied stays yours to take. Ask at ${SUPPORT_EMAIL} and you will get copies of it, whatever the reason for stopping.`,
   },
   {
     title: 'Authorized Use',

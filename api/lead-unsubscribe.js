@@ -1,11 +1,11 @@
 /**
  * One request takes a lead off the list, and off every other one.
  *
- * The follow-up is the only message a lead ever gets, and this is the link
- * under it. `unsub_token` is the whole credential and the whole interaction:
- * the reader following it carries no session and no account, and asking for
- * either would make the link useless, which is the same thing as not having
- * one.
+ * A lead carries an `unsub_token` from the row it was written in, and this is
+ * the link built on it. `unsub_token` is the whole credential and the whole
+ * interaction: the reader following it carries no session and no account, and
+ * asking for either would make the link useless, which is the same thing as
+ * not having one.
  *
  * What it writes is a timestamp on the lead and a row on `public.suppression`
  * with the reason 'unsubscribed', which is the list the newsletter and the
@@ -52,7 +52,7 @@ async function retire(db, token) {
   const { error: suppressError } = await db
     .from('suppression')
     .upsert(
-      { email: lead.email, reason: 'unsubscribed', note: 'configurator follow-up' },
+      { email: lead.email, reason: 'unsubscribed', note: 'lead mail' },
       { onConflict: 'email', ignoreDuplicates: true }
     )
   if (suppressError) return 'failed'

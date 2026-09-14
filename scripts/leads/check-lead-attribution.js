@@ -266,10 +266,7 @@ check('the ad account is told beside the property, naming one action', () => {
   same(Object.keys(ads[0][2]).join(', '), 'send_to', 'parameters')
 })
 
-check('the checkout is filed against its own action', () => {
-  const fired = []
-  recordLead('checkout', { held: null, tag: (...args) => fired.push(args) })
-  same(fired.filter(call => call[1] === ADS_EVENT)[0][2].send_to, SITE.adsCheckoutSendTo, 'action')
+check('every form is filed against the one lead action', () => {
   for (const form of ['contact', 'start', 'tools']) {
     same(adsSendTo(form), SITE.adsLeadSendTo, `${form} action`)
   }
@@ -277,11 +274,11 @@ check('the checkout is filed against its own action', () => {
 
 check('a site with no ad account is told nothing', () => {
   const fired = []
-  const none = { adsLeadSendTo: null, adsCallSendTo: null, adsCheckoutSendTo: null }
+  const none = { adsLeadSendTo: null, adsCallSendTo: null }
   recordLead('contact', { held: null, site: none, tag: (...args) => fired.push(args) })
   recordCall('nav', { held: null, site: none, tag: (...args) => fired.push(args) })
   same(fired.filter(call => call[1] === ADS_EVENT).length, 0, 'conversions')
-  same(adsSendTo('checkout', none), null, 'checkout action')
+  same(adsSendTo('contact', none), null, 'lead action')
 })
 
 check('every action names the one account', () => {
@@ -289,7 +286,6 @@ check('every action names the one account', () => {
   for (const [what, sendTo] of Object.entries({
     lead: SITE.adsLeadSendTo,
     call: SITE.adsCallSendTo,
-    checkout: SITE.adsCheckoutSendTo,
   })) {
     same(sendTo.startsWith(account), true, `${what} account`)
     same(sendTo.slice(account.length).length > 0, true, `${what} label`)
@@ -387,7 +383,7 @@ check('a delivered enquiry reports one conversion and carries its campaign', asy
   }
 })
 
-check('the enquiry hands over who wrote in, and the checkout hands over what it has', async () => {
+check('the enquiry hands over who wrote in', async () => {
   // The identity is assembled inside recordLead, so a call site that stops
   // passing `person` costs enhanced conversions everything and breaks nothing:
   // the conversion still fires, still counts, and simply stops matching. This
@@ -424,30 +420,6 @@ check('the enquiry hands over who wrote in, and the checkout hands over what it 
       globalThis.fetch = OFFLINE
     }
   }
-
-  const fired = []
-  globalThis.localStorage = store()
-  globalThis.gtag = (...args) => fired.push(args)
-  globalThis.fetch = async () => ({
-    ok: true,
-    json: async () => ({ url: 'https://stripe.test/c' }),
-  })
-  try {
-    const { openCheckout } = await import('../../src/app/data/checkout/startCheckout.js')
-    await openCheckout({ email: ' BUYER@Example.COM ', termsAccepted: true })
-    const set = fired.find(call => call[0] === 'set' && call[1] === 'user_data')
-    same(set?.[2].email, 'buyer@example.com', 'checkout email')
-    // The checkout knows a business, not a person, so there is no name to match
-    // on and none is invented.
-    same(set?.[2].address, undefined, 'checkout address')
-    same(
-      fired.find(call => call[1] === ADS_EVENT)?.[2].send_to,
-      SITE.adsCheckoutSendTo,
-      'checkout action'
-    )
-  } finally {
-    globalThis.fetch = OFFLINE
-  }
 })
 
 check('an untagged enquiry carries the page it came in from', async () => {
@@ -467,7 +439,7 @@ check('an untagged enquiry carries the page it came in from', async () => {
 
     // One page of a visit pointing at the next says nothing about where the
     // visit came from, so it is not reported as a source.
-    globalThis.document = { referrer: 'https://www.taylorurl.com/pricing' }
+    globalThis.document = { referrer: 'https://www.taylorurl.com/portfolio' }
     await submitEnquiry({ form: 'contact', name: 'Ada', email: 'a@b.com', message: 'hello there' })
     same(sent[1].referrer, '', 'from this site')
 
@@ -701,47 +673,6 @@ check('the written answer reaches the inbox exactly as it was typed', () => {
   same(htmlBody(carried).includes(escapeHtml(typed)), true, 'the laid-out half')
 })
 
-check('the configurator still has a way out that is not a card', () => {
-  // The get-in-touch step was taken out of this flow once before, and nothing
-  // failed when it went: the page built, the checkout worked, and the only
-  // symptom was that the visitors who were not ready to pay stopped leaving a
-  // trace. Two of the four enquiries on record had come in through it.
-  //
-  // So the arrangement is held here rather than remembered. The panel has to
-  // exist, it has to file as its own form, and the configurator has to mount it
-  // somewhere a visitor reaches before the payment screen.
-  const panel = readFileSync(join(ROOT, 'src/app/views/start/steps/SaveSection.jsx'), 'utf8')
-  same(/form:\s*'start'/.test(panel), true, 'the panel files as the configurator')
-  same(panel.includes('submitEnquiry'), true, 'the panel sends an enquiry')
-
-  const view = readFileSync(join(ROOT, 'src/app/views/start/Start.jsx'), 'utf8')
-  same(view.includes('SaveSection'), true, 'the configurator mounts the panel')
-
-  // Steps are counted from zero and the payment is the last of five, so a set
-  // that reached it would be offering the panel beside the card.
-  const steps = view.match(/const SAVEABLE = new Set\(\[([^\]]*)\]\)/)
-  same(Boolean(steps), true, 'the steps the panel stands under are named')
-  const offered = steps[1]
-    .split(',')
-    .map(part => Number(part.trim()))
-    .filter(part => Number.isInteger(part))
-  same(offered.length > 0, true, 'the panel is offered on at least one step')
-  same(Math.max(...offered) < 4, true, 'the panel is never offered beside the card')
-  same(Math.min(...offered) > 0, true, 'the panel waits until something has been picked')
-})
-
-check('the pay step carries the answers to the enquiry rather than dropping them', () => {
-  // The second button on the payment screen is the visitor saying they want to
-  // talk first. It used to be a bare link, so five screens of picking were lost
-  // on the way and the contact form opened empty in front of the one visitor
-  // who had told the site the most.
-  const pay = readFileSync(join(ROOT, 'src/app/views/start/steps/PaySection.jsx'), 'utf8')
-  same(/to="\/contact"\s+state=\{\{\s*brief:\s*summary\s*\}\}/.test(pay), true, 'the brief travels')
-
-  const contact = readFileSync(join(ROOT, 'src/app/views/company/Contact.jsx'), 'utf8')
-  same(contact.includes('briefText(state?.brief)'), true, 'the contact form reads it')
-})
-
 check('a form renders its labels from the questions the notice reports', () => {
   // Written twice, the two drift, which is how the notice came to describe a
   // form that had been reworded underneath it. Every label and legend on an
@@ -750,7 +681,7 @@ check('a form renders its labels from the questions the notice reports', () => {
   const views = [
     'src/app/views/company/Contact.jsx',
     'src/app/views/tools/ToolEnquiry.jsx',
-    'src/app/views/start/steps/SaveSection.jsx',
+    'src/app/views/start/Start.jsx',
     'src/app/components/conversion/ContactMethodChoice.jsx',
   ]
   let found = 0
@@ -762,10 +693,17 @@ check('a form renders its labels from the questions the notice reports', () => {
       // the ones with markup inside them are not labels over an answer.
       if (said.includes('<')) continue
       found += 1
-      same(/^\{(ASKED|REPLY_QUESTIONS)\.\w+\}$/.test(said), true, `${path}: ${said}`)
+      const shared = /^\{(ASKED|REPLY_QUESTIONS)\.\w+\}$/.test(said)
+      // One question sits outside the shared set. The Start page asks for a
+      // website that has no field of its own and rides into the message, so the
+      // label and the line it is written under have to be one constant: that is
+      // what keeps the inbox reading the question that was actually put.
+      const alone = said.match(/^\{([A-Z][A-Z_]*)\}$/)
+      const rides = alone ? source.includes(`\${${alone[1]}}:`) : false
+      same(shared || rides, true, `${path}: ${said}`)
     }
   }
-  same(found, 12, 'labels read')
+  same(found, 15, 'labels read')
   same(questionsFor('contact').message, 'What the site has to do', 'the contact page still asks it')
 })
 
@@ -888,7 +826,11 @@ check('a newsletter link is still tagged, and one already tagged is left alone',
 check('every enquiry form names itself', () => {
   // A third form added without a name would be counted as the contact page,
   // which is worse than not being counted at all.
-  const views = ['src/app/views/company/Contact.jsx', 'src/app/views/tools/ToolEnquiry.jsx']
+  const views = [
+    'src/app/views/company/Contact.jsx',
+    'src/app/views/tools/ToolEnquiry.jsx',
+    'src/app/views/start/Start.jsx',
+  ]
   let found = 0
   for (const path of views) {
     const source = readFileSync(join(ROOT, path), 'utf8')
@@ -901,47 +843,25 @@ check('every enquiry form names itself', () => {
   same(found, views.length, 'call sites')
 })
 
-check('the configurator reports the address it was given', () => {
-  // The step the ads point at. Until this reported, the only conversion the
-  // account could see came from forms further down the site that almost
-  // nobody reaches, so the campaign was optimised toward cheap visits.
-  const source = readFileSync(join(ROOT, 'src/app/data/leads/startLead.js'), 'utf8')
-  same(/\brecordLead\(\s*'start'/.test(source), true, 'reports the lead')
-  same(/\bclaimLead\(\s*'start'/.test(source), true, 'reports it once')
-})
-
-check('one visitor answering five screens is one lead', () => {
-  // `recordStart` runs on a settle timer at every screen and again as the tab
-  // closes. Counted per call, one person would arrive as five conversions and
-  // every cost-per-lead figure would read a fifth of what it is.
+check('one visitor sending the same form twice is one lead', () => {
+  // A send that failed and was tried again is one person deciding once.
+  // Counted per call, they would arrive as two conversions and every
+  // cost-per-lead figure would read half of what it is.
   const held = store()
   const seen = new Set()
   const claims = []
-  for (let screen = 0; screen < 5; screen += 1) {
+  for (let attempt = 0; attempt < 5; attempt += 1) {
     claims.push(claimLead('start', 'owner@example.com', { store: held, here: seen }))
   }
-  same(claims.filter(Boolean).length, 1, 'claims across five reports')
-})
-
-check('the brief at the end does not count the visitor twice', () => {
-  // The configurator asks for the address on screen one and submits it again
-  // under the same form at the end. That is one person deciding once.
-  const held = store()
-  const seen = new Set()
-  same(claimLead('start', 'owner@example.com', { store: held, here: seen }), true, 'first step')
-  same(
-    claimLead('start', 'owner@example.com', { store: held, here: seen }),
-    false,
-    'the brief behind it'
-  )
+  same(claims.filter(Boolean).length, 1, 'claims across five sends')
 })
 
 check('a different form under the same address still counts', () => {
-  // Somebody who configures a site and later writes from the contact page has
-  // done two separate things, and the second is the one worth replying to.
+  // Somebody who writes in from the Start page and later from the contact page
+  // has done two separate things, and the second is the one worth replying to.
   const held = store()
   const seen = new Set()
-  same(claimLead('start', 'owner@example.com', { store: held, here: seen }), true, 'configurator')
+  same(claimLead('start', 'owner@example.com', { store: held, here: seen }), true, 'the start page')
   same(claimLead('contact', 'owner@example.com', { store: held, here: seen }), true, 'contact page')
 })
 

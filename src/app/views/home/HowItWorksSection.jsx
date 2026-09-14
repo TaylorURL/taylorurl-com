@@ -12,8 +12,9 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  *
  * Three cards saying what happens is three claims, and this band made them
  * about the one part of the site a reader has to act on. So each step now
- * carries the thing itself: the enquiry form with its actual fields, the two
- * figures a price actually starts at, and a client's site as it draws today.
+ * carries the thing itself: the enquiry form with its actual fields, the step of
+ * the build where the plan and the price get written down, and a client's site
+ * as it draws today.
  * All three are pages a reader can open and check, which is the argument the
  * capability band above already makes and the reason it is the strongest band
  * on the page.
@@ -71,7 +72,8 @@ function PageShot({ shot, alt }) {
 function artefactFor(index, launched) {
   if (index === 0)
     return <PageShot shot="step-enquiry" alt="The enquiry form, with the fields it asks for" />
-  if (index === 1) return <PageShot shot="step-plan" alt="The two figures a price starts from" />
+  if (index === 1)
+    return <PageShot shot="step-plan" alt="The plan and price step, with your part and ours" />
   return launched ? (
     <CaptureShot
       project={launched}

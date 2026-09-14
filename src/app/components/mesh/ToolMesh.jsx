@@ -108,7 +108,7 @@ function NameChip({ tool, tone, checked, onToggle }) {
  * naming a capability rather than a company quieter still. Nothing stands in
  * for a mark that does not exist.
  *
- * The same panel answers on a page and in the configurator; handed a toggle, it
+ * The same panel answers on a page and in a stepped form; handed a toggle, it
  * draws every product as a control instead.
  *
  * @param {object} props

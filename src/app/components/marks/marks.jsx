@@ -149,7 +149,7 @@ export function MarkPulse(props) {
   )
 }
 
-/** Pricing: the figure carried on the thing it belongs to. */
+/** A tag: the thing that names what is on the other end of it. */
 export function MarkTag(props) {
   return (
     <svg {...BASE} {...props}>
