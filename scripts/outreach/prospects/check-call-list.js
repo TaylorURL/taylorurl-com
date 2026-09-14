@@ -71,6 +71,7 @@ import {
   dialHref,
   isCallable,
   matchesControls,
+  othersLast,
   interestIn,
   medianOf,
   outcomeAsksInterest,
@@ -612,6 +613,27 @@ check('two businesses level on rank are separated to the last', () => {
   const same0 = listed({ id: 'a', pull_ratio: 1.1, created_at: filed })
   const same1 = listed({ id: 'b', pull_ratio: 1.1, created_at: filed })
   ok(order(same0, same1) !== 0, 'two identical listings ordered the same, so the sort is partial')
+})
+
+check("a colleague's business sits behind every one of the caller's own", () => {
+  const you = 'caller-you'
+  const order = byCallOrder(now, you)
+  const theirs = listed({ id: 'a', place: 'fresh', score: SCORE_PEAK, assigned_to: 'caller-them' })
+  const mine = listed({ id: 'b', place: 'fresh', score: 5, assigned_to: you })
+  const nobody = listed({ id: 'c', place: 'fresh', score: 5, assigned_to: null })
+  ok(order(mine, theirs) < 0, "a colleague's best score was offered ahead of the caller's own")
+  ok(order(nobody, theirs) < 0, "a colleague's business was offered ahead of one nobody holds")
+
+  const theirsDue = listed({ id: 'd', place: 'due', ready_at: off(-1), assigned_to: 'caller-them' })
+  ok(order(nobody, theirsDue) < 0, "a colleague's promise led the caller's list")
+
+  const sorted = [theirs, nobody, theirsDue, mine].sort(order).map(one => one.id)
+  same(sorted.slice(2).sort().join(), 'a,d', "a colleague's business was not at the bottom")
+
+  const byReviews = othersLast(you, (one, two) => two.rating_count - one.rating_count)
+  const busyTheirs = listed({ rating_count: 900, assigned_to: 'caller-them' })
+  const quietMine = listed({ rating_count: 1, assigned_to: you })
+  ok(byReviews(quietMine, busyTheirs) < 0, "another order put a colleague's business first")
 })
 
 // ── What the controls do and do not hide ────────────────────────────────
