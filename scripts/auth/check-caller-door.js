@@ -4,9 +4,10 @@
  * The `staff` role existed in the profiles table and in the console's role
  * picker for weeks before anything read it, which means it was a label rather
  * than a permission: every admin endpoint refused it exactly as it refused a
- * client, so an account set to Staff could sign in and see nothing. Two
- * endpoints now admit it - `api/calls-desk.js` and `api/calls-admin.js` - and
- * those two are the whole of the job the role describes.
+ * client, so an account set to Staff could sign in and see nothing. The
+ * endpoints in `CALLER_DOORS` now admit it, and they are the whole of the job
+ * the role describes: reading the list, working it, and sending a business the
+ * audit the owner has just agreed to see.
  *
  * The risk in widening a door is not the door that was widened. It is the six
  * beside it that were written against the same helper and must not move, and
@@ -29,8 +30,14 @@ const ADMIN = 'account-admin'
 const STAFF = 'account-staff'
 const CLIENT = 'account-client'
 
-/** The two endpoints a representative is meant to reach, and nothing else. */
-const CALLER_DOORS = ['api/calls-desk.js', 'api/calls-admin.js']
+/** The endpoints a representative is meant to reach, and nothing else. */
+const CALLER_DOORS = [
+  'api/calls-desk.js',
+  'api/calls-admin.js',
+  // Sending a business its own audit is done off the call screen by the person
+  // on the phone with them, so it is a caller's job rather than an admin's.
+  'api/calls-audit-email.js',
+]
 
 /** A stand-in for the two clients, holding whichever roles a case needs. */
 function door({ roles = {}, verifies = null } = {}) {
@@ -114,7 +121,7 @@ check('a role that would not read is never a yes at the caller door either', asy
   same((await authorizeCaller(clients, token(STAFF))).status, 500, 'unknown is not staff')
 })
 
-check('only the two call endpoints admit a representative', async () => {
+check('only the call endpoints admit a representative', async () => {
   // Read off the tree rather than off a list, so an endpoint that reaches for
   // the wider helper next year fails here rather than shipping quietly.
   const widened = endpoints().filter(file =>

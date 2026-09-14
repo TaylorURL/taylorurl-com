@@ -171,6 +171,9 @@ const REFUSED_THERE = [
   '/api/social-queue',
   '/api/console-admin',
   '/api/payments-admin',
+  // The call desk's audit email, which leaves from the studio's warmed sending
+  // domain and writes the studio's own prospect rows.
+  '/api/calls-audit-email',
   '/api/speed-check',
   '/api/site-audit',
   // The console's summary proxy. It reads as the collector and is not: the
