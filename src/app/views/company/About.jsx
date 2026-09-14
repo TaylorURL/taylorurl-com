@@ -37,7 +37,7 @@ const VALUE_COUNT = String(ABOUT.values.length).padStart(2, '0')
  *
  * So it is drawn once, here, where the page has already said who does the work
  * and the founder is the last thing left to say. The title carries the weight -
- * a name over "Founder and CEO" is a seat in a company, and the same name over
+ * a name over "CEO" is a seat in a company, and the same name over
  * a photograph anywhere else is just the company.
  *
  * The name, the title and the paragraph are the studio's one bio, read from the
