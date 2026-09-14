@@ -534,7 +534,7 @@ export default function CallDesk({ Shell }) {
                             value={emailTo}
                             onChange={event => setEmailTo(event.target.value)}
                           />
-                          <p className="staff-read">The audit goes to this address.</p>
+                          <p className="staff-read">You send the audit to this address.</p>
                           <div className="staff-confirm-keys">
                             <button
                               type="button"
