@@ -26,6 +26,15 @@
  * settled and when they will have it, so nothing here may spell a dollar amount
  * out and the answer to what it costs has to say how it is arrived at.
  *
+ * A CALL THAT ASKS FOR THE WRONG THING. The first call sells nothing and quotes
+ * nothing: it asks for a yes to a free audit and a time the same day to go
+ * through it, and everything about the money happens on that second call with
+ * the audit in front of the owner. The handbook is the only place that strategy
+ * is written down, so a line that slipped back to offering a plan by email is
+ * the old call being made over and over by whoever read it last, and it would
+ * look exactly like the handbook working. So the ask and the close are held to
+ * naming the audit and the same day, and to promising no plan.
+ *
  * A SEARCH THAT ONLY READS HEADINGS. The handbook is used one-handed with
  * somebody waiting, and the word reached for is the word that was just said -
  * "facebook", "wordpress", "locked in" - which is in the answer rather than in
@@ -264,6 +273,12 @@ check('what it costs is answered with how the number is arrived at', () => {
   ok(cost, 'the question somebody asks first is not in the handbook')
   ok(/your job|what the site has to do/.test(cost.say), `the cost answer reads: "${cost.say}"`)
   ok(/written|writing/.test(cost.say), 'the cost answer does not say the figure comes in writing')
+  // And what settles it, which is the audit. Without this the answer reads as a
+  // figure that will arrive somehow, and the caller is back to promising one.
+  ok(
+    /audit/i.test(cost.say),
+    `the cost answer does not name what works the number out: "${cost.say}"`
+  )
   for (const id of ['build', 'monthly']) {
     ok(
       /per project/i.test(FACTS.find(fact => fact.id === id)?.value ?? ''),
@@ -291,6 +306,79 @@ check('the measured scores are read rather than remembered', () => {
     said.includes(String(PORTFOLIO_AVERAGES.desktop)),
     'the desktop average quoted is not the measured one'
   )
+})
+
+// ── A call that asks for the wrong thing ───────────────────────────────────
+
+/** Everything a caller reads out, as one body of text, for a rule about all of it. */
+const ALL_SPOKEN = () =>
+  SPOKEN()
+    .map(([, say]) => say)
+    .join(' ')
+
+check('the ask is for a free audit and a time the same day', () => {
+  const ask = scriptFor(business()).find(line => line.id === 'ask').say
+  ok(/audit/i.test(ask), `the ask does not name the audit: "${ask}"`)
+  ok(/free/i.test(ask), `the ask does not say the audit costs them nothing: "${ask}"`)
+  ok(/today/i.test(ask), `the ask does not ask for a time the same day: "${ask}"`)
+})
+
+check('nothing a caller says offers a plan instead of an audit', () => {
+  // The call this replaced asked for ten minutes and promised a written plan
+  // and a price by email, and the whole strategy turns on it no longer doing
+  // that: nobody quotes on a first call, because the audit is what works the
+  // number out. One line slipping back is the old call being made by whoever
+  // read it last, and nothing else on the screen would look any different.
+  for (const [what, say] of SPOKEN()) {
+    ok(!/\bplan\b/i.test(say), `"${what}" offers a plan rather than an audit: ${say}`)
+  }
+  ok(!/by email/i.test(ALL_SPOKEN()), 'something a caller says still promises to send it instead')
+})
+
+check('the close books the audit for the same day and files it as one', () => {
+  const close = CLOSING.map(one => `${one.label} ${one.say}`).join(' ')
+  ok(/audit/i.test(close), 'the close never mentions the audit the call was for')
+  ok(/today/i.test(close), 'the close does not put the call back on the same day')
+  ok(/morning/i.test(close), 'the close does not say how late the call back may ever go')
+  ok(/Audit Booked/.test(close), 'the close does not say what the call is recorded as')
+  // The two things a yes gets filed as by mistake, and both are worth saying
+  // out loud: a yes with no time is not a booking, and a booking is not a job.
+  ok(/Call Back/.test(close), 'the close does not say what an untimed yes is filed as instead')
+  ok(/Booked The Work/.test(close), 'the close does not say what a signed job is filed as')
+})
+
+check('the close says how the audit is emailed, and that the address is read back twice', () => {
+  const named = one => `${one.label} ${one.say}`
+  const button = CLOSING.find(one => /Email Client This Audit/.test(named(one)))
+  ok(button, 'the close says nothing about the button that emails a business its audit')
+  ok(/twice/i.test(named(button)), 'the close does not say the address is confirmed twice')
+  ok(
+    /on file/i.test(named(button)),
+    'the close does not say the button only works where there is an audit to send'
+  )
+})
+
+/**
+ * The six things said to a caller asking for an audit rather than a sale.
+ *
+ * Each of them is about the audit itself rather than about a website - the
+ * address, the screen, the day, the thirty seconds - so none of them was in the
+ * handbook before the call changed, and each is now among the most common
+ * things a caller hears. An objection with no answer written down is the one a
+ * caller improvises, which is how two callers come to say two different things
+ * about how an owner's email is used.
+ */
+const AUDIT_OBJECTIONS = ['how-much', 'email', 'no-email', 'no-computer', 'today-no-good', 'busy']
+
+check('every objection the audit call runs into is answered', () => {
+  for (const id of AUDIT_OBJECTIONS) {
+    const held = PUSHBACK.find(one => one.id === id)
+    ok(held, `nothing answers the "${id}" objection`)
+    ok(held.said.includes('“'), `${id} does not say what was said down the phone`)
+    ok(sentences(held.say) <= 3, `${id} is answered in ${sentences(held.say)} sentences`)
+    ok(!/[—–]/.test(held.say), `${id} is answered with a dash in it`)
+    ok(held.after, `${id} is answered and the caller is left with nothing to do`)
+  }
 })
 
 // ── A search that only reads headings ──────────────────────────────────────
@@ -433,6 +521,21 @@ check('the words said down the phone reach the answer for them', () => {
     'edit',
     'pictures',
     'free',
+    // The words the audit call brought with it. Every one of them is about the
+    // asking rather than about a website, which is why none of them was here
+    // before: a caller is now told "just send me an email", "not today", "I am
+    // not near a computer", and the word they reach for is the one the owner
+    // used.
+    'how much',
+    'send me',
+    'later',
+    'tomorrow',
+    'next week',
+    'text',
+    'phone',
+    'computer',
+    'spam',
+    'busy',
   ]
   for (const word of said) {
     ok(

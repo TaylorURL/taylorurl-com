@@ -22,8 +22,29 @@
  * off the board and two other people are free to ring the line they are on.
  * Neither shows up anywhere but on the phone, so both edges are pinned here.
  *
+ * The audit is the third of them, and it fails in two directions. Most of the
+ * call list is businesses with no site of their own, which is why they are on
+ * it, so a row with nothing to read is the common case rather than the edge -
+ * and a reading that answered a missing score with a nought would put four
+ * zeros in a band of red in front of an owner and call it their site. So every
+ * shape of nothing the list actually holds is read here and asserted to carry
+ * no number at all, and the sentence it carries instead is asserted to be a
+ * sentence.
+ *
+ * The other direction is the send. The audit leaves the building on a press
+ * and cannot be recalled, so the screen asks twice and guards against the
+ * second press, and the row says who already sent it so the next caller does
+ * not send it again. Every one of those is a piece of markup that can be
+ * refactored away without anything failing, and what it would cost is a
+ * stranger receiving somebody else's audit twice. So the screen's own source
+ * is read for the labels and the guard, and the endpoint's for the columns the
+ * screen draws them from - a column dropped from the select is a reading that
+ * silently reads as never measured on every row.
+ *
  *   npm run check:call-desk
  */
+import { bandOf, CATEGORIES, GOOD_FLOOR } from '../../../lib/outreach/audit/bands.js'
+import { auditReading, scoresOf } from '../../../lib/outreach/audit/reading.js'
 import {
   CALL_PULLS,
   CALL_SCORES,
@@ -71,6 +92,7 @@ import {
   ownerOf,
   PULLS,
 } from '../../../lib/outreach/prospects/calls.js'
+import { read } from '../../harness/files.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
 const NOW = new Date('2026-09-08T15:00:00Z')
@@ -467,6 +489,193 @@ check('the clock an answer was taken on is never a reason to redraw', () => {
   const beat = again({ at: '2026-09-08T23:59:59Z' })
   delete beat.prefs
   ok(settleDesk(DESK, beat) === DESK, 'a later clock alone changes nothing')
+})
+
+// ── The audit a caller reads out ─────────────────────────────────────────
+
+/** A business with a site of its own that the audit has actually measured. */
+const AUDITED = Object.freeze({
+  id: 'a1',
+  name: 'Gulf Coast Plumbing',
+  site_kind: 'own',
+  website: 'https://gulfcoastplumbing.com',
+  audit_score: 34,
+  accessibility_score: 71,
+  best_practices_score: 96,
+  seo_score: 82,
+  audit_at: new Date(NOW.getTime() - 11 * 24 * 60 * 60_000).toISOString(),
+  audit_raw: {
+    final_url: 'https://gulfcoastplumbing.com/',
+    opportunities: [
+      { id: 'unused-javascript', title: 'Reduce unused JavaScript', savings_ms: 2400 },
+      { id: 'server-response-time', title: 'Reduce initial server response time', savings_ms: 900 },
+      // A saving of nothing is the report saying the audit passed, and a
+      // report lists everything it ran.
+      { id: 'redirects', title: 'Avoid multiple page redirects', savings_ms: 0 },
+    ],
+  },
+})
+
+/** Every shape of nothing the call list actually holds, and what each one is. */
+const UNMEASURED = Object.freeze([
+  ['no site at all', { site_kind: 'none', website: null }],
+  [
+    'a Facebook page',
+    { site_kind: 'social', website: 'https://www.facebook.com/gulfcoastplumbing' },
+  ],
+  [
+    'a site nobody has measured yet',
+    { site_kind: 'own', website: 'https://gulfcoastplumbing.com' },
+  ],
+])
+
+check('a business with nothing to read says which nothing it is', () => {
+  // The common case, not the edge. The call list is made of businesses the
+  // email pipeline could not reach, which is mostly businesses with no site of
+  // their own, so the screen draws this far more often than it draws scores.
+  for (const [what, row] of UNMEASURED) {
+    const reading = auditReading(row, NOW)
+    same(reading.measured, false, `${what} reads as measured`)
+    ok(reading.why.length > 0, `${what} says nothing about why`)
+    ok(reading.why.trim().endsWith('.'), `${what} is not said as a sentence`)
+    ok(/^[A-Z]/.test(reading.why), `${what} does not open as a sentence`)
+    same(reading.age, null, `${what} carries an age`)
+    same(reading.at, null, `${what} carries an instant`)
+  }
+})
+
+check('a business with nothing to read is never given a number', () => {
+  // The whole fault this guards. A missing score answered with a nought draws
+  // four zeros in a band of red and calls it the owner's site, and the owner is
+  // on the phone looking at a site that does not exist.
+  for (const [what, row] of UNMEASURED) {
+    const reading = auditReading(row, NOW)
+    same(reading.scores.length, 0, `${what} draws cells`)
+    same(reading.issues.length, 0, `${what} names faults`)
+    ok(
+      scoresOf(row).every(score => score.value === null),
+      `${what} produces a number when its scores are read directly`
+    )
+    ok(
+      scoresOf(row).every(score => score.band === 'plain'),
+      `${what} lands a category in a coloured band`
+    )
+  }
+})
+
+check('a measured business reads four scores, each in the band its number falls in', () => {
+  const reading = auditReading(AUDITED, NOW)
+  same(reading.measured, true, 'a measured row reads as unmeasured')
+  same(reading.scores.length, CATEGORIES.length, 'the four categories')
+  same(
+    reading.scores.map(score => score.column).join(),
+    CATEGORIES.map(entry => entry.column).join(),
+    "the report's own order"
+  )
+  for (const score of reading.scores) {
+    same(score.band, bandOf(score.value), `${score.column} is painted out of its band`)
+    ok(score.label.length > 0, `${score.column} has no label`)
+  }
+  same(reading.scores[0].band, 'poor', 'a 34 is not poor')
+  same(reading.scores[2].band, 'good', 'a 96 is not good')
+})
+
+check('a reading says how old it is, because a caller is asked', () => {
+  const reading = auditReading(AUDITED, NOW)
+  same(reading.age?.days, 11, 'the age in days')
+  ok(reading.age?.said.startsWith('Measured'), 'the age is not said')
+  ok(!/undefined|NaN/.test(reading.age?.said ?? ''), 'the age reads as a fault')
+  same(reading.at, AUDITED.audit_at, 'the instant the date is drawn from')
+})
+
+check('a category the report answered nothing for is carried as nothing, not as nought', () => {
+  // A row measured before the audit asked for all four has a performance
+  // figure and no reading for the rest. Four cells are still drawn, and one of
+  // them says so.
+  const reading = auditReading({ ...AUDITED, accessibility_score: null }, NOW)
+  const missing = reading.scores.find(score => score.column === 'accessibility_score')
+  same(missing.value, null, 'an unanswered category carries a value')
+  same(missing.band, 'plain', 'an unanswered category is painted')
+  ok(
+    reading.scores.every(score => score.value !== 0),
+    'an unanswered category became a nought'
+  )
+})
+
+check('every fault the reading names is a whole sentence', () => {
+  const reading = auditReading(AUDITED, NOW)
+  ok(reading.issues.length > 0, 'a page scoring 34 names nothing wrong with it')
+  for (const issue of reading.issues) {
+    ok(issue.id.length > 0, 'a fault with no id')
+    ok(!/undefined|NaN|\[object/.test(issue.text), `${issue.id} reads as a fault: ${issue.text}`)
+    ok(/^[A-Z]/.test(issue.text), `${issue.id} does not open as a sentence`)
+    ok(issue.text.trim().endsWith('.'), `${issue.id} is not said as a sentence`)
+  }
+  // A hundred beside a complaint reads as padding, so a category in the good
+  // band is not a fault and is not listed.
+  const good = CATEGORIES.filter(entry => AUDITED[entry.column] >= GOOD_FLOOR)
+  ok(good.length > 0, 'the fixture no longer has a category to leave out')
+  for (const entry of good) {
+    ok(
+      !reading.issues.some(issue => issue.id === entry.column),
+      `${entry.column} is in the good band and is listed as a fault`
+    )
+  }
+})
+
+// ── The screen, and the send it cannot take back ─────────────────────────
+
+const SCREEN = read('src/app/views/staff/parts/CallDesk.jsx')
+
+check('the screen offers the audit to the client in so many words', () => {
+  ok(SCREEN.includes('Email Client This Audit'), 'the control that sends the audit is gone')
+})
+
+check('the send is asked twice, in two different words, and both are refusable', () => {
+  // One label used for both steps is one step: a caller who reads the same
+  // control twice presses it twice without reading it the second time.
+  ok(SCREEN.includes('Send the Audit'), 'the first confirmation is gone')
+  ok(SCREEN.includes('Yes, Send It'), 'the second confirmation is gone')
+  ok(SCREEN.includes('Cancel'), 'there is no way out of the confirmation')
+  ok(!SCREEN.includes('window.confirm'), 'the confirmation left the screen for a browser dialog')
+})
+
+check('a second press before the first send settles is ignored', () => {
+  ok(/feed\.sending/.test(SCREEN), 'the screen does not read whether a send is in flight')
+  ok(
+    /emailing\.current/.test(SCREEN),
+    'nothing guards the press itself, so a double press sends twice'
+  )
+  ok(SCREEN.includes("'Sending'"), 'a send in flight does not say so')
+})
+
+check('the screen says who already sent the audit', () => {
+  // Two callers work one queue. Without the name the second one has no way to
+  // know it went, and the owner gets it twice from two people.
+  ok(SCREEN.includes('audit_emailed_at'), 'the screen does not read whether the audit went')
+  ok(SCREEN.includes('audit_emailed_by_name'), 'the screen does not say who sent it')
+  ok(SCREEN.includes('audit_emailed_to'), 'the screen does not say where it went')
+})
+
+// ── The columns the screen draws it all from ─────────────────────────────
+
+const DOOR = read('api/calls-admin.js')
+const SELECTED = DOOR.match(/const COLUMNS = \[([\s\S]*?)\]\.join/)?.[1] ?? ''
+
+check('the list names every column the reading is taken from', () => {
+  // A column dropped from the select does not fail anything. It makes the
+  // reading read as never measured, on every row, quietly.
+  ok(SELECTED.length > 0, 'the list no longer names its own columns')
+  for (const entry of CATEGORIES) {
+    ok(SELECTED.includes(`'${entry.column}'`), `${entry.column} is not selected`)
+  }
+  for (const column of ['audit_at', 'audit_raw', 'audit_emailed_at', 'audit_emailed_to', 'email']) {
+    ok(SELECTED.includes(`'${column}'`), `${column} is not selected`)
+  }
+})
+
+check('the list hands over a name for whoever sent the audit', () => {
+  ok(/audit_emailed_by_name:/.test(DOOR), 'the row carries an id where the screen draws a name')
 })
 
 await finish()

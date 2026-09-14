@@ -543,6 +543,140 @@
   color: var(--ink-soft);
 }
 
+/* ── The audit ───────────────────────────────────────────────────────────── */
+
+/* The four scores, read as one set rather than as four numbers. Two across on
+   a phone and four once there is room: the whole use of them on a call is that
+   a caller glances at the row and says which one is the problem, and a column
+   of four is four separate readings that have to be compared by memory. */
+.staff-scores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+@media (min-width: 768px) {
+  .staff-scores {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.staff-scores > div {
+  display: grid;
+  gap: var(--s-1);
+  padding: var(--s-2h) var(--s-3);
+  border-radius: var(--r-card);
+  background-color: var(--wash-paper-strong);
+}
+
+.staff-scores dd {
+  font-size: var(--t-6);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-mute);
+}
+
+.staff-scores dt {
+  font-size: var(--t-1);
+  font-weight: 500;
+  line-height: 1.3;
+  color: var(--ink-faint);
+}
+
+/* The band carries the colour, and the value does not. A report run twice
+   comes back a few points apart and lands in the same band both times, so the
+   band is the part of a reading that holds still - and it is the same four
+   names the reading module answers with and the audit email is painted from,
+   so nothing here has to know where the floors are.
+
+   The plain pair is a reading with no number in it, which is the tile a
+   category the report answered nothing for lands on. It is stated rather than
+   left to the rule above it, so the four bands read as four bands. */
+.staff-scores > div[data-band='plain'] {
+  background-color: var(--wash-paper-strong);
+}
+
+.staff-scores > div[data-band='plain'] dd {
+  color: var(--ink-mute);
+}
+
+.staff-scores > div[data-band='good'] {
+  background-color: var(--good-wash);
+}
+
+.staff-scores > div[data-band='good'] dd {
+  color: var(--good-on-paper);
+}
+
+.staff-scores > div[data-band='fair'] {
+  background-color: var(--warn-wash);
+}
+
+.staff-scores > div[data-band='fair'] dd {
+  color: var(--warn-on-paper);
+}
+
+.staff-scores > div[data-band='poor'] {
+  background-color: var(--danger-wash);
+}
+
+.staff-scores > div[data-band='poor'] dd {
+  color: var(--danger-on-paper);
+}
+
+/* What is wrong with the page, as lines a caller reads out. Marked with a rule
+   rather than a bullet, because the site's own lists are marked that way and
+   these are sentences rather than items. */
+.staff-issues {
+  display: grid;
+  gap: var(--s-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.staff-issues li {
+  padding-left: var(--s-3);
+  border-left: 2px solid var(--hairline-strong);
+  font-size: var(--t-3);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* The two steps between the control and the send. It stands on a wash inside
+   the part, the way the callback lengths do, so it reads as the control having
+   opened rather than as a second section arriving under it. */
+.staff-confirm {
+  display: grid;
+  gap: var(--s-2h);
+  padding: var(--s-3) var(--s-3h);
+  border-radius: var(--r-control);
+  background-color: var(--wash-paper);
+}
+
+/* The way out first and the send last, each the size of what it says. On a
+   phone they take the width in turn rather than being squeezed onto one line,
+   because the one that sends is not a control to hit by accident. */
+.staff-confirm-keys {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-2);
+}
+
+.staff-confirm-keys > .staff-btn,
+.staff-confirm-keys > .staff-quiet {
+  flex: 1 1 8rem;
+}
+
+@media (min-width: 768px) {
+  .staff-confirm-keys > .staff-btn,
+  .staff-confirm-keys > .staff-quiet {
+    flex: 0 0 auto;
+  }
+}
+
 /* ── The log ─────────────────────────────────────────────────────────────── */
 
 /* The form that files a call, drawn only once the call is marked. It stands

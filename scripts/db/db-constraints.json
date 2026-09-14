@@ -100,12 +100,13 @@
           "gatekeeper",
           "spoke",
           "callback",
+          "audit_booked",
           "not_interested",
           "wrong_number",
           "booked",
           "bad_lead"
         ],
-        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text, 'bad_lead'::text])))"
+        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'audit_booked'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text, 'bad_lead'::text])))"
       }
     },
     "outreach_domains": {
@@ -454,9 +455,19 @@
       "definition": "CHECK (((prospect_id IS NULL) = (on_phone_since IS NULL)))"
     },
     {
+      "table": "outreach_messages",
+      "constraint": "outreach_messages_outbound_has_prospect",
+      "definition": "CHECK (((direction = 'inbound'::text) OR (prospect_id IS NOT NULL)))"
+    },
+    {
       "table": "outreach_prospects",
       "constraint": "outreach_prospects_assignment_has_a_start",
       "definition": "CHECK (((assigned_to IS NULL) = (assigned_at IS NULL)))"
+    },
+    {
+      "table": "outreach_prospects",
+      "constraint": "outreach_prospects_audit_email_is_whole",
+      "definition": "CHECK (((audit_emailed_at IS NULL) = (audit_emailed_to IS NULL)))"
     },
     {
       "table": "outreach_settings",

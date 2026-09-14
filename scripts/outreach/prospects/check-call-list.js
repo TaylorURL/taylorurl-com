@@ -29,6 +29,15 @@
  * every write to its column counts them as dynamic and passes. The column and
  * the dropdown are compared here instead, against the schema's own snapshot.
  *
+ * The fourth arrived with the audit. A first call now aims at one thing, a yes
+ * to a free audit with a time the same day to go through it, and that is
+ * `audit_booked` - the second outcome to carry a time where there had only ever
+ * been one. Every rule about a promise used to be keyed on the word `callback`,
+ * and each of them fails the same silent way: the outcome is recorded, the
+ * audit is built, and the business rests a day rather than coming back that
+ * afternoon, so the caller rings into nothing and nobody can see why. So the
+ * pair is held here together, at every rule that reads a time.
+ *
  *   npm run check:call-list
  */
 import { readFileSync } from 'node:fs'
@@ -37,8 +46,10 @@ import { fileURLToPath } from 'node:url'
 
 import {
   ATTEMPT_HOURS,
+  AUDIT_CALLBACK_DEFAULT_HOURS,
   BUSY_FLOOR,
   CALLBACK_DEFAULT_HOURS,
+  CALLBACK_LENGTHS,
   CALL_OUTCOMES,
   OUTCOME_FLOOR_HOURS,
   OUTCOME_IDS,
@@ -46,6 +57,7 @@ import {
   PROMISE_KEEPS_DAYS,
   PULLS,
   QUIET_CEILING,
+  SAME_DAY_LENGTHS,
   SCORE_PEAK,
   SCORE_WEIGHTS,
   TRADE_FLOOR,
@@ -53,6 +65,7 @@ import {
   callMakesLead,
   callPlace,
   callRank,
+  callbackLengthsFor,
   countAtBand,
   defaultCallbackAt,
   dialHref,
@@ -660,29 +673,58 @@ check('every outcome carries a label and a tone, and none repeats an id', () => 
 check('every outcome carries the key it is recorded on, and no key repeats', () => {
   const keys = CALL_OUTCOMES.map(outcome => outcome.key)
   same(new Set(keys).size, keys.length, 'two outcomes sharing a key')
-  for (const key of keys) ok(/^[1-9]$/.test(key), `${key} is not a number key`)
+  // Ten outcomes against ten digits, which is the whole of the room there is.
+  // The keypad draws the key on the tile and a caller presses it without
+  // looking, so an eleventh outcome is a decision about what stops having a key
+  // rather than one to make here by reaching for a letter.
+  for (const key of keys) ok(/^[0-9]$/.test(key), `${key} is not a number key`)
 })
 
 check('the outcomes that end a business are the ones that should', () => {
   for (const id of ['booked', 'not_interested', 'wrong_number', 'bad_lead']) {
     ok(outcomeEnds(id), `${id} left the business on the list`)
   }
-  for (const id of ['no_answer', 'voicemail', 'gatekeeper', 'spoke', 'callback']) {
+  for (const id of ['no_answer', 'voicemail', 'gatekeeper', 'spoke', 'callback', 'audit_booked']) {
     ok(!outcomeEnds(id), `${id} took the business off the list`)
   }
 })
 
-check('a call back is the one outcome that carries a time to ring back', () => {
-  ok(outcomeTakesCallback('callback'), 'a call back carried no time at all')
-  for (const id of OUTCOME_IDS.filter(one => one !== 'callback')) {
+check('the two outcomes that carry a time are the call back and the audit', () => {
+  // Both of them are a promise somebody made rather than a rest the ladder set,
+  // and every rule about a time reads the pair through `outcomeTakesCallback`.
+  // A rule keyed on the word `callback` would file an audit as a promise with
+  // nothing to surface it: the business would rest a day, the caller would ring
+  // back into nothing, and the audit sitting built and unread is the only thing
+  // left to see.
+  for (const id of ['callback', 'audit_booked']) {
+    ok(outcomeTakesCallback(id), `${id} carried no time at all`)
+    same(waitHoursFor(id, 1), null, `${id} was given a rest to compete with its own promise`)
+  }
+  for (const id of OUTCOME_IDS.filter(one => one !== 'callback' && one !== 'audit_booked')) {
     ok(!outcomeTakesCallback(id), `${id} was made to carry a callback time`)
   }
 })
 
-check('a call back nobody timed is filed a day out rather than refused', () => {
+check('an audit booked is a yes, a lead, and a business still on the list', () => {
+  // The one goal of a first call, so every reading that decides whether the
+  // work reaches anybody has to answer for it. The silent failure is an outcome
+  // the caller presses sixty times a week that answers null for interest and
+  // never becomes a lead - the calls are made, the audits are built, and
+  // nothing arrives in front of the studio.
+  same(interestIn('audit_booked'), true, 'a booked audit was read as anything but a yes')
+  ok(callMakesLead('audit_booked'), 'a booked audit did not become a lead')
+  ok(!outcomeEnds('audit_booked'), 'a booked audit took the business off the list')
+  ok(!outcomeAsksInterest('audit_booked'), 'a booked audit asked a question it already answers')
+  // And it is not one of the outcomes that reached nobody who decides, so it
+  // resets the unanswered run rather than climbing the ladder with it.
+  const after = listed({ calls: [call({ outcome: 'audit_booked' }), call({ id: 'c2' })] })
+  same(triesRun(after), 0, 'a booked audit counted as a ring nobody answered')
+})
+
+check('an untimed promise lands where its own outcome says, and they differ', () => {
   // The console and the endpoint both fill this, and what it has to produce is
   // a promise the list reads like any other. A default that landed in the past
-  // or that the ladder outranked would be the call back nobody typed a time on
+  // or that the ladder outranked would be the promise nobody typed a time on
   // going quietly missing, which is the failure the refusal was there to stop.
   const filed = defaultCallbackAt(now)
   same(
@@ -695,6 +737,62 @@ check('a call back nobody timed is filed a day out rather than refused', () => {
   })
   same(callPlace(untimed, now), 'promised', 'where an untimed call back sits')
   same(readyAt(untimed, now).toISOString(), filed.toISOString(), 'when it comes back')
+
+  // An audit is a different promise and a day is the wrong answer for it: the
+  // owner agreed to look at a reading of their own listing, and what gets it
+  // looked at is ringing back while they still remember agreeing.
+  const audit = defaultCallbackAt(now, 'audit_booked')
+  same(
+    audit.getTime() - now.getTime(),
+    AUDIT_CALLBACK_DEFAULT_HOURS * 3_600_000,
+    'how far out an untimed audit lands'
+  )
+  ok(
+    AUDIT_CALLBACK_DEFAULT_HOURS < CALLBACK_DEFAULT_HOURS,
+    'an untimed audit waits as long as an untimed call back, so it is not the same day'
+  )
+  same(
+    defaultCallbackAt(now, 'spoke').getTime(),
+    filed.getTime(),
+    'an outcome that is neither promise moved off the call back default'
+  )
+})
+
+check('an audit whose time has passed puts the business at the head of the list', () => {
+  // A time that has gone past still buys the short rest a missed promise buys,
+  // so the call is dated past it: a caller who misses an audit by an hour is
+  // not handed the same number back the same minute.
+  const due = listed({
+    calls: [call({ outcome: 'audit_booked', called_at: off(-30), callback_at: off(-2) })],
+  })
+  same(callPlace(due, now), 'due', 'where a passed audit sits')
+  ok(placeCalls('due'), 'a business due back was not offered')
+  const ahead = listed({
+    calls: [call({ outcome: 'audit_booked', called_at: off(-1), callback_at: off(3) })],
+  })
+  same(callPlace(ahead, now), 'promised', 'where an audit still ahead sits')
+  same(readyAt(ahead, now).toISOString(), off(3), 'when a booked audit comes back')
+})
+
+check('an audit is walked through the same day, and a call back is not', () => {
+  // The ladder starts at tomorrow, and tomorrow is the one thing a booked audit
+  // must not be. A screen offering the ladder alone hands the caller a choice
+  // between a time that is wrong and typing nothing at all, and an audit with
+  // no time on it is the whole call wasted.
+  const audit = callbackLengthsFor('audit_booked')
+  for (const [at, length] of SAME_DAY_LENGTHS.entries()) {
+    same(audit[at], length, `the audit lengths do not lead with ${length.label}`)
+  }
+  same(
+    audit.length,
+    SAME_DAY_LENGTHS.length + CALLBACK_LENGTHS.length,
+    'the audit lengths are not the same day set followed by the ladder'
+  )
+  for (const length of SAME_DAY_LENGTHS) {
+    ok(length.hours > 0, `${length.label} is not a length at all`)
+    ok(length.hours < 24, `${length.label} is not inside the day`)
+  }
+  same(callbackLengthsFor('callback'), CALLBACK_LENGTHS, 'a call back was offered the same day set')
 })
 
 check('an id nothing offers is not an outcome', () => {
@@ -710,7 +808,7 @@ check('every outcome either answers for interest, asks, or reached nobody', () =
   // never settled - which is the silent half of the failure this exists for.
   const held = id => CALL_OUTCOMES.find(one => one.id === id) ?? {}
   const asks = ['gatekeeper', 'spoke']
-  const answers = ['callback', 'booked', 'not_interested']
+  const answers = ['callback', 'audit_booked', 'booked', 'not_interested']
   const reachedNobody = ['no_answer', 'voicemail', 'wrong_number', 'bad_lead']
   same(
     [...asks, ...answers, ...reachedNobody].sort().join(','),
