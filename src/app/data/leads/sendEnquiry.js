@@ -99,10 +99,9 @@ export async function submitEnquiry({
     throw new Error(faultFromResponse(response, payload, FALLBACK_ERROR))
   }
 
-  // The configurator already reported this address when it was answered on the
-  // first step, so the brief arriving at the end of the same visit is the same
-  // conversion reaching its last screen rather than a second one. Every other
-  // form is the first time this address has been heard from on it.
+  // An address already reported from this form inside this visit is the same
+  // person pressing send twice rather than a second conversion, so it is
+  // claimed once and the ad account is told once.
   if (!claimLead(form, email)) return
 
   recordLead(form, {

@@ -1,5 +1,5 @@
 /**
- * The brand marks the configurator draws beside a product name.
+ * The brand marks a tool list draws beside a product name.
  *
  * The path data for Stripe, Square, PayPal, QuickBooks, Xero, DoorDash and
  * Uber Eats is vendored from simple-icons

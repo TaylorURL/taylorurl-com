@@ -1,15 +1,16 @@
 /**
- * Regenerates the three shots the home page's process band stands on, one per
+ * Regenerates the shots the home page's process band stands on, one per
  * palette: `public/home/step-*.webp` and `step-*-dark.webp`, plus the narrow
  * cut each one is served to a phone as.
  *
- * The band used to describe its three steps and show nothing, which is the same
+ * The band used to describe its steps and show nothing, which is the same
  * mistake the capability cards above it exist to avoid: a sentence about a form
- * is a claim, and the form itself is not. So the first two steps now carry the
- * page they are talking about - the enquiry form you fill in and the prices you
- * are quoted against - captured off the live site, where a visitor can go and
- * check both of them. The third stands on a client's own site, which is already
- * committed under `public/portfolio/` and needs nothing taken here.
+ * is a claim, and the form itself is not. So the first two steps carry the page
+ * they are talking about - the enquiry form you fill in and the step of the
+ * build where the plan and the price are written down - captured off the live
+ * site, where a visitor can go and read both of them. The third stands on a
+ * client's own site, which is already committed under `public/portfolio/` and
+ * needs nothing taken here.
  *
  * `settle` is carried for a page that fills itself from a fetch, and no shot
  * needs it yet. The board would, and the board is not taken here: it paints
@@ -39,7 +40,7 @@ import { join } from 'node:path'
 import { BINARY, OUT_DIR, encode, prepare, run } from './shot-renderer.js'
 
 /**
- * The three artefacts, in the order the steps run.
+ * The two artefacts, in the order the steps run.
  *
  * `selector` is the element the shot is framed on, `pad` the air left above it,
  * and `settle` how long the page is given to finish filling itself. All three
@@ -48,7 +49,7 @@ import { BINARY, OUT_DIR, encode, prepare, run } from './shot-renderer.js'
  */
 const SHOTS = [
   { name: 'step-enquiry', path: '/contact', selector: 'form', pad: 100 },
-  { name: 'step-plan', path: '/pricing', selector: '#figures .edge', pad: 26 },
+  { name: 'step-plan', path: '/process', selector: '.panel-static article:nth-child(2)', pad: 0 },
 ]
 
 const PALETTES = ['light', 'dark']

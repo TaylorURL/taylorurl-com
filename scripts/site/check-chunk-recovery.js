@@ -357,7 +357,7 @@ check(
 if (settling) {
   const settled = new Function('location', `${settling}; return settled`)({
     origin: 'https://www.taylorurl.com',
-    href: 'https://www.taylorurl.com/pricing',
+    href: 'https://www.taylorurl.com/contact',
   })
 
   // Every one of these is a real filed message, copied off the ticket it made.

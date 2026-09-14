@@ -12,8 +12,7 @@ import { surfacesIn, usePortalNav } from '../lib/nav'
  *
  * The call center leads because it is where the day is spent, and the main site
  * is one of the doors rather than a link in a corner - a representative is asked
- * about the pricing page on the phone and needs it the same way they need the
- * script.
+ * about a page on the phone and needs it the same way they need the script.
  *
  * Which doors there are is the portal's own answer rather than this screen's,
  * so a surface added to the portal is a door here without this file changing.

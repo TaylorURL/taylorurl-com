@@ -1,33 +1,25 @@
 /**
  * A checkout opened by hand, for a job that was quoted before it was sold.
  *
- * `/start` is where somebody who found the site buys the standard build at the
- * standard figure. This is the other half of the same sale: a prospect in a
- * reply, a number agreed in an email, and a link that has to charge that number
- * without either of us going near the Stripe dashboard. What comes back is a
- * URL to paste into the reply.
+ * Every build is quoted per project. A prospect answers a reply, a number is
+ * agreed in an email, and this is what charges that number without either of us
+ * going near the Stripe dashboard. What comes back is a URL to paste into the
+ * reply.
  *
- * What it opens is the same object `api/checkout.js` opens, built the same way
- * and pointed at the same two places, because a build bought through a link in
- * an email has to become a project by exactly the route a build bought off the
- * pricing page does. The webhook is the only door a project comes through, the
- * screen after a payment reads the session back to name the address that paid
- * and spends the key that signs the buyer in, and neither of them is told which
- * of the two endpoints made the session. The only difference either can see is
- * metadata nothing branches on.
+ * It is the only door a project comes through. The webhook opens the project
+ * off the session this makes, and the screen after a payment reads the same
+ * session back to name the address that paid and spend the key that signs the
+ * buyer in.
  *
- * The prices come from `pricing.js` for the same reason they do there, and
- * with an extra edge: this endpoint can be told a different figure, so the
- * default it falls back to has to be the one figure the pages print, read from
- * the same module they read. A link opened with no override charges what
- * `/start` charges, and `scripts/checkout/check-payment-link.js` fails the suite if the
- * two ever send different bodies.
+ * The figures come from `pricing.js`, which holds the floor a link cannot be
+ * written under. This endpoint can be told a different figure, so what it falls
+ * back to when it is told none has to be read from that module rather than
+ * typed here a second time.
  *
- * An override may only go up. `pricing.js` calls both figures a floor, and a
- * bigger build costs more than one; nothing about a quote is ever a reason to
- * charge less than the site publicly advertises. Refusing below the floor here
- * means the worst an override can do, if this endpoint were ever reached by
- * somebody who should not have reached it, is overpay.
+ * An override may only go up. A bigger build costs more than the floor; nothing
+ * about a quote is ever a reason to charge less than it. Refusing below the
+ * floor here means the worst an override can do, if this endpoint were ever
+ * reached by somebody who should not have reached it, is overpay.
  *
  * Which is the other thing this file is: the only endpoint on the site that
  * takes a price from its caller. `authorizeAdmin` is what stands in front of
@@ -59,9 +51,9 @@ import { form, openSession } from '../lib/stripe/session.js'
 const SECRET_KEY = process.env.STRIPE_SECRET_KEY || ''
 const SITE_URL = process.env.SITE_URL || 'https://www.taylorurl.com'
 
-// The same two products the pricing page's checkout hangs its lines on. Named
-// from the environment for the same reason: a product id belongs to one mode
-// of the account, and the sandbox keeps its own pair.
+// The two products a session hangs its lines on. Named from the environment
+// because a product id belongs to one mode of the account, and the sandbox
+// keeps its own pair.
 const BUILD_PRODUCT = process.env.STRIPE_PRODUCT_BUILD || ''
 const CARE_PRODUCT = process.env.STRIPE_PRODUCT_CARE || ''
 
@@ -92,11 +84,11 @@ const MONTHLY_CEILING_CENTS = 500000
 /**
  * One quoted figure, or the reason it cannot stand.
  *
- * Absent is the ordinary case and answers with the floor, which is what makes
- * a link with no override charge what the pricing page charges. Present has to
- * be a whole number of cents at or above that floor and under the ceiling; a
- * decimal, a string of dollars, or anything below what the site advertises is
- * refused by name rather than rounded into something plausible.
+ * Absent is the ordinary case and answers with the floor, which is what a link
+ * written with no override charges. Present has to be a whole number of cents
+ * at or above that floor and under the ceiling; a decimal, a string of dollars,
+ * or anything below the floor is refused by name rather than rounded into
+ * something plausible.
  *
  * @param {unknown} value
  * @param {{floor: number, ceiling: number, what: string}} bounds
@@ -108,7 +100,7 @@ export function quotedCents(value, { floor, ceiling, what }) {
     return { error: `The ${what} has to be a whole number of cents.` }
   }
   if (value < floor) {
-    return { error: `The ${what} cannot go below the ${floor / 100} dollars the site publishes.` }
+    return { error: `The ${what} cannot go below the ${floor / 100} dollar floor.` }
   }
   if (value > ceiling) {
     return { error: `The ${what} is past the ${ceiling / 100} dollar ceiling. Check the zeros.` }
@@ -119,10 +111,10 @@ export function quotedCents(value, { floor, ceiling, what }) {
 /**
  * The body sent to Stripe, which is the whole of what this endpoint decides.
  *
- * Split out from the handler so the suite can hold it beside the body
- * `api/checkout.js` sends and fail on any difference. Everything a buyer meets
- * is in here: what they are charged, where they land afterwards, what the
- * subscription is called in a year, and which address the receipt goes to.
+ * Split out from the handler so the suite can read the body without opening a
+ * session. Everything a buyer meets is in here: what they are charged, where
+ * they land afterwards, what the subscription is called in a year, and which
+ * address the receipt goes to.
  *
  * The figures are written into metadata as well as into the line items. Stripe
  * puts the build and the first month into one total on a subscription session,
@@ -132,8 +124,8 @@ export function quotedCents(value, { floor, ceiling, what }) {
  *
  * The key that signs the buyer in is minted here rather than passed in, so a
  * caller cannot open a checkout that a buyer comes back from with no way into
- * the account it made. Each call mints its own, which is why the suite compares
- * the two bodies with it normalised out rather than expecting one string.
+ * the account it made. Each call mints its own, which is why the suite reads
+ * the body with it normalised out rather than expecting one string.
  *
  * @param {object} quote
  * @returns {URLSearchParams}
@@ -185,7 +177,7 @@ export function linkFields({
     'metadata[claim]': claim.hash,
     expires_at: expiresAt,
     success_url: claimReturnUrl(SITE_URL, claim.token),
-    cancel_url: `${SITE_URL}/pricing`,
+    cancel_url: `${SITE_URL}/contact`,
   })
 }
 

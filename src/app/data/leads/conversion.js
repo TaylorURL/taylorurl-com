@@ -51,7 +51,7 @@ export const LEAD_EVENT = 'generate_lead'
 export const CALL_EVENT = 'phone_call_click'
 
 /**
- * The event name the ad account is told, for all three actions.
+ * The event name the ad account is told, for both actions.
  *
  * `conversion` is not one of the property's events and is not meant to be. The
  * account reads `send_to`, which names the action; the event name beside it is
@@ -73,11 +73,10 @@ export const PIXEL_CALL_EVENT = 'Contact'
  * Where the addresses already reported are remembered, for the length of one
  * visit.
  *
- * The session rather than the tab's memory alone, because the configurator
- * reports on a timer and again as the document goes, and a visitor who leaves
- * and comes back inside the same session would otherwise arrive as a second
- * lead. It is deliberately not the local store: a person who comes back next
- * week is worth counting again.
+ * The session rather than the tab's memory alone, because a visitor who leaves
+ * a form and comes back inside the same session would otherwise arrive as a
+ * second lead. It is deliberately not the local store: a person who comes back
+ * next week is worth counting again.
  */
 const REPORTED_KEY = 'taylorurl:leads-reported'
 
@@ -104,17 +103,15 @@ function sessionStore() {
  * Whether this form's lead for this address still needs reporting, claiming it
  * in the same call so the next asker is told no.
  *
- * The configurator asks for an address on its first step and then reports
- * again at every screen behind it, and the brief it ends on submits under the
- * same address a second time. All of that is one person deciding once, so it
- * is one conversion, and the account is told at the earliest moment it can be
- * told rather than at the last.
+ * One person deciding once is one conversion, however many times the same
+ * address reaches the endpoint inside a visit, so the account is told at the
+ * earliest moment it can be told rather than at every send after it.
  *
- * Keyed on the form as well as the address, because somebody who fills in the
- * configurator and later writes from the contact page has done two separate
- * things and both are worth counting.
+ * Keyed on the form as well as the address, because somebody who starts a
+ * project and later writes from the contact page has done two separate things
+ * and both are worth counting.
  *
- * @param {string} form Which form is asking: `contact`, `start`, `tools` or `checkout`.
+ * @param {string} form Which form is asking: `contact`, `start` or `tools`.
  * @param {string} email The address it holds.
  * @param {{store?: Storage|null, here?: Set<string>}} [where]
  * @returns {boolean} Whether this call is the one that should report.
@@ -170,9 +167,9 @@ function callEventParams(where, held) {
 /**
  * Which action in the ad account a form's conversion belongs to.
  *
- * The checkout is its own action because it is a different claim: an inquiry is
- * somebody asking, and a checkout is somebody at the payment page for a build.
- * The other three forms are all the same claim and share one.
+ * Every form on the site makes the same claim - somebody wrote in - so all three
+ * share one action, and the form they came from travels with the property's
+ * event instead.
  *
  * Returns null on a site with no ad account, which is what keeps the studio's
  * account from being told about a second site's forms.
@@ -181,7 +178,7 @@ function callEventParams(where, held) {
  * @param {object} [site]
  */
 export function adsSendTo(form, site = SITE) {
-  return (form === 'checkout' ? site.adsCheckoutSendTo : site.adsLeadSendTo) || null
+  return site.adsLeadSendTo || null
 }
 
 /**
@@ -208,14 +205,14 @@ export function e164(value) {
  *
  * Google's tag normalises and hashes these itself, so they are handed over
  * plain. That is what keeps this function synchronous, and it has to be:
- * hashing in the page means `crypto.subtle`, which is a promise, which would
- * put an await between the checkout's report and the document unload on the
- * next line of `startCheckout`.
+ * hashing in the page means `crypto.subtle`, which is a promise, and a caller
+ * that reports on its way off the page would have an await standing between
+ * the report and the document unload.
  *
  * Only fields a form actually holds are sent. No form on this site collects a
  * street, a city or a postcode, so the address carries names and nothing else,
- * and a checkout - which knows an email and a business, not a person - carries
- * no address at all. A field that cannot be filled honestly is left out.
+ * and a form that asks for a business rather than a person carries no address at
+ * all. A field that cannot be filled honestly is left out.
  *
  * @param {{name?: string, email?: string, phone?: string}} person
  * @returns {object|null}
@@ -246,7 +243,7 @@ export function identityOf(person) {
  * kept from running. A missing one costs this event on that side and nothing
  * else, so each is read at the moment of use rather than depended on.
  *
- * @param {string} form Which form was sent: `contact`, `start`, `tools` or `checkout`.
+ * @param {string} form Which form was sent: `contact`, `start` or `tools`.
  * @param {{held?: object|null, person?: object|null, tag?: Function|null,
  *   pixel?: Function|null, site?: object}} [where]
  * @returns {object|null} What Google was told, or null when neither tag was there.

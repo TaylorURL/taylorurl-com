@@ -40,8 +40,6 @@ const CONSOLE = 'src/app/views/console/pages/studio/LeadsPage.jsx'
  * adding a door to the constant without wiring it fails here.
  */
 const DOORS = [
-  ['configurator', 'api/start-lead.js', 'SOURCES.configurator'],
-  ['payment', 'api/start-lead.js', 'SOURCES.payment'],
   ['contact', 'api/contact.js', 'SOURCES.contact'],
   ['tools', 'api/contact.js', 'SOURCES.tools'],
   ['speed-check', 'api/speed-check.js', 'SOURCES.speedCheck'],
@@ -50,6 +48,16 @@ const DOORS = [
   ['call', 'api/calls-admin.js', 'SOURCES.call'],
 ]
 
+/**
+ * The sources no door writes any more, which the console still has to name.
+ *
+ * The column's check constraint holds every spelling a row was ever written
+ * with, and the rows written under these two are still in the table and still
+ * worked. A source dropped from `SOURCES` would be a filter the console cannot
+ * offer and a lead nobody can find, so they stay named and stay unwritten.
+ */
+const CLOSED = new Set(['configurator', 'payment'])
+
 check('every door the constant names is one this file accounts for', () => {
   // The point of asserting this rather than deriving the list: a door added to
   // `SOURCES` and never wired writes nothing, and nothing is exactly what a
@@ -57,7 +65,7 @@ check('every door the constant names is one this file accounts for', () => {
   const wired = new Set(DOORS.map(([source]) => source))
   for (const source of Object.values(SOURCES)) {
     same(
-      wired.has(source),
+      wired.has(source) || CLOSED.has(source),
       true,
       `the door "${source}" is named in SOURCES but nothing here writes it`
     )
@@ -89,7 +97,6 @@ check('the console names every door it can be shown', () => {
 check('a moment is stamped by whoever watches it happen', () => {
   const watchers = [
     ['api/contact.js', 'enquired'],
-    ['api/checkout.js', 'checkout'],
     ['api/stripe-webhook.js', 'bought'],
   ]
   for (const [file, moment] of watchers) {
@@ -152,6 +159,6 @@ check('one person written two ways is one lead', () => {
 await finish()
 
 console.log(
-  `lead spine: all ${cases.length} cases pass; ${Object.keys(SOURCES).length} doors write to ${SPINE}, ` +
+  `lead spine: all ${cases.length} cases pass; ${DOORS.length} doors write to ${SPINE}, ` +
     `the console reads it, and the studio's own address is not a lead`
 )

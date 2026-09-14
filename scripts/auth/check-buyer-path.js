@@ -47,7 +47,6 @@ const SHELL = 'src/app/views/auth/AuthShell.jsx'
 const NEXT = 'src/app/views/auth/AuthNext.jsx'
 const READER = 'src/app/data/checkout/checkoutClaim.js'
 const CLAIM = 'api/checkout-claim.js'
-const CHECKOUT = 'api/checkout.js'
 const LINK = 'api/checkout-link.js'
 const WEBHOOK = 'api/stripe-webhook.js'
 const FORGOT = 'src/app/views/auth/ForgotPassword.jsx'
@@ -266,16 +265,14 @@ check('the site offers nobody a way to sign up', () => {
   }
 })
 
-check('both endpoints that open a checkout return the buyer to the same place', () => {
-  for (const path of [CHECKOUT, LINK]) {
-    const source = read(path)
-    same(source.includes('claimReturnUrl(SITE_URL'), true, `${path} uses the shared return address`)
-    same(source.includes("'metadata[claim]': claim.hash"), true, `${path} leaves only the hash`)
-    // The token itself must never be written onto the session. Anything holding
-    // the session could then mint a sign-in from it, which is the whole thing
-    // the split is for.
-    same(source.includes('claim.token,'), false, `${path} does not send the token to Stripe`)
-  }
+check('the endpoint that opens a checkout returns the buyer to the shared address', () => {
+  const source = read(LINK)
+  same(source.includes('claimReturnUrl(SITE_URL'), true, `${LINK} uses the shared return address`)
+  same(source.includes("'metadata[claim]': claim.hash"), true, `${LINK} leaves only the hash`)
+  // The token itself must never be written onto the session. Anything holding
+  // the session could then mint a sign-in from it, which is the whole thing
+  // the split is for.
+  same(source.includes('claim.token,'), false, `${LINK} does not send the token to Stripe`)
 })
 
 check('the return address carries the session and the key, and nothing else', () => {

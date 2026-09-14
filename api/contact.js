@@ -358,9 +358,9 @@ export default async function handler(request, response) {
   // rather than the enquiry.
   await recordAttribution(enquiry)
 
-  // The configurator's own form is sent by somebody who answered its first
-  // step, so the enquiry and the lead are the same person and the row should
-  // say so. Nothing else on the site can tell them apart afterwards: the
+  // The Start page's own form is sent by somebody who may already be a row in
+  // `start_leads`, so the enquiry and the lead are the same person and the row
+  // should say so. Nothing else on the site can tell them apart afterwards: the
   // attribution row deliberately holds no address.
   if (enquiry.form === 'start') await markLead('enquired', enquiry.email)
 

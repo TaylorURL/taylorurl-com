@@ -5,7 +5,7 @@
  * entry in `trades` is an id from `@data/towns-and-trades/trades`, and that id is also the slug
  * its detail page answers to, so a trade renamed there renames here and a trade
  * removed there loses its page. `something-else` is absent: it is the
- * configurator's catch-all rather than an industry.
+ * catch-all trade rather than an industry.
  *
  * The register is deliberate — a trade added to `@data/trades` gets a page by
  * being named in a group, so the index never grows a heading nobody chose.

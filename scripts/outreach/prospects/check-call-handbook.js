@@ -20,11 +20,11 @@
  * would not break anything: the script would quietly fall back to the generic
  * line on every call, forever, and the list would look exactly the same.
  *
- * A PRICE QUOTED TWO WAYS. The figures are held once, in the checkout's own
- * pricing module, and read from there by the pricing page, the configurator and
- * this. A figure typed into a script instead is a caller contradicting the page
- * the prospect is looking at while they talk. Nothing here may spell a dollar
- * amount out.
+ * A PRICE QUOTED AT ALL. A build is worked out for the job it is, so there is
+ * no figure for a caller to read out and a number said down the phone is one
+ * the caller invented. What the answer carries instead is how the number gets
+ * settled and when they will have it, so nothing here may spell a dollar amount
+ * out and the answer to what it costs has to say how it is arrived at.
  *
  * A SEARCH THAT ONLY READS HEADINGS. The handbook is used one-handed with
  * somebody waiting, and the word reached for is the word that was just said -
@@ -44,7 +44,6 @@ import {
   handbookMatches,
   scriptFor,
 } from '../../../lib/outreach/prospects/handbook.js'
-import { BUILD_PRICE, MONTHLY_PRICE } from '../../../src/app/data/checkout/pricing.js'
 import { PORTFOLIO_AVERAGES } from '../../../src/app/data/portfolio.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 import { read } from '../../harness/files.js'
@@ -252,22 +251,25 @@ check('both ends of the field the claim rides on still name it', () => {
   ok(handbook.includes('proof_work'), 'the handbook stopped reading proof_work')
 })
 
-// ── A price quoted two ways ────────────────────────────────────────────────
+// ── A price quoted at all ──────────────────────────────────────────────────
 
-check('every figure said on the phone is the one the site holds', () => {
-  const said = [...QUESTIONS, ...PUSHBACK].map(one => one.say).join(' ')
-  ok(said.includes(BUILD_PRICE), `the build price ${BUILD_PRICE} is not what the answers quote`)
-  ok(said.includes(MONTHLY_PRICE), `the monthly ${MONTHLY_PRICE} is not what the answers quote`)
-  same(
-    FACTS.find(fact => fact.id === 'build')?.value,
-    BUILD_PRICE,
-    'the reference card and the pricing module disagree on the build'
-  )
-  same(
-    FACTS.find(fact => fact.id === 'monthly')?.value,
-    MONTHLY_PRICE,
-    'the reference card and the pricing module disagree on the monthly'
-  )
+check('nothing a caller says down the phone carries a figure', () => {
+  const said = [...QUESTIONS, ...PUSHBACK, ...CLOSING].map(one => one.say).join(' ')
+  const typed = said.match(/\$[0-9][0-9,.]*/g)
+  ok(!typed, `a caller reads a figure out: ${typed}`)
+})
+
+check('what it costs is answered with how the number is arrived at', () => {
+  const cost = QUESTIONS.find(one => one.id === 'cost')
+  ok(cost, 'the question somebody asks first is not in the handbook')
+  ok(/your job|what the site has to do/.test(cost.say), `the cost answer reads: "${cost.say}"`)
+  ok(/written|writing/.test(cost.say), 'the cost answer does not say the figure comes in writing')
+  for (const id of ['build', 'monthly']) {
+    ok(
+      /per project/i.test(FACTS.find(fact => fact.id === id)?.value ?? ''),
+      `the reference card still prints a ${id} figure a caller can read out`
+    )
+  }
 })
 
 check('no money is written down in the handbook itself', () => {

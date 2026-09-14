@@ -4,9 +4,9 @@ import { AccentGradient } from '@reactbits/kit'
 
 /**
  * The closing call to action for a page that offers a choice: both buttons are
- * addressable, so a service page can send a reader to the inquiry or across to
- * pricing. `@components/CtaSection` is the same band with one fixed button, for
- * pages where there is only one thing to do next.
+ * addressable, so a service page can send a reader to the start form or across
+ * to the contact page. `@components/CtaSection` is the same band with one fixed
+ * button, for pages where there is only one thing to do next.
  *
  * @param {object} props
  * @param {string} props.heading - The heading, up to the accent.

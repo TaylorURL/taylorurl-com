@@ -178,10 +178,10 @@ function briefId(session) {
  *
  * A subscription session puts the build and the first month into one total, so
  * `amount_total` cannot be taken apart after the fact and the deposit is read
- * off the published figure instead. That is correct for every checkout the
- * pricing page opens, and wrong for every one quoted above it: the card is
- * charged what was agreed while the project records what the page advertises,
- * and the two disagree quietly for as long as the project exists.
+ * off the floor instead. That is correct for a session opened at the floor and
+ * wrong for every one quoted above it: the card is charged what was agreed
+ * while the project records the floor, and the two disagree quietly for as long
+ * as the project exists.
  *
  * So a checkout opened against a quote writes both figures down as it opens,
  * and this reads one of them back. A session that carries no such key was

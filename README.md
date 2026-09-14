@@ -60,7 +60,7 @@ Most small-business sites are either a static template that never ranks or a sin
 | Auth                 | Supabase Auth — accounts, with a role per profile                                                                                                                                  |
 | Analytics            | First-party, cookieless, one collector for every site under care                                                                                                                   |
 | Ad measurement       | The Google tag (GA4 and Ads conversions) and the Meta pixel, identified per site in `lib/site/registry.js`, fetched only after the reader's first touch or ten settled seconds     |
-| Outbound mail        | Resend for enquiries, the configurator's follow-up and client notifications; Nodemailer and IMAP for outreach                                                                      |
+| Outbound mail        | Resend for enquiries, the studio's own notices and client notifications; Nodemailer and IMAP for outreach                                                                          |
 | SEO                  | `react-helmet-async` + build-time static prerender                                                                                                                                 |
 | The Pi               | The studio's own machine, behind `api/`: the uptime feed, the chat assistant and the brief's writing help, and the browser error reporter the page posts to directly               |
 | Serverless & hosting | Vercel Functions, on two Vercel projects built from this one tree and keyed by `SITE`                                                                                              |
@@ -116,14 +116,13 @@ flowchart TD
     IN --> DB[("Postgres, RLS-locked")]
     Site -->|"unsubscribe"| EF["the unsubscribe function"] --> DB
     Site -->|"enquiry"| CT["api/contact.js"] --> RS["Resend"]
-    Site -->|"configurator address"| SL["api/start-lead.js"] --> DB
-    Site -->|"checkout"| CK["api/checkout.js"] --> ST["Stripe"] -->|"signed webhook"| WH["api/stripe-webhook.js"] --> DB
+    Console["/console"] -->|"a quoted payment link"| CK["api/checkout-link.js"] --> ST["Stripe"] -->|"signed webhook"| WH["api/stripe-webhook.js"] --> DB
     Site -->|"Trustpilot rating"| TP["api/trustpilot.js"] --> TB["Trustpilot TrustBox data"]
     Site -->|"uptime feed, chat turns"| PX["api/status-feed.js, api/live-chat.js"] --> PI["The Pi"]
     Site -->|"browser errors, straight from the page"| PI
-    Console["/console"] -->|"signed-in session"| ADM["api/*-admin.js, and the proxies to the analytics-summary, console-admin and site-speed functions"] --> DB
+    Console -->|"signed-in session"| ADM["api/*-admin.js, and the proxies to the analytics-summary, console-admin and site-speed functions"] --> DB
     Client["A client project's own deployment"] -->|"bearer secret per project"| NF["api/notify.js"] --> RS
-    Cron["Vercel cron: nine schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js, api/start-followup.js"]
+    Cron["Vercel cron: eight schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js"]
 ```
 
 ## How it works
@@ -137,14 +136,14 @@ flowchart TD
 
 - **One tracker, every site.** The collector serves the browser tracker that every site TaylorURL runs includes with a single script tag, so a change to what gets collected is one deploy rather than a dozen releases. Hits carry no address and no cookie: the country comes from the browser's own timezone, the session and visitor ids are random numbers in the browser's storage, and the collector accepts a hit only from the origins its site is registered with.
 - **Type is served from this origin.** Geist and Geist Mono are two variable woff2 files in `public/fonts/`, declared as `@font-face` in `src/index.css` and preloaded from `index.html`, so the first paint waits on nothing third-party.
-- **Secrets stay on the server.** The configurator's leads, the enquiry attribution and the notify tables all have row-level security on with no policies at all, so only the service role reaches them — the browser's publishable key can neither read nor write them. The browser never writes to them directly either: a lead goes through `api/start-lead.js`, which measures what it was sent before a row is written.
+- **Secrets stay on the server.** The lead tables, the enquiry attribution and the notify tables all have row-level security on with no policies at all, so only the service role reaches them — the browser's publishable key can neither read nor write them. The browser never writes to them directly either: a lead goes through `api/contact.js`, which measures what it was sent before a row is written.
 - **Client projects send through this one.** Every product the studio runs eventually has to reach somebody with the site closed, and a sender per client would be a domain to warm and a reputation to earn per client. `api/notify.js` lends them this one: a project posts what happened with its own bearer secret, and the message is drawn on the same sheet in that project's name, colour and mark. The identity is a row rather than a branch — a project becomes able to send when one appears in `notify_projects` — and the row is found by the digest of the secret presented, so a deployment can only ever send as itself.
 
 ## The lead figure
 
-Three surfaces take an enquiry, and all three post to `api/contact.js`: the contact page, the free tools, and the configurator. Each names itself in `form`, so `public.enquiry_attribution` answers which of the three produced a lead and which campaign it arrived on. That table is the lead figure. Nothing else on the site counts as one — a checkout that opens is a sale in Stripe, and the address the configurator and the payment page record in `start_leads` on their first screen is a lead to follow up rather than an enquiry. That row is what `/console/leads` lists and what `api/start-followup.js` writes to an hour later, and it reaches this table only when the person writes in.
+Three surfaces take an enquiry, and all three post to `api/contact.js`: the contact page, the free tools, and `/start`. Each names itself in `form`, so `public.enquiry_attribution` answers which of the three produced a lead and which campaign it arrived on. That table is the lead figure. Nothing else on the site counts as one — a payment that clears is a sale in Stripe, and `public.leads` holds the door every other kind of arrival came through, which `/console/leads` lists. An arrival reaches the attribution table only when the person writes in.
 
-The configurator is the newest of the three and the reason the number moved. It asks five screens of questions and used to end at a card, so a visitor who answered four of them and stopped left nothing behind at all; `SaveSection` sends the configuration as it stands, and the pay step's second button carries the same answers to the contact form rather than dropping them.
+`/start` is one screen: who is writing, what the business is, the site they already have, and what the new one has to do. It takes no card and quotes no figure, because a build is priced for the project and the number is settled in the reply.
 
 **The table starts on the evening of 29 August 2026**, read in Central like every other time in this project; its first row is stamped 30 August in UTC. Enquiries before that were delivered and never filed, so there is no earlier figure to compare against and one cannot be reconstructed from anything the site holds — the record of them is the inbox. Read the number from that date forward and treat anything before it as unmeasured rather than as zero:
 
@@ -249,13 +248,13 @@ The row is the whole of it. Nothing about a new project is a release on this sid
 
 ```
 taylorurl-com/
-├── api/                       Vercel serverless functions, one URL each — the enquiry form, the configurator's lead record and its follow-up, checkout, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
+├── api/                       Vercel serverless functions, one URL each — the enquiry form, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
 ├── brand/                     The post cards the queue publishes, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
 │   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, the shapes a value takes before it reaches a column, and the runner a posted action calls its database function through
 │   ├── enquiry/               What each enquiry form asks, in the words the sender read
 │   ├── http/                  Request guards, the body readers, the per-caller window and the caller digest, the timed fetch, the scheduler check, the public-address check, the answer an unsubscribe link gives, and the console's edge proxy
-│   ├── leads/                 The address the configurator records, the two pages that record one, and the one message a lead who did not finish gets
+│   ├── leads/                 Every door a lead arrives through, the page a historic row was recorded at, and the reply the console writes back
 │   ├── live-chat/             How much of the assistant one connection gets, and what a typed message is read for before a turn is spent
 │   ├── mail/                  The sheet every message is drawn on and the escaping every body goes through, the studio's identity and bio, the mailing list's audience and issues, the confirmation bodies, the notice to the studio's own inbox, the catalogue every family is drawn from for a design read, and the brand a client project's notification is drawn in
 │   ├── outreach/              The message a prospect is given, the segments and the letter variants, the first names a mailbox can be greeted by, and the door every outreach job stands behind
@@ -275,7 +274,7 @@ taylorurl-com/
 │   ├── mail/                  The messages the studio sends under its own name, the notifications door, and the inbox preview
 │   ├── social/                The post queue, its watch, and what an article writes for itself
 │   ├── leads/                 The visitor who becomes an enquiry, what is recorded about them, the ad tags, and the chat
-│   ├── checkout/              Reaching Stripe and being charged
+│   ├── checkout/              The link a quoted job is charged through
 │   ├── onboarding/            The brief a payment turns into a build
 │   ├── auth/                  Getting an account, and getting back into it
 │   ├── console/               The signed-in sections, their skeletons, palettes and icons, and the pages the traffic figures leave out
@@ -309,7 +308,7 @@ taylorurl-com/
 │   │   │   ├── app-shell/     The three modules mounted around the route tree
 │   │   │   └── reactbits/     WebGL + motion effects (Aurora, Particles, ShinyText…)
 │   │   ├── views/             One folder per section of the site: the route views it publishes, above the parts that build them
-│   │   │   ├── home/ company/ services/ pricing/ start/     The sales path, from the front page to the card (the configurator's own steps under start/steps/)
+│   │   │   ├── home/ company/ services/ start/             The sales path, from the front page to the enquiry
 │   │   │   ├── portfolio/ industries/ areas/ blog/ tools/   The pages that argue for it
 │   │   │   ├── subscription/                                The page a mailed unsubscribe link lands on
 │   │   │   ├── auth/ legal/                                  Signing in, and the three standing documents

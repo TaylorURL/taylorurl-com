@@ -1,6 +1,6 @@
 /**
  * The grounds a ruled section sits on, as the class each role takes on each of
- * them. The configurator alternates between them one step to the next, and the
+ * them. A stepped tool alternates between them one step to the next, and the
  * service pages do the same one section to the next.
  *
  * A section names its ground and reads its shell, blueprint rule, ink,
@@ -108,7 +108,7 @@ export const CELL_FOCUS =
 /**
  * The label over a form field on paper, and the line a refused field carries.
  *
- * Every form drawn on paper sets these two - the configurator, the tools and
+ * Every form drawn on paper sets these two - the start page, the tools and
  * the contact page - and holding them apart is how one form ends up a size away
  * from the next. A fault is a sentence rather than a standing label, so it is
  * set as small prose and left free to wrap.

@@ -33,13 +33,19 @@
     {
       "path": "/api/social-watch",
       "schedule": "40 17 * * *"
-    },
-    {
-      "path": "/api/start-followup",
-      "schedule": "*/15 * * * *"
     }
   ],
   "redirects": [
+    {
+      "source": "/pricing",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/payment",
+      "destination": "/contact",
+      "permanent": true
+    },
     {
       "source": "/portfolio/domebreak",
       "destination": "/portfolio",

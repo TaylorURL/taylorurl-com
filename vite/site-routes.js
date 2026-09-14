@@ -105,13 +105,13 @@ const STUDIO_STATIC_ROUTES = [
     changefreq: 'monthly',
     priority: '0.7',
   },
-  // Where every Start a Project button on the site lands: the configurator
-  // that carries the offer and the price.
+  // Where every Start a Project button on the site lands: the form that starts
+  // a project.
   {
     path: '/start',
     name: 'Start a Project',
     summary:
-      'Pick a trade and see the matching work, the software a site runs beside, business email, and the price.',
+      'Say what the business does and what the site has to do, and get a plan and a price for it.',
     group: 'company',
     changefreq: 'monthly',
     priority: '0.9',
@@ -142,15 +142,6 @@ const STUDIO_STATIC_ROUTES = [
     group: 'services',
     changefreq: 'monthly',
     priority: '0.8',
-  },
-  // The price. Searched for by name, so it is a page of its own.
-  {
-    path: '/pricing',
-    name: 'Pricing',
-    summary: 'What a site costs to build, and what it costs to keep running.',
-    group: 'company',
-    changefreq: 'monthly',
-    priority: '0.9',
   },
   {
     path: '/contact',
@@ -231,7 +222,7 @@ const STUDIO_STATIC_ROUTES = [
   {
     path: '/faq',
     name: 'FAQ',
-    summary: 'Common questions about pricing, timelines, and ownership.',
+    summary: 'Common questions about cost, timelines, and ownership.',
     group: 'company',
     changefreq: 'monthly',
     priority: '0.7',
@@ -443,12 +434,6 @@ const STUDIO_PRERENDER_ROUTES = [
   // for the same one: reachable, noindex, and not pages to rank.
   '/login',
   '/welcome',
-  // The short checkout, handed to a buyer rather than found. Built for the
-  // reason the screens above are built - nothing rewrites an unknown path to
-  // the shell, so a URL typed off a phone has to answer on a direct load - and
-  // kept out of the sitemap because a page nobody is meant to arrive at from a
-  // search result has no business being offered to one.
-  '/payment',
   // The page a mailed unsubscribe link lands on. Built for the same reason as
   // the rest and kept out of the sitemap for the same one: a link arrives from
   // an inbox, so the URL has to answer on a direct load, and it is not a page
