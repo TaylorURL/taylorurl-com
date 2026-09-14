@@ -57,6 +57,7 @@ import {
   outcomeEnds,
   outcomeTakesCallback,
   OUTCOME_IDS,
+  othersLast,
   ownerOf,
   placeCalls,
   promiseOf,
@@ -457,25 +458,37 @@ function narrow(rows, controls) {
   return rows.filter(row => matchesControls(row, controls))
 }
 
-/** The four orders the list can be read in. */
-function sorted(rows, sort, now) {
+/**
+ * The four orders the list can be read in, each one the caller's own.
+ *
+ * Whichever order is picked, a business a colleague holds sits behind every
+ * business the caller holds or nobody does, so two people on the list are not
+ * both handed the same colleague's work at the top of it.
+ */
+function sorted(rows, sort, now, you) {
   const ordered = [...rows]
   if (sort === 'waited') {
-    return ordered.sort((one, two) => {
-      const a = one.ready_at ? Date.parse(one.ready_at) : Infinity
-      const b = two.ready_at ? Date.parse(two.ready_at) : Infinity
-      return a - b
-    })
-  }
-  if (sort === 'reviews') {
-    return ordered.sort((one, two) => (two.rating_count ?? -1) - (one.rating_count ?? -1))
-  }
-  if (sort === 'newest') {
-    return ordered.sort((one, two) =>
-      String(two.created_at ?? '').localeCompare(String(one.created_at ?? ''))
+    return ordered.sort(
+      othersLast(you, (one, two) => {
+        const a = one.ready_at ? Date.parse(one.ready_at) : Infinity
+        const b = two.ready_at ? Date.parse(two.ready_at) : Infinity
+        return a - b
+      })
     )
   }
-  return ordered.sort(byCallOrder(now))
+  if (sort === 'reviews') {
+    return ordered.sort(
+      othersLast(you, (one, two) => (two.rating_count ?? -1) - (one.rating_count ?? -1))
+    )
+  }
+  if (sort === 'newest') {
+    return ordered.sort(
+      othersLast(you, (one, two) =>
+        String(two.created_at ?? '').localeCompare(String(one.created_at ?? ''))
+      )
+    )
+  }
+  return ordered.sort(byCallOrder(now, you))
 }
 
 /**
@@ -553,7 +566,7 @@ async function list(db, query, account) {
   const ordered =
     view === 'finished'
       ? byLastCall(filtered)
-      : sorted(filtered, view === 'resting' ? 'waited' : sort, now)
+      : sorted(filtered, view === 'resting' ? 'waited' : sort, now, account.userId)
 
   const page = pageOf(query.page)
   const pages = Math.max(1, Math.ceil(ordered.length / take))
