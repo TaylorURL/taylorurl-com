@@ -1142,8 +1142,20 @@
 }
 
 .figures {
+  /* The line a tile grows by while it is being considered, and the air
+     between it and the figure above. The tiles read both, and the strip's
+     foot is sized from them below. */
+  --open-h: 14px;
+  --open-gap: 0.375rem;
   display: grid;
   gap: calc(var(--console-gap) * 0.75);
+  /* The strip carries the room its tiles reach into. A hovered tile grows
+     downward by the line and its air, and the column's own gap under the
+     strip is shorter than that, so without this the tile's foot and the
+     shadow under it landed on the card below. Reserved here rather than on
+     the tile, so the row and the strip keep their height while a tile grows
+     and the section under it never moves. */
+  padding-bottom: calc(var(--open-h) + var(--open-gap));
 }
 
 .figures-note {
@@ -1251,11 +1263,9 @@
    and at a desk the section under the strip is sized to whatever is left, so
    one card growing a line was every card on the screen moving. The tile takes
    the same line back off its own foot: the row and the strip keep their
-   height, and the card reaches over the gap under it instead. It paints above
-   its neighbours because it now overlaps them. */
+   height, and the card reaches into the room the strip holds under it
+   instead. It paints above its neighbours because it now overlaps them. */
 .figures-tile {
-  --open-h: 14px;
-  --open-gap: 0.375rem;
   @apply block w-full min-w-0 cursor-pointer px-3.5 pb-3 pt-3 text-left;
   border-radius: var(--console-radius);
   background-color: var(--console-card-bg);
