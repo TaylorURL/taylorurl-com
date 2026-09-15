@@ -478,6 +478,20 @@ async function carryReply(db, prospect, message, now) {
   )
   if (!lead) return
 
+  // A reply reopens a lead somebody had ruled out. Ruling out is a decision
+  // that they are not work, taken on what was known at the time, and a person
+  // writing back is new knowledge that outranks it: the console keeps a
+  // ruled-out lead off the list and reads the ruling ahead of everything else
+  // on the row, so a reply that left it standing would land on a record nobody
+  // sees. This is not guarded on the first-reply stamp below, because the
+  // second reply after a ruling-out is the one that has to reopen it.
+  const { error: kept } = await db
+    .from(SPINE)
+    .update({ dismissed_at: null, dismissed_reason: null, updated_at: now })
+    .eq('id', lead.id)
+    .not('dismissed_at', 'is', null)
+  if (kept) console.error('watch: the reply did not reopen the lead: %s', kept.message)
+
   // Two facts the reply settles that the merge will not touch: they have
   // written back, and the studio had already written to them to provoke it.
   const { error } = await db
