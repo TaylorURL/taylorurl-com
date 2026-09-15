@@ -324,7 +324,7 @@ taylorurl-com/
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   ├── index.css              The token block and the font faces
 │   └── main.jsx               Browser entry
-└── vercel.json                The ten crons, the redirects, the security headers and the cache rules
+└── vercel.json                The region the functions run in, the ten crons, the redirects, the security headers and the cache rules
 ```
 
 `api/` and `public/` are the two trees whose shape is not a matter of taste: Vercel turns `api/<path>.js` into `/api/<path>`, and everything under `public/` is served at its own path. A file moved in either one changes a URL that is already published — in `vercel.json`'s ten cron entries, in a Stripe or Resend webhook configured outside this repository, or in the unsubscribe link of mail that has already been sent. They stay flat for that reason rather than by neglect.

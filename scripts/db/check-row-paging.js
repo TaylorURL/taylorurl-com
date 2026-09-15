@@ -14,8 +14,14 @@
 import { readAll, PAGE_ROWS } from '../../lib/db/rows.js'
 import { cases, check, finish, same } from '../harness/checks.js'
 
-/** A query builder over `total` rows, counting the requests it takes. */
-function table(total, { fail = null } = {}) {
+/**
+ * A query builder over `total` rows, counting the requests it takes.
+ *
+ * `count` is what the answer says the whole set holds, the way a select built
+ * with `{ count: 'exact' }` says it. Left off, the answer carries none, which
+ * is what every read that never asked for one gets.
+ */
+function table(total, { fail = null, count = null } = {}) {
   const calls = []
   const build = () => ({
     range(from, to) {
@@ -23,7 +29,7 @@ function table(total, { fail = null } = {}) {
       if (fail) return Promise.resolve({ data: null, error: fail })
       const rows = []
       for (let at = from; at <= to && at < total; at += 1) rows.push({ id: at })
-      return Promise.resolve({ data: rows, error: null })
+      return Promise.resolve({ data: rows, error: null, count })
     },
   })
   return { build, calls }
@@ -77,6 +83,49 @@ check('a ceiling inside a page is not overrun', async () => {
   same(rows.length, 1500, 'rows')
   same(complete, false, 'complete')
   same(calls[1][1], 1499, 'last row asked for')
+})
+
+check('a set that says its size is read in two rounds, not one per page', async () => {
+  const { build, calls } = table(2431, { count: 2431 })
+  const { rows, complete } = await readAll(build)
+  same(rows.length, 2431, 'rows')
+  same(complete, true, 'complete')
+  same(new Set(rows.map(row => row.id)).size, 2431, 'distinct rows')
+  same(rows[rows.length - 1].id, 2430, 'last row')
+  // The first page, then the other two together, and nothing asked past the end.
+  same(calls.length, 3, 'requests')
+  same(calls[2][0], 2000, 'the last page starts where the second ends')
+})
+
+check('a count that understates the set loses none of it', async () => {
+  const { build } = table(2431, { count: 1500 })
+  const { rows, complete } = await readAll(build)
+  same(rows.length, 2431, 'rows')
+  same(complete, true, 'complete')
+  same(new Set(rows.map(row => row.id)).size, 2431, 'distinct rows')
+})
+
+check('a count that overstates the set reads it once and stops', async () => {
+  const { build } = table(2431, { count: 5000 })
+  const { rows, complete } = await readAll(build)
+  same(rows.length, 2431, 'rows')
+  same(complete, true, 'complete')
+  same(new Set(rows.map(row => row.id)).size, 2431, 'distinct rows')
+})
+
+check('a counted set past the ceiling stops at the ceiling and says so', async () => {
+  const { build, calls } = table(9000, { count: 9000 })
+  const { rows, complete } = await readAll(build, { max: 2500 })
+  same(rows.length, 2500, 'rows')
+  same(complete, false, 'complete')
+  same(calls[calls.length - 1][1], 2499, 'last row asked for')
+})
+
+check('a counted set under one page is one request', async () => {
+  const { build, calls } = table(37, { count: 37 })
+  const { rows } = await readAll(build)
+  same(rows.length, 37, 'rows')
+  same(calls.length, 1, 'requests')
 })
 
 check('a refused read raises rather than answering short', async () => {
