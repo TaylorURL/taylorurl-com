@@ -257,6 +257,36 @@ check('watch counts a reply only once every one of its writes has landed', async
   same(counts.changed, 1, 'rows counted as changed')
 })
 
+check('a reply reopens a lead somebody had ruled out', async () => {
+  // The console hides a ruled-out lead and reads the ruling ahead of every
+  // other mark on the row, so a reply that only stamped `replied_at` would be
+  // filed onto a record nobody sees. The reopening is asked for as its own
+  // write, unguarded by the first-reply stamp, because the lead who replied,
+  // was ruled out and replied again is exactly the one it exists for.
+  const { db, writes } = stubDb({
+    'select:outreach_messages': { data: [], error: null },
+    'select:outreach_prospects': { data: [PROSPECT], error: null },
+    'update:outreach_prospects': { error: null },
+    'insert:outreach_messages': { error: null },
+    'rpc:lead_record': { data: { ok: true, lead_id: LEAD_ID, fresh: false }, error: null },
+    'update:leads': { error: null },
+  })
+
+  const counts = { examined: 0, changed: 0 }
+  await watchWork({ db, counts, read: async () => [inbound('yes, still interested')] })
+
+  const onLead = writes.filter(({ key }) => key === 'update:leads').map(({ payload }) => payload)
+  const reopening = onLead.find(payload => payload && 'dismissed_at' in payload)
+  ok(reopening, 'nothing clears the ruling-out')
+  same(reopening.dismissed_at, null, 'the ruling-out is cleared')
+  same(reopening.dismissed_reason, null, 'the reason goes with it')
+  ok(!('replied_at' in reopening), 'the reopening is its own write, so a second reply reopens too')
+  ok(
+    onLead.some(payload => payload && payload.replied_at && payload.contacted_at),
+    'the reply is still stamped'
+  )
+})
+
 check('a person answering a cold letter becomes a lead', () => {
   // The reply is what turns a name off a map into somebody worth following up,
   // and it is the only thing that does. Read here because the failure is
