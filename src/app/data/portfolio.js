@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-09' },
+    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -106,7 +106,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dickinson, Texas',
     description:
       'Two five-acre gated waterfront yards on the upper Texas Gulf Coast, let by the month with the shore crew already on them. Monochrome, with the rate and the phone number on every screen, because a phone on one bar out on a dock is what the site has to load on.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 96, desktop: 99, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -121,7 +121,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dayton, Texas',
     description:
       'Listings across Dayton and the Liberty County towns around it, grouped by place rather than by a radius on a map. Buyers save what is worth a second look, put the shortlist side by side, and ask their questions on the listing itself.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -135,7 +135,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 94, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -163,7 +163,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -193,7 +193,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Liberty, Texas',
     description:
       'Fades taken to skin, beard shaping cut to match the head, and straight razor shaves, on Main Street in Liberty since 2018. Tuesday through Thursday is by appointment and Friday is the walk-in day, which is the one thing most callers are ringing to find out.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -208,7 +208,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'A Houston credit-education practice with four services compared side by side, an education section on the five factors behind a score, and every page published in English and Spanish. It states plainly that it is not a law firm and guarantees no outcome.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
   {
@@ -239,7 +239,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-14' },
+    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-15' },
     hasStudy: true,
   },
 ]
