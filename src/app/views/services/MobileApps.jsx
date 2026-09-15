@@ -48,7 +48,7 @@ const USES = [
   },
   {
     title: 'Repeat Business',
-    body: 'Points, punch cards, and offers that live in the app instead of on a card in a wallet.',
+    body: 'Points, punch cards, and offers that live in the app instead of in a wallet.',
   },
   {
     title: 'A Tool for the Crew',
@@ -76,7 +76,7 @@ const FIT = [
 const TERMS = [
   {
     title: 'How Long It Takes',
-    body: 'Longer than a website, because there are two stores to satisfy and a back end to build. You get the finish date in writing with the price, and store review adds a few days at the end that nobody controls.',
+    body: 'Longer than a website, because there are two stores to satisfy and a back end to build. You get the finish date in writing with the price, and at the end, store review adds a few days nobody controls.',
   },
   {
     title: 'What It Costs',
@@ -110,6 +110,7 @@ export default function MobileApps() {
             name: 'iOS and Android apps for local businesses',
             description:
               'Apps for iPhone and Android, built beside the website they share data with, and published on the App Store and Google Play in the business’s own name.',
+            url: `${SITE_URL}${PAGE_PATH}`,
             provider: { '@id': BUSINESS_ID },
             areaServed: AREA_SERVED,
           },
@@ -117,8 +118,8 @@ export default function MobileApps() {
       />
       <PageHero
         eyebrow="Mobile Apps"
-        title="An app on the phone, for the customers who keep coming back."
-        description="iOS and Android apps for a local business: booking, ordering, loyalty, or the tool your crew carries on the job. Built by the same team that builds the site, and you get the price in writing before any work starts."
+        title="An iOS and Android app for the customers who keep coming back."
+        description="iOS and Android apps for your business around Baytown: booking, ordering, loyalty, or the tool your crew carries on the job. Built by the same team that builds the site, and you get the price in writing before any work starts."
       />
 
       <ServiceSection
@@ -146,7 +147,7 @@ export default function MobileApps() {
         ground="paper"
         eyebrow="Site or App"
         title="When you need one, and when the site is enough."
-        lede="Most businesses do not need an app. The first call settles which one you are before we quote anything."
+        lede="Most businesses do not need an app. The first call settles which you need before we quote anything."
       >
         <FactMesh items={FIT} ground="paper" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
@@ -169,7 +170,7 @@ export default function MobileApps() {
 
       <CtaBanner
         eyebrow="Let’s Talk"
-        heading="Get the app"
+        heading="Get your app"
         accentText="on both stores."
         description="Tell us what it has to do and who will open it. You get a plan and a price before any work starts, and a straight answer if the site would do the job."
         primaryLabel="Start a Project"
