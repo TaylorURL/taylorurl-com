@@ -2,14 +2,24 @@ import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { EXTRA_SERVICES, SERVICE_PAGES } from '@data/pages/serviceDetail'
+import { otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
 import MoreServices from './MoreServices'
 import SectionLink from './SectionLink'
 
-const PAGE_PATH = '/services/business-email'
-const PAGE_NAME = 'Business Email'
+// The name, the path and the mark come from the same data the menu and the
+// cards read, so this page cannot be called one thing in the bar and another
+// in its own breadcrumb.
+//
+// Read as optional because the subsidiary compiles this view too, and its
+// prerender evaluates the module even though its route table never mounts it.
+// There the service does not exist, the record is null, and a bare `.path` at
+// the top level stopped that site's build.
+const SLUG = 'business-email'
+const PAGE = servicePage(SLUG)
+const PAGE_PATH = PAGE?.path
+const PAGE_NAME = PAGE?.name
 
 // What the work is, in the order it happens: the address, the mailboxes behind
 // it, the routing on top of it, and the move onto it.
@@ -69,7 +79,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: 'Setup and the move are quoted with the rest of the work. After that the only cost on top of the monthly is what the provider charges per mailbox.',
+    body: 'Setup and the move are part of the build. After that the only cost beyond the monthly is what the provider charges per mailbox, and the provider bills you for it.',
   },
 ]
 
@@ -82,8 +92,8 @@ export default function BusinessEmail() {
   return (
     <div>
       <Seo
-        title="Business Email Setup in Baytown, TX"
-        description="Business email on your own domain: mailboxes, forwarding, aliases, and migration to Google Workspace or Microsoft 365, set up for Houston-area businesses."
+        title="Company Email Setup in Baytown, TX"
+        description="Company email on your own domain: mailboxes, forwarding, aliases, and migration to Google Workspace or Microsoft 365, set up for Houston-area businesses."
         path={PAGE_PATH}
         schema={[
           breadcrumbSchema([
@@ -95,8 +105,8 @@ export default function BusinessEmail() {
             '@context': 'https://schema.org',
             '@type': 'Service',
             '@id': `${SITE_URL}${PAGE_PATH}#service`,
-            serviceType: 'Business email setup and migration',
-            name: 'Business email on your own domain',
+            serviceType: 'Company email setup and migration',
+            name: 'Company email on your own domain',
             description:
               'Mailboxes, forwarding, aliases, and migration onto Google Workspace, Microsoft 365, or another provider, on the business’s own domain.',
             provider: { '@id': BUSINESS_ID },
@@ -105,7 +115,7 @@ export default function BusinessEmail() {
         ]}
       />
       <PageHero
-        eyebrow="Business Email"
+        eyebrow="Company Email"
         title="Mail that reads as the business."
         description="An address at your own domain instead of yourbusiness@gmail.com. Mailboxes, forwarding, aliases, and the move off whatever runs it today."
       />
@@ -142,15 +152,13 @@ export default function BusinessEmail() {
         </div>
       </ServiceSection>
 
-      <MoreServices
-        pages={[...SERVICE_PAGES, ...EXTRA_SERVICES.filter(page => page.path !== PAGE_PATH)]}
-      />
+      <MoreServices pages={otherServices(SLUG)} />
 
       <CtaBanner
         eyebrow="Let’s Talk"
         heading="Get the address"
         accentText="set up."
-        description="Business email is set up alongside the site. Tell us what the business runs on now and we will handle the move."
+        description="We set up company email alongside the site. Tell us what the business runs on now and we will handle the move."
         primaryLabel="Start a Project"
         primaryTo="/start"
         secondaryLabel="Ask a Question"

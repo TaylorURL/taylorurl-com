@@ -1,5 +1,6 @@
 import { m } from 'framer-motion'
 import {
+  Check,
   Code,
   FileText,
   HeadphonesIcon,
@@ -16,8 +17,6 @@ import Seo from '@components/Seo'
 import { fadeInUp, staggerChild } from '@constants/animations'
 import { PROCESS_TIMELINE } from '@data/pages/home'
 import { breadcrumbSchema } from '@constants/seo'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
-import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import { AccentGradient } from '@reactbits/kit'
 
 const TIMELINE_DETAIL = [
@@ -106,73 +105,109 @@ const TIMELINE_DETAIL = [
 ]
 
 /**
- * The rows the page draws: each step's name and duration from the shared list,
- * carrying the long-form detail written for it here.
+ * The cells the page draws: each step's name and duration from the shared
+ * list, carrying the long-form detail written for it here.
  */
 const TIMELINE_STEPS = PROCESS_TIMELINE.map((step, index) => ({
   ...step,
   ...TIMELINE_DETAIL[index],
 }))
 
-// Scroll-driven timeline row. The decorative left rail (huge mono digit +
-// icon + duration tag) drifts at its own pace as the row scrolls through view,
-// breaking the otherwise-static grid into something with a sense of momentum.
-function TimelineRow({ step, index }) {
+// How much of the four weeks each step takes, as the share of the ruler it is
+// drawn across. The two days at the front are held wider than their share so
+// their labels have room; the rest is the calendar.
+const RULER_COLUMNS = 'lg:[grid-template-columns:13fr_17fr_26fr_34fr_30fr_20fr]'
+
+const stepAnchor = step => `step-${step.step}`
+
+/**
+ * The six steps laid across the four weeks, over the grid that explains them.
+ * The bar over each step is its span; the last one is drawn in the hairline
+ * because it has no end.
+ */
+function TimelineRuler() {
+  return (
+    <ol className={`grid grid-cols-2 gap-x-1.5 gap-y-5 sm:grid-cols-3 ${RULER_COLUMNS}`}>
+      {TIMELINE_STEPS.map((step, i) => {
+        const open = i === TIMELINE_STEPS.length - 1
+        return (
+          <li key={step.step}>
+            <a href={`#${stepAnchor(step)}`} className="group block">
+              <span
+                className={`block h-[3px] rounded-[var(--r-tiny)] ${open ? 'bg-hair-paper-strong' : 'bg-accent'}`}
+                aria-hidden="true"
+              />
+              <span className="mt-3 flex gap-2 font-mono text-[12px] font-medium">
+                <span className="text-accent">{step.step}</span>
+                <span className="text-paper-faint">{step.duration}</span>
+              </span>
+              <span className="mt-1 block text-[14px] font-medium tracking-tight text-ink-paper transition-colors duration-200 ease-out-soft group-hover:text-accent">
+                {step.title}
+              </span>
+            </a>
+          </li>
+        )
+      })}
+    </ol>
+  )
+}
+
+// One step in the grid: the number and the span across the top, the title,
+// the description, then what lands on the reader over what lands on us. The
+// reader's list leads and takes the accent, because it is the one they came
+// to read.
+function StepCell({ step, index }) {
   const Icon = step.icon
-  const { ref, transform } = useScrollParallax({ range: [30, -30] })
 
   return (
     <m.article
-      ref={ref}
+      id={stepAnchor(step)}
       {...staggerChild(index, 0.05)}
-      className="grid items-start gap-6 bg-paper p-8 sm:p-10 lg:grid-cols-[200px_1fr_1fr] lg:gap-10"
+      className="flex scroll-mt-28 flex-col bg-paper p-6 sm:p-7"
     >
-      <m.div
-        style={{ transform }}
-        className="flex items-start gap-5 will-change-transform lg:flex-col lg:gap-4"
-      >
-        <span className="text-paper-faint display-2 font-mono font-semibold leading-none">
-          {step.step}
-        </span>
-        <div className="flex flex-1 flex-col gap-3 lg:flex-none">
-          <Icon className="h-5 w-5 text-accent" strokeWidth={1.5} />
-          <span className="section-label-sm text-accent">{step.duration}</span>
-        </div>
-      </m.div>
-
-      <div className="lg:col-span-1">
-        <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink-paper sm:text-[26px]">
-          {step.title}
-        </h3>
-        <p className="text-[15px] leading-relaxed text-paper-soft sm:text-[16px]">
-          {step.description}
-        </p>
+      <div className="flex items-center gap-3">
+        <Icon className="h-[18px] w-[18px] text-accent" strokeWidth={1.5} aria-hidden="true" />
+        <span className="font-mono text-[12px] font-medium text-accent">{step.step}</span>
+        <span className="flex-1" />
+        <span className="chip-static font-mono">{step.duration}</span>
       </div>
 
-      <div className="edge bg-hair-paper grid grid-cols-1 gap-px overflow-hidden sm:grid-cols-2 lg:col-span-1">
-        <div className="bg-paper p-5">
-          <p className="section-label-sm text-paper-faint mb-3">Your Part</p>
+      <h3 className="mt-5 text-[20px] font-semibold leading-tight tracking-tight text-ink-paper">
+        {step.title}
+      </h3>
+      <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">{step.description}</p>
+
+      <div className="border-hair-paper mt-5 flex flex-1 flex-col gap-5 border-t pt-5">
+        <div>
+          <p className="section-label-sm mb-3 text-accent">Your Part</p>
           <ul className="space-y-2">
             {step.client.map(item => (
               <li
                 key={item}
-                className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
+                className="flex items-start gap-2 text-[13px] font-medium leading-snug text-ink-paper"
               >
-                <span className="mt-1 h-1 w-1 flex-shrink-0 rounded bg-[color:var(--paper-ink-faint)]" />
+                <Check
+                  className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-accent"
+                  strokeWidth={2}
+                  aria-hidden="true"
+                />
                 {item}
               </li>
             ))}
           </ul>
         </div>
-        <div className="bg-paper p-5">
-          <p className="section-label-sm mb-3 text-accent">Our Part</p>
+        <div>
+          <p className="section-label-sm text-paper-faint mb-3">Our Part</p>
           <ul className="space-y-2">
             {step.taylorurl.map(item => (
               <li
                 key={item}
                 className="flex items-start gap-2 text-[13px] leading-snug text-paper-soft"
               >
-                <span className="mt-1 h-1 w-1 flex-shrink-0 rounded bg-accent" />
+                <span
+                  className="mt-[7px] h-1 w-1 flex-shrink-0 rounded-full bg-[color:var(--paper-ink-ghost)]"
+                  aria-hidden="true"
+                />
                 {item}
               </li>
             ))}
@@ -213,13 +248,12 @@ export default function Process() {
         <div className="container-rail relative">
           <m.div
             {...fadeInUp}
-            className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
+            className="border-hair-paper grid items-end gap-6 border-b pb-8 lg:grid-cols-[1.4fr_1fr] lg:gap-10"
           >
             <div>
-              <p className="section-label mb-6 block text-accent">Timeline</p>
+              <p className="section-label mb-5 block text-accent">Timeline</p>
               <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink-paper [text-wrap:balance]">
-                Six steps. <br />
-                <AccentGradient>Two to four weeks.</AccentGradient>
+                Six steps. <AccentGradient>Two to four weeks.</AccentGradient>
               </h2>
             </div>
             <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
@@ -227,66 +261,51 @@ export default function Process() {
             </p>
           </m.div>
 
-          <div className="panel-static bg-hair-paper mt-16 space-y-px overflow-hidden">
-            {TIMELINE_STEPS.map((step, i) => (
-              <TimelineRow key={step.step} step={step} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section
-        data-ground="band"
-        className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
-      >
-        <div className="container-rail relative flex flex-col gap-12">
-          <m.div
-            {...fadeInUp}
-            className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div>
-              <p className="section-label mb-6 block text-accent">What You Bring</p>
-              <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink [text-wrap:balance]">
-                What we&apos;ll need <br />
-                <AccentGradient>from you.</AccentGradient>
-              </h2>
-            </div>
-            <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              None of it has to be finished. Send what you have and we fill the gaps as we go.
-            </p>
+          <m.div {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.1 }} className="mt-8">
+            <TimelineRuler />
           </m.div>
 
-          <div className="panel-static bg-hair grid gap-px overflow-hidden sm:grid-cols-2 lg:grid-cols-5">
-            {WHAT_YOULL_NEED.map((item, i) => {
-              const Icon = item.icon
-              return (
-                <m.div key={item.label} {...staggerChild(i, 0.05)}>
-                  <SpotlightCard
-                    className="flex h-full flex-col gap-5 bg-bg p-6"
-                    spotlightColor="var(--spotlight)"
-                  >
-                    <div className="flex items-center justify-between">
-                      <Icon className="h-4 w-4 text-accent" strokeWidth={1.5} />
-                      <span className="font-mono text-[9px] tabular-nums tracking-tight text-ink-faint">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                    </div>
-                    <span className="text-[13px] font-medium leading-snug text-ink">
-                      {item.label}
-                    </span>
-                  </SpotlightCard>
-                </m.div>
-              )
-            })}
+          <div className="panel-static bg-hair-paper mt-8 grid gap-px overflow-hidden sm:grid-cols-2 lg:grid-cols-3">
+            {TIMELINE_STEPS.map((step, i) => (
+              <StepCell key={step.step} step={step} index={i} />
+            ))}
           </div>
 
-          <m.p
+          <m.div
             {...fadeInUp}
-            transition={{ ...fadeInUp.transition, delay: 0.2 }}
-            className="section-label-sm leading-relaxed text-ink-faint"
+            className="panel-static bg-hair-paper mt-6 grid gap-px overflow-hidden lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]"
           >
-            No logo or photos yet? We can point you to people who do that.
-          </m.p>
+            <div className="bg-paper p-6 sm:p-7">
+              <p className="section-label-sm mb-3 text-accent">What You Bring</p>
+              <ul className="grid gap-x-8 gap-y-3 sm:grid-cols-2">
+                {WHAT_YOULL_NEED.map(item => {
+                  const Icon = item.icon
+                  return (
+                    <li
+                      key={item.label}
+                      className="flex items-start gap-2.5 text-[14px] font-medium leading-snug tracking-tight text-ink-paper"
+                    >
+                      <Icon
+                        className="mt-px h-4 w-4 flex-shrink-0 text-accent"
+                        strokeWidth={1.5}
+                        aria-hidden="true"
+                      />
+                      {item.label}
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+            <div className="flex flex-col justify-center gap-2 bg-paper p-6 sm:p-7">
+              <p className="text-[15px] font-semibold tracking-tight text-ink-paper">
+                None of it has to be finished.
+              </p>
+              <p className="text-[14px] leading-relaxed text-paper-soft">
+                Send what you have and we fill the gaps as we go. No logo or photos yet? We can
+                point you to people who do that.
+              </p>
+            </div>
+          </m.div>
         </div>
       </section>
 

@@ -5,7 +5,7 @@ import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { START_LINK, serves } from '@constants/navigation'
-import { EXTRA_SERVICES, otherServices, servicePage } from '@data/pages/serviceDetail'
+import { otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
 import MoreServices from './MoreServices'
@@ -51,25 +51,35 @@ const DOC = IS_SECOND_SITE ? SECOND_SITE : STUDIO
 
 const CTA_SECONDARY = DOC.cta.secondary && serves(DOC.cta.secondary.to) ? DOC.cta.secondary : null
 
+// The page alternates its grounds down its length, so a section is never the
+// same colour as the one above it whatever the page holds between what the
+// work covers and what it costs.
+const GROUND = ['paper', 'band']
+const groundAt = index => GROUND[index % GROUND.length]
+
 /**
- * One service line's own page. The lines share a shape - what the work covers,
- * how long it takes, what it runs - so they share a view and differ only in the
- * content `@data/serviceDetail` holds against their slug.
+ * One service's own page. The services share a shape - what the work covers,
+ * what it is for, how long it takes, what it runs - so they share a view and
+ * differ only in the content `@data/serviceDetail` holds against their slug.
  *
- * A slug no line carries reaches the 404 page. Only the lines this site sells
- * are prerendered, so this is the answer to a hand-typed address rather than to
- * a link.
+ * A slug no service carries reaches the 404 page, and so does a slug whose page
+ * is bespoke: those are routed to their own views ahead of this one, so this
+ * only sees them from a hand-typed address on a site that never built them.
+ * Only the services this site sells are prerendered.
  */
 export default function ServiceDetail() {
   const { service } = useParams()
   const page = servicePage(service)
 
-  if (!page) return <NotFound />
+  if (!page?.covers) return <NotFound />
 
   const terms = [
     { title: 'How Long It Takes', body: page.timeline },
     { title: DOC.costTitle, body: page.running },
   ]
+
+  const sections = page.sections ?? []
+  const termsGround = groundAt(sections.length + 1)
 
   // The pages this one sends a reader on to, beside its own price. A link
   // written by hand still has to be a page this site serves, so `serves` reads
@@ -103,30 +113,51 @@ export default function ServiceDetail() {
           },
         ]}
       />
-      <PageHero eyebrow={page.eyebrow} title={page.name} description={page.lede} />
+      <PageHero eyebrow={page.eyebrow} title={page.title ?? page.name} description={page.lede} />
 
       <ServiceSection
         id="covers"
-        ground="paper"
+        ground={groundAt(0)}
         eyebrow="What It Covers"
         title="What you get."
         lede="Everything below is part of the work. Nothing here is an upgrade."
       >
-        <FactMesh items={page.covers} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
+        <FactMesh items={page.covers} ground={groundAt(0)} columns={{ base: 1, sm: 2, lg: 3 }} />
       </ServiceSection>
 
-      <ServiceSection id="terms" ground="paper" eyebrow="Time and Cost" title={DOC.termsTitle}>
-        <FactMesh items={terms} ground="paper" columns={{ base: 1, sm: 2 }} />
+      {sections.map((section, index) => {
+        const ground = groundAt(index + 1)
+        return (
+          <ServiceSection
+            key={section.id}
+            id={section.id}
+            ground={ground}
+            eyebrow={section.eyebrow}
+            title={section.title}
+            lede={section.lede}
+          >
+            <FactMesh items={section.items} ground={ground} columns={section.columns} />
+          </ServiceSection>
+        )
+      })}
+
+      <ServiceSection
+        id="terms"
+        ground={termsGround}
+        eyebrow="Time and Cost"
+        title={DOC.termsTitle}
+      >
+        <FactMesh items={terms} ground={termsGround} columns={{ base: 1, sm: 2 }} />
         {asides.length > 0 && (
           <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
             {asides.map(aside => (
-              <SectionLink key={aside.to} to={aside.to} label={aside.label} ground="paper" />
+              <SectionLink key={aside.to} to={aside.to} label={aside.label} ground={termsGround} />
             ))}
           </div>
         )}
       </ServiceSection>
 
-      <MoreServices pages={[...otherServices(page.slug), ...EXTRA_SERVICES]} />
+      <MoreServices pages={otherServices(page.slug)} />
 
       <CtaBanner
         eyebrow="Let’s Talk"
