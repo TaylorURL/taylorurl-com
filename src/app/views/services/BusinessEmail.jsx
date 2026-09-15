@@ -11,10 +11,15 @@ import SectionLink from './SectionLink'
 // The name, the path and the mark come from the same data the menu and the
 // cards read, so this page cannot be called one thing in the bar and another
 // in its own breadcrumb.
+//
+// Read as optional because the subsidiary compiles this view too, and its
+// prerender evaluates the module even though its route table never mounts it.
+// There the service does not exist, the record is null, and a bare `.path` at
+// the top level stopped that site's build.
 const SLUG = 'business-email'
 const PAGE = servicePage(SLUG)
-const PAGE_PATH = PAGE.path
-const PAGE_NAME = PAGE.name
+const PAGE_PATH = PAGE?.path
+const PAGE_NAME = PAGE?.name
 
 // What the work is, in the order it happens: the address, the mailboxes behind
 // it, the routing on top of it, and the move onto it.
