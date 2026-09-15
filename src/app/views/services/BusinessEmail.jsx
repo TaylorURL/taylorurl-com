@@ -79,7 +79,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: 'Setup and the move are part of the build rather than billed on top of it. After that the only cost on top of the monthly is what the provider charges per mailbox, and they bill that.',
+    body: 'Setup and the move are part of the build. After that the only cost beyond the monthly is what the provider charges per mailbox, and the provider bills you for it.',
   },
 ]
 
@@ -93,7 +93,7 @@ export default function BusinessEmail() {
     <div>
       <Seo
         title="Company Email Setup in Baytown, TX"
-        description="Business email on your own domain: mailboxes, forwarding, aliases, and migration to Google Workspace or Microsoft 365, set up for Houston-area businesses."
+        description="Company email on your own domain: mailboxes, forwarding, aliases, and migration to Google Workspace or Microsoft 365, set up for Houston-area businesses."
         path={PAGE_PATH}
         schema={[
           breadcrumbSchema([
@@ -105,8 +105,8 @@ export default function BusinessEmail() {
             '@context': 'https://schema.org',
             '@type': 'Service',
             '@id': `${SITE_URL}${PAGE_PATH}#service`,
-            serviceType: 'Business email setup and migration',
-            name: 'Business email on your own domain',
+            serviceType: 'Company email setup and migration',
+            name: 'Company email on your own domain',
             description:
               'Mailboxes, forwarding, aliases, and migration onto Google Workspace, Microsoft 365, or another provider, on the business’s own domain.',
             provider: { '@id': BUSINESS_ID },
@@ -158,7 +158,7 @@ export default function BusinessEmail() {
         eyebrow="Let’s Talk"
         heading="Get the address"
         accentText="set up."
-        description="Business email is set up alongside the site. Tell us what the business runs on now and we will handle the move."
+        description="We set up company email alongside the site. Tell us what the business runs on now and we will handle the move."
         primaryLabel="Start a Project"
         primaryTo="/start"
         secondaryLabel="Ask a Question"

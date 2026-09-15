@@ -196,7 +196,7 @@ const DETAIL = {
         id: 'platforms',
         eyebrow: 'What It Connects To',
         title: 'The accounts it all runs through.',
-        lede: 'Each one is opened in the business’s name, set up inside your own account, and left there.',
+        lede: 'We open each one in the business’s name, set it up inside your own account, and leave it there.',
         items: [
           {
             title: 'Meta',
@@ -220,7 +220,7 @@ const DETAIL = {
           },
           {
             title: 'Your Own Accounts',
-            body: 'Nothing holds the site hostage to an account somebody else owns. What each platform charges is billed by them.',
+            body: 'Nothing holds the site hostage to an account somebody else owns. Each platform bills its own charges.',
           },
         ],
         columns: { base: 1, sm: 2, lg: 3 },
@@ -229,13 +229,13 @@ const DETAIL = {
     timeline:
       'Installed while the site is built, and tested before launch by firing every event and reading it back on each platform. On a site that already exists it is a few days of work.',
     running:
-      'On a site we build, the tracking is part of the price of the site rather than billed on top of it. On a site somebody else built it is quoted on its own, and you get the figure in writing first. What an ad platform charges is billed by them.',
+      'On a site we build, the tracking is part of the price of the site. On a site somebody else built, we quote it on its own, and you get the figure in writing first. Each ad platform bills its own charges.',
   },
   'desktop-apps': {
     eyebrow: 'Desktop Apps',
     title: 'Software that lives on the computer at the counter.',
     description:
-      'Desktop software for Windows and Mac, built for Baytown businesses: the front desk, the back office, and the workshop, wired to the website and quoted in writing.',
+      'Desktop software for Windows and Mac, built for Baytown businesses: the front desk, the back office, the workshop, wired to the website and quoted in writing.',
     lede: 'The program the front desk runs all day, the screen in the workshop, the tool the office opens every morning. Built for Windows and Mac around how the work already runs, and wired to the same records as the website.',
     covers: [
       {
@@ -293,7 +293,7 @@ const DETAIL = {
         id: 'fit',
         eyebrow: 'Browser or Desktop',
         title: 'When you need one, and when the site is enough.',
-        lede: 'Most of what a business does runs in a browser. The first call settles which you need before we quote anything.',
+        lede: 'Most of what a business does runs in a browser. We settle which you need on the first call, before we quote anything.',
         items: [
           {
             title: 'The Site Is Enough When',
@@ -316,7 +316,7 @@ const DETAIL = {
     eyebrow: 'Automation',
     title: 'The work you still do by hand, done by software.',
     description:
-      'Business automation for Baytown companies and freelancers: the reports, the follow-ups, and the copying between systems, built to run on their own and quoted in writing.',
+      'Business automation for Baytown companies and freelancers: reports, follow-ups, and copying between systems, built to run on their own and quoted in writing.',
     lede: 'Stock that counts itself down as sales come in. Every job application in one list, sorted by who can start Monday. The day’s numbers pulled from the software you already use, checked, and in your inbox at seven. Whatever you still do by hand, it gets built to run on its own.',
     covers: [
       {
@@ -388,15 +388,15 @@ const DETAIL = {
       },
     ],
     timeline:
-      'A single automation takes a week or two. A run of them across the business is scoped as one project, and the dates are agreed in writing before any work starts.',
+      'A single automation takes a week or two. A run of them across the business is scoped as one project, and you get the dates in writing before any work starts.',
     running:
-      'Quoted per project, and you get the figure in writing before anything starts. What moves it is how many systems are involved and how much each has to do. After that a monthly keeps it running, watched, and fixed when a tool it talks to changes.',
+      'We quote it per project, and you get the figure in writing before anything starts. What moves it is how many systems are involved and how much each has to do. After that a monthly keeps it running, watched, and fixed when a tool it talks to changes.',
   },
   'ai-integration': {
     eyebrow: 'AI Integration',
     title: 'AI given real work in the business.',
     description:
-      'AI integration for Baytown businesses: an assistant on the site, mail read and drafted, documents sorted, and photos checked, built into the tools you already run.',
+      'AI integration for Baytown businesses: an assistant on the site, mail read and drafted, documents sorted, and photos checked, built into the tools you run.',
     lede: 'An assistant on the site that answers at two in the morning and books the job. Mail read, sorted, and drafted before you open it. Photos from the crew checked against the job sheet. Built into the site and the tools you already run, with a person still on the end of anything that matters.',
     covers: [
       {
@@ -457,7 +457,7 @@ const DETAIL = {
         items: [
           {
             title: 'Your Accounts',
-            body: 'The AI accounts are opened in the business’s name, so what it reads and what it costs are yours to see.',
+            body: 'We open the AI accounts in the business’s name, so what it reads and what it costs are yours to see.',
           },
           {
             title: 'Not Used for Training',
@@ -472,9 +472,9 @@ const DETAIL = {
       },
     ],
     timeline:
-      'A single job, an assistant on the site or mail sorted into an inbox, takes a week or two. Anything wired into several systems is scoped as one project, with the dates agreed in writing before any work starts.',
+      'A single job, an assistant on the site or mail sorted into an inbox, takes a week or two. Anything wired into several systems is scoped as one project, and you get the dates in writing before any work starts.',
     running:
-      'Quoted per project, and you get the figure in writing before anything starts. After that a monthly keeps it running and watched, and what the AI provider charges for what it reads is billed by them, in the account opened in your name.',
+      'We quote it per project, and you get the figure in writing before anything starts. After that a monthly keeps it running and watched, and the AI provider bills what it reads, in the account opened in your name.',
   },
 }
 
