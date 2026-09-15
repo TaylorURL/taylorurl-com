@@ -15,7 +15,8 @@
  * silhouette: a page, a page replacing a page, a form that submits, something
  * kept safe, a catalogue, a stack of work, a run of steps, a square,
  * a written page, a question, a heartbeat, a tag, an address, a search,
- * a sign on a post, a place on the map, a run of issues, a conversation.
+ * a sign on a post, a place on the map, a run of issues, a conversation, a
+ * phone in the hand.
  */
 
 const BASE = {
@@ -165,6 +166,17 @@ export function MarkAt(props) {
     <svg {...BASE} {...props}>
       <circle cx="12" cy="12" r="3.5" />
       <path d="M15.5 12v2.5a2.5 2.5 0 005 0V12a8.5 8.5 0 10-4.5 7.5" />
+    </svg>
+  )
+}
+
+/** iOS and Android apps: the phone itself, and the app open on it. */
+export function MarkDevice(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <rect x="7" y="2.5" width="10" height="19" />
+      <path d="M7 6.5h10M7 17.5h10" />
+      <path d="M10.5 12h3" />
     </svg>
   )
 }

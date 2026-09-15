@@ -39,11 +39,12 @@ const ALL_ROUTES = [
   // Each service line's own page. One view answers for all four, from the
   // content held against the slug in the path.
   { key: 'ServiceDetail', path: 'services/:service' },
-  // The two services that are not one of the four lines. A static path outranks
-  // a parameterized one however they are ordered, so both reach their own view
+  // The services that are not one of the four lines. A static path outranks a
+  // parameterized one however they are ordered, so each reaches its own view
   // rather than the one above.
   { key: 'BusinessEmail', path: 'services/business-email' },
   { key: 'ServiceSeo', path: 'services/seo' },
+  { key: 'MobileApps', path: 'services/mobile-apps' },
   // The one line that is not the shared service shape. It is still one of the
   // four - the menu, the cards and the sitemap all read it from the same list -
   // and it is served here rather than by the view above because its page makes
