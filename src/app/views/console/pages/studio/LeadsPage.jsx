@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Check, Pencil, Plus, Send, X } from 'lucide-react'
 import { faultMessage } from '@utils/faults'
 import { useSession } from '@hooks/session/useSession'
@@ -184,7 +184,16 @@ function arrival(lead) {
 /** What the search box runs over: everything a lead is known by. */
 function matches(lead, needle) {
   if (!needle) return true
-  const hay = [lead.name, lead.business, lead.email, lead.phone, lead.town, lead.trade, lead.note]
+  const hay = [
+    lead.name,
+    lead.business,
+    lead.email,
+    lead.phone,
+    lead.website,
+    lead.town,
+    lead.trade,
+    lead.note,
+  ]
     .filter(Boolean)
     .join(' ')
     .toLowerCase()
@@ -209,7 +218,86 @@ const ORDERS = [
   { key: 'newest', label: 'Newest First' },
   { key: 'oldest', label: 'Oldest First' },
   { key: 'due', label: 'Next Owed' },
+  { key: 'name', label: 'By Name' },
 ]
+
+/** How the list is being read: every narrowing at once, in one object. */
+const OPEN_READING = {
+  query: '',
+  door: 'all',
+  stageKey: 'all',
+  owner: 'all',
+  ruledOut: false,
+}
+
+/**
+ * Whether one lead is on the list under a reading.
+ *
+ * A ruled-out lead is off the list by default. Ruling somebody out is the
+ * decision that they are not work, and a list that keeps showing them is a
+ * list where the work has to be found among the not-work every morning. They
+ * come back two ways: the toggle that asks for them alongside everybody else,
+ * or the stage filter set to them alone, which is asking for them outright.
+ */
+function keeps(lead, reading) {
+  if (reading.door !== 'all' && lead.source !== reading.door) return false
+  if (reading.stageKey === 'waiting') {
+    if (!waiting(lead)) return false
+  } else if (reading.stageKey !== 'all' && stage(lead).label !== reading.stageKey) {
+    return false
+  }
+  if (reading.owner === 'nobody') {
+    if (lead.owner) return false
+  } else if (reading.owner !== 'all' && lead.owner !== reading.owner) {
+    return false
+  }
+  if (!matches(lead, reading.query)) return false
+  if (lead.dismissed_at && !reading.ruledOut && reading.stageKey !== 'Ruled Out') return false
+  return true
+}
+
+/** The list in the order asked for. */
+function ordered(rows, order) {
+  const at = value => (value ? new Date(value).getTime() : 0)
+  const sorted = [...rows]
+  if (order === 'oldest') return sorted.sort((a, b) => at(a.first_seen) - at(b.first_seen))
+  if (order === 'name') return sorted.sort((a, b) => who(a).localeCompare(who(b)))
+  if (order === 'due') {
+    // Whoever is owed soonest first. The rest keep their newest-first order
+    // behind them rather than shuffling on a date none of them have.
+    return sorted.sort((a, b) => {
+      const owedA = a.due_at ? at(a.due_at) : Infinity
+      const owedB = b.due_at ? at(b.due_at) : Infinity
+      return owedA - owedB || at(b.first_seen) - at(a.first_seen)
+    })
+  }
+  return sorted.sort((a, b) => at(b.first_seen) - at(a.first_seen))
+}
+
+/** Whether a reading is narrower than the desk's own: anything but the toggle. */
+function narrows(reading) {
+  return (
+    reading.door !== 'all' ||
+    reading.stageKey !== 'all' ||
+    reading.owner !== 'all' ||
+    Boolean(reading.query)
+  )
+}
+
+/** A control that is on or off, and says which by carrying the accent. */
+function Toggle({ on, onChange, children, ...rest }) {
+  return (
+    <button
+      type="button"
+      aria-pressed={on}
+      onClick={() => onChange(!on)}
+      className={`${QUIET} aria-pressed:border-[color:var(--accent)] aria-pressed:text-accent`}
+      {...rest}
+    >
+      {children}
+    </button>
+  )
+}
 
 /** One labelled thing a lead told us. */
 function Fact({ label, value }) {
@@ -221,12 +309,30 @@ function Fact({ label, value }) {
   )
 }
 
-/** One lead in the column: who, where from, how far, and whether they wait. */
-function LeadRow({ lead, open, onOpen }) {
+/**
+ * One lead in the column: who, where from, where they are, who has them, and
+ * whether they wait.
+ *
+ * The second line carries what a reader scanning for the next thing to do
+ * needs without opening the row: the door and the moment say what kind of
+ * lead this is, the town says whether it is nearby, the name says whether it
+ * is somebody else's, and a date that has passed says so in the warning
+ * colour rather than leaving the reader to compare it with today.
+ */
+function LeadRow({ lead, carrier, open, onOpen }) {
+  const owed = lead.due_at ? new Date(lead.due_at) : null
+  const late = owed && owed <= new Date() && !lead.dismissed_at && !lead.bought_at
   return (
     <SplitRow name={who(lead)} badge={stage(lead)} open={open} onOpen={onOpen}>
       {DOORS[lead.source] || lead.source} · {when(lead.first_seen)}
-      {lead.due_at ? ` · owed ${onDay(lead.due_at)}` : ''}
+      {lead.town ? ` · ${lead.town}` : ''}
+      {carrier ? ` · ${carrier}` : ''}
+      {owed && (
+        <span className={late ? 'text-[color:var(--warn)]' : undefined}>
+          {' '}
+          · {late ? 'was owed' : 'owed'} {onDay(lead.due_at)}
+        </span>
+      )}
     </SplitRow>
   )
 }
@@ -871,8 +977,10 @@ export default function LeadsPage() {
   } = useLeadsFeed({ token, enabled: Boolean(token), openId })
 
   const [needle, setNeedle] = useState('')
-  const [door, setDoor] = useState('all')
-  const [stageKey, setStageKey] = useState('all')
+  const [door, setDoor] = useState(OPEN_READING.door)
+  const [stageKey, setStageKey] = useState(OPEN_READING.stageKey)
+  const [owner, setOwner] = useState(OPEN_READING.owner)
+  const [ruledOut, setRuledOut] = useState(OPEN_READING.ruledOut)
   const [order, setOrder] = useState('newest')
   const [composing, setComposing] = useState(false)
   const [editing, setEditing] = useState(null)
@@ -882,28 +990,44 @@ export default function LeadsPage() {
   const templates = useMemo(() => data?.templates || [], [data])
   const team = useMemo(() => data?.team || [], [data])
 
-  const shown = useMemo(() => {
-    const query = needle.trim().toLowerCase()
-    const kept = leads
-      .filter(lead => (door === 'all' ? true : lead.source === door))
-      .filter(lead => {
-        if (stageKey === 'all') return true
-        if (stageKey === 'waiting') return waiting(lead)
-        return stage(lead).label === stageKey
-      })
-      .filter(lead => matches(lead, query))
-    if (order === 'oldest') {
-      return [...kept].sort((a, b) => new Date(a.first_seen) - new Date(b.first_seen))
-    }
-    if (order === 'due') {
-      return [...kept].sort((a, b) => {
-        const owedA = a.due_at ? new Date(a.due_at).getTime() : Infinity
-        const owedB = b.due_at ? new Date(b.due_at).getTime() : Infinity
-        return owedA - owedB
-      })
-    }
-    return kept
-  }, [leads, door, stageKey, needle, order])
+  const reading = useMemo(
+    () => ({ query: needle.trim().toLowerCase(), door, stageKey, owner, ruledOut }),
+    [needle, door, stageKey, owner, ruledOut]
+  )
+
+  // The open lead stays on the list after being ruled out from its own record,
+  // so the row the reader just acted on does not vanish under them and Put
+  // Back is still a row away. It leaves the list with the next lead opened.
+  const shown = useMemo(
+    () =>
+      ordered(
+        leads.filter(
+          lead =>
+            keeps(lead, reading) ||
+            (lead.id === openId && keeps(lead, { ...reading, ruledOut: true }))
+        ),
+        order
+      ),
+    [leads, reading, order, openId]
+  )
+
+  /**
+   * How many rows one option would leave on the list, with every other
+   * narrowing left as it stands. That is the figure a reader wants beside the
+   * option: not how many leads came through the contact form, but how many
+   * of the ones they are already looking at did.
+   */
+  const countUnder = useCallback(
+    change => leads.filter(lead => keeps(lead, { ...reading, ...change })).length,
+    [leads, reading]
+  )
+
+  // The ruled-out leads the reading is holding back: the ones the toggle would
+  // put on the list, and nothing the other filters would keep off it anyway.
+  const heldBack = useMemo(
+    () => (ruledOut ? 0 : countUnder({ ruledOut: true }) - shown.length),
+    [ruledOut, countUnder, shown.length]
+  )
 
   // Only the doors that have actually produced a lead. A filter offering eight
   // sources where six of them are empty is a filter that mostly answers with
@@ -916,7 +1040,37 @@ export default function LeadsPage() {
     return DOOR_NAMES.filter(name => seen.has(name))
   }, [leads])
 
+  /** Who carries each lead, by name, for the row and the filter. */
+  const carriers = useMemo(() => new Map(team.map(person => [person.id, person.name])), [team])
+
+  const narrowed = narrows(reading)
+
+  const clear = () => {
+    setNeedle('')
+    setDoor(OPEN_READING.door)
+    setStageKey(OPEN_READING.stageKey)
+    setOwner(OPEN_READING.owner)
+    setRuledOut(OPEN_READING.ruledOut)
+  }
+
   const open = useMemo(() => leads.find(lead => lead.id === openId) || null, [leads, openId])
+
+  /**
+   * The arrow keys walk the list. The rows are buttons, so a reader is already
+   * on one when they press a key, and the next lead opening on the next press
+   * is what makes fifty leads in a morning a matter of one hand.
+   */
+  const walk = event => {
+    const step = event.key === 'ArrowDown' ? 1 : event.key === 'ArrowUp' ? -1 : 0
+    if (!step || !shown.length) return
+    event.preventDefault()
+    const at = shown.findIndex(lead => lead.id === openId)
+    const to = Math.min(shown.length - 1, Math.max(0, at + step))
+    const next = shown[to]
+    if (!next || next.id === openId) return
+    go(view, { lead: next.id })
+    event.currentTarget.querySelectorAll('button')[to]?.focus()
+  }
 
   // The desk opens on whoever is next: the first lead the filters show, so
   // arriving at the section is arriving at work rather than at a blank pane.
@@ -1037,8 +1191,6 @@ export default function LeadsPage() {
   // place of the desk rather than above an empty one.
   if (error && !data) return <SectionNotice>{error}</SectionNotice>
 
-  const narrowed = door !== 'all' || stageKey !== 'all' || Boolean(needle.trim())
-
   return (
     <ConsolePage areas={['stats', 'views', 'work']} rows="auto auto minmax(0,1fr)">
       <Area area="stats">
@@ -1068,19 +1220,11 @@ export default function LeadsPage() {
                 onChange={event => setNeedle(event.target.value)}
                 aria-label="Find a lead"
               />
-              <select
-                className={door === 'all' ? SELECT : SELECT_ON}
-                value={door}
-                onChange={event => setDoor(event.target.value)}
-                aria-label="Which door"
-              >
-                <option value="all">Every Door</option>
-                {doors.map(name => (
-                  <option key={name} value={name}>
-                    {DOORS[name] || name}
-                  </option>
-                ))}
-              </select>
+              {/* Every option says how many rows it would leave, counted with
+                  the other controls as they stand. An option that would leave
+                  nothing is still offered, at nought, so the reader learns the
+                  list has none rather than wondering whether the filter is
+                  broken. */}
               <select
                 className={stageKey === 'all' ? SELECT : SELECT_ON}
                 value={stageKey}
@@ -1089,10 +1233,41 @@ export default function LeadsPage() {
               >
                 {STAGE_VIEWS.map(one => (
                   <option key={one.key} value={one.key}>
-                    {one.label}
+                    {one.label} ({countUnder({ stageKey: one.key })})
                   </option>
                 ))}
               </select>
+              <select
+                className={door === 'all' ? SELECT : SELECT_ON}
+                value={door}
+                onChange={event => setDoor(event.target.value)}
+                aria-label="Which door"
+              >
+                <option value="all">Every Door ({countUnder({ door: 'all' })})</option>
+                {doors.map(name => (
+                  <option key={name} value={name}>
+                    {DOORS[name] || name} ({countUnder({ door: name })})
+                  </option>
+                ))}
+              </select>
+              {team.length > 0 && (
+                <select
+                  className={owner === 'all' ? SELECT : SELECT_ON}
+                  value={owner}
+                  onChange={event => setOwner(event.target.value)}
+                  aria-label="Carried by whom"
+                >
+                  <option value="all">Carried by Anyone ({countUnder({ owner: 'all' })})</option>
+                  <option value="nobody">
+                    Carried by Nobody ({countUnder({ owner: 'nobody' })})
+                  </option>
+                  {team.map(person => (
+                    <option key={person.id} value={person.id}>
+                      {person.name} ({countUnder({ owner: person.id })})
+                    </option>
+                  ))}
+                </select>
+              )}
               <select
                 className={SELECT}
                 value={order}
@@ -1105,6 +1280,24 @@ export default function LeadsPage() {
                   </option>
                 ))}
               </select>
+              {/* The ruled-out leads stay off the list until asked for. The
+                  toggle carries how many it is holding back, so the figure a
+                  reader might go looking for is on the control that shows it,
+                  and it goes quiet when the stage filter has already asked for
+                  them. */}
+              {stageKey !== 'Ruled Out' && (
+                <Toggle on={ruledOut} onChange={setRuledOut} aria-label="Show the ruled-out leads">
+                  {ruledOut
+                    ? 'Hide Ruled Out'
+                    : `Show Ruled Out${heldBack ? ` (${heldBack})` : ''}`}
+                </Toggle>
+              )}
+              {(narrowed || ruledOut) && (
+                <button type="button" className={QUIET} onClick={clear}>
+                  <X aria-hidden="true" className="h-3.5 w-3.5" strokeWidth={1.75} />
+                  Clear
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -1117,26 +1310,58 @@ export default function LeadsPage() {
             <Panel
               title="Leads"
               loading={loading}
-              aside={narrowed ? `${shown.length} of ${leads.length}` : `${leads.length} held`}
+              aside={
+                shown.length === leads.length
+                  ? `${leads.length} held`
+                  : `${shown.length} of ${leads.length}`
+              }
             >
               <PanelBody>
                 {loading ? (
                   <SkeletonList rows={8} />
                 ) : shown.length ? (
-                  <ul>
+                  <ul onKeyDown={walk}>
                     {shown.map(lead => (
                       <LeadRow
                         key={lead.id}
                         lead={lead}
+                        carrier={lead.owner ? carriers.get(lead.owner) : null}
                         open={lead.id === openId}
                         onOpen={() => go(view, { lead: lead.id })}
                       />
                     ))}
                   </ul>
                 ) : (
-                  <p className="px-5 py-10 text-center text-[13px] text-paper-soft">
-                    {narrowed ? 'Nobody matches that reading.' : 'Nobody has raised a hand yet.'}
-                  </p>
+                  <div className="grid justify-items-center gap-3 px-5 py-10 text-center text-[13px] text-paper-soft">
+                    {/* An empty list says why it is empty, and where the rows
+                        went. A reader who ruled out the last lead an hour ago
+                        and comes back to nothing should not have to wonder
+                        whether the leads are gone. */}
+                    <p>
+                      {narrowed
+                        ? 'Nobody matches that reading.'
+                        : heldBack
+                          ? 'Everybody here has been ruled out.'
+                          : 'Nobody has raised a hand yet.'}
+                      {narrowed && heldBack
+                        ? ` ${heldBack} ruled out ${heldBack === 1 ? 'is' : 'are'} held back.`
+                        : ''}
+                    </p>
+                    {(narrowed || heldBack > 0) && (
+                      <span className="flex flex-wrap justify-center gap-2">
+                        {heldBack > 0 && (
+                          <button type="button" className={QUIET} onClick={() => setRuledOut(true)}>
+                            Show Ruled Out
+                          </button>
+                        )}
+                        {narrowed && (
+                          <button type="button" className={QUIET} onClick={clear}>
+                            Clear the Reading
+                          </button>
+                        )}
+                      </span>
+                    )}
+                  </div>
                 )}
               </PanelBody>
               {data && !data.complete && (
