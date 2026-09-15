@@ -25,6 +25,7 @@ import { readBody } from '../lib/http/body.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { connect } from '../lib/db/clients.js'
 import { notice, sendNotice } from '../lib/mail/notice.js'
+import { replyAddressFor } from '../lib/leads/relay.js'
 import { SOURCES, keepLead } from '../lib/leads/spine.js'
 
 const AD_LEAD_SECRET = process.env.AD_LEAD_SECRET || ''
@@ -86,23 +87,26 @@ function fieldFrom(body, names) {
  * theirs, because the whole value of a message about a lead is being able to
  * answer it from the inbox in the minute it is read.
  */
-async function announce({ name, email, phone, form, campaign }) {
+async function announce({ name, email, phone, form, campaign, lead }) {
   if (!RESEND_API_KEY) return
   try {
+    const drawn = notice({
+      label: 'Paid ad',
+      subject: `${name || email || phone} asked for a quote`,
+      rows: [
+        ['Name', name || 'Not given'],
+        ['Address', email || 'Not given'],
+        ['Phone', phone || 'Not given'],
+        ['Form', form || 'Not given'],
+        ['Campaign', campaign || 'Not given'],
+      ],
+      replyTo: email || undefined,
+      link: { label: 'Open the leads in the console', url: `${SITE_URL}/console/leads` },
+    })
+    // The body names their address; the header names the relay, so a reply
+    // from any mailbox is filed and marked on its way to them.
     await sendNotice(
-      notice({
-        label: 'Paid ad',
-        subject: `${name || email || phone} asked for a quote`,
-        rows: [
-          ['Name', name || 'Not given'],
-          ['Address', email || 'Not given'],
-          ['Phone', phone || 'Not given'],
-          ['Form', form || 'Not given'],
-          ['Campaign', campaign || 'Not given'],
-        ],
-        replyTo: email || undefined,
-        link: { label: 'Open the leads in the console', url: `${SITE_URL}/console/leads` },
-      }),
+      { ...drawn, replyTo: replyAddressFor({ id: lead?.id, name: name || email }, email) },
       RESEND_API_KEY
     )
   } catch (cause) {
@@ -163,7 +167,7 @@ export default async function handler(request, response) {
   // Only the first time. A platform that delivers the same lead twice must not
   // put it in front of a person twice, or the second copy teaches them to skim
   // the first.
-  if (lead?.fresh) await announce({ name, email, phone, form, campaign })
+  if (lead?.fresh) await announce({ name, email, phone, form, campaign, lead })
 
   response.setHeader('Cache-Control', 'private, no-store')
   return response.status(200).json({ ok: true })

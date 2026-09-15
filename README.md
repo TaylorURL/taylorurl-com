@@ -116,6 +116,7 @@ flowchart TD
     IN --> DB[("Postgres, RLS-locked")]
     Site -->|"unsubscribe"| EF["the unsubscribe function"] --> DB
     Site -->|"enquiry"| CT["api/contact.js"] --> RS["Resend"]
+    RS -->|"a reply to a lead, from any mailbox"| LR["api/lead-reply.js"] --> RS
     Console["/console"] -->|"a quoted payment link"| CK["api/checkout-link.js"] --> ST["Stripe"] -->|"signed webhook"| WH["api/stripe-webhook.js"] --> DB
     Site -->|"Trustpilot rating"| TP["api/trustpilot.js"] --> TB["Trustpilot TrustBox data"]
     Site -->|"uptime feed, chat turns"| PX["api/status-feed.js, api/live-chat.js"] --> PI["The Pi"]

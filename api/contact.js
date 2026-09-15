@@ -35,6 +35,7 @@ import { callerAddress, callerWindow } from '../lib/http/rate.js'
 import { INK, INK_FAINT, INK_SOFT, SANS, eyebrowMark, page, rule } from '../lib/mail/frame.js'
 import { escapeHtml } from '../lib/mail/escape.js'
 import { block, line, sendNotice } from '../lib/mail/notice.js'
+import { replyAddressFor } from '../lib/leads/relay.js'
 import { CAMPAIGN_FIELDS } from '../src/app/data/leads/campaign.js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gujgtjqqurildqurpffh.supabase.co'
@@ -245,14 +246,18 @@ export function htmlBody(enquiry) {
  * Hands the enquiry to the inbox. The refusal is logged rather than returned:
  * an upstream message names account details that belong on this side of the
  * request.
+ *
+ * Reply-To is the lead's relay address where the lead has a row, so a reply
+ * written from any mailbox is filed and marked before it reaches them. Where
+ * the row was not written it is their own address, and the reply goes direct.
  */
-function deliver(enquiry, key) {
+function deliver(enquiry, key, lead) {
   return sendNotice(
     {
       subject: `Website enquiry from ${enquiry.name} (${METHOD_LABELS[enquiry.contactMethod]})`,
       text: textBody(enquiry),
       html: htmlBody(enquiry),
-      replyTo: enquiry.email,
+      replyTo: replyAddressFor({ id: lead?.id, name: enquiry.name }, enquiry.email),
     },
     key,
     { urgent: false }
@@ -346,8 +351,31 @@ export default async function handler(request, response) {
     return
   }
 
+  // Everybody who sends this form is a lead, whichever form it was. Until this
+  // was here the contact and tools forms recorded the campaign that produced
+  // the enquiry and threw the person away: the console counted an enquiry it
+  // could not name, and the only copy of who sent it was a message in an
+  // inbox. A deal was worked for a week out of that inbox and never appeared
+  // in the section built to show it.
+  //
+  // Before the delivery, because the notice carries the lead's relay address
+  // and that address is the row's id. The write never throws, so a database
+  // refusing it costs the record and never the enquiry: the notice then
+  // carries the sender's own address and the reply goes direct.
+  const lead = await keepLead({
+    source: enquiry.form === 'tools' ? SOURCES.tools : SOURCES.contact,
+    email: enquiry.email,
+    name: enquiry.name,
+    phone: enquiry.phone,
+    business: enquiry.company,
+    trade: enquiry.projectType,
+    note: enquiry.message,
+    campaign: enquiry.campaign,
+    path: enquiry.path,
+  })
+
   try {
-    await deliver(enquiry, key)
+    await deliver(enquiry, key, lead)
   } catch (error) {
     console.error('contact: %s', describe(error))
     response.status(502).json({ error: 'The message could not be sent. Please try again.' })
@@ -363,24 +391,6 @@ export default async function handler(request, response) {
   // should say so. Nothing else on the site can tell them apart afterwards: the
   // attribution row deliberately holds no address.
   if (enquiry.form === 'start') await markLead('enquired', enquiry.email)
-
-  // Everybody who sends this form is a lead, whichever form it was. Until this
-  // was here the contact and tools forms recorded the campaign that produced
-  // the enquiry and threw the person away: the console counted an enquiry it
-  // could not name, and the only copy of who sent it was a message in an
-  // inbox. A deal was worked for a week out of that inbox and never appeared
-  // in the section built to show it.
-  await keepLead({
-    source: enquiry.form === 'tools' ? SOURCES.tools : SOURCES.contact,
-    email: enquiry.email,
-    name: enquiry.name,
-    phone: enquiry.phone,
-    business: enquiry.company,
-    trade: enquiry.projectType,
-    note: enquiry.message,
-    campaign: enquiry.campaign,
-    path: enquiry.path,
-  })
   await markSpineLead('enquired', { email: enquiry.email })
 
   response.setHeader('Cache-Control', 'private, no-store')
