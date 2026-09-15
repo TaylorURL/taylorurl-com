@@ -27,7 +27,7 @@ import { cases, check, finish, ok, raised, same } from '../../harness/checks.js'
 
 process.env.GOOGLE_PLACES_API_KEY = 'a-places-key'
 
-const { work } = await import('../../../api/outreach/source.js')
+const { work, sweepDue, SWEEPS_EVERY } = await import('../../../api/outreach/source.js')
 
 // ── The endpoint ─────────────────────────────────────────────────────────
 
@@ -111,29 +111,45 @@ const NO_COLUMN = {
 }
 
 /**
- * A client that answers the four calls a sweep makes and records the writes.
+ * A client that answers the calls a sweep makes and records the writes.
  *
  * Rows upserted are held, so a second pair searching the same place id reads it
  * back as already on file - which is what the write-once first count depends
  * on and what a repeat across two pages would otherwise break.
+ *
+ * The two counts the decision reads come from the plan rather than from the
+ * rows held, since the cases are about what a run does with a figure rather
+ * than about counting: `queued` is what stands ready to be written to and
+ * `found` what the enrichment has not settled. Both default to nothing, which
+ * is a queue under its floor, so every case that is about the walk sweeps.
+ * `runs` is the ledger the run reads its own history back from.
  */
-function stubDb({ onFile = [], firsts = true } = {}) {
+function stubDb({ onFile = [], firsts = true, queued = 0, found = 0, runs = [] } = {}) {
   const held = new Set(onFile)
   const upserts = []
   const cursors = []
 
   const prospects = () => {
-    const state = { op: 'select', column: null, ids: [], rows: [] }
+    const state = { op: 'select', column: null, count: false, stage: null, ids: [], rows: [] }
     const chain = {
-      select(column) {
+      select(column, options) {
         state.column = column
+        state.count = Boolean(options?.head)
         return chain
       },
       limit() {
         return chain
       },
+      eq(column, value) {
+        if (column === 'stage') state.stage = value
+        return chain
+      },
+      not() {
+        return chain
+      },
       in(column, ids) {
-        state.ids = ids
+        if (column === 'stage') state.stage = ids
+        else state.ids = ids
         return chain
       },
       upsert(rows) {
@@ -147,6 +163,9 @@ function stubDb({ onFile = [], firsts = true } = {}) {
           for (const row of state.rows) held.add(row.place_id)
           return resolve({ error: null })
         }
+        if (state.count) {
+          return resolve({ count: state.stage === 'found' ? found : queued, error: null })
+        }
         if (state.column === 'rating_count_first') {
           return resolve(firsts ? { data: [], error: null } : NO_COLUMN)
         }
@@ -154,6 +173,42 @@ function stubDb({ onFile = [], firsts = true } = {}) {
           data: state.ids.filter(id => held.has(id)).map(id => ({ place_id: id })),
           error: null,
         })
+      },
+    }
+    return chain
+  }
+
+  // The ledger, answering the two reads the run makes of it: the latest run
+  // whose note begins the way a sweep's does, and the latest with an error.
+  const ledger = () => {
+    const state = { notes: null, errors: false }
+    const chain = {
+      select() {
+        return chain
+      },
+      eq() {
+        return chain
+      },
+      like(column, pattern) {
+        state.notes = pattern.replace(/%$/, '')
+        return chain
+      },
+      not(column) {
+        if (column === 'error') state.errors = true
+        return chain
+      },
+      order() {
+        return chain
+      },
+      limit() {
+        return chain
+      },
+      then(resolve) {
+        const sorted = [...runs].sort((a, b) => (a.started_at < b.started_at ? 1 : -1))
+        const match = sorted.find(run =>
+          state.errors ? run.error : String(run.note ?? '').startsWith(state.notes)
+        )
+        return resolve({ data: match ? [match] : [], error: null })
       },
     }
     return chain
@@ -177,7 +232,11 @@ function stubDb({ onFile = [], firsts = true } = {}) {
     return chain
   }
 
-  const from = table => (table === 'outreach_settings' ? settings() : prospects())
+  const from = table => {
+    if (table === 'outreach_settings') return settings()
+    if (table === 'outreach_runs') return ledger()
+    return prospects()
+  }
   return { db: { from }, upserts, cursors }
 }
 
@@ -204,14 +263,20 @@ const slowAfter = after => {
 }
 
 /** One sweep, against a scripted endpoint and a stand-in client. */
-async function sweep(script, { settings = SETTINGS, clock, ...plan } = {}) {
+async function sweep(script, { settings = SETTINGS, clock, now, ...plan } = {}) {
   const { get, sent } = endpoint(script)
   const { db, upserts, cursors } = stubDb(plan)
   const counts = { examined: 0, changed: 0 }
   const held = globalThis.fetch
   globalThis.fetch = get
   try {
-    const detail = await work({ db, settings, counts, ...(clock ? { clock } : {}) })
+    const detail = await work({
+      db,
+      settings,
+      counts,
+      ...(clock ? { clock } : {}),
+      ...(now ? { now } : {}),
+    })
     return { detail, sent, upserts, cursors, counts }
   } finally {
     globalThis.fetch = held
@@ -380,7 +445,7 @@ check('a run that runs out of window still moves the cursor over what it swept',
   // The stall the walk would otherwise settle into. advance() is the last
   // thing a run does, so a run killed at its ceiling files rows and moves the
   // cursor nowhere, and the next run takes the same slice, meets the same slow
-  // pairs and dies in the same place - forever, on a cron every two hours.
+  // pairs and dies in the same place - forever, on a cron every half hour.
   const { detail, cursors } = await sweep(everywhere([page('a1')]), { clock: slowAfter(1) })
 
   same(detail.searched, 1, 'pairs searched before the run gave up taking more')
@@ -426,6 +491,149 @@ check('a run that failed everywhere leaves the cursor where it was', async () =>
   const { cursors } = await sweep(everywhere([refuses(500, 'INTERNAL')])).catch(() => ({
     cursors: [],
   }))
+
+  same(cursors.length, 0, 'cursor writes made by a run that searched nothing')
+})
+
+// ── When a run sweeps at all ─────────────────────────────────────────────
+
+// A moment to read the ledger against, and the ledger rows around it. The
+// floor under the queue is a hundred and fifty with no cap set, which is what
+// SETTINGS carries, so two hundred waiting is a fed queue and ten is a short one.
+const NOON = new Date('2026-09-15T17:00:00Z')
+const minutesBefore = minutes => new Date(NOON.getTime() - minutes * 60_000).toISOString()
+const swept = minutes => ({
+  started_at: minutesBefore(minutes),
+  note: 'Swept 6 pairs from 0 of 28.',
+})
+const QUOTA =
+  "pest control in Highlands: places answered 429 Quota exceeded for quota metric 'SearchTextRequest' and limit 'SearchTextRequest per day'"
+const refusedFor = minutes => ({ started_at: minutesBefore(minutes), error: QUOTA })
+
+check('a queue above its floor with a recent pass behind it holds', async () => {
+  const { detail, sent, cursors } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 200,
+    runs: [swept(40)],
+  })
+
+  same(sent.length, 0, 'searches made by a run that had nothing to feed')
+  same(cursors.length, 0, 'cursor writes made by a run that swept nothing')
+  ok(detail.skipped, 'a run that held did not say so')
+  ok(String(detail.note).startsWith('Held'), `the note the ledger keeps: ${detail.note}`)
+})
+
+check('a queue above its floor still gets the map its pass', async () => {
+  const { detail, sent } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 200,
+    runs: [swept(SWEEPS_EVERY + 1)],
+  })
+
+  same(sent.length, 6, 'searches made once the pass came due')
+  ok(String(detail.note).startsWith('Swept'), `the note the ledger keeps: ${detail.note}`)
+})
+
+check('the pass is taken by the run that lands seconds after the mark', async () => {
+  // The cron fires on the half hour and the sweep before it started a few
+  // seconds past one, so the two-hour mark falls a few seconds after the run
+  // that should take it. Waiting for the next would make every pass two and
+  // a half hours, and a run a quarter early takes it instead.
+  ok(
+    sweepDue({ short: false, sweptMinutesAgo: SWEEPS_EVERY - 1 }),
+    'a pass a minute early was refused'
+  )
+  ok(
+    !sweepDue({ short: false, sweptMinutesAgo: SWEEPS_EVERY / 2 }),
+    'a pass an hour early was taken'
+  )
+  ok(sweepDue({ short: false, sweptMinutesAgo: null }), 'a map never swept was not swept')
+})
+
+check('a queue under its floor sweeps whatever the last pass was', async () => {
+  const { sent, cursors } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 10,
+    runs: [swept(1)],
+  })
+
+  same(sent.length, 6, 'searches made for a queue that had run short')
+  same(cursors[0], 6, 'where the next run picks the grid up')
+})
+
+check('a floor of found rows waiting on the enrichment holds the sweep', async () => {
+  // Sourcing more into a backlog the enrichment has not reached feeds the
+  // backlog rather than the queue. The shortage is the enrichment's then.
+  const { sent, detail } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 10,
+    found: 400,
+    runs: [swept(1)],
+  })
+
+  same(sent.length, 0, 'searches made with a floor of rows already found')
+  ok(detail.skipped, 'a run that held did not say so')
+})
+
+check('a quota spent earlier today holds the run without a request', async () => {
+  const { sent, detail, cursors } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 10,
+    runs: [refusedFor(120)],
+  })
+
+  same(sent.length, 0, 'searches made against a quota already known to be spent')
+  same(cursors.length, 0, 'cursor writes made by a run that swept nothing')
+  ok(String(detail.skipped).includes('quota'), `the reason given: ${detail.skipped}`)
+  ok(String(detail.note).startsWith('Held'), `the note the ledger keeps: ${detail.note}`)
+})
+
+check('a quota spent yesterday says nothing about today', async () => {
+  // Noon Central is ten in the morning Pacific, so a refusal eleven hours
+  // earlier fell the previous evening where the quota is counted, and the
+  // quota has reset since.
+  const { sent } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 10,
+    runs: [refusedFor(11 * 60)],
+  })
+
+  same(sent.length, 6, 'searches made the morning after a quota reset')
+})
+
+check('a refusal today that is not the quota does not hold the run', async () => {
+  const { sent } = await sweep(everywhere([page('a1')]), {
+    now: NOON,
+    queued: 10,
+    runs: [
+      { started_at: minutesBefore(30), error: 'plumber in Baytown: places answered 500 INTERNAL' },
+    ],
+  })
+
+  same(sent.length, 6, 'searches made after an ordinary failure')
+})
+
+check('a run the quota stops mid-slice keeps what it swept and stops there', async () => {
+  // Two pairs answer, the third is the day's quota. The cursor moves over the
+  // two, the third is the first pair of the morning, and the quota is on the
+  // row for the runs between to read.
+  let answered = 0
+  const script = () => (answered++ < 2 ? [page(`p${answered}`)] : [refuses(429, QUOTA)])
+  const { detail, sent, cursors } = await sweep(script, { now: NOON, queued: 10 })
+
+  same(sent.length, 3, 'searches made before the run stopped')
+  same(detail.searched, 2, 'pairs recorded as searched')
+  same(detail.failed, 0, 'pairs recorded as failed')
+  same(cursors[0], 2, 'the cursor moved over the pairs actually swept')
+  ok(String(detail.error).includes('per day'), `the error the ledger keeps: ${detail.error}`)
+  ok(String(detail.note).startsWith('Swept 2 pairs'), `the note the ledger keeps: ${detail.note}`)
+})
+
+check('a run the quota stops on its first pair is the failed run it was', async () => {
+  const { cursors } = await sweep(everywhere([refuses(429, QUOTA)]), {
+    now: NOON,
+    queued: 10,
+  }).catch(() => ({ cursors: [] }))
 
   same(cursors.length, 0, 'cursor writes made by a run that searched nothing')
 })

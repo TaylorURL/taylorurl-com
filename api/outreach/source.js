@@ -68,9 +68,28 @@
  * What stops it: sourcing_enabled being false, an empty town or trade list, a
  * missing API key, or every search in the slice failing. One or two failing
  * searches do not, since a single refused query says nothing about the rest.
+ *
+ * How often it looks is decided by what the sender needs rather than by the
+ * cron alone. The cron fires every half hour, and a run reads the send queue
+ * against its floor before it searches anything: under the floor it sweeps,
+ * and at or above it the run holds unless the map has gone SWEEPS_EVERY
+ * minutes without a pass, which is the cadence the cron used to fire at on its
+ * own. A run that holds makes three reads and returns, so a queue that is
+ * already fed costs nothing at Google, and one that has run short is searched
+ * for four times as often. `sweepDue` is the decision, and the run's note in
+ * `outreach_runs` says which way it went and on what figures.
+ *
+ * Google's text search carries a per-day quota of its own, set in the Cloud
+ * console rather than here, and answers 429 once it is spent. A run that meets
+ * it stops taking pairs, moves the cursor over what it swept and records what
+ * Google said as its error; the runs after it read that row and hold until the
+ * quota resets, which is midnight Pacific, rather than each spending a refused
+ * request to learn the same thing. Until 2026-09-15 that was six failed runs
+ * a night, and a sourcing that looked half broken from the ledger.
  */
 
 import { columnMissing } from '../../lib/db/rows.js'
+import { queueFloorFor } from '../../lib/outreach/sending/limits.js'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 
@@ -96,13 +115,14 @@ const API_KEY = process.env.GOOGLE_PLACES_API_KEY || ''
 /**
  * Pairs one run searches, which is what keeps it inside the function's window.
  *
- * How fast the grid is covered is set by the cron beside this rather than by
+ * How fast the grid is covered is set by how often a run sweeps rather than by
  * this number, and the two are worth reading together: the pairs a run takes,
- * times the runs in a day, is how much of the map a day sees, and everything
+ * times the sweeps in a day, is how much of the map a day sees, and everything
  * downstream is a share of that. A sweep slower than the sender empties what it
- * finds is a queue that runs dry between passes, which is what the every-two-
- * hours cadence in vercel.json is set against - the whole grid inside a working
- * week, which is about as often as a map of small businesses has anything new
+ * finds is a queue that runs dry between passes, which is why the sweeps come
+ * every half hour while the queue is under its floor and every SWEEPS_EVERY
+ * minutes once it is not - the whole grid inside a working week at the slower
+ * pace, which is about as often as a map of small businesses has anything new
  * on it.
  *
  * It moves against PAGES_PER_QUERY rather than on its own. A pair is up to
@@ -130,6 +150,40 @@ const PAGES_PER_QUERY = 3
 
 /** Results one page carries, and the most the Places API puts on one. */
 const RESULTS_PER_PAGE = 20
+
+/**
+ * How often the cron fires, in minutes. vercel.json is the real cadence; this
+ * is the same figure written where the decision can allow for it, since a pass
+ * due at two hours has to be caught by the run that lands a few seconds past
+ * the mark rather than the one half an hour later.
+ */
+const RUNS_EVERY = 30
+
+/**
+ * Minutes the map goes between passes while the queue is above its floor.
+ *
+ * Two hours is what the cron fired at on its own before the decision moved
+ * here, and it is kept as the floor under the sweep rather than dropped. The
+ * grid still comes round inside a working week at that pace, and a queue that
+ * reads full this morning was fed by the pass that ran while it did; stopping
+ * the map altogether until it ran short would hand the sender a queue that
+ * only ever fills after it has emptied.
+ */
+export const SWEEPS_EVERY = 120
+
+/**
+ * The zone Google's per-day quota is counted in, which is Google's own rather
+ * than the recipients'. The quota resets at midnight there, so a run reads the
+ * date of the refusal and the date now in this zone to know whether the two
+ * are the same day.
+ */
+const QUOTA_ZONE = 'America/Los_Angeles'
+
+/**
+ * What the ledger note of a run that searched begins with. The next run finds
+ * the last sweep by it, so it is the one word the note must not lose.
+ */
+const SWEPT = 'Swept'
 const SEARCH_TIMEOUT_MS = 10_000
 
 /**
@@ -170,7 +224,7 @@ const LAST_PAIR_STARTS_MS = config.maxDuration * 1000 - PAGES_PER_QUERY * SEARCH
  * searched, so a run that returned before that leaves the cursor where it was.
  *
  * updated_at is left alone deliberately. It records when somebody last changed
- * a setting, and a sweep every six hours moving it would bury that.
+ * a setting, and a sweep every half hour moving it would bury that.
  */
 async function advance(db, cursor) {
   const { error } = await db.from('outreach_settings').update({ source_cursor: cursor }).eq('id', 1)
@@ -388,12 +442,138 @@ async function known(db, ids) {
   return new Set(data.map(row => row.place_id))
 }
 
-export async function work({ db, settings, counts, clock = Date.now }) {
+/** The calendar date an instant fell on where the quota is counted. */
+function quotaDay(at) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: QUOTA_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(at instanceof Date ? at : new Date(at))
+}
+
+/**
+ * Whether what Google said is the day's search quota being spent, rather than
+ * one query being refused. A 429 alone is also what a burst over the per-minute
+ * limit answers with, and that one clears by the next pair; only the per-day
+ * limit is worth holding the rest of the day for.
+ */
+function quotaSpent(message) {
+  return /\b429\b/.test(String(message ?? '')) && /per day/i.test(String(message ?? ''))
+}
+
+/**
+ * What the sender needs, read as counts.
+ *
+ * The queue is the businesses standing ready to be written to. The console
+ * reads it as the length of the planned queue, which costs the stored
+ * PageSpeed report of every row; a stage count over the same rows is close
+ * enough to hold against a floor and costs one head read. It is a little
+ * generous, since the address rules and the held domains refuse some of what
+ * the stages say is ready, and that is the right side to be generous on: a
+ * sweep held for a queue that turns out shorter is the next run's to make up.
+ *
+ * The found count is the other half. Rows the enrichment has not settled yet
+ * are supply already in hand, and a run that swept more with a floor's worth
+ * of them waiting would be feeding a backlog rather than the queue. So a
+ * shortage is only sourcing's to answer when both are under the floor.
+ */
+async function demand(db, settings) {
+  const floor = queueFloorFor(Number(settings.daily_cap))
+  const [queue, backlog] = await Promise.all([
+    db
+      .from('outreach_prospects')
+      .select('id', { count: 'exact', head: true })
+      .in('stage', ['audited', 'enriched'])
+      .not('email', 'is', null),
+    db.from('outreach_prospects').select('id', { count: 'exact', head: true }).eq('stage', 'found'),
+  ])
+  if (queue.error) throw new Error(queue.error.message)
+  if (backlog.error) throw new Error(backlog.error.message)
+  const queued = queue.count ?? 0
+  const found = backlog.count ?? 0
+  return { floor, queued, found, short: queued < floor && found < floor }
+}
+
+/**
+ * What the ledger says about the runs before this one: when the map was last
+ * swept, and whether the day's quota is already spent.
+ *
+ * The ledger is the state rather than a column on the settings row because
+ * both facts are things a run wrote as it finished. A run that swept leaves a
+ * note beginning SWEPT; a run the quota stopped leaves what Google said in its
+ * error. Each is the latest of its kind, read on its own, so a night of holds
+ * between the quota and the morning does not push either out of range.
+ */
+async function history(db) {
+  const [swept, failed] = await Promise.all([
+    db
+      .from('outreach_runs')
+      .select('started_at')
+      .eq('job', 'source')
+      .like('note', `${SWEPT}%`)
+      .order('started_at', { ascending: false })
+      .limit(1),
+    db
+      .from('outreach_runs')
+      .select('started_at, error')
+      .eq('job', 'source')
+      .not('error', 'is', null)
+      .order('started_at', { ascending: false })
+      .limit(1),
+  ])
+  if (swept.error) throw new Error(swept.error.message)
+  if (failed.error) throw new Error(failed.error.message)
+  const last = failed.data?.[0]
+  return {
+    sweptAt: swept.data?.[0]?.started_at ?? null,
+    quotaSpentAt: last && quotaSpent(last.error) ? last.started_at : null,
+  }
+}
+
+/**
+ * Whether this run sweeps. A short queue always does; a fed one waits for the
+ * map's own pass, allowed half a cron's cadence early so the run that lands
+ * seconds past the mark takes it rather than the one after.
+ *
+ * @param {{short: boolean, sweptMinutesAgo: number|null}} state
+ * @returns {boolean}
+ */
+export function sweepDue({ short, sweptMinutesAgo }) {
+  if (short) return true
+  return sweptMinutesAgo === null || sweptMinutesAgo >= SWEEPS_EVERY - RUNS_EVERY / 2
+}
+
+/** A count, written the way the ledger note reads it. */
+const count = value => new Intl.NumberFormat('en-US').format(value)
+
+/** How the note describes the queue the decision was made on. */
+function standing({ queued, floor, found }) {
+  return `${count(queued)} waiting against a floor of ${count(floor)}, ${count(found)} found and not yet enriched`
+}
+
+export async function work({ db, settings, counts, clock = Date.now, now = new Date() }) {
   if (!settings.sourcing_enabled) return { skipped: 'sourcing is switched off' }
   if (!API_KEY) throw new Error('GOOGLE_PLACES_API_KEY is not set')
 
   const pairs = grid(settings)
   if (!pairs.length) return { skipped: 'no towns or trades are configured' }
+
+  const [need, ledger] = await Promise.all([demand(db, settings), history(db)])
+  // The day is Google's, so the refusal and the moment are both read in its
+  // zone. A refusal yesterday says nothing about today.
+  if (ledger.quotaSpentAt && quotaDay(ledger.quotaSpentAt) === quotaDay(now)) {
+    const reason = 'the Places search quota for the day is spent, and it resets at midnight Pacific'
+    return { skipped: reason, note: `Held: ${reason}. ${standing(need)}.`, ...need }
+  }
+  const sweptMinutesAgo = ledger.sweptAt
+    ? Math.max(0, (now.getTime() - new Date(ledger.sweptAt).getTime()) / 60_000)
+    : null
+  if (!sweepDue({ short: need.short, sweptMinutesAgo })) {
+    const ago = `${count(Math.round(sweptMinutesAgo))} minutes ago`
+    const reason = `the queue is above its floor and the map was swept ${ago}`
+    return { skipped: reason, note: `Held: ${standing(need)}, map swept ${ago}.`, ...need }
+  }
 
   const width = Math.min(QUERIES_PER_RUN, pairs.length)
   // Both lists are edited from the console, so the grid a cursor was written
@@ -409,18 +589,27 @@ export async function work({ db, settings, counts, clock = Date.now }) {
   const firsts = await firstCount(db)
   const failures = []
   let taken = 0
+  let quota = null
   for (const { town, trade } of slice) {
     // The first pair always goes, so a run that has nothing but a slow
     // endpoint still sweeps one pair and still moves the cursor past it.
     if (taken && clock() - began > LAST_PAIR_STARTS_MS) break
-    taken += 1
     let places
     try {
       places = await pages(`${trade} in ${town} TX`)
     } catch (cause) {
+      // The day's quota refuses every pair behind this one the same way, so
+      // the run stops here with the pair untaken: the cursor stays on it for
+      // the first run after the reset, and nothing else is spent finding out.
+      if (quotaSpent(cause.message)) {
+        quota = `${trade} in ${town}: ${cause.message}`
+        break
+      }
+      taken += 1
       failures.push(`${trade} in ${town}: ${cause.message}`)
       continue
     }
+    taken += 1
 
     const rows = places.map(place => prospect(place, town, trade)).filter(Boolean)
     counts.examined += rows.length
@@ -447,6 +636,11 @@ export async function work({ db, settings, counts, clock = Date.now }) {
     counts.changed += filing.length
   }
 
+  // A quota met on the first pair is a run that searched nothing, and it is
+  // recorded as the failure it is so the runs behind it can read it. Met later
+  // it is a shortened sweep with the same error on its row, which those runs
+  // read the same way.
+  if (quota && !taken) throw new Error(quota)
   if (failures.length === taken) throw new Error(failures[0])
 
   // Over the pairs this run actually reached rather than the pairs it was
@@ -461,8 +655,11 @@ export async function work({ db, settings, counts, clock = Date.now }) {
     next,
     searched: taken - failures.length,
     failed: failures.length,
+    ...need,
+    note: `${SWEPT} ${count(taken)} pairs from ${count(offset)} of ${count(pairs.length)}: ${standing(need)}.`,
     ...(taken < slice.length ? { left: slice.length - taken } : {}),
     ...(failures.length ? { failures: failures.slice(0, 3) } : {}),
+    ...(quota ? { error: quota } : {}),
   }
 }
 

@@ -2805,7 +2805,9 @@ export default function OutreachPage() {
    * Every figure on this strip is already measured out of something - a
    * target, a floor, the day's cap, everybody ever written to - so the
    * promoted one is drawn on that scale with the bar it answers to marked on
-   * it. A queue under its floor is the one thing here that needs a person, so
+   * it. A queue under its floor is the one thing here that may need a person:
+   * the sourcing sweeps harder on its own while it is short, so one that
+   * stays short is a map with nothing left on it or a search quota spent, and
    * it takes the lede on its own when it happens.
    */
   const outreachFigures = useMemo(() => {
