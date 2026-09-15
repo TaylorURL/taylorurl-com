@@ -109,7 +109,7 @@ const STANDALONE_SERVICES = [
   {
     slug: 'mobile-apps',
     label: 'iOS and Android Apps',
-    summary: 'Booking, ordering, and tools for the crew, on the phone they already carry.',
+    summary: 'Booking, ordering, and tools for the crew, on the phone everyone already carries.',
   },
 ]
 
