@@ -1,5 +1,5 @@
 /* nav: n11-mega-menu */
-/* footer: ft1-mast-headed */
+/* footer: ft2-statement-card */
 
 /*
  * The navigation is one full-width surface with two states. At the top of the
@@ -9,9 +9,10 @@
  * and its directory are one box in either state, and moving between triggers
  * travels the open panel rather than replaying its entrance.
  *
- * The footer anchors on the wordmark, the positioning line and the direct
- * contact details, with narrow columns beside it and the licence and location
- * below the rule.
+ * The footer opens on the wordmark and the positioning line set as a
+ * statement, with the ask on a card beside them; the directory and the direct
+ * contact details run on equal tracks under the rule, and the licence and
+ * location below that.
  */
 
 /* Geist ships as one variable file per family, served from this origin so the
