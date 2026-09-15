@@ -23,6 +23,7 @@ import { THEMES, useTheme } from '@hooks/theme/useTheme'
 import { supabase } from '@data/supabase/supabaseClient'
 import { ConsoleBar } from './shell/ConsoleBar'
 import { ConsoleSidebar } from './shell/ConsoleSidebar'
+import { ConsoleStrip } from './shell/ConsoleStrip'
 import { ConsoleSearch } from './shell/ConsoleSearch'
 import { menuSections, SECTIONS, sectionHref } from './lib/sections'
 import ProjectChecklist from './intake/ProjectChecklist'
@@ -889,6 +890,11 @@ export default function ConsoleFrame() {
               theme={choice}
               signInTo={here}
             />
+
+            {/* The same sections as the column, in a row, for the widths at
+                which the column is a drawer. A phone should move between
+                sections without opening anything. */}
+            <ConsoleStrip sections={sections} />
 
             <div className="console-work" ref={workRef} tabIndex={-1}>
               {publicOnly || !figures ? null : unassigned ? (

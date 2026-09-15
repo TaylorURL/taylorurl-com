@@ -1,4 +1,5 @@
 import {
+  MarkDevice,
   MarkFrame,
   MarkGuard,
   MarkInflow,
@@ -171,9 +172,9 @@ export const SERVICE_PAGES = IS_SECOND_SITE
   : SERVICE_LINES.map(line => ({ ...line, ...DETAIL[line.slug] }))
 
 /**
- * The two services that are not one of the four lines. Both are real work with
- * a page of their own, and neither is a stage of a build, so they carry their
- * own name and summary rather than a slug in `@data/services`.
+ * The services that are not one of the four lines. Each is real work with a
+ * page of its own, and none is a stage of a build, so they carry their own name
+ * and summary rather than a slug in `@data/services`.
  */
 export const EXTRA_SERVICES = IS_SECOND_SITE
   ? []
@@ -189,6 +190,12 @@ export const EXTRA_SERVICES = IS_SECOND_SITE
         name: 'Getting Found on Google',
         summary: 'Organic search work, included in the monthly.',
         mark: MarkInflow,
+      },
+      {
+        path: '/services/mobile-apps',
+        name: 'iOS and Android Apps',
+        summary: 'An app on both stores, built by the team that built the site.',
+        mark: MarkDevice,
       },
     ]
 

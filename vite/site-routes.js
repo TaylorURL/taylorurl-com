@@ -125,8 +125,8 @@ const STUDIO_STATIC_ROUTES = [
     priority: '0.9',
   },
   ...SERVICE_ROUTES,
-  // Business email and the search work: services in their own right, each with
-  // a page rather than a step inside another one.
+  // Business email, the search work and the apps: services in their own right,
+  // each with a page rather than a step inside another one.
   {
     path: '/services/business-email',
     name: 'Business Email',
@@ -139,6 +139,15 @@ const STUDIO_STATIC_ROUTES = [
     path: '/services/seo',
     name: 'Local Search Visibility',
     summary: 'Being found in local search: the profile, the listings, and the pages behind them.',
+    group: 'services',
+    changefreq: 'monthly',
+    priority: '0.8',
+  },
+  {
+    path: '/services/mobile-apps',
+    name: 'iOS and Android Apps',
+    summary:
+      'Apps for iPhone and Android: booking, ordering, loyalty, and tools for staff, wired to the website and published on both stores.',
     group: 'services',
     changefreq: 'monthly',
     priority: '0.8',
