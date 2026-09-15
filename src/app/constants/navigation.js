@@ -6,6 +6,7 @@ import { INCLUDED_SERVICES, SERVICE_LINES, SOFTWARE_SERVICES } from '@data/pages
 import { SERVICE_MARKS } from '@data/pages/serviceMarks'
 import { MarkFacebook, MarkInstagram } from '@components/marks/brandMarks'
 import { REVIEW_SOURCE_MARKS } from '@components/marks/reviewMarks'
+import { SERIES_MARKS } from '@components/marks/seriesMarks'
 import { FACEBOOK_PAGE_URL } from '@data/reputation/facebook'
 import { reviewSource, reviewSourcesWith } from '@data/reputation/reviews'
 import { TOOLS_INDEX } from '@data/pages/tools'
@@ -151,20 +152,14 @@ const CASE_STUDY_ENTRIES = IS_SECOND_SITE
   ? []
   : FEATURED_STUDIES.map(({ displayUrl, summary }) => {
       const project = PORTFOLIO_PROJECTS.find(entry => entry.displayUrl === displayUrl)
-      return project && { to: `/portfolio/${studySlug(project)}`, label: project.name, summary }
-    }).filter(Boolean)
-
-// The same three studies the column lists, as the captures the portfolio
-// renders. Reading them off `FEATURED_STUDIES` is what stops the strip from
-// showing one set of sites while the names beside it say another. Written
-// against the key for the reason the entries above it are: this is the second of
-// the two reads of the portfolio in this file, and either one left standing
-// carries the whole of it just as far as both would.
-const CASE_STUDY_SHOTS = IS_SECOND_SITE
-  ? []
-  : FEATURED_STUDIES.map(({ displayUrl }) => {
-      const project = PORTFOLIO_PROJECTS.find(entry => entry.displayUrl === displayUrl)
-      return project && { src: portfolioPreviewSrc(project, 'desktop'), name: project.name }
+      return (
+        project && {
+          to: `/portfolio/${studySlug(project)}`,
+          label: project.name,
+          summary,
+          shot: portfolioPreviewSrc(project, 'desktop'),
+        }
+      )
     }).filter(Boolean)
 
 // The blog's running series, which are the shelves the articles sit on.
@@ -174,11 +169,10 @@ const CASE_STUDY_SHOTS = IS_SECOND_SITE
 // a route the site prerendered, listed in its own sitemap, and linked from
 // nowhere above the article a reader was already reading.
 //
-// Names alone. A series name says what the series is about - that is the whole
-// job a series name has - and the tagline under it would be six more lines in a
-// column that is a shelf rather than a pitch. Same reason the studies above
-// carry no mark: one drawing repeated down a column of six says nothing the six
-// names do not.
+// Each shelf carries its tagline and its mark, the way every other row in the
+// panel does: a shelf called Speed & Vitals or Owner's Handbook is a name a
+// reader has to open to find out about, and the line the register already
+// holds for it answers that here.
 //
 // Read off `@data/blog/series`, which is the register itself rather than
 // `BLOG_SERIES_INDEX`. That index is derived from every article on the site, so
@@ -190,7 +184,12 @@ const CASE_STUDY_SHOTS = IS_SECOND_SITE
 // the site with no blog the fold leaves nothing behind to be kept.
 const BLOG_SERIES_ENTRIES = IS_SECOND_SITE
   ? []
-  : BLOG_SERIES.map(series => ({ to: `/blog/series/${series.slug}`, label: series.name }))
+  : BLOG_SERIES.map(series => ({
+      to: `/blog/series/${series.slug}`,
+      label: series.name,
+      summary: series.tagline,
+      mark: SERIES_MARKS[series.mark],
+    }))
 
 export const FACEBOOK_URL = FACEBOOK_PAGE_URL
 
@@ -262,6 +261,8 @@ const REVIEW_FEATURE = featureSource && {
   summary: featureSource.featureLine,
   mark: REVIEW_SOURCE_MARKS[featureSource.key],
   tone: featureSource.key,
+  // Tim Mossholder, unsplash.com/photos/XU84U7xhQ_4
+  image: '/images/menu/reviews.webp',
   marks: reviewSourcesWith('reads')
     .filter(source => source.key !== featureSource.key)
     .map(source => ({
@@ -280,9 +281,25 @@ const REVIEW_FEATURE = featureSource && {
 // panel is columns: each has a head naming what is under it and entries
 // carrying a destination and the line that says what is there.
 //
-// `feature` is the group's own index page, promoted onto a card beside the
-// columns. Every group has one, so a panel always holds an answer when none of
-// the rows is it.
+// `feature` is the group's own index page, which stands as the cover down the
+// left edge of the sheet. Every group has one, so a sheet always holds an
+// answer when none of the rows is it. A cover carries a photograph where it
+// has nothing of its own to show - the studies' cover stands its captures on
+// the plane instead. The photographs are from Unsplash under its licence,
+// which asks for nothing back; each is named beside the path it is served
+// from, so a replacement is a file and a line rather than a hunt.
+//
+// The sheet is the width of the bar, and `grid` is how many tracks its body
+// runs. Each column names how it is drawn: `kind: 'tiles'` for a run of cards
+// `per` to a row, rows otherwise, `dense` for rows of names alone, and `span`
+// and `rows` for where it sits on the grid, so a tall column can stand beside
+// two short ones stacked.
+//
+// A body wider than `wideAt` pixels takes the group's wide layout instead:
+// `gridWide` tracks, and each column's `spanWide`, `rowsWide` and `perWide`
+// where it names them. The wide layout is the same parts in one row rather
+// than two, which is what a sheet the width of a large screen has room for
+// and what keeps its right-hand half from being ground.
 //
 // An entry without a `summary` is a name that already says what it is, and the
 // panel sets those in a tighter row. Two columns are the whole of that case:
@@ -312,25 +329,41 @@ const STUDIO_NAV_GROUPS = [
     // of its own under a plain heading reads as a second bill. The way to
     // start a conversation is the bar's own button and the Resources panel's
     // last row, so it is not a fourth column here.
+    // The two ways a site is bought lead as tiles, and the two lists stand
+    // beside them where there is room and under them where there is not. The
+    // lists are names alone: what is included is a checklist, and a checklist
+    // with a sentence under every line is a page rather than a list.
+    grid: 2,
+    gridWide: 4,
+    wideAt: 960,
     columns: [
-      { head: 'Websites', items: WEBSITE_ENTRIES },
-      { head: 'Included With Every Site', items: INCLUDED_ENTRIES },
-      { head: 'Separate Projects', items: SOFTWARE_ENTRIES },
+      { head: 'Websites', items: WEBSITE_ENTRIES, kind: 'tiles', per: 2, span: 2 },
+      { head: 'Included With Every Site', items: INCLUDED_ENTRIES, dense: true },
+      { head: 'Separate Projects', items: SOFTWARE_ENTRIES, dense: true },
     ],
     feature: {
       to: '/services',
       label: 'All Services',
       summary: 'What each one covers, what keeps it running, and how long it takes.',
       mark: MarkIndex,
+      // Alen Kuriakose, unsplash.com/photos/FhWWzP6LAkY
+      image: '/images/menu/services.webp',
     },
   },
   {
     key: 'work',
     label: 'Work',
+    // The studies lead as three tiles, each under its own capture, and the two
+    // short lists stand under them - or beside them, on a sheet wide enough
+    // that three captures still read as websites with the lists alongside.
+    grid: 2,
+    gridWide: 4,
+    wideAt: 1150,
     columns: [
-      { head: 'Case Studies', items: CASE_STUDY_ENTRIES },
+      { head: 'Case Studies', items: CASE_STUDY_ENTRIES, kind: 'tiles', per: 3, span: 2 },
       {
         head: 'How It Runs',
+        dense: true,
         items: [
           {
             to: '/process',
@@ -358,6 +391,7 @@ const STUDIO_NAV_GROUPS = [
       // pages under one index that the bar never named.
       {
         head: 'Trades and Towns',
+        dense: true,
         items: [
           {
             to: '/industries',
@@ -379,17 +413,27 @@ const STUDIO_NAV_GROUPS = [
       label: 'Recent Work',
       summary: 'Live sites built for businesses around Baytown and Houston.',
       mark: MarkStack,
-      shots: CASE_STUDY_SHOTS,
+      // Dmitry Kropachev, unsplash.com/photos/n6zRhE0eJJA
+      image: '/images/menu/work.webp',
     },
   },
   {
     key: 'reviews',
     label: 'Reviews',
+    // The listings that can be read run down the left with what each one
+    // holds, and the two short lists - where to leave one, and the work the
+    // reviews are about - stack beside them, or stand in a row of three where
+    // the sheet is wide enough for it.
+    grid: 5,
+    gridWide: 7,
+    wideAt: 960,
     columns: [
-      reviewColumn('Read the Reviews', 'reads', true),
-      reviewColumn('Leave a Review', 'writes', false),
+      { ...reviewColumn('Read the Reviews', 'reads', true), span: 3, rows: 2, rowsWide: 1 },
+      { ...reviewColumn('Leave a Review', 'writes', false), span: 2, dense: true },
       {
         head: 'The Work Behind Them',
+        span: 2,
+        dense: true,
         items: [
           {
             to: '/portfolio',
@@ -417,13 +461,29 @@ const STUDIO_NAV_GROUPS = [
   {
     key: 'tools',
     label: 'Tools',
+    // Four tools as four tiles, two by two, and the one built to order as a
+    // row under them; on a wide sheet the four run in one row and the one
+    // built to order stands at the end of it.
+    grid: 2,
+    gridWide: 4,
+    wideAt: 960,
     columns: [
-      { head: 'Free Tools', items: TOOL_ENTRIES },
-      // The paid work sits beside the free tools so the two stay distinct: a
+      {
+        head: 'Free Tools',
+        items: TOOL_ENTRIES,
+        kind: 'tiles',
+        per: 2,
+        perWide: 4,
+        span: 2,
+        spanWide: 3,
+      },
+      // The paid work sits under the free tools so the two stay distinct: a
       // tool built for one business is the automation page, and the wording is
       // read from the service data rather than restated here.
       {
         head: 'Built to Order',
+        span: 2,
+        spanWide: 1,
         items: SOFTWARE_ENTRIES.filter(entry => entry.to.endsWith('/automation')),
       },
     ],
@@ -432,15 +492,31 @@ const STUDIO_NAV_GROUPS = [
       label: 'All Tools',
       summary: 'Free tools that run in your browser, with no account and no fee.',
       mark: MarkIndex,
+      // Jakub Żerdzicki, unsplash.com/photos/FjtWczJWRlc
+      image: '/images/menu/tools.webp',
     },
   },
   {
     key: 'resources',
     label: 'Resources',
+    // The six shelves as tiles, two to a row or three where there is room, and
+    // the three answers as rows in a column beside them.
+    grid: 3,
+    gridWide: 4,
+    wideAt: 960,
     columns: [
-      { head: 'Article Series', items: BLOG_SERIES_ENTRIES },
+      {
+        head: 'Article Series',
+        items: BLOG_SERIES_ENTRIES,
+        kind: 'tiles',
+        per: 2,
+        perWide: 3,
+        span: 2,
+        spanWide: 3,
+      },
       {
         head: 'Answers',
+        span: 1,
         items: [
           {
             to: '/faq',
@@ -468,6 +544,8 @@ const STUDIO_NAV_GROUPS = [
       label: 'The Blog',
       summary: 'Plain-English pieces on websites, Google, and getting more customers.',
       mark: MarkPage,
+      // Yasamine June, unsplash.com/photos/2PMdixMFvvU
+      image: '/images/menu/resources.webp',
     },
   },
 ]
