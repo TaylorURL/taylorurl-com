@@ -112,7 +112,9 @@
   .console-icon-button,
   .console-scope-button,
   .console-window-mini,
-  .console-foot-button {
+  .console-foot-button,
+  .console-strip a,
+  .console-views button {
     transition-duration: var(--motion-off);
   }
 
@@ -423,9 +425,15 @@
 
 /* The heading starts where the labels under it start. The rows carry their own
    margin so the hover ground stops short of the rail's edge, and a heading set
-   from the rail instead lands two pixels out from every word it heads. */
+   from the rail instead lands two pixels out from every word it heads.
+
+   Tracked capitals, and the only place in the console that uses them. There
+   are four headings on the rail and each is one word, so the decoding cost
+   that rules capitals out of a table head does not apply, and the shape they
+   make - a short grey rule over a run of rows - is what lets the eye land on a
+   group without reading it. */
 .console-nav-group-head {
-  @apply pb-1.5 pt-1 text-[11px] font-semibold;
+  @apply pb-1.5 pt-1 text-[10.5px] font-semibold uppercase tracking-[0.07em];
   padding-inline: 1.125rem;
   color: var(--paper-ink-faint);
 }
@@ -437,7 +445,7 @@
    holds still. The right side is tighter than the left because the lock and
    the chevron that sit there are already inset within their own box. */
 .console-nav-item {
-  @apply relative mx-2 flex min-h-[36px] cursor-pointer items-center gap-2 text-[14px] font-medium tracking-[-0.02em] transition-colors duration-150 ease-out-soft;
+  @apply relative mx-2 flex min-h-[32px] cursor-pointer items-center gap-2.5 text-[13.5px] font-medium tracking-[-0.01em] transition-colors duration-150 ease-out-soft;
   padding-inline: 0.625rem 0.5rem;
   border-radius: var(--console-radius-sm);
   color: var(--paper-ink-soft);
@@ -484,44 +492,69 @@
   }
 }
 
-/* The open section is set into the rail: one step darker than the ground it
-   sits on, and nothing else - no edge, no shadow, no white. Lifting it onto
-   the card's own surface was the other way to do it, and it made the row read
-   as floating in front of the rail, which is a claim about depth nothing else
-   in the rail makes. Recessing says the row is the part of the rail you are
-   standing in, which is what being on a page is. The step is small enough to
-   survive the hover ground landing over it without reaching for the accent -
-   and an accent spent on saying "you are here" is an accent that no longer
-   means "this is the thing to press". The ink goes to full strength alongside
-   it, which is the other half of the mark and costs nothing. */
+/* The open section reads in the accent: a wash of it under the row, the
+   label and the mark in it, and a short bar of it standing in the rail's own
+   margin beside the row. Three statements of one colour, because the rail is
+   read from across the desk and from the corner of the eye, and a recessed
+   grey step - what this replaced - was legible only to a reader already
+   looking at it. The bar is what survives when the rail is narrowed to its
+   marks alone: a wash behind a sixteen-pixel glyph is a wash nobody sees. The
+   accent still means "press this" everywhere else, and the one row it cannot
+   mean that on is the row already pressed. */
 .console-nav-item[aria-current='page'],
 .console-nav-item[aria-current='page']:hover {
   background-color: var(--console-rail-active);
-  color: var(--paper-ink);
+  color: var(--accent);
+}
+
+.console-nav-item[aria-current='page']::before {
+  content: '';
+  @apply absolute top-1/2 w-[3px] -translate-y-1/2 rounded-full;
+  left: -0.5rem;
+  height: 1rem;
+  background-color: var(--accent);
 }
 
 .console-nav-item[aria-current='page'] .console-nav-mark,
 .console-nav-item[aria-current='page']:hover .console-nav-mark {
-  color: var(--paper-ink);
+  color: var(--accent);
 }
 
 .console-nav-item:active {
   transform: scale(0.99);
 }
 
-/* The width control is the only thing in here and it is a desktop control, so
-   below the breakpoint the strip goes with it. Left in, it is a ruled band at
-   the bottom of the drawer with nothing in it, which reads as a row that failed
-   to load rather than as a border. */
+/* The account and the width control, at the foot of the column.
+
+   The account used to sit at the head, under the brand, which put the thing
+   changed least - who is signed in - above the thing changed most, the
+   section. At the foot it is where every desk tool keeps it, the sections
+   start where the eye starts, and the panel it opens grows upward over the
+   rail rather than downward over the rows a reader is about to press. On a
+   phone the foot is the bottom of the drawer, which is where a thumb rests. */
 .console-sidebar-foot {
-  @apply hidden flex-shrink-0 px-2 py-2 lg:block;
+  @apply flex flex-shrink-0 flex-col gap-1 px-2 py-2;
   border-top: 1px solid var(--paper-hairline);
 }
 
+/* A signed-out reader has no account, which leaves the width control alone
+   down here, and that is a desktop control. Below the breakpoint the foot
+   goes with it rather than standing as a ruled band with nothing in it. */
+.console-sidebar-foot[data-empty='true'] {
+  @apply hidden lg:flex;
+}
+
 .console-foot-button {
-  @apply flex min-h-[36px] w-full cursor-pointer items-center gap-2.5 px-2.5 text-[13px] transition-colors duration-150 ease-out-soft;
+  @apply flex min-h-[30px] w-full cursor-pointer items-center gap-2.5 px-2.5 text-[12.5px] transition-colors duration-150 ease-out-soft;
   border-radius: var(--console-radius-sm);
   color: var(--paper-ink-mute);
+}
+
+.console-foot-button kbd {
+  @apply ml-auto rounded-[var(--r-tiny)] px-1 py-px font-mono text-[10px] font-medium;
+  background-color: var(--paper-field);
+  box-shadow: 0 0 0 1px var(--paper-hairline);
+  color: var(--paper-ink-faint);
 }
 
 .console-foot-button:hover {
@@ -613,7 +646,7 @@
    Which screen this is has to survive: the type gives way before the name
    does. */
 .console-title h1 {
-  @apply min-w-0 truncate text-[17px] font-semibold tracking-tight sm:text-[19px];
+  @apply min-w-0 truncate text-[17px] font-semibold tracking-tight sm:text-[15px];
   color: var(--paper-ink);
 }
 
@@ -654,10 +687,10 @@
 .console-window-mini {
   @apply inline-flex min-w-0 cursor-pointer items-center gap-2 text-[13px] font-medium transition-[background-color,border-color,color] duration-150 ease-out-soft;
   height: 2.25rem;
-  padding-inline: 0.5rem 0.375rem;
-  border-radius: var(--console-radius-sm);
+  padding-inline: 0.625rem 0.5rem;
+  border-radius: 999px;
   border: 1px solid var(--paper-hairline-strong);
-  background-color: var(--paper-field);
+  background-color: var(--console-card-bg);
   color: var(--paper-ink);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
@@ -669,7 +702,7 @@
 @media (min-width: 768px) {
   .console-scope-button,
   .console-window-mini {
-    height: 2rem;
+    height: 1.875rem;
   }
 }
 
@@ -745,14 +778,14 @@
 }
 
 .console-segmented {
-  @apply inline-flex items-center p-0.5;
-  border-radius: var(--console-radius-sm);
+  @apply inline-flex items-center gap-0.5 p-[3px];
+  border-radius: 999px;
   background-color: var(--wash-paper-strong);
 }
 
 .console-segmented button {
-  @apply h-7 cursor-pointer px-2.5 text-[13px] font-medium transition-[background-color,color,box-shadow] duration-150 ease-out-soft;
-  border-radius: var(--console-radius-sm);
+  @apply h-6 cursor-pointer px-2.5 text-[12.5px] font-medium transition-[background-color,color,box-shadow] duration-150 ease-out-soft;
+  border-radius: 999px;
   color: var(--paper-ink-mute);
 }
 
@@ -782,42 +815,39 @@
 
 /* ── The views inside a section ───────────────────────────────────────── */
 
-/* A row of tabs on the card's own ground, with the open one lifted onto a
-   ground of its own.
+/* A row of tabs on the page's own ground, ruled underneath, with the open one
+   marked by a bar of the accent on that rule.
+
+   It is not a card. The views are a way of reading the section rather than
+   part of what it says, and a card of pills above a card of figures was two
+   raised surfaces for one thing. Drawn on the ground with one rule, the tabs
+   read as the section's own head and the cards under them as its body.
 
    It wraps rather than scrolling. A row that slides its last tabs off the edge
    hides views a reader has no reason to look for, and the section's own rule
-   is that a thing on the page fits the page. A wrapped row is a second line of
-   the same set, so the tabs sit tight to each other and the lines are close
-   enough to read as one block. */
+   is that a thing on the page fits the page. */
 .console-views {
-  @apply flex flex-wrap items-stretch gap-x-0.5 gap-y-1 p-1.5;
-  border-radius: var(--console-radius);
-  background-color: var(--console-card-bg);
-  box-shadow: var(--console-card-shadow);
+  @apply flex flex-wrap items-stretch gap-x-1;
+  border-bottom: 1px solid var(--paper-hairline);
 }
 
 .console-views button {
-  @apply flex h-10 cursor-pointer items-center gap-2 whitespace-nowrap px-3 text-[13px] font-medium transition-[background-color,color] duration-150 ease-out-soft;
-  border-radius: var(--console-radius-sm);
+  @apply relative -mb-px flex h-10 cursor-pointer items-center gap-2 whitespace-nowrap px-3 text-[13.5px] font-medium transition-[color,border-color] duration-150 ease-out-soft;
+  border-bottom: 2px solid transparent;
   color: var(--paper-ink-mute);
 }
 
 .console-views button:hover {
-  background-color: var(--console-row-hover);
   color: var(--paper-ink);
 }
 
-/* The open tab takes the ground, the accent and the heavier weight together
-   rather than any one of the three alone.
-
-   It is the mark the column already uses for the open section, one level down:
-   a reader who has learnt where they are once does not learn it again for the
-   views inside. A rule underneath instead would be an underline drawn against
-   nothing, since the bar is its own card and the work below it is another. */
+/* The open tab takes the ink and the bar together rather than either alone. It
+   is the mark the column already uses for the open section, one level down: a
+   reader who has learnt where they are once does not learn it again for the
+   views inside. */
 .console-views button[aria-current='page'] {
-  background-color: var(--wash-accent);
-  color: var(--accent);
+  border-bottom-color: var(--accent);
+  color: var(--paper-ink);
   font-weight: 600;
 }
 
@@ -832,7 +862,7 @@
 }
 
 .console-views-count {
-  @apply rounded-[var(--r-tiny)] px-1.5 py-0.5 font-mono text-[11px] tabular-nums leading-none;
+  @apply rounded-full px-1.5 py-0.5 font-mono text-[11px] tabular-nums leading-none;
   background-color: var(--wash-paper-strong);
   color: var(--paper-ink-mute);
 }
@@ -841,7 +871,7 @@
    deeper one of the same colour rather than the neutral it carries elsewhere -
    a wash at the same strength would read as a hole in the tab. */
 .console-views button[aria-current='page'] .console-views-count {
-  background-color: color-mix(in srgb, var(--accent) 18%, transparent);
+  background-color: var(--wash-accent);
   color: var(--accent);
 }
 
@@ -890,7 +920,7 @@
   @apply flex h-9 w-9 cursor-pointer items-center justify-center border transition-colors duration-150 ease-out-soft lg:h-8 lg:w-8;
   border-radius: var(--console-radius-sm);
   border-color: var(--paper-hairline-strong);
-  background-color: var(--paper-field);
+  background-color: var(--console-card-bg);
   color: var(--paper-ink-soft);
 }
 
@@ -1125,9 +1155,9 @@
 
 .figures-lede {
   display: grid;
-  gap: 1.25rem;
+  gap: 1.5rem;
   grid-template-columns: minmax(0, 1fr);
-  padding: 0.9rem 1.15rem 1rem;
+  padding: 0.875rem 1.125rem 1rem;
   border-radius: var(--console-radius);
   background-color: var(--console-card-bg);
   box-shadow: var(--console-card-shadow);
@@ -1158,8 +1188,8 @@
 }
 
 .figures-lede-value {
-  @apply min-h-[42px] text-[40px] font-semibold tabular-nums leading-none tracking-[-0.03em];
-  margin-top: 0.35rem;
+  @apply min-h-[40px] text-[38px] font-semibold tabular-nums leading-none tracking-[-0.03em];
+  margin-top: 0.3rem;
   color: var(--paper-ink);
 }
 
@@ -1226,7 +1256,7 @@
 .figures-tile {
   --open-h: 14px;
   --open-gap: 0.375rem;
-  @apply block w-full min-w-0 cursor-pointer px-4 pb-3 pt-2.5 text-left;
+  @apply block w-full min-w-0 cursor-pointer px-3.5 pb-3 pt-3 text-left;
   border-radius: var(--console-radius);
   background-color: var(--console-card-bg);
   box-shadow: var(--console-card-shadow);
@@ -1250,7 +1280,7 @@
 }
 
 .figures-tile-value {
-  @apply mt-1 block min-h-[26px] text-[23px] font-semibold tabular-nums leading-none tracking-tight;
+  @apply mt-1 block min-h-[26px] text-[22px] font-semibold tabular-nums leading-none tracking-[-0.02em];
   color: var(--paper-ink);
 }
 
@@ -1590,8 +1620,11 @@
   box-shadow: var(--console-card-shadow);
 }
 
+/* Forty-four pixels, the height of the bar's own controls, so a card head
+   and a row of chips beside it sit on one line. The name and the aside share
+   it; a note wraps under them onto a second. */
 .console-card-head {
-  @apply flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-5 pb-3 pt-4;
+  @apply flex min-h-[44px] flex-wrap items-center justify-between gap-x-4 gap-y-1 px-[18px] py-2;
   border-bottom: 1px solid var(--paper-hairline);
 }
 
@@ -1601,7 +1634,7 @@
    is gone. There it wraps instead, which costs a row of the head and keeps the
    whole name. */
 .console-card-head h2 {
-  @apply text-[15px] font-semibold tracking-tight sm:whitespace-nowrap;
+  @apply text-[13.5px] font-semibold tracking-[-0.01em] sm:whitespace-nowrap;
   color: var(--paper-ink);
 }
 
@@ -1610,7 +1643,7 @@
    of them on a page. The mono is kept for figures, where the fixed advance is
    doing work. */
 .console-card-head p {
-  @apply text-[13px];
+  @apply text-[12px];
   color: var(--paper-ink-mute);
 }
 
@@ -1620,7 +1653,7 @@
    and above the figures, which is the order somebody reads a card they have
    not used before: what it is, then what it says. */
 .console-card-note {
-  @apply w-full text-[13px] leading-snug;
+  @apply w-full pb-1 text-[12.5px] leading-snug;
   color: var(--paper-ink-mute);
 }
 
@@ -1640,9 +1673,17 @@
    so neither is doing the work alone - which is what keeps it legible to a
    reader who cannot separate the two colours. */
 .console-badge {
-  @apply inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[var(--r-tiny)] px-1.5 py-0.5 text-[11px] font-semibold;
+  @apply inline-flex flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full py-[3px] pl-2 pr-2 text-[11px] font-semibold;
   background-color: var(--wash-paper-strong);
   color: var(--paper-ink-mute);
+}
+
+/* The dot is the state in the colour alone, before the word. A row of badges
+   is scanned for the one that is not green, and a dot at full strength is
+   found faster than a tinted word. */
+.console-badge-dot {
+  @apply h-1.5 w-1.5 flex-shrink-0 rounded-full;
+  background-color: currentColor;
 }
 
 .console-badge[data-tone='good'] {
@@ -1750,6 +1791,54 @@
   }
 }
 
+/* ── The phone's row of sections ──────────────────────────────────────────
+   Under the desk width the column is a drawer, and a drawer is a trip: open
+   it, find the row, press it, watch it close. Moving from Overview to Pages
+   and back is the most common thing a reader does in here, so on a phone the
+   sections stand in a row under the bar as well, scrolled sideways with the
+   open one in view. The drawer keeps the account and the sites, which are
+   changed once a visit rather than once a minute. */
+.console-strip {
+  @apply flex flex-shrink-0 gap-1 overflow-x-auto px-3 py-2 lg:hidden;
+  border-bottom: 1px solid var(--paper-hairline);
+  background-color: var(--console-bar-bg);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.console-strip::-webkit-scrollbar {
+  display: none;
+}
+
+.console-strip a {
+  @apply flex h-8 flex-shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3 text-[13px] font-medium transition-colors duration-150 ease-out-soft;
+  color: var(--paper-ink-mute);
+  scroll-margin-inline: 0.75rem;
+}
+
+.console-strip a[aria-current='page'] {
+  background-color: var(--console-rail-active);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.console-strip a[data-locked='true'] {
+  color: var(--paper-ink-faint);
+}
+
+.console-strip a svg {
+  @apply h-3 w-3 flex-shrink-0;
+}
+
+/* The groups are separated by a hairline rather than a heading, since a
+   heading in a row that scrolls is a word the reader passes rather than one
+   they file rows under. */
+.console-strip-rule {
+  @apply mx-1 w-px flex-shrink-0 self-stretch;
+  background-color: var(--paper-hairline-strong);
+}
+
 /* ── The shortcut list ────────────────────────────────────────────────── */
 
 .console-modal {
@@ -1817,6 +1906,15 @@
   z-index: var(--z-sticky);
   background-color: var(--console-card-bg);
   border-bottom: 1px solid var(--paper-hairline);
+}
+
+/* A row takes the hover ground the lists already take, so a table and a
+   ranked list answer the pointer the same way. A placeholder row is not a row
+   and takes nothing. */
+@media (hover: hover) {
+  .console-card tbody tr:not([aria-hidden='true']):hover {
+    background-color: var(--console-row-hover);
+  }
 }
 
 /* A table that fits the column it was given rather than scrolling inside it.
@@ -2143,29 +2241,28 @@
 .console-account-holder {
   position: relative;
   flex-shrink: 0;
-  padding: 0.5rem;
 }
 
+/* The control is a small card on the rail rather than a row of it: it is the
+   one thing at the foot, and a row with nothing under it reads as a row that
+   ran out of list. */
 .console-account-button {
-  @apply flex min-h-[44px] w-full cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-left transition-colors duration-150 ease-out-soft;
+  @apply flex min-h-[44px] w-full cursor-pointer items-center gap-2.5 px-2.5 py-1.5 text-left transition-[border-color,background-color] duration-150 ease-out-soft;
   border-radius: var(--console-radius-sm);
-  border: 1px solid transparent;
+  border: 1px solid var(--paper-hairline);
+  background-color: var(--console-card-bg);
   color: var(--paper-ink);
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
 }
 
-/* Hover moves the ground and nothing else, which is the one hover vocabulary
-   every other row in the console uses. The border belongs to the open state,
-   which is a state rather than a pointer answer. */
 .console-account-button:hover {
-  background-color: var(--console-row-hover);
+  border-color: var(--paper-ink-ghost);
 }
 
 .console-account-button[aria-expanded='true'] {
-  background-color: var(--paper-field);
-  border-color: var(--paper-hairline);
+  border-color: var(--accent);
 }
 
 .console-account-button:active {
@@ -2173,7 +2270,7 @@
 }
 
 .console-account-tile {
-  @apply flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-[var(--console-radius-sm)] text-[12px] font-semibold;
+  @apply flex h-[26px] w-[26px] flex-shrink-0 items-center justify-center rounded-[var(--console-radius-sm)] text-[12px] font-semibold;
   background-color: var(--accent-fill);
   color: var(--on-accent);
 }
@@ -2205,9 +2302,12 @@
    the way out of it below the bottom of the screen; the list inside now takes
    whatever height is left and scrolls, and the account above it and the sign-out
    below it are always both on screen. */
+/* It opens upward, since the control is at the foot of the rail and a panel
+   dropping below it would be a panel under the window. */
 .console-account-panel {
-  @apply absolute inset-x-2 z-[var(--z-float)] mt-1.5 flex flex-col overflow-hidden;
-  max-height: calc(100dvh - var(--console-bar-h) - 5rem);
+  @apply absolute inset-x-2 z-[var(--z-float)] mb-1.5 flex flex-col overflow-hidden;
+  bottom: 100%;
+  max-height: calc(100dvh - 6rem);
   border-radius: var(--console-radius);
   background-color: var(--console-card-bg);
   border: 1px solid var(--paper-hairline-strong);
@@ -2220,10 +2320,10 @@
   left: 100%;
   right: auto;
   margin-left: 0.5rem;
-  margin-top: 0;
-  top: 0;
+  margin-bottom: 0;
+  bottom: 0;
   width: 16rem;
-  max-height: calc(100dvh - var(--console-bar-h) - 3rem);
+  max-height: calc(100dvh - 3rem);
 }
 
 /* The account reads as a row rather than as a centred portrait. It is one line
@@ -2472,7 +2572,7 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: var(--console-radius-sm);
-  background-color: var(--paper-field);
+  background-color: var(--console-card-bg);
   box-shadow: inset 0 0 0 1px var(--paper-hairline-strong);
   color: var(--paper-ink-faint);
 }
@@ -2511,12 +2611,12 @@
 
 @media (min-width: 1280px) {
   .console-search-open {
-    width: 14rem;
+    width: 15.5rem;
   }
 }
 
 .console-search-open:hover {
-  box-shadow: inset 0 0 0 1px var(--paper-hairline-strong);
+  box-shadow: inset 0 0 0 1px var(--paper-ink-ghost);
   color: var(--paper-ink-mute);
 }
 

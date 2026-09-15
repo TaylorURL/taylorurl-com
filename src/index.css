@@ -911,23 +911,19 @@
     --wash-paper-strong: rgba(68, 63, 55, 0.08);
     --rule-paper: rgba(68, 63, 55, 0.05);
     --rule-paper-fine: rgba(68, 63, 55, 0.03);
-    /* A card is separated by a lift rather than a line. One hairline shadow
-       and one soft one under it, which is what reads as a raised surface
-       without drawing a box around everything. */
-    --console-radius: var(--r-card);
-    --console-radius-sm: var(--r-control);
-    --console-card-shadow:
-      0 0 0 1px rgba(68, 63, 55, 0.06), 0 1px 3px rgba(68, 63, 55, 0.08),
-      0 2px 6px rgba(68, 63, 55, 0.04);
+    /* A card is separated by its edge rather than by a lift: one hairline
+       ring at a tenth of the ink, and the faintest shadow under it so the edge
+       reads as a surface and not as a rule. Every surface in the console -
+       the cards, the tiles, the account control, the chips - takes this one
+       ring, which is what makes a page of them read as one material. */
+    --console-radius: 10px;
+    --console-radius-sm: 7px;
+    --console-card-shadow: 0 0 0 1px rgba(68, 63, 55, 0.1), 0 1px 2px rgba(68, 63, 55, 0.04);
     --console-row-hover: rgba(68, 63, 55, 0.05);
-    /* The open row in the rail, set into the ground rather than lifted off
-       it: one step darker than the rail and nothing else - no border, no
-       shadow, no lighter card. A raised card says the row is in front of the
-       rail, which is a claim about depth the rail does not make anywhere else;
-       recessing it says the row is the part of the rail you are standing
-       in, which is what being on a page actually is. The step is the same
-       fifteen levels the reference this was taken from moves by. */
-    --console-rail-active: rgba(68, 63, 55, 0.08);
+    /* The open row in the rail: a wash of the accent under it, with the
+       label and a short bar beside it in the accent proper. The console layer
+       says why; this only names the ground. */
+    --console-rail-active: var(--wash-accent);
     --console-raise-shadow: 0 0 0 1px rgba(68, 63, 55, 0.08), 0 1px 2px rgb(68 63 55 / 12%);
     --bg: #e8e6dc;
     --ink: var(--paper-ink);
@@ -989,8 +985,8 @@
        The inset is deliberately small. A dashboard is tables, and a table reads
        better with the width than with a margin either side of it; anything
        wider than a hairline of air is a rail holding nothing. */
-    --console-rail-w: 15rem;
-    --console-bar-h: 3.5rem;
+    --console-rail-w: 14rem;
+    --console-bar-h: 3.25rem;
     --console-gap: 1rem;
     --console-pad: 1rem;
     /* The chrome sits a step under the surfaces carried on it: rail and bar on
@@ -1004,7 +1000,7 @@
        the card's value above a recessed rail put a seam down the console's own
        corner that dark never had. */
     --console-rail-bg: var(--paper);
-    --console-bar-bg: var(--paper);
+    --console-bar-bg: var(--bg);
     --console-card-bg: #faf9f5;
     /* The lift under a panel that floats over the page rather than sitting in
        it. Deeper on the dark setting, where a shadow has less ground to darken
@@ -1031,16 +1027,16 @@
   }
 
   :root[data-theme='dark'] [data-theme='console'] {
-    --paper: #1f1e1d;
+    --paper: #1c1b1a;
     --paper-ink: #f0eee6;
     --paper-ink-soft: rgba(240, 238, 230, 0.72);
     --paper-ink-mute: rgba(240, 238, 230, 0.55);
-    /* The console sits one step behind the site's own dark paper, so here the
-       cards are the lower of the two grounds rather than the higher: the rail
-       and the bar are #1f1e1d and the cards #262624 above them. The quietest
-       text step is therefore cut against the card. At the 0.48 it carried
-       against the old near-black it lands at 4.16 on a card, under AA; 0.52
-       reads 4.62 on the card and 4.83 on the rail. */
+    /* The console sits one step behind the site's own dark paper. The page
+       is #161514, the rail a step up at #1c1b1a, the cards #232221 above
+       both and the fields #262624 inside them, so the quietest text step is
+       cut against the field, the lightest of the four. At the 0.48 it carried
+       against the old near-black it landed at 4.16 on a card, under AA; 0.52
+       reads 4.62 on the field and higher on every darker ground. */
     --paper-ink-faint: rgba(240, 238, 230, 0.52);
     --paper-ink-ghost: rgba(240, 238, 230, 0.32);
     --paper-hairline: rgba(240, 238, 230, 0.07);
@@ -1050,7 +1046,7 @@
     --wash-paper-strong: rgb(240 238 230 / 0.1);
     --rule-paper: rgba(240, 238, 230, 0.05);
     --rule-paper-fine: rgba(240, 238, 230, 0.03);
-    --bg: #1c1b1a;
+    --bg: #161514;
     --surface-1: #262624;
     --surface-2: #2c2b29;
     --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
@@ -1059,7 +1055,7 @@
     --accent-loud: var(--accent-hi-bright);
     --mark-invert: 1;
     --shine-sweep: rgba(240, 238, 230, 0.95);
-    --glare-ground: #1f1e1d;
+    --glare-ground: #1c1b1a;
     --glare-edge: rgba(240, 238, 230, 0.2);
     --spotlight: rgba(47, 107, 255, 0.2);
     --spotlight-soft: rgba(47, 107, 255, 0.12);
@@ -1087,13 +1083,13 @@
     --series-5: #10b981;
     --series-6: #ec4899;
     --series-7: #64748b;
-    --console-rail-bg: #1f1e1d;
-    --console-bar-bg: #1f1e1d;
-    --console-card-bg: #262624;
+    --console-rail-bg: #1c1b1a;
+    --console-bar-bg: var(--bg);
+    --console-card-bg: #232221;
     --console-float-shadow: 0 12px 32px -12px rgb(0 0 0 / 62%);
-    --console-card-shadow: 0 0 0 1px rgba(240, 238, 230, 0.07);
+    --console-card-shadow: 0 0 0 1px rgba(240, 238, 230, 0.09);
     --console-row-hover: rgba(240, 238, 230, 0.06);
-    --console-rail-active: rgba(240, 238, 230, 0.09);
+    --console-rail-active: var(--wash-accent);
     /* A raised chip separates itself by catching light on a pale ground and by
        its own edge on a dark one, where a shadow has nothing left to darken. */
     --console-raise-shadow: 0 0 0 1px rgba(240, 238, 230, 0.12), 0 1px 2px rgb(0 0 0 / 40%);

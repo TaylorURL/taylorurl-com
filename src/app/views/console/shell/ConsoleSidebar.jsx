@@ -1,6 +1,7 @@
 import { ChevronsLeft, Lock } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { GROUPS, sectionHref } from '../lib/sections'
+import { useModifierLabel } from '../lib/useConsoleShortcuts'
 import { ConsoleAccount } from './ConsoleAccount'
 
 /**
@@ -17,6 +18,11 @@ import { ConsoleAccount } from './ConsoleAccount'
  * Collapsed it keeps the marks and drops the words, which is what makes the
  * column worth having on a laptop: the figures get two hundred pixels back and
  * the section is still one click away.
+ *
+ * Under the desk width the column is a drawer, and the sections are also laid
+ * out in a row under the bar by `ConsoleStrip`, so a phone moves between
+ * sections without opening this. The drawer is then the account, the sites and
+ * the full list.
  *
  * A locked section is still in the menu and still a link: it goes to the sign-in
  * page and comes back to the section afterwards. Leaving it out instead would
@@ -43,7 +49,7 @@ function Item({ section, collapsed }) {
       data-collapsed={collapsed ? 'true' : undefined}
     >
       <span className="console-nav-mark" aria-hidden="true">
-        {Mark ? <Mark className="h-[18px] w-[18px]" /> : null}
+        {Mark ? <Mark className="h-4 w-4" /> : null}
       </span>
       {!collapsed && <span className="console-nav-label truncate">{section.label}</span>}
       {!collapsed && locked && (
@@ -76,6 +82,7 @@ export function ConsoleSidebar({
   theme,
   onCycleTheme,
 }) {
+  const modifier = useModifierLabel()
   return (
     <nav
       id="console-sections"
@@ -109,23 +116,6 @@ export function ConsoleSidebar({
         </Link>
       </div>
 
-      <ConsoleAccount
-        email={email}
-        role={role}
-        collapsed={collapsed}
-        theme={theme}
-        onCycleTheme={onCycleTheme}
-        sites={sites}
-        siteIds={siteIds}
-        scopeLabel={scopeLabel}
-        onPickSite={onPickSite}
-        onToggleSite={onToggleSite}
-        onSignOut={onSignOut}
-        canPreview={canPreview}
-        preview={preview}
-        onPreview={onPreview}
-      />
-
       <div className="console-sidebar-scroll">
         {GROUPS.map(group => {
           const rows = sections.filter(section => section.group === group)
@@ -145,10 +135,30 @@ export function ConsoleSidebar({
         })}
       </div>
 
-      {/* The width control lives down here rather than in the head, because the
-          narrow rail is the width of one mark and a second control beside the
-          brand does not fit in it. */}
-      <div className="console-sidebar-foot">
+      {/* The account sits at the foot, under the sections rather than over
+          them: who is signed in changes once a visit and which section is open
+          changes once a minute, so the rows start where the eye starts and the
+          panel the account opens grows upward over nothing a reader is about
+          to press. The width control lives down here too, because the narrow
+          rail is the width of one mark and a second control beside the brand
+          does not fit in it. */}
+      <div className="console-sidebar-foot" data-empty={email ? undefined : 'true'}>
+        <ConsoleAccount
+          email={email}
+          role={role}
+          collapsed={collapsed}
+          theme={theme}
+          onCycleTheme={onCycleTheme}
+          sites={sites}
+          siteIds={siteIds}
+          scopeLabel={scopeLabel}
+          onPickSite={onPickSite}
+          onToggleSite={onToggleSite}
+          onSignOut={onSignOut}
+          canPreview={canPreview}
+          preview={preview}
+          onPreview={onPreview}
+        />
         <button
           type="button"
           onClick={onToggle}
@@ -158,6 +168,7 @@ export function ConsoleSidebar({
         >
           <ChevronsLeft className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
           {!collapsed && <span>Narrow</span>}
+          {!collapsed && <kbd aria-hidden="true">{modifier}B</kbd>}
         </button>
       </div>
     </nav>
