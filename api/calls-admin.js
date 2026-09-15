@@ -226,7 +226,9 @@ async function callsByProspect(db) {
     () =>
       db
         .from(CALLS)
-        .select('id, prospect_id, outcome, note, interested, callback_at, called_at, called_by')
+        .select('id, prospect_id, outcome, note, interested, callback_at, called_at, called_by', {
+          count: 'exact',
+        })
         .order('called_at', { ascending: false })
         .order('id', { ascending: false }),
     { max: SET_MAX * 4 }
@@ -514,7 +516,11 @@ async function list(db, query, account) {
       () =>
         db
           .from(PROSPECTS)
-          .select(COLUMNS)
+          // The count is what lets `readAll` ask for the pages after the first
+          // together rather than one after another. It is answered off the
+          // partial index over exactly this predicate, so it costs the request
+          // almost nothing and saves it two round trips.
+          .select(COLUMNS, { count: 'exact' })
           .in('site_kind', ['none', 'social'])
           .not('phone', 'is', null)
           .order('id'),
@@ -718,8 +724,14 @@ async function record(db, body, account) {
     .maybeSingle()
   if (written.error) return refusal(written.error, NOT_RECORDED)
 
-  const took = await claim(db, prospectId, account.userId)
-  await carry(db, found.data, body, ringBack, interest.interested)
+  // Who the business belongs to and whether it becomes a lead are two facts
+  // the same call settles, and neither needs the other, so they are written
+  // together. A caller is waiting on this answer with the next number already
+  // in front of them, and every round trip on it is a pause between calls.
+  const [took] = await Promise.all([
+    claim(db, prospectId, account.userId),
+    carry(db, found.data, body, ringBack, interest.interested),
+  ])
 
   return {
     status: 200,

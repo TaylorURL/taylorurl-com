@@ -56,7 +56,11 @@ const LIVE_MS = 30_000
  * Recording a call re-reads rather than patching the row on screen. A call
  * moves the business's place in the order, can take it off the list entirely,
  * and moves three of the five figures above it, so patching would mean
- * recomputing a ranking the page does not hold.
+ * recomputing a ranking the page does not hold. The re-read is started the
+ * moment the call is on the record and not waited for: the caller has the next
+ * business in front of them already, chosen off the rows on screen, and the
+ * re-rank is the slowest read the console makes. Holding the answer until it
+ * landed put that whole read between every call and the next.
  *
  * The two failures go to different places. A read that does not land leaves
  * the section with nothing to draw, so it is held in `error` and stands where
@@ -142,7 +146,9 @@ export function useCallsFeed({ token, enabled, filters }) {
           if (alive.current) toast(faultFromResponse(response, payload, NO_RECORD), 'error')
           return null
         }
-        await load()
+        // Started and not awaited. `load` answers its own failures, so nothing
+        // it meets can reach the caller who has already moved on.
+        load()
         return payload
       } catch (cause) {
         if (alive.current) toast(faultMessage(cause, NO_RECORD), 'error')
