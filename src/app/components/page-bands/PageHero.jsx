@@ -26,8 +26,10 @@ const TITLE_MARGIN = '0px 0px 15% 0px'
  * @param {import('react').ReactNode} props.title - Heading content.
  * @param {string} [props.description] - Supporting line under the heading.
  * @param {string} [props.eyebrow] - Standing label above the heading.
+ * @param {import('react').ReactNode} [props.children] - Anything the page sets
+ *   under the supporting line, on the same rise as the rest of the column.
  */
-export default function PageHero({ title, description, eyebrow }) {
+export default function PageHero({ title, description, eyebrow, children }) {
   // Canvas takes colour values, not CSS, so the accent steps are resolved first.
   const tone = useThemeTokens(['--accent', '--accent-hi', '--accent-pale'])
   const reduced = useReducedMotion()
@@ -107,6 +109,12 @@ export default function PageHero({ title, description, eyebrow }) {
           >
             {description}
           </m.p>
+        )}
+
+        {children && (
+          <m.div {...rise(0.18)} className="mt-10">
+            {children}
+          </m.div>
         )}
       </m.div>
     </section>
