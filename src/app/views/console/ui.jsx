@@ -390,6 +390,7 @@ export function RankedList({
 export function Badge({ tone = 'plain', title, children }) {
   return (
     <span className="console-badge" data-tone={tone} title={title}>
+      <span className="console-badge-dot" aria-hidden="true" />
       {children}
     </span>
   )

@@ -105,10 +105,13 @@ export const ROW_HEIGHT = {
 // rather than spelling them out.
 //
 // One height covers all of them, fields included: a row of controls at two
-// heights reads as one of them being in a different state. Forty-four, because
-// the console is opened on a phone as often as the marketing pages are and a
-// control a thumb cannot land on is a control that is not there.
-export const CONTROL_H = 'min-h-[44px]'
+// heights reads as one of them being in a different state. Thirty-six under a
+// pointer, which is the height the bar's own chips and the card head are drawn
+// to, and forty-four under a finger, because the console is opened on a phone
+// as often as the marketing pages are and a control a thumb cannot land on is a
+// control that is not there. The pointer decides rather than the width, since
+// a tablet is wide and still pressed.
+export const CONTROL_H = 'min-h-[36px] [@media(pointer:coarse)]:min-h-[44px]'
 
 export const SELECT = `${MONO_LABEL} ${CONTROL_H} border-hair-paper-strong cursor-pointer appearance-none rounded-[var(--console-radius-sm)] border bg-[color:var(--paper-field)] px-2.5 py-1 text-ink-paper transition-colors duration-150 ease-out-soft hover:border-[color:var(--accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[color:var(--accent)]`
 
