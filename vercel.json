@@ -1,6 +1,7 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
+  "regions": ["pdx1"],
   "crons": [
     {
       "path": "/api/outreach/source",

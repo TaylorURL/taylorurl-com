@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.38.6-2f6bff?style=for-the-badge" alt="Version 2026.38.6" />
+  <img src="https://img.shields.io/badge/version-2026.38.7-2f6bff?style=for-the-badge" alt="Version 2026.38.7" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -324,7 +324,7 @@ taylorurl-com/
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   ├── index.css              The token block and the font faces
 │   └── main.jsx               Browser entry
-└── vercel.json                The ten crons, the redirects, the security headers and the cache rules
+└── vercel.json                The region the functions run in, the ten crons, the redirects, the security headers and the cache rules
 ```
 
 `api/` and `public/` are the two trees whose shape is not a matter of taste: Vercel turns `api/<path>.js` into `/api/<path>`, and everything under `public/` is served at its own path. A file moved in either one changes a URL that is already published — in `vercel.json`'s ten cron entries, in a Stripe or Resend webhook configured outside this repository, or in the unsubscribe link of mail that has already been sent. They stay flat for that reason rather than by neglect.
