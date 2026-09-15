@@ -1203,8 +1203,19 @@
         // The recovery is inline in the head and cannot fail to arrive, but if
         // it is somehow not there, nothing is going to retry and nothing is
         // going to file, so the sheet reports for itself as it always did.
+        //
+        // A picture carrying `data-retry` is the same arrangement one tag over.
+        // `retryImage` counts that attribute down a rung at a time and takes it
+        // off the element before the attempt that has nothing after it, so the
+        // presence of the attribute is exactly the question being asked here:
+        // has this element somewhere left to go. The mark is on every page of
+        // both sites twice over, so a reader who loses it and gets it back on
+        // the second ask has lost nothing, and filing that as a fault buries
+        // the reader who lost it for good.
         function recovering(target) {
-          if (!target || target.tagName !== 'LINK') return false
+          if (!target) return false
+          if (target.tagName === 'IMG') return target.hasAttribute('data-retry')
+          if (target.tagName !== 'LINK') return false
           if (typeof window.__sheetLost !== 'function') return false
           if (target.hasAttribute('data-sheet')) return true
           return String(target.getAttribute('onerror') || '').indexOf('__sheetLost') === 0

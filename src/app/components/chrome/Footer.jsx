@@ -25,6 +25,7 @@ import ThemePicker from '@components/navigation/ThemePicker'
 import Magnet from '@reactbits/Magnet/Magnet'
 import ShinyText from '@reactbits/ShinyText/ShinyText'
 import { dayIn } from '@lib/time/zone.js'
+import { retryable } from '@utils/retryImage'
 import { IS_SECOND_SITE, PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
 
 /**
@@ -201,6 +202,7 @@ export default function Footer() {
                   filter: 'brightness(0) invert(var(--mark-invert))',
                 }}
                 draggable={false}
+                {...retryable()}
               />
             </Link>
             <p className="mt-6 text-[14px] leading-relaxed text-ink-soft">{SITE.footerBlurb}</p>
