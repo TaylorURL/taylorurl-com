@@ -215,8 +215,12 @@ export default function Navigation() {
   const openForKeyboard = key => {
     clearHover()
     setOpenGroup(key)
-    // One frame, so the panel has rendered before focus moves into it.
-    window.requestAnimationFrame(() => panelRef.current?.querySelector('a')?.focus())
+    // One frame, so the sheet has rendered before focus moves into it. The
+    // group is named, because the sheet still holds the last group while it
+    // fades out, and its first link is the one a bare query would find.
+    window.requestAnimationFrame(() =>
+      panelRef.current?.querySelector(`[data-nav-group="${key}"] a`)?.focus()
+    )
   }
 
   const toggleGroup = key => {
@@ -453,16 +457,14 @@ export default function Navigation() {
             </div>
           </div>
 
-          <div className="hidden lg:block">
-            <NavPanelViewport
-              group={openPanel}
-              panelId={panelId}
-              panelRef={panelRef}
-              isActive={isActive}
-              onClose={closeAndRefocus}
-              onCloseAll={closePanel}
-            />
-          </div>
+          <NavPanelViewport
+            group={openPanel}
+            panelId={panelId}
+            panelRef={panelRef}
+            isActive={isActive}
+            onClose={closeAndRefocus}
+            onCloseAll={closePanel}
+          />
         </nav>
       </header>
 

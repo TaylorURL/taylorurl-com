@@ -5,20 +5,8 @@ import {
   MarkPage,
   MarkRule,
   MarkSeries,
-  MarkTrade,
 } from '@components/marks/marks'
-
-// The drawing each series and each category is known by. Series data names its
-// mark as a string so the register can be read by the sitemap build in plain
-// Node; this is where that name becomes a drawing.
-const MARKS = {
-  find: MarkFind,
-  gauge: MarkGauge,
-  rule: MarkRule,
-  page: MarkPage,
-  ledger: MarkLedger,
-  trade: MarkTrade,
-}
+import { SERIES_MARKS } from './seriesMarks'
 
 // The categories predate the series and are written on the articles themselves,
 // so their marks are keyed on the words the articles use. A category added to an
@@ -36,7 +24,7 @@ const CATEGORY_MARKS = {
  * @param {{ mark?: string }} props - The key from a series' `mark` field.
  */
 export default function SeriesMark({ mark, ...props }) {
-  const Drawing = MARKS[mark] || MarkSeries
+  const Drawing = SERIES_MARKS[mark] || MarkSeries
   return <Drawing {...props} />
 }
 
