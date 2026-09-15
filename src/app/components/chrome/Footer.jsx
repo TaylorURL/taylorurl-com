@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { m } from 'framer-motion'
 import { ArrowUpRight, Mail, MapPin, Phone } from 'lucide-react'
 import { MarkBbb, MarkFacebook, MarkInstagram, MarkTrustpilot } from '@components/marks/brandMarks'
@@ -138,6 +138,21 @@ export default function Footer() {
   // that is still in the old one.
   const currentYear = Number(dayIn().slice(0, 4))
 
+  // The ask, pressed on the page it opens. The router reads a link to the page
+  // a reader is already on as a navigation to nowhere: the location changes,
+  // the page does not, and the arrival that puts a new page at its top never
+  // runs. On that one page the button is travel rather than navigation, so it
+  // takes the reader up to the form it names instead of doing nothing. The
+  // root scrolls smoothly, and the reduced-motion setting turns that off, so no
+  // behaviour is passed here.
+  const { pathname } = useLocation()
+  const openStart = event => {
+    if (pathname !== START_LINK.to) return
+    event.preventDefault()
+    window.scrollTo({ top: 0 })
+    document.getElementById('main-content')?.focus({ preventScroll: true })
+  }
+
   // The foot of every page stands on the ground the setting chose rather than
   // on a slab of its own. It names no ground, so --bg, --ink and the hairlines
   // resolve against the document: every role below follows light and dark
@@ -231,7 +246,7 @@ export default function Footer() {
               </p>
               <div className="mt-5">
                 <Magnet padding={50} magnetStrength={6}>
-                  <Link to={START_LINK.to} className="btn btn-primary group">
+                  <Link to={START_LINK.to} onClick={openStart} className="btn btn-primary group">
                     {START_LINK.label}
                     <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
                   </Link>
