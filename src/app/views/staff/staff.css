@@ -4,20 +4,34 @@
 /*
  * The representatives' surface, beside the screens it dresses.
  *
- * It sits here rather than in the site sheet for the reason the console's does:
- * this is a surface of its own, not a page. Three parts, one viewport tall, and
- * only the middle one scrolls. None of that is wanted on a marketing page, and a
- * rule for it in the shared sheet is a rule every page carries and four pages
- * use.
+ * It sits here rather than in the console sheet because it is a surface of its
+ * own rather than a section like the others: three parts with only the middle
+ * one scrolling, a control bar that does not move between screens, and a set of
+ * controls sized for a thumb. None of that is wanted on a table of accounts, and
+ * a rule for it in the console sheet is a rule every section carries and one
+ * section uses.
  *
- *   HEAD    read only. Where you are, and the way back.
+ *   HEAD    the section's tab row, with whatever the screen puts beside it.
  *   SCROLL  everything read. One column on a phone. On a desk the call screen
  *           stands three columns side by side and the management screen two,
  *           because a desk has the width and a representative has the phone in
  *           the other hand.
- *   FOOT    everything pressed. It does not scroll and it does not move between
- *           screens, so the control that ends a call is in the same place on the
- *           sixtieth call as on the first.
+ *   FOOT    everything pressed. It exists on the call screen alone. It does not
+ *           move between screens and it does not scroll away, so the control
+ *           that ends a call is in the same place on the sixtieth call as on
+ *           the first.
+ *
+ * There was a second shell once - a standalone portal at `/staff`, one viewport
+ * tall, with a head and a tab strip of its own - and this sheet carried both,
+ * the console's arrangement written as a block of overrides at the bottom. Two
+ * shells meant every rule was read twice to work out which surface it described,
+ * and the overrides were where the real layout lived. The standalone portal is
+ * gone and its addresses redirect into the console, so what is left is one
+ * arrangement stated once.
+ *
+ * The section draws no navigation. The console's rail, its bar and the tab row
+ * at the head are the whole of it, and a second way between these three screens
+ * would be a third statement of where the reader is standing.
  *
  * Every colour, radius and curve is a site token, and every control is the
  * site's own: the filled key, the ringed key, the field, the hairline rule, the
@@ -26,18 +40,22 @@
  * key is a shadow under every key on the sixtieth call too.
  *
  * The steps and the type sizes are declared in the scope below rather than in
- * the shared sheet, because they are this surface's own.
+ * the console sheet, because they are this surface's own.
  */
 
 .staff {
-  /* The one value the sizes disagree about. Everything else is written against
-     it, so the phone and the desk cannot drift into two layouts. */
-  --staff-measure: 100%;
-  --staff-pad: var(--s-4);
   /* How far a card's own edge is drawn outside itself: the hairline ring plus
      the softest of the three shadows under it. A container that clips has to
      allow this much past its content or it cuts every card down its side. */
   --staff-bleed: 8px;
+
+  /* How deep the console pads its work region under the last card in it.
+     `.console-work` in the console sheet sets it as three of its own gaps, and
+     that figure matters here for one reason: a sticky child is held inside its
+     scroll container's content box, so a bar asking for `bottom: 0` comes to
+     rest on the padding edge and leaves that much window under itself. It is
+     named here rather than written as a number so the two cannot drift. */
+  --staff-region-foot: calc(var(--console-gap) * 3);
 
   --s-h: 2px;
   --s-1: 4px;
@@ -66,59 +84,13 @@
 
   --staff-mono: 'Geist Mono', 'Geist Mono Fallback', ui-monospace, monospace;
 
+  /* The console's work region already pads the section and stretches it to the
+     region's width, so the portal adds no measure of its own. What it adds is
+     the three rows and the gap the console sets between the cards in every
+     other section. */
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  /* The small viewport unit, so the foot is above the phone browser's own bar
-     rather than behind it. */
-  height: 100svh;
-  overflow: hidden;
-  background-color: var(--paper);
-  color: var(--paper-ink);
-  /* The browser's own furniture - the scrollbar, the resize corner, the cross
-     in a search field - follows the setting the same way the console's does. */
-  color-scheme: light;
-}
-
-:root[data-theme='dark'] .staff {
-  color-scheme: dark;
-}
-
-@media (min-width: 768px) {
-  .staff {
-    --staff-measure: 46rem;
-    --staff-pad: var(--s-6);
-  }
-}
-
-/* A desk opens to hold two columns; a wide one, three. A screen that is read
-   rather than worked - the handbook - stays at the site's reading measure,
-   because a line of script sixty characters wide is the width a line of script
-   should be, and the portal is four doors that do not want the room. */
-@media (min-width: 1024px) {
-  .staff {
-    --staff-measure: 64rem;
-    --staff-pad: var(--s-8);
-  }
-
-  .staff[data-layout='reading'] {
-    --staff-measure: 52rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .staff[data-layout='wide'] {
-    --staff-measure: 84rem;
-    --staff-pad: var(--s-10);
-  }
-}
-
-/* The measure. Everything in the head, the scroll and the foot sits inside one
-   of these, which is what keeps the column and the controls on the same axis
-   when the window is wider than the column. */
-.staff-pad {
-  width: 100%;
-  max-width: var(--staff-measure);
-  margin: 0 auto;
+  grid-template-rows: auto auto auto;
+  gap: var(--console-gap);
 }
 
 /* ── What every control in here owes ─────────────────────────────────────── */
@@ -146,67 +118,25 @@
 
 /* ── The head ────────────────────────────────────────────────────────────── */
 
-/* The page's own ground, and a hairline under it once the column has scrolled
-   under it - the site's bar draws the same line for the same reason. */
+/* The console's own tab row and nothing else. The bar above it names the
+   section and the open tab names the screen, so a heading here would be the
+   third statement of where the reader is standing. */
 .staff-head {
-  padding: var(--s-2h) var(--staff-pad);
-  /* The notch and the rounded corners on a phone held in one hand. */
-  padding-top: calc(var(--s-2h) + env(safe-area-inset-top));
-  background-color: var(--paper);
-  box-shadow: inset 0 -1px 0 transparent;
-  transition: box-shadow 150ms var(--ease-out-soft);
-}
-
-.staff-head[data-surfaced='true'] {
-  box-shadow: inset 0 -1px 0 var(--hairline);
-}
-
-.staff-head-row {
-  display: flex;
-  align-items: center;
-  gap: var(--s-3);
-  min-height: 40px;
-}
-
-.staff-head-row b {
   min-width: 0;
-  font-size: var(--t-4);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
-/* The way back sits at the far end of the row, whatever else the row holds. */
-.staff-back {
-  display: inline-flex;
-  flex-shrink: 0;
+/* The tab row takes the width and anything the screen puts beside it sits at
+   the end of it, dropping under on a phone rather than squeezing the tabs. */
+.staff-nav {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--s-1h);
-  min-height: 36px;
-  margin-left: auto;
-  margin-right: calc(var(--s-2) * -1);
-  padding-inline: var(--s-2);
-  border-radius: var(--r-control);
-  font-size: var(--t-3);
-  font-weight: 500;
-  text-decoration: none;
-  color: var(--ink-mute);
-  transition:
-    background-color 150ms var(--ease-out-soft),
-    color 150ms var(--ease-out-soft);
+  gap: var(--s-2h);
 }
 
-.staff-back svg {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-}
-
-.staff-back:hover {
-  background-color: var(--wash-ink);
-  color: var(--ink);
+.staff-nav > .console-views {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* A figure in the head is set as the bar sets its key hint: mono, inside a
@@ -223,46 +153,47 @@
 
 /* ── The scroll ──────────────────────────────────────────────────────────── */
 
+/* On a phone the console scrolls its whole work region as one column and the
+   section simply flows into it, so this is a plain block. From a desk up the
+   console gives the section the height of the region and the column scrolls
+   inside it instead - see the rule further down. */
 .staff-scroll {
-  overflow-y: auto;
+  min-width: 0;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  padding: var(--s-4) var(--staff-pad) var(--s-8);
-}
-
-@media (min-width: 768px) {
-  .staff-scroll {
-    padding-top: var(--s-5);
-  }
-}
-
-/* The portal is four doors and a name, and on a desk that is a screen with
-   more room than content. It stands in the middle of the window the way the
-   sign-in form does, rather than against the top of an empty page. */
-@media (min-width: 1024px) {
-  .staff[data-layout='portal'] .staff-scroll {
-    display: grid;
-    align-content: safe center;
-  }
 }
 
 .staff-stack {
   display: grid;
   align-content: start;
   gap: var(--s-5);
+  min-width: 0;
 }
 
 /* ── The foot ────────────────────────────────────────────────────────────── */
 
-/* A bar of controls. The quiet ones first, the filled one last and widest, and
-   under them the one line that says what pressing it does. On a desk the line
-   moves to the left and the controls sit at the right end, which is where a
-   pointer expects the control that goes on to be. */
+/* A bar of controls, drawn as one of the console's cards. The quiet ones first,
+   the filled one last and widest, and under them the one line that says what
+   pressing it does. On a desk the line moves to the left and the controls sit
+   at the right end, which is where a pointer expects the control that goes on
+   to be.
+
+   On a phone it sticks to the bottom of the region while the column scrolls
+   behind it. That is the promise the whole surface is built on and the one the
+   console's own layout would break: the region scrolls as a single column at
+   this width, so a bar that was merely the last block in it would be somewhere
+   up the page by the time a caller had read the business they are ringing. */
 .staff-foot {
-  padding: var(--s-2h) var(--staff-pad) var(--s-3);
-  padding-bottom: calc(var(--s-3) + env(safe-area-inset-bottom));
-  background-color: var(--paper);
-  box-shadow: inset 0 1px 0 var(--hairline);
+  position: sticky;
+  /* Past the region's own bottom padding rather than onto it, so the bar sits
+     against the bottom of the window instead of a card's depth above it. */
+  bottom: calc(var(--staff-region-foot) * -1);
+  z-index: 1;
+  padding: var(--s-2h) var(--s-3h);
+  padding-bottom: calc(var(--s-2h) + env(safe-area-inset-bottom));
+  border-radius: var(--console-radius);
+  background-color: var(--console-card-bg);
+  box-shadow: var(--console-card-shadow);
 }
 
 .staff-foot-stack {
@@ -320,6 +251,63 @@
     flex: 1 1 auto;
     order: -1;
     text-align: left;
+  }
+}
+
+/* ── The height a desk gives the section ─────────────────────────────────── */
+
+/* At a desk the console hands a section the whole height of its work region, so
+   the portal lays out into it the way it laid out into a window: the column
+   scrolls inside the surface and the bar is simply the last row of the grid,
+   with nothing left for it to stick to. */
+@media (min-width: 1024px) {
+  .staff {
+    /* Widened by the bleed and given the same figure back as padding, so the
+       clip below falls a card's edge outside the contents rather than along
+       them. The content box does not move, so nothing on the screen shifts.
+
+       `overflow-clip-margin` says this in one declaration and is what this rule
+       reached for first. It is not carried everywhere `overflow: clip` is, and
+       a browser that honours the clip and ignores the margin snaps the clip
+       back onto the contents - which is not a smaller fix, it is no fix at all,
+       silently, in exactly the browsers nobody tested. Padding is the same
+       allowance in properties that have worked everywhere for twenty years.
+
+       `width: auto` because the console sets `width: 100%` on everything in its
+       work region, and against a fixed width a negative margin is a shove to
+       the left rather than room on both sides. Stretched by the flex column,
+       auto gives the width and the margins together. */
+    width: auto;
+    margin-inline: calc(var(--staff-bleed) * -1);
+    padding-inline: var(--staff-bleed);
+    overflow: hidden;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  /* A scroll container clips on both axes whatever the other one is asked for:
+     `overflow-y: auto` beside `overflow-x: visible` computes the visible one to
+     `auto` as well, and there is no way to scroll one axis and overflow the
+     other. Every card in this column is the column's own width, so that clip
+     landed exactly on their left and right edges and sliced the ring and the
+     shadow off flat - a few pixels, on every screen in the portal.
+
+     So the scroll box is widened by the reach of a card's edge and given the
+     same figure back as padding, the same way the surface above it is. The
+     cards keep the tab row's measure, and their edges have somewhere to
+     draw. */
+  .staff-scroll {
+    overflow-y: auto;
+    margin-inline: calc(var(--staff-bleed) * -1);
+    padding-inline: var(--staff-bleed);
+    /* The card edges of the last row want air under them rather than the
+       bar's own edge against them. */
+    padding-bottom: var(--s-2);
+  }
+
+  .staff-foot {
+    position: static;
+    bottom: auto;
+    padding-bottom: var(--s-2h);
   }
 }
 
@@ -513,6 +501,7 @@
 .staff-part {
   display: grid;
   gap: var(--s-3);
+  min-width: 0;
   padding-top: var(--s-3h);
   border-top: 1px solid var(--hairline);
 }
@@ -525,6 +514,24 @@
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--ink-faint);
+}
+
+/* A heading that says what it is answering for - the span a set of figures was
+   taken over - carries it at the far end of its own line rather than as a
+   second heading under it. Set in the mono the site keeps for a figure that is
+   looked up rather than read, which is what the handbook's part heads do. */
+.staff-part > h3 {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--s-3);
+}
+
+.staff-part > h3 > span {
+  font-family: var(--staff-mono);
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 /* A lone control in a section is the size of what it says, not of the column. */
@@ -976,6 +983,31 @@ textarea.staff-input {
   color: var(--danger-on-paper);
 }
 
+/* ── The span a set of figures is read over ──────────────────────────────── */
+
+/* Three keys that name one span each, drawn as the keypad above rather than as
+   a control of their own: the pressed key is the same accent a picked outcome
+   takes, so a reader who has learnt that mark once does not learn it again.
+
+   They share the width on a phone, where three keys of their own size leave a
+   ragged end to the row and nothing to the right of it. */
+.staff-segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.staff-segmented .staff-tag {
+  justify-content: center;
+}
+
+@media (min-width: 768px) {
+  .staff-segmented {
+    display: flex;
+    flex-wrap: wrap;
+  }
+}
+
 /* ── The record ──────────────────────────────────────────────────────────── */
 
 /* Every call before this one: a date, what happened and who placed it. The
@@ -1093,7 +1125,7 @@ textarea.staff-input {
   color: var(--ink-soft);
 }
 
-/* ── The portal ──────────────────────────────────────────────────────────── */
+/* ── Where the reader stands ─────────────────────────────────────────────── */
 
 .staff-greet {
   display: grid;
@@ -1117,102 +1149,6 @@ textarea.staff-input {
   color: var(--ink-soft);
 }
 
-/* Phone: the name, the four doors, the way out. Desk: the name and the way out
-   on the left, the four doors on the right, which is the sign-in screen's own
-   split. */
-.staff-split {
-  display: grid;
-  gap: var(--s-5);
-}
-
-@media (min-width: 1024px) {
-  .staff-split {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
-    grid-template-areas:
-      'greet tiles'
-      'foot tiles';
-    column-gap: var(--s-10);
-    row-gap: var(--s-5);
-    align-items: start;
-  }
-
-  .staff-split > .staff-greet {
-    grid-area: greet;
-  }
-
-  .staff-split > .staff-tiles {
-    grid-area: tiles;
-  }
-
-  .staff-split > .staff-split-foot {
-    grid-area: foot;
-  }
-}
-
-.staff-tiles {
-  display: grid;
-  gap: var(--s-2h);
-}
-
-@media (min-width: 768px) {
-  .staff-tiles {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-3);
-  }
-}
-
-/* A door: a surface in a hairline, a title and one line. The first door is the
-   one filled thing on the screen, because it is where the day is spent. */
-.staff-tile {
-  display: grid;
-  gap: var(--s-1h);
-  align-content: start;
-  padding: var(--s-4) var(--s-4h, var(--s-4));
-  border-radius: var(--r-card);
-  background-color: var(--surface-1);
-  box-shadow: 0 0 0 1px var(--hairline-strong);
-  color: var(--ink);
-  text-decoration: none;
-  transition:
-    background-color 150ms var(--ease-out-soft),
-    box-shadow 150ms var(--ease-out-soft),
-    transform 120ms var(--ease-out-soft);
-}
-
-.staff-tile b {
-  font-size: var(--t-4);
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-.staff-tile p {
-  font-size: var(--t-2);
-  line-height: 1.5;
-  color: var(--ink-mute);
-}
-
-.staff-tile:hover {
-  background-color: var(--surface-2);
-}
-
-.staff-tile:active {
-  transform: scale(0.99);
-}
-
-.staff-tile[data-lead='true'] {
-  background-color: var(--accent-fill);
-  color: var(--on-accent);
-  box-shadow: none;
-}
-
-.staff-tile[data-lead='true'] p {
-  color: color-mix(in srgb, var(--on-accent) 78%, transparent);
-}
-
-.staff-tile[data-lead='true']:hover {
-  background-color: var(--accent-fill-hi);
-}
-
 /* ── Management ──────────────────────────────────────────────────────────── */
 
 /* The three figures, side by side at every width: the count large and tabular,
@@ -1226,6 +1162,20 @@ textarea.staff-input {
 @media (min-width: 768px) {
   .staff-figures {
     gap: var(--s-3);
+  }
+}
+
+/* What the desk came to, which is four figures rather than three and has no
+   target behind any of them. Two by two on a phone: four across at that width
+   leaves each figure about as wide as the figure itself, and a row of four
+   numbers nobody can read is worse than two rows of two. */
+.staff-figures[data-four='true'] {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (min-width: 1024px) {
+  .staff-figures[data-four='true'] {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
@@ -1278,6 +1228,14 @@ textarea.staff-input {
   color: var(--ink-faint);
 }
 
+/* A figure still being read stands at the size the figure will be, so the card
+   is the same height before and after it lands and the strip does not jump
+   under whoever is reading it. */
+.staff-figure dd .staff-skeleton {
+  width: 3rem;
+  height: 1em;
+}
+
 .staff-track {
   overflow: hidden;
   height: 3px;
@@ -1297,16 +1255,43 @@ textarea.staff-input {
 }
 
 /* The charts draw in the console's own tick face; the wrapper only has to be a
-   box of the height the chart asked for. */
+   box of the height the chart asked for, with room under it for the key to the
+   colours in it. */
 .staff-part .recharts-wrapper {
   font-family: var(--staff-mono);
 }
 
-.staff-person {
+.staff-chart {
   display: grid;
+  gap: var(--s-2);
+  min-width: 0;
+}
+
+/* The key to a stacked chart's colours, drawn as markup rather than by the
+   chart. A legend inside the frame is paid for out of the chart's own height,
+   and these bars are 150 pixels tall to begin with. */
+.staff-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-1h) var(--s-3);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.staff-legend li {
+  display: inline-flex;
+  align-items: center;
   gap: var(--s-1h);
-  padding: var(--s-2h) 0;
-  box-shadow: inset 0 -1px 0 var(--hairline);
+  font-size: var(--t-2);
+  color: var(--ink-mute);
+}
+
+.staff-legend li span {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-tiny);
 }
 
 .staff-person-top {
@@ -1319,6 +1304,201 @@ textarea.staff-input {
 .staff-person-top b {
   font-size: var(--t-3);
   font-weight: 600;
+}
+
+/* ── The desk, person by person ──────────────────────────────────────────── */
+
+.staff-people {
+  display: grid;
+  gap: var(--s-2h);
+  min-width: 0;
+}
+
+/* One person, on a phone: who they are and what they are doing, then the three
+   figures of their span, then the one line that says how the calls went. A card
+   rather than a ruled row, because the block holds four different kinds of
+   statement and a rule between people is not enough to keep them apart. */
+.staff-person-card {
+  display: grid;
+  gap: var(--s-2h);
+  min-width: 0;
+  padding: var(--s-3) var(--s-3h);
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: 0 0 0 1px var(--hairline-strong);
+}
+
+.staff-person-card .staff-person-top {
+  align-items: center;
+  gap: var(--s-2h);
+}
+
+/* The name and what the account is, read as one thing. */
+.staff-person-who {
+  display: flex;
+  align-items: center;
+  gap: var(--s-1h);
+  min-width: 0;
+}
+
+.staff-person-who b {
+  font-size: var(--t-3);
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The three figures inside a person's card. Smaller than the day's own, because
+   these are read down a column of people rather than glanced at once. */
+.staff-mini {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-2h);
+}
+
+.staff-mini > div {
+  display: grid;
+  gap: var(--s-1);
+  min-width: 0;
+}
+
+.staff-mini dd {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s-1);
+  font-size: var(--t-6);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.staff-mini dd span {
+  font-size: var(--t-2);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--ink-faint);
+}
+
+.staff-mini dt {
+  font-size: var(--t-1);
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+/* The one line under the figures: how many of the calls reached somebody, and
+   when the last of them was. */
+.staff-person-rate {
+  font-size: var(--t-2);
+  line-height: 1.5;
+  color: var(--ink-faint);
+}
+
+/* The same desk at a desk: one row per person, and the columns lined up so
+   three people's figures can be read against each other down the page rather
+   than card by card. The wrapper scrolls it sideways, because the console's
+   work region is narrow with the rail open on a small laptop and a table that
+   will not fit breaks the frame around it instead. */
+.staff-table-wrap {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.staff-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--t-3);
+}
+
+.staff-table th {
+  padding: var(--s-2) var(--s-2h);
+  box-shadow: inset 0 -1px 0 var(--hairline);
+  font-size: var(--t-1);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.staff-table td {
+  padding: var(--s-2h);
+  box-shadow: inset 0 -1px 0 var(--hairline);
+  vertical-align: middle;
+}
+
+.staff-table th[data-figure='true'],
+.staff-table td[data-figure='true'] {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* A figure that is looked up rather than read - a rate, a clock time - takes
+   the fixed-advance face, so a column of them lines up on the decimal and on
+   the colon. */
+.staff-table td[data-mono='true'] {
+  font-family: var(--staff-mono);
+  font-size: var(--t-2);
+  color: var(--ink-mute);
+}
+
+.staff-table td[data-figure='true'] span {
+  font-size: var(--t-2);
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+.staff-table td .staff-person-who b {
+  white-space: nowrap;
+}
+
+/* Who somebody is on the phone with, under the badge that says they are on
+   one. It is the fact the board exists to carry - the whole point of being
+   able to see a colleague is not ringing the business they are already on -
+   so it travels with the badge rather than being kept for the narrow shape. */
+.staff-table td .staff-person-rate {
+  margin-top: var(--s-h);
+}
+
+/* The reader's own row names them rather than repeating a name they know. The
+   name stays beside it, faintly, because the board is read out loud at a desk
+   with three people at it. */
+.staff-table-you {
+  font-weight: 500;
+  color: var(--ink-faint);
+}
+
+/* The three figures somebody's day is set to, opened under their own row. On a
+   wash inside the block, the way the callback lengths are, so it reads as the
+   control above having opened rather than as a section arriving underneath. */
+.staff-editor {
+  display: grid;
+  gap: var(--s-2h);
+  padding: var(--s-3) var(--s-3h);
+  border-radius: var(--r-control);
+  background-color: var(--wash-paper);
+}
+
+/* A row that has not landed, drawn at the height the row will be so the column
+   does not jump under the reader when it does. */
+.staff-skeleton {
+  display: block;
+  height: var(--s-3);
+  border-radius: var(--r-tiny);
+  background-color: var(--wash-paper-strong);
+}
+
+.staff-skeleton[data-wide='true'] {
+  width: 40%;
+}
+
+.staff-skeleton[data-tall='true'] {
+  height: var(--s-10);
+  border-radius: var(--r-control);
 }
 
 /* ── Resources ───────────────────────────────────────────────────────────── */
@@ -1490,161 +1670,6 @@ textarea.staff-input {
   border-top: 1px solid var(--hairline);
 }
 
-/* ── Nothing to show ─────────────────────────────────────────────────────── */
-
-.staff-spent {
-  display: grid;
-  gap: var(--s-3);
-  justify-items: start;
-  padding: var(--s-6) 0;
-}
-
-.staff-spent .staff-quiet {
-  margin-top: var(--s-1);
-}
-
-/* ── Less motion ─────────────────────────────────────────────────────────── */
-
-/* The only movement left in here is a press answering with a scale, and a
-   reader who asked for less motion does not get that either. */
-@media (prefers-reduced-motion: reduce) {
-  .staff-tile:active,
-  .staff-dial:active,
-  .staff-btn:active:enabled,
-  .staff-quiet:active:enabled,
-  a.staff-btn:active,
-  a.staff-quiet:active,
-  .staff-tag:active:enabled {
-    transform: none;
-  }
-}
-
-/* ── The portal inside the console ───────────────────────────────────────── */
-
-/*
- * The same screens, standing in the console's work region instead of in a
- * window of their own.
- *
- * Nothing about the screens changes to get them here and nothing about their
- * colours does either: every value on this surface is a token, and the console
- * scope redefines the tokens, so the portal is drawn in the console's own
- * palette in both settings without a rule of its own for either.
- *
- * What changes is the three parts. Standing alone, the surface is the window:
- * one viewport tall, the middle part the only thing that scrolls. Inside the
- * console it is a section of a page the console already scrolls, so the height
- * comes off, the measure goes to the full width of the region, and the padding
- * goes to nothing - the region's own inset is already there and a second one
- * inside it would set the portal in from every card beside it.
- *
- * The head is the tab row rather than a title. The console's bar already names
- * the section above it and the open tab names the screen, so a heading here
- * would be the third statement of where the reader is standing.
- */
-.staff[data-mode='console'] {
-  --staff-measure: 100%;
-  --staff-pad: 0px;
-  height: auto;
-  min-height: 0;
-  overflow: visible;
-  background-color: transparent;
-  grid-template-rows: auto auto auto;
-  gap: var(--console-gap);
-}
-
-.staff[data-mode='console'] .staff-head {
-  padding: 0;
-  background-color: transparent;
-  box-shadow: none;
-}
-
-/* The tab row takes the width and anything the screen puts beside it sits at
-   the end of it, dropping under on a phone rather than squeezing the tabs. */
-.staff-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--s-2h);
-}
-
-.staff-nav > .console-views {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.staff[data-mode='console'] .staff-scroll {
-  overflow: visible;
-  padding: 0;
-}
-
-/* The bar of controls, drawn as one of the console's cards rather than as a
-   band across the window.
-
-   Standing alone it is fixed to the bottom of the screen, so the control that
-   ends a call is in the same place on the sixtieth call as on the first. That
-   promise is kept here from the desk width up, where the console gives a
-   section the whole height of its region and the bar is simply its last row.
-   Below that width the console scrolls the region as one column - which is its
-   own rule, stated for every section - and the bar is the last card in it. The
-   surface built for a phone is the portal on its own, and that one keeps the
-   foot against the bottom edge at every size. */
-.staff[data-mode='console'] .staff-foot {
-  padding: var(--s-2h) var(--s-3h);
-  padding-bottom: var(--s-2h);
-  border-radius: var(--console-radius);
-  background-color: var(--console-card-bg);
-  box-shadow: var(--console-card-shadow);
-}
-
-/* At a desk the console gives a section the whole height of its work region,
-   so the portal lays out into it the way it lays out into a window: the column
-   scrolls inside the surface and the bar is simply the last row of the grid. */
-@media (min-width: 1024px) {
-  .staff[data-mode='console'] {
-    /* Widened by the bleed and given the same figure back as padding, so the
-       clip below falls a card's edge outside the contents rather than along
-       them. The content box does not move, so nothing on the screen shifts.
-
-       `overflow-clip-margin` says this in one declaration and is what this rule
-       reached for first. It is not carried everywhere `overflow: clip` is, and
-       a browser that honours the clip and ignores the margin snaps the clip
-       back onto the contents - which is not a smaller fix, it is no fix at all,
-       silently, in exactly the browsers nobody tested. Padding is the same
-       allowance in properties that have worked everywhere for twenty years.
-
-       `width: auto` because the console sets `width: 100%` on everything in its
-       work region, and against a fixed width a negative margin is a shove to
-       the left rather than room on both sides. Stretched by the flex column,
-       auto gives the width and the margins together. */
-    width: auto;
-    margin-inline: calc(var(--staff-bleed) * -1);
-    padding-inline: var(--staff-bleed);
-    overflow: hidden;
-    grid-template-rows: auto minmax(0, 1fr) auto;
-  }
-
-  /* A scroll container clips on both axes whatever the other one is asked for:
-     `overflow-y: auto` beside `overflow-x: visible` computes the visible one to
-     `auto` as well, and there is no way to scroll one axis and overflow the
-     other. Every card in this column is the column's own width, so that clip
-     landed exactly on their left and right edges and sliced the ring and the
-     shadow off flat - a few pixels, on every screen in the portal, and only
-     inside the console, which is the one place the column scrolls.
-
-     So the scroll box is widened by the reach of a card's edge and given the
-     same figure back as padding, the same way the surface above it is. The
-     cards keep the tab row's measure, and their edges have somewhere to
-     draw. */
-  .staff[data-mode='console'] .staff-scroll {
-    overflow-y: auto;
-    margin-inline: calc(var(--staff-bleed) * -1);
-    padding-inline: var(--staff-bleed);
-    /* The card edges of the last row want air under them rather than the
-       bar's own edge against them. */
-    padding-bottom: var(--s-2);
-  }
-}
-
 /* The handbook is a script beside a rail.
  *
  * The reading measure is the one thing the console does not get to widen: a
@@ -1679,22 +1704,44 @@ textarea.staff-input {
 }
 
 @media (min-width: 1280px) {
-  .staff[data-mode='console'] .staff-reading {
+  .staff[data-layout='reading'] .staff-reading {
     grid-template-columns: minmax(0, 52rem) minmax(15rem, 22rem);
     column-gap: var(--s-8);
-  }
-
-  /* The stack is two columns now, so the cap belongs on the script rather than
-     on everything drawn beside it. */
-  .staff[data-mode='console'][data-layout='reading'] .staff-stack {
-    max-width: none;
   }
 
   /* Stacked, but only where the rail is a rail. Three figures side by side in a
      column this narrow is three numbers nobody can read; the same three across
      the foot of a single-column screen, which is what this is at every width
      below, is the shape they are drawn in everywhere else. */
-  .staff[data-mode='console'] .staff-reading-side .staff-figures {
+  .staff[data-layout='reading'] .staff-reading-side .staff-figures {
     grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Nothing to show ─────────────────────────────────────────────────────── */
+
+.staff-spent {
+  display: grid;
+  gap: var(--s-3);
+  justify-items: start;
+  padding: var(--s-6) 0;
+}
+
+.staff-spent .staff-quiet {
+  margin-top: var(--s-1);
+}
+
+/* ── Less motion ─────────────────────────────────────────────────────────── */
+
+/* The only movement left in here is a press answering with a scale, and a
+   reader who asked for less motion does not get that either. */
+@media (prefers-reduced-motion: reduce) {
+  .staff-dial:active,
+  .staff-btn:active:enabled,
+  .staff-quiet:active:enabled,
+  a.staff-btn:active,
+  a.staff-quiet:active,
+  .staff-tag:active:enabled {
+    transform: none;
   }
 }

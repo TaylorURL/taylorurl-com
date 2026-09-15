@@ -1,5 +1,4 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { ChevronsDownUp, ChevronsUpDown } from 'lucide-react'
 import { useCallDesk } from '@hooks/console/useCallDesk'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
@@ -16,7 +15,6 @@ import {
 import { DEFAULT_GOALS, shiftOf } from '@lib/outreach/prospects/callShift.js'
 import ShiftFigures from './ShiftFigures'
 import { useStaff } from '../lib/context'
-import { usePortalNav } from '../lib/nav'
 
 /**
  * The handbook, on a screen a representative can reach mid-call.
@@ -89,7 +87,6 @@ const partLabel = id => HANDBOOK_PARTS.find(one => one.id === id)?.label ?? id
 
 export default function Handbook({ Shell }) {
   const { name, token, userId } = useStaff()
-  const nav = usePortalNav()
   const [typed, setTyped] = useState('')
   const [opened, setOpened] = useState(SHUT)
 
@@ -158,11 +155,7 @@ export default function Handbook({ Shell }) {
   }, [])
 
   return (
-    <Shell
-      title="Resources Center"
-      back={{ to: nav.hrefFor('portal'), label: 'Portal' }}
-      layout="reading"
-    >
+    <Shell layout="reading">
       <div className="staff-reading">
         <div className="staff-reading-main">
           <div className="staff-find">
@@ -341,12 +334,6 @@ export default function Handbook({ Shell }) {
             )}
           </div>
         </aside>
-      </div>
-
-      <div className="staff-part">
-        <Link className="staff-btn" to={nav.hrefFor('calls')}>
-          Back to Calls
-        </Link>
       </div>
     </Shell>
   )
