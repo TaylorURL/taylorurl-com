@@ -13,7 +13,6 @@ import {
   INSTAGRAM_URL,
   LEGAL_LINKS,
   PRIMARY_LINKS,
-  SIBLING_LINKS,
   START_LINK,
   SUPPORT_EMAIL,
   serves,
@@ -46,14 +45,6 @@ const DIRECTORY = [
   // Asked of the route table rather than written out, for the reason the note
   // above `serves` in `@constants/navigation` gives.
   { head: 'Legal', items: serves(STATUS_LINK.to) ? [...LEGAL_LINKS, STATUS_LINK] : LEGAL_LINKS },
-  // The other site. One company runs both, and until now neither said so
-  // anywhere a reader could click: the only trace of taylor.website on
-  // taylorurl.com was a build constant, and the only trace of taylorurl.com on
-  // taylor.website was an unlinked sentence in a privacy clause and a mailto.
-  //
-  // The head is what it is rather than the sibling's name, because the column is
-  // the claim: these are ours too.
-  { head: 'Also Ours', items: SIBLING_LINKS },
 ]
 
 /**
@@ -66,17 +57,18 @@ const DIRECTORY = [
 const SPLIT_AT = 6
 
 /**
- * How many tracks the directory needs: one for every column, and a second for a
- * column long enough to split.
+ * How many tracks the directory row needs: one for every column, a second for
+ * a column long enough to split, and one more for the contact column that
+ * closes the row.
  *
  * Counted off the lists rather than written into the grid, because a number
  * here is a number that stops matching the day a page is added to
  * `@constants/navigation` — the one edit these columns are built to absorb.
+ * The contact column is not in `DIRECTORY` because its rows are not links to
+ * pages, so it is the one track added by hand.
  */
-const DIRECTORY_TRACKS = DIRECTORY.reduce(
-  (tracks, column) => tracks + (column.items.length > SPLIT_AT ? 2 : 1),
-  0
-)
+const DIRECTORY_TRACKS =
+  DIRECTORY.reduce((tracks, column) => tracks + (column.items.length > SPLIT_AT ? 2 : 1), 0) + 1
 
 /**
  * What a split column does with the second track it is given: fills the two
@@ -138,7 +130,7 @@ const DIRECTORY_LINK =
   'group -my-3 inline-flex min-h-[44px] items-center gap-1.5 py-3 text-[14px] text-ink-soft transition-colors hover:text-ink'
 
 const CONTACT_ROW =
-  '-my-3 flex min-h-[44px] items-center gap-3 py-3 text-[13px] text-ink-mute transition-colors hover:text-accent'
+  '-my-3 flex min-h-[44px] items-center gap-2.5 py-3 text-[14px] text-ink-soft transition-colors hover:text-accent'
 
 export default function Footer() {
   // The studio's year rather than the reader's. East of Texas the two differ
@@ -161,98 +153,99 @@ export default function Footer() {
 
       <m.div {...fadeInUp} className="container-rail relative pb-10 pt-16 sm:pt-20">
         {/*
-          The masthead: who this is on the left, and everything a reader came
-          down here to click on the right.
+          The masthead, in two bands.
 
-          Two blocks rather than one row of columns, because the two answer to
-          different measures. The brand runs as long as the address and the
-          marks make it; the directory is a set of equal tracks that has to
-          divide evenly and end on the rail. Laid out as one grid they fought:
-          the columns were hand-picked fractions, the widest of them held a
-          single row, the directory stopped two hundred pixels short of the
-          right edge, and the call to action — a fifth child of a four-track
-          grid — wrapped under the brand with the whole width of the directory
-          sitting empty beside it.
+          The first is who this is and the one thing to do about it: the
+          wordmark, the positioning line set as a statement rather than as a
+          caption under the mark, and beside it the ask on a raised card - the
+          label, the promise and the button - so the corner a reader's eye
+          lands in is the one that starts a project. The second band, under
+          the rule, is the directory: every page, the policies, and where the
+          company can be reached, on equal tracks that divide the rail evenly.
+
+          Two bands rather than one row of columns because the two answer to
+          different measures. A statement runs as long as its sentence and a
+          card is as tall as its button; a directory is a set of equal tracks
+          that has to end on the rail. Laid out together they fought over the
+          same column lines.
         */}
-        <div className="border-hair grid gap-x-8 gap-y-12 border-b pb-12 lg:grid-cols-[minmax(0,1.7fr)_minmax(0,4fr)] xl:gap-x-10">
-          <div className="max-w-sm lg:max-w-none">
-            {/*
-              The wordmark through a window, the way the bar already reads it.
-              The file is a 384-unit square carrying 328x98 of lettering in the
-              middle of it, so a surface that draws the whole square spends
-              three quarters of its height on nothing: the foot of the page was
-              holding a 144px box open for a 37px name. The zoom and the offset
-              are what put the lettering in the window and the empty bands
-              outside it.
-            */}
-            <Link
-              to="/"
-              className="footer-mark relative block overflow-hidden opacity-100 transition-opacity duration-200 hover:opacity-80"
-            >
-              <img
-                src="/images/TaylorURL-Logo.webp"
-                alt={SITE.logoAlt}
-                width="384"
-                height="384"
-                loading="lazy"
-                decoding="async"
-                className="pointer-events-none absolute left-1/2 top-1/2 h-[300%] w-auto max-w-none select-none"
-                style={{
-                  transform: 'translate(-50%, -53.5%)',
-                  filter: 'brightness(0) invert(var(--mark-invert))',
-                }}
-                draggable={false}
-                {...retryable()}
-              />
-            </Link>
-            <p className="mt-6 text-[14px] leading-relaxed text-ink-soft">{SITE.footerBlurb}</p>
-            <div className="mt-6 space-y-1">
-              {/* A site that claims no area draws no row for one. The pin
-                  was rendered whatever the record held, so the second site,
-                  which is run from nowhere it names, opened a 44px row on an
-                  icon with nothing beside it. */}
-              {COMPANY_LOCATION ? (
-                <div className={CONTACT_ROW}>
-                  <MapPin className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
-                  <span>{COMPANY_LOCATION}</span>
-                </div>
-              ) : null}
-              <a href={COMPANY_PHONE_HREF} className={CONTACT_ROW}>
-                <Phone className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
-                <span>{COMPANY_PHONE}</span>
-              </a>
-              <a href={`mailto:${SUPPORT_EMAIL}`} className={CONTACT_ROW}>
-                <Mail className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
-                <span>{SUPPORT_EMAIL}</span>
-              </a>
+        <div className="border-hair border-b pb-12">
+          <div className="border-hair grid gap-y-10 border-b pb-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:items-start lg:gap-x-16">
+            <div>
+              {/*
+                The wordmark through a window, the way the bar already reads it.
+                The file is a 384-unit square carrying 328x98 of lettering in the
+                middle of it, so a surface that draws the whole square spends
+                three quarters of its height on nothing: the foot of the page was
+                holding a 144px box open for a 37px name. The zoom and the offset
+                are what put the lettering in the window and the empty bands
+                outside it.
+              */}
+              <Link
+                to="/"
+                className="footer-mark relative block overflow-hidden opacity-100 transition-opacity duration-200 hover:opacity-80"
+              >
+                <img
+                  src="/images/TaylorURL-Logo.webp"
+                  alt={SITE.logoAlt}
+                  width="384"
+                  height="384"
+                  loading="lazy"
+                  decoding="async"
+                  className="pointer-events-none absolute left-1/2 top-1/2 h-[300%] w-auto max-w-none select-none"
+                  style={{
+                    transform: 'translate(-50%, -53.5%)',
+                    filter: 'brightness(0) invert(var(--mark-invert))',
+                  }}
+                  draggable={false}
+                  {...retryable()}
+                />
+              </Link>
+              {/*
+                The positioning line at display size. It ran as a caption under
+                the wordmark at the size of a footnote; set as the statement of
+                the foot of the page it is the one line a reader takes away.
+              */}
+              <p className="display-5 mt-7 max-w-2xl font-medium leading-[1.3] tracking-tight text-ink">
+                {SITE.footerBlurb}
+              </p>
             </div>
-            {LISTINGS.length > 0 && (
-              <ul className="mt-5 flex flex-wrap items-center gap-2">
-                {LISTINGS.map(listing => (
-                  <li key={listing.key}>
-                    <a
-                      href={listing.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={listing.label}
-                      title={listing.label}
-                      className="border-hair inline-flex h-11 w-11 items-center justify-center rounded-[var(--r-control)] border text-ink-mute transition-colors duration-200 hover:border-accent/40 hover:text-accent"
-                    >
-                      <listing.Mark className="h-[18px] w-[18px]" />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+
+            {/*
+              The ask, on a card. It stood at the foot of the directory in
+              the type of a footnote, and the button was the only thing on
+              the line a reader noticed. A raised surface with a hairline
+              round it is the one shape on this ground that reads as a thing
+              to act on, and the primary button is the one that reads as the
+              action.
+            */}
+            <div className="border-hair rounded-[var(--r-card)] border bg-[var(--surface-1)] p-6">
+              <p className="section-label-sm mb-3 text-ink-faint">Hire Us</p>
+              {/* "A plan and a price" is what a website quote is. This site
+                  quotes work whose shape has to be agreed before it can be
+                  priced, and says "scope" for that everywhere else it speaks. */}
+              <p className="text-[15px] leading-relaxed text-ink-soft">
+                {IS_SECOND_SITE
+                  ? 'Tell us what you need and you get a scope and a price back, free.'
+                  : 'Tell us what you need and you get a plan and a price back, free.'}
+              </p>
+              <div className="mt-5">
+                <Magnet padding={50} magnetStrength={6}>
+                  <Link to={START_LINK.to} className="btn btn-primary group">
+                    {START_LINK.label}
+                    <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </Link>
+                </Magnet>
+              </div>
+            </div>
           </div>
 
           {/*
             The directory. Equal tracks carrying the one gap, so every column
             line falls on the same rhythm, a row in one column sits level with
             the row beside it, and the last column ends on the rail. One track
-            on a phone, two from `sm`, and one per directory column from `lg`,
-            so a long column has its second track from the step there are two
-            to give.
+            on a phone, two from `sm`, and one per column from `lg`, so a long
+            column has its second track from the step there are two to give.
 
             `content-start` because the tracks are as tall as the longest of
             them and the short ones would otherwise stretch their rows apart to
@@ -260,7 +253,7 @@ export default function Footer() {
           */}
           <div
             style={{ '--dir-tracks': DIRECTORY_TRACKS }}
-            className="grid content-start gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-[repeat(var(--dir-tracks),minmax(0,1fr))] xl:gap-x-10"
+            className="grid content-start gap-x-8 gap-y-10 pt-10 sm:grid-cols-2 lg:grid-cols-[repeat(var(--dir-tracks),minmax(0,1fr))]"
           >
             {DIRECTORY.map(column => {
               // A column past the split takes two tracks and the gap between
@@ -275,12 +268,10 @@ export default function Footer() {
                   style={split ? { '--rows': Math.ceil(column.items.length / 2) } : undefined}
                 >
                   <p className="section-label-sm mb-4 text-ink-faint">{column.head}</p>
-                  <ul className={`grid gap-x-8 gap-y-2 xl:gap-x-10 ${split ? SPLIT_COLUMN : ''}`}>
+                  <ul className={`grid gap-x-8 gap-y-2 ${split ? SPLIT_COLUMN : ''}`}>
                     {column.items.map(item => {
-                      // A row naming the other site is an anchor: two origins,
-                      // and the router cannot reach across. Same tab, same
-                      // furniture — it is the same company one door along, not
-                      // somewhere else.
+                      // A row naming another origin is an anchor: the router
+                      // cannot reach across. Same tab, same furniture.
                       const Row = item.href ? 'a' : Link
                       const link = item.href ? { href: item.href } : { to: item.to }
                       return (
@@ -298,29 +289,60 @@ export default function Footer() {
             })}
 
             {/*
-              The one thing a reader came down here to do, on the line under
-              the columns it belongs to rather than in a column of its own. It
-              runs the width of the directory with the button on the rail, so
-              the corner the short columns leave open is the corner it fills.
+              Where the company can be reached, as the last column of the
+              directory rather than a block under the wordmark: a reader
+              looking for a number reads down the columns the way they read
+              for a page, and this is the column that answers.
+
+              Two kinds of address share the row of marks on purpose.
+              Facebook, Trustpilot and BBB are where the work is vouched for
+              by somebody else; Instagram is where it is posted as it happens.
+              A reader who came down here to check a company and one who came
+              down here to follow it are looking in the same place.
             */}
-            <div className="border-hair col-span-full flex flex-col gap-5 border-t pt-8 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
-              <div>
-                <p className="section-label-sm mb-2 text-ink-faint">Hire Us</p>
-                {/* "A plan and a price" is what a website quote is. This site
-                    quotes work whose shape has to be agreed before it can be
-                    priced, and says "scope" for that everywhere else it speaks. */}
-                <p className="max-w-xs text-[13px] leading-relaxed text-ink-mute">
-                  {IS_SECOND_SITE
-                    ? 'Tell us what you need and you get a scope and a price back, free.'
-                    : 'Tell us what you need and you get a plan and a price back, free.'}
-                </p>
+            <div>
+              <p className="section-label-sm mb-4 text-ink-faint">Reach Us</p>
+              {/* A flex column with a gap rather than `space-y`, which writes a
+                  margin-top onto every row after the first and overrides the
+                  negative one that pulls the 44px target into a 20px line. */}
+              <div className="flex flex-col gap-y-3">
+                {/* A site that claims no area draws no row for one. The pin
+                    was rendered whatever the record held, so the second site,
+                    which is run from nowhere it names, opened a 44px row on an
+                    icon with nothing beside it. */}
+                {COMPANY_LOCATION ? (
+                  <div className={CONTACT_ROW}>
+                    <MapPin className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
+                    <span>{COMPANY_LOCATION}</span>
+                  </div>
+                ) : null}
+                <a href={COMPANY_PHONE_HREF} className={CONTACT_ROW}>
+                  <Phone className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
+                  <span>{COMPANY_PHONE}</span>
+                </a>
+                <a href={`mailto:${SUPPORT_EMAIL}`} className={CONTACT_ROW}>
+                  <Mail className="h-4 w-4 flex-shrink-0 text-accent" strokeWidth={1.5} />
+                  <span>{SUPPORT_EMAIL}</span>
+                </a>
               </div>
-              <Magnet padding={50} magnetStrength={6}>
-                <Link to={START_LINK.to} className="btn btn-secondary group">
-                  {START_LINK.label}
-                  <ArrowUpRight className="h-3.5 w-3.5 transition-transform duration-200 ease-out-soft group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </Link>
-              </Magnet>
+              {LISTINGS.length > 0 && (
+                <ul className="mt-6 flex flex-wrap items-center gap-2">
+                  {LISTINGS.map(listing => (
+                    <li key={listing.key}>
+                      <a
+                        href={listing.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={listing.label}
+                        title={listing.label}
+                        className="border-hair inline-flex h-11 w-11 items-center justify-center rounded-[var(--r-control)] border text-ink-mute transition-colors duration-200 hover:border-accent/40 hover:text-accent"
+                      >
+                        <listing.Mark className="h-[18px] w-[18px]" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
