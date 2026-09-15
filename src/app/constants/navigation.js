@@ -14,6 +14,7 @@ import {
   MarkAt,
   MarkCanvass,
   MarkCurve,
+  MarkDevice,
   MarkFind,
   MarkFrame,
   MarkGuard,
@@ -55,6 +56,7 @@ const SERVICE_MARKS = {
   care: MarkGuard,
   'business-email': MarkAt,
   seo: MarkFind,
+  'mobile-apps': MarkDevice,
 }
 
 // The mark each free tool carries, keyed on the slug its route ends in, so a
@@ -103,6 +105,11 @@ const STANDALONE_SERVICES = [
     slug: 'seo',
     label: 'Getting Found on Google',
     summary: 'The work that puts a business in front of people searching nearby.',
+  },
+  {
+    slug: 'mobile-apps',
+    label: 'iOS and Android Apps',
+    summary: 'Booking, ordering, and tools for the crew, on the phone they already carry.',
   },
 ]
 
@@ -512,7 +519,7 @@ const STUDIO_NAV_GROUPS = [
 // its own list, and it is six indexes rather than a flattened tree.
 //
 // Each of these is a real page that carries the rest of its branch, so the
-// tree is one tap deeper rather than gone: /services holds the six lines,
+// tree is one tap deeper rather than gone: /services holds the seven lines,
 // /portfolio the client work and the towns it was done in, /tools the free
 // ones, /contact the ways to start a conversation.
 //

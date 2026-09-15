@@ -25,6 +25,7 @@ const loaders = {
     : {
         BusinessEmail: () => import('@views/services/BusinessEmail'),
         ServiceSeo: () => import('@views/services/ServiceSeo'),
+        MobileApps: () => import('@views/services/MobileApps'),
         OnlineTools: () => import('@views/services/OnlineTools'),
       }),
   Contact: () => import('@views/company/Contact'),

@@ -175,7 +175,7 @@ const STUDIO = {
   mockupPaths: { redesign: '/before-after', 'online-tools': '/performance' },
   extra: {
     eyebrow: 'Also on Offer',
-    heading: 'Mail on your own domain, and getting found.',
+    heading: 'Mail on your own domain, getting found, and an app of your own.',
   },
   band: {
     eyebrow: 'Comes with Every Site',
@@ -369,7 +369,11 @@ export default function Services() {
                   {DOC.extra.heading}
                 </h2>
               </div>
-              <ServiceCards pages={EXTRA_SERVICES} ground="paper" columns={{ base: 1, sm: 2 }} />
+              <ServiceCards
+                pages={EXTRA_SERVICES}
+                ground="paper"
+                columns={{ base: 1, sm: 2, lg: 3 }}
+              />
             </m.div>
           )}
         </div>
