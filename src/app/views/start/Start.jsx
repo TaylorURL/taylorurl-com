@@ -48,6 +48,11 @@ const NOT_SENT = 'That message did not send. Nothing you typed was lost, so try 
 const FINE_PRINT =
   'Free. No account to make, nothing to pay until you have a price in writing, and no call unless you ask for one.'
 
+// The photograph beside the headline on a wide screen: a shopfront, because
+// that is whose site the form is about.
+// olivia kim, unsplash.com/photos/iRulVpVqre0
+const HERO_PHOTO = '/images/start/storefront.webp'
+
 // The four things the hero promises, under the headline, before the form asks
 // for anything.
 const PROMISES = [
@@ -185,6 +190,7 @@ export default function Start() {
         eyebrow="Start a Project"
         title="Tell us what the site has to do. You get a plan and a price back, in writing."
         description="Two minutes to fill in. A person in Baytown reads it and usually replies within the hour, by email or with a call, whichever you pick. You pay nothing to find out what it costs."
+        image={HERO_PHOTO}
       >
         <ul className="flex flex-wrap gap-x-8 gap-y-3">
           {PROMISES.map(promise => (

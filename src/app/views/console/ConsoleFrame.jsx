@@ -708,13 +708,29 @@ export default function ConsoleFrame() {
   // Outreach, Builds, Leads, Call List, Payments and Admin, because they carry
   // the same mark for the same reason.
   //
+  // Who else is let past the mark is the section's own answer, read from the
+  // same catalogue the menu reads. Written out here instead, this branch and
+  // the menu would be two lists of roles that drift, and a section a
+  // representative can see in the column and cannot open fails in front of the
+  // representative rather than in a check.
+  //
   // The role rides in on the overview read, so this waits for that read to land
   // rather than acting on an unknown role. Redirecting while it is unknown
   // would throw an admin off their own section on every refresh, and an
   // unreachable collector would do it on sections that were working. Until it
   // lands the menu is already drawing as a client's, so the two agree.
   const roleKnown = preview || Boolean(overview.data)
-  if (!publicOnly && roleKnown && role !== 'admin' && section?.admin) {
+  const named = Boolean(section?.roles?.includes(role))
+
+  // The front of the console is a reading of the sites on the account, and a
+  // representative has none: every figure on it is nought for them, and nought
+  // visitors is a finding rather than an absence. The portal is the whole of
+  // what they came in for, so the front door opens on it.
+  if (!publicOnly && roleKnown && role === 'staff' && here === '/console') {
+    return <Navigate to="/console/staff" replace />
+  }
+
+  if (!publicOnly && roleKnown && role !== 'admin' && !named && section?.admin) {
     return <Navigate to="/console" replace />
   }
 

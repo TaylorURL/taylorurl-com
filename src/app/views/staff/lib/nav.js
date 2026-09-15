@@ -3,17 +3,19 @@ import { createContext, useContext } from 'react'
 /**
  * The portal's surfaces, and how one reaches another.
  *
- * The same screens are opened from two places. A representative works them
- * on their own, one viewport tall, with nothing else on the screen; an admin
- * works them inside the console, under its bar and beside its column. Which
- * they are standing in decides nothing about what a screen says and everything
- * about what a link on it points at, so the addresses come from here and the
- * screens themselves carry none.
+ * The screens carry no addresses of their own. They are rendered inside the
+ * console's work region, under its bar and beside its column, and a link
+ * reading `/staff/calls` pressed in there would throw the reader out of the
+ * console, out of the scope they had set, and onto a surface that looks nothing
+ * like the one they pressed from. So the addresses are published by whatever is
+ * holding the screens and come down through the context.
  *
- * Without this each screen would hold a hard `/staff/...` address, and every
- * one of them opened inside the console would throw the reader out of it - out
- * of the frame, out of the scope they had set, and onto a surface that looks
- * nothing like the one they pressed from.
+ * There is one holder today. There were two - a standalone portal at `/staff`
+ * and the console's section - and keeping both meant every screen was written
+ * against a shell it could not name. The standalone one is gone and its
+ * addresses redirect here, but the indirection stays: what it buys is that the
+ * screens still state no address, which is the thing that let one of them move
+ * without the other four being edited.
  */
 
 /**
@@ -21,17 +23,10 @@ import { createContext, useContext } from 'react'
  *
  * The call center leads because it is where the day is spent.
  *
- * `lede` is the line under the door on the portal front. It says what the
- * screen is for rather than what is on it, which is what somebody deciding
- * where to go needs.
+ * `lede` says what the screen is for rather than what is on it, which is what
+ * somebody deciding where to go needs.
  */
 export const PORTAL_SURFACES = Object.freeze([
-  {
-    key: 'portal',
-    label: 'Portal',
-    title: 'Staff Portal',
-    lede: 'Every screen behind the desk.',
-  },
   {
     key: 'calls',
     label: 'Call Center',
@@ -52,23 +47,14 @@ export const PORTAL_SURFACES = Object.freeze([
   },
 ])
 
-/** What the standalone portal publishes: four addresses, one per screen. */
-export const STANDALONE = Object.freeze({
-  surfaces: Object.freeze(['portal', 'calls', 'management', 'resources']),
-  hrefFor: (key, params) => {
-    const path = key === 'portal' ? '/staff' : `/staff/${key}`
-    const query = new URLSearchParams(
-      Object.entries(params ?? {}).filter(([, value]) => value)
-    ).toString()
-    return query ? `${path}?${query}` : path
-  },
-  openedOn: null,
-  // A representative reads the figures their shift is measured against and
-  // never moves them. The console's portal is where they are set.
-  sets: false,
-})
-
-export const PortalNav = createContext(STANDALONE)
+/**
+ * What is holding the screens, and where it publishes each of them.
+ *
+ * Null by default and read through a hook that refuses the default, the way the
+ * staff context is. A screen drawn outside a portal has no addresses at all,
+ * and a fallback here would hand it plausible ones that point at nothing.
+ */
+export const PortalNav = createContext(null)
 
 /**
  * @returns {{surfaces: readonly string[],
@@ -77,15 +63,16 @@ export const PortalNav = createContext(STANDALONE)
  *   address of each, the business the call center was opened on where one was
  *   named, and whether this is the portal the shift is set from.
  *
- * `sets` is false on the standalone portal and true in the console, and it is
- * the one line between what a representative may do and what the person who set
- * their shift may do. A representative controls the call screen and nothing
- * else: the figures they are read against are a reading rather than a set of
- * controls, and a screen that let them move their own target would make the
- * target mean nothing.
+ * `sets` is the one line between what a representative may do and what the
+ * person who set their shift may do. A representative controls the call screen
+ * and nothing else: the figures they are read against are a reading rather than
+ * a set of controls, and a screen that let them move their own target would make
+ * the target mean nothing.
  */
 export function usePortalNav() {
-  return useContext(PortalNav)
+  const held = useContext(PortalNav)
+  if (!held) throw new Error('usePortalNav was called outside the staff portal')
+  return held
 }
 
 /**

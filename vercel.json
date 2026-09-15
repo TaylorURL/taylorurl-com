@@ -78,6 +78,26 @@
       "permanent": true
     },
     {
+      "source": "/staff",
+      "destination": "/console/staff",
+      "permanent": true
+    },
+    {
+      "source": "/staff/calls",
+      "destination": "/console/staff",
+      "permanent": true
+    },
+    {
+      "source": "/staff/management",
+      "destination": "/console/staff?view=management",
+      "permanent": true
+    },
+    {
+      "source": "/staff/resources",
+      "destination": "/console/staff?view=resources",
+      "permanent": true
+    },
+    {
       "source": "/console/traffic",
       "destination": "/console",
       "permanent": true

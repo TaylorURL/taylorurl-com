@@ -37,6 +37,9 @@ const CALLER_DOORS = [
   // Sending a business its own audit is done off the call screen by the person
   // on the phone with them, so it is a caller's job rather than an admin's.
   'api/calls-audit-email.js',
+  // The team board counts a representative's own day, so a representative may
+  // read it; the one write behind it is admin only and refuses them inside.
+  'api/calls-team.js',
 ]
 
 /** A stand-in for the two clients, holding whichever roles a case needs. */
