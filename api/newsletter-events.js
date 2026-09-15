@@ -27,7 +27,7 @@
 
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { rawBody } from '../lib/http/body.js'
-import { createHmac, timingSafeEqual } from 'node:crypto'
+import { same, signedByResend } from '../lib/mail/webhook.js'
 import { createClient } from '@supabase/supabase-js'
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gujgtjqqurildqurpffh.supabase.co'
@@ -39,36 +39,13 @@ const SIGNING_SECRET = process.env.RESEND_WEBHOOK_SECRET || ''
 // over what was sent and not over what a parser made of it.
 export const config = { api: { bodyParser: false } }
 
-/** Two strings compared without the comparison itself saying how far it got. */
-function same(a, b) {
-  const left = Buffer.from(String(a))
-  const right = Buffer.from(String(b))
-  if (left.length !== right.length) return false
-  return timingSafeEqual(left, right)
-}
-
 /**
- * Whether the signature Resend sent matches the body that arrived.
- *
- * Svix signs `id.timestamp.body` with the secret that follows `whsec_`, base64
- * decoded, and sends one or more candidate signatures because a secret can be
- * rotated with both live. Any one of them matching is a match.
+ * Whether the signature Resend sent matches the body that arrived, checked
+ * against this webhook's own secret. The check itself is lib/mail/webhook.js,
+ * shared with every other endpoint Resend posts to.
  */
 export function signed(headers, body, secret = SIGNING_SECRET) {
-  if (!secret || !body) return false
-  const id = headers['svix-id']
-  const stamp = headers['svix-timestamp']
-  const offered = headers['svix-signature']
-  if (!id || !stamp || !offered) return false
-
-  const key = Buffer.from(secret.replace(/^whsec_/, ''), 'base64')
-  const expected = createHmac('sha256', key).update(`${id}.${stamp}.${body}`).digest('base64')
-  return String(offered)
-    .split(' ')
-    .some(entry => {
-      const [version, value] = entry.split(',')
-      return version === 'v1' && value && same(value, expected)
-    })
+  return signedByResend(headers, body, secret)
 }
 
 /**

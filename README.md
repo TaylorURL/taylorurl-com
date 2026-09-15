@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.38.7-2f6bff?style=for-the-badge" alt="Version 2026.38.7" />
+  <img src="https://img.shields.io/badge/version-2026.38.8-2f6bff?style=for-the-badge" alt="Version 2026.38.8" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -116,6 +116,7 @@ flowchart TD
     IN --> DB[("Postgres, RLS-locked")]
     Site -->|"unsubscribe"| EF["the unsubscribe function"] --> DB
     Site -->|"enquiry"| CT["api/contact.js"] --> RS["Resend"]
+    RS -->|"a reply to a lead, from any mailbox"| LR["api/lead-reply.js"] --> RS
     Console["/console"] -->|"a quoted payment link"| CK["api/checkout-link.js"] --> ST["Stripe"] -->|"signed webhook"| WH["api/stripe-webhook.js"] --> DB
     Site -->|"Trustpilot rating"| TP["api/trustpilot.js"] --> TB["Trustpilot TrustBox data"]
     Site -->|"uptime feed, chat turns"| PX["api/status-feed.js, api/live-chat.js"] --> PI["The Pi"]

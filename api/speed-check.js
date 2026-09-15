@@ -50,6 +50,7 @@ import { suppressed } from '../lib/outreach/sending/queue.js'
 import { bridge } from '../lib/outreach/prospects/bridge.js'
 import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
 import { SOURCES, keepLead } from '../lib/leads/spine.js'
+import { replyAddressFor } from '../lib/leads/relay.js'
 import { sendNotice, notice } from '../lib/mail/notice.js'
 import {
   DAY_MS,
@@ -167,9 +168,12 @@ async function takeReading(db, row, url, response) {
  * stops being the message the moment either copy moves.
  *
  * @param {object} check The row as it stands once the reading is written.
+ * @param {{id: string}|null} [lead] The lead the sender became, whose relay
+ *   address the header carries so a reply from any mailbox is filed and
+ *   marked on its way to them. The body still names their own address.
  * @returns {{subject: string, text: string, html: string, replyTo: string}}
  */
-export function speedCheckNotice(check) {
+export function speedCheckNotice(check, lead = null) {
   const rows = [
     ['Email', check.email],
     ['Site', check.site],
@@ -182,7 +186,7 @@ export function speedCheckNotice(check) {
   // check that simply scored nothing.
   if (check.fault) rows.push(['Did not finish', check.fault])
 
-  return notice({
+  const drawn = notice({
     label: 'Speed Check',
     subject: check.fault
       ? `Speed Check from ${check.host} did not finish`
@@ -190,6 +194,7 @@ export function speedCheckNotice(check) {
     rows,
     replyTo: check.email,
   })
+  return { ...drawn, replyTo: replyAddressFor({ id: lead?.id, name: check.host }, check.email) }
 }
 
 /**
@@ -208,11 +213,11 @@ export function speedCheckNotice(check) {
  *
  * @param {object} check The row as it stands once the reading is written.
  */
-async function announce(check) {
+async function announce(check, lead) {
   if (!RESEND_API_KEY) return
 
   try {
-    await sendNotice(speedCheckNotice(check), RESEND_API_KEY)
+    await sendNotice(speedCheckNotice(check, lead), RESEND_API_KEY)
   } catch (cause) {
     console.error('speed-check: notifying: %s', cause.message)
   }
@@ -355,7 +360,7 @@ export default async function handler(request, response) {
   // Somebody who typed their address in to have their own site measured is
   // asking about their own site, which is the warmest question this business
   // gets asked. The reading was being kept and the person asking was not.
-  await keepLead(
+  const lead = await keepLead(
     {
       source: SOURCES.speedCheck,
       ref: row.id,
@@ -422,7 +427,7 @@ export default async function handler(request, response) {
     // is a write on a client already in hand and the notice is a call to
     // somebody else's server.
     await enlist(db, check)
-    await announce(check)
+    await announce(check, lead)
     response.end()
   } catch (cause) {
     console.error('speed-check: %s: %s', host, cause.message)
@@ -442,7 +447,7 @@ export default async function handler(request, response) {
     // A reading that did not come back is still somebody who asked for one and
     // left an address to be answered at. They are the sender most worth
     // writing to, since the page told them nothing useful.
-    await announce({ ...opened, status: 'failed', fault })
+    await announce({ ...opened, status: 'failed', fault }, lead)
     say(response, { fault: 'The reading did not come back. Try again in a few minutes.' })
     response.end()
   }
