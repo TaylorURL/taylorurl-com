@@ -2,14 +2,19 @@ import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { EXTRA_SERVICES, SERVICE_PAGES } from '@data/pages/serviceDetail'
+import { otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
 import MoreServices from './MoreServices'
 import SectionLink from './SectionLink'
 
-const PAGE_PATH = '/services/mobile-apps'
-const PAGE_NAME = 'iOS and Android Apps'
+// The name, the path and the mark come from the same data the menu and the
+// cards read, so this page cannot be called one thing in the bar and another
+// in its own breadcrumb.
+const SLUG = 'mobile-apps'
+const PAGE = servicePage(SLUG)
+const PAGE_PATH = PAGE.path
+const PAGE_NAME = PAGE.name
 
 // What the work is, in the order it lands: the stores, the screens, the site
 // underneath, the sign-in, the notifications, and the listing.
@@ -164,9 +169,7 @@ export default function MobileApps() {
         </div>
       </ServiceSection>
 
-      <MoreServices
-        pages={[...SERVICE_PAGES, ...EXTRA_SERVICES.filter(page => page.path !== PAGE_PATH)]}
-      />
+      <MoreServices pages={otherServices(SLUG)} />
 
       <CtaBanner
         eyebrow="Let’s Talk"

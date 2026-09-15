@@ -36,20 +36,16 @@ const ALL_ROUTES = [
   { key: 'Home', index: true },
   { key: 'About', path: 'about' },
   { key: 'Services', path: 'services' },
-  // Each service line's own page. One view answers for all four, from the
-  // content held against the slug in the path.
+  // Each service's own page. One view answers for every service whose page is
+  // the shared shape, from the content held against the slug in the path.
   { key: 'ServiceDetail', path: 'services/:service' },
-  // The services that are not one of the four lines. A static path outranks a
-  // parameterized one however they are ordered, so each reaches its own view
-  // rather than the one above.
+  // The four services whose pages are not the shared shape. A static path
+  // outranks a parameterized one however they are ordered, so each reaches its
+  // own view rather than the one above. They are still services like the rest:
+  // the menu, the cards and the sitemap read all of them from the same lists.
   { key: 'BusinessEmail', path: 'services/business-email' },
   { key: 'ServiceSeo', path: 'services/seo' },
   { key: 'MobileApps', path: 'services/mobile-apps' },
-  // The one line that is not the shared service shape. It is still one of the
-  // four - the menu, the cards and the sitemap all read it from the same list -
-  // and it is served here rather than by the view above because its page makes
-  // an argument about the machinery a build installs that the other three do
-  // not make.
   { key: 'OnlineTools', path: 'services/online-tools' },
   { key: 'Contact', path: 'contact' },
   // The form every Start a Project button opens: one screen that takes a name,

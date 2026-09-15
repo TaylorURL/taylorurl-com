@@ -14,14 +14,7 @@ import {
   UserRound,
   Zap,
 } from 'lucide-react'
-import {
-  MarkFrame,
-  MarkGauge,
-  MarkGuard,
-  MarkPanel,
-  MarkReach,
-  MarkRefit,
-} from '@components/marks/marks'
+import { MarkFrame, MarkGauge, MarkPanel, MarkReach, MarkRefit } from '@components/marks/marks'
 import PageHero from '@components/page-bands/PageHero'
 import BrowserMockup from '@components/mockups/BrowserMockup'
 import CtaBanner from '@components/conversion/CtaBanner'
@@ -31,7 +24,11 @@ import { fadeInUp, staggerChild } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
 import { START_LINK, serves } from '@constants/navigation'
 import { SERVICE_LINES } from '@data/pages/services'
-import { EXTRA_SERVICES } from '@data/pages/serviceDetail'
+import {
+  INCLUDED_SERVICE_PAGES,
+  SERVICE_PAGES,
+  SOFTWARE_SERVICE_PAGES,
+} from '@data/pages/serviceDetail'
 import { AREA_SERVED, BUSINESS_ID, SERVICE_AREAS, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
@@ -68,30 +65,6 @@ const STUDIO_ROWS = {
       'Cleaned up so Google can read every page',
     ],
     mockup: 'code',
-  },
-  'online-tools': {
-    mark: MarkPanel,
-    description:
-      'Booking, ordering, customer logins, and quote forms on the front, wired into Jobber, Housecall Pro, or whatever you already run. Ad tracking, a sending domain, and monitoring underneath, all of it put in while the site is built.',
-    features: [
-      'Online booking, ordering, and quote forms',
-      'Checkout through Stripe, Square, or PayPal',
-      'Meta Pixel and Google Ads tracking, wired in before you advertise',
-      'Your own sending domain, so the mail reaches an inbox',
-    ],
-    mockup: 'analytics',
-  },
-  care: {
-    mark: MarkGuard,
-    description:
-      'Hosting, backups, security, and monitoring, all handled without being asked. A change to a price, a photo, or a page costs nothing and takes a text message.',
-    features: [
-      'Changes any time, with no fee per change',
-      'Security kept current in the background',
-      'Watched around the clock with daily backups',
-      'A direct line to the people who built it',
-    ],
-    mockup: 'dashboard',
   },
 }
 
@@ -158,25 +131,36 @@ const BAND = GROUNDS.band
 const STUDIO = {
   seoTitle: 'Small Business Websites in Baytown, TX',
   seoDescription:
-    'Small business websites in Baytown, TX: custom sites, redesigns, online booking, and hosting for shops, restaurants, trades, and local pros, from a small team.',
+    'Small business websites in Baytown, TX: custom sites and redesigns with booking, company email, ad tracking, SEO, and hosting included, plus apps and automation.',
   serviceType: 'Web Development',
-  serviceName: 'Small business websites and online tools',
-  catalogName: 'Small business website services',
+  serviceName: 'Small business websites, apps, and software',
+  catalogName: 'Small business website and software services',
   hero: {
     eyebrow: 'What We Do',
     title: 'A small team builds it, hosts it, and answers when you call.',
     description:
-      'Custom websites, redesigns, and online tools for shops, restaurants, trades, and pros around Baytown and the Houston area. You get a plan and a price before any work starts.',
+      'A website for shops, restaurants, trades, and pros around Baytown and the Houston area, with booking, email, ad tracking, search work, and hosting as part of it. Apps and automation are quoted on their own. You get a plan and a price before any work starts.',
   },
   // The URL the row's schematic is drawn under. A path is set only for the
   // lines whose work is easiest to show on one; the rest sit on the home page
   // of the site they stand for.
   mockupHost: 'yourbusiness.com',
-  mockupPaths: { redesign: '/before-after', 'online-tools': '/performance' },
-  extra: {
-    eyebrow: 'Also on Offer',
-    heading: 'Mail on your own domain, getting found, and an app on both stores.',
-  },
+  mockupPaths: { redesign: '/before-after' },
+  // The two bands under the rows, each a list the menu also draws as a column.
+  // The first says what every site comes with, because five pages under a
+  // plain heading read as five more bills.
+  extra: [
+    {
+      eyebrow: 'Included With Every Site',
+      heading: 'Booking, company email, ad tracking, the search work, and hosting, all part of it.',
+      pages: INCLUDED_SERVICE_PAGES,
+    },
+    {
+      eyebrow: 'Separate Projects',
+      heading: 'Apps and automation, each quoted as a project of its own.',
+      pages: SOFTWARE_SERVICE_PAGES,
+    },
+  ],
   band: {
     eyebrow: 'Comes with Every Site',
     heading: 'Six things you never have to ask for.',
@@ -215,7 +199,7 @@ const SECOND_SITE = {
   },
   mockupHost: 'yourcompany.com',
   mockupPaths: {},
-  extra: null,
+  extra: [],
   band: {
     eyebrow: 'Holds on Every Job',
     heading: 'Six things that are true of all three.',
@@ -333,7 +317,7 @@ export default function Services() {
             hasOfferCatalog: {
               '@type': 'OfferCatalog',
               name: DOC.catalogName,
-              itemListElement: [...SERVICE_LINES, ...EXTRA_SERVICES].map(line => ({
+              itemListElement: SERVICE_PAGES.map(line => ({
                 '@type': 'Offer',
                 itemOffered: {
                   '@type': 'Service',
@@ -361,21 +345,23 @@ export default function Services() {
             ))}
           </div>
 
-          {EXTRA_SERVICES.length > 0 && (
-            <m.div {...fadeInUp} className="mt-24">
-              <div className="border-hair-paper mb-10 border-b pb-8">
-                <p className="section-label mb-4 text-accent">{DOC.extra.eyebrow}</p>
-                <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink-paper [text-wrap:balance]">
-                  {DOC.extra.heading}
-                </h2>
-              </div>
-              <ServiceCards
-                pages={EXTRA_SERVICES}
-                ground="paper"
-                columns={{ base: 1, sm: 2, lg: 3 }}
-              />
-            </m.div>
-          )}
+          {DOC.extra
+            .filter(band => band.pages.length > 0)
+            .map(band => (
+              <m.div key={band.eyebrow} {...fadeInUp} className="mt-24">
+                <div className="border-hair-paper mb-10 border-b pb-8">
+                  <p className="section-label mb-4 text-accent">{band.eyebrow}</p>
+                  <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink-paper [text-wrap:balance]">
+                    {band.heading}
+                  </h2>
+                </div>
+                <ServiceCards
+                  pages={band.pages}
+                  ground="paper"
+                  columns={{ base: 1, sm: 2, lg: band.pages.length % 3 === 0 ? 3 : 4 }}
+                />
+              </m.div>
+            ))}
         </div>
       </section>
 
