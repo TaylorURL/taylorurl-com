@@ -46,7 +46,7 @@ const NOT_SENT = 'That message did not send. Nothing you typed was lost, so try 
 // What stands under the send button. Each clause answers one reason not to
 // press it.
 const FINE_PRINT =
-  'Free. No account to make, nothing charged until you have a price in writing, and no call unless you ask for one.'
+  'Free. No account to make, nothing to pay until you have a price in writing, and no call unless you ask for one.'
 
 // The four things the hero promises, under the headline, before the form asks
 // for anything.
@@ -66,7 +66,7 @@ const NEXT = [
   },
   {
     title: 'Plan and price',
-    body: 'What gets built, how long it takes and what it costs. In writing, before anything is charged.',
+    body: 'What gets built, how long it takes and what it costs. In writing, before you pay anything.',
   },
   {
     title: 'Build and go live',
@@ -116,7 +116,7 @@ export default function Start() {
     if (held.contactMethod === 'phone' && !hasMinLength(held.phone, 7)) {
       return {
         field: 'phone',
-        fault: 'A phone number is needed to return a call. Pick email instead to skip it.',
+        fault: 'We need a phone number to call you back. Pick email instead to skip it.',
       }
     }
     if (!hasMinLength(held.message, 10)) {
@@ -184,7 +184,7 @@ export default function Start() {
       <PageHero
         eyebrow="Start a Project"
         title="Tell us what the site has to do. You get a plan and a price back, in writing."
-        description="Two minutes to fill in. A person in Baytown reads it and usually replies within the hour, by email or with a call, whichever you pick. Nothing is charged to find out what it costs."
+        description="Two minutes to fill in. A person in Baytown reads it and usually replies within the hour, by email or with a call, whichever you pick. You pay nothing to find out what it costs."
       >
         <ul className="flex flex-wrap gap-x-8 gap-y-3">
           {PROMISES.map(promise => (
@@ -223,7 +223,7 @@ export default function Start() {
                     Tell us about the business
                   </h2>
                   <p className={`mt-1.5 text-[14px] ${GROUND.body}`}>
-                    Five short answers. The person who reads them writes the reply.
+                    A few short answers. The person who reads them writes the reply.
                   </p>
                 </div>
                 <span className={`section-label-sm ${GROUND.meta}`}>About 2 Min</span>
@@ -470,7 +470,7 @@ export default function Start() {
                   get the same plan and price over the phone.
                 </p>
                 <a href={SITE.phoneHref} className="btn btn-secondary mt-5 w-full">
-                  Call Now
+                  Call for a Plan and Price
                 </a>
               </div>
 
