@@ -28,6 +28,7 @@ import { useTheme } from '@hooks/theme/useTheme'
 import { SITE } from '../../../../lib/site/current.js'
 import QuietBoundary from '../app-shell/QuietBoundary'
 import { lazyWithRetry } from '@utils/lazyWithRetry'
+import { retryable } from '@utils/retryImage'
 
 // Below this depth the bar is transparent; past it the shell takes its
 // surface, before the first line of content reaches the bar's underside.
@@ -60,6 +61,7 @@ function Wordmark({ invert = false }) {
           filter: invert ? 'brightness(0) invert(1)' : undefined,
         }}
         draggable={false}
+        {...retryable()}
       />
     </div>
   )
