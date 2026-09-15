@@ -139,7 +139,7 @@ const STUDIO = {
     eyebrow: 'What We Do',
     title: 'A small team builds it, hosts it, and answers when you call.',
     description:
-      'A website for shops, restaurants, trades, and pros around Baytown and the Houston area, with booking, email, ad tracking, search work, and hosting as part of it. Apps and automation are quoted on their own. You get a plan and a price before any work starts.',
+      'A website for shops, restaurants, trades, and pros around Baytown and the Houston area. Booking, company email, ad tracking, SEO, and hosting are part of it. We quote apps and automation on their own. You get a plan and a price before any work starts.',
   },
   // The URL the row's schematic is drawn under. A path is set only for the
   // lines whose work is easiest to show on one; the rest sit on the home page
@@ -151,13 +151,13 @@ const STUDIO = {
   // plain heading read as five more bills.
   extra: [
     {
-      eyebrow: 'Included With Every Site',
-      heading: 'Booking, company email, ad tracking, the search work, and hosting, all part of it.',
+      eyebrow: 'Included with Every Site',
+      heading: 'Booking, company email, ad tracking, SEO, and hosting, all part of it.',
       pages: INCLUDED_SERVICE_PAGES,
     },
     {
       eyebrow: 'Separate Projects',
-      heading: 'Apps and automation, each quoted as a project of its own.',
+      heading: 'Apps and automation, each one a project we quote on its own.',
       pages: SOFTWARE_SERVICE_PAGES,
     },
   ],

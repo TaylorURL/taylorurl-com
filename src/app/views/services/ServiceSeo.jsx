@@ -109,7 +109,7 @@ export default function ServiceSeo() {
       />
       <PageHero
         eyebrow="SEO"
-        title="Found on Google by the people nearest you, every month."
+        title="Found on Google, and we keep at it every month."
         description="The search work sits inside the monthly fee that keeps the site running. There is no separate SEO bill, and no promise about where you land."
       />
 

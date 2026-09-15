@@ -33,12 +33,12 @@ const PAGE = servicePage(SLUG)
 // screens on your side of it.
 const COVERS = [
   {
-    title: 'Booking From a Phone',
+    title: 'Booking from a Phone',
     body: 'A slot booked at ten at night, on the hours and services you actually offer, with the reminder sent the morning of.',
   },
   {
     title: 'Ordering Ahead',
-    body: 'The menu or the catalogue on the site, an order placed and paid for, and a note to the kitchen or the counter when it lands.',
+    body: 'The menu or the catalog on the site, an order placed and paid for, and a note to the kitchen or the counter when it lands.',
   },
   {
     title: 'Payment That Lands',
@@ -115,7 +115,7 @@ export default function OnlineTools() {
     <div>
       <Seo
         title="Online Booking and Ordering in Baytown, TX"
-        description="Online booking, ordering ahead, and payment built into a small business website, with checkout through Stripe, Square, or PayPal and the bookings sent to the software you already run."
+        description="Online booking, ordering ahead, and payment built into a small business website, with checkout through Stripe, Square, or PayPal, wired to the software you run."
         path={PAGE.path}
         schema={[
           breadcrumbSchema([
@@ -147,7 +147,7 @@ export default function OnlineTools() {
         ground="paper"
         eyebrow="What It Covers"
         title="What you get."
-        lede="Everything below is part of the build rather than an upgrade sold on top of it."
+        lede="Everything below is part of the build. Nothing here is an upgrade."
       >
         <FactMesh items={COVERS} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
       </ServiceSection>
@@ -167,7 +167,7 @@ export default function OnlineTools() {
         ground="paper"
         eyebrow="Link or Built In"
         title="When you need it built in, and when a link will do."
-        lede="Plenty of businesses are fine with a booking link. The first call settles which you need before we quote anything."
+        lede="Plenty of businesses are fine with a booking link. We settle which you need on the first call, before we quote anything."
       >
         <FactMesh items={FIT} ground="paper" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
