@@ -2,7 +2,8 @@ import { IS_SECOND_SITE, SITE } from '../../../lib/site/current.js'
 import { STATIC_ROUTES as SECOND_SITE_ROUTES } from '../../../lib/site/routes/taylorwebsite.js'
 import { CROSS_LINKS } from '../../../lib/site/cross-links.js'
 import { PORTFOLIO_PROJECTS, portfolioPreviewSrc } from '@data/portfolio'
-import { SERVICE_LINES } from '@data/pages/services'
+import { INCLUDED_SERVICES, SERVICE_LINES, SOFTWARE_SERVICES } from '@data/pages/services'
+import { SERVICE_MARKS } from '@data/pages/serviceMarks'
 import { MarkFacebook, MarkInstagram } from '@components/marks/brandMarks'
 import { REVIEW_SOURCE_MARKS } from '@components/marks/reviewMarks'
 import { FACEBOOK_PAGE_URL } from '@data/reputation/facebook'
@@ -11,13 +12,9 @@ import { TOOLS_INDEX } from '@data/pages/tools'
 import { BLOG_SERIES } from '@data/blog/series'
 import {
   MarkArea,
-  MarkAt,
   MarkCanvass,
   MarkCurve,
-  MarkDevice,
-  MarkFind,
   MarkFrame,
-  MarkGuard,
   MarkIndex,
   MarkNow,
   MarkPage,
@@ -25,7 +22,6 @@ import {
   MarkPulse,
   MarkQuery,
   MarkGauge,
-  MarkRefit,
   MarkScan,
   MarkSquare,
   MarkStack,
@@ -46,18 +42,6 @@ export const NAV_EASE = [0.16, 1, 0.3, 1]
 export const NAV_DURATION = 0.24
 export const NAV_DURATION_SLOW = 0.3
 export const NAV_DRAWER_DURATION = 0.42
-
-// The mark each service page carries, keyed on the slug its route ends in, so
-// a page renamed in the data keeps its drawing.
-const SERVICE_MARKS = {
-  'new-website': MarkFrame,
-  redesign: MarkRefit,
-  'online-tools': MarkPanel,
-  care: MarkGuard,
-  'business-email': MarkAt,
-  seo: MarkFind,
-  'mobile-apps': MarkDevice,
-}
 
 // The mark each free tool carries, keyed on the slug its route ends in, so a
 // tool renamed in the registry keeps its drawing.
@@ -91,43 +75,24 @@ const TOOL_ENTRIES = [
   SPEED_CHECK_ENTRY,
 ]
 
-// The service pages that are not service lines. Each has a page under
-// /services and none is priced or sold as one of the four lines, so the copy
-// lives here rather than in `SERVICE_LINES`. A slug that later joins the data
-// takes the wording from there instead of from this list.
-const STANDALONE_SERVICES = [
-  {
-    slug: 'business-email',
-    label: 'Business Email',
-    summary: 'Email on your own domain, set up and looked after.',
-  },
-  {
-    slug: 'seo',
-    label: 'Getting Found on Google',
-    summary: 'The work that puts a business in front of people searching nearby.',
-  },
-  {
-    slug: 'mobile-apps',
-    label: 'iOS and Android Apps',
-    summary: 'Booking, ordering, and tools for the crew, on the phone everyone already carries.',
-  },
-]
-
-const serviceEntry = ({ slug, label, summary }) => ({
-  to: `/services/${slug}`,
-  label,
-  summary,
-  mark: SERVICE_MARKS[slug],
+// One row of the Services panel, read off the service data. The name, the
+// line under it and the path all come from `@data/services`, and the mark from
+// the map every other surface draws the service with, so a service renamed or
+// added there arrives here with nothing restated.
+const serviceEntry = service => ({
+  to: service.path,
+  label: service.name,
+  summary: service.summary,
+  mark: SERVICE_MARKS[service.slug],
 })
 
-const SERVICE_ENTRIES = [
-  ...SERVICE_LINES.map(line =>
-    serviceEntry({ slug: line.slug, label: line.name, summary: line.summary })
-  ),
-  ...STANDALONE_SERVICES.filter(page => !SERVICE_LINES.some(line => line.slug === page.slug)).map(
-    serviceEntry
-  ),
-]
+// The three columns, which are the three lists the data holds: the two ways a
+// site is bought, what comes with every site, and the software quoted as a
+// project of its own. A column is its list and nothing else, so the panel
+// cannot split a list at an index that stops being true when a row is added.
+const WEBSITE_ENTRIES = SERVICE_LINES.map(serviceEntry)
+const INCLUDED_ENTRIES = INCLUDED_SERVICES.map(serviceEntry)
+const SOFTWARE_ENTRIES = SOFTWARE_SERVICES.map(serviceEntry)
 
 // The client studies the Work panel names, keyed on the site each client
 // trades under rather than on the business name, so a client renamed in
@@ -327,7 +292,7 @@ const REVIEW_FEATURE = featureSource && {
 //
 // An entry carries either a `to` for a route on this site or an `href` for one
 // off it, and the routes are all real ones: the services come from
-// `SERVICE_LINES`, the client studies from `PORTFOLIO_PROJECTS`, the free tools
+// `@data/services`, the client studies from `PORTFOLIO_PROJECTS`, the free tools
 // from `TOOLS_INDEX` and the shelves from `BLOG_SERIES`, each keyed on what the
 // route ends in, so a row cannot name something the data does not hold. Three
 // sets stop at their index rather than running into the bar: the towns, which
@@ -341,20 +306,16 @@ const STUDIO_NAV_GROUPS = [
   {
     key: 'services',
     label: 'Services',
+    // Three columns and eleven pages, grouped by what a reader pays for: the
+    // two ways a site is bought, the five things that come with it, and the
+    // four quoted on their own. The heads say which is which, because a page
+    // of its own under a plain heading reads as a second bill. The way to
+    // start a conversation is the bar's own button and the Resources panel's
+    // last row, so it is not a fourth column here.
     columns: [
-      { head: 'Websites', items: SERVICE_ENTRIES.slice(0, 2) },
-      { head: 'Beyond the Site', items: SERVICE_ENTRIES.slice(2) },
-      {
-        head: 'Where to Start',
-        items: [
-          {
-            to: '/contact',
-            label: 'Talk It Through',
-            summary: 'Say what you need built, and you get a plan and a price for it.',
-            mark: MarkTalk,
-          },
-        ],
-      },
+      { head: 'Websites', items: WEBSITE_ENTRIES },
+      { head: 'Included With Every Site', items: INCLUDED_ENTRIES },
+      { head: 'Separate Projects', items: SOFTWARE_ENTRIES },
     ],
     feature: {
       to: '/services',
@@ -458,11 +419,12 @@ const STUDIO_NAV_GROUPS = [
     label: 'Tools',
     columns: [
       { head: 'Free Tools', items: TOOL_ENTRIES },
-      // The paid line sits beside the free ones so the two stay distinct: the
-      // wording is read from the service data rather than restated here.
+      // The paid work sits beside the free tools so the two stay distinct: a
+      // tool built for one business is the automation page, and the wording is
+      // read from the service data rather than restated here.
       {
         head: 'Built to Order',
-        items: SERVICE_ENTRIES.filter(entry => entry.to.endsWith('/online-tools')),
+        items: SOFTWARE_ENTRIES.filter(entry => entry.to.endsWith('/automation')),
       },
     ],
     feature: {
@@ -519,7 +481,7 @@ const STUDIO_NAV_GROUPS = [
 // its own list, and it is six indexes rather than a flattened tree.
 //
 // Each of these is a real page that carries the rest of its branch, so the
-// tree is one tap deeper rather than gone: /services holds the seven lines,
+// tree is one tap deeper rather than gone: /services holds the eleven pages,
 // /portfolio the client work and the towns it was done in, /tools the free
 // ones, /contact the ways to start a conversation.
 //

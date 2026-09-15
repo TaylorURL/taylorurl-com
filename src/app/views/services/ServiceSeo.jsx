@@ -2,14 +2,24 @@ import PageHero from '@components/page-bands/PageHero'
 import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SERVICE_AREAS, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { EXTRA_SERVICES, SERVICE_PAGES } from '@data/pages/serviceDetail'
+import { otherServices, servicePage } from '@data/pages/serviceDetail'
 import ServiceSection from './ServiceSection'
 import FactMesh from './FactMesh'
 import MoreServices from './MoreServices'
 import SectionLink from './SectionLink'
 
-const PAGE_PATH = '/services/seo'
-const PAGE_NAME = 'Getting Found on Google'
+// The name, the path and the mark come from the same data the menu and the
+// cards read, so this page cannot be called one thing in the bar and another
+// in its own breadcrumb.
+//
+// Read as optional because the subsidiary compiles this view too, and its
+// prerender evaluates the module even though its route table never mounts it.
+// There the service does not exist, the record is null, and a bare `.path` at
+// the top level stopped that site's build.
+const SLUG = 'seo'
+const PAGE = servicePage(SLUG)
+const PAGE_PATH = PAGE?.path
+const PAGE_NAME = PAGE?.name
 
 // The work itself, in the order it lands: the pages, the place, the markup,
 // the speed, the words, and the months after.
@@ -75,7 +85,7 @@ export default function ServiceSeo() {
   return (
     <div>
       <Seo
-        title="Getting Found on Google in Baytown, TX"
+        title="SEO and Google Rankings in Baytown, TX"
         description="Local SEO for Baytown, TX businesses: pages built for search, local signals, structured data, and speed. Part of the monthly fee, not sold separately."
         path={PAGE_PATH}
         schema={[
@@ -98,8 +108,8 @@ export default function ServiceSeo() {
         ]}
       />
       <PageHero
-        eyebrow="Getting Found"
-        title="Getting found on Google, every month."
+        eyebrow="SEO"
+        title="Found on Google by the people nearest you, every month."
         description="The search work sits inside the monthly fee that keeps the site running. There is no separate SEO bill, and no promise about where you land."
       />
 
@@ -142,9 +152,7 @@ export default function ServiceSeo() {
         </div>
       </ServiceSection>
 
-      <MoreServices
-        pages={[...SERVICE_PAGES, ...EXTRA_SERVICES.filter(page => page.path !== PAGE_PATH)]}
-      />
+      <MoreServices pages={otherServices(SLUG)} />
 
       <CtaBanner
         eyebrow="Let’s Talk"

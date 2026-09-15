@@ -1,36 +1,39 @@
-import {
-  MarkDevice,
-  MarkFrame,
-  MarkGuard,
-  MarkInflow,
-  MarkPanel,
-  MarkReach,
-  MarkRefit,
-} from '@components/marks/marks'
-import { SERVICE_LINES } from '@data/pages/services'
+import { ALL_SERVICES, INCLUDED_SERVICES, SOFTWARE_SERVICES } from '@data/pages/services'
+import { SERVICE_MARKS } from '@data/pages/serviceMarks'
 import { SERVICE_PAGES as TAYLORWEBSITE_PAGES } from '../taylorwebsite/serviceDetailTaylorwebsite.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
 /**
- * What each service line's own page says, keyed by the slug the line already
+ * What each service's own page says, keyed by the slug the service already
  * carries. The name, the summary, and the path stay in `@data/services`, so a
- * line renamed there is renamed on its page, in the menu, and in the sitemap at
- * the same time.
+ * service renamed there is renamed on its page, in the menu, and in the sitemap
+ * at the same time.
  *
  * - `eyebrow`  The small label above the page title.
+ * - `title`    The headline under it. Left out, the page is headed by the
+ *              service's name.
  * - `description` What a search result says under the title, inside the 155
  *              characters a result shows.
  * - `lede`     The paragraph under the title on the page itself.
  * - `covers`   What the work includes.
+ * - `sections` Anything the page says between what it covers and what it
+ *              costs: what the work is for, when it earns its place. Each is a
+ *              headed mesh of facts, and the page alternates its grounds.
  * - `timeline` How long it takes.
  * - `running`  What it takes to keep running, and how the figure is arrived at.
  * - `beside`   One page of this service's own, shown beside the process page
  *              every service page links. Optional, and only where a service
  *              has a neighbour a reader would otherwise confuse it with.
+ *
+ * Four pages carry none of this. Company email, the search work, the apps and
+ * the booking page each make an argument the shared view has no shape for, so
+ * each has a view of its own under `@views/services` and holds its words there
+ * beside the layout they were written for. What every surface still reads from
+ * here is the mark, the name, the summary and the path, so a card and a menu
+ * row never have to know which pages are bespoke.
  */
 const DETAIL = {
   'new-website': {
-    mark: MarkFrame,
     eyebrow: 'New Builds',
     description:
       'A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team. We quote the job before work starts.',
@@ -67,7 +70,6 @@ const DETAIL = {
       'One fee to build it, paid once before the work begins, then a monthly to host it, watch it, change it, and carry on the search work. What moves both is how big the whole project is, so you get the two figures in writing and agree to them before anything starts.',
   },
   redesign: {
-    mark: MarkRefit,
     eyebrow: 'Redesigns',
     description:
       'Rebuilding a small business site that stopped bringing work in. New design, new pages, old addresses still working, two to four weeks start to finish.',
@@ -102,21 +104,7 @@ const DETAIL = {
     running:
       'One fee to rebuild it, paid once before the work begins, then a monthly to run it. We price it the way we price a new build.',
   },
-  /**
-   * The one line whose page is not the shared shape.
-   *
-   * `@views/services/OnlineTools` renders it, and the words are held there
-   * beside the layout they were written for, the way business email and the
-   * search work hold theirs. What stays here is what every other surface reads:
-   * the mark a card and a menu row draw, and - through `SERVICE_LINES` - the
-   * name, the summary and the path. A second copy of the page's own covers
-   * would sit here rendering nowhere and drift from the page inside a release.
-   */
-  'online-tools': {
-    mark: MarkPanel,
-  },
   care: {
-    mark: MarkGuard,
     eyebrow: 'After Launch',
     description:
       'Hosting, backups, security, changes any time, and realtime error monitoring. The monthly is what keeps the site online. No per-change fee.',
@@ -150,13 +138,358 @@ const DETAIL = {
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',
     running: 'One monthly fee, the same whether you ask for one change or ten.',
   },
+  'ad-tracking': {
+    eyebrow: 'Ad Tracking',
+    title: 'The tracking installed before the first ad runs.',
+    description:
+      'Meta Pixel, Google Ads tag, Tag Manager, and GA4 installed on a Baytown business website and firing on real leads, set up before you spend on ads.',
+    lede: 'The Meta Pixel, the Google Ads tag, and the analytics behind them, installed on the site and firing on the things that matter: a booked job, a form that reached your inbox, a call. Put in while the site is built, so the day you advertise there is nothing left to install.',
+    covers: [
+      {
+        title: 'Meta Pixel',
+        body: 'Installed and firing on real events, a booking or a form sent, rather than on page loads alone.',
+      },
+      {
+        title: 'Conversions API',
+        body: 'The same events sent from the server as well as the browser, so a blocked browser does not lose them.',
+      },
+      {
+        title: 'Google Ads Tag',
+        body: 'The tag in place with enhanced conversions switched on, so Google counts the lead and not the click.',
+      },
+      {
+        title: 'Tag Manager and Analytics',
+        body: 'Google Tag Manager carrying the tags, and Google Analytics 4 reporting against the same events the ads count.',
+      },
+      {
+        title: 'Where the Lead Came From',
+        body: 'The campaign, the ad, and the click carried through the form, so every lead says what brought it in.',
+      },
+      {
+        title: 'Written Into the Code',
+        body: 'Events and audiences built into the site rather than pasted into a dashboard, where the next page change breaks them.',
+      },
+    ],
+    sections: [
+      {
+        id: 'early',
+        eyebrow: 'Why It Goes In Early',
+        title: 'Worth more in year two than it was at launch.',
+        lede: 'None of it is worth much the day it is installed, and all of it is worth more every month it has been running.',
+        items: [
+          {
+            title: 'Launch Day',
+            body: 'The pixel fires on the first visitor. The conversion events already have their names. Nothing is waiting on a second project or a second invoice.',
+          },
+          {
+            title: 'Six Months In',
+            body: 'The retargeting audience holds six months of real visitors, and the ad platforms have a conversion history to read.',
+          },
+          {
+            title: 'The Day You Advertise',
+            body: 'There is nothing to install and nobody spends a month teaching the platforms what the site already knows. The first campaign runs against data the site has been collecting since it went live.',
+          },
+        ],
+        columns: { base: 1, lg: 3 },
+      },
+      {
+        id: 'platforms',
+        eyebrow: 'What It Connects To',
+        title: 'The accounts it all runs through.',
+        lede: 'Each one is opened in the business’s name, set up inside your own account, and left there.',
+        items: [
+          {
+            title: 'Meta',
+            body: 'Facebook and Instagram ads, through the Pixel and the Conversions API.',
+          },
+          {
+            title: 'Google Ads',
+            body: 'Search and display campaigns, with enhanced conversions sending.',
+          },
+          {
+            title: 'Google Analytics 4',
+            body: 'Every visit and every event, reported in the account opened in your name.',
+          },
+          {
+            title: 'Google Tag Manager',
+            body: 'A tag added next year needs no code change.',
+          },
+          {
+            title: 'Google Ad Manager',
+            body: 'Where the site carries advertising of its own.',
+          },
+          {
+            title: 'Your Own Accounts',
+            body: 'Nothing holds the site hostage to an account somebody else owns. What each platform charges is billed by them.',
+          },
+        ],
+        columns: { base: 1, sm: 2, lg: 3 },
+      },
+    ],
+    timeline:
+      'Installed while the site is built, and tested before launch by firing every event and reading it back on each platform. On a site that already exists it is a few days of work.',
+    running:
+      'On a site we build, the tracking is part of the price of the site rather than billed on top of it. On a site somebody else built it is quoted on its own, and you get the figure in writing first. What an ad platform charges is billed by them.',
+  },
+  'desktop-apps': {
+    eyebrow: 'Desktop Apps',
+    title: 'Software that lives on the computer at the counter.',
+    description:
+      'Desktop software for Windows and Mac, built for Baytown businesses: the front desk, the back office, and the workshop, wired to the website and quoted in writing.',
+    lede: 'The program the front desk runs all day, the screen in the workshop, the tool the office opens every morning. Built for Windows and Mac around how the work already runs, and wired to the same records as the website.',
+    covers: [
+      {
+        title: 'Windows and Mac',
+        body: 'Built once and shipped for both, so the office machine and the laptop at home open the same program.',
+      },
+      {
+        title: 'Drawn for the Job',
+        body: 'Screens laid out for the steps the work takes, in the order it takes them, with nothing on them the job does not need.',
+      },
+      {
+        title: 'Works Offline',
+        body: 'Keeps working when the internet drops, and catches up on its own when it comes back.',
+      },
+      {
+        title: 'Wired to the Site',
+        body: 'The app and the website read the same bookings, orders, and customers, so nothing is entered twice.',
+      },
+      {
+        title: 'Talks to the Hardware',
+        body: 'Receipt printers, barcode scanners, label printers, and card readers, driven from the program rather than from a browser tab.',
+      },
+      {
+        title: 'Updates Itself',
+        body: 'A new version arrives on its own, and nobody walks round the building installing it.',
+      },
+    ],
+    sections: [
+      {
+        id: 'uses',
+        eyebrow: 'What It Is For',
+        title: 'What a local business runs on a desktop.',
+        lede: 'Four jobs a program on the machine does better than a page in a browser.',
+        items: [
+          {
+            title: 'Point of Sale',
+            body: 'The ticket, the receipt, the drawer, and the day’s takings, on a screen that never asks anyone to sign in again.',
+          },
+          {
+            title: 'The Workshop Screen',
+            body: 'Today’s jobs, what is waiting on parts, and what is ready to go out, on the monitor in the bay.',
+          },
+          {
+            title: 'The Back Office',
+            body: 'Invoicing, stock, staff hours, and the reports somebody rebuilds in a spreadsheet every week.',
+          },
+          {
+            title: 'A Kiosk',
+            body: 'Check-in, ordering, or sign-up on a screen customers use themselves, locked to that one job.',
+          },
+        ],
+        columns: { base: 1, sm: 2, lg: 4 },
+      },
+      {
+        id: 'fit',
+        eyebrow: 'Browser or Desktop',
+        title: 'When you need one, and when the site is enough.',
+        lede: 'Most of what a business does runs in a browser. The first call settles which you need before we quote anything.',
+        items: [
+          {
+            title: 'The Site Is Enough When',
+            body: 'The work is done from different machines in different places, and nothing on it needs a printer or a scanner.',
+          },
+          {
+            title: 'A Desktop App Earns Its Place When',
+            body: 'One machine runs the same job all day, the internet cannot be trusted, or the program has to drive hardware on the desk.',
+          },
+        ],
+        columns: { base: 1, sm: 2 },
+      },
+    ],
+    timeline:
+      'Longer than a website, because there is a program to build and a back end for it to talk to. You get the finish date in writing with the price.',
+    running:
+      'One fee to build it, paid once before the work begins, then a monthly to host the back end, publish updates, and keep it running on every machine. What moves the price is how much the program has to do.',
+  },
+  automation: {
+    eyebrow: 'Automation',
+    title: 'The work you still do by hand, done by software.',
+    description:
+      'Business automation for Baytown companies and freelancers: the reports, the follow-ups, and the copying between systems, built to run on their own and quoted in writing.',
+    lede: 'Stock that counts itself down as sales come in. Every job application in one list, sorted by who can start Monday. The day’s numbers pulled from the software you already use, checked, and in your inbox at seven. Whatever you still do by hand, it gets built to run on its own.',
+    covers: [
+      {
+        title: 'A Read of the Job',
+        body: 'A walk through the work as it runs now: the spreadsheet, the email thread, and the steps nobody wrote down. What gets built comes from that.',
+      },
+      {
+        title: 'Systems Wired Together',
+        body: 'Two tools that hold the same information and never exchange it, connected so a record entered once shows up in both.',
+      },
+      {
+        title: 'Run on a Schedule',
+        body: 'The report somebody rebuilds every Monday runs on its own instead. When it fails it says so, rather than stopping quietly.',
+      },
+      {
+        title: 'Set Off by an Event',
+        body: 'A form sent, a payment landing, a job marked done. Each one kicks off whatever used to happen by hand next.',
+      },
+      {
+        title: 'In the Tools You Have',
+        body: 'Built around Jobber, Housecall Pro, QuickBooks, Toast, Google Sheets, or whatever you already run, wherever they allow it.',
+      },
+      {
+        title: 'Yours to Keep',
+        body: 'The code, the accounts, and the schedules in your name, so another engineer can pick it up after us.',
+      },
+    ],
+    sections: [
+      {
+        id: 'uses',
+        eyebrow: 'What It Is For',
+        title: 'What gets automated first.',
+        lede: 'Four jobs that come up in nearly every business, and a freelancer has all four with nobody to hand them to.',
+        items: [
+          {
+            title: 'Follow-Ups',
+            body: 'The quote chased, the review asked for, the reminder sent the morning of the appointment, without anyone remembering to.',
+          },
+          {
+            title: 'The Weekly Numbers',
+            body: 'Sales, hours, and what is owed, pulled from where they live and put in front of you on a schedule.',
+          },
+          {
+            title: 'Copying Between Systems',
+            body: 'The order retyped into the accounts, the customer retyped into the mailing list. Each is entered once and the software copies it across.',
+          },
+          {
+            title: 'Invoicing and Chasing',
+            body: 'The invoice sent when the job closes, and the reminder sent when it goes unpaid.',
+          },
+        ],
+        columns: { base: 1, sm: 2, lg: 4 },
+      },
+      {
+        id: 'who',
+        eyebrow: 'Who It Is For',
+        title: 'A business with a crew, or one person doing all of it.',
+        items: [
+          {
+            title: 'A Business With Staff',
+            body: 'The jobs that eat an office manager’s week, taken off the desk so the people are on the work that pays.',
+          },
+          {
+            title: 'A Freelancer',
+            body: 'The admin that runs into the evening: quotes, invoices, reminders, and the books. Built so the evenings are yours again.',
+          },
+        ],
+        columns: { base: 1, sm: 2 },
+      },
+    ],
+    timeline:
+      'A single automation takes a week or two. A run of them across the business is scoped as one project, and the dates are agreed in writing before any work starts.',
+    running:
+      'Quoted per project, and you get the figure in writing before anything starts. What moves it is how many systems are involved and how much each has to do. After that a monthly keeps it running, watched, and fixed when a tool it talks to changes.',
+  },
+  'ai-integration': {
+    eyebrow: 'AI Integration',
+    title: 'AI given real work in the business.',
+    description:
+      'AI integration for Baytown businesses: an assistant on the site, mail read and drafted, documents sorted, and photos checked, built into the tools you already run.',
+    lede: 'An assistant on the site that answers at two in the morning and books the job. Mail read, sorted, and drafted before you open it. Photos from the crew checked against the job sheet. Built into the site and the tools you already run, with a person still on the end of anything that matters.',
+    covers: [
+      {
+        title: 'An Assistant on the Site',
+        body: 'Answers questions about the work in your own words, day or night, and hands the conversation to a person when it needs one.',
+      },
+      {
+        title: 'Mail Read and Drafted',
+        body: 'Enquiries sorted, the routine ones answered in a draft for you to send, and the ones that need you put at the top.',
+      },
+      {
+        title: 'Documents Sorted',
+        body: 'Invoices, quotes, and forms read as they arrive, with what matters pulled out and filed where it goes.',
+      },
+      {
+        title: 'Photos and Job Sheets',
+        body: 'Pictures from the crew checked against the job, and the write-up drafted from them.',
+      },
+      {
+        title: 'In Your Own Tools',
+        body: 'Built into the site, the inbox, Jobber, QuickBooks, or whatever the work runs in, rather than another tab to keep open.',
+      },
+      {
+        title: 'Checked Before It Acts',
+        body: 'Anything that sends, charges, or books is confirmed by a person until it has earned the right not to be.',
+      },
+    ],
+    sections: [
+      {
+        id: 'fit',
+        eyebrow: 'Where It Earns Its Place',
+        title: 'What AI is good at, and what it is not.',
+        lede: 'It earns its place where it takes a job off a person. Being new is not a reason to put it in.',
+        items: [
+          {
+            title: 'Reading and Sorting',
+            body: 'Mail, forms, documents, and photos, read faster than a person can and filed the same way every time.',
+          },
+          {
+            title: 'Answering the Same Question',
+            body: 'The hours, the price range, the areas covered, and whether you do the thing, answered at any hour without anyone on the phone.',
+          },
+          {
+            title: 'Drafting',
+            body: 'The reply, the quote, the write-up, and the post, drafted for a person to read and send.',
+          },
+          {
+            title: 'Not the Decision',
+            body: 'Whether to take the job, what to charge, and what to say to an unhappy customer stay with you.',
+          },
+        ],
+        columns: { base: 1, sm: 2, lg: 4 },
+      },
+      {
+        id: 'data',
+        eyebrow: 'Your Data',
+        title: 'What it is allowed to read, and where that goes.',
+        items: [
+          {
+            title: 'Your Accounts',
+            body: 'The AI accounts are opened in the business’s name, so what it reads and what it costs are yours to see.',
+          },
+          {
+            title: 'Not Used for Training',
+            body: 'Customer records are read to do the job and not used to train anyone’s model. The provider settings that say so are set before it reads anything.',
+          },
+          {
+            title: 'A Log of Every Action',
+            body: 'What it read, what it drafted, and what it sent, written down where you can look.',
+          },
+        ],
+        columns: { base: 1, sm: 3 },
+      },
+    ],
+    timeline:
+      'A single job, an assistant on the site or mail sorted into an inbox, takes a week or two. Anything wired into several systems is scoped as one project, with the dates agreed in writing before any work starts.',
+    running:
+      'Quoted per project, and you get the figure in writing before anything starts. After that a monthly keeps it running and watched, and what the AI provider charges for what it reads is billed by them, in the account opened in your name.',
+  },
 }
 
+/** A service with its mark and, where the shared view renders it, its page. */
+const attach = service => ({
+  ...service,
+  mark: SERVICE_MARKS[service.slug],
+  ...DETAIL[service.slug],
+})
+
 /**
- * Every service line with its page content attached, for whichever site is
+ * Every service with its page content attached, for whichever site is
  * building.
  *
- * The studio's lines publish no offer node, because the studio quotes each
+ * The studio's pages publish no offer node, because the studio quotes each
  * project rather than listing a figure a crawler could read back. The
  * subsidiary's pages each carry their own, because there the three are priced
  * separately and stated on the page.
@@ -167,42 +500,18 @@ const DETAIL = {
  * which is how the whole of the studio's service copy was still in the
  * subsidiary's chunk after the selection had already picked the other pages.
  */
-export const SERVICE_PAGES = IS_SECOND_SITE
-  ? TAYLORWEBSITE_PAGES
-  : SERVICE_LINES.map(line => ({ ...line, ...DETAIL[line.slug] }))
+export const SERVICE_PAGES = IS_SECOND_SITE ? TAYLORWEBSITE_PAGES : ALL_SERVICES.map(attach)
 
-/**
- * The services that are not one of the four lines. Each is real work with a
- * page of its own, and none is a stage of a build, so they carry their own name
- * and summary rather than a slug in `@data/services`.
- */
-export const EXTRA_SERVICES = IS_SECOND_SITE
-  ? []
-  : [
-      {
-        path: '/services/business-email',
-        name: 'Business Email',
-        summary: 'Mail on your own domain, set up and moved across.',
-        mark: MarkReach,
-      },
-      {
-        path: '/services/seo',
-        name: 'Getting Found on Google',
-        summary: 'Organic search work, included in the monthly.',
-        mark: MarkInflow,
-      },
-      {
-        path: '/services/mobile-apps',
-        name: 'iOS and Android Apps',
-        summary: 'An app on both stores, built by the team that built the site.',
-        mark: MarkDevice,
-      },
-    ]
+/** What comes with every site, as cards. */
+export const INCLUDED_SERVICE_PAGES = IS_SECOND_SITE ? [] : INCLUDED_SERVICES.map(attach)
+
+/** The software quoted as its own project, as cards. */
+export const SOFTWARE_SERVICE_PAGES = IS_SECOND_SITE ? [] : SOFTWARE_SERVICES.map(attach)
 
 /**
  * @param {string} slug - Last segment of a service page's path.
- * @returns {object|null} The line and its page content, or null for a slug no
- *   service line carries.
+ * @returns {object|null} The service and its page content, or null for a slug
+ *   no service carries.
  */
 export function servicePage(slug) {
   return SERVICE_PAGES.find(page => page.slug === slug) || null
@@ -210,7 +519,7 @@ export function servicePage(slug) {
 
 /**
  * @param {string} [slug] - A service to leave out, normally the current page.
- * @returns {object[]} The service lines, as cards linking to their own pages.
+ * @returns {object[]} Every other service, as cards linking to their own pages.
  */
 export function otherServices(slug) {
   return SERVICE_PAGES.filter(page => page.slug !== slug)

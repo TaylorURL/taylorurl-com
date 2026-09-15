@@ -2,7 +2,7 @@ import { BLOG_POSTS, BLOG_SERIES_INDEX } from '../src/app/data/blog/index.js'
 import { INDUSTRY_SLUGS } from '../src/app/data/towns-and-trades/industries.js'
 import { INDUSTRY_DETAIL } from '../src/app/data/towns-and-trades/industryDetail.js'
 import { AREAS } from '../src/app/data/towns-and-trades/areas.js'
-import { SERVICE_LINES } from '../src/app/data/pages/services.js'
+import { ALL_SERVICES } from '../src/app/data/pages/services.js'
 import { TOOLS_INDEX } from '../src/app/data/pages/tools.js'
 import { PORTFOLIO_STUDIES } from '../src/app/data/portfolioStudies.js'
 import { SITE } from '../lib/site/current.js'
@@ -60,12 +60,13 @@ export function publishedAt(date) {
 const SERIES_BY_SLUG = new Map(BLOG_SERIES_INDEX.map(series => [series.slug, series]))
 
 /**
- * One entry per service line, read from the same list the pages render, so a
- * line added or renamed there is built and published without a second edit
- * here. The name and the one-line summary come from that list too, so the
- * words a menu row shows and the words llms.txt carries are the same words.
+ * One entry per service, read from the same lists the menu and the pages
+ * render, so a service added or renamed there is built and published without a
+ * second edit here. The name and the one-line summary come from those lists
+ * too, so the words a menu row shows and the words llms.txt carries are the
+ * same words.
  */
-const SERVICE_ROUTES = SERVICE_LINES.map(line => ({
+const SERVICE_ROUTES = ALL_SERVICES.map(line => ({
   path: line.path,
   name: line.name,
   summary: line.summary,
@@ -125,33 +126,6 @@ const STUDIO_STATIC_ROUTES = [
     priority: '0.9',
   },
   ...SERVICE_ROUTES,
-  // Business email, the search work and the apps: services in their own right,
-  // each with a page rather than a step inside another one.
-  {
-    path: '/services/business-email',
-    name: 'Business Email',
-    summary: 'Mail on your own domain, set up and looked after alongside the site.',
-    group: 'services',
-    changefreq: 'monthly',
-    priority: '0.8',
-  },
-  {
-    path: '/services/seo',
-    name: 'Local Search Visibility',
-    summary: 'Being found in local search: the profile, the listings, and the pages behind them.',
-    group: 'services',
-    changefreq: 'monthly',
-    priority: '0.8',
-  },
-  {
-    path: '/services/mobile-apps',
-    name: 'iOS and Android Apps',
-    summary:
-      'Apps for iPhone and Android: booking, ordering, loyalty, and tools for staff, wired to the website and published on both stores.',
-    group: 'services',
-    changefreq: 'monthly',
-    priority: '0.8',
-  },
   {
     path: '/contact',
     name: 'Contact',

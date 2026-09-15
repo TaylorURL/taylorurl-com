@@ -35,8 +35,8 @@ const termsOf = query => fold(query).split(BREAK).filter(Boolean)
 // what it does, so the name is the stronger statement of the two.
 const LABEL = { whole: 140, leads: 80, word: 60, inside: 40 }
 // The word the address uses, which is routinely not a word on the page. The
-// care page is titled Keeping It Running and lives at /services/care; the SEO
-// page is titled Getting Found on Google and lives at /services/seo. A reader
+// care page is titled Hosting and Care and lives at /services/care; the SEO
+// page is titled SEO and Google Rankings and lives at /services/seo. A reader
 // typing either slug has named the page as exactly as anyone can, and without
 // this both of them came back with nothing but articles.
 const SLUG = { whole: 100, leads: 50, word: 40, inside: 20 }

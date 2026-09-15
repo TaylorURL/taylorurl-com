@@ -16,7 +16,8 @@
  * kept safe, a catalogue, a stack of work, a run of steps, a square,
  * a written page, a question, a heartbeat, a tag, an address, a search,
  * a sign on a post, a place on the map, a run of issues, a conversation, a
- * phone in the hand.
+ * phone in the hand, a reticle, a screen on a desk, a job running round
+ * again, a chip.
  */
 
 const BASE = {
@@ -435,6 +436,52 @@ export function MarkDial(props) {
       <rect x="3" y="3.5" width="5" height="5" />
       <rect x="16" y="15.5" width="5" height="5" />
       <path d="M8 8.5l8 7" />
+    </svg>
+  )
+}
+
+/** Ad tracking: the reticle, and the visitor the ad found standing in it. */
+export function MarkTarget(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <circle cx="12" cy="12" r="7.5" />
+      <path d="M12 2.5v4M12 17.5v4M2.5 12h4M17.5 12h4" />
+      <path d="M10.5 10.5h3v3h-3z" />
+    </svg>
+  )
+}
+
+/** Desktop apps: the screen on the desk, and the program open on it. */
+export function MarkScreen(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <rect x="3" y="4" width="18" height="12" />
+      <path d="M12 16v4.5M7.5 20.5h9" />
+      <path d="M6.5 8h5M6.5 11h8" />
+    </svg>
+  )
+}
+
+/** Automation: the job that runs itself round again. */
+export function MarkCycle(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <path d="M4 10V5.5h13" />
+      <path d="M14 2.5l3 3-3 3" />
+      <path d="M20 14v4.5H7" />
+      <path d="M10 15.5l-3 3 3 3" />
+    </svg>
+  )
+}
+
+/** AI integration: the chip, with every leg wired to something of yours. */
+export function MarkChip(props) {
+  return (
+    <svg {...BASE} {...props}>
+      <rect x="6.5" y="6.5" width="11" height="11" />
+      <path d="M9.5 2.5v4M14.5 2.5v4M9.5 17.5v4M14.5 17.5v4" />
+      <path d="M2.5 9.5h4M2.5 14.5h4M17.5 9.5h4M17.5 14.5h4" />
+      <path d="M10 10h4v4h-4z" />
     </svg>
   )
 }
