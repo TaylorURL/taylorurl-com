@@ -321,6 +321,13 @@ export const SECTIONS = [
     path: 'staff',
     label: 'Staff Portal',
     admin: true,
+    // `roles` names who else is admitted past the `admin` mark, and this is the
+    // only section that names anybody. A representative is not an admin - they
+    // read no traffic, own no sites and set nobody's shift - but the call
+    // screen is the whole of their working day, and the endpoints behind it
+    // already admit `staff` on every request. Without this the mark above
+    // would shut the one section they have out of the one console there is.
+    roles: ['admin', 'staff'],
     // A business to ring is not a site with a window over it, and the portal is
     // the same portal whichever site is in scope, so the traffic strip, the date
     // picker and the site chooser all measure something else.
@@ -380,13 +387,24 @@ export const GROUPS = ['Health', 'Traffic', 'Email', 'Studio']
  * empty tables. A missing flag leaves the whole menu standing, because a
  * console that hides most of itself while it works out what is going on is
  * worse than one that briefly shows too much.
+ *
+ * `admin` and `roles` are read together: the mark shuts a section to everybody
+ * but an admin, and the list names whoever else is let past it.
+ *
+ * A representative is the one reader the menu is built down to rather than up
+ * from. The rest of the console answers about sites, and a representative has
+ * none: every traffic section would open on an empty table, which reads as a
+ * site with no visitors rather than as a section that was never theirs. So a
+ * `staff` account is handed the public sections and whatever names the role,
+ * which today is the staff portal and is the whole of what they came in for.
  */
 export function menuSections({ signedIn, role, inView, hasProject, onboarding }) {
   const comparing = inView === undefined || inView > 1
   return SECTIONS.filter(
     section =>
       section.menu !== false &&
-      (!section.admin || role === 'admin') &&
+      (role !== 'staff' || section.public === true || Boolean(section.roles?.includes(role))) &&
+      (!section.admin || role === 'admin' || Boolean(section.roles?.includes(role))) &&
       (!section.multiSite || comparing) &&
       (!section.project || hasProject) &&
       (!onboarding || section.duringBuild === true)

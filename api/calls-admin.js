@@ -245,15 +245,20 @@ async function callsByProspect(db) {
 /**
  * The people a business can belong to.
  *
- * Everybody who can reach this endpoint at all, which is the same set the role
- * check lets through. It is three rows and it is read on every list, because a
- * page that knows an id and not a name draws a business as belonging to nobody.
+ * Both roles the caller door admits, which is the same set the role check lets
+ * through. It read the admins alone for as long as every account was one, and
+ * the day a representative was hired that became a hole with no symptom worth
+ * noticing: their calls were recorded, the businesses were handed to them, and
+ * every screen drew both as belonging to nobody, because a name was looked up
+ * in a list their account was never in. It is a handful of rows and it is read
+ * on every list, because a page that knows an id and not a name draws a
+ * business as belonging to nobody.
  */
 async function callers(db) {
   const { data, error } = await db
     .from(PROFILES)
     .select('id, full_name')
-    .eq('role', 'admin')
+    .in('role', ['admin', 'staff'])
     .order('full_name')
   if (error) throw error
   return (data || []).map(row => ({ id: row.id, name: row.full_name || null }))

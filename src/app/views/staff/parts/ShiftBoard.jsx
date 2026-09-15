@@ -1,19 +1,13 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useMemo } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { useCallDesk } from '@hooks/console/useCallDesk'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
-import { callerName, saidSince } from '@lib/outreach/prospects/callPresence.js'
-import {
-  DEFAULT_GOALS,
-  GOAL_CEILING,
-  GOAL_FLOOR,
-  SHIFT_GOALS,
-  callsLeft,
-  finishAt,
-  shiftOf,
-} from '@lib/outreach/prospects/callShift.js'
+import { useCallsTeam } from '@hooks/console/useCallsTeam'
+import { DEFAULT_GOALS, callsLeft, finishAt, shiftOf } from '@lib/outreach/prospects/callShift.js'
+import { DEFAULT_RANGE, TEAM_RANGES, rangeOf } from '@lib/outreach/prospects/callTeam.js'
 import { HourChart, OutcomeChart } from '../Charts'
 import ShiftFigures from './ShiftFigures'
+import TeamBoard, { TEAM_DAYS } from './TeamBoard'
 import { useStaff } from '../lib/context'
 import { usePortalNav } from '../lib/nav'
 import { callMoment } from '../lib/call'
@@ -24,71 +18,47 @@ import { callMoment } from '../lib/call'
 const FILTERS = Object.freeze({ view: 'list', take: 25 })
 
 /**
- * One of the three figures a shift is worked to.
+ * What the day has come to, and what the desk has.
  *
- * The only control on this screen that is typed rather than read, and typing is
- * why it holds its own draft. Everything else here is written on the change and
- * redrawn from what came back, which is right for a press and wrong for a
- * number: clearing forty to type sixty passes through an empty field, an empty
- * field is not a figure, and the figure that is not a figure is the studio's
- * own - so the field would snap to forty under the cursor.
+ * Two readings on one screen, and the order between them is the argument. Your
+ * own day comes first because it is the one you can still do something about
+ * before five o'clock; the desk comes after because it is what makes your day
+ * mean anything - forty calls is a good morning or a thin one depending
+ * entirely on what the other two people did.
  *
- * So the draft is what is on screen while the field is being typed in, and the
- * figure is written when the field is left. A number outside the two bounds is
- * pulled back to them on the way out rather than refused, because somebody who
- * typed 1000 meant a big number and not a refusal.
- */
-function GoalField({ goal, had, onSet }) {
-  const [draft, setDraft] = useState(null)
-  const leave = () => {
-    setDraft(null)
-    const figure = Number.parseInt(String(draft ?? ''), 10)
-    if (!Number.isFinite(figure)) return
-    const held = Math.min(GOAL_CEILING, Math.max(GOAL_FLOOR, figure))
-    if (held !== had) onSet(held)
-  }
-  return (
-    <label className="staff-pick">
-      <span className="staff-label">{goal.label}</span>
-      <input
-        type="number"
-        inputMode="numeric"
-        className="staff-input"
-        min={GOAL_FLOOR}
-        max={GOAL_CEILING}
-        value={draft ?? had ?? ''}
-        onChange={event => setDraft(event.target.value)}
-        onBlur={leave}
-        onKeyDown={event => {
-          if (event.key === 'Enter') event.currentTarget.blur()
-        }}
-      />
-    </label>
-  )
-}
-
-/**
- * What the day has come to, and who else is working it.
+ * The span belongs to the desk alone. Your own figures are today's, always:
+ * they are the shift you are working right now, and a control that could swap
+ * them for a month's would make the tracks above them meaningless. What the
+ * range moves is the board underneath, where the question actually is whether
+ * this week went better than last.
  *
- * It reads and it does not act, which is the line between this screen and the
- * one next door: a representative controls the call screen and nothing else, so
- * the figures here are a reading rather than a set of controls. The goals
- * behind them are set on the account by whoever set the shift.
- *
- * The desk is on it because a representative who cannot see the colleague beside
- * them calls the business that colleague is on the phone with. The call screen
- * already refuses to hand them one that is held; this is where that becomes
- * something they can see rather than something that silently happens to them.
+ * It is held in the address rather than in state, for the reason the console
+ * holds its views there: a reload lands on the span the reader was reading, and
+ * a link to the board pasted to somebody else opens on the same one. The
+ * console already spends `view` on which screen is open, so the span takes a key
+ * of its own and the tab row drops it on the way out - a span chosen on this
+ * screen is not a question the call screen was asked.
  *
  * @param {{Shell: React.ComponentType}} props
  */
 export default function ShiftBoard({ Shell }) {
   const { token, userId, name } = useStaff()
   const nav = usePortalNav()
+  const [params, setParams] = useSearchParams()
+  const range = rangeOf(params.get('range'))
+
   const desk = useCallDesk({ token, userId, enabled: Boolean(token) })
   const feed = useCallsFeed({ token, enabled: Boolean(token), filters: FILTERS })
+  const team = useCallsTeam({ token, enabled: Boolean(token), days: TEAM_DAYS[range.id] })
 
-  const goals = desk.prefs?.goals ?? DEFAULT_GOALS
+  // The figures the day is read against, taken from the board where they are
+  // now set. An admin who moves their own goal on a row below would otherwise
+  // watch the tracks up here keep drawing against the figure they replaced,
+  // until the desk's own poll came round and quietly corrected them. The desk
+  // row is still the fallback, because it is what answers before the board has.
+  const mine = team.data?.people?.find(person => person.id === team.data.you)
+  const goals = mine?.goals ?? desk.prefs?.goals ?? DEFAULT_GOALS
+
   const shift = useMemo(() => shiftOf(feed.data?.shift, goals), [feed.data?.shift, goals])
   const finish = useMemo(() => finishAt(shift), [shift])
   const left = callsLeft(shift)
@@ -96,17 +66,22 @@ export default function ShiftBoard({ Shell }) {
   const totals = feed.data?.totals ?? null
   const nextBack = feed.data?.next_back ?? null
 
-  // Everybody at the desk, this caller first. Reading your own row against the
-  // others is the whole reason the board is here, and hunting for it in a list
-  // sorted by who beat most recently is a board read twice.
-  const board = useMemo(() => {
-    const rows = desk.presence ?? []
-    const mine = rows.filter(row => row.user_id === userId)
-    return [...mine, ...rows.filter(row => row.user_id !== userId)]
-  }, [desk.presence, userId])
+  // Who may set a shift is the endpoint's answer rather than the shell's, so an
+  // admin reading the board is an admin whichever door they came through. The
+  // shell's own mark stands beside it for the moment before the board lands.
+  const sets = team.data?.role === 'admin' || nav.sets
+
+  const pick = id => {
+    setParams(current => {
+      const next = new URLSearchParams(current)
+      if (id === DEFAULT_RANGE) next.delete('range')
+      else next.set('range', id)
+      return next
+    })
+  }
 
   return (
-    <Shell title="Management Center" back={{ to: nav.hrefFor('portal'), label: 'Portal' }}>
+    <Shell>
       <div className="staff-greet">
         <h2>{name ? name.split(' ')[0] : 'Today'}</h2>
         <p className="staff-mute">
@@ -118,7 +93,24 @@ export default function ShiftBoard({ Shell }) {
         </p>
       </div>
 
-      <ShiftFigures shift={shift} spent={callsSpent} />
+      <div className="staff-segmented" role="group" aria-label="Team Range">
+        {TEAM_RANGES.map(one => (
+          <button
+            key={one.id}
+            type="button"
+            className="staff-tag"
+            aria-pressed={one.id === range.id}
+            onClick={() => pick(one.id)}
+          >
+            {one.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="staff-part">
+        <h3>Your Day</h3>
+        <ShiftFigures shift={shift} spent={callsSpent} />
+      </div>
 
       <div className="staff-cols staff-cols-even">
         <div className="staff-part">
@@ -131,95 +123,39 @@ export default function ShiftBoard({ Shell }) {
         </div>
       </div>
 
-      <div className="staff-cols staff-cols-even">
-        <div className="staff-part">
-          <h3>Today</h3>
-          <dl className="staff-pairs">
-            <div>
-              <dt>Started</dt>
-              <dd>{shift.first ? callMoment(shift.first) : 'Not yet'}</dd>
-            </div>
-            <div>
-              <dt>On Pace For</dt>
-              <dd>
-                {finish ? callMoment(finish.toISOString()) : shift.met.calls ? 'Met' : 'Too early'}
-              </dd>
-            </div>
-            <div>
-              <dt>Leads Available</dt>
-              <dd>{totals ? totals.call : 'Loading'}</dd>
-            </div>
-            <div>
-              <dt>Next Callback</dt>
-              <dd>{nextBack ? callMoment(nextBack) : 'None'}</dd>
-            </div>
-          </dl>
-          {nav.sets ? null : (
-            <p className="staff-read">Whoever set your shift sets the goals on your account.</p>
-          )}
-        </div>
-
-        <div className="staff-part">
-          <h3>Team</h3>
-          {desk.loading ? (
-            <p className="staff-read">Loading</p>
-          ) : board.length ? (
-            board.map(row => (
-              <div className="staff-person" key={row.user_id}>
-                <div className="staff-person-top">
-                  <b>{row.user_id === userId ? 'You' : callerName(row)}</b>
-                  <span className="staff-badge" data-tone={row.business ? 'accent' : 'plain'}>
-                    {row.business ? 'On a Call' : 'Available'}
-                  </span>
-                </div>
-                <p className="staff-read">
-                  {row.business
-                    ? `${row.business.name}${row.business.town ? `, ${row.business.town}` : ''}${
-                        row.on_phone_since ? ` (${saidSince(row.on_phone_since)})` : ''
-                      }`
-                    : 'No lead open.'}
-                </p>
-              </div>
-            ))
-          ) : (
-            <p className="staff-read">No one else is online.</p>
-          )}
-        </div>
-      </div>
-
-      {/* The three figures a day is read against, set where they are read. They
-          are a fact about the person working the list rather than about the
-          list, and they are kept on the account, so they are the same on
-          whichever machine that account signs in from.
-
-          Only on the portal the shift is set from. A representative reads the
-          figures and never moves them: a target somebody can lower at four in
-          the afternoon is not a target. */}
-      {nav.sets && (
-        <div className="staff-part">
-          <h3>Shift Goals</h3>
-          <div className="staff-picks">
-            {SHIFT_GOALS.map(goal => (
-              <GoalField
-                key={goal.id}
-                goal={goal}
-                had={goals[goal.id]}
-                onSet={figure => desk.savePrefs({ goals: { ...goals, [goal.id]: figure } })}
-              />
-            ))}
-          </div>
-          <p className="staff-read">
-            What a day on the phone comes to. The Call Center counts your calls against the first of
-            them as you go, and the figures above draw all three.
-          </p>
-        </div>
-      )}
-
       <div className="staff-part">
-        <Link className="staff-btn" to={nav.hrefFor('calls')}>
-          Back to Calls
-        </Link>
+        <h3>Today</h3>
+        <dl className="staff-pairs">
+          <div>
+            <dt>Started</dt>
+            <dd>{shift.first ? callMoment(shift.first) : 'Not yet'}</dd>
+          </div>
+          <div>
+            <dt>On Pace For</dt>
+            <dd>
+              {finish ? callMoment(finish.toISOString()) : shift.met.calls ? 'Met' : 'Too early'}
+            </dd>
+          </div>
+          <div>
+            <dt>Leads Available</dt>
+            <dd>{totals ? totals.call : 'Loading'}</dd>
+          </div>
+          <div>
+            <dt>Next Callback</dt>
+            <dd>{nextBack ? callMoment(nextBack) : 'None'}</dd>
+          </div>
+        </dl>
+        {sets ? null : (
+          <p className="staff-read">Whoever set your shift sets the goals on your account.</p>
+        )}
       </div>
+
+      {/* The desk, over whichever span the control above was left on. The
+          figures a person is worked to are set on their own row down there
+          rather than in a form of its own at the foot of this screen: that form
+          answered for one account, so the person who sets everybody's day had
+          no way to set anybody's but their own. */}
+      <TeamBoard range={range} team={team} admin={sets} />
     </Shell>
   )
 }

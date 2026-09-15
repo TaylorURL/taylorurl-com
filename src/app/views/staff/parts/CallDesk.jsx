@@ -392,12 +392,7 @@ export default function CallDesk({ Shell }) {
   ) : null
 
   return (
-    <Shell
-      title="Call Center"
-      back={{ to: nav.hrefFor('portal'), label: 'Portal' }}
-      aside={<span className="staff-badge">{progress}</span>}
-      foot={foot}
-    >
+    <Shell aside={<span className="staff-badge">{progress}</span>} foot={foot}>
       {!current ? (
         <div className="staff-spent">
           {/* Three different nothings, and they must not be drawn as one. A read
