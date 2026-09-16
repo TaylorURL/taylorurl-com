@@ -110,7 +110,7 @@ export default function HeroTerrain() {
           h += Math.sin(u * 3.1 + shift * 4) * 0.12 * Math.exp(-((t - 0.45) ** 2) * 14)
           // The pointer lifts the ground under it.
           const dx = u - pointer.x
-          const dy = (1 - t) - pointer.y
+          const dy = 1 - t - pointer.y
           const d2 = dx * dx + dy * dy * 2.2
           h += LIFT * pointer.strength * Math.exp(-d2 / (LIFT_RADIUS * LIFT_RADIUS))
           row[c] = project(c, r, h)
