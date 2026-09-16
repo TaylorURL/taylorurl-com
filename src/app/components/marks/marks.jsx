@@ -151,16 +151,6 @@ export function MarkPulse(props) {
   )
 }
 
-/** A tag: the thing that names what is on the other end of it. */
-export function MarkTag(props) {
-  return (
-    <svg {...BASE} {...props}>
-      <path d="M12.5 3.5H20.5V11.5L11.5 20.5 3.5 12.5z" />
-      <path d="M16 6.5h1.5V8H16z" />
-    </svg>
-  )
-}
-
 /** Business email: mail at the business's own name. */
 export function MarkAt(props) {
   return (

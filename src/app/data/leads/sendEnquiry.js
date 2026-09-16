@@ -1,4 +1,4 @@
-import { faultFromResponse, faultMessage } from '../../utils/faults.js'
+import { faultFromResponse } from '../../utils/faults.js'
 import { campaignHeld } from './campaign.js'
 import { claimLead, recordLead } from './conversion.js'
 
@@ -108,17 +108,4 @@ export async function submitEnquiry({
     held: campaign,
     person: { name: name.trim(), email: email.trim(), phone: phone.trim() },
   })
-}
-
-/**
- * What to show when an inquiry did not send.
- *
- * Every form on the site posts through one function and catches one thrown
- * thing, so the one door in `utils/faults` answers for all of them. The
- * fallback names the message rather than whatever failed carrying it, because
- * somebody who has just written three paragraphs wants to know whether they
- * were sent.
- */
-export function enquiryErrorMessage(error) {
-  return faultMessage(error, FALLBACK_ERROR)
 }
