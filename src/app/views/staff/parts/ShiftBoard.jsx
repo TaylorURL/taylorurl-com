@@ -75,7 +75,7 @@ function liveLine(people, goals) {
   const here = []
   if (free) here.push(`${free} available`)
   if (onPhone) here.push(`${onPhone} on a call`)
-  const who = here.length ? here.join(', ') : 'Nobody signed in'
+  const who = here.length ? here.join(', ') : 'Nobody is signed in'
   const togo = left
     ? `${left} ${left === 1 ? 'call' : 'calls'} to go across the desk.`
     : 'Every goal met.'
