@@ -703,7 +703,7 @@ check('a form renders its labels from the questions the notice reports', () => {
       same(shared || rides, true, `${path}: ${said}`)
     }
   }
-  same(found, 17, 'labels read')
+  same(found, 19, 'labels read')
   same(questionsFor('contact').message, 'What the site has to do', 'the contact page still asks it')
 })
 

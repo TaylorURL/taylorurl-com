@@ -54,6 +54,7 @@ const LIMITS = {
   email: 200,
   company: 160,
   projectType: 60,
+  addOns: 400,
   contactMethod: 20,
   phone: 40,
   message: 5000,
@@ -163,6 +164,8 @@ function faultIn(enquiry) {
 /** What one field of a form is worth reading back as. */
 function answerTo(enquiry, field) {
   if (field === 'contactMethod') return METHOD_LABELS[enquiry.contactMethod]
+  // An add-on is optional, so leaving them all unticked is an answer.
+  if (field === 'addOns') return enquiry.addOns || 'None picked'
   return enquiry[field] || 'Not given'
 }
 
@@ -326,6 +329,7 @@ export default async function handler(request, response) {
     email: line(body.email, LIMITS.email),
     company: line(body.company, LIMITS.company),
     projectType: line(body.projectType, LIMITS.projectType),
+    addOns: line(body.addOns, LIMITS.addOns),
     contactMethod: CONTACT_METHODS.has(body.contactMethod)
       ? body.contactMethod
       : DEFAULT_CONTACT_METHOD,
