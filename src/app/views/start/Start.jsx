@@ -67,7 +67,7 @@ const PROMISES = [
 const NEXT = [
   {
     title: 'We reply',
-    body: 'We read what you wrote and reply within an hour in most cases, with any questions we still have.',
+    body: 'We read what you wrote and reply with any questions we still have.',
   },
   {
     title: 'Plan and price',
@@ -171,7 +171,7 @@ export default function Start() {
     <div>
       <Seo
         title="Start Your Small Business Website Project"
-        description="Tell us what your website needs to do. We are a small web team in Baytown, and we reply within an hour in most cases with a written plan and price."
+        description="Tell us what your website needs to do. We are a small web team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
         path="/start"
         schema={[
           breadcrumbSchema([
@@ -473,7 +473,7 @@ export default function Start() {
                 </a>
                 <p className={`mt-3 text-[14px] leading-relaxed ${SLAB.body}`}>
                   The same small team that builds the site answers the phone. Tell us what the
-                  business does and we will give you a plan and price on the call.
+                  business does and you get the same written plan and price.
                 </p>
                 <a href={SITE.phoneHref} className="btn btn-secondary mt-5 w-full">
                   Call for a Plan and Price
