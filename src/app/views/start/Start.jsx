@@ -41,12 +41,12 @@ const SITE_ASKED = 'Current website, if there is one'
 // What a message that did not leave says. It names the message rather than
 // whatever carried it, because somebody who has just written a paragraph wants
 // to know whether the paragraph survived.
-const NOT_SENT = 'That message did not send. Nothing you typed was lost, so try it again.'
+const NOT_SENT = 'Your message did not send. Everything you typed is still here, so try again.'
 
 // What stands under the send button. Each clause answers one reason not to
 // press it.
 const FINE_PRINT =
-  'Free. No account to make, nothing to pay until you have a price in writing, and no call unless you ask for one.'
+  'Asking is free and you do not need an account. You pay nothing until you have a written price, and we only call if you ask us to.'
 
 // The photograph beside the headline on a wide screen: a shopfront, because
 // that is whose site the form is about.
@@ -57,7 +57,7 @@ const HERO_PHOTO = '/images/start/storefront.webp'
 // for anything.
 const PROMISES = [
   'Free to ask',
-  'Reply usually within the hour',
+  'Reply within an hour in most cases',
   'Price in writing before any work',
   'Most sites live in two to four weeks',
 ]
@@ -66,16 +66,16 @@ const PROMISES = [
 // nothing.
 const NEXT = [
   {
-    title: 'Within the hour',
-    body: 'A person reads what you wrote and replies with anything we still need to know.',
+    title: 'We reply',
+    body: 'We read what you wrote and reply with any questions we still have.',
   },
   {
     title: 'Plan and price',
-    body: 'What gets built, how long it takes and what it costs. In writing, before you pay anything.',
+    body: 'We send a written plan with what we will build, how long it takes and what it costs. You pay nothing before you have it.',
   },
   {
     title: 'Build and go live',
-    body: 'You see the work as it goes. Most sites are live in two to four weeks.',
+    body: 'You can watch the site come together. Most sites go live in two to four weeks.',
   },
 ]
 
@@ -116,18 +116,18 @@ export default function Start() {
       return { field: 'company', fault: 'Add the name of the business.' }
     }
     if (!isValidEmail(held.email)) {
-      return { field: 'email', fault: 'Check the email address. The reply has nowhere else to go.' }
+      return { field: 'email', fault: 'Check the email address. That is where we send the reply.' }
     }
     if (held.contactMethod === 'phone' && !hasMinLength(held.phone, 7)) {
       return {
         field: 'phone',
-        fault: 'We need a phone number to call you back. Pick email instead to skip it.',
+        fault: 'We need a phone number to call you. Pick email if you would rather skip it.',
       }
     }
     if (!hasMinLength(held.message, 10)) {
       return {
         field: 'message',
-        fault: 'A sentence about the business is enough to start.',
+        fault: 'Write at least a sentence about the business.',
       }
     }
     return null
@@ -171,7 +171,7 @@ export default function Start() {
     <div>
       <Seo
         title="Start Your Small Business Website Project"
-        description="Tell us what the site has to do and how to reach you. A small Baytown web team reads it and replies, usually within the hour, with a plan and a price in writing."
+        description="Tell us what your website needs to do. We are a small web team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
         path="/start"
         schema={[
           breadcrumbSchema([
@@ -188,8 +188,8 @@ export default function Start() {
       />
       <PageHero
         eyebrow="Start a Project"
-        title="Tell us what the site has to do. You get a plan and a price back, in writing."
-        description="Two minutes to fill in. A person in Baytown reads it and usually replies within the hour, by email or with a call, whichever you pick. You pay nothing to find out what it costs."
+        title="Tell us what the site needs to do, and we will send you a written plan and price."
+        description="We operate out of Baytown and we will reply within an hour in most cases."
         image={HERO_PHOTO}
       >
         <ul className="flex flex-wrap gap-x-8 gap-y-3">
@@ -229,7 +229,7 @@ export default function Start() {
                     Tell us about the business
                   </h2>
                   <p className={`mt-1.5 text-[14px] ${GROUND.body}`}>
-                    A few short answers. The person who reads them writes the reply.
+                    A few short answers. The person who reads them is the one who replies.
                   </p>
                 </div>
                 <span className={`section-label-sm ${GROUND.meta}`}>About 2 Min</span>
@@ -243,7 +243,7 @@ export default function Start() {
                   <div>
                     <p className="section-label-sm text-accent">Message Sent</p>
                     <p className={`text-[15px] ${GROUND.title}`}>
-                      Thanks. A person reads it and gets back to you, usually within the hour.
+                      Thanks. We will get back to you within an hour in most cases.
                     </p>
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export default function Start() {
                           </p>
                         ) : (
                           <p id="email-note" className={`mt-2 text-[13px] ${GROUND.meta}`}>
-                            Where we send the plan and the price.
+                            We send the plan and price here.
                           </p>
                         )}
                       </div>
@@ -363,7 +363,7 @@ export default function Start() {
                           </p>
                         ) : (
                           <p id="phone-note" className={`mt-2 text-[13px] ${GROUND.meta}`}>
-                            Optional. It only rings if you ask for a call.
+                            Optional. We only call if you ask us to.
                           </p>
                         )}
                       </div>
@@ -436,7 +436,7 @@ export default function Start() {
                         placeholder="yourbusiness.com"
                       />
                       <p id="website-note" className={`mt-2 text-[13px] ${GROUND.meta}`}>
-                        Optional. We open it before we reply.
+                        Optional. We look at it before we reply.
                       </p>
                     </div>
                   </fieldset>
@@ -472,8 +472,8 @@ export default function Start() {
                   {SITE.phone}
                 </a>
                 <p className={`mt-3 text-[14px] leading-relaxed ${SLAB.body}`}>
-                  A small team builds it and answers the phone. Say what the business does and you
-                  get the same plan and price over the phone.
+                  The same small team that builds the site answers the phone. Tell us what the
+                  business does and you get the same written plan and price.
                 </p>
                 <a href={SITE.phoneHref} className="btn btn-secondary mt-5 w-full">
                   Call for a Plan and Price
