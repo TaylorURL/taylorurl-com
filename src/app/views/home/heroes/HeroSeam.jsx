@@ -7,7 +7,7 @@ import SearchSeamPlate from './SearchSeamPlate'
 
 export default function HeroSeam() {
   return (
-    <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden bg-bg pt-24 text-ink">
+    <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden pt-24 text-ink">
       <div className="container-rail relative grid items-center gap-14 pb-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:gap-20">
         <div>
           <HeroEyebrow />

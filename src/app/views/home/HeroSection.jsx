@@ -3,6 +3,7 @@ import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { Pause, Play } from 'lucide-react'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
 import { HERO_OPENER_ID, HERO_VARIANTS } from './heroes'
+import HeroTerrain from './heroes/HeroTerrain'
 
 // Long enough to read a headline and take in the figure beside it before the
 // next presentation arrives.
@@ -140,6 +141,13 @@ export default function HeroSection() {
       ref={stageRef}
       className="relative isolate grid min-h-[max(100svh,var(--hero-floor))] bg-bg"
     >
+      {/* The ground every presentation stands on: a wireframe terrain drawn
+          live in the accent, rolling on its own and lifting under the pointer.
+          It runs out into the page's own ground at the foot so the next
+          section meets a flat field. The presentations paint no ground. */}
+      <div className="hero-terrain col-start-1 row-start-1" aria-hidden="true">
+        <HeroTerrain />
+      </div>
       {/* The stage stands on its own floor rather than on whichever presentation
           is mounted, so nothing under the hero moves when one arrives. The
           outgoing one still leaves the flow the moment it starts to go, which

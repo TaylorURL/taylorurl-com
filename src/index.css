@@ -3230,3 +3230,32 @@
     transform: scaleX(1);
   }
 }
+
+/* The terrain under the homepage hero, drawn live on a canvas in the accent.
+   The scrim runs it out into --bg at the foot, so the section after the hero
+   meets a flat field, and thins it under the type so the ink stays legible. */
+.hero-terrain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-terrain canvas {
+  display: block;
+  position: absolute;
+  inset: 0;
+  opacity: 0.55;
+}
+
+:root[data-theme='dark'] .hero-terrain canvas {
+  opacity: 0.8;
+}
+
+.hero-terrain::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, var(--bg) 0%, transparent 30%, transparent 62%, var(--bg) 100%);
+}
