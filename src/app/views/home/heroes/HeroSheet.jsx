@@ -14,7 +14,7 @@ const COLUMN_RULE = {
 
 export default function HeroSheet() {
   return (
-    <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden bg-bg pt-24">
+    <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden pt-24">
       <div className="pointer-events-none absolute inset-0 flex justify-center" aria-hidden="true">
         <div className="container-rail">
           <div className="h-full w-full" style={COLUMN_RULE} />

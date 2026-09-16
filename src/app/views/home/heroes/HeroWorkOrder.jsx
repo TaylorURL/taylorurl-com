@@ -9,7 +9,7 @@ export default function HeroWorkOrder() {
   return (
     // The offer set as the document it produces. It stands on the ground the
     // setting chose, like the other three presentations.
-    <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden bg-bg pt-24 text-ink">
+    <section className="relative isolate flex h-full min-h-[100svh] items-center overflow-hidden pt-24 text-ink">
       <div className="container-rail relative grid items-center gap-14 pb-16 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] lg:gap-16">
         <div>
           <HeroEyebrow />
