@@ -278,6 +278,41 @@ if (laddering) {
     Boolean(drawn) && Boolean(minting) && minting[1].includes(drawn[1]),
     'the retry address is numbered and nothing more, so it is the same address the last document asked at'
   )
+
+  // And a rung the document was not there for is not a rung.
+  //
+  // The browser words a request torn down with its own document exactly the way
+  // it words a file that is not there: `Failed to fetch dynamically imported
+  // module: <url>`. The reporter's `fetch` wrapper has told the two apart since
+  // #543 by asking whether the document was on screen for the whole of the
+  // request, and a route's chunk is asked for by `import()` rather than by
+  // `fetch` - so it was the one request on the page that never reached the
+  // question. A reader who locks the phone, switches apps or closes the tab
+  // while the route is still arriving spends the whole ladder inside the
+  // teardown, takes the boundary's reload on a document that is already going,
+  // and files a fault against a chunk that was answering every request put to
+  // it. That is #615, filed three times over on a file that has never once
+  // been missing.
+  check(
+    /__reporter/.test(laddering.source) && /FORGIVEN/.test(laddering.source),
+    'the ladder spends a rung on a request the document was torn down under, which files a fault against a file that is answering'
+  )
+  check(
+    /function onScreen/.test(laddering.source) && /await onScreen\(\)/.test(laddering.source),
+    'a forgiven attempt is asked again straight away rather than when the document is back, so it fails again for the same reason and the forgiveness buys one more refusal'
+  )
+
+  // And the count it reads has to be published. It lives in the reporter's own
+  // closure in the head, where nothing under src/app can see it.
+  const published = readFileSync(path.join(ROOT, 'index.html'), 'utf8')
+  check(
+    /left: function \(\) \{\s*return departures/.test(published),
+    'the departure count stays inside the reporter, so the chunk ladder cannot tell a torn-down request from a missing file'
+  )
+  check(
+    /away: offscreen/.test(published),
+    'nothing publishes whether the document is off screen, so a forgiven attempt has nothing to wait on'
+  )
 }
 
 // The search is the only chunk on the site a reader asks for by name, and that
