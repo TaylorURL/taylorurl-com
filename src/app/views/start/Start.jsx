@@ -61,7 +61,7 @@ const PROMISES = [
   'Free to ask',
   'Reply within an hour in most cases',
   'Price in writing before any work',
-  'Most websites live in two to four weeks',
+  'Most websites go live in two to four weeks',
 ]
 
 // What happens after send, beside the form, so pressing it is not a leap into
@@ -186,7 +186,7 @@ export default function Start() {
     <div>
       <Seo
         title="Start a Website, App or Software Project"
-        description="Tell us what you need built, from a website to a mobile or desktop app. We are a small team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
+        description="Tell us what you need built: a website, a mobile or desktop app, or software. We are a small team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
         path="/start"
         schema={[
           breadcrumbSchema([
@@ -244,8 +244,7 @@ export default function Start() {
                     Tell us about the business
                   </h2>
                   <p className={`mt-1.5 text-[14px] ${GROUND.body}`}>
-                    A few short answers about the business and the project. The person who reads
-                    them is the one who replies.
+                    A few short answers. The person who reads them is the one who replies.
                   </p>
                 </div>
                 <span className={`section-label-sm ${GROUND.meta}`}>About 2 Min</span>
@@ -409,7 +408,7 @@ export default function Start() {
                     <legend className="mb-5 flex items-center gap-3">
                       <StepMark>2</StepMark>
                       <span className={`text-[16px] font-semibold tracking-tight ${GROUND.title}`}>
-                        What you need
+                        About the project
                       </span>
                     </legend>
 
@@ -442,7 +441,7 @@ export default function Start() {
                       <fieldset>
                         <legend className={FIELD_LABEL}>{ASKED.addOns}</legend>
                         <p className={`-mt-1 mb-3 text-[13px] ${GROUND.meta}`}>
-                          Optional. Tick any you want with it.
+                          Optional. Check any you want with it.
                         </p>
                         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                           {START_ADD_ONS.map(service => (
