@@ -41,11 +41,16 @@ function CallsTooltip({ active, payload }) {
 }
 
 /**
- * One caller's calls by hour of the Central day.
+ * Calls by hour of the Central day - one caller's, or the whole desk's added up.
  *
- * @param {{hours: {hour: number, calls: number}[]}} props
+ * `fill` draws it to the height of whatever holds it rather than to a fixed
+ * one. The management board is laid out to the window and hands its charts the
+ * room that is left, and a chart that insisted on 150 pixels there would leave
+ * the rest of its card blank.
+ *
+ * @param {{hours: {hour: number, calls: number}[], fill?: boolean}} props
  */
-export function HourChart({ hours }) {
+export function HourChart({ hours, fill = false }) {
   const busy = hours.filter(slot => slot.calls > 0).map(slot => slot.hour)
   const from = Math.min(DAY_FROM, ...busy)
   const to = Math.max(DAY_TO, ...busy)
@@ -54,7 +59,7 @@ export function HourChart({ hours }) {
     .map(slot => ({ ...slot, name: hourLabel(slot.hour) }))
 
   return (
-    <div {...frame(false, HEIGHT)}>
+    <div {...frame(fill, HEIGHT)}>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} margin={{ top: 8, right: CHART_INSET, bottom: 0, left: 0 }}>
           <CartesianGrid stroke={GRID} vertical={false} />
@@ -174,9 +179,9 @@ function TeamTooltip({ active, payload, label, people }) {
  * budget and push the bars up to pay for it.
  *
  * @param {{days: {day: string, placed: Record<string, number>}[],
- *   people: {id: string, name: string|null}[]}} props
+ *   people: {id: string, name: string|null}[], fill?: boolean}} props
  */
-export function TeamDayChart({ days, people }) {
+export function TeamDayChart({ days, people, fill = false }) {
   const named = people.map((person, at) => ({
     id: person.id,
     name: callerName(person),
@@ -189,8 +194,8 @@ export function TeamDayChart({ days, people }) {
   })
 
   return (
-    <div className="staff-chart">
-      <div {...frame(false, HEIGHT)}>
+    <div className="staff-chart" data-fill={fill || undefined}>
+      <div {...frame(fill, HEIGHT)}>
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 8, right: CHART_INSET, bottom: 0, left: 0 }}>
             <CartesianGrid stroke={GRID} vertical={false} />

@@ -43,7 +43,7 @@ export const PORTAL_VIEWS = PORTAL_SURFACES.map(one => ({
  * because every screen is a tab and the tab row is on screen at every width.
  *
  * @param {{aside?: React.ReactNode, foot?: React.ReactNode,
- *   layout?: 'wide' | 'reading', children: React.ReactNode}} props
+ *   layout?: 'wide' | 'reading' | 'board', children: React.ReactNode}} props
  */
 export default function PortalScreen({ aside, foot, layout = 'wide', children }) {
   const [view, go] = useView(PORTAL_VIEWS)
