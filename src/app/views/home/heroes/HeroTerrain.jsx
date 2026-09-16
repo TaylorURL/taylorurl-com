@@ -6,7 +6,7 @@ import { useReducedMotion } from 'framer-motion'
 const COLS = 72
 const ROWS = 34
 // How far the ground rolls on its own, and how hard it lifts under the pointer.
-const DRIFT = 0.00005
+const DRIFT = 0.000025
 const LIFT = 0.42
 const LIFT_RADIUS = 0.22
 
@@ -63,7 +63,10 @@ export default function HeroTerrain() {
     let frame = 0
     let running = true
     let onScreen = true
-    const pointer = { x: 0.5, y: 0.6, tx: 0.5, ty: 0.6, strength: 0 }
+    // The lift follows the pointer while it is over the page and fades out
+    // where it last stood when the pointer leaves, so it never travels on its
+    // own to some resting point.
+    const pointer = { x: 0.5, y: 0.6, tx: 0.5, ty: 0.6, strength: 0, over: false }
     let ink = readInk(host)
 
     const resize = () => {
@@ -94,9 +97,9 @@ export default function HeroTerrain() {
 
     const draw = time => {
       ctx.clearRect(0, 0, width, height)
-      pointer.x += (pointer.tx - pointer.x) * 0.06
-      pointer.y += (pointer.ty - pointer.y) * 0.06
-      pointer.strength += ((onScreen ? 1 : 0) - pointer.strength) * 0.04
+      pointer.x += (pointer.tx - pointer.x) * 0.035
+      pointer.y += (pointer.ty - pointer.y) * 0.035
+      pointer.strength += ((onScreen && pointer.over ? 1 : 0) - pointer.strength) * 0.02
 
       const shift = time * DRIFT
       const points = new Array(ROWS)
@@ -170,10 +173,14 @@ export default function HeroTerrain() {
       const rect = host.getBoundingClientRect()
       pointer.tx = (event.clientX - rect.left) / rect.width
       pointer.ty = (event.clientY - rect.top) / rect.height
+      if (!pointer.over) {
+        pointer.x = pointer.tx
+        pointer.y = pointer.ty
+        pointer.over = true
+      }
     }
     const onLeave = () => {
-      pointer.tx = 0.5
-      pointer.ty = 0.6
+      pointer.over = false
     }
     const onVisibility = () => {
       if (document.hidden || !onScreen) {
@@ -202,7 +209,8 @@ export default function HeroTerrain() {
 
     window.addEventListener('resize', resize)
     window.addEventListener('pointermove', onMove, { passive: true })
-    window.addEventListener('pointerleave', onLeave)
+    document.addEventListener('pointerleave', onLeave)
+    document.addEventListener('mouseleave', onLeave)
     document.addEventListener('visibilitychange', onVisibility)
     observer.observe(host)
     ground.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
@@ -212,7 +220,8 @@ export default function HeroTerrain() {
       cancelAnimationFrame(frame)
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', onMove)
-      window.removeEventListener('pointerleave', onLeave)
+      document.removeEventListener('pointerleave', onLeave)
+      document.removeEventListener('mouseleave', onLeave)
       document.removeEventListener('visibilitychange', onVisibility)
       observer.disconnect()
       ground.disconnect()
