@@ -63,6 +63,16 @@ let spent = 0
 // fresh per document is.
 const TOKEN = Math.random().toString(36).slice(2, 8)
 
+// How many failed attempts a departure is allowed to take back.
+//
+// Bounded, because a document that leaves and returns over and over - a phone
+// picked up and put down through a long page - would otherwise hand every rung
+// back and never reach a verdict, and a chunk that really has gone would never
+// be reported from that reader at all. Two is enough for the shape this
+// actually sees, one departure under the request and one under the retry, and
+// past it the ladder runs as it always did and reports if it runs out.
+const FORGIVEN = 2
+
 // The address inside the sentence a browser throws when a module will not load.
 // Chrome and Edge say "Failed to fetch dynamically imported module: <url>", and
 // Firefox and Safari word it differently and sometimes name no address at all -
@@ -106,6 +116,61 @@ function refetch(error) {
   // reader.
   address.searchParams.set('retry', `${spent}.${TOKEN}`)
   return import(/* @vite-ignore */ address.href)
+}
+
+/**
+ * How many times this document has gone away, as the reporter has been counting
+ * it since the head ran: `pagehide` for a dismantled or frozen document, and a
+ * `visibilitychange` into hidden for a phone that was locked or switched away
+ * from without firing one.
+ *
+ * Read off the reporter rather than counted again here, because it is the same
+ * question its `fetch` wrapper already asks about every request the page makes
+ * and this is the one request that is not a `fetch`. A document with no
+ * reporter - a test, a build - reads as never having left, so the ladder
+ * behaves exactly as it did before any of this.
+ *
+ * @returns {number} The departure count, or 0 where nothing is counting.
+ */
+function departures() {
+  const reporter = typeof window === 'undefined' ? null : window.__reporter
+  return reporter && typeof reporter.left === 'function' ? reporter.left() : 0
+}
+
+/**
+ * Whether the document is off screen at this instant.
+ *
+ * @returns {boolean} True while the document is hidden.
+ */
+function away() {
+  const reporter = typeof window === 'undefined' ? null : window.__reporter
+  return Boolean(reporter && typeof reporter.away === 'function' && reporter.away())
+}
+
+/**
+ * Settles when the document is on screen, and immediately if it already is.
+ *
+ * A pass that is waiting on this is a pass holding the Suspense fallback, which
+ * is the right thing to be showing a document that nobody is looking at. If the
+ * document is being dismantled rather than frozen this never settles and
+ * nothing is thrown, which is the point: there is no reader left to fail in
+ * front of, and a rejection handed to the boundary on the way out is a reload
+ * and an error screen drawn over a page that is already gone.
+ *
+ * @returns {Promise<void>} Resolved once the document is visible again.
+ */
+function onScreen() {
+  if (typeof document === 'undefined' || !away()) return Promise.resolve()
+  return new Promise(resolve => {
+    function back() {
+      if (away()) return
+      document.removeEventListener('visibilitychange', back)
+      window.removeEventListener('pageshow', back)
+      resolve()
+    }
+    document.addEventListener('visibilitychange', back)
+    window.addEventListener('pageshow', back)
+  })
 }
 
 /**
@@ -162,8 +227,21 @@ export function lazyWithRetry(
 ) {
   return lazy(async () => {
     let lastError = after
+    let forgiven = 0
+    // Where the document stood when this pass opened. `pagehide` and the hide
+    // are counted at different moments - a dismantling document fires
+    // `pagehide` before `visibilityState` turns, so the rejection can arrive in
+    // the gap between them and read as a document that is still here. Once
+    // either has moved, this pass is running on a document on its way out and
+    // every failure in it is read that way.
+    const opened = departures()
     const last = retries + waits
     for (let attempt = 0; attempt <= last; attempt++) {
+      // Where the document was when this attempt started, so the failure can be
+      // asked the question the reporter's `fetch` wrapper asks about every
+      // other request: was the document on screen for the whole of it.
+      const left = departures()
+      const startedAway = away()
       try {
         // The first attempt is the factory itself, so a chunk that loads
         // normally - which is all of them, nearly all of the time - is asked
@@ -176,6 +254,34 @@ export function lazyWithRetry(
         return await again
       } catch (error) {
         lastError = error
+        // A request the document was not there to receive an answer to.
+        //
+        // `Failed to fetch dynamically imported module` is what the browser
+        // throws when the fetch does not complete, and a fetch torn down with
+        // the document does not complete. So a chunk that is sitting on the
+        // server answering every request put to it produces the same sentence
+        // as one a deploy has deleted, on a reader who lost nothing: they
+        // locked the phone, switched apps or closed the tab while the route was
+        // still arriving. Handing that to the boundary reloads a document that
+        // is already going and files the fault under the one address the whole
+        // ladder reports as - which is how a chunk that has never once been
+        // missing has now been filed three times.
+        //
+        // Every recovery on this site reports after it has given up, and this
+        // is the rung that had not been told when it had not actually tried.
+        // The attempt is given back rather than spent, and the pass waits for
+        // the document to be on screen before asking again - so a reader who
+        // comes back to the tab gets the page, and a document that never comes
+        // back throws nothing at nobody.
+        if (
+          forgiven < FORGIVEN &&
+          (startedAway || away() || departures() !== left || departures() !== opened)
+        ) {
+          forgiven += 1
+          attempt -= 1
+          await onScreen()
+          continue
+        }
         // The quick pair widens; everything past it is the long wait, which is
         // the one that reaches the far side of the outage.
         if (attempt < last) await wait(attempt < retries ? delayMs * (attempt + 1) : waitMs)
