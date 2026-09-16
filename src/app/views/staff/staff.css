@@ -381,11 +381,40 @@
   }
 }
 
+/* Until the call is marked the desk column holds the call history and nothing
+   else - the form arrives with the mark - and a column of the screen given to
+   one short list is a column standing empty. So the history goes under the
+   business until then, and the script takes the rest of the width; the third
+   column opens when there is a form to put in it. */
+@media (min-width: 1024px) {
+  .staff-call[data-marked='false'] {
+    grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+    grid-template-areas:
+      'who script'
+      'desk script';
+  }
+}
+
 @media (min-width: 1280px) {
   .staff-call {
     grid-template-columns: 18rem minmax(0, 1fr) minmax(0, 25rem);
     grid-template-areas: 'who script desk';
     column-gap: var(--s-10);
+  }
+
+  .staff-call[data-marked='false'] {
+    grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+    grid-template-areas:
+      'who script'
+      'desk script';
+  }
+
+  /* The script across the whole of that width is one line of eighty words
+     after another. Two columns of beats keep every line at a measure. */
+  .staff-call[data-marked='false'] .staff-script > .staff-fold-body {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    column-gap: var(--s-8);
+    align-content: start;
   }
 
   /* The keypad in a column this narrow holds two keys to a row, not three. */
@@ -1704,17 +1733,109 @@ textarea.staff-input {
 }
 
 @media (min-width: 1280px) {
+  /* Two thirds to the answers and a third to the rail, whatever the window is.
+     The answers held a reading measure before and the rail a fixed width, and
+     on a wide desk the two together came to half the screen with the other
+     half blank. The measure was the right idea for a page of prose and the
+     wrong one for a list of folded answers, which are read one at a time. */
   .staff[data-layout='reading'] .staff-reading {
-    grid-template-columns: minmax(0, 52rem) minmax(15rem, 22rem);
+    grid-template-columns: minmax(0, 2fr) minmax(18rem, 1fr);
     column-gap: var(--s-8);
   }
 
-  /* Stacked, but only where the rail is a rail. Three figures side by side in a
-     column this narrow is three numbers nobody can read; the same three across
-     the foot of a single-column screen, which is what this is at every width
-     below, is the shape they are drawn in everywhere else. */
+  .staff[data-layout='reading'] .staff-reading-main {
+    max-width: none;
+  }
+
+  /* Stacked where the rail is a rail, three across once it is wide enough to
+     read three figures side by side. Two across is never right: three figures
+     in two columns is two and a straggler. The rail's own width decides,
+     because the window's width says nothing about a third of a region. */
+  .staff[data-layout='reading'] .staff-reading-side {
+    container-type: inline-size;
+  }
+
   .staff[data-layout='reading'] .staff-reading-side .staff-figures {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  @container (min-width: 33rem) {
+    .staff[data-layout='reading'] .staff-reading-side .staff-figures {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+}
+
+/* ── The board ───────────────────────────────────────────────────────────── */
+
+/* The management screen is four rows read at a glance, and on a desk it is
+   sized to the window rather than to its contents: the head, the figures and
+   the list take what they need, the charts take the rest, and the column does
+   not scroll. A dashboard that scrolls is a dashboard whose bottom row is a
+   surprise. On a phone the console scrolls the region as one column and the
+   rows stack into it like everything else. */
+.staff-board-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-3) var(--s-5);
+}
+
+/* A chart told to fill has to be handed a height by everything above it, and
+   a grid row is the one thing that hands one down without being asked to. */
+.staff-board-charts > .staff-part {
+  grid-template-rows: auto minmax(0, 1fr);
+  min-height: 0;
+}
+
+.staff-chart[data-fill] {
+  grid-template-rows: minmax(0, 1fr) auto;
+  height: 100%;
+  min-height: 0;
+}
+
+@media (min-width: 1024px) {
+  .staff[data-layout='board'] .staff-scroll {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr);
+    overflow: hidden;
+  }
+
+  .staff[data-layout='board'] .staff-stack {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .staff[data-layout='board'] .staff-stack > * {
+    flex: 0 0 auto;
+  }
+
+  /* The pair of charts is the row that grows, and its two cards stand the
+     height of the row rather than of their own contents: the columns rule
+     above aligns a pair to the top, which is right for two blocks of prose
+     and wrong for two charts told to fill, because a card the height of its
+     heading leaves a chart no height to fill. */
+  .staff[data-layout='board'] .staff-board-charts {
+    flex: 1 1 0;
+    grid-template-rows: minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 11rem;
+  }
+
+  /* The list is the one row that can outgrow the window - a desk of twelve is
+     twelve rows - so it is the one that gives, and scrolls inside its own card
+     the way every wide thing in the console does. */
+  .staff[data-layout='board'] .staff-board-team {
+    flex: 0 1 auto;
+    grid-template-rows: auto minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .staff[data-layout='board'] .staff-board-team .staff-table-wrap {
+    min-height: 0;
+    overflow: auto;
   }
 }
 
@@ -1724,7 +1845,10 @@ textarea.staff-input {
   display: grid;
   gap: var(--s-3);
   justify-items: start;
-  padding: var(--s-6) 0;
+  padding: var(--s-8) var(--s-6);
+  border-radius: var(--r-card);
+  background-color: var(--surface-1);
+  box-shadow: var(--edge);
 }
 
 .staff-spent .staff-quiet {

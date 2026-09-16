@@ -2,32 +2,24 @@ import { Fragment, useState } from 'react'
 import { callerName, saidSince } from '@lib/outreach/prospects/callPresence.js'
 import { SHIFT_GOALS, shiftOf, shiftShare } from '@lib/outreach/prospects/callShift.js'
 import { orderPeople, reachRate, saidRate } from '@lib/outreach/prospects/callTeam.js'
-import { TeamDayChart } from '../Charts'
 import GoalFields from './GoalFields'
 import { useDesk } from '../lib/surface'
 import { callMoment } from '../lib/call'
 
 /**
- * The whole desk, read over one span: what it came to, how the days went, and
- * where each person stands.
+ * The desk, person by person, over one span.
  *
- * The screen it sits on answered for one seat before this - the signed-in
- * caller's own day, and a list of who else happened to be online. That is the
- * right answer for the person holding the phone and the wrong one for anybody
- * deciding anything: a representative whose reach rate fell all week and a
- * Tuesday that was quiet across the whole desk look identical from inside one
- * seat, and they call for opposite responses.
+ * The screen this sits on is the whole desk rather than one seat at it. A
+ * representative whose reach rate fell all week and a Tuesday that was quiet
+ * across the whole desk look identical from inside one seat, and they call for
+ * opposite responses; so the screen reads everybody, and this is the part of it
+ * that says who.
  *
- * Three readings of one payload, taken at one moment. The totals say what the
- * span came to, the chart says which days it came on, and the list says who.
- * They are handed the same answer rather than three reads of their own, so the
- * strip cannot disagree with the rows under it for as long as a second request
- * would take.
- *
- * The board is also where a shift is set, for whoever may set one. The figures a
- * person is read against belong beside the figures they made, and the old form
- * that set them sat at the bottom of the screen answering for one account - so
- * an admin setting somebody else's day had no way to do it at all.
+ * The totals and the chart the same payload feeds are drawn by the screen
+ * above, as rows of its own, because the screen is laid out to the window and
+ * decides which row gets the room that is left. What is here is the list, and
+ * the list is also where a shift is set, for whoever may set one: the figures a
+ * person is read against belong beside the figures they made.
  */
 
 /**
@@ -304,20 +296,37 @@ function TeamCards({ people, you, span, today, admin, saving, editing, onToggle,
 }
 
 /**
- * What the desk came to over the span, with no target behind any of it.
+ * What the desk came to over the span.
  *
  * Four figures rather than the day's three, and the fourth is the one that makes
  * the other three readable: two hundred calls is a good week by four people and
  * a remarkable one by two.
  *
+ * On Today the three carry the desk's goal under them - every person's own,
+ * added up - and a bar of how far along it is, because today is the one span
+ * anybody can still do something about. A week is over; a target drawn against
+ * it would read as one somebody missed by six hundred per cent.
+ *
  * Nothing is stated until it has been read. A nought drawn while the request is
  * still out is a finding - nobody rang anybody - and it is replaced a second
  * later by the real one, which is the board appearing to change its mind.
+ *
+ * @param {{counts: object|null|undefined, goals: object|null, loading: boolean}} props
+ *   `goals` is the desk's summed goals, handed in on Today and null otherwise.
  */
-function TeamTotals({ counts, loading }) {
+export function TeamTotals({ counts, goals, loading }) {
+  const shift = goals ? shiftOf(counts, goals) : null
+  const spent = Boolean(shift?.met.calls)
   const cards = [
-    ...SHIFT_GOALS.map(goal => ({ id: goal.id, label: goal.label, value: counts?.[goal.of] })),
-    { id: 'callers', label: 'Callers Active', value: counts?.callers },
+    ...SHIFT_GOALS.map(goal => ({
+      id: goal.id,
+      label: goal.label,
+      value: counts?.[goal.of],
+      of: goals ? goals[goal.id] : null,
+      share: shift ? shiftShare(shift, goal.id) : null,
+      behind: spent && shift && !shift.met[goal.id],
+    })),
+    { id: 'callers', label: 'Callers Active', value: counts?.callers, of: null, share: null },
   ]
   return (
     <dl className="staff-figures" data-four="true">
@@ -325,8 +334,17 @@ function TeamTotals({ counts, loading }) {
         <div className="staff-figure" key={card.id}>
           <dd>
             {loading ? <span className="staff-skeleton" aria-hidden="true" /> : (card.value ?? 0)}
+            {card.of !== null && !loading && <span>of {card.of}</span>}
           </dd>
           <dt>{card.label}</dt>
+          {card.share !== null && (
+            <div className="staff-track">
+              <span
+                data-behind={card.behind || undefined}
+                style={{ width: `${Math.round(card.share * 100)}%` }}
+              />
+            </div>
+          )}
         </div>
       ))}
     </dl>
@@ -350,8 +368,8 @@ function TeamWaiting() {
 
 /**
  * @param {{range: {id: string, label: string}, team: object, admin: boolean}} props
- *   `team` is the `useCallsTeam` reading, held by the screen above because it
- *   also reads the caller's own goals out of it.
+ *   `team` is the `useCallsTeam` reading, held by the screen above because the
+ *   totals and the chart up there read the same answer.
  */
 export default function TeamBoard({ range, team, admin }) {
   const [editing, setEditing] = useState(null)
@@ -368,25 +386,19 @@ export default function TeamBoard({ range, team, admin }) {
   const list = { people, you: data?.you, span, today, admin, saving: team.saving, editing }
 
   return (
-    <div className="staff-part">
+    <div className="staff-part staff-board-team">
       <h3>
         Team<span>{range.label}</span>
       </h3>
 
       {team.error ? (
         <p className="staff-read">{team.error}</p>
+      ) : team.loading ? (
+        <TeamWaiting />
+      ) : desk ? (
+        <TeamTable {...list} onToggle={toggle} onSet={set} />
       ) : (
-        <>
-          <TeamTotals counts={data?.totals?.[span]} loading={team.loading} />
-          {data && <TeamDayChart days={data.by_day} people={data.people} />}
-          {team.loading ? (
-            <TeamWaiting />
-          ) : desk ? (
-            <TeamTable {...list} onToggle={toggle} onSet={set} />
-          ) : (
-            <TeamCards {...list} onToggle={toggle} onSet={set} />
-          )}
-        </>
+        <TeamCards {...list} onToggle={toggle} onSet={set} />
       )}
     </div>
   )

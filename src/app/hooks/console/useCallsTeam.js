@@ -72,7 +72,10 @@ export function useCallsTeam({ token, enabled, days }) {
         `${TEAM_PATH}?${query}&t=${Date.now()}`
       )
       if (!alive.current) return
-      if (!response.ok) {
+      // An answer without a roster in it is not an answer, whatever the status
+      // said: a page served in the endpoint's place parses to nothing, and a
+      // board drawn from nothing is a board that throws on its first chart.
+      if (!response.ok || !Array.isArray(payload?.people)) {
         setFailed({ key: query, value: faultFromResponse(response, payload, NO_READ) })
         return
       }

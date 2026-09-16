@@ -417,7 +417,7 @@ export default function CallDesk({ Shell }) {
           )}
         </div>
       ) : (
-        <div className="staff-call">
+        <div className="staff-call" data-marked={marked}>
           <div className="staff-who">
             <div className="staff-lead" key={`${current.id}-who`}>
               <h2>{current.name}</h2>
