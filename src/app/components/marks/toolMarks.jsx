@@ -84,21 +84,3 @@ export function ToolUberEats(props) {
     </svg>
   )
 }
-
-/**
- * Google's single-colour G, held once in the network marks rather than a
- * second time here: one glyph drawn twice drifts the moment one copy is
- * touched.
- */
-export { MarkGoogle as ToolGoogle } from '@components/marks/brandMarks'
-
-/**
- * Microsoft: four equal squares, eleven units to a side, two units apart.
- */
-export function ToolMicrosoft(props) {
-  return (
-    <svg {...BASE} {...props}>
-      <path d="M0 0h11v11H0zM13 0h11v11H13zM0 13h11v11H0zM13 13h11v11H13z" />
-    </svg>
-  )
-}

@@ -70,7 +70,7 @@ Most small-business sites are either a static template that never ranks or a sin
 ```bash
 npm install
 npm run dev           # Vite dev server
-npm run build         # production build, static prerender of every route, then the two postbuild checks
+npm run build         # production build, static prerender of every route, then the postbuild internal-link check
 ```
 
 Node 22, which is what `engines` names and what CI and the capture workflow run on. No environment configuration is required to run the site locally: the forms and the console's sign-in reach the backend with a publishable key, which row-level security scopes to what an anonymous reader may already see. The variables the functions under `api/` read are named in `.env.example` and set per environment in Vercel; the file carries none of their values.
@@ -133,7 +133,7 @@ flowchart TD
 - **Real markup in the head.** React 19 hoists each page's `react-helmet-async` title, meta, canonical, Open Graph, and JSON-LD into the prerendered `<head>`, and `vite/sitemap-plugin.js`, `vite/feed-plugin.js` and `vite/llms-plugin.js` emit `sitemap.xml`, `feed.xml` and `llms.txt` from the same route table.
 - **Targeted at local search.** Pages carry `geo.*` meta and a `LocalBusiness` / `ProfessionalService` schema for Baytown, TX and the greater Houston area. The work is carried out from Baytown and there is nowhere a visitor can be met, so the schema's address stops at the locality and `areaServed` carries the reach as a circle plus the markets the service pages name. The foot of the studio's pages prints the company's Houston mail box, which is the address the business is written to rather than a place it can be visited, so it stands in the colophon and stays out of the schema.
 - **The console asks for a sign-in.** `/console/status` is the uptime monitor's board and is open to anyone; it reports on no account. Every other section verifies the session against the project, and the database functions decide what that account may read, so the page chooses what to show and never what it is allowed to fetch.
-- **What the sender cannot reach is a phone list rather than a dead end.** The cold email pipeline ends at an address, and about a fifth of what the map sweep finds has none to end at: the listing names no website, or names a Facebook page, a Linktree or a Square booking page whose only published address belongs to the platform. Those rows stop at `unreachable`, and they are the strongest leads on the table, because the thing being sold is the thing they visibly do not have. `/console/calls` is where they are dialled. The order is not the review count, which is not comparable across trades - a restaurant collects reviews from every table it turns and a machine shop collects them from the two customers a year who think to leave one - so a business is ranked on its count against the middle count for its own trade, behind any callback that has come due. `outreach_calls` holds one row per attempt rather than a state on the prospect, so a number rung twice reads as twice.
+- **What the sender cannot reach is a phone list rather than a dead end.** The cold email pipeline ends at an address, and about a fifth of what the map sweep finds has none to end at: the listing names no website, or names a Facebook page, a Linktree or a Square booking page whose only published address belongs to the platform. Those rows stop at `unreachable`, and they are the strongest leads on the table, because the thing being sold is the thing they visibly do not have. `/console/staff` is where they are dialled. The order is not the review count, which is not comparable across trades - a restaurant collects reviews from every table it turns and a machine shop collects them from the two customers a year who think to leave one - so a business is ranked on its count against the middle count for its own trade, behind any callback that has come due. `outreach_calls` holds one row per attempt rather than a state on the prospect, so a number rung twice reads as twice.
 
 - **One tracker, every site.** The collector serves the browser tracker that every site TaylorURL runs includes with a single script tag, so a change to what gets collected is one deploy rather than a dozen releases. Hits carry no address and no cookie: the country comes from the browser's own timezone, the session and visitor ids are random numbers in the browser's storage, and the collector accepts a hit only from the origins its site is registered with.
 - **Type is served from this origin.** Geist and Geist Mono are two variable woff2 files in `public/fonts/`, declared as `@font-face` in `src/index.css` and preloaded from `index.html`, so the first paint waits on nothing third-party.
@@ -252,6 +252,7 @@ taylorurl-com/
 ├── api/                       Vercel serverless functions, one URL each — the enquiry form, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
 ├── brand/                     The post cards the queue publishes, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
+│   ├── auth/                  The account a payment opens, and the record of which checkout opened it
 │   ├── db/                    Paged reads, the two Supabase clients and the door in front of them, the shapes a value takes before it reaches a column, and the runner a posted action calls its database function through
 │   ├── enquiry/               What each enquiry form asks, in the words the sender read
 │   ├── http/                  Request guards, the body readers, the per-caller window and the caller digest, the timed fetch, the scheduler check, the public-address check, the answer an unsubscribe link gives, and the console's edge proxy
@@ -301,6 +302,8 @@ taylorurl-com/
 │   │   │   ├── page-bands/    The hero, the ruled band, and the frame a standing document is set in
 │   │   │   ├── mesh/          The ruled mesh and its four fillings
 │   │   │   ├── article/       The reading frame: body, controls, rail and the share row
+│   │   │   ├── steps/         The frame a numbered sequence is set in, and the flow that walks it
+│   │   │   ├── areas/         The proof of work shown on a service area's page
 │   │   │   ├── reviews/       Cards, stars, standings and the seals
 │   │   │   ├── marks/         The drawing vocabulary and the three registries that key into it
 │   │   │   ├── conversion/    The things whose job is to move a reader to the next step
@@ -315,20 +318,21 @@ taylorurl-com/
 │   │   │   ├── auth/ legal/                                  Signing in, and the three standing documents
 │   │   │   ├── console/       Console.jsx, its shell/, its intake/, its lib/, and pages/ filed under the sidebar's own headings: traffic/, email/, health/, studio/
 │   │   │   ├── analytics/     Charts, and under lib/ the number formatting and the pages the console does not count
+│   │   │   ├── staff/         The portal's screens, the parts they are built from and its own sheet, rendered inside the console
 │   │   │   ├── status/        The uptime board, the console's public section
 │   │   │   └── NotFound.jsx   The catch-all, which belongs to no section
-│   │   ├── hooks/             console/ (eleven feeds, the state, requests and clocks they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and useFormFields.js and useMediaQuery.js above them, which belong to no surface
+│   │   ├── hooks/             console/ (eleven feeds, the state, requests and clocks they share, and the client preview), session/, theme/, scroll/, reading/, reviews/, chrome/, and useFormFields.js, useMediaQuery.js and useStepTravel.js above them, which belong to no surface
 │   │   ├── constants/         navigation, seo, business-schema, animations, grounds, mesh, routes
 │   │   ├── data/              blog/, pages/ and taylorwebsite/ (the copy each site publishes), portfolio.js and portfolioStudies.js, towns-and-trades/, reputation/, and the browser's calls filed under the flow they belong to: checkout/, leads/, console/, supabase/, liveChat.js
 │   │   ├── tools/             QR encoding and drawing, the logo cutout, the zip, how a site reading is worded, and the pacing of a wait nothing reports on
-│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, the browser's own stores where it has them, and how a prospect's audit score reads
+│   │   └── utils/             blog-HTML sanitization (DOMPurify), validation, the one sentence any failure is turned into before a reader sees it, domain formatting, retrying lazy imports, the site search's ranking, the keyboard rules, the article frame, the software-renderer check, the announcement a caught error is filed by, the retry an image that failed to load is given, the browser's own stores where it has them, and how a prospect's audit score reads
 │   ├── entry-server.jsx       Prerender entry (react-dom/server)
 │   ├── index.css              The token block and the font faces
 │   └── main.jsx               Browser entry
-└── vercel.json                The region the functions run in, the ten crons, the redirects, the security headers and the cache rules
+└── vercel.json                The region the functions run in, the eight crons, the redirects, the security headers and the cache rules
 ```
 
-`api/` and `public/` are the two trees whose shape is not a matter of taste: Vercel turns `api/<path>.js` into `/api/<path>`, and everything under `public/` is served at its own path. A file moved in either one changes a URL that is already published — in `vercel.json`'s ten cron entries, in a Stripe or Resend webhook configured outside this repository, or in the unsubscribe link of mail that has already been sent. They stay flat for that reason rather than by neglect.
+`api/` and `public/` are the two trees whose shape is not a matter of taste: Vercel turns `api/<path>.js` into `/api/<path>`, and everything under `public/` is served at its own path. A file moved in either one changes a URL that is already published — in `vercel.json`'s eight cron entries, in a Stripe or Resend webhook configured outside this repository, or in the unsubscribe link of mail that has already been sent. They stay flat for that reason rather than by neglect.
 
 Vite writes a content hash into every filename under `/assets`, so one of those files cannot change without changing its name. `vercel.json` serves them `immutable` for a year on that basis; the documents themselves stay on `must-revalidate`, so a deploy is live on the next request.
 

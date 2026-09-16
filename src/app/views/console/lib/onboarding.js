@@ -90,8 +90,8 @@ const SENTINELS = new Set(['not chosen', 'none given', 'none checked'])
 const LONGTEXT_FLOOR = 40
 
 /**
- * The shape an address has to take, matching the one `api/checkout.js` uses on
- * the buyer's own address. An address good enough to take money with is good
+ * The shape an address has to take, matching the one `lib/leads/record.js`
+ * holds and `api/checkout-link.js` puts the buyer's own address through. An address good enough to take money with is good
  * enough to put on the site, and two different rules would mean a client whose
  * receipt arrived being told their address is not an address.
  */

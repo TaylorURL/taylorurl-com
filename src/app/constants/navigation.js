@@ -1,6 +1,5 @@
 import { IS_SECOND_SITE, SITE } from '../../../lib/site/current.js'
 import { STATIC_ROUTES as SECOND_SITE_ROUTES } from '../../../lib/site/routes/taylorwebsite.js'
-import { CROSS_LINKS } from '../../../lib/site/cross-links.js'
 import { PORTFOLIO_PROJECTS, portfolioPreviewSrc } from '@data/portfolio'
 import { INCLUDED_SERVICES, SERVICE_LINES, SOFTWARE_SERVICES } from '@data/pages/services'
 import { SERVICE_MARKS } from '@data/pages/serviceMarks'
@@ -754,24 +753,6 @@ export const LEGAL_LINKS = served(STUDIO_LEGAL_LINKS)
  * remembering which pages the second site has.
  */
 export const serves = target => isOffSite(target) || !IS_SECOND_SITE || SERVED.has(target)
-
-/**
- * The rows this site points at the other one with.
- *
- * `SIBLING_LINKS` is `CROSS_LINKS` read from this side. An entry names the site
- * that serves it, so the rows for this build are the ones naming the other, and
- * each becomes an `href` on the sibling's origin. The origin comes off the record
- * `current.js` resolved, so the losing site's copy is not in this bundle.
- * `check-cross-links.js` resolves every one of these against that site's route
- * table, which is the only thing in the repo that looks at a link leaving the
- * origin it is drawn on.
- */
-export const SIBLING_LINKS = CROSS_LINKS.filter(entry => entry.site !== SITE.key).map(entry => ({
-  key: entry.key,
-  href: `${SITE.siblingOrigin}${entry.path === '/' ? '' : entry.path}`,
-  label: entry.label,
-  summary: entry.summary,
-}))
 
 /**
  * The bar's, the drawer's and the footer's call to action, in one place.
