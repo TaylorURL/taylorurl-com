@@ -9,6 +9,7 @@ import { useFormFields } from '@hooks/useFormFields'
 import { FIELD_FAULT, FIELD_LABEL, GROUNDS } from '@constants/grounds'
 import { CONTACT_METHODS, DEFAULT_CONTACT_METHOD } from '@constants/navigation'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
+import { START_ADD_ONS, START_SERVICES } from '@data/pages/services'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { faultMessage } from '@utils/faults'
@@ -24,6 +25,7 @@ const EMPTY = {
   email: '',
   phone: '',
   contactMethod: DEFAULT_CONTACT_METHOD,
+  service: '',
   website: '',
   message: '',
 }
@@ -59,7 +61,7 @@ const PROMISES = [
   'Free to ask',
   'Reply within an hour in most cases',
   'Price in writing before any work',
-  'Most sites live in two to four weeks',
+  'Most websites go live in two to four weeks',
 ]
 
 // What happens after send, beside the form, so pressing it is not a leap into
@@ -75,7 +77,7 @@ const NEXT = [
   },
   {
     title: 'Build and go live',
-    body: 'You can watch the site come together. Most sites go live in two to four weeks.',
+    body: 'You can watch the work come together. Most websites go live in two to four weeks.',
   },
 ]
 
@@ -95,7 +97,8 @@ function messageFrom(fields) {
 
 /**
  * The page every Start a Project button opens: how to reach the sender first,
- * then what the site has to do, with the number to call standing beside it.
+ * then which service the work is, the extras wanted with it and what it has to
+ * do, with the number to call standing beside it.
  *
  * It posts to the same endpoint the contact page posts to, so one inbox, one
  * set of questions and one attribution answer for both. What separates them is
@@ -107,6 +110,12 @@ export default function Start() {
   const toast = useToast()
   const { fields, setFields, errors, setErrors, change } = useFormFields(EMPTY)
   const [status, setStatus] = useState('idle')
+  const [addOns, setAddOns] = useState([])
+
+  const toggleAddOn = name =>
+    setAddOns(held =>
+      held.includes(name) ? held.filter(picked => picked !== name) : [...held, name]
+    )
 
   // The same rules the endpoint applies, so a fault is named under the field
   // rather than arriving as a refusal after the round trip.
@@ -124,10 +133,13 @@ export default function Start() {
         fault: 'We need a phone number to call you. Pick email if you would rather skip it.',
       }
     }
+    if (!held.service) {
+      return { field: 'service', fault: 'Pick what you need built.' }
+    }
     if (!hasMinLength(held.message, 10)) {
       return {
         field: 'message',
-        fault: 'Write at least a sentence about the business.',
+        fault: 'Write at least a sentence about the project.',
       }
     }
     return null
@@ -154,10 +166,13 @@ export default function Start() {
         company: fields.company,
         contactMethod: fields.contactMethod,
         phone: fields.phone,
+        projectType: fields.service,
+        addOns: addOns.join(', '),
         message: messageFrom(fields),
       })
       setStatus('sent')
       setFields(EMPTY)
+      setAddOns([])
     } catch (cause) {
       // A send that failed is a notice rather than a line in the form. The
       // faults this form raises itself are each about one field and each sit
@@ -170,8 +185,8 @@ export default function Start() {
   return (
     <div>
       <Seo
-        title="Start Your Small Business Website Project"
-        description="Tell us what your website needs to do. We are a small web team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
+        title="Start a Website, App or Software Project"
+        description="Tell us what you need built: a website, a mobile or desktop app, or software. We are a small team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
         path="/start"
         schema={[
           breadcrumbSchema([
@@ -188,7 +203,7 @@ export default function Start() {
       />
       <PageHero
         eyebrow="Start a Project"
-        title="Tell us what the site needs to do, and we will send you a written plan and price."
+        title="Tell us what you need built, and we will send you a written plan and price."
         description="We operate out of Baytown and we will reply within an hour in most cases."
         image={HERO_PHOTO}
       >
@@ -393,9 +408,58 @@ export default function Start() {
                     <legend className="mb-5 flex items-center gap-3">
                       <StepMark>2</StepMark>
                       <span className={`text-[16px] font-semibold tracking-tight ${GROUND.title}`}>
-                        What the site has to do
+                        About the project
                       </span>
                     </legend>
+
+                    <fieldset aria-describedby={errors.service ? 'service-error' : undefined}>
+                      <legend className={FIELD_LABEL}>{ASKED.projectType}</legend>
+                      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {START_SERVICES.map((service, index) => (
+                          <label key={service.slug} className="relative block cursor-pointer">
+                            <input
+                              type="radio"
+                              id={index === 0 ? 'service' : undefined}
+                              name="service"
+                              value={service.name}
+                              checked={fields.service === service.name}
+                              onChange={change}
+                              className="sr-only"
+                            />
+                            <span className="choice-tile text-center">{service.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                      {errors.service && (
+                        <p id="service-error" className={FIELD_FAULT} role="alert">
+                          {errors.service}
+                        </p>
+                      )}
+                    </fieldset>
+
+                    {START_ADD_ONS.length > 0 && (
+                      <fieldset>
+                        <legend className={FIELD_LABEL}>{ASKED.addOns}</legend>
+                        <p className={`-mt-1 mb-3 text-[13px] ${GROUND.meta}`}>
+                          Optional. Check any you want with it.
+                        </p>
+                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                          {START_ADD_ONS.map(service => (
+                            <label key={service.slug} className="relative block cursor-pointer">
+                              <input
+                                type="checkbox"
+                                name="addOns"
+                                value={service.name}
+                                checked={addOns.includes(service.name)}
+                                onChange={() => toggleAddOn(service.name)}
+                                className="sr-only"
+                              />
+                              <span className="choice-tile text-center">{service.name}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </fieldset>
+                    )}
 
                     <div>
                       <label htmlFor="message" className={FIELD_LABEL}>
@@ -411,7 +475,7 @@ export default function Start() {
                         aria-invalid={errors.message ? true : undefined}
                         aria-describedby={errors.message ? 'message-error' : undefined}
                         className="field resize-none py-3.5"
-                        placeholder="What the business does, who you want walking in, and anything the site has to handle. A sentence is enough to start."
+                        placeholder="What the business does, who this is for, and anything it has to handle. A sentence is enough to start."
                       />
                       {errors.message && (
                         <p id="message-error" className={FIELD_FAULT} role="alert">
@@ -472,7 +536,7 @@ export default function Start() {
                   {SITE.phone}
                 </a>
                 <p className={`mt-3 text-[14px] leading-relaxed ${SLAB.body}`}>
-                  The same small team that builds the site answers the phone. Tell us what the
+                  The same small team that does the work answers the phone. Tell us what the
                   business does and you get the same written plan and price.
                 </p>
                 <a href={SITE.phoneHref} className="btn btn-secondary mt-5 w-full">

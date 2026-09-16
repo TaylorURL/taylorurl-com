@@ -104,5 +104,32 @@ export const INCLUDED_SERVICES = IS_SECOND_SITE ? [] : withPath(INCLUDED)
 /** The software quoted as its own project. Empty on the subsidiary. */
 export const SOFTWARE_SERVICES = IS_SECOND_SITE ? [] : withPath(SOFTWARE)
 
+/**
+ * What the Start page offers as the work itself: a site, or the software
+ * quoted as its own project. AI integration is left to the extras, because it
+ * goes into something the business already has or is having built.
+ */
+const START_MAIN_SLUGS = ['new-website', 'redesign', 'mobile-apps', 'desktop-apps', 'automation']
+const START_ADD_ON_SLUGS = [
+  'online-tools',
+  'business-email',
+  'ad-tracking',
+  'seo',
+  'care',
+  'ai-integration',
+]
+
+const bySlug = (list, slugs) => slugs.map(slug => list.find(service => service.slug === slug))
+
+/** The services the Start page lets a sender pick one of. */
+export const START_SERVICES = IS_SECOND_SITE
+  ? SERVICE_LINES
+  : bySlug([...SERVICE_LINES, ...SOFTWARE_SERVICES], START_MAIN_SLUGS)
+
+/** The extras the Start page lets a sender tick. Empty on the subsidiary. */
+export const START_ADD_ONS = IS_SECOND_SITE
+  ? []
+  : bySlug([...INCLUDED_SERVICES, ...SOFTWARE_SERVICES], START_ADD_ON_SLUGS)
+
 /** Every service, in the order the menu and the index read them. */
 export const ALL_SERVICES = [...SERVICE_LINES, ...INCLUDED_SERVICES, ...SOFTWARE_SERVICES]
