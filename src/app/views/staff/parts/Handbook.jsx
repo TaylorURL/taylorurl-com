@@ -13,6 +13,7 @@ import {
   scriptFor,
 } from '@lib/outreach/prospects/handbook.js'
 import { DEFAULT_GOALS, shiftOf } from '@lib/outreach/prospects/callShift.js'
+import { HourChart, OutcomeChart } from '../Charts'
 import ShiftFigures from './ShiftFigures'
 import { useStaff } from '../lib/context'
 
@@ -47,12 +48,15 @@ import { useStaff } from '../lib/context'
  * a phone call. The one thing that gets recorded is what the caller heard, and
  * that is the form on the call screen.
  *
- * THE RAIL IS WHERE THE READER STANDS. The script holds a reading measure and
- * will not widen past it, which on a desk leaves room going spare beside it.
- * The three figures of the day go there: somebody who has opened the handbook
- * mid-shift is between calls, and between calls is exactly when where they
- * stand is worth knowing. Below the width that has room for two columns the
- * rail is simply the last thing on the screen.
+ * THE RAIL IS WHERE THE READER STANDS. On a desk the answers take the width
+ * they need to read and the rest of the screen is the rail: the three figures
+ * of the reader's own day, when their calls landed, and how they went.
+ * Somebody who has opened the handbook mid-shift is between calls, and between
+ * calls is exactly when where they stand is worth knowing. It is the one place
+ * a person's own day is drawn as charts - the Management Center reads the
+ * whole desk - so it is not a smaller copy of that screen but the other half
+ * of it. Below the width that has room for two columns the rail is simply the
+ * last thing on the screen.
  *
  * @param {{Shell: React.ComponentType}} props
  */
@@ -322,8 +326,9 @@ export default function Handbook({ Shell }) {
         </div>
 
         {/* Where the reader stands, beside what they are reading. The figures
-            are the Management Center's own, drawn from one component so the
-            two screens cannot come to disagree about a number. */}
+            and the charts are the ones the desk's board draws for everybody,
+            from the same components, so the two screens cannot come to
+            disagree about a number. */}
         <aside className="staff-reading-side">
           <div className="staff-part">
             <h3>Your Day</h3>
@@ -332,6 +337,14 @@ export default function Handbook({ Shell }) {
             ) : (
               <ShiftFigures shift={shift} spent={shift.met.calls} />
             )}
+          </div>
+          <div className="staff-part">
+            <h3>Calls by Hour</h3>
+            <HourChart hours={shift.hours} />
+          </div>
+          <div className="staff-part">
+            <h3>Outcomes</h3>
+            <OutcomeChart outcomes={shift.outcomes} />
           </div>
         </aside>
       </div>
