@@ -882,8 +882,23 @@
         // list. It is the identical beacon wearing a hostname the site does
         // link to, which is what put a blocked analytics hit through as a site
         // fault while its twin an hour earlier was classified correctly.
+        //
+        // `/measurement/conversion` is the ad account being told a conversion
+        // happened, and it was the last of these to be found because it is the
+        // only one a reader has to send a form to produce. The tag library
+        // builds that address out of itself - the host and the path are both
+        // inside `gtag.js` - and fires it in the same instant as `/ccm/collect`,
+        // `/ccm/form-data`, `/rmkt/collect`, `/pagead/1p-user-list` and
+        // `/pagead/1p-conversion`, every one of which this list already held.
+        // Driven with `www.google.com` refused outright, one send from
+        // `/contact` put fourteen beacons on these hosts and held thirteen: the
+        // message reached the endpoint once, the confirmation showed, nothing
+        // blocked and no error screen appeared, and the single path missing from
+        // here filed three faults against a page that had just worked. A reader
+        // on a network that cannot reach Google is the everyday case, and it
+        // files every time they write in.
         var beaconPaths = {
-          'google.com': ['/pagead', '/ccm', '/rmkt', '/ads', '/g/collect'],
+          'google.com': ['/pagead', '/ccm', '/rmkt', '/ads', '/g/collect', '/measurement'],
           'facebook.com': ['/tr'],
         }
         // A loader host serves two different things and only one of them is the
