@@ -43,8 +43,23 @@ function readInk(el) {
 /**
  * A wireframe terrain drawn live behind the hero. The ground rolls toward the
  * reader on its own, lifts where the pointer rests, and is drawn in the site's
- * accent at the device's own pixel density so every line is a line. Anyone
- * who asked for less motion is handed a single still frame.
+ * accent at the device's own pixel density so every line is a line.
+ *
+ * A single still frame is drawn instead of the rotation in two cases: for
+ * anyone who asked for less motion, and on a device whose pointer is coarse.
+ * The rolling exists to be lifted under a pointer that rests on it, and a
+ * touch screen has no pointer resting anywhere, so on a phone the loop draws
+ * the same field over and over for an interaction that cannot happen - on the
+ * hardware that can least afford it. A frame of this mesh is ~2,400 projected
+ * points and ~2,450 stroked segments, which is a long task at every repaint
+ * under a phone's CPU, and a loop of long tasks never lets the main thread go
+ * quiet. The page stays interactive-in-name-only for as long as the hero is on
+ * screen, and every one of those frames is charged as blocking time.
+ *
+ * The drawing also waits for the document rather than racing it. Nothing reads
+ * this canvas - it is decoration, and aria-hidden - so there is no reason for
+ * it to hold the main thread while the page it sits behind is still being
+ * adopted.
  */
 export default function HeroTerrain() {
   const canvasRef = useRef(null)
@@ -61,8 +76,16 @@ export default function HeroTerrain() {
     let height = 0
     let dpr = 1
     let frame = 0
+    let idle = 0
     let running = true
     let onScreen = true
+    let started = false
+    let torn = false
+    // A coarse pointer is a finger, and a finger does not rest on the ground
+    // waiting for it to lift. The rotation is drawn for an interaction that
+    // cannot be had there, so the field is drawn once and left alone.
+    const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false
+    const still = reduced || coarse
     // The lift follows the pointer while it is over the page and fades out
     // where it last stood when the pointer leaves, so it never travels on its
     // own to some resting point.
@@ -82,17 +105,22 @@ export default function HeroTerrain() {
       ink = readInk(host)
     }
 
+    // The projected mesh, held flat as x,y pairs and written over in place. The
+    // grid is a fixed size, so building it out of fresh arrays each frame only
+    // handed the collector ~2,450 of them sixty times a second.
+    const points = new Float32Array(ROWS * COLS * 2)
+
     // Row r sits at depth t in [0,1], 0 nearest. Perspective pulls the far rows
     // together toward a horizon set a little above the vertical centre.
-    const project = (col, row, lift) => {
+    const project = (col, row, lift, at) => {
       const t = row / (ROWS - 1)
       const depth = 0.18 + t * 0.82
       const scale = 1 / depth
       const cx = width / 2
       const horizon = height * 0.42
-      const x = cx + ((col / (COLS - 1) - 0.5) * width * 1.9 * scale) / 1.9
       const base = horizon + ((1 - t) * height * 0.66 * scale) / 4.6
-      return [x, base - lift * (0.35 + (1 - t) * 0.65) * height * 0.22 * scale * 0.4]
+      points[at] = cx + ((col / (COLS - 1) - 0.5) * width * 1.9 * scale) / 1.9
+      points[at + 1] = base - lift * (0.35 + (1 - t) * 0.65) * height * 0.22 * scale * 0.4
     }
 
     const draw = time => {
@@ -102,9 +130,7 @@ export default function HeroTerrain() {
       pointer.strength += ((onScreen && pointer.over ? 1 : 0) - pointer.strength) * 0.02
 
       const shift = time * DRIFT
-      const points = new Array(ROWS)
       for (let r = 0; r < ROWS; r += 1) {
-        const row = new Array(COLS)
         const t = r / (ROWS - 1)
         for (let c = 0; c < COLS; c += 1) {
           const u = c / (COLS - 1)
@@ -116,9 +142,8 @@ export default function HeroTerrain() {
           const dy = 1 - t - pointer.y
           const d2 = dx * dx + dy * dy * 2.2
           h += LIFT * pointer.strength * Math.exp(-d2 / (LIFT_RADIUS * LIFT_RADIUS))
-          row[c] = project(c, r, h)
+          project(c, r, h, (r * COLS + c) * 2)
         }
-        points[r] = row
       }
 
       ctx.lineWidth = 1
@@ -130,18 +155,18 @@ export default function HeroTerrain() {
         ctx.strokeStyle = t < 0.3 ? ink.line : ink.bright
         ctx.beginPath()
         for (let c = 0; c < COLS; c += 1) {
-          const [x, y] = points[r][c]
-          if (c === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
+          const o = (r * COLS + c) * 2
+          if (c === 0) ctx.moveTo(points[o], points[o + 1])
+          else ctx.lineTo(points[o], points[o + 1])
         }
         ctx.stroke()
       }
       for (let c = 0; c < COLS; c += 1) {
         ctx.beginPath()
         for (let r = 0; r < ROWS; r += 1) {
-          const [x, y] = points[r][c]
-          if (r === 0) ctx.moveTo(x, y)
-          else ctx.lineTo(x, y)
+          const o = (r * COLS + c) * 2
+          if (r === 0) ctx.moveTo(points[o], points[o + 1])
+          else ctx.lineTo(points[o], points[o + 1])
         }
         ctx.globalAlpha = 0.34
         ctx.strokeStyle = ink.line
@@ -153,10 +178,10 @@ export default function HeroTerrain() {
       ctx.beginPath()
       for (let r = 0; r < ROWS - 1; r += 1) {
         for (let c = 0; c < COLS - 1; c += 1) {
-          const [x0, y0] = points[r][c]
-          const [x1, y1] = points[r + 1][c + 1]
-          ctx.moveTo(x0, y0)
-          ctx.lineTo(x1, y1)
+          const near = (r * COLS + c) * 2
+          const far = ((r + 1) * COLS + c + 1) * 2
+          ctx.moveTo(points[near], points[near + 1])
+          ctx.lineTo(points[far], points[far + 1])
         }
       }
       ctx.stroke()
@@ -186,7 +211,7 @@ export default function HeroTerrain() {
       if (document.hidden || !onScreen) {
         cancelAnimationFrame(frame)
         running = false
-      } else if (!running && !reduced) {
+      } else if (!running && !still && started) {
         running = true
         frame = requestAnimationFrame(loop)
       }
@@ -199,25 +224,57 @@ export default function HeroTerrain() {
       ink = readInk(host)
     })
 
-    resize()
-    if (reduced) {
-      draw(0)
-      running = false
-    } else {
-      frame = requestAnimationFrame(loop)
+    const begin = () => {
+      if (torn) return
+      started = true
+      resize()
+      window.addEventListener('resize', resize)
+      // The lift is the only thing the pointer listeners feed, and a still
+      // field has nothing for them to move, so they are not bound at all there.
+      if (!still) {
+        window.addEventListener('pointermove', onMove, { passive: true })
+        document.addEventListener('pointerleave', onLeave)
+        document.addEventListener('mouseleave', onLeave)
+      }
+      document.addEventListener('visibilitychange', onVisibility)
+      observer.observe(host)
+      ground.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      })
+      if (still) {
+        draw(0)
+        running = false
+      } else {
+        frame = requestAnimationFrame(loop)
+      }
     }
 
-    window.addEventListener('resize', resize)
-    window.addEventListener('pointermove', onMove, { passive: true })
-    document.addEventListener('pointerleave', onLeave)
-    document.addEventListener('mouseleave', onLeave)
-    document.addEventListener('visibilitychange', onVisibility)
-    observer.observe(host)
-    ground.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+    // The page first, then the decoration. Whichever of the two the browser
+    // offers, both put the first frame after the document has finished loading
+    // and the main thread has a moment spare; the timeout is the ceiling on how
+    // long the field waits when the thread never goes quiet on its own.
+    // Called back through `window` rather than off a held reference, because a
+    // browser method pulled off it and called bare is an illegal invocation.
+    const hasIdle = typeof window.requestIdleCallback === 'function'
+    const soon = () => {
+      if (torn) return
+      idle = hasIdle
+        ? window.requestIdleCallback(begin, { timeout: 1200 })
+        : window.setTimeout(begin, 120)
+    }
+    if (document.readyState === 'complete') soon()
+    else window.addEventListener('load', soon, { once: true })
 
     return () => {
+      torn = true
       running = false
       cancelAnimationFrame(frame)
+      if (idle) {
+        if (hasIdle) window.cancelIdleCallback(idle)
+        else window.clearTimeout(idle)
+      }
+      window.removeEventListener('load', soon)
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', onMove)
       document.removeEventListener('pointerleave', onLeave)
