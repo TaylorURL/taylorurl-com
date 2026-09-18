@@ -251,9 +251,12 @@ export default function HeroTerrain() {
     // offers, both put the first frame after the document has finished loading
     // and the main thread has a moment spare; the timeout is the ceiling on how
     // long the field waits when the thread never goes quiet on its own.
+    // Called back through `window` rather than off a held reference, because a
+    // browser method pulled off it and called bare is an illegal invocation.
+    const hasIdle = typeof window.requestIdleCallback === 'function'
     const soon = () => {
       if (torn) return
-      idle = window.requestIdleCallback
+      idle = hasIdle
         ? window.requestIdleCallback(begin, { timeout: 1200 })
         : window.setTimeout(begin, 120)
     }
@@ -264,7 +267,10 @@ export default function HeroTerrain() {
       torn = true
       running = false
       cancelAnimationFrame(frame)
-      if (idle) (window.cancelIdleCallback ?? window.clearTimeout)(idle)
+      if (idle) {
+        if (hasIdle) window.cancelIdleCallback(idle)
+        else window.clearTimeout(idle)
+      }
       window.removeEventListener('load', soon)
       window.removeEventListener('resize', resize)
       window.removeEventListener('pointermove', onMove)
