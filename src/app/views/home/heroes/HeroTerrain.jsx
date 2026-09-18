@@ -238,7 +238,10 @@ export default function HeroTerrain() {
       }
       document.addEventListener('visibilitychange', onVisibility)
       observer.observe(host)
-      ground.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] })
+      ground.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['data-theme'],
+      })
       if (still) {
         draw(0)
         running = false
