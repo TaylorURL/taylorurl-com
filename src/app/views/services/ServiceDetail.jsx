@@ -51,6 +51,12 @@ const DOC = IS_SECOND_SITE ? SECOND_SITE : STUDIO
 
 const CTA_SECONDARY = DOC.cta.secondary && serves(DOC.cta.secondary.to) ? DOC.cta.secondary : null
 
+const COVERS_HEADING = {
+  eyebrow: 'What It Covers',
+  title: 'What you get.',
+  lede: 'Everything below is part of the work. Nothing here is an upgrade.',
+}
+
 // The page alternates its grounds down its length, so a section is never the
 // same colour as the one above it whatever the page holds between what the
 // work covers and what it costs.
@@ -78,6 +84,8 @@ export default function ServiceDetail() {
     { title: DOC.costTitle, body: page.running },
   ]
 
+  const coversHeading = page.coversHeading ?? COVERS_HEADING
+  const cta = { ...DOC.cta, ...page.cta }
   const sections = page.sections ?? []
   const termsGround = groundAt(sections.length + 1)
 
@@ -118,9 +126,9 @@ export default function ServiceDetail() {
       <ServiceSection
         id="covers"
         ground={groundAt(0)}
-        eyebrow="What It Covers"
-        title="What you get."
-        lede="Everything below is part of the work. Nothing here is an upgrade."
+        eyebrow={coversHeading.eyebrow}
+        title={coversHeading.title}
+        lede={coversHeading.lede}
       >
         <FactMesh items={page.covers} ground={groundAt(0)} columns={{ base: 1, sm: 2, lg: 3 }} />
       </ServiceSection>
@@ -161,9 +169,9 @@ export default function ServiceDetail() {
 
       <CtaBanner
         eyebrow="Let’s Talk"
-        heading={DOC.cta.heading}
-        accentText={DOC.cta.accentText}
-        description={DOC.cta.description}
+        heading={cta.heading}
+        accentText={cta.accentText}
+        description={cta.description}
         primaryLabel={START_LINK.label}
         primaryTo={START_LINK.to}
         secondaryLabel={CTA_SECONDARY?.label}
