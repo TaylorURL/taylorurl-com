@@ -16,11 +16,15 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  *              characters a result shows.
  * - `lede`     The paragraph under the title on the page itself.
  * - `covers`   What the work includes.
+ * - `coversHeading` Optional eyebrow, title and lede for the covers section,
+ *              for a service whose list is examples rather than a scope.
  * - `sections` Anything the page says between what it covers and what it
  *              costs: what the work is for, when it earns its place. Each is a
  *              headed mesh of facts, and the page alternates its grounds.
  * - `timeline` How long it takes.
  * - `running`  What it takes to keep running, and how the figure is arrived at.
+ * - `cta`      Optional heading, accent and description for the closing
+ *              banner, in place of the site's own.
  * - `beside`   One page of this service's own, shown beside the process page
  *              every service page links. Optional, and only where a service
  *              has a neighbour a reader would otherwise confuse it with.
@@ -394,61 +398,61 @@ const DETAIL = {
   },
   'ai-integration': {
     eyebrow: 'AI Integration',
-    title: 'AI given real work in the business.',
+    title: 'AI built around how your business runs.',
     description:
-      'AI integration for Baytown businesses: an assistant on the site, mail read and drafted, documents sorted, and photos checked, built into the tools you run.',
-    lede: 'An assistant on the site that answers at two in the morning and books the job. Mail read, sorted, and drafted before you open it. Photos from the crew checked against the job sheet. Built into the site and the tools you already run, with a person still on the end of anything that matters.',
+      'AI integration for Baytown businesses. We set up AI to manage email, help with the daily work, and take repetitive jobs off your team.',
+    lede: 'No two businesses use it the same way, so we do not sell it as a package. For one business we set up AI to sort the inbox and draft replies. For another it is an assistant that keeps the day on track, or automated systems that take repetitive work off the team. Tell us where your time goes and we will work out what AI can take off it.',
+    coversHeading: {
+      eyebrow: 'What It Can Do',
+      title: 'A few places it can start.',
+      lede: 'These are examples. We work out with you what to build, because it depends on the business.',
+    },
     covers: [
       {
-        title: 'An Assistant on the Site',
-        body: 'Answers questions about the work in your own words, day or night, and hands the conversation to a person when it needs one.',
+        title: 'Email Management',
+        body: 'AI sorts the inbox as mail arrives, drafts or sends the routine replies, and puts the messages that need you at the top.',
       },
       {
-        title: 'Mail Read and Drafted',
-        body: 'Enquiries sorted, the routine ones answered in a draft for you to send, and the ones that need you put at the top.',
+        title: 'Help Running the Business',
+        body: 'Scheduling, notes, reminders, and answers pulled from your own records, so less of the day goes on keeping track.',
       },
       {
-        title: 'Documents Sorted',
+        title: 'Automated Systems',
+        body: 'We map out the repetitive work and set it up to run on its own, so your team gets those hours back.',
+      },
+      {
+        title: 'Customer Questions',
+        body: 'An assistant on the site that answers at two in the morning and hands the conversation to you when it needs a person.',
+      },
+      {
+        title: 'Paperwork',
         body: 'Invoices, quotes, and forms read as they arrive, with what matters pulled out and filed where it goes.',
       },
       {
-        title: 'Photos and Job Sheets',
-        body: 'Pictures from the crew checked against the job, and the write-up drafted from them.',
-      },
-      {
-        title: 'In Your Own Tools',
-        body: 'Built into the site, the inbox, Jobber, QuickBooks, or whatever the work runs in, rather than another tab to keep open.',
-      },
-      {
-        title: 'Checked Before It Acts',
-        body: 'Anything that sends, charges, or books is confirmed by a person until it has earned the right not to be.',
+        title: 'Something Else',
+        body: 'If a job takes time and follows a pattern, AI can probably take some of it. Tell us about it.',
       },
     ],
     sections: [
       {
-        id: 'fit',
-        eyebrow: 'Where It Earns Its Place',
-        title: 'What AI is good at, and what it is not.',
-        lede: 'It earns its place where it takes a job off a person. Being new is not a reason to put it in.',
+        id: 'how',
+        eyebrow: 'How It Starts',
+        title: 'A conversation first, then a plan for your business.',
         items: [
           {
-            title: 'Reading and Sorting',
-            body: 'Mail, forms, documents, and photos, read faster than a person can and filed the same way every time.',
+            title: 'A Call About the Work',
+            body: 'You walk us through where the hours go. You do not need to know what AI can do before we talk.',
           },
           {
-            title: 'Answering the Same Question',
-            body: 'The hours, the price range, the areas covered, and whether you do the thing, answered at any hour without anyone on the phone.',
+            title: 'A Plan in Writing',
+            body: 'We tell you what AI can take on, how we would build it, and what it costs, in writing.',
           },
           {
-            title: 'Drafting',
-            body: 'The reply, the quote, the write-up, and the post, drafted for a person to read and send.',
-          },
-          {
-            title: 'Not the Decision',
-            body: 'Whether to take the job, what to charge, and what to say to an unhappy customer stay with you.',
+            title: 'Built Into What You Use',
+            body: 'We build it into the inbox, the site, and the tools you already run, so there is no new app to learn.',
           },
         ],
-        columns: { base: 1, sm: 2, lg: 4 },
+        columns: { base: 1, sm: 3 },
       },
       {
         id: 'data',
@@ -472,9 +476,15 @@ const DETAIL = {
       },
     ],
     timeline:
-      'A single job, an assistant on the site or mail sorted into an inbox, takes a week or two. Anything wired into several systems is scoped as one project, and you get the dates in writing before any work starts.',
+      'It depends on what we build. Something like a sorted inbox can be running in a week or two, and we scope larger systems as one project. Either way you get the dates in writing before any work starts.',
     running:
-      'We quote it per project, and you get the figure in writing before anything starts. After that a monthly keeps it running and watched, and the AI provider bills what it reads, in the account opened in your name.',
+      'We quote each project on its own and give you the figure in writing after we talk, before anything starts. After that you pay a monthly and we keep it running, and the AI provider bills its usage to an account in your name.',
+    cta: {
+      heading: 'Tell us what',
+      accentText: 'eats your week.',
+      description:
+        'Say what the business does and which work takes the most time. We read every message and answer it ourselves, usually within the hour, and set up a call to work out what AI can take on.',
+    },
   },
 }
 
