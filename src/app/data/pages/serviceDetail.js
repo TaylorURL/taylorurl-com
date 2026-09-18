@@ -400,17 +400,17 @@ const DETAIL = {
     eyebrow: 'AI Integration',
     title: 'AI built around how your business runs.',
     description:
-      'AI integration for Baytown businesses, shaped to each one: email that manages itself, a hand with the daily work, and systems that cut the workload.',
-    lede: 'No two businesses use it the same way, so it is not sold as a package. For one it is an inbox that sorts and answers itself. For another it is an assistant that keeps the day on track, or automated systems that take hours of work off the team every week. Tell us where your time goes and we will work out what AI can take off it.',
+      'AI integration for Baytown businesses. We set up AI to manage email, help with the daily work, and take repetitive jobs off your team.',
+    lede: 'No two businesses use it the same way, so we do not sell it as a package. For one business we set up AI to sort the inbox and draft replies. For another it is an assistant that keeps the day on track, or automated systems that take repetitive work off the team. Tell us where your time goes and we will work out what AI can take off it.',
     coversHeading: {
       eyebrow: 'What It Can Do',
       title: 'A few places it can start.',
-      lede: 'Examples, not a menu. What gets built for you depends on the business, and we work that out together.',
+      lede: 'These are examples. We work out with you what to build, because it depends on the business.',
     },
     covers: [
       {
         title: 'Email Management',
-        body: 'The inbox sorted as mail arrives, routine replies drafted or sent, and the messages that need you put at the top.',
+        body: 'AI sorts the inbox as mail arrives, drafts or sends the routine replies, and puts the messages that need you at the top.',
       },
       {
         title: 'Help Running the Business',
@@ -418,7 +418,7 @@ const DETAIL = {
       },
       {
         title: 'Automated Systems',
-        body: 'The repetitive work mapped out and set up to run on its own, so your team gets those hours back.',
+        body: 'We map out the repetitive work and set it up to run on its own, so your team gets those hours back.',
       },
       {
         title: 'Customer Questions',
@@ -449,7 +449,7 @@ const DETAIL = {
           },
           {
             title: 'Built Into What You Use',
-            body: 'It goes into the inbox, the site, and the tools you already run, rather than another app to learn.',
+            body: 'We build it into the inbox, the site, and the tools you already run, so there is no new app to learn.',
           },
         ],
         columns: { base: 1, sm: 3 },
@@ -476,9 +476,9 @@ const DETAIL = {
       },
     ],
     timeline:
-      'It depends on what gets built. Something like a sorted inbox can be running in a week or two, and larger systems are scoped as one project. Either way you get the dates in writing before any work starts.',
+      'It depends on what we build. Something like a sorted inbox can be running in a week or two, and we scope larger systems as one project. Either way you get the dates in writing before any work starts.',
     running:
-      'Each project is quoted on its own, because no two are the same. You get the figure in writing after we talk, before anything starts. After that a monthly keeps it running, and the AI provider bills its usage to an account in your name.',
+      'We quote each project on its own and give you the figure in writing after we talk, before anything starts. After that you pay a monthly and we keep it running, and the AI provider bills its usage to an account in your name.',
     cta: {
       heading: 'Tell us what',
       accentText: 'eats your week.',
