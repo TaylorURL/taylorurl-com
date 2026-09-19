@@ -755,6 +755,40 @@
           if (String(stack || '')) return false
           return extensionApis.test(String(message || ''))
         }
+        // The same judgement where there is no `//` for `extensionOnly` to find.
+        // An app that opens a link in its own web view injects its scripts the
+        // way an extension does, but WebKit names those frames `user-script:`
+        // and that is a scheme with no authority behind it. So the pattern above
+        // matches nothing at all in a stack made entirely of them, finds no
+        // scheme to judge, and answers no - the same shape of miss as the
+        // stackless rejection above, one scheme short instead of one path short.
+        //
+        // #631 was that: a bridge inside an iPhone in-app browser announcing its
+        // own version change, on the home page, off a paid ad. Every frame read
+        // `user-script:804:...` and not one of them named this site.
+        //
+        // Only the host application can inject one - a page cannot reach
+        // `addUserScript`, this site does not ship an app, and nothing served
+        // from this origin is ever given that name. So a stack of them describes
+        // the app the visitor opened the page in as surely as a stack of
+        // `safari-extension://` frames describes their browser, and neither is
+        // this site's to answer for or fixable here if it were.
+        //
+        // A site frame carries `://` in every stack any browser writes, so one
+        // anywhere in here hands the whole question back and the report goes as
+        // it always has. That is the direction that matters: this site's own
+        // console output going quiet would be worse than the tickets.
+        function injectedScriptOnly(stack) {
+          var text = String(stack || '')
+          if (!text.replace(/\s/g, '')) return false
+          if (text.indexOf('://') > -1) return false
+          var lines = text.split('\n')
+          for (var i = 0; i < lines.length; i += 1) {
+            if (!lines[i].replace(/\s/g, '')) continue
+            if (!/(?:^|[@\s(])user-script:/.test(lines[i])) return false
+          }
+          return true
+        }
         // What the browser hands over when it has decided not to say. A throw
         // inside a script from another origin that was not fetched in CORS mode
         // is muted: the message becomes "Script error.", the file is blank, the
@@ -1148,6 +1182,7 @@
           if (sent >= 10) return // a page stuck in an error loop stops at ten
           if (extensionOnly(stack)) return
           if (extensionApiOnly(message, stack)) return
+          if (injectedScriptOnly(stack)) return
           sent += 1
           try {
             send(
