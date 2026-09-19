@@ -234,6 +234,37 @@ check(
     'it cannot tell which file wrote it'
 )
 
+// An app that opens a link in its own web view injects its scripts the way an
+// extension does, and WebKit names those frames `user-script:` -- a scheme with
+// no authority behind it, so the pattern that reads `scheme://` matches nothing
+// in a stack made entirely of them and rules the whole thing the site's. #631
+// was that: a bridge inside an in-app browser announcing its own version change
+// on the home page, off a paid ad, every frame reading `user-script:804:...`
+// and not one of them naming this site.
+const inApp = collector()
+inApp.from(
+  'user-script:804',
+  "function bridge() { console.error('[Bridge] This version has Break Change') }\nbridge()"
+)
+check(
+  inApp.posted.length === 0,
+  'a line an in-app browser injected into the page was filed as a fault against this site, ' +
+    'so a stack with no scheme in it is being read as the site again'
+)
+
+// And the direction that matters more. A stack the site wrote carries `://` in
+// it, so nothing above may swallow it on its way past.
+const alongside = collector()
+alongside.from(
+  'https://www.taylorurl.com/assets/index-abcd1234.js',
+  "function loadPanel() { console.error('a real failure alongside an in-app browser') }\nloadPanel()"
+)
+check(
+  alongside.posted.length === 1,
+  'the site wrote to the console and nothing was filed, so the injected-script test is ' +
+    'swallowing the site with it'
+)
+
 // `console.assert` files through the same door and was the same dead end.
 const asserted = collector()
 asserted.from(
