@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-18' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -121,7 +121,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dayton, Texas',
     description:
       'Listings across Dayton and the Liberty County towns around it, grouped by place rather than by a radius on a map. Buyers save what is worth a second look, put the shortlist side by side, and ask their questions on the listing itself.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-18' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -135,7 +135,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-09-18' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-09-17' },
+    pagespeed: { mobile: 95, desktop: 99, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -163,7 +163,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-09-18' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Huffman, Texas',
     description:
       'On-site calibration against certified test weights, repair, and a parts counter for industrial weighing equipment, out of a family-owned shop in Huffman, Texas. Every part carries a page of its own, so a search for a failed load cell lands on the thing itself.',
-    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-09-18' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -223,7 +223,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Daisetta, Texas',
     description:
       'Two half-days in Daisetta for kids five to twelve, with no tryouts and no bench. A parent registers, orders the shirts, and pays without being made to create a login first, then signs in later to follow it.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-18' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
   {
@@ -239,7 +239,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-09-17' },
+    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-09-19' },
     hasStudy: true,
   },
 ]
