@@ -121,7 +121,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dayton, Texas',
     description:
       'Listings across Dayton and the Liberty County towns around it, grouped by place rather than by a radius on a map. Buyers save what is worth a second look, put the shortlist side by side, and ask their questions on the listing itself.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-19' },
+    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-20' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 95, desktop: 99, runs: 3, measured: '2026-09-19' },
+    pagespeed: { mobile: 96, desktop: 99, runs: 3, measured: '2026-09-20' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Huffman, Texas',
     description:
       'On-site calibration against certified test weights, repair, and a parts counter for industrial weighing equipment, out of a family-owned shop in Huffman, Texas. Every part carries a page of its own, so a search for a failed load cell lands on the thing itself.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-09-19' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-20' },
     hasStudy: true,
   },
   {
@@ -239,7 +239,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-09-19' },
+    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-09-20' },
     hasStudy: true,
   },
 ]
