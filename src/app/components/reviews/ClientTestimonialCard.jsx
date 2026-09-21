@@ -5,6 +5,7 @@ import ReviewStars from '@components/reviews/ReviewStars'
 import TrustpilotLogo from '@components/marks/TrustpilotLogo'
 import { reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
 import { staggerChild } from '@constants/animations'
+import { retryImage, RETRY_ATTEMPTS } from '@utils/retryImage'
 import { reviewLogoSrc, reviewSource } from '@data/reputation/reviews'
 
 /**
@@ -86,6 +87,15 @@ function ReviewEndorsement({ source }) {
  * The initials stand in only where no logo arrives - none was captured for
  * the site, or the file did not load - rather than underneath the image,
  * because a logo with a transparent ground would show them through itself.
+ *
+ * A mark that fails to arrive is asked for again before the initials are
+ * drawn, on the ladder in `retryImage`. These marks are held under `/images/`,
+ * which `vercel.json` answers `immutable` for a year whatever the status, so a
+ * request lost to a dropped packet is a failure the browser keeps: the card
+ * shows initials on every page view from then on, and no reload fixes it
+ * because nothing is ever sent again. The navigation mark and the footer mark
+ * were given the ladder for that reason and the client marks were left on the
+ * plain fallback, which is the one that files a fault the reader met.
  */
 function ClientAvatar({ name, business, displayUrl }) {
   const src = reviewLogoSrc(displayUrl)
@@ -94,6 +104,18 @@ function ClientAvatar({ name, business, displayUrl }) {
     .split(' ')
     .map(part => part[0])
     .join('')
+  /* Read before the ladder answers, because `retryImage` takes the attribute
+     off the element ahead of the attempt that has nothing after it. An element
+     still holding attempts is recovering and keeps its box; the failure that
+     arrives with none left is the one the reader actually met, and that is the
+     one the initials are for. It is the same question `index.html` asks in the
+     capture phase to decide whether to file the fault, so the card gives up at
+     the moment the reporter starts counting. */
+  function lost(event) {
+    const recovering = Number(event.currentTarget.getAttribute('data-retry') || 0) > 0
+    retryImage(event)
+    if (!recovering) setMissing(true)
+  }
   return (
     <div className="flex h-11 w-11 shrink-0 items-center justify-center text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-paper">
       {missing ? (
@@ -107,7 +129,8 @@ function ClientAvatar({ name, business, displayUrl }) {
           loading="lazy"
           decoding="async"
           className="h-full w-full object-contain"
-          onError={() => setMissing(true)}
+          data-retry={String(RETRY_ATTEMPTS)}
+          onError={lost}
         />
       )}
     </div>
