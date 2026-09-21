@@ -80,6 +80,7 @@ export default function HeroTerrain() {
     let running = true
     let onScreen = true
     let started = false
+    let sized = false
     let torn = false
     // A coarse pointer is a finger, and a finger does not rest on the ground
     // waiting for it to lift. The rotation is drawn for an interaction that
@@ -92,17 +93,31 @@ export default function HeroTerrain() {
     const pointer = { x: 0.5, y: 0.6, tx: 0.5, ty: 0.6, strength: 0, over: false }
     let ink = readInk(host)
 
+    // Sizing the backing store clears whatever was drawn on it, and a still
+    // field has no loop behind it to put the picture back. A phone fires a
+    // resize every time its address bar slides away, so the frame is drawn
+    // again here or the mesh is gone for the rest of the visit - which is why
+    // the ground held on a desktop and vanished on the first scroll of a
+    // phone. The measurement is compared before anything is written, because
+    // the hero stands on `svh` and most of those events leave it exactly where
+    // it was; a redraw is a long task on the hardware that sends the most of
+    // them, and a store that is already the right size needs neither.
     const resize = () => {
       const rect = host.getBoundingClientRect()
-      dpr = Math.min(window.devicePixelRatio || 1, 2)
+      const ratio = Math.min(window.devicePixelRatio || 1, 2)
+      const store = { w: Math.round(rect.width * ratio), h: Math.round(rect.height * ratio) }
+      if (sized && store.w === canvas.width && store.h === canvas.height) return
+      dpr = ratio
       width = rect.width
       height = rect.height
-      canvas.width = Math.round(width * dpr)
-      canvas.height = Math.round(height * dpr)
+      canvas.width = store.w
+      canvas.height = store.h
       canvas.style.width = `${width}px`
       canvas.style.height = `${height}px`
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
       ink = readInk(host)
+      sized = true
+      if (still && started) draw(0)
     }
 
     // The projected mesh, held flat as x,y pairs and written over in place. The
@@ -220,8 +235,11 @@ export default function HeroTerrain() {
       onScreen = entry.isIntersecting
       onVisibility()
     })
+    // The setting changes the accent the mesh is drawn in, and a still field
+    // has to be drawn again to take it for the same reason a resized one does.
     const ground = new MutationObserver(() => {
       ink = readInk(host)
+      if (still && started) draw(0)
     })
 
     const begin = () => {
