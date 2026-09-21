@@ -2,13 +2,28 @@ import { useEffect, useRef } from 'react'
 import { useReducedMotion } from 'framer-motion'
 
 // The mesh: columns across, rows away from the camera. Enough to read as a
-// surface, few enough that a phone draws every frame in well under its budget.
+// surface, few enough that the device draws every frame inside its budget.
+//
+// A phone rolls the same ground at a coarser weave. The field is drawn at the
+// width of a hand rather than a desktop, so the lines it drops were never far
+// apart on that screen, and what it buys is the difference between a frame a
+// phone can spend sixty times a second and one it cannot: 792 projected points
+// against 2,448, and 748 diagonals against 2,343. The diagonals are the
+// expensive half - one path holding a moveTo and a lineTo per cell - and they
+// fall by two thirds.
 const COLS = 72
 const ROWS = 34
+const PHONE_COLS = 36
+const PHONE_ROWS = 22
 // How far the ground rolls on its own, and how hard it lifts under the pointer.
 const DRIFT = 0.000025
 const LIFT = 0.42
 const LIFT_RADIUS = 0.22
+// The shortest gap between frames on a phone. A rolling field reads as rolling
+// well under the display's own rate, and the drift is slow enough that thirty
+// frames a second is indistinguishable from sixty - so half of them are handed
+// back to the main thread rather than spent where nobody can see them.
+const PHONE_FRAME_MS = 33
 
 /** Two-octave value noise over a lattice, smooth enough to read as ground. */
 function makeNoise() {
@@ -45,16 +60,20 @@ function readInk(el) {
  * reader on its own, lifts where the pointer rests, and is drawn in the site's
  * accent at the device's own pixel density so every line is a line.
  *
- * A single still frame is drawn instead of the rotation in two cases: for
- * anyone who asked for less motion, and on a device whose pointer is coarse.
- * The rolling exists to be lifted under a pointer that rests on it, and a
- * touch screen has no pointer resting anywhere, so on a phone the loop draws
- * the same field over and over for an interaction that cannot happen - on the
- * hardware that can least afford it. A frame of this mesh is ~2,400 projected
- * points and ~2,450 stroked segments, which is a long task at every repaint
- * under a phone's CPU, and a loop of long tasks never lets the main thread go
- * quiet. The page stays interactive-in-name-only for as long as the hero is on
- * screen, and every one of those frames is charged as blocking time.
+ * The ground rolls everywhere. What changes with the device is what the roll
+ * costs and what else it carries.
+ *
+ * A phone draws a coarser weave at half the frame rate, and binds no pointer
+ * listeners: a finger does not rest on the ground waiting for it to lift, so
+ * the lift is the one part of this that a touch screen genuinely has no use
+ * for. The roll is not - it is the whole of what the field does while nobody
+ * is touching it, which on a phone is all of the time. Drawing the desktop's
+ * mesh at the desktop's rate is what a phone cannot afford, rather than the
+ * animation itself; at this density a frame is a third of the work and half as
+ * many of them are asked for.
+ *
+ * A single still frame is drawn for one reader only: anyone who asked for less
+ * motion. That is a request about motion and it is answered by not moving.
  *
  * The drawing also waits for the document rather than racing it. Nothing reads
  * this canvas - it is decoration, and aria-hidden - so there is no reason for
@@ -83,10 +102,17 @@ export default function HeroTerrain() {
     let sized = false
     let torn = false
     // A coarse pointer is a finger, and a finger does not rest on the ground
-    // waiting for it to lift. The rotation is drawn for an interaction that
-    // cannot be had there, so the field is drawn once and left alone.
+    // waiting for it to lift - so a phone gets the roll without the lift, at a
+    // weave and a frame rate it can carry. Only a reader who asked for less
+    // motion gets a field that does not move.
     const coarse = window.matchMedia?.('(pointer: coarse)').matches ?? false
-    const still = reduced || coarse
+    const still = reduced
+    const cols = coarse ? PHONE_COLS : COLS
+    const rows = coarse ? PHONE_ROWS : ROWS
+    const minFrameMs = coarse ? PHONE_FRAME_MS : 0
+    // The lift is the only thing the pointer listeners feed, so they are bound
+    // only where a pointer can rest on the field to be read.
+    const lift = !still && !coarse
     // The lift follows the pointer while it is over the page and fades out
     // where it last stood when the pointer leaves, so it never travels on its
     // own to some resting point.
@@ -123,19 +149,19 @@ export default function HeroTerrain() {
     // The projected mesh, held flat as x,y pairs and written over in place. The
     // grid is a fixed size, so building it out of fresh arrays each frame only
     // handed the collector ~2,450 of them sixty times a second.
-    const points = new Float32Array(ROWS * COLS * 2)
+    const points = new Float32Array(rows * cols * 2)
 
     // Row r sits at depth t in [0,1], 0 nearest. Perspective pulls the far rows
     // together toward a horizon set a little above the vertical centre.
-    const project = (col, row, lift, at) => {
-      const t = row / (ROWS - 1)
+    const project = (col, row, rise, at) => {
+      const t = row / (rows - 1)
       const depth = 0.18 + t * 0.82
       const scale = 1 / depth
       const cx = width / 2
       const horizon = height * 0.42
       const base = horizon + ((1 - t) * height * 0.66 * scale) / 4.6
-      points[at] = cx + ((col / (COLS - 1) - 0.5) * width * 1.9 * scale) / 1.9
-      points[at + 1] = base - lift * (0.35 + (1 - t) * 0.65) * height * 0.22 * scale * 0.4
+      points[at] = cx + ((col / (cols - 1) - 0.5) * width * 1.9 * scale) / 1.9
+      points[at + 1] = base - rise * (0.35 + (1 - t) * 0.65) * height * 0.22 * scale * 0.4
     }
 
     const draw = time => {
@@ -145,10 +171,10 @@ export default function HeroTerrain() {
       pointer.strength += ((onScreen && pointer.over ? 1 : 0) - pointer.strength) * 0.02
 
       const shift = time * DRIFT
-      for (let r = 0; r < ROWS; r += 1) {
-        const t = r / (ROWS - 1)
-        for (let c = 0; c < COLS; c += 1) {
-          const u = c / (COLS - 1)
+      for (let r = 0; r < rows; r += 1) {
+        const t = r / (rows - 1)
+        for (let c = 0; c < cols; c += 1) {
+          const u = c / (cols - 1)
           let h = noise(u * 6.5, t * 5 + shift * 6) - 0.5
           // A roll of higher ground across the middle distance, like the frames in the pack.
           h += Math.sin(u * 3.1 + shift * 4) * 0.12 * Math.exp(-((t - 0.45) ** 2) * 14)
@@ -157,29 +183,29 @@ export default function HeroTerrain() {
           const dy = 1 - t - pointer.y
           const d2 = dx * dx + dy * dy * 2.2
           h += LIFT * pointer.strength * Math.exp(-d2 / (LIFT_RADIUS * LIFT_RADIUS))
-          project(c, r, h, (r * COLS + c) * 2)
+          project(c, r, h, (r * cols + c) * 2)
         }
       }
 
       ctx.lineWidth = 1
       ctx.lineJoin = 'round'
       // Far rows fade toward the horizon; near rows carry the full accent.
-      for (let r = 0; r < ROWS; r += 1) {
-        const t = r / (ROWS - 1)
+      for (let r = 0; r < rows; r += 1) {
+        const t = r / (rows - 1)
         ctx.globalAlpha = 0.14 + (1 - t) * 0.62
         ctx.strokeStyle = t < 0.3 ? ink.line : ink.bright
         ctx.beginPath()
-        for (let c = 0; c < COLS; c += 1) {
-          const o = (r * COLS + c) * 2
+        for (let c = 0; c < cols; c += 1) {
+          const o = (r * cols + c) * 2
           if (c === 0) ctx.moveTo(points[o], points[o + 1])
           else ctx.lineTo(points[o], points[o + 1])
         }
         ctx.stroke()
       }
-      for (let c = 0; c < COLS; c += 1) {
+      for (let c = 0; c < cols; c += 1) {
         ctx.beginPath()
-        for (let r = 0; r < ROWS; r += 1) {
-          const o = (r * COLS + c) * 2
+        for (let r = 0; r < rows; r += 1) {
+          const o = (r * cols + c) * 2
           if (r === 0) ctx.moveTo(points[o], points[o + 1])
           else ctx.lineTo(points[o], points[o + 1])
         }
@@ -191,10 +217,10 @@ export default function HeroTerrain() {
       ctx.globalAlpha = 0.16
       ctx.strokeStyle = ink.line
       ctx.beginPath()
-      for (let r = 0; r < ROWS - 1; r += 1) {
-        for (let c = 0; c < COLS - 1; c += 1) {
-          const near = (r * COLS + c) * 2
-          const far = ((r + 1) * COLS + c + 1) * 2
+      for (let r = 0; r < rows - 1; r += 1) {
+        for (let c = 0; c < cols - 1; c += 1) {
+          const near = (r * cols + c) * 2
+          const far = ((r + 1) * cols + c + 1) * 2
           ctx.moveTo(points[near], points[near + 1])
           ctx.lineTo(points[far], points[far + 1])
         }
@@ -203,10 +229,18 @@ export default function HeroTerrain() {
       ctx.globalAlpha = 1
     }
 
+    // The next frame is asked for before this one is drawn, so a skipped frame
+    // costs a comparison rather than a gap in the rotation. `time` is the
+    // timestamp the browser hands the callback, which is what the drift is read
+    // off too, so throttling changes how often the ground is redrawn and never
+    // how fast it rolls.
+    let drawn = -Infinity
     const loop = time => {
       if (!running) return
-      draw(time)
       frame = requestAnimationFrame(loop)
+      if (time - drawn < minFrameMs) return
+      drawn = time
+      draw(time)
     }
 
     const onMove = event => {
@@ -247,9 +281,7 @@ export default function HeroTerrain() {
       started = true
       resize()
       window.addEventListener('resize', resize)
-      // The lift is the only thing the pointer listeners feed, and a still
-      // field has nothing for them to move, so they are not bound at all there.
-      if (!still) {
+      if (lift) {
         window.addEventListener('pointermove', onMove, { passive: true })
         document.addEventListener('pointerleave', onLeave)
         document.addEventListener('mouseleave', onLeave)
