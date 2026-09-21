@@ -39,7 +39,7 @@ process.env.SUPABASE_SERVICE_ROLE_KEY = 'service_role_not_a_real_key'
 process.env.SUPABASE_ANON_KEY = 'anon_not_a_real_key'
 
 const { default: linkHandler, linkFields, quotedCents } = await import('../../api/checkout-link.js')
-const { openArgs } = await import('../../api/stripe-webhook.js')
+const { mintedHere, openArgs } = await import('../../api/stripe-webhook.js')
 const { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } =
   await import('../../src/app/data/checkout/pricing.js')
 const { claimHolds } = await import('../../lib/stripe/claim.js')
@@ -212,6 +212,52 @@ check('a session saying something unusable falls back rather than guessing', () 
       BUYER
     )
     same(args.p_deposit_cents, BUILD_PRICE_CENTS, `a build_cents of ${JSON.stringify(written)}`)
+  }
+})
+
+/**
+ * A session as Stripe delivers one, with whatever a case cares about set on it.
+ *
+ * The defaults are a client site's own checkout, because that is the shape the
+ * webhook has to refuse and the shape nothing else in this suite produces.
+ */
+function delivered(overrides = {}) {
+  return {
+    id: 'cs_live_someone_elses',
+    mode: 'payment',
+    amount_total: 17016,
+    payment_status: 'paid',
+    customer_details: { email: 'ticket-buyer@example.com' },
+    metadata: { total_quantity: '1' },
+    on_behalf_of: 'acct_a_client_of_ours',
+    transfer_data: { destination: 'acct_a_client_of_ours' },
+    ...overrides,
+  }
+}
+
+check('a checkout this site opened is recognised as one', () => {
+  const link = bodyFromLink()
+  same(
+    mintedHere({ id: 'cs_ours', metadata: { claim: link.get('metadata[claim]') } }),
+    true,
+    'our own session'
+  )
+})
+
+check('a client site selling its own goods through the account is not a build', () => {
+  same(mintedHere(delivered()), false, 'go-kart tickets, paid, on this account')
+})
+
+check('a sale that pays out to another account is refused even carrying a key', () => {
+  const link = bodyFromLink()
+  const routed = delivered({ metadata: { claim: link.get('metadata[claim]') } })
+  same(mintedHere(routed), false, 'a key on a session that pays somebody else')
+})
+
+check('a session with no key of ours is refused however ordinary it looks', () => {
+  for (const claim of [undefined, '', null, 'not-a-hash', 'a'.repeat(63), 'A'.repeat(64)]) {
+    const plain = delivered({ metadata: { claim }, on_behalf_of: null, transfer_data: null })
+    same(mintedHere(plain), false, `a claim of ${JSON.stringify(claim)}`)
   }
 })
 

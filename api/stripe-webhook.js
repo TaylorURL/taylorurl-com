@@ -154,6 +154,46 @@ export function signed(header, body, secret) {
 }
 
 /**
+ * The shape the key on one of our own checkouts is written in.
+ *
+ * `mintClaim` leaves a sha256 digest as hex and nothing else ever writes this
+ * field, so the shape is as good as the value for telling our sessions apart
+ * from everybody else's.
+ */
+const CLAIM_SHAPE = /^[0-9a-f]{64}$/
+
+/**
+ * Whether this session is one this site opened.
+ *
+ * The account does not sell builds alone. A client site taking its own payments
+ * through it does so as a destination charge, which is a charge on this account
+ * that pays out to theirs - and a charge on this account is an event on this
+ * account's webhook. Nothing about the delivery says whose sale it was. So a
+ * go-kart ticket arrives here looking exactly like a build, and on 2026-09-20
+ * one did: a project was opened for it, an account was made for the customer
+ * who bought it, and $170.16 of tickets was recorded as a deposit.
+ *
+ * The test is the key `api/checkout-link.js` mints as it opens a session. Every
+ * checkout this site opens carries one, nothing else on the account writes that
+ * field, and it is already the thing a buyer is signed in against - so a session
+ * without one is not a build being bought however much it resembles one.
+ *
+ * Money routed away refuses on its own besides. A destination charge names the
+ * account it pays out to, and this one keeps the whole of what it sells, so a
+ * session sending the money elsewhere is somebody else's by definition. It is
+ * checked as well as the key rather than instead of it, because it is the fact
+ * that made this visible and a session can lose its metadata far more easily
+ * than it can start paying somebody else.
+ *
+ * @param {object} session The session Stripe sent.
+ * @returns {boolean}
+ */
+export function mintedHere(session) {
+  if (session?.transfer_data?.destination || session?.on_behalf_of) return false
+  return CLAIM_SHAPE.test(String(session?.metadata?.claim || ''))
+}
+
+/**
  * The id of an object a session points at - its payment intent, its customer,
  * the subscription it opened - whether Stripe expanded the object or sent the id.
  */
@@ -671,6 +711,13 @@ export default async function handler(request, response) {
   }
 
   const session = event?.data?.object || {}
+
+  // Whose sale this was, before anything is read off it. The account carries
+  // client sites' own checkouts as well as its own, and one of those completing
+  // is an event here that looks like a build being bought.
+  if (!mintedHere(session)) {
+    return response.status(200).json({ ok: true, ignored: 'not a build checkout' })
+  }
 
   // A session can complete before the money has. Bank debits settle for hours,
   // and opening a project against one that later fails would put an unpaid
