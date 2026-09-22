@@ -313,6 +313,31 @@ if (laddering) {
     /away: offscreen/.test(published),
     'nothing publishes whether the document is off screen, so a forgiven attempt has nothing to wait on'
   )
+
+  // And off screen is a narrower question than gone.
+  //
+  // `visibilityState` turns on a tab switch, a locked phone and most
+  // navigations, and it stays `visible` where the renderer is dropped instead
+  // - a tab closed, or a measurement client that ends its run by destroying
+  // the target rather than navigating it. `pagehide` fires in every one of
+  // them, which is why the reporter latches it.
+  //
+  // A wait written on the narrow question ends at once for the document that
+  // has most certainly gone. The forgiveness is then spent on attempts made
+  // into a teardown, the ladder reaches its end, and the rejection is handed
+  // to the boundary in front of a reader who was not there for any of it.
+  // Driven against the module with the chunk refusing and the document
+  // departing that way, the pass filed the exact sentence #647 carries, on a
+  // file that answered 200 throughout - the fourth ticket on a chunk that has
+  // never once been missing.
+  check(
+    /leaving: function \(\) \{\s*return unloading/.test(published),
+    'the reporter keeps whether the document is on its way out to itself, so the chunk ladder reads a dismantling document as one that is still here'
+  )
+  check(
+    /reporter\.leaving/.test(laddering.source),
+    'the ladder asks only whether the document is hidden, so a document torn down without its visibility turning spends the whole ladder inside the teardown and files a fault against a file that is answering'
+  )
 }
 
 // The search is the only chunk on the site a reader asks for by name, and that

@@ -1133,6 +1133,29 @@
             return departures
           },
           away: offscreen,
+          // And whether the document is on its way out right now, which is a
+          // wider question than whether it is hidden and a different one.
+          //
+          // `away` reads `visibilityState`, and a document being dismantled
+          // does not always turn it. Chrome turns it on a tab switch, a lock
+          // and most navigations, and leaves it `visible` when the renderer
+          // goes - a tab closed, or a measurement client ending its run by
+          // destroying the target rather than navigating it. `pagehide` fires
+          // in every one of those, which is why it is what `unloading` is kept
+          // from.
+          //
+          // The difference decides whether a failure is filed. `lazyWithRetry`
+          // waits for the document to be back before it asks again, and where
+          // the document has gone for good that wait is what stops a fault
+          // being filed against a file that is answering. Read off
+          // `visibilityState` alone the wait ends immediately, the ladder runs
+          // to the end inside the teardown, and the rejection is handed to the
+          // boundary in front of a reader who is not there. #647 was that,
+          // three passes and a filed fault on a chunk that answered 200
+          // throughout.
+          leaving: function () {
+            return unloading
+          },
         }
         // The attempt number this page hung on an address of its own, taken
         // back off before the failure is filed under it.

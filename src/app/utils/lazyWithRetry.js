@@ -138,13 +138,33 @@ function departures() {
 }
 
 /**
- * Whether the document is off screen at this instant.
+ * Whether the document is absent at this instant - off screen, or on its way
+ * out and not yet back.
  *
- * @returns {boolean} True while the document is hidden.
+ * Hidden was the whole of this question until #647, and it is the narrower of
+ * the two. `visibilityState` turns on a tab switch, a locked phone and most
+ * navigations, and it does not turn when the renderer is simply dropped: a tab
+ * closed, or a measurement client that ends its run by destroying the target
+ * rather than navigating it. `pagehide` fires in every one of those, and the
+ * reporter has been latching it into `leaving` since it started counting
+ * departures at all.
+ *
+ * Reading only the narrow one is what let this be filed a fourth time. A
+ * document that fired `pagehide` with its visibility still `visible` reads as
+ * present, so `onScreen` below returns at once, the forgiveness is spent on
+ * attempts made into a document being dismantled, and the ladder reaches its
+ * end and throws in front of a reader who left before the first attempt
+ * finished. Driven against this module with the chunk refusing and the
+ * document departing that way, the pass filed exactly the sentence #647
+ * carries - on a file that answered 200 the whole time.
+ *
+ * @returns {boolean} True while the document is hidden or leaving.
  */
 function away() {
   const reporter = typeof window === 'undefined' ? null : window.__reporter
-  return Boolean(reporter && typeof reporter.away === 'function' && reporter.away())
+  if (!reporter) return false
+  if (typeof reporter.away === 'function' && reporter.away()) return true
+  return Boolean(typeof reporter.leaving === 'function' && reporter.leaving())
 }
 
 /**
