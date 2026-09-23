@@ -206,10 +206,25 @@ function onScreen() {
  */
 function entryName() {
   if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return ''
-  const tag = document.querySelector('script[type="module"][src]')
-  if (!tag || !tag.src) return ''
+  // Two ways a document names its entry, and this site uses the second.
+  //
+  // A plain Vite build writes `<script type="module" src>`. The prerender here
+  // does not: the boot is an inline module written into the head, so there is
+  // no `src` anywhere on the page and reading only that finds nothing - which
+  // is a probe that can never fire, on every document the site actually
+  // serves. What the build does write for the entry is a `modulepreload`, and
+  // that carries the same hashed name.
+  //
+  // Either one answers the question, because the name is only ever being used
+  // as a token for the build: any hashed file this document was served with is
+  // absent from the document of a build that replaced it.
+  const tag =
+    document.querySelector('script[type="module"][src]') ||
+    document.querySelector('link[rel="modulepreload"][href]')
+  const address = tag && (tag.src || tag.href)
+  if (!address) return ''
   try {
-    return new URL(tag.src, location.href).pathname.split('/').pop() || ''
+    return new URL(address, location.href).pathname.split('/').pop() || ''
   } catch {
     return ''
   }
