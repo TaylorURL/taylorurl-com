@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 import { wait } from '@lib/time/wait.js'
+import { markReloaded, recentlyReloaded } from '@utils/reloadGuard'
 
 const DEFAULT_RETRIES = 2
 const DEFAULT_DELAY_MS = 350
@@ -194,6 +195,97 @@ function onScreen() {
 }
 
 /**
+ * The file name of the entry this document was served with.
+ *
+ * Every hashed asset the page will ever ask for is named by that one script, so
+ * it stands for the whole build: if it is still being served, this document's
+ * manifest is still good, and if it is not, none of the addresses in it are.
+ *
+ * @returns {string} The entry's file name, or '' where there is no document to
+ *   read it off.
+ */
+function entryName() {
+  if (typeof document === 'undefined' || typeof document.querySelector !== 'function') return ''
+  const tag = document.querySelector('script[type="module"][src]')
+  if (!tag || !tag.src) return ''
+  try {
+    return new URL(tag.src, location.href).pathname.split('/').pop() || ''
+  } catch {
+    return ''
+  }
+}
+
+/**
+ * Whether the build this document is running from has been replaced under it.
+ *
+ * This is the shape the ladder above cannot ride out, and the one every fix
+ * before it was built on the assumption of the opposite. A hashed file belongs
+ * to the deploy that wrote it, the production alias flips from one deploy to
+ * the next in a single step, and the build before it stops being served at that
+ * instant - not slowly, not at one edge, and not temporarily. So a document
+ * served seconds before a release goes live spends the rest of its life holding
+ * a manifest of file names that have been deleted, and every rung of a ladder
+ * whose premise is "wait, and the file comes back" is spent on a file that
+ * cannot. Measured against the report that prompted this: the document was
+ * served at 10:15:09, the release went live at 10:15:21, and the chunk it then
+ * asked for had been gone for nineteen seconds by the time the failure was
+ * filed against its address.
+ *
+ * The question is asked of the document rather than of the chunk, and once:
+ * does the page this site serves right now still name the entry this page is
+ * running from. Asking about the chunk would only say it is absent, which is
+ * what a dropped request looks like too; asking about the build says why.
+ *
+ * It is asked with `fetch`, which puts it through the reporter's own wrapper
+ * and so under the same "was this document here for the whole of the request"
+ * test every other request on the page already gets - rather than adding one
+ * more teardown tell to the list beside `away`. Anything short of a clear
+ * answer reads as not superseded, because a probe that failed is no evidence.
+ *
+ * @returns {Promise<boolean>} True only where the served document no longer
+ *   names this document's entry.
+ */
+async function superseded() {
+  const entry = entryName()
+  if (!entry || typeof fetch !== 'function' || typeof location === 'undefined') return false
+  try {
+    const address = new URL(location.pathname, location.href)
+    address.searchParams.set('build', `${spent}.${TOKEN}`)
+    const answer = await fetch(address.href, { cache: 'no-store' })
+    if (!answer.ok) return false
+    const served = await answer.text()
+    return Boolean(served) && !served.includes(entry)
+  } catch {
+    return false
+  }
+}
+
+/**
+ * The only recovery a superseded build has: a newer document.
+ *
+ * Nothing is thrown and nothing ever resolves. The Suspense fallback holds for
+ * the moment the reload takes, which is the last thing this document will draw,
+ * and because the pass never rejects there is no boundary, no error screen and
+ * no failure written to the console - which is what was being collected and
+ * filed as a fault against an address no build on the server still has. A
+ * reader recovered by a reload met no fault, and this is the same reload the
+ * boundary was going to ask for six seconds later.
+ *
+ * It shares the boundary's guard rather than keeping one of its own, so a chunk
+ * that stays broken still costs exactly one reload and then gets a screen the
+ * reader can act on.
+ *
+ * @returns {Promise<never>} A promise that never settles.
+ */
+function renew() {
+  if (typeof window !== 'undefined' && !recentlyReloaded()) {
+    markReloaded()
+    window.location.reload()
+  }
+  return new Promise(() => {})
+}
+
+/**
  * The same chunk, asked for ahead of the press that will need it.
  *
  * A warm-up is an offer rather than a request: nothing waits on it, and a
@@ -248,6 +340,10 @@ export function lazyWithRetry(
   return lazy(async () => {
     let lastError = after
     let forgiven = 0
+    // Whether the build has already been asked about. Once per pass: the answer
+    // cannot change back, and a document that is superseded is superseded for
+    // every rung that is left.
+    let checked = false
     // Where the document stood when this pass opened. `pagehide` and the hide
     // are counted at different moments - a dismantling document fires
     // `pagehide` before `visibilityState` turns, so the rejection can arrive in
@@ -301,6 +397,14 @@ export function lazyWithRetry(
           attempt -= 1
           await onScreen()
           continue
+        }
+        // Asked once, on the first failure this document was present for,
+        // because the answer decides whether the rungs that are left are worth
+        // spending at all. The ladder below reaches past an outage; a build
+        // that has been replaced is not an outage, and no address recovers it.
+        if (!checked) {
+          checked = true
+          if (await superseded()) return renew()
         }
         // The quick pair widens; everything past it is the long wait, which is
         // the one that reaches the far side of the outage.
