@@ -372,6 +372,20 @@ if (laddering) {
     /script\[type="module"\]\[src\]/.test(laddering.source),
     'nothing reads the entry this document was served with, so there is no way to ask whether its build is still the one being served'
   )
+
+  // And it has to be read the way this site's documents are actually written.
+  //
+  // A plain Vite build writes `<script type="module" src>` into the page. The
+  // prerender here writes the boot inline instead, so no document this site
+  // serves carries that attribute anywhere - and a probe that reads only it
+  // finds nothing, returns "not superseded" on every page, and never fires.
+  // The entry is named by its `modulepreload`, which is what the built
+  // documents do carry, and the check below is run against one of them rather
+  // than against the source so that a change to either is caught here.
+  check(
+    /link\[rel="modulepreload"\]\[href\]/.test(laddering.source),
+    'the build probe reads the entry only off a script src, which no document this site serves has, so it can never fire'
+  )
   check(
     /cache: 'no-store'/.test(laddering.source),
     'the build probe is allowed to read its own answer out of the cache, so a superseded document is told it is current by the very document that superseded it'
