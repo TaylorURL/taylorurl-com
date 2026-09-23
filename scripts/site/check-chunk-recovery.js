@@ -338,6 +338,68 @@ if (laddering) {
     /reporter\.leaving/.test(laddering.source),
     'the ladder asks only whether the document is hidden, so a document torn down without its visibility turning spends the whole ladder inside the teardown and files a fault against a file that is answering'
   )
+
+  // And a build that has been replaced is not an outage.
+  //
+  // Every rung above is built on one premise: the file comes back. That is true
+  // of an edge that has not caught up, a phone changing networks and a proxy
+  // refusing for a moment, and it is false of the case this site actually meets
+  // most often. A hashed file belongs to the deploy that wrote it, the
+  // production alias moves from one deploy to the next in a single step, and at
+  // that instant every file of the build before it stops being served for good.
+  // So a document served seconds before a release goes live holds a manifest of
+  // names that have been deleted, and the ladder spends six seconds asking for
+  // one of them before handing a rejection to the boundary, which reloads -
+  // which was the only thing that was ever going to work.
+  //
+  // The reader is recovered either way; what the six seconds buy is the fault.
+  // React writes a caught boundary error to the console, the reporter collects
+  // the console, and the address in it names a build the server no longer has.
+  // Five tickets on one fingerprint were that, each filed within a minute of a
+  // release going live, and none of the four fixes before this one could see it
+  // because each was looking for a reader who had left rather than a file that
+  // had been deleted.
+  //
+  // So the ladder asks the question once, of the document rather than of the
+  // chunk - is the entry this page is running from still the entry the site
+  // serves - and where it is not, it stops asking and takes the reload now.
+  check(
+    /async function superseded/.test(laddering.source) &&
+      /await superseded\(\)/.test(laddering.source),
+    'the ladder treats a build that has been replaced as an outage it can wait out, so it spends every rung on a file that has been deleted and files the failure against an address no deploy still carries'
+  )
+  check(
+    /script\[type="module"\]\[src\]/.test(laddering.source),
+    'nothing reads the entry this document was served with, so there is no way to ask whether its build is still the one being served'
+  )
+  check(
+    /cache: 'no-store'/.test(laddering.source),
+    'the build probe is allowed to read its own answer out of the cache, so a superseded document is told it is current by the very document that superseded it'
+  )
+  check(
+    /function renew/.test(laddering.source) && /return renew\(\)/.test(laddering.source),
+    'a superseded build is thrown rather than reloaded, so the recovery arrives through the boundary and the console carries a fault against a file the deploy deleted on purpose'
+  )
+  check(
+    /new Promise\(\(\) => \{\}\)/.test(laddering.source),
+    'the pass settles after asking for the reload, so the boundary draws over a document that is already being replaced'
+  )
+  check(
+    /recentlyReloaded/.test(laddering.source) && /markReloaded/.test(laddering.source),
+    "the ladder keeps a reload budget of its own, so a chunk that stays broken can spend the boundary's reload and its own and trap the tab in a loop"
+  )
+
+  // And the guard both of them spend has to be one guard.
+  const guard = readFileSync(path.join(APP, 'utils/reloadGuard.js'), 'utf8')
+  check(
+    /taylorurl:chunk-reload-at/.test(guard),
+    'the shared reload guard does not name the key the boundary has always written, so an upgraded document starts its budget over'
+  )
+  const boundary = readFileSync(path.join(APP, 'components/app-shell/ErrorBoundary.jsx'), 'utf8')
+  check(
+    /from '@utils\/reloadGuard'/.test(boundary) && !/sessionStorage/.test(boundary),
+    'the boundary keeps its own copy of the reload guard, so the two callers each hold a budget and a broken chunk gets two reloads instead of one'
+  )
 }
 
 // The search is the only chunk on the site a reader asks for by name, and that

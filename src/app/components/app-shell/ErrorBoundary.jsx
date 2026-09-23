@@ -1,4 +1,5 @@
 import { Component } from 'react'
+import { markReloaded, recentlyReloaded } from '@utils/reloadGuard'
 
 // Matches the various messages browsers and Vite use when a code-split chunk
 // fails to load (transient network error, or a stale hashed filename requested
@@ -7,33 +8,8 @@ import { Component } from 'react'
 const CHUNK_ERROR_PATTERN =
   /ChunkLoadError|Loading chunk|dynamically imported module|Importing a module script failed|error loading dynamically imported/i
 
-// The sessionStorage key and the window guarding the auto-reload. One reload
-// recovers the crash a visitor would otherwise have to fix by hand, and the
-// window is what stops a chunk that stays broken from trapping the tab in a
-// reload loop: a second failure inside it shows the fallback instead.
-const RELOAD_GUARD_KEY = 'taylorurl:chunk-reload-at'
-const RELOAD_GUARD_MS = 20000
-
 function isChunkLoadError(error) {
   return Boolean(error && CHUNK_ERROR_PATTERN.test(error.name + ' ' + error.message))
-}
-
-function recentlyReloaded() {
-  try {
-    const last = Number(window.sessionStorage.getItem(RELOAD_GUARD_KEY))
-    return Number.isFinite(last) && Date.now() - last < RELOAD_GUARD_MS
-  } catch {
-    return false
-  }
-}
-
-function markReloaded() {
-  try {
-    window.sessionStorage.setItem(RELOAD_GUARD_KEY, String(Date.now()))
-  } catch {
-    // Private-mode or storage-disabled: fall through; worst case is the
-    // fallback UI instead of an auto-reload, which is still recoverable.
-  }
 }
 
 /**
