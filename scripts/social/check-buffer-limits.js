@@ -27,7 +27,15 @@
  *
  *   npm run check:buffer-limits
  */
-import { RATE_LIMITED, connect, post, promote, wiring } from '../../lib/social/buffer.js'
+import {
+  RATE_LIMITED,
+  connect,
+  discard,
+  post,
+  promote,
+  requeue,
+  wiring,
+} from '../../lib/social/buffer.js'
 import { assetFor, card } from '../../lib/social/cards.js'
 import { cases, check, finish, ok, same } from '../harness/checks.js'
 import { OFFLINE } from '../harness/offline.js'
@@ -48,6 +56,7 @@ const OPERATIONS = [
   ['Posts', /query Posts/],
   ['Create', /mutation Create/],
   ['Edit', /mutation Edit/],
+  ['Delete', /mutation Delete/],
 ]
 
 const operationOf = query => OPERATIONS.find(([, shape]) => shape.test(query))?.[0] ?? 'unknown'
@@ -70,6 +79,7 @@ const ANSWERS = {
   Posts: { posts: { edges: [] } },
   Create: { createPost: { __typename: 'PostActionSuccess', post: WRITTEN } },
   Edit: { editPost: { __typename: 'PostActionSuccess', post: WRITTEN } },
+  Delete: { deletePost: { __typename: 'DeletePostSuccess', id: 'taken-out' } },
 }
 
 /**
@@ -521,6 +531,106 @@ check('a caption with no image is refused before it reaches Buffer', async () =>
 
   ok(/without an image/.test(cause.message), `the reason is named: ${cause.message}`)
   same(stub.count('Create'), 0, 'and nothing was placed')
+})
+
+// A Thursday, so the next Instagram day is the Friday after it and the slot
+// search has somewhere to put a post without the check having to know the
+// cadence it is checking.
+const THURSDAY = new Date('2026-09-24T18:00:00Z')
+
+/** A post Buffer tried to publish and could not, on a day already gone. */
+const failedPost = (id, extra = {}) => ({
+  id,
+  channelId: 'ig',
+  status: 'error',
+  text: 'a caption that did not go out',
+  dueAt: '2026-09-23T14:00:00.000Z',
+  assets: [],
+  ...extra,
+})
+
+const instagramHolding = held =>
+  open(
+    workingWith({
+      Channels: { channels: [INSTAGRAM_CHANNEL] },
+      Posts: { posts: { edges: held.map(node => ({ node })) } },
+    })
+  )
+
+check('a failed post is booked onto a free slot ahead of it, image and all', async () => {
+  // The state nothing else in the client reaches. It holds a day that has gone,
+  // so no slot search competes with it and no promotion touches it, and left
+  // alone it is counted a failure on every reading the queue takes forever.
+  const chosen = card('included')
+  const { stub, run } = instagramHolding([failedPost('stuck', { assets: [heldAsset(chosen)] })])
+  const moved = await requeue(run, { now: THURSDAY })
+
+  same(stub.count('Edit'), 1, 'the failed post was booked again')
+  const edit = stub.requests.find(request => request.operation === 'Edit')
+  same(edit.variables.input.id, 'stuck', 'and it is the one that failed')
+  ok(
+    edit.variables.input.dueAt > THURSDAY.toISOString(),
+    `the day it was booked onto is ahead: ${edit.variables.input.dueAt}`
+  )
+  same(edit.variables.input.saveToDraft, false, 'it goes back as a scheduled post')
+  // `editPost` replaces the post, so an empty list here is a second failure
+  // booked for a day in the future on a channel that publishes nothing bare.
+  same(edit.variables.input.assets.length, 1, 'the card it was written with')
+  same(edit.variables.input.assets[0].image.url, assetFor(chosen).image.url, 'and the same one')
+  same(moved.requeued.length, 1, 'posts reported as moved')
+  same(moved.skipped.length, 0, 'posts stood down')
+})
+
+check('a failed Instagram post with no image is stood down, not booked again', async () => {
+  const { stub, run } = instagramHolding([failedPost('bare')])
+  const moved = await requeue(run, { now: THURSDAY })
+
+  same(stub.count('Edit'), 0, 'nothing was booked')
+  same(moved.requeued.length, 0, 'posts reported as moved')
+  same(moved.skipped.length, 1, 'the post is named rather than dropped quietly')
+  same(moved.skipped[0].id, 'bare', 'and it is the one with no image')
+})
+
+check('an id the queue does not hold is reported rather than invented', async () => {
+  const { stub, run } = instagramHolding([])
+  const moved = await requeue(run, { ids: ['published-already'], now: THURSDAY })
+
+  same(stub.count('Edit'), 0, 'nothing was booked')
+  same(moved.missing.length, 1, 'the id is reported')
+  same(moved.missing[0], 'published-already', 'and named')
+})
+
+check('a dry run chooses the slot and writes nothing', async () => {
+  const chosen = card('included')
+  const { stub, run } = instagramHolding([failedPost('stuck', { assets: [heldAsset(chosen)] })])
+  const moved = await requeue(run, { now: THURSDAY, dryRun: true })
+
+  same(stub.count('Edit'), 0, 'requests that would have changed the queue')
+  same(moved.requeued.length, 1, 'the post it would have moved')
+  ok(moved.requeued[0].dueAt > THURSDAY.toISOString(), 'and the day it would have gone on')
+})
+
+check('discarding takes the post out and says what went with it', async () => {
+  const { stub, run } = instagramHolding([failedPost('stale')])
+  const gone = await discard(run, ['stale'])
+
+  same(stub.count('Delete'), 1, 'posts taken out')
+  const deletion = stub.requests.find(request => request.operation === 'Delete')
+  same(deletion.variables.input.id, 'stale', 'the post named to Buffer')
+  same(gone.discarded.length, 1, 'posts reported as taken out')
+  // Read off the post before it goes, because afterwards there is nothing left
+  // to read and this is the only record of what the queue was holding.
+  same(gone.discarded[0].text, 'a caption that did not go out', 'the words that went with it')
+  same(gone.discarded[0].service, 'instagram', 'and the channel it was on')
+})
+
+check('discarding an id the queue does not hold deletes nothing', async () => {
+  const { stub, run } = instagramHolding([failedPost('stale')])
+  const gone = await discard(run, ['someone-elses-id'])
+
+  same(stub.count('Delete'), 0, 'requests made against an id the queue does not hold')
+  same(gone.missing.length, 1, 'the id is reported')
+  same(gone.discarded.length, 0, 'and nothing was taken out')
 })
 
 await finish()
