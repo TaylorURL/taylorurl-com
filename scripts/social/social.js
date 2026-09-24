@@ -17,6 +17,9 @@
  *   node scripts/social/social.js cards --channel instagram
  *   node scripts/social/social.js rewrite --file edits.json [--dry-run]
  *   node scripts/social/social.js promote
+ *   node scripts/social/social.js failed
+ *   node scripts/social/social.js failed --requeue [--id ID] [--dry-run]
+ *   node scripts/social/social.js failed --discard --id ID [--dry-run]
  */
 import { readFileSync, existsSync } from 'node:fs'
 import { join } from 'node:path'
@@ -24,9 +27,12 @@ import { homedir } from 'node:os'
 import {
   CADENCE,
   connect,
+  discard,
+  isFailed,
   post,
   posts,
   promote,
+  requeue,
   rewrite,
   status,
   wiring,
@@ -154,6 +160,15 @@ function flag(name) {
   return index === -1 ? null : process.argv[index + 1]
 }
 
+/** Every value given for a flag, so one that names a post can name several. */
+function flags(name) {
+  const values = []
+  process.argv.forEach((argument, index) => {
+    if (argument === name && process.argv[index + 1]) values.push(process.argv[index + 1])
+  })
+  return values
+}
+
 const BLOG = new URL('../../src/app/data/blog/index.js', import.meta.url)
 
 /**
@@ -200,6 +215,61 @@ async function main() {
   if (command === 'promote') {
     const limit = Number(flag('--limit') ?? 5)
     console.log(JSON.stringify(await promote(key, { limit }), null, 2))
+    return
+  }
+
+  // The posts Buffer tried to publish and could not, and the two things that can
+  // be done about one. Nothing else in this file reaches them: `promote` moves
+  // drafts, `rewrite` changes words, and a failed post holds a day that has
+  // already gone, so without this it stays in the queue being counted a failure
+  // on every reading for as long as the account exists.
+  //
+  // Named with no disposition it only reads, because what a failed post carries
+  // decides which of the two it wants and that is a judgement made on the text.
+  if (command === 'failed') {
+    const ids = flags('--id')
+    const dryRun = process.argv.includes('--dry-run')
+    const requeueWanted = process.argv.includes('--requeue')
+    const discardWanted = process.argv.includes('--discard')
+
+    if (requeueWanted && discardWanted) {
+      throw new Error('failed takes --requeue or --discard, not both')
+    }
+
+    // Requeueing a post that cannot be requeued costs a day and says so;
+    // discarding one is final, so it is never done to a post nobody named.
+    if (discardWanted) {
+      if (!ids.length) throw new Error('failed --discard needs --id <post id>')
+      const answer = await discard(key, ids, { dryRun })
+      console.log(JSON.stringify(answer, null, 2))
+      if (answer.missing.length) process.exit(1)
+      return
+    }
+
+    if (requeueWanted) {
+      const answer = await requeue(key, { ids: ids.length ? ids : null, dryRun })
+      console.log(JSON.stringify(answer, null, 2))
+      // A post the run declined to move is still a failed post in the queue, and
+      // the caller asked for it to stop being one.
+      if (answer.missing.length || answer.skipped.length) process.exit(1)
+      return
+    }
+
+    const run = connect(key)
+    const { organizationId, channels } = await wiring(run)
+    const service = new Map(channels.map(channel => [channel.id, channel.service]))
+    const all = await posts(run, organizationId)
+    const held = all
+      .filter(candidate => isFailed(candidate) && (!ids.length || ids.includes(candidate.id)))
+      .map(candidate => ({
+        id: candidate.id,
+        service: service.get(candidate.channelId) ?? null,
+        status: candidate.status,
+        dueAt: candidate.dueAt ?? null,
+        hasImage: (candidate.assets ?? []).some(asset => asset.type === 'image'),
+        text: candidate.text ?? '',
+      }))
+    console.log(JSON.stringify({ failed: held }, null, 2))
     return
   }
 
@@ -308,7 +378,8 @@ async function main() {
       'social.js announce --slug SLUG [--dry-run] | ' +
       'social.js cards [--channel SERVICE] | ' +
       'social.js rewrite --file EDITS.json [--dry-run] | ' +
-      'social.js post --text-file F (--at ISO | --draft) [--channel SERVICE] [--image CARD]\n' +
+      'social.js post --text-file F (--at ISO | --draft) [--channel SERVICE] [--image CARD] | ' +
+      'social.js failed [--requeue | --discard --id ID] [--id ID] [--dry-run]\n' +
       'watch exits 0 when the queue is publishing, 1 when something needs ' +
       'doing, and 2 when Buffer would not answer and it could not tell.'
   )
