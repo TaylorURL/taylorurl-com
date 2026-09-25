@@ -590,6 +590,11 @@
         var endpoint = 'https://sunday.tail1f78d7.ts.net/report'
         var site = '%SITE_ERROR_LABEL%'
         var sent = 0
+        // The address this document's own inline scripts carry in a stack.
+        // Read here, in the head, before the app mounts: client-side routing
+        // moves `location` on every navigation and the frames go on naming the
+        // URL the document was served from.
+        var documentUrl = String(location.href).split('#')[0]
         // Nothing the page can intercept reaches the visitor's console. Each
         // error is reported first and swallowed second, so the report is made
         // whether or not the suppression holds. What survives is written by the
@@ -788,6 +793,86 @@
             if (!/(?:^|[@\s(])user-script:/.test(lines[i])) return false
           }
           return true
+        }
+        // Chrome's word for what `user-script:` is WebKit's word for.
+        //
+        // Code that never came from a file has no file to name, and V8 writes
+        // `<anonymous>` where the URL would go - `at p (<anonymous>:7:465)` for
+        // a frame inside such a block, `at <anonymous>:1:1` for the top of it.
+        // An extension's injected script, anything handed to `eval` or `new
+        // Function`, and a crawler or a devtools client evaluating script in
+        // the page all arrive that way, and nothing this site serves ever does:
+        // its code is files under /assets and inline blocks in this document,
+        // and every one of those names a URL.
+        //
+        // Read whole-stack like the two tests above it, and with the same
+        // direction of doubt - a frame carrying `://` is a file, a file is the
+        // site's, and one anywhere in here hands the question back. V8 also
+        // heads a stack with the error's own description, which names nothing
+        // and is not a frame; it is skipped where it stands and refused
+        // anywhere else, because a line with no `at` after the frames have
+        // started is not a stack this test understands.
+        function evaluatedScriptOnly(stack) {
+          var lines = String(stack || '').split('\n')
+          var frames = 0
+          for (var i = 0; i < lines.length; i += 1) {
+            var line = lines[i]
+            if (!line.replace(/\s/g, '')) continue
+            if (!/^\s+at\s/.test(line)) {
+              if (frames) return false
+              continue
+            }
+            frames += 1
+            if (line.indexOf('://') > -1) return false
+            if (line.indexOf('<anonymous>') < 0) return false
+          }
+          return frames > 0
+        }
+        // The frame this reporter leaves in everybody else's stack.
+        //
+        // `window.fetch` is wrapped further down so a failed request can be
+        // read against where the document stood while it was in flight, and
+        // what that wrapper costs is a frame. The browser records the call
+        // through it as a frame in this document on every fetch the page makes
+        // - including every fetch the site did not make. An extension, a
+        // userscript or a crawler's own instrumentation calls `fetch`, the
+        // request fails, and the stack that arrives here reads `at window.fetch
+        // (<this page>:...)` above frames belonging to code this site has never
+        // seen.
+        //
+        // That one frame stands all three tests above down. `extensionOnly`
+        // finds an `https://` scheme that is not an extension's and answers no;
+        // the other two find a `://` and hand the question straight back. So
+        // the single path on which foreign code is guaranteed to pick up a site
+        // frame is the one path the filters cannot see through, and what goes
+        // out names this site for a request it did not issue. #666 was that: a
+        // `TypeError: Failed to fetch` off Google's crawler, whose only other
+        // two frames were both `<anonymous>`.
+        //
+        // The console wrappers already had this problem and `callerFrames`
+        // already answers it - the reporter's own frame is struck out before
+        // the stack is judged, because a frame the instrumentation contributed
+        // says nothing about whose code failed. This is that same strike, on
+        // the one frame the browser contributes rather than the reporter.
+        //
+        // Struck narrowly: this document's address and the wrapper's own name
+        // together, never the address alone. The boot retry, the stylesheet
+        // recovery and the theme are inline in here too, and a throw inside one
+        // of those is this site's to answer for.
+        //
+        // Nothing the site does itself is lost. Its application code is served
+        // from /assets, so a fetch this site issued keeps a frame naming a real
+        // file and reports exactly as it always has, and a stack struck back to
+        // nothing fails every test below and reports as well.
+        function withoutOwnFetch(stack) {
+          var lines = String(stack || '').split('\n')
+          var kept = []
+          for (var i = 0; i < lines.length; i += 1) {
+            if (lines[i].indexOf(documentUrl) > -1 && /(?:^|[\s.@(])fetch[\s@(]/.test(lines[i]))
+              continue
+            kept.push(lines[i])
+          }
+          return kept.join('\n')
         }
         // What the browser hands over when it has decided not to say. A throw
         // inside a script from another origin that was not fetched in CORS mode
@@ -1203,9 +1288,14 @@
           // collector has to lose to see two attempts as one fault.
           hold(kind, message, stack)
           if (sent >= 10) return // a page stuck in an error loop stops at ten
-          if (extensionOnly(stack)) return
-          if (extensionApiOnly(message, stack)) return
-          if (injectedScriptOnly(stack)) return
+          // Judged on the stack with this reporter's own frame struck out, and
+          // sent whole, because the frame is noise in the verdict and evidence
+          // in the ticket.
+          var judged = withoutOwnFetch(stack)
+          if (extensionOnly(judged)) return
+          if (extensionApiOnly(message, judged)) return
+          if (injectedScriptOnly(judged)) return
+          if (evaluatedScriptOnly(judged)) return
           sent += 1
           try {
             send(
@@ -1404,7 +1494,14 @@
         }
         if (window.fetch) {
           var originalFetch = window.fetch
-          window.fetch = function (input) {
+          // Named, and the name is load-bearing. V8 titles this frame from the
+          // call site and writes `window.fetch` whatever the function is
+          // called, but JSC and SpiderMonkey title it from `fetch.name` - and
+          // assigning a function expression to a member expression names it
+          // nothing at all, so on those two the frame reads `@<this page>` and
+          // `withoutOwnFetch` cannot tell it from any other inline block in
+          // here. The declaration puts the same word in front of all three.
+          window.fetch = function fetch(input) {
             var target = typeof input === 'string' ? input : (input && input.url) || ''
             // Reports about the reporter's own request would loop, so the endpoint passes through unwrapped.
             if (target.indexOf(endpoint) === 0) return originalFetch.apply(window, arguments)
@@ -1510,11 +1607,20 @@
                   hold('beacon', 'No answer from ' + target.split('?')[0], '')
                   throw error
                 }
+                // Filed with the stack the failure already carries. It was
+                // dropped before, which cost this path every test `report`
+                // makes - handed no stack, the extension and injected-script
+                // filters have nothing to read and a request an extension or a
+                // crawler issued through this wrapper is filed as the site's
+                // under a second name. The frames are also the only record of
+                // who asked for the request, which is the first thing anybody
+                // reading the ticket wants.
                 report(
                   'network',
                   (error && error.message ? error.message : String(error)) +
                     ' fetching ' +
-                    target.split('?')[0]
+                    target.split('?')[0],
+                  error && error.stack
                 )
                 throw error
               }
