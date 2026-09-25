@@ -271,9 +271,9 @@ const STUDY_BODIES = {
   'southeast-arbor-care': {
     title: 'Southeast Arbor Care Site, Pasadena TX',
     description:
-      'How the Southeast Arbor Care site works: a page for each tree service and each town the trucks reach, a ballpark price range, and a short estimate form.',
+      'How the Southeast Arbor Care site works: a page for each tree service and each town the trucks reach, and an estimate form that takes a photo of the tree.',
     summary:
-      'A family tree service in Pasadena, on a site that puts a price range on the front page before anyone has to call.',
+      'A family tree service in Pasadena, on a site built around the jobs it takes and the towns it works.',
     sector: 'Tree service',
     business: [
       'Terry Lloyd started Southeast Arbor Care in Pasadena, Texas, in 2000. The work is removal, trimming and pruning, stump grinding, storm and emergency calls, lot clearing, and tree health work such as deep-root feeding and cabling.',
@@ -287,10 +287,6 @@ const STUDY_BODIES = {
       {
         title: 'Towns written one at a time',
         body: 'Each town the trucks reach has its own page about the trees that grow there: water oak and pine in Pasadena, salt-burned foliage in La Porte, the old live oaks of Clear Lake.',
-      },
-      {
-        title: 'A ballpark before the call',
-        body: 'The front page asks what needs doing, how tall the tree is, and whether a truck can get to it, then shows a price range. It says plainly that the range is not a quote.',
       },
       {
         title: 'The number stays in reach',
