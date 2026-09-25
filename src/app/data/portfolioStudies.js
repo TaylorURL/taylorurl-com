@@ -268,6 +268,47 @@ const STUDY_BODIES = {
       'Vercel',
     ],
   },
+  'southeast-arbor-care': {
+    title: 'Southeast Arbor Care Tree Service Website',
+    description:
+      'How the Southeast Arbor Care site works: a page for each tree service and each town the trucks reach from Pasadena, and an estimate form that takes a photo.',
+    summary:
+      'A family-run tree service in Pasadena, on a site built around the jobs it takes and the towns it works.',
+    sector: 'Tree service',
+    business: [
+      'Terry Lloyd started Southeast Arbor Care in Pasadena, Texas, in 2000. The work is removal, trimming and pruning, stump grinding, storm and emergency calls, lot clearing, and tree health work such as deep-root feeding and cabling.',
+      'The trucks work Pasadena, Deer Park, La Porte, Clear Lake and Webster, Baytown, and the southeast side of Houston inside Beltway 8. Southeast Arbor Care answers storm calls after hours.',
+    ],
+    site: [
+      {
+        title: 'A page for every job',
+        body: 'Removal, trimming, stump grinding, storm work, lot clearing, and tree health each get a page saying what the job includes and how it is done.',
+      },
+      {
+        title: 'Towns written one at a time',
+        body: 'Each town the trucks reach has its own page about its own trees. The Pasadena page covers the water oaks and pines, the La Porte page covers what salt air does to a canopy, and the Clear Lake page covers the old live oaks.',
+      },
+      {
+        title: 'The number stays in reach',
+        body: 'On a phone, a bar pinned to the bottom of every page holds the phone number and a link to the estimate form. The form asks for a name, a phone number, the address of the tree, and what needs doing, plus an optional photo.',
+      },
+    ],
+    build: [
+      {
+        title: 'Every business fact in one file',
+        body: 'The phone number, address, hours, owner, and profile links live in one place, so a change is one edit. A detail that is not settled yet stays empty.',
+      },
+      {
+        title: 'A storm switch',
+        body: 'One setting puts a storm-response bar with the phone number above every page, and switching it off after the storm takes the bar down.',
+      },
+      {
+        title: 'Described to search as a tree service',
+        body: 'The front page, the estimate page, and each town page describe the business to search engines as a tree service, with its address, its hours, and the towns it serves.',
+      },
+    ],
+    stack: ['React 19', 'React Router 7', 'Vite 7', 'Tailwind CSS 3', 'Vercel'],
+  },
   tiretracker: {
     title: 'TireTracker Field Service Software',
     description:

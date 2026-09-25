@@ -125,6 +125,21 @@ export const PORTFOLIO_PROJECTS = [
     hasStudy: true,
   },
   {
+    name: 'Southeast Arbor Care',
+    slug: 'southeast-arbor-care',
+    kind: 'client',
+    url: 'https://southeastarbor.com',
+    displayUrl: 'southeastarbor.com',
+    tagline: 'Tree service · Service-area site',
+    trades: ['tree-service'],
+    town: 'Pasadena',
+    location: 'Pasadena, Texas',
+    description:
+      'Removal, trimming, stump grinding, and storm work, out of a Pasadena family business started in 2000. Every service and every town the trucks work has a page of its own, and on a phone the number to call stays pinned to the bottom of the screen.',
+    pagespeed: { mobile: 92, desktop: 100, runs: 5, measured: '2026-09-25' },
+    hasStudy: true,
+  },
+  {
     name: 'TireTracker',
     slug: 'tiretracker',
     kind: 'product',
