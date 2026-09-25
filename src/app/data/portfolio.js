@@ -130,7 +130,7 @@ export const PORTFOLIO_PROJECTS = [
     kind: 'client',
     url: 'https://southeastarbor.com',
     displayUrl: 'southeastarbor.com',
-    tagline: 'Tree service · Estimate site',
+    tagline: 'Tree service · Service-area site',
     trades: ['tree-service'],
     town: 'Pasadena',
     location: 'Pasadena, Texas',
