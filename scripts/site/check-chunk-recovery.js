@@ -214,6 +214,49 @@ if (renewing) {
   )
 }
 
+// The one import on this site that runs outside the ladder, and what it owes the
+// ladder afterwards.
+//
+// `resolveArrival` asks for the landed route's module ahead of hydration, with
+// the raw loader: no ladder, no build probe, no report. That is deliberate and it
+// is right - a boundary that suspends during hydration throws away the served
+// markup, so the module has to be in hand before the root adopts it, and putting
+// a six-second ladder in front of hydration would cost the page it is there to
+// save. What is not right is losing the rejection. A failed `import()` is
+// recorded against its specifier in the document's module map, keyed by URL and
+// never revisited, so the built address is dead for the life of the document
+// from the moment this pass fails - and `lazyWithRetry` then opened its pass at
+// that same address, spent attempt 0 on a request that was never sent, and fired
+// its one supersession probe off a rejection that had never been near the
+// network. On a build that was present and answering the whole time. That is
+// #671, and `after` was written for the hand-off and never wired to it.
+//
+// Read rather than run: what makes the map poison an address is the browser's,
+// and node's loader re-reads instead, so a check that drove it would be checking
+// node. The measurement is above `refetch`, from #561.
+const arriving = swept.find(entry => entry.name === ROUTES)
+if (arriving) {
+  check(
+    /Promise\.allSettled/.test(arriving.source),
+    'one route chunk failing rejects the whole arrival, so the modules that did arrive are thrown away and hydration goes back to the lazy copy for all of them'
+  )
+  check(
+    /failedOnArrival\.set\(/.test(arriving.source),
+    'the pre-hydration import swallows its rejection, so the built address it has just poisoned in the module map is handed to the ladder as a rung to spend'
+  )
+  check(
+    /after: \(\) => failedOnArrival\.get\(/.test(arriving.source),
+    'the lazy copy is built without `after`, so it opens at the address the arrival already failed at and the map answers it with nothing sent'
+  )
+  // A value read while this map is built is read before anything has been asked
+  // for, so it is always empty and the wiring above would be decoration.
+  check(
+    /after: \(\) =>/.test(arriving.source) &&
+      /typeof after === 'function'/.test(readFileSync(path.join(ROOT, RETRY), 'utf8')),
+    '`after` is read when the view map is built rather than when the view mounts, which is before the arrival has asked for anything, so it is always empty'
+  )
+}
+
 // And the same rung on the route's own chunk, which was the last one without it.
 //
 // The sheet has it and `LateChrome` has it, and both were given it off the same
@@ -391,7 +434,7 @@ if (laddering) {
     'the build probe is allowed to read its own answer out of the cache, so a superseded document is told it is current by the very document that superseded it'
   )
   check(
-    /function renew/.test(laddering.source) && /return renew\(\)/.test(laddering.source),
+    /function renew/.test(laddering.source) && /return renew\(error\)/.test(laddering.source),
     'a superseded build is thrown rather than reloaded, so the recovery arrives through the boundary and the console carries a fault against a file the deploy deleted on purpose'
   )
   check(
@@ -401,6 +444,23 @@ if (laddering) {
   check(
     /recentlyReloaded/.test(laddering.source) && /markReloaded/.test(laddering.source),
     "the ladder keeps a reload budget of its own, so a chunk that stays broken can spend the boundary's reload and its own and trap the tab in a loop"
+  )
+  // Holding forever is right while a newer document is on its way and right
+  // about nothing once the reload has been spent. A reader whose chunk is still
+  // refusing after the one reload is on the Suspense fallback for the rest of
+  // the visit with nothing to press, which is a worse place to be than an error
+  // screen. So the guard being already spent has to leave by the throw.
+  const renewal = laddering.source.slice(
+    laddering.source.indexOf('function renew('),
+    laddering.source.indexOf('export function warm')
+  )
+  check(
+    /recentlyReloaded\(\)\) throw reason/.test(renewal),
+    'a pass that finds the reload already spent still returns a promise that never settles, so the reader is held on the loading state for the rest of the visit with no screen to act on'
+  )
+  check(
+    !/if \(typeof window !== 'undefined' && !recentlyReloaded\(\)\)/.test(renewal),
+    'the reload is asked for inside a condition whose other branch holds forever, which is the arrangement that stranded the reader'
   )
 
   // And the guard both of them spend has to be one guard.
