@@ -92,6 +92,205 @@ check(
 )
 
 /* ------------------------------------------------------------------------ *
+ * 1b. Every figure belongs to the entry holding it.
+ *
+ * Everything above is a question about the shape of a number, and a wrong
+ * number in the right shape passes all of it. On 2026-09-26 a rewrite that
+ * located a figure by matching the `pagespeed` text rather than by the entry's
+ * own span wrote SETX Football's fresh mobile 97 onto Faded Barber Shop and
+ * left SETX Football on its stale 99. Both blocks were well-formed scores,
+ * every surface still read from the data, the average came out plausible, and
+ * this file reported "136 checks hold across 13 entries". A prospect was one
+ * deploy away from a score on a public page that had never been measured
+ * against that site.
+ *
+ * The precondition is not a thing that happened once. `develop` holds two pairs
+ * of entries with byte-identical `pagespeed` lines today - Impressiva Printing
+ * with SETX Football, Dylan Jordan Real Estate with Hollingshead Harbor - and
+ * they are legitimate readings that happened to agree, which is why refusing an
+ * identical line is not the gate. It would red-line a correct tree and block
+ * every release until somebody changed a measurement.
+ *
+ * So the figure is corroborated against a measurement of the entry's own url.
+ * The daily routine has always re-read each entry back against its own scratch
+ * record after writing - that step is what caught the mis-write - and the record
+ * lived in a scratch directory on the machine that took the readings, where no
+ * run of this check could reach it. It is now committed beside the figures, and
+ * the routine writes it in the same run that rewrites them.
+ *
+ * Two medians and not the run count. `runs` is the count the study states and
+ * the routine leaves it alone across a re-measure, so a confirmed reading whose
+ * five runs of record sit in the record against a stored 3 is a correct tree -
+ * deluxfitbyangie.com is one today. The medians are what a reader sees and what
+ * a mis-write swaps, and they are what this holds to.
+ *
+ * And the record's date may run ahead of the stored one, because the routine
+ * advances `measured` only when a figure moved. It may never run behind: a
+ * figure dated later than any measurement of that url is a figure from
+ * somewhere else.
+ * ------------------------------------------------------------------------ */
+
+const PROVENANCE = 'src/app/data/portfolio-provenance.json'
+const provenance = JSON.parse(read(PROVENANCE))
+
+/**
+ * What a set of entries cannot account for against a set of measurements.
+ *
+ * Written as a function over both rather than as a loop over the real data, so
+ * the scenario this exists for can be driven through the same code below rather
+ * than described in a comment beside it.
+ *
+ * @param {Array<object>} projects - Portfolio entries, each with `url`, `slug`
+ *   and `pagespeed`.
+ * @param {{readings: Record<string, object>}} record - Measurements keyed by the
+ *   url they were taken against.
+ * @returns {string[]} One complaint per entry that cannot be accounted for.
+ */
+function unaccounted(projects, record) {
+  const complaints = []
+  for (const project of projects) {
+    const reading = record.readings && record.readings[project.url]
+    if (!reading) {
+      complaints.push(`${project.slug} has no measurement recorded against ${project.url}`)
+      continue
+    }
+    const figures = project.pagespeed || {}
+    if (figures.mobile !== reading.mobile) {
+      complaints.push(
+        `${project.slug} shows mobile ${figures.mobile} and ${project.url} measured ${reading.mobile}`
+      )
+    }
+    if (figures.desktop !== reading.desktop) {
+      complaints.push(
+        `${project.slug} shows desktop ${figures.desktop} and ${project.url} measured ${reading.desktop}`
+      )
+    }
+    if (String(figures.measured) > String(reading.measured)) {
+      complaints.push(
+        `${project.slug} is dated ${figures.measured} and the last measurement of ${project.url} is ${reading.measured}`
+      )
+    }
+  }
+  return complaints
+}
+
+const orphaned = Object.keys(provenance.readings || {}).filter(
+  url => !PORTFOLIO_PROJECTS.some(project => project.url === url)
+)
+
+check(
+  'every entry has a measurement recorded against its own url',
+  PORTFOLIO_PROJECTS.every(project => Boolean((provenance.readings || {})[project.url]))
+)
+const unaccountedFor = unaccounted(PORTFOLIO_PROJECTS, provenance)
+check(
+  `every stored figure is one measured against that entry's own url${
+    unaccountedFor.length ? ` — ${unaccountedFor.join('; ')}` : ''
+  }`,
+  unaccountedFor.length === 0
+)
+check(
+  `the record holds no url the portfolio has dropped${
+    orphaned.length ? ` — ${orphaned.join(', ')}` : ''
+  }`,
+  orphaned.length === 0
+)
+check('the record says which run wrote it', ISO_DATE.test(String(provenance.measured ?? '')))
+
+// The 2026-09-26 mis-write, driven rather than described.
+//
+// Two entries holding byte-identical figures, one of them quoting the other's
+// measurement. Every check above this section passes on it - both are scores,
+// both are dated, both are shaped exactly as a figure should be - which is the
+// whole complaint. This is the case that has to fail.
+const SWAPPED = [
+  {
+    slug: 'faded-barber-shop',
+    url: 'https://faded-barbershop.com',
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-26' },
+  },
+  {
+    slug: 'setx-football',
+    url: 'https://www.setxfootball.org',
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-09-26' },
+  },
+]
+const FIXTURE = {
+  measured: '2026-09-26',
+  readings: {
+    'https://faded-barbershop.com': { mobile: 99, desktop: 100, measured: '2026-09-26' },
+    'https://www.setxfootball.org': { mobile: 97, desktop: 100, measured: '2026-09-26' },
+  },
+}
+const caught = unaccounted(SWAPPED, FIXTURE)
+check(
+  "a figure quoting another row's measurement is refused even where both rows are well-formed",
+  caught.length === 1 && caught[0].includes('faded-barber-shop') && caught[0].includes('mobile 97')
+)
+check(
+  'the row that was not mis-written is left alone',
+  !caught.some(complaint => complaint.includes('setx-football'))
+)
+check(
+  'a figure dated later than any measurement of its own url is refused',
+  unaccounted(
+    [
+      {
+        slug: 'ahead',
+        url: 'https://example.com',
+        pagespeed: { mobile: 99, desktop: 100, measured: '2026-09-27' },
+      },
+    ],
+    {
+      measured: '2026-09-26',
+      readings: {
+        'https://example.com': { mobile: 99, desktop: 100, measured: '2026-09-26' },
+      },
+    }
+  ).length === 1
+)
+check(
+  'an entry with no measurement against its url is refused rather than skipped',
+  unaccounted(
+    [
+      {
+        slug: 'unmeasured',
+        url: 'https://nowhere.example',
+        pagespeed: { mobile: 99, desktop: 100, measured: '2026-09-26' },
+      },
+    ],
+    { measured: '2026-09-26', readings: {} }
+  ).length === 1
+)
+// And a correct tree still passes, which is the half that keeps this from being
+// a gate nobody can land under: two entries agreeing on every figure is a
+// coincidence rather than a fault, and `develop` holds two such pairs today.
+check(
+  'two entries that genuinely measured the same are not refused for agreeing',
+  unaccounted(
+    [
+      {
+        slug: 'one',
+        url: 'https://one.example',
+        pagespeed: { mobile: 97, desktop: 100, measured: '2026-09-26' },
+      },
+      {
+        slug: 'two',
+        url: 'https://two.example',
+        pagespeed: { mobile: 97, desktop: 100, measured: '2026-09-26' },
+      },
+    ],
+    {
+      measured: '2026-09-26',
+      readings: {
+        'https://one.example': { mobile: 97, desktop: 100, measured: '2026-09-26' },
+        'https://two.example': { mobile: 97, desktop: 100, measured: '2026-09-26' },
+      },
+    }
+  ).length === 0
+)
+
+/* ------------------------------------------------------------------------ *
  * 2. The derived figures are the ones the entries add up to.
  * ------------------------------------------------------------------------ */
 
@@ -217,7 +416,7 @@ if (stale.length) {
 
 console.log(
   `check-portfolio-scores: ${cases.length} checks hold across ${PORTFOLIO_PROJECTS.length} entries — ` +
-    `every stored figure is a score, the client sites average ${PORTFOLIO_AVERAGES.mobile} mobile ` +
-    `and ${PORTFOLIO_AVERAGES.desktop} desktop, and all ${SURFACES.length} surfaces that quote a ` +
-    `score read it from the data`
+    `every stored figure is a score measured against that entry's own url, the client sites ` +
+    `average ${PORTFOLIO_AVERAGES.mobile} mobile and ${PORTFOLIO_AVERAGES.desktop} desktop, and ` +
+    `all ${SURFACES.length} surfaces that quote a score read it from the data`
 )
