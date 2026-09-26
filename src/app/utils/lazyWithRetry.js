@@ -290,13 +290,24 @@ async function superseded() {
  * that stays broken still costs exactly one reload and then gets a screen the
  * reader can act on.
  *
- * @returns {Promise<never>} A promise that never settles.
+ * Which is the whole reason this throws when the guard is already spent. Holding
+ * and never settling is right while a reload is on its way, because the
+ * fallback is the last thing this document draws and there is a newer one
+ * arriving behind it. With the reload already taken it is right about nothing:
+ * no document is coming, and a promise that never settles leaves the reader on
+ * the Suspense fallback for the rest of the visit with no error screen, no
+ * retry and nothing to press. The screen the boundary draws is worse-looking
+ * and better - it is the one they can act on.
+ *
+ * @param {unknown} reason - What the pass died of, thrown where no reload is
+ *   left to take.
+ * @returns {Promise<never>} A promise that never settles, where a reload is on
+ *   its way.
  */
-function renew() {
-  if (typeof window !== 'undefined' && !recentlyReloaded()) {
-    markReloaded()
-    window.location.reload()
-  }
+function renew(reason) {
+  if (typeof window === 'undefined' || recentlyReloaded()) throw reason
+  markReloaded()
+  window.location.reload()
   return new Promise(() => {})
 }
 
@@ -337,9 +348,12 @@ export function warm(factory) {
  * @param {() => Promise<{ default: React.ComponentType }>} factory - Dynamic
  *   import returning a module with a default-exported component.
  * @param {{ retries?: number, delayMs?: number, waits?: number, waitMs?: number, after?: unknown }} [options] -
- *   `after` is what an earlier pass at this same piece died of. Given one, the
- *   plain address is skipped: it is the address that already failed, and the
- *   module map will hand back that failure without sending anything.
+ *   `after` is what an earlier pass at this same piece died of, as an error or as
+ *   a function returning one. Given one, the plain address is skipped: it is the
+ *   address that already failed, and the module map will hand back that failure
+ *   without sending anything. A function because the only caller that knows -
+ *   `resolveArrival`, which asks for the landed route's chunk ahead of hydration
+ *   - learns it after this map is built and before React calls the factory.
  * @returns {React.LazyExoticComponent} A lazy component with retry built in.
  */
 export function lazyWithRetry(
@@ -353,7 +367,7 @@ export function lazyWithRetry(
   } = {}
 ) {
   return lazy(async () => {
-    let lastError = after
+    let lastError = typeof after === 'function' ? after() : after
     let forgiven = 0
     // Whether the build has already been asked about. Once per pass: the answer
     // cannot change back, and a document that is superseded is superseded for
@@ -419,7 +433,7 @@ export function lazyWithRetry(
         // that has been replaced is not an outage, and no address recovers it.
         if (!checked) {
           checked = true
-          if (await superseded()) return renew()
+          if (await superseded()) return renew(error)
         }
         // The quick pair widens; everything past it is the long wait, which is
         // the one that reaches the far side of the outage.
