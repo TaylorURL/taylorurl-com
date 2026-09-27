@@ -94,6 +94,7 @@
     "check:live-chat": "node scripts/leads/check-live-chat.js",
     "check:font-coverage": "node scripts/design/check-font-coverage.js",
     "check:portfolio-split": "node scripts/portfolio/check-portfolio-split.js",
+    "write:portfolio-provenance": "node scripts/portfolio/write-provenance.js",
     "check:outreach-segments": "node scripts/outreach/prospects/check-outreach-segments.js",
     "check:outreach-variants": "node scripts/outreach/messages/check-outreach-variants.js",
     "check:outreach-assignment": "node scripts/outreach/messages/check-outreach-assignment.js",
