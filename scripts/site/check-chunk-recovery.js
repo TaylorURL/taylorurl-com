@@ -640,6 +640,39 @@ check(
 )
 
 /* ----------------------------------------------------------------------- *
+ * The ladder the capture frames climb, and who is told about its rungs.
+ * ----------------------------------------------------------------------- */
+
+// A picture the page depends on says so with `data-retry`, and the listener
+// above reads that attribute to tell a failure the reader met from one the
+// element is about to ask again for. `retryImage` puts it on the mark in the
+// navigation bar; the portfolio frame writes its own ladder, because it has a
+// screenshot service past the end of one and a count shared across the page,
+// and for as long as it wrote that ladder without the attribute every rung of
+// it filed a fault of its own. A capture lost to a dropped packet and fetched
+// 350ms later - which the reader never sees - arrived as a ticket naming the
+// built address, indistinguishable from a capture that had genuinely gone.
+//
+// The far end matters as much as the near one. The last ask at this site's own
+// file has to report, so the attribute comes off before it rather than after,
+// exactly as `retryImage` drops it on its own last rung; hold that one too and
+// a capture that is really missing is held on every rung and files nothing at
+// all.
+const FRAME = readFileSync(path.join(APP, 'components/mockups/DevicePreview.jsx'), 'utf8')
+check(
+  /'data-retry':/.test(FRAME),
+  'the capture frame no longer marks the rungs it is still climbing, so a capture fetched on the second ask is filed as a fault the reader met'
+)
+check(
+  /CAPTURE_ASKS - 1 - attempt/.test(FRAME),
+  "the capture frame counts its remaining asks some other way; the attribute has to be gone before the last ask at this site's own file or a missing capture reports nothing"
+)
+check(
+  /left > 0 \? \{ 'data-retry'/.test(FRAME),
+  'the capture frame carries data-retry on a rung with nothing after it, so a capture that has genuinely gone missing is held rather than filed'
+)
+
+/* ----------------------------------------------------------------------- *
  * The import that is the whole application.
  * ----------------------------------------------------------------------- */
 
