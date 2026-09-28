@@ -84,9 +84,27 @@ function PreviewImage({ project, device, priority, stageClassName }) {
   // `data-probe` is what the reporter in the page head reads to tell an ask from
   // a dependency - it holds the failure for the live console and files nothing -
   // and it is here for the same reason the console's favicon lookup carries it.
-  // The rungs before this one are this site's own file and keep reporting, so a
-  // capture that has genuinely gone missing still arrives as a fault.
+  // The rungs before this one are this site's own file, and the last of them
+  // reports, so a capture that has genuinely gone missing still arrives as a
+  // fault.
   const asking = attempt >= CAPTURE_ASKS
+
+  // How many further asks at this site's own file the frame has after the one
+  // it is making now. `data-retry` is the other half of the same reader: the
+  // listener holds a failure from an element still carrying attempts and files
+  // one from an element whose ladder is spent, which is how `retryImage` has
+  // always marked the mark in the navigation bar. This ladder was the one that
+  // never carried it, so each of its first two asks filed a fault of its own
+  // for a capture the third ask was about to fetch - and the reader, who saw
+  // the picture arrive 350ms late, met nothing at all.
+  //
+  // Dropped before the last ask at the site's own file rather than after it,
+  // for the reason `retryImage` drops it there: the rung with nothing after it
+  // has to look like a dependency, or a capture that is genuinely gone is held
+  // on every rung and reports nothing. That rung asks at the built address
+  // carrying a `retry` marker, which `settled()` strips, so a real loss still
+  // files under the address the build wrote.
+  const left = asking ? 0 : CAPTURE_ASKS - 1 - attempt
 
   useEffect(() => () => clearTimeout(waiting.current), [])
 
@@ -142,6 +160,7 @@ function PreviewImage({ project, device, priority, stageClassName }) {
           ref={readSettledImage}
           src={source}
           {...(asking ? { 'data-probe': '' } : null)}
+          {...(left > 0 ? { 'data-retry': String(left) } : null)}
           alt={`The ${project.name} website on a ${device === 'phone' ? 'phone' : 'desktop'}`}
           width={box.width}
           height={box.height}
