@@ -3401,17 +3401,18 @@ export default function OutreachPage() {
                   <ul>
                     <li className="border-hair-paper border-b px-5 py-3">
                       <p className="text-[12px] leading-relaxed text-paper-soft">
-                        Every business gets the same letter, and gets it again every{' '}
-                        {FOLLOW_UP_DAYS} days until it replies or takes itself off the list. Nothing
-                        is drawn and nothing is split, so what one business reads is what all of
-                        them read. Press a name to read it.
+                        Every business gets the introduction first, the meeting ask {FOLLOW_UP_DAYS}{' '}
+                        days later, and the introduction again every {FOLLOW_UP_DAYS} days after
+                        that until it replies or takes itself off the list. Nothing is drawn and
+                        nothing is split, so what one business reads is what all of them read. Press
+                        a name to read it.
                       </p>
                     </li>
                     <li className="border-hair-paper border-b py-1">
                       <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-5 pb-2 pt-3">
                         <span className={`${MONO_LABEL} text-ink-paper`}>Sending</span>
                         <span className="text-paper-faint text-[11px]">
-                          the letter every business hears, monthly
+                          the letters every business hears, {FOLLOW_UP_DAYS} days apart
                         </span>
                       </span>
                       <ul className="divide-hair-paper divide-y">
