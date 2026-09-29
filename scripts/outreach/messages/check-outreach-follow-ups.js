@@ -132,11 +132,11 @@ const drawnFirst = segment =>
       entry.weight > 0
   )
 
-check('every step draws the same letter, in every segment', () => {
-  // The chain is one letter arriving again rather than a sequence of different
-  // ones, so what is owed next month is what arrived this month. A step that
-  // drew something else would be the reader getting a letter the first one did
-  // not promise them.
+check('every step draws its letter, in every segment', () => {
+  // Step two is the second letter, the one that asks for a call. Every step
+  // after it is the introduction arriving again, so what is owed each time
+  // after that is what arrived at step one. A step that drew anything else
+  // would be the reader getting a letter the chain never meant for them.
   for (const segment of SEGMENTS) {
     const row = inSegment(segment)
     same(segmentOf(row), segment, `${segment} row reads as its segment`)
@@ -144,10 +144,11 @@ check('every step draws the same letter, in every segment', () => {
     ok(first, `nothing at all for ${segment}`)
     same(first.id, `${segment}-intro`, `the first letter for ${segment}`)
     for (const step of [2, 3, 4, 13, 120]) {
+      const owed = step === 2 ? `${segment}-intro-meeting` : first.id
       for (const roll of [0, 0.5, 0.99]) {
         const picked = pickVariant({ ...row, variant_id: first.id }, VARIANTS, roll, step)
         ok(picked, `nothing at step ${step} for ${segment}`)
-        same(picked.id, first.id, `the letter drawn at step ${step}, roll ${roll}`)
+        same(picked.id, owed, `the letter drawn at step ${step}, roll ${roll}`)
         ok(!picked.holdout, 'a holdout was drawn at a later step')
       }
     }
@@ -156,7 +157,7 @@ check('every step draws the same letter, in every segment', () => {
 
 check('a chain has no step it runs out at', () => {
   // A step nothing was registered for used to be where a business stopped
-  // hearing from the studio. The letter says one a month, so there is no such
+  // hearing from the studio. The introduction repeats, so there is no such
   // step and the chain ends only when the reader ends it.
   for (const segment of SEGMENTS) {
     for (const step of [1, 2, 5, 40, 500]) {
@@ -199,7 +200,7 @@ check('the one letter takes the whole share of its segment', () => {
 
 check('every segment opens on the one voice that still writes', () => {
   // The laid-out letters and the plain ones are both retired, so every
-  // business opens on the introduction and hears it again each month. A
+  // business opens on the introduction and hears it again every two weeks. A
   // retired letter that finds its way back onto the draw is the one change
   // here nobody would notice from the outside.
   for (const segment of SEGMENTS) {
@@ -425,11 +426,22 @@ check(
 
     const [draft] = inserted(writes)
     same(draft.payload.step, 2, 'the step on the message row')
-    // The same letter as the first, which is what the first one promised: one
-    // of these a month. The subject is its own rather than threaded, since a
-    // reminder is the letter arriving again and not a reply to it.
-    same(draft.payload.variant_id, CONTACTED.variant_id, 'the letter drawn')
-    same(mail.subject, 'Trenton Taylor, TaylorURL', `the subject: ${mail.subject}`)
+    // The second letter, which opens on the first and asks for a call, so it
+    // is threaded as a reply to it. It carries no unsubscribe line of its own,
+    // and the header a mail client offers the way off the list with still
+    // goes with it.
+    same(draft.payload.variant_id, 'slow-site-intro-meeting', 'the letter drawn')
+    same(mail.subject, `Re: ${FIRST_MESSAGE.subject}`, `the subject: ${mail.subject}`)
+    ok(!/Unsubscribe:/.test(mail.text), 'the second letter carries the unsubscribe line')
+    ok(
+      String(mail.headers?.['List-Unsubscribe'] ?? '').includes(UNSUB),
+      'the second letter went without the List-Unsubscribe header'
+    )
+    same(
+      mail.headers?.['List-Unsubscribe-Post'],
+      'List-Unsubscribe=One-Click',
+      'the one-click header'
+    )
 
     const moved = writes.find(sets('update:outreach_prospects', 'step'))
     ok(moved, 'the business was not moved on')
@@ -474,6 +486,14 @@ check('a business deep into its chain is still owed the next one', async () => {
   same(answer.followed, 1, 'follow-ups sent')
   same(answer.closed, 0, 'chains closed')
   same(TRANSPORT.sent.length, 1, 'messages handed to the transport')
+  // The same letter as the first, arriving again. The subject is its own
+  // rather than threaded, since a
+  // reminder is the letter arriving again and not a reply to it, and it
+  // carries the unsubscribe line the second letter goes without.
+  const [mail] = TRANSPORT.sent
+  same(inserted(writes)[0]?.payload.variant_id, CONTACTED.variant_id, 'the letter drawn')
+  same(mail.subject, 'Trenton Taylor, TaylorURL', `the subject: ${mail.subject}`)
+  ok(/Unsubscribe:/.test(mail.text), 'a reminder went without the unsubscribe line')
   const moved = writes.find(sets('update:outreach_prospects', 'step'))
   same(moved.payload.step, 13, 'the step on the business')
   same(
@@ -483,14 +503,43 @@ check('a business deep into its chain is still owed the next one', async () => {
   )
 })
 
-check('a reminder is owed a month on rather than a few days', async () => {
-  // The letter says one a month. A cadence that drifted tighter would make the
-  // message a promise the sender does not keep, which is the one claim in it a
-  // reader can check without leaving their inbox.
-  same(FOLLOW_UP_DAYS, 30, 'days between letters')
+check('the next letter is owed two weeks on', async () => {
+  // The second letter follows the first by two weeks, and the introduction
+  // comes round on the same gap after it.
+  same(FOLLOW_UP_DAYS, 14, 'days between letters')
 })
 
-check('pausing the one letter holds the chain rather than skipping it', async () => {
+check(
+  'a business opened under a retired letter is sent the second letter, not dropped',
+  async () => {
+    // The laid-out letters stopped going out while businesses were still part
+    // way through them. The chain goes on in what still sends rather than
+    // ending the day its next letter comes due, so those businesses hear the
+    // same second letter as everybody else, threaded under the first they got.
+    TRANSPORT.clear()
+    const laid = { ...CONTACTED, variant_id: 'slow-site-audit' }
+    const { db, writes } = stubDb(plan({ due: [laid] }))
+
+    const answer = await atMidAfternoon(() =>
+      sendWork({ db, settings: SENDING, counts: { examined: 0, changed: 0 } })
+    )
+
+    same(answer.followed, 1, 'follow-ups sent')
+    same(answer.closed, 0, 'chains closed')
+    const [mail] = TRANSPORT.sent
+    same(inserted(writes)[0]?.payload.variant_id, 'slow-site-intro-meeting', 'the letter drawn')
+    same(mail?.subject, `Re: ${FIRST_MESSAGE.subject}`, `the subject: ${mail?.subject}`)
+    const moved = writes.find(sets('update:outreach_prospects', 'step'))
+    same(moved?.payload.step, 2, 'the step on the business')
+    same(
+      moved?.payload.next_due_at,
+      new Date(AFTERNOON + FOLLOW_UP_DAYS * DAY_MS).toISOString(),
+      'when the next letter is owed'
+    )
+  }
+)
+
+check('pausing every letter a segment sends holds the chain rather than skipping it', async () => {
   TRANSPORT.clear()
   const paused = VARIANTS.filter(
     entry => entry.segment === 'slow-site' && entry.status === 'live'

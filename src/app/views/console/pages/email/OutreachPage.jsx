@@ -68,11 +68,11 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  * and where one business is looked up - all five under one switch, since they
  * are the same list read at different moments.
  *
- * What the strip is about is the rotation. Outreach is one letter, an
- * introduction, sent to every business alike and sent again every month until
- * they reply or take themselves off, so the two figures that say whether it is
- * working are how many businesses are on that rotation and how many are queued
- * to join it. Both are drawn against a target - ROTATION_TARGET and
+ * What the strip is about is the rotation. Outreach is an introduction, a
+ * meeting ask two weeks on and the introduction again every two weeks after
+ * that, sent to every business alike until they reply or take themselves off,
+ * so the two figures that say whether it is working are how many businesses
+ * are on that rotation and how many are queued to join it. Both are drawn against a target - ROTATION_TARGET and
  * queueFloorFor in lib/outreach/sending/limits.js - because either one alone is a
  * number with nothing to be read against, and the queue falling under its floor
  * is the single reading that says the pipeline has stopped feeding the
@@ -1454,20 +1454,28 @@ function BounceRow({ row }) {
 }
 
 // The letters switched on for one kind at one step. `repeats` is the half a
-// step number cannot carry: the letter that sends is registered at step one
-// and stands at every step after it, which is what a monthly reminder is. This
+// step number cannot carry: the introduction is registered at step one and
+// stands at every step after it, which is what a reminder is. This
 // is `sendsAt` in lib/outreach/variants.js, which is what the sender asks, and
 // reading `step` alone here reported every reminder in the queue as having no
 // letter switched on for it.
 const sendsAt = (entry, step) =>
   entry.repeats ? step >= (entry.step ?? 1) : (entry.step ?? 1) === step
 
-/** The letters switched on for one kind at one step, which is what a draw is made among. */
-const lettersAt = (letters, segment, step) =>
-  letters.filter(
+/**
+ * The letters switched on for one kind at one step, which is what a draw is
+ * made among. A letter written for the step takes it from one that repeats
+ * into it, as `drawn` in lib/outreach/variants.js has it, so step two names
+ * the second letter rather than a draw between it and the introduction.
+ */
+const lettersAt = (letters, segment, step) => {
+  const live = letters.filter(
     entry =>
       !entry.holdout && entry.segment === segment && sendsAt(entry, step) && entry.status === 'live'
   )
+  const own = live.filter(entry => (entry.step ?? 1) === step && entry.weight > 0)
+  return own.length ? own : live
+}
 
 /**
  * A letter's name as the way to it, on the stage in the Letters view. An id
@@ -2819,7 +2827,7 @@ export default function OutreachPage() {
       {
         key: 'rotation',
         label: 'In Rotation',
-        gloss: 'Businesses hearing from the studio every month.',
+        gloss: `Businesses hearing from the studio every ${FOLLOW_UP_DAYS} days.`,
         value: `${fullCount(rotation)} / ${fullCount(ROTATION_TARGET)}`,
         caption: `${fullCount(Math.max(0, ROTATION_TARGET - rotation))} short of the target`,
         tone: rotation ? 'good' : 'plain',
@@ -3393,17 +3401,18 @@ export default function OutreachPage() {
                   <ul>
                     <li className="border-hair-paper border-b px-5 py-3">
                       <p className="text-[12px] leading-relaxed text-paper-soft">
-                        Every business gets the same letter, and gets it again every{' '}
-                        {FOLLOW_UP_DAYS} days until it replies or takes itself off the list. Nothing
-                        is drawn and nothing is split, so what one business reads is what all of
-                        them read. Press a name to read it.
+                        Every business gets the introduction first, the meeting ask {FOLLOW_UP_DAYS}{' '}
+                        days later, and the introduction again every {FOLLOW_UP_DAYS} days after
+                        that until it replies or takes itself off the list. Nothing is drawn and
+                        nothing is split, so what one business reads is what all of them read. Press
+                        a name to read it.
                       </p>
                     </li>
                     <li className="border-hair-paper border-b py-1">
                       <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-5 pb-2 pt-3">
                         <span className={`${MONO_LABEL} text-ink-paper`}>Sending</span>
                         <span className="text-paper-faint text-[11px]">
-                          the letter every business hears, monthly
+                          the letters every business hears, {FOLLOW_UP_DAYS} days apart
                         </span>
                       </span>
                       <ul className="divide-hair-paper divide-y">
