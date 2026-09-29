@@ -1462,12 +1462,20 @@ function BounceRow({ row }) {
 const sendsAt = (entry, step) =>
   entry.repeats ? step >= (entry.step ?? 1) : (entry.step ?? 1) === step
 
-/** The letters switched on for one kind at one step, which is what a draw is made among. */
-const lettersAt = (letters, segment, step) =>
-  letters.filter(
+/**
+ * The letters switched on for one kind at one step, which is what a draw is
+ * made among. A letter written for the step takes it from one that repeats
+ * into it, as `drawn` in lib/outreach/variants.js has it, so step two names
+ * the second letter rather than a draw between it and the introduction.
+ */
+const lettersAt = (letters, segment, step) => {
+  const live = letters.filter(
     entry =>
       !entry.holdout && entry.segment === segment && sendsAt(entry, step) && entry.status === 'live'
   )
+  const own = live.filter(entry => (entry.step ?? 1) === step && entry.weight > 0)
+  return own.length ? own : live
+}
 
 /**
  * A letter's name as the way to it, on the stage in the Letters view. An id
