@@ -137,7 +137,7 @@ import { BIO_PHONE } from '../../lib/mail/bio.js'
 import { ensureShot } from '../../lib/outreach/audit/shot.js'
 import {
   VARIANTS,
-  familyHeld,
+  familyAhead,
   familyOf,
   liveAhead,
   pickVariant,
@@ -367,10 +367,16 @@ export function compose(
       track,
       // The studio's own signature goes under the letter, and the studio's own
       // address is what it links to. It is a place to look rather than an
-      // invitation: nothing in the letter asks the reader to ring or to reply,
-      // and the number the signature carries is there the way a number on a
-      // business card is. The unsubscribe rides along because it is owed.
-      contact: { unsubscribe: contact.unsubscribe, site: homeUrl(track) },
+      // invitation, the way a number on a business card is. The unsubscribe
+      // line rides along unless the letter is registered without it; the
+      // List-Unsubscribe header `deliver` adds goes either way.
+      contact: {
+        unsubscribe: variant.unsubscribeLink === false ? null : contact.unsubscribe,
+        site: homeUrl(track),
+      },
+      // A letter registered unstyled goes out in the reader's own client's
+      // type, on no ground of the studio's.
+      styled: variant.styled !== false,
     }
     return {
       subject: message.subject,
@@ -1172,15 +1178,15 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
     const address = String(prospect.email).toLowerCase()
     const step = (prospect.step ?? 1) + 1
     const segment = segmentOf(prospect)
-    // The chain stays in the family of the first letter, so the step after
-    // this one is asked about within that family and no other.
-    const family = familyHeld(prospect, variants)
+    // The chain stays in the family of the first letter while that family
+    // still sends, and goes on in whatever does once it has been retired, so a
+    // business opened under a letter nobody sends any more is still written to.
+    const family = familyAhead(prospect, variants, step)
 
-    // A chain ends when its family has nothing live left to send, not merely
-    // when the code holds no words for the next step. A family retired outright
-    // leaves every business part way through it owed a letter no draw can
-    // produce, and deferring those forever is a queue that quietly holds people
-    // and reports nothing.
+    // A chain ends when nothing live is left for it at this step or beyond,
+    // not merely when the code holds no words for the next step. Deferring a
+    // business owed a letter no draw can produce would be a queue that quietly
+    // holds people and reports nothing.
     if (held.has(address) || !liveAhead(variants, segment, step, family)) {
       await closeChain(db, prospect)
       counts.changed += 1
@@ -1199,7 +1205,9 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
     const message = await draft(db, prospect, from, shot, letter, {
       ready: true,
       step,
-      prior: prior ? { subject: prior.subject } : null,
+      // The day the first letter went is read by a letter that says how long
+      // ago it was.
+      prior: prior ? { subject: prior.subject, sent_at: prior.sent_at } : null,
     })
 
     if (handed) await wait(SPACING_MAX_MS)
