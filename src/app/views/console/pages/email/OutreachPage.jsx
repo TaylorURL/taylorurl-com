@@ -68,9 +68,9 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  * and where one business is looked up - all five under one switch, since they
  * are the same list read at different moments.
  *
- * What the strip is about is the rotation. Outreach is one letter, an
- * introduction, sent to every business alike and sent again every month until
- * they reply or take themselves off, so the two figures that say whether it is
+ * What the strip is about is the rotation. Outreach is an introduction, a
+ * meeting ask two weeks on and the introduction again every two weeks after
+ * that, sent to every business alike until they reply or take themselves off, so the two figures that say whether it is
  * working are how many businesses are on that rotation and how many are queued
  * to join it. Both are drawn against a target - ROTATION_TARGET and
  * queueFloorFor in lib/outreach/sending/limits.js - because either one alone is a
@@ -1454,8 +1454,8 @@ function BounceRow({ row }) {
 }
 
 // The letters switched on for one kind at one step. `repeats` is the half a
-// step number cannot carry: the letter that sends is registered at step one
-// and stands at every step after it, which is what a monthly reminder is. This
+// step number cannot carry: the introduction is registered at step one and
+// stands at every step after it, which is what a reminder is. This
 // is `sendsAt` in lib/outreach/variants.js, which is what the sender asks, and
 // reading `step` alone here reported every reminder in the queue as having no
 // letter switched on for it.
@@ -2827,7 +2827,7 @@ export default function OutreachPage() {
       {
         key: 'rotation',
         label: 'In Rotation',
-        gloss: 'Businesses hearing from the studio every month.',
+        gloss: `Businesses hearing from the studio every ${FOLLOW_UP_DAYS} days.`,
         value: `${fullCount(rotation)} / ${fullCount(ROTATION_TARGET)}`,
         caption: `${fullCount(Math.max(0, ROTATION_TARGET - rotation))} short of the target`,
         tone: rotation ? 'good' : 'plain',
