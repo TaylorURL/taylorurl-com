@@ -70,9 +70,9 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  *
  * What the strip is about is the rotation. Outreach is an introduction, a
  * meeting ask two weeks on and the introduction again every two weeks after
- * that, sent to every business alike until they reply or take themselves off, so the two figures that say whether it is
- * working are how many businesses are on that rotation and how many are queued
- * to join it. Both are drawn against a target - ROTATION_TARGET and
+ * that, sent to every business alike until they reply or take themselves off,
+ * so the two figures that say whether it is working are how many businesses
+ * are on that rotation and how many are queued to join it. Both are drawn against a target - ROTATION_TARGET and
  * queueFloorFor in lib/outreach/sending/limits.js - because either one alone is a
  * number with nothing to be read against, and the queue falling under its floor
  * is the single reading that says the pipeline has stopped feeding the
