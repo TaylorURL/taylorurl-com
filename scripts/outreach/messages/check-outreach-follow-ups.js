@@ -134,7 +134,7 @@ const drawnFirst = segment =>
 
 check('every step draws its letter, in every segment', () => {
   // Step two is the second letter, the one that asks for a call. Every step
-  // after it is the introduction arriving again, so what is owed each month
+  // after it is the introduction arriving again, so what is owed each time
   // after that is what arrived at step one. A step that drew anything else
   // would be the reader getting a letter the chain never meant for them.
   for (const segment of SEGMENTS) {
@@ -157,7 +157,7 @@ check('every step draws its letter, in every segment', () => {
 
 check('a chain has no step it runs out at', () => {
   // A step nothing was registered for used to be where a business stopped
-  // hearing from the studio. The letter says one a month, so there is no such
+  // hearing from the studio. The introduction repeats, so there is no such
   // step and the chain ends only when the reader ends it.
   for (const segment of SEGMENTS) {
     for (const step of [1, 2, 5, 40, 500]) {
@@ -200,7 +200,7 @@ check('the one letter takes the whole share of its segment', () => {
 
 check('every segment opens on the one voice that still writes', () => {
   // The laid-out letters and the plain ones are both retired, so every
-  // business opens on the introduction and hears it again each month. A
+  // business opens on the introduction and hears it again every two weeks. A
   // retired letter that finds its way back onto the draw is the one change
   // here nobody would notice from the outside.
   for (const segment of SEGMENTS) {
@@ -486,8 +486,8 @@ check('a business deep into its chain is still owed the next one', async () => {
   same(answer.followed, 1, 'follow-ups sent')
   same(answer.closed, 0, 'chains closed')
   same(TRANSPORT.sent.length, 1, 'messages handed to the transport')
-  // The same letter as the first, which is what the first one promised: one
-  // of these a month. The subject is its own rather than threaded, since a
+  // The same letter as the first, arriving again. The subject is its own
+  // rather than threaded, since a
   // reminder is the letter arriving again and not a reply to it, and it
   // carries the unsubscribe line the second letter goes without.
   const [mail] = TRANSPORT.sent
