@@ -98,7 +98,7 @@ import {
   VARIANTS,
   VARIANT_STATUSES,
   WEIGHT_MAX,
-  familyHeld,
+  familyAhead,
   fits,
   isHoldoutId,
   liveAhead,
@@ -827,7 +827,7 @@ async function mail(db) {
       first_subject: firsts.get(prospect.id)?.subject ?? null,
       // What the console shows as the end of a chain is the same question the
       // run asks: whether anything live is left, not whether words exist.
-      ends: !liveAhead(registry, segment, step, familyHeld(prospect, registry)),
+      ends: !liveAhead(registry, segment, step, familyAhead(prospect, registry, step)),
     }
   })
 

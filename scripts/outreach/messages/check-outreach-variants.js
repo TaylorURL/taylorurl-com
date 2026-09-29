@@ -13,11 +13,13 @@
  * The openers are also driven through the real composer against a business of
  * each shape, so what the registry says a business gets is what `compose`
  * actually writes, and both halves of every message still carry the way off
- * the list and the way in.
+ * the list and the way in. The one exception is a letter registered without
+ * the unsubscribe line, which is held to going without it.
  *
  *   npm run check:outreach-variants
  */
-import { BIO_NAME } from '../../../lib/mail/bio.js'
+import { BIO_NAME, BIO_PHONE } from '../../../lib/mail/bio.js'
+import { PORTFOLIO_PROJECTS } from '../../../src/app/data/portfolio.js'
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import {
   HOLDOUTS,
@@ -26,12 +28,15 @@ import {
   fits,
   holdoutId,
   isHoldoutId,
+  pickVariant,
   siteOpener,
   speedOpener,
   sendsAt,
   stepOf,
   variantById,
+  withSettings,
 } from '../../../lib/outreach/variants.js'
+import { sinceFirst } from '../../../lib/outreach/openers/plain/meeting.js'
 import { CANDIDATE_COLUMNS } from '../../../lib/outreach/sending/queue.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
@@ -214,22 +219,117 @@ check('every segment that sends has a first letter to open on', () => {
 })
 
 // A chain used to be four different letters and had to have no gap in it and
-// an end. There is one letter now and it repeats, so what has to hold instead
-// is that it stands at every step: a business is owed the same introduction
-// next month and the month after, and a step it did not stand at would be the
-// month the sender quietly stopped writing.
-check('the letter that sends stands at every step, so a chain never runs out', () => {
+// an end. Now the introduction repeats and stands at every step, and the one
+// letter written for a later step takes step two from it. What has to hold is
+// that every step draws exactly the letter it should: a step that drew nothing
+// would be the month the sender quietly stopped writing, and a step that drew
+// between two letters would be half the businesses hearing the wrong one.
+check('every step draws its one letter, so a chain never runs out', () => {
   for (const segment of SENDING) {
+    const row = { ...FITTING[segment], variant_id: `${segment}-intro` }
     for (const step of [1, 2, 3, 12, 60]) {
       ok(
         VARIANTS.some(entry => entry.segment === segment && sendsAt(entry, step)),
         `${segment} has nothing at step ${step}`
       )
-      const live = VARIANTS.filter(
-        entry => entry.segment === segment && entry.status === 'live' && sendsAt(entry, step)
-      )
-      same(live.length, 1, `${segment} letters live at step ${step}`)
+      const owed = step === 2 ? `${segment}-intro-meeting` : `${segment}-intro`
+      for (const roll of [0, 0.5, 0.99]) {
+        same(pickVariant(row, VARIANTS, roll, step)?.id, owed, `${segment} at step ${step}`)
+      }
     }
+  }
+})
+
+// The second letter taking step two is a precedence rather than a gap in the
+// introduction, so switching it off in the console hands the step back
+// instead of leaving the business owed a letter nothing will write.
+check('switching the second letter off hands step two back to the introduction', () => {
+  const off = withSettings(
+    VARIANTS,
+    SENDING.map(segment => ({ id: `${segment}-intro-meeting`, status: 'paused' }))
+  )
+  for (const segment of SENDING) {
+    const row = { ...FITTING[segment], variant_id: `${segment}-intro` }
+    same(pickVariant(row, off, 0, 2)?.id, `${segment}-intro`, `${segment} at step two`)
+  }
+})
+
+check('the second letter asks once, in the introduction chain, and opens on the first', () => {
+  for (const segment of SENDING) {
+    const entry = variantById(`${segment}-intro-meeting`)
+    ok(entry, `no second letter for ${segment}`)
+    same(stepOf(entry), 2, `${entry.id} step`)
+    same(entry.repeats, false, `${entry.id} repeats`)
+    same(entry.status, 'live', `${entry.id} is`)
+    same(entry.family, 'introduction', `${entry.id} family`)
+    same(entry.plain, true, `${entry.id} is plain`)
+    same(entry.unsubscribeLink, false, `${entry.id} shows the unsubscribe line`)
+    same(entry.styled, false, `${entry.id} is styled`)
+
+    const message = compose(FITTING[segment], null, TRACK, entry, CONTEXT)
+    // No ground and no type of the studio's own: what is left is the words,
+    // the signature and the square, sized and nothing else.
+    ok(message.html.includes('<body>'), `${entry.id} dresses the body`)
+    ok(
+      !/background|font-family|font-size|line-height|color:/i.test(message.html),
+      `${entry.id} carries styling of its own`
+    )
+    ok(
+      message.text.includes('I sent you an email a couple of weeks ago introducing myself.'),
+      `${entry.id} does not open on the first letter`
+    )
+    ok(message.text.includes(`/portfolio?`), `${entry.id} does not link the work`)
+    ok(message.text.includes(BIO_PHONE), `${entry.id} does not give the number`)
+    ok(!/undefined|null/.test(message.text), `${entry.id} reads as a gap`)
+  }
+})
+
+// The opening line says how long ago the first letter went, and it is the one
+// claim in the letter a reader can check against their own inbox. Two weeks is
+// when it is owed, but a business that waited its turn in a long queue hears
+// it later, so the words follow the day the first letter actually went.
+check('the second letter says how long ago the first one went', () => {
+  const at = new Date('2026-10-01T15:00:00Z')
+  const ago = days => new Date(at.getTime() - days * 24 * 60 * 60 * 1000).toISOString()
+  same(sinceFirst(ago(14), at), 'a couple of weeks ago', 'two weeks on')
+  same(sinceFirst(ago(17), at), 'a couple of weeks ago', 'seventeen days on')
+  same(sinceFirst(ago(21), at), 'about three weeks ago', 'three weeks on')
+  same(sinceFirst(ago(30), at), 'about a month ago', 'a month on')
+  same(sinceFirst(ago(60), at), 'a while back', 'two months on')
+  same(sinceFirst(null, at), 'a couple of weeks ago', 'no day to read')
+
+  const entry = variantById('slow-site-intro-meeting')
+  const opened = entry.open(FITTING['slow-site'], WHERE, null, {
+    ...CONTEXT,
+    at,
+    prior: { ...CONTEXT.prior, sent_at: ago(30) },
+  })
+  ok(
+    opened.paragraphs[0].startsWith('I sent you an email about a month ago introducing myself.'),
+    `the opening line: ${opened.paragraphs[0]}`
+  )
+})
+
+// The letter names two clients and links the page they are on. A client
+// taken off the portfolio would leave the letter pointing a reader at a page
+// that does not have them, so the names are held to the page.
+check('the clients the second letter names are on the portfolio it links', () => {
+  const opened = variantById('slow-site-intro-meeting').open(FITTING['slow-site'], WHERE, null, {
+    ...CONTEXT,
+    site: 'https://example.com/portfolio',
+  })
+  const words = opened.paragraphs.join(' ')
+  for (const [name, town] of [
+    ['Speedway 146', 'Baytown'],
+    ['Impressiva Printing', 'Pasadena'],
+  ]) {
+    ok(words.includes(`${name} in ${town}`), `the letter no longer names ${name}`)
+    const project = PORTFOLIO_PROJECTS.find(entry => entry.name === name)
+    ok(project, `${name} is not on the portfolio`)
+    ok(
+      String(project.town ?? project.location ?? '').startsWith(town),
+      `${name} is not in ${town}: ${project.town ?? project.location}`
+    )
   }
 })
 
@@ -459,15 +559,23 @@ for (const entry of VARIANTS) {
         ok(message.subject.startsWith('Re: '), `a follow-up does not thread: ${message.subject}`)
       }
 
+      // A letter registered without the unsubscribe line goes without it in
+      // both halves; every other letter carries it in both. The header a mail
+      // client reads is added by `deliver` and is held in the follow-up check.
       const unsubscribe = unsubscribeUrl(UNSUB)
-      ok(
-        message.html.includes(`href="${unsubscribe}"`),
-        'the laid-out half has no unsubscribe link'
-      )
-      ok(
-        message.text.includes(`Unsubscribe: ${unsubscribe}`),
-        'the plain half has no unsubscribe link'
-      )
+      if (entry.unsubscribeLink === false) {
+        ok(!message.html.includes(unsubscribe), 'the laid-out half has an unsubscribe link')
+        ok(!message.text.includes(unsubscribe), 'the plain half has an unsubscribe link')
+      } else {
+        ok(
+          message.html.includes(`href="${unsubscribe}"`),
+          'the laid-out half has no unsubscribe link'
+        )
+        ok(
+          message.text.includes(`Unsubscribe: ${unsubscribe}`),
+          'the plain half has no unsubscribe link'
+        )
+      }
 
       // A plain letter carries the way off the list, the square that says
       // whether it was opened, and the signature it is signed with. Nothing
