@@ -51,6 +51,42 @@
         "definition": "CHECK ((verdict = ANY (ARRAY['clear'::text, 'watch'::text, 'refuse'::text])))"
       }
     },
+    "new_business_leads": {
+      "site_found_by": {
+        "constraint": "new_business_leads_site_found_by_check",
+        "allows": ["new-domain", "guess"],
+        "definition": "CHECK ((site_found_by = ANY (ARRAY['new-domain'::text, 'guess'::text])))"
+      },
+      "stage": {
+        "constraint": "new_business_leads_stage_check",
+        "allows": [
+          "waiting",
+          "emailable",
+          "phone_only",
+          "contacted",
+          "replied",
+          "unsubscribed",
+          "bounced",
+          "undeliverable",
+          "gave_up"
+        ],
+        "definition": "CHECK ((stage = ANY (ARRAY['waiting'::text, 'emailable'::text, 'phone_only'::text, 'contacted'::text, 'replied'::text, 'unsubscribed'::text, 'bounced'::text, 'undeliverable'::text, 'gave_up'::text])))"
+      }
+    },
+    "new_business_messages": {
+      "status": {
+        "constraint": "new_business_messages_status_check",
+        "allows": ["sent", "failed"],
+        "definition": "CHECK ((status = ANY (ARRAY['sent'::text, 'failed'::text])))"
+      }
+    },
+    "new_business_runs": {
+      "job": {
+        "constraint": "new_business_runs_job_check",
+        "allows": ["source", "check", "send"],
+        "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'check'::text, 'send'::text])))"
+      }
+    },
     "newsletter_issues": {
       "status": {
         "constraint": "newsletter_issues_status_check",
@@ -425,6 +461,11 @@
   },
   "unread": [
     {
+      "table": "client_sites",
+      "constraint": "client_sites_domain_check",
+      "definition": "CHECK (((domain = lower(domain)) AND (domain !~ '^www\\.'::text)))"
+    },
+    {
       "table": "lead_messages",
       "constraint": "lead_messages_body_check",
       "definition": "CHECK (((char_length(body) >= 1) AND (char_length(body) <= 5000)))"
@@ -448,6 +489,16 @@
       "table": "lead_templates",
       "constraint": "lead_templates_subject_check",
       "definition": "CHECK (((char_length(subject) >= 1) AND (char_length(subject) <= 200)))"
+    },
+    {
+      "table": "new_business_settings",
+      "constraint": "new_business_settings_daily_cap_check",
+      "definition": "CHECK (((daily_cap >= 0) AND (daily_cap <= 500)))"
+    },
+    {
+      "table": "new_business_settings",
+      "constraint": "new_business_settings_id_check",
+      "definition": "CHECK ((id = 1))"
     },
     {
       "table": "outreach_call_presence",
