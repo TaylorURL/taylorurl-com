@@ -186,12 +186,15 @@ check('one late invoice: its number, amount, due day, a link on its own line and
   ok(letter.text.startsWith('Hi Dana,\n\n'), 'greeting first')
   ok(
     letter.text.includes(
-      "Invoice EXAMPLE-0001 for $2,099.00 was due October 6 and hasn't been paid."
+      "I haven't received the $2,099.00 for invoice EXAMPLE-0001, which was due October 6."
     ),
     letter.text
   )
   ok(letter.text.includes('\nhttps://pay.example.com/invoice/0001\n'), 'the link sits alone')
-  ok(letter.text.includes("Your website, late.example.com, is offline until it's paid"), 'the site')
+  ok(
+    letter.text.includes('Your website, late.example.com, is offline until you pay the invoice'),
+    'the site'
+  )
   ok(letter.text.endsWith('Trenton Taylor\nTaylorURL'), 'signed')
   ok(letter.html.includes('<a href="https://pay.example.com/invoice/0001">'), 'linked in html')
   ok(!/style=|background|<table/i.test(letter.html), 'no styling in the html')
@@ -209,9 +212,7 @@ check('a refused card is named as the reason, and no site means no site line', (
     sites: [],
   })
   ok(
-    letter.text.includes(
-      "from September 13 hasn't been paid, because the card on file didn't go through."
-    ),
+    letter.text.includes("from September 13, because the card on file didn't go through."),
     letter.text
   )
   ok(!letter.text.includes('offline'), 'no site line')
@@ -232,7 +233,7 @@ check('several invoices share one letter', () => {
   ok(letter.text.includes('EXAMPLE-0001') && letter.text.includes('EXAMPLE-0002'), 'both named')
   ok(
     letter.text.includes(
-      'Your websites, a.example.com and b.example.com, are offline until these are paid'
+      'Your websites, a.example.com and b.example.com, are offline until you pay these invoices'
     ),
     'both sites'
   )
