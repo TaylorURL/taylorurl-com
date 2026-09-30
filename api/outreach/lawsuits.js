@@ -25,6 +25,8 @@
  * sweep reads, and the search itself failing.
  */
 
+import { promises as dns } from 'node:dns'
+
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 import {
@@ -32,6 +34,8 @@ import {
   LAWSUIT_SOURCE,
   SHOPIFY_REASON,
   isShopify,
+  isShopifyCart,
+  isShopifyDns,
   prospectOfSuit,
   siteUrl,
   suitsUrl,
@@ -97,6 +101,44 @@ async function siteOf(docketId) {
 }
 
 /** The site's home page, or null where it would not answer. */
+/**
+ * What a site's host and its www resolve to, for `isShopifyDns`. A lookup that
+ * fails answers nothing, which reads as not Shopify, the same as before.
+ */
+async function resolved(site) {
+  const host = new URL(site).hostname.replace(/^www\./, '')
+  const settle = promise => promise.catch(() => [])
+  const [cnames, apex, www] = await Promise.all([
+    settle(dns.resolveCname(`www.${host}`)),
+    settle(dns.resolve4(host)),
+    settle(dns.resolve4(`www.${host}`)),
+  ])
+  return { cnames, addresses: [...apex, ...www] }
+}
+
+/** What a site answers at Shopify's cart path, or null where it would not answer. */
+async function cartOf(site) {
+  try {
+    const answer = await fetch(new URL('/cart.js', site), {
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TaylorURL)', Accept: 'application/json' },
+    })
+    return answer.ok ? await answer.text() : null
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Whether a site is a Shopify store, asked three ways since each can be turned
+ * away on its own: the DNS, the cart, and the page.
+ */
+async function onShopify(site) {
+  if (isShopifyDns(await resolved(site))) return true
+  if (isShopifyCart(await cartOf(site))) return true
+  return isShopify(await homePage(site))
+}
+
 async function homePage(site) {
   try {
     const answer = await fetch(site, {
@@ -158,7 +200,7 @@ export async function work({ db, settings, counts, now = new Date() }) {
       row.stage = 'unreachable'
       row.site_kind = 'none'
       siteless += 1
-    } else if (isShopify(await homePage(site))) {
+    } else if (await onShopify(site)) {
       row.stage = 'skipped'
       row.skip_reason = SHOPIFY_REASON
       stores += 1
