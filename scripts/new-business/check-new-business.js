@@ -112,6 +112,12 @@ check('a name reads as a person would write it', () => {
   same(displayName("STINKY'S COOKIES, L.L.C."), "Stinky's Cookies", 'apostrophe and dotted suffix')
   same(displayName('C4K DIGITAL LLC'), 'C4K Digital', 'initialism with a digit')
   same(displayName('TBL CYBER, INC.'), 'TBL Cyber', 'initialism with no vowel')
+  same(displayName('EKG CONTRACTORS LLC'), 'EKG Contractors', 'short initials with a vowel')
+  same(displayName('AJ AUTO REPAIR LLC'), 'AJ Auto Repair', 'two-letter initials')
+  same(displayName('ABC HVAC SERVICES LLC'), 'ABC HVAC Services', 'named initials')
+  same(displayName('THE RED FOX INN LLC'), 'The Red Fox Inn', 'short words stay words')
+  same(displayName('SUN AND SEA SPA LLC'), 'Sun and Sea Spa', 'small words and short words')
+  same(displayName('WOLFGANG & CO. LLC'), 'Wolfgang & Co', 'and company')
 })
 
 check('a run reads back past its cursor, and the first reaches three weeks', () => {
@@ -239,14 +245,15 @@ check('the email names the company and its site, and carries its own way off the
     unsub_token: '00000000-0000-4000-8000-000000000001',
   }
   const at = new Date('2026-09-30T15:00:00Z')
-  const [opening, , offer] = paragraphsFor(lead, at)
-  ok(opening.startsWith("I saw Stinky's Cookies was registered in Texas this month."), opening)
+  const [opening, offer] = paragraphsFor(lead, at)
+  ok(opening.startsWith("I saw that Stinky's Cookies was registered in Texas this month."), opening)
   ok(offer.includes('stinkyscookies.com'), offer)
   const message = composeFor(lead, at)
   same(message.to_address, 'jane@stinkyscookies.example', 'lowercased address')
   ok(message.body_text.includes(unsubscribeUrlFor(lead.unsub_token)), 'unsubscribe in the text')
   ok(message.body_html.includes('/api/new-business/unsubscribe?token='), 'unsubscribe in the html')
   ok(!message.body_html.includes('/api/outreach/open'), 'no tracking pixel')
+  ok(message.body_html.includes('I saw that Stinky'), 'the words are still inside it')
 })
 
 check(
