@@ -19,6 +19,7 @@ import {
   websiteIn,
 } from '../../../lib/outreach/prospects/lawsuits.js'
 import {
+  businessName,
   filedOn,
   lawsuitFollowUpOpener,
   lawsuitOpener,
@@ -125,6 +126,14 @@ check('a suit becomes a row that names its case', () => {
   same(prospectOfSuit({ ...SUIT, caseName: 'nothing' }, null), null, 'no defendant, no row')
 })
 
+check('a business is named the way a person writes to it', () => {
+  same(businessName('Cardhaus Games, LLC'), 'Cardhaus Games', 'LLC')
+  same(businessName('Room & Board, Inc.'), 'Room & Board', 'Inc.')
+  same(businessName('Acme Corp.'), 'Acme', 'Corp.')
+  same(businessName('Riverside Dance Studio'), 'Riverside Dance Studio', 'no company form')
+  same(businessName(''), 'your business', 'no name')
+})
+
 check('the court and the day read the way a person says them', () => {
   same(
     courtPhrase('District Court, S.D. New York'),
@@ -141,15 +150,16 @@ check('the court and the day read the way a person says them', () => {
   same(filedOn(null), null, 'no date')
 })
 
-check('the letter names the case, the site and nothing it cannot back', () => {
-  const letter = lawsuitOpener(sued())
+check('the letter names the suit, the site and nothing it cannot back', () => {
+  const letter = lawsuitOpener(sued(), '', null, { phone: '555' })
   const text = letter.paragraphs.join('\n')
   ok(letter.plain, 'a plain letter')
-  same(letter.subject, 'the screen reader lawsuit', 'subject')
+  same(letter.subject, 'Trenton Taylor, TaylorURL', 'the same sender as the introduction')
   ok(
-    text.includes('the Southern District of New York on September 14 (case 1:26-cv-00001)'),
-    'the case'
+    text.includes('Riverside Dance Studio was sued on September 14 because riversidedance.example'),
+    'the suit, with the company form dropped'
   )
+  ok(text.includes('555'), 'carries the number')
   ok(text.includes('WCAG 2.1 AA'), 'the standard')
   ok(text.includes('legal advice'), 'says it is not legal advice')
   ok(!/Baytown|Houston|Texas/.test(text), 'no Texas service area in a letter to New York')
