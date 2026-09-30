@@ -43,6 +43,14 @@ const COPY = {
   },
 }
 
+// Whether the query string named one of the states above. The question is asked
+// of COPY's own keys alone, because a plain `COPY[settled]` is answered by
+// Object.prototype as well: `state=constructor` and `state=toString` both came
+// back truthy, carried the page into a state whose copy is a function, and left
+// the reader an empty heading and no way off the list. Any state this page does
+// not write copy for is a link that did not work, which is what `failed` says.
+const known = settled => Object.prototype.hasOwnProperty.call(COPY, settled)
+
 /**
  * The page an unsubscribe link opens, and the page a reader reaches without one.
  *
@@ -83,7 +91,7 @@ export default function Unsubscribe() {
     if (sent.current) return
     sent.current = true
     if (settled) {
-      setState(COPY[settled] ? settled : 'failed')
+      setState(known(settled) ? settled : 'failed')
       return
     }
     if (!token) {
