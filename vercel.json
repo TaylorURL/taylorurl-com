@@ -12,6 +12,10 @@
       "schedule": "*/30 * * * *"
     },
     {
+      "path": "/api/outreach/lawsuits",
+      "schedule": "5 */3 * * *"
+    },
+    {
       "path": "/api/outreach/enrich",
       "schedule": "*/10 * * * *"
     },

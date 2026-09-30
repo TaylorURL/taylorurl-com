@@ -26,6 +26,7 @@ import { SEGMENTS, segmentOf } from '@lib/outreach/segments.js'
 import { isYoung, youthOf } from '@lib/outreach/prospects/youth.js'
 import { STAGES } from '@lib/outreach/prospects/stages.js'
 import { ASKED_SOURCE } from '@lib/outreach/sending/rank.js'
+import { LAWSUIT_SOURCE } from '@lib/outreach/prospects/lawsuits.js'
 import {
   Area,
   Badge,
@@ -308,6 +309,7 @@ const SOURCE = {
   places: 'Google Places',
   console: 'By Hand',
   [ASKED_SOURCE]: 'Speed Check',
+  [LAWSUIT_SOURCE]: 'Lawsuit',
 }
 
 /**

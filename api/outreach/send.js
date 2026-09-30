@@ -139,6 +139,7 @@ import {
   VARIANTS,
   familyAhead,
   familyOf,
+  letterSourceOf,
   liveAhead,
   pickVariant,
   withSettings,
@@ -960,7 +961,9 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
     const held = messages.get(prospect.id)
     const under = held ? (variants.find(one => one.id === held.variant_id) ?? null) : null
     const stale = Boolean(
-      held && (!under || !liveAhead(variants, segmentOf(prospect), 1, familyOf(under)))
+      held &&
+      (!under ||
+        !liveAhead(variants, segmentOf(prospect), 1, familyOf(under), letterSourceOf(prospect)))
     )
     const variant = held && !stale ? null : pickVariant(prospect, variants, Math.random())
     if (!variant && (!held || stale)) {
@@ -1187,7 +1190,10 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
     // not merely when the code holds no words for the next step. Deferring a
     // business owed a letter no draw can produce would be a queue that quietly
     // holds people and reports nothing.
-    if (held.has(address) || !liveAhead(variants, segment, step, family)) {
+    if (
+      held.has(address) ||
+      !liveAhead(variants, segment, step, family, letterSourceOf(prospect))
+    ) {
       await closeChain(db, prospect)
       counts.changed += 1
       tally.closed += 1
@@ -1253,7 +1259,9 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
 
     const now = new Date().toISOString()
     await markSent(db, message, providerId, now)
-    const next = liveAhead(variants, segment, step + 1, family) ? dueAfter(now) : null
+    const next = liveAhead(variants, segment, step + 1, family, letterSourceOf(prospect))
+      ? dueAfter(now)
+      : null
     const moved = await db
       .from('outreach_prospects')
       .update({ step, next_due_at: next })

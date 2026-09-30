@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.40.5-2f6bff?style=for-the-badge" alt="Version 2026.40.5" />
+  <img src="https://img.shields.io/badge/version-2026.40.6-2f6bff?style=for-the-badge" alt="Version 2026.40.6" />
   <img src="https://img.shields.io/badge/React-19-2f6bff?style=for-the-badge&logo=react&logoColor=white" alt="React 19" />
   <img src="https://img.shields.io/badge/Vite-7-2f6bff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite 7" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-3-2f6bff?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS 3" />
@@ -123,7 +123,7 @@ flowchart TD
     Site -->|"browser errors, straight from the page"| PI
     Console -->|"signed-in session"| ADM["api/*-admin.js, and the proxies to the analytics-summary, console-admin and site-speed functions"] --> DB
     Client["A client project's own deployment"] -->|"bearer secret per project"| NF["api/notify.js"] --> RS
-    Cron["Vercel cron: eight schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js"]
+    Cron["Vercel cron: ten schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js"]
 ```
 
 ## How it works

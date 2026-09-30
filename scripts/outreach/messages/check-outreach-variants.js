@@ -112,7 +112,16 @@ const FITTING = {
  * turns on moved under the band, which is the only condition there is.
  */
 function suited(entry) {
-  const base = FITTING[entry.segment]
+  const base = entry.source
+    ? {
+        ...FITTING[entry.segment],
+        source: entry.source,
+        case_name: 'Doe v. Baytown Plumbing, LLC',
+        case_number: '1:26-cv-00001',
+        case_court: 'District Court, S.D. New York',
+        case_filed_on: '2026-09-14',
+      }
+    : FITTING[entry.segment]
   return fits(entry, base) ? base : { ...base, seo_score: 60 }
 }
 

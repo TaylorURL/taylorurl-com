@@ -165,8 +165,8 @@
     "outreach_runs": {
       "job": {
         "constraint": "outreach_runs_job_check",
-        "allows": ["source", "enrich", "audit", "send", "watch", "ramp"],
-        "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'enrich'::text, 'audit'::text, 'send'::text, 'watch'::text, 'ramp'::text])))"
+        "allows": ["source", "enrich", "audit", "send", "watch", "ramp", "lawsuits"],
+        "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'enrich'::text, 'audit'::text, 'send'::text, 'watch'::text, 'ramp'::text, 'lawsuits'::text])))"
       }
     },
     "outreach_variants": {

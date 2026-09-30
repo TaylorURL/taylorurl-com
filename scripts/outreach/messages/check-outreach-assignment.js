@@ -244,9 +244,12 @@ check('the roll spreads one kind of business across every letter written for it'
   const short = row({ seo_score: 60 })
   // The first letters that are still sending: a follow-up is drawn at its own
   // step, and a retired letter takes no slice of the line at all.
+  // A letter written for another source is never drawn for a business off the
+  // map, so it takes no slice of this line.
   const written = VARIANTS.filter(
     one =>
       one.segment === 'slow-site' &&
+      !one.source &&
       (one.step ?? 1) === 1 &&
       one.status === 'live' &&
       one.weight > 0
