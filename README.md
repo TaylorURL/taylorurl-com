@@ -123,7 +123,7 @@ flowchart TD
     Site -->|"browser errors, straight from the page"| PI
     Console -->|"signed-in session"| ADM["api/*-admin.js, and the proxies to the analytics-summary, console-admin and site-speed functions"] --> DB
     Client["A client project's own deployment"] -->|"bearer secret per project"| NF["api/notify.js"] --> RS
-    Cron["Vercel cron: eight schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js"]
+    Cron["Vercel cron: ten schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js"]
 ```
 
 ## How it works

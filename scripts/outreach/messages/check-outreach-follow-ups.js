@@ -123,10 +123,13 @@ const inSegment = segment => {
 }
 
 /** The letters a business in `segment` can be drawn for its first message. */
+// The first letters a business off the map can be drawn. A letter written for
+// another source is held to that source's businesses by `fits`.
 const drawnFirst = segment =>
   VARIANTS.filter(
     entry =>
       entry.segment === segment &&
+      !entry.source &&
       stepOf(entry) === 1 &&
       entry.status === 'live' &&
       entry.weight > 0
