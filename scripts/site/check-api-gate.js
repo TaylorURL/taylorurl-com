@@ -74,6 +74,7 @@ for (const path of files) {
 // failure that announces itself; it is a reputation dropping over weeks.
 const SCHEDULED = [
   'lib/outreach/runtime.js',
+  'lib/new-business/runtime.js',
   'api/newsletter-due.js',
   'api/social-queue.js',
   'api/social-watch.js',

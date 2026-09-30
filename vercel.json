@@ -36,6 +36,18 @@
       "schedule": "30 * * * *"
     },
     {
+      "path": "/api/new-business/source",
+      "schedule": "15 11 * * *"
+    },
+    {
+      "path": "/api/new-business/check",
+      "schedule": "5,20,35,50 * * * *"
+    },
+    {
+      "path": "/api/new-business/send",
+      "schedule": "3,23,43 13-23 * * 1-6"
+    },
+    {
       "path": "/api/social-queue",
       "schedule": "20 15 * * *"
     },
