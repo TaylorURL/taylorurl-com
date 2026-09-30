@@ -145,7 +145,7 @@ check('the letter names the case, the site and nothing it cannot back', () => {
   const letter = lawsuitOpener(sued())
   const text = letter.paragraphs.join('\n')
   ok(letter.plain, 'a plain letter')
-  same(letter.subject, 'the lawsuit over riversidedance.example', 'subject')
+  same(letter.subject, 'the screen reader lawsuit', 'subject')
   ok(
     text.includes('the Southern District of New York on September 14 (case 1:26-cv-00001)'),
     'the case'
