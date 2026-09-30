@@ -55,6 +55,7 @@ import {
   TH_TIGHT as TH,
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
+import { NewBusinessView } from './NewBusinessView'
 import { Figures } from '../../Figures'
 import { fullCount, percent } from '../../../analytics/lib/format'
 
@@ -310,6 +311,7 @@ const SOURCE = {
   console: 'By Hand',
   [ASKED_SOURCE]: 'Speed Check',
   [LAWSUIT_SOURCE]: 'Lawsuit',
+  'new-business': 'New Business',
 }
 
 /**
@@ -2330,6 +2332,7 @@ const VIEWS = [
   { key: 'overview', label: 'Overview' },
   { key: 'mail', label: 'Mail' },
   { key: 'letters', label: 'Letters' },
+  { key: 'new-business', label: 'New Businesses' },
   { key: 'settings', label: 'Settings' },
 ]
 
@@ -3624,6 +3627,8 @@ export default function OutreachPage() {
           </Panel>
         </Board>
       ) : null}
+
+      {view === 'new-business' ? <NewBusinessView token={token} area="work" /> : null}
 
       {/* One business in full, over the table it was opened from. The head
           names the record rather than the business; the business is named

@@ -123,7 +123,7 @@ flowchart TD
     Site -->|"browser errors, straight from the page"| PI
     Console -->|"signed-in session"| ADM["api/*-admin.js, and the proxies to the analytics-summary, console-admin and site-speed functions"] --> DB
     Client["A client project's own deployment"] -->|"bearer secret per project"| NF["api/notify.js"] --> RS
-    Cron["Vercel cron: ten schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/social-queue.js, api/social-watch.js"]
+    Cron["Vercel cron: thirteen schedules, answered by the studio alone"] --> Jobs["api/outreach/*, api/new-business/*, api/social-queue.js, api/social-watch.js"]
 ```
 
 ## How it works
@@ -249,7 +249,7 @@ The row is the whole of it. Nothing about a new project is a release on this sid
 
 ```
 taylorurl-com/
-├── api/                       Vercel serverless functions, one URL each — the enquiry form, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach and social pipelines on their schedules, the public speed check and site audit, and the build stamp
+├── api/                       Vercel serverless functions, one URL each — the enquiry form, the hand-quoted checkout link and the Stripe webhook, a client's projects, brief and writing help, account deletion, the live chat, the Trustpilot and status proxies, the analytics, console-admin and PageSpeed proxies, the admin reads and writes behind each console section, the notifications door client projects send their own alerts through, the outreach, new-business and social pipelines on their schedules, the public speed check and site audit, and the build stamp
 ├── brand/                     The post cards the queue publishes, the subsidiary's share card, and the faces they draw with
 ├── lib/                       Shared by the functions under api/ and by the console bundle
 │   ├── auth/                  The account a payment opens, and the record of which checkout opened it
