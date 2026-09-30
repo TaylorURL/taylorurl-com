@@ -101,6 +101,7 @@ import {
   familyAhead,
   fits,
   isHoldoutId,
+  letterSourceOf,
   liveAhead,
   withSettings,
   wouldEmptySegment,
@@ -169,7 +170,7 @@ const wentAt = row => Date.parse(row.sent_at || row.created_at) || 0
 // when both it and the console's switch are open.
 const ARMED = process.env.OUTREACH_SEND_ARMED === 'true'
 
-const JOBS = ['source', 'enrich', 'audit', 'send', 'watch', 'ramp']
+const JOBS = ['source', 'lawsuits', 'enrich', 'audit', 'send', 'watch', 'ramp']
 
 // The stages a business stands at while it is still owed a first letter, which
 // is the same four the send queue's own read takes.
@@ -827,7 +828,13 @@ async function mail(db) {
       first_subject: firsts.get(prospect.id)?.subject ?? null,
       // What the console shows as the end of a chain is the same question the
       // run asks: whether anything live is left, not whether words exist.
-      ends: !liveAhead(registry, segment, step, familyAhead(prospect, registry, step)),
+      ends: !liveAhead(
+        registry,
+        segment,
+        step,
+        familyAhead(prospect, registry, step),
+        letterSourceOf(prospect)
+      ),
     }
   })
 
