@@ -15,6 +15,8 @@ import {
   courtPhrase,
   defendantOf,
   isShopify,
+  isShopifyCart,
+  isShopifyDns,
   prospectOfSuit,
   websiteIn,
 } from '../../../lib/outreach/prospects/lawsuits.js'
@@ -110,6 +112,24 @@ check('a Shopify store is told apart from a site that can be rebuilt', () => {
   ok(isShopify('<script>window.Shopify = window.Shopify || {}</script>'), 'the window global')
   ok(!isShopify('<link href="/wp-content/themes/studio/style.css">'), 'a WordPress site')
   ok(!isShopify(null), 'a page that would not load')
+})
+
+check('a Shopify store is known by its DNS when its page turns the reader away', () => {
+  ok(isShopifyDns({ cnames: ['shops.myshopify.com.'] }), 'the shared shops CNAME')
+  ok(isShopifyDns({ cnames: ['a-store.myshopify.com'] }), 'a store of its own')
+  ok(isShopifyDns({ addresses: ['23.227.38.65'] }), "an apex in Shopify's range")
+  ok(
+    !isShopifyDns({ cnames: ['example.map.fastly.net.'], addresses: ['23.185.0.4'] }),
+    'a WordPress host'
+  )
+  ok(!isShopifyDns({}), 'a lookup that answered nothing')
+})
+
+check('a Shopify store behind Cloudflare is known by its cart', () => {
+  ok(isShopifyCart('{"token":"abc","note":null,"item_count":0,"items":[]}'), "Shopify's cart")
+  ok(!isShopifyCart('<!DOCTYPE html><html></html>'), 'a page')
+  ok(!isShopifyCart('{"items":[]}'), 'some other JSON')
+  ok(!isShopifyCart(null), 'nothing')
 })
 
 check('a suit becomes a row that names its case', () => {
