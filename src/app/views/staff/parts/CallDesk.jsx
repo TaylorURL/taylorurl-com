@@ -4,6 +4,7 @@ import { Phone } from 'lucide-react'
 import { useCallDesk } from '@hooks/console/useCallDesk'
 import { useCallsFeed } from '@hooks/console/useCallsFeed'
 import { isTyping } from '@utils/keyboard'
+import { browserStore } from '@utils/storage'
 import {
   callbackLengthsFor,
   CALL_OUTCOMES,
@@ -32,6 +33,38 @@ const FILTERS = Object.freeze({ view: 'list', take: 50 })
 // nobody finishes and the owner stops hearing after the first two.
 const ISSUES_SHOWN = 4
 
+/** Where this tab remembers the businesses one caller has skipped for later. */
+const SKIP_KEY = 'console.calls.skipped'
+
+/**
+ * The businesses this caller skipped in this tab, oldest first, or none.
+ *
+ * A skip is one caller deciding what to ring next rather than a fact about the
+ * business, so it lives in the tab and nowhere else: it files no call, starts
+ * no rest, and a colleague is still handed the business. Holding it past a
+ * reload stops the top of the ranking from handing the same business straight
+ * back, and letting it go with the tab means a new shift opens on the list as
+ * ranked. A browser with no store keeps the skips for as long as the screen
+ * stays open, and a value that does not parse reads as no skips at all.
+ */
+function readSkips(userId) {
+  if (!userId) return []
+  try {
+    const held = JSON.parse(
+      browserStore('sessionStorage')?.getItem(`${SKIP_KEY}.${userId}`) || '[]'
+    )
+    return Array.isArray(held) ? held.filter(id => typeof id === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+/** The same, written back. */
+function writeSkips(userId, skipped) {
+  if (userId)
+    browserStore('sessionStorage')?.setItem(`${SKIP_KEY}.${userId}`, JSON.stringify(skipped))
+}
+
 /**
  * Whether an address is worth sending to.
  *
@@ -57,12 +90,14 @@ function plausibleAddress(address) {
  * known about the business, every call placed to it, and the lines to say - and
  * once the call is marked, the form that logs it.
  *
- * Nobody moves to the next lead without logging this one. The only way past a
- * business is a filed call, and the one shortcut is Bad Lead, which is a filed
- * call too: it says the business should never have been on the list and takes
- * it off, so the next person is not handed it. The one exception is a business
- * somebody else has already logged since it was opened here, which Next steps
- * over because there is nothing left to file.
+ * A business is passed by filing a call, with two exceptions that are not the
+ * same thing. Bad Lead is a filed call too: it says the business should never
+ * have been on the list and takes it off, so the next person is not handed it.
+ * Skip for Later files nothing. It puts the business behind everything else in
+ * this caller's queue - no attempt on the record, no rest, nothing a colleague
+ * sees - and hands it back once nothing else in reach is left. A business
+ * somebody else has already logged since it was opened here is stepped over by
+ * Next, because there is nothing left to file.
  *
  * The form is not drawn before the call is marked. A screen that offers nine
  * outcomes and a comment box to somebody who has not dialed yet reads as a form
@@ -108,12 +143,22 @@ export default function CallDesk({ Shell }) {
   const desk = useCallDesk({ token, userId, enabled: Boolean(token) })
   const feed = useCallsFeed({ token, enabled: Boolean(token), filters: FILTERS })
   const wide = useDesk()
-  // A phone's foot has room for three short keys and not for a long one: the
-  // armed label says the whole of what it does where there is room, and the
-  // one word that matters where there is not.
+  // A phone's foot has room for short keys and not for long ones: the armed
+  // label and the skip say the whole of what they do where there is room, and
+  // the one word that matters where there is not.
   const roomy = useDesk('(min-width: 768px)')
 
   const [trail, setTrail] = useState([])
+  // The businesses put off with Skip for Later, oldest first. Read before the
+  // write below so a session landing after the first render restores the
+  // caller's skips rather than saving an empty list over them.
+  const [skipped, setSkipped] = useState(() => readSkips(userId))
+  useEffect(() => {
+    setSkipped(readSkips(userId))
+  }, [userId])
+  useEffect(() => {
+    writeSkips(userId, skipped)
+  }, [userId, skipped])
   const [cursor, setCursor] = useState(0)
   const [marked, setMarked] = useState(false)
   const [outcome, setOutcome] = useState(null)
@@ -165,7 +210,21 @@ export default function CallDesk({ Shell }) {
   // A business the trail remembers but the list no longer offers has been dealt
   // with - by this caller a moment ago, or by somebody else while they read it.
   const spent = Boolean(at) && !queue.some(row => row.id === at)
-  const next = queue.find(row => !trail.includes(row.id)) ?? null
+  // The list as ranked, less what was skipped. A skipped business comes back
+  // only once nothing else in reach is left, the oldest skip first.
+  const next =
+    queue.find(row => !trail.includes(row.id) && !skipped.includes(row.id)) ??
+    skipped
+      .map(id => queue.find(row => row.id === id))
+      .find(row => row && !trail.includes(row.id)) ??
+    null
+
+  // A skipped business back on screen - handed back once the rest ran out, or
+  // opened by name from the call list - is no longer put off.
+  useEffect(() => {
+    if (!at) return
+    setSkipped(held => (held.includes(at) ? held.filter(id => id !== at) : held))
+  }, [at])
 
   // A business named in the address opens first. It is taken once and then
   // forgotten: the caller works on from it, and the name in the address is the
@@ -265,6 +324,19 @@ export default function CallDesk({ Shell }) {
     await desk.dropNumber()
     onward()
   }, [current, armed, feed, desk, onward])
+
+  // Skip for Later swaps the business out of the trail for the next one in the
+  // same slot, so the cursor lands on the next business and Back never returns
+  // to the skipped one. Nothing is filed and nothing is released by hand: the
+  // claim moves with the screen, and taking the next number gives this one
+  // back to the board.
+  const skip = useCallback(() => {
+    if (!current || !next || feed.saving) return
+    const id = current.id
+    const after = next.id
+    setSkipped(held => [...held.filter(one => one !== id), id])
+    setTrail(held => [...held.filter(one => one !== id), after])
+  }, [current, next, feed.saving])
 
   // The business's audit as the caller reads it out. The row carries the four
   // scores and a trimmed copy of the report; this is the only place that turns
@@ -372,6 +444,14 @@ export default function CallDesk({ Shell }) {
               disabled={feed.saving}
             >
               {armed ? (roomy ? 'Confirm Bad Lead' : 'Confirm') : 'Bad Lead'}
+            </button>
+            <button
+              type="button"
+              className="staff-quiet"
+              onClick={skip}
+              disabled={!next || feed.saving}
+            >
+              {roomy ? 'Skip for Later' : 'Skip'}
             </button>
             <button type="button" className="staff-btn" onClick={() => setMarked(true)}>
               Mark as Called
