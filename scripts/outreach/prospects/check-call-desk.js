@@ -669,6 +669,18 @@ check('the screen says who already sent the audit', () => {
   ok(SCREEN.includes('audit_emailed_to'), 'the screen does not say where it went')
 })
 
+check('skipping a lead files nothing and is remembered', () => {
+  // A skip is one caller choosing what to ring next. Filed as a call it would
+  // put an attempt on the record that nobody made, rest the business, and
+  // count toward the shift for a number nobody dialled.
+  ok(SCREEN.includes('Skip for Later'), 'the control that puts a lead off is gone')
+  const skip = SCREEN.match(/const skip = useCallback\(([\s\S]*?)\n {2}\}, \[/)?.[1] ?? ''
+  ok(skip.length > 0, 'the skip handler is not where this check reads it')
+  ok(!/feed\.record/.test(skip), 'skipping a lead files a call')
+  ok(/setSkipped/.test(skip), 'skipping a lead does not remember it was skipped')
+  ok(/sessionStorage/.test(SCREEN), 'a reload hands the skipped lead straight back')
+})
+
 // ── The columns the screen draws it all from ─────────────────────────────
 
 const DOOR = read('api/calls-admin.js')
