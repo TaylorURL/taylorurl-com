@@ -35,7 +35,6 @@ async function board(db, query) {
     })
     .range(page * PAGE, page * PAGE + PAGE - 1)
   if (stage) listing = listing.eq('stage', stage)
-  else listing = listing.neq('stage', 'waiting')
 
   const [settings, sent, runs, list, ...counted] = await Promise.all([
     db
