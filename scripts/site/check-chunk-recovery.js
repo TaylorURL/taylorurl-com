@@ -672,6 +672,34 @@ check(
   'the capture frame carries data-retry on a rung with nothing after it, so a capture that has genuinely gone missing is held rather than filed'
 )
 
+// The process shots on the home page are the one place a picture the page
+// depends on is drawn from a `srcset`, and for as long as they were drawn with no
+// ladder at all they were the two files on this site a dropped packet could take
+// for good: one `error` event, an empty box, and a 404 answered with the day's
+// `Cache-Control` so the next page view asks a cache holding the failure. #704
+// and #705 were both of them, lost in one page view by one reader off an ad.
+//
+// Two things are checked and they are not the same thing. The element has to
+// carry the ladder, and the ladder has to reach the cuts: width descriptors in
+// `srcset` leave `src` out of the browser's selection entirely, so a rung that
+// moves `src` alone on an element like this one asks for nothing and the reader
+// still loses the picture. A ladder that cannot be seen to climb is worse than
+// none, because the reporter holds every rung of it and files the loss nowhere.
+const SHOT = readFileSync(path.join(APP, 'components/mockups/PaletteShot.jsx'), 'utf8')
+check(
+  /data-retry=\{String\(RETRY_ATTEMPTS\)\}/.test(SHOT) && /onError=/.test(SHOT),
+  'a process shot is drawn with no ladder, so one dropped request takes it off the home page until the reader clears their cache'
+)
+check(
+  /naturalWidth !== 0/.test(SHOT),
+  'a process shot that settled before React attached its handler is never read, and these routes are rendered to markup at build time, so that race is lost often rather than rarely'
+)
+const LADDER = readFileSync(path.join(APP, 'utils/retryImage.js'), 'utf8')
+check(
+  /getAttribute\('srcset'\)/.test(LADDER) && /removeAttribute\('srcset'\)/.test(LADDER),
+  'the ladder moves src alone; an element choosing between cuts ignores src, so every rung would be a request the browser never makes'
+)
+
 /* ----------------------------------------------------------------------- *
  * The import that is the whole application.
  * ----------------------------------------------------------------------- */
