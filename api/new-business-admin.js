@@ -16,6 +16,13 @@ import { LEAD_STAGES } from '../lib/new-business/stages.js'
 
 const PAGE = 50
 
+/**
+ * A company the view shows: one with a site, an email or a phone. A filing
+ * with only a name on it is nothing a person can act on, so it stays on file
+ * for the check job and out of the list and its counts.
+ */
+const REACHABLE = 'website.not.is.null,email.not.is.null,phone.not.is.null'
+
 const LEAD_COLUMNS =
   'id, name, formed_on, city, state, stage, website, site_found_by, email, phone, checks, next_check_at, contacted_at, created_at'
 
@@ -24,11 +31,16 @@ async function board(db, query) {
   const page = Math.max(0, Number.parseInt(query.page, 10) || 0)
 
   const counting = LEAD_STAGES.map(name =>
-    db.from('new_business_leads').select('id', { count: 'exact', head: true }).eq('stage', name)
+    db
+      .from('new_business_leads')
+      .select('id', { count: 'exact', head: true })
+      .eq('stage', name)
+      .or(REACHABLE)
   )
   let listing = db
     .from('new_business_leads')
     .select(LEAD_COLUMNS, { count: 'exact' })
+    .or(REACHABLE)
     .order(stage === 'contacted' ? 'contacted_at' : 'formed_on', {
       ascending: false,
       nullsFirst: false,
