@@ -258,7 +258,7 @@ export function NewBusinessView({ token, area = 'work' }) {
 
       <Panel
         area="list"
-        title={stage ? STAGE[stage].label : 'Found Online'}
+        title={stage ? STAGE[stage].label : 'All Companies'}
         aside={`${fullCount(data?.total ?? 0)} companies`}
         loading={!data}
         busy={loading && Boolean(data)}
@@ -279,9 +279,7 @@ export function NewBusinessView({ token, area = 'work' }) {
                 <SkeletonRows cols={COLUMNS.length} rows={8} />
               ) : !data?.leads?.length ? (
                 <EmptyRow cols={COLUMNS}>
-                  {stage
-                    ? 'No companies at this stage yet.'
-                    : 'No company has been found online yet.'}
+                  {stage ? 'No companies at this stage yet.' : 'No company is on file yet.'}
                 </EmptyRow>
               ) : (
                 data.leads.map(lead => (
