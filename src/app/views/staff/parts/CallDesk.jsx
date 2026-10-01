@@ -16,11 +16,12 @@ import {
 import { auditReading } from '@lib/outreach/audit/reading.js'
 import { heldByOther } from '@lib/outreach/prospects/callPresence.js'
 import { DEFAULT_GOALS } from '@lib/outreach/prospects/callShift.js'
-import { scriptFor } from '@lib/outreach/prospects/handbook.js'
+import { contactNameOf, scriptFor } from '@lib/outreach/prospects/handbook.js'
 import { useStaff } from '../lib/context'
 import { usePortalNav } from '../lib/nav'
 import { useDesk } from '../lib/surface'
 import { NOTE_STAMPS, callDay, callLine, callMoment, marksFor } from '../lib/call'
+import PlacePanel from './PlacePanel'
 
 // The whole list, ranked, in one read. A representative works the top of it and
 // never pages, so the page size is only how far ahead this screen can see when
@@ -87,8 +88,9 @@ function plausibleAddress(address) {
  *
  * One business at a time, and the order is the list's own ranking rather than
  * anything chosen here. What is on screen is the next number to call, what is
- * known about the business, every call placed to it, and the lines to say - and
- * once the call is marked, the form that logs it.
+ * known about the business - down to who to ask for, where the record knows a
+ * name - every call placed to it, the lines to say, its photos and a map of
+ * where it is, and once the call is marked, the form that logs it.
  *
  * A business is passed by filing a call, with two exceptions that are not the
  * same thing. Bad Lead is a filed call too: it says the business should never
@@ -397,6 +399,9 @@ export default function CallDesk({ Shell }) {
   // The caller's own name goes into the opener, so the line a representative
   // reads out loud is theirs rather than a slot they have to fill.
   const script = useMemo(() => (current ? scriptFor(current, name) : []), [current, name])
+  // Somebody at the business the record knows by name, which the script's
+  // greeting already asks for and the facts put beside the number.
+  const contact = current ? contactNameOf(current) : null
 
   const placed = shift?.placed ?? 0
   const progress = `${placed} / ${goals.calls} calls`
@@ -519,6 +524,12 @@ export default function CallDesk({ Shell }) {
             </a>
 
             <dl className="staff-pairs staff-facts" key={`${current.id}-facts`}>
+              {contact && (
+                <div>
+                  <dt>Ask For</dt>
+                  <dd className="staff-contact">{contact}</dd>
+                </div>
+              )}
               <div>
                 <dt>Address</dt>
                 <dd>{current.address || 'Not on file'}</dd>
@@ -778,17 +789,21 @@ export default function CallDesk({ Shell }) {
             </div>
           </div>
 
-          <details className="staff-fold staff-script" open={wide || undefined}>
-            <summary>Script</summary>
-            <div className="staff-fold-body">
-              {script.map(beat => (
-                <div className="staff-beat" key={beat.id}>
-                  <p className="staff-label">{beat.label}</p>
-                  <p>{beat.say}</p>
-                </div>
-              ))}
-            </div>
-          </details>
+          <div className="staff-side">
+            <details className="staff-fold staff-script" open={wide || undefined}>
+              <summary>Script</summary>
+              <div className="staff-fold-body">
+                {script.map(beat => (
+                  <div className="staff-beat" key={beat.id}>
+                    <p className="staff-label">{beat.label}</p>
+                    <p>{beat.say}</p>
+                  </div>
+                ))}
+              </div>
+            </details>
+
+            <PlacePanel row={current} token={token} />
+          </div>
         </div>
       )}
     </Shell>
