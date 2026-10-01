@@ -25,10 +25,11 @@
  * cosmetic fault: a dropped newest call silently changes the run, the wait,
  * the place and the score of the business it belonged to.
  *
- * Two verbs. GET answers the list. POST records one call - an outcome, a note
- * in whoever's own words, and a time to ring back where one was named. Nothing
- * composes a note, and nothing sends anything: the whole point of this section
- * is that a person picks up a phone.
+ * Two verbs. GET answers the list, or with `photos` naming a business, that
+ * business's photos off its Google listing. POST records one call - an outcome,
+ * a note in whoever's own words, and a time to ring back where one was named.
+ * Nothing composes a note, and nothing sends anything: the whole point of this
+ * section is that a person picks up a phone.
  *
  * A recorded call also settles who the business belongs to, where nobody holds
  * it yet. That write is here rather than anywhere else because it is the same
@@ -81,8 +82,12 @@ import {
   SORT_IDS,
 } from '../lib/outreach/prospects/callPrefs.js'
 import { callsToday, countsOf } from '../lib/outreach/prospects/callShift.js'
+import { placePhotos } from '../lib/outreach/prospects/placePhotos.js'
 
 const PROSPECTS = 'outreach_prospects'
+
+/** The key the map sweep searches with, which also reads a listing's photos. */
+const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY || ''
 const CALLS = 'outreach_calls'
 const PROFILES = 'profiles'
 
@@ -147,6 +152,9 @@ const LIST_UNREAD = 'The call list could not be read. Try again in a moment.'
 
 /** What is said when a call will not go on the record. */
 const NOT_RECORDED = 'That call could not be saved. Try again in a moment.'
+
+/** What is said when a business's photos will not come back. */
+const PHOTOS_UNREAD = 'The photos did not load.'
 
 /**
  * What a driver said, turned into an answer the console can print.
@@ -826,6 +834,34 @@ async function claim(db, prospectId, userId) {
   return data?.assigned_to ?? null
 }
 
+/**
+ * One business's photos, read off the Google listing it was found through.
+ *
+ * Asked for one business at a time, as a caller arrives on it, rather than
+ * carried on every row of the list: each photo is a billed request to Google,
+ * and the list is fifteen hundred businesses of which a caller sees one.
+ *
+ * `listed` tells the screen which nothing an empty answer is. A business added
+ * by hand has no listing to read, which is a different fact from a listing that
+ * holds no photos.
+ */
+async function photos(db, value) {
+  const id = uuid(value)
+  if (!id) return { status: 400, body: { error: 'That is not a business on the list.' } }
+  const { data, error } = await db.from(PROSPECTS).select('place_id').eq('id', id).maybeSingle()
+  if (error) return refusal(error, PHOTOS_UNREAD)
+  if (!data) return { status: 404, body: { error: 'That business is not on the list.' } }
+  if (!data.place_id) return { status: 200, body: { photos: [], listed: false } }
+  if (!PLACES_KEY) return { status: 503, body: { error: 'Google photos are not set up here.' } }
+  try {
+    const found = await placePhotos(data.place_id, { key: PLACES_KEY })
+    return { status: 200, body: { photos: found, listed: true } }
+  } catch (cause) {
+    console.error('calls-admin photos: %s', cause.message)
+    return { status: 502, body: { error: PHOTOS_UNREAD } }
+  }
+}
+
 export default async function handler(request, response) {
   if (!servedHereOr404(request, response)) return
 
@@ -847,14 +883,20 @@ export default async function handler(request, response) {
     const account = await authorizeCaller(wired, authorization)
     if (account.status) return response.status(account.status).json({ error: account.error })
 
+    const query = request.query ?? {}
     let answer
     try {
       answer =
-        request.method === 'GET'
-          ? await list(wired.db, request.query ?? {}, account)
-          : await record(wired.db, request.body ?? {}, account)
+        request.method === 'POST'
+          ? await record(wired.db, request.body ?? {}, account)
+          : query.photos
+            ? await photos(wired.db, query.photos)
+            : await list(wired.db, query, account)
     } catch (cause) {
-      answer = refusal(cause, request.method === 'POST' ? NOT_RECORDED : LIST_UNREAD)
+      answer = refusal(
+        cause,
+        request.method === 'POST' ? NOT_RECORDED : query.photos ? PHOTOS_UNREAD : LIST_UNREAD
+      )
     }
     return response.status(answer.status).json(answer.body)
   } catch (cause) {

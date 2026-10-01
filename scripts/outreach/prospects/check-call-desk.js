@@ -92,6 +92,8 @@ import {
   ownerOf,
   PULLS,
 } from '../../../lib/outreach/prospects/calls.js'
+import { PHOTOS_SHOWN, placePhotos } from '../../../lib/outreach/prospects/placePhotos.js'
+import { mapFrameHref, mapQuery } from '../../../lib/outreach/prospects/map.js'
 import { read } from '../../harness/files.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
@@ -700,6 +702,108 @@ check('the list names every column the reading is taken from', () => {
 
 check('the list hands over a name for whoever sent the audit', () => {
   ok(/audit_emailed_by_name:/.test(DOOR), 'the row carries an id where the screen draws a name')
+})
+
+// ── The photos and the map ───────────────────────────────────────────────
+
+/**
+ * Google, as far as the photo read can tell: a listing with `count` photos,
+ * each answering for its address unless its index is in `refused`. Every
+ * request is kept, so a case can read what was asked and with which headers.
+ */
+function google({ count = 6, refused = [], listing = 200 } = {}) {
+  const asked = []
+  const fetcher = async (url, init) => {
+    asked.push({ url, headers: init?.headers ?? {} })
+    if (url.includes('/media?')) {
+      const at = Number(url.match(/photos\/p(\d+)\//)?.[1])
+      if (refused.includes(at)) return { ok: false, status: 500, json: async () => ({}) }
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({ photoUri: `https://lh3.example/p${at}` }),
+      }
+    }
+    if (listing !== 200) return { ok: false, status: listing, json: async () => ({}) }
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        photos: Array.from({ length: count }, (_, at) => ({
+          name: `places/ChIJ1/photos/p${at}`,
+          widthPx: 1200,
+          heightPx: 900,
+          authorAttributions: [{ displayName: `Author ${at}`, uri: `https://maps.example/a${at}` }],
+        })),
+      }),
+    }
+  }
+  return { asked, fetcher }
+}
+
+check('a listing is read for its photos alone, and only as many as are shown', async () => {
+  const { asked, fetcher } = google({ count: 9 })
+  const found = await placePhotos('ChIJ1', { key: 'k', fetcher })
+  same(found.length, PHOTOS_SHOWN, 'the photos handed back')
+  // Asking for any other field moves the read into a dearer tier for every
+  // business a caller opens.
+  same(asked[0].headers['X-Goog-FieldMask'], 'photos', 'the fields asked of the listing')
+  same(asked.length, 1 + PHOTOS_SHOWN, 'a media request for every photo shown and no more')
+  ok(
+    asked.every(one => !one.url.includes('key=')),
+    'the key went out in an address, where a log or a redirect keeps it'
+  )
+  same(
+    JSON.stringify(found[0].by),
+    JSON.stringify([{ name: 'Author 0', uri: 'https://maps.example/a0' }]),
+    'who took it'
+  )
+})
+
+check('a photo that will not come back is left out rather than failing the rest', async () => {
+  const { fetcher } = google({ count: 4, refused: [1] })
+  const found = await placePhotos('ChIJ1', { key: 'k', fetcher })
+  same(
+    found.map(photo => photo.uri).join(' '),
+    'https://lh3.example/p0 https://lh3.example/p2 https://lh3.example/p3',
+    'the photos that did'
+  )
+})
+
+check('a listing that refuses is thrown without the key in it', async () => {
+  const { fetcher } = google({ listing: 403 })
+  let said = ''
+  try {
+    await placePhotos('ChIJ1', { key: 'sekret', fetcher })
+  } catch (cause) {
+    said = cause.message
+  }
+  ok(said.includes('403'), 'the refusal does not say what Google answered')
+  ok(!said.includes('sekret'), 'the refusal carries the key')
+})
+
+check('the list endpoint reads photos for one business and keeps the key', () => {
+  ok(/query\.photos/.test(DOOR), 'the endpoint no longer answers a photo read')
+  ok(/listed: false/.test(DOOR), 'a business with no listing reads as one with no photos')
+  ok(/GOOGLE_PLACES_API_KEY/.test(DOOR), 'the photo read lost the Places key')
+})
+
+check('the map finds the business by name and address, without a key', () => {
+  same(
+    mapQuery({ name: 'Bayou Welding', address: '1200 Decker Dr, Baytown, TX 77520' }),
+    'Bayou Welding, 1200 Decker Dr, Baytown, TX 77520',
+    'a business with an address'
+  )
+  same(
+    mapQuery({ name: 'Bayou Welding', town: 'Baytown' }),
+    'Bayou Welding, Baytown, TX',
+    'a town alone'
+  )
+  same(mapQuery({ name: 'Bayou Welding' }), null, 'nowhere to put it')
+  const href = mapFrameHref('Bayou Welding, Baytown, TX')
+  ok(href.includes('output=embed'), 'the map is not one a frame will draw')
+  ok(!/key=/.test(href), 'a key went into the browser')
+  ok(SCREEN.includes('<PlacePanel'), 'the call screen no longer shows the photos and the map')
 })
 
 await finish()

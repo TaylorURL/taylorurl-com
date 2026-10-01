@@ -50,6 +50,7 @@ import {
   PLACES_TO_SEND,
   PUSHBACK,
   QUESTIONS,
+  contactNameOf,
   handbookMatches,
   scriptFor,
 } from '../../../lib/outreach/prospects/handbook.js'
@@ -632,6 +633,40 @@ check('every folded answer can be opened and shut without twenty presses', () =>
   // sharing one would open and shut together, which is silent and looks like a
   // bug in the fold rather than in the key.
   ok(drawn.includes('`${part}:${id}`'), 'the two lists no longer fold under separate keys')
+})
+
+// ── The name to ask for ─────────────────────────────────────────────────
+
+check('a real first name on file is asked for, and anything else is not', () => {
+  // A receptionist puts through a call for somebody by name, and a caller who
+  // asks for the wrong name has told them the call is a guess. So only a name
+  // the list of first names knows is used, and a mailbox that is not one says
+  // nothing at all.
+  same(contactNameOf(business({ email: 'maria.g@example.com' })), 'Maria', 'a name off the address')
+  same(contactNameOf(business({ email: 'info@example.com' })), null, 'a shared inbox')
+  same(contactNameOf(business({ email: 'dfence@example.com' })), null, 'a word that is not a name')
+  same(contactNameOf(business()), null, 'no address at all')
+  same(
+    contactNameOf(business({ email: 'info@example.com', audit_emailed_to: 'danny@example.com' })),
+    'Danny',
+    'the address a caller typed while on the phone'
+  )
+
+  const greet = row => scriptFor(row).find(line => line.id === 'greeting').say
+  same(greet(business({ email: 'maria@example.com' })), 'Hi, is Maria around?', 'the named ask')
+  same(greet(business()), 'Hi, is the owner around?', 'the ask with no name')
+  ok(
+    greet(business({ email: 'maria@example.com', calls: [{ outcome: 'gatekeeper' }] })).endsWith(
+      'Is Maria around?'
+    ),
+    'the second call to a business drops the name it asked for'
+  )
+})
+
+check('the call screen puts the name beside the number', () => {
+  const desk = read('src/app/views/staff/parts/CallDesk.jsx')
+  ok(desk.includes('contactNameOf('), 'the screen no longer reads the name to ask for')
+  ok(desk.includes('Ask For'), 'the name is read and never shown')
 })
 
 // ── Run them ────────────────────────────────────────────────────────────
