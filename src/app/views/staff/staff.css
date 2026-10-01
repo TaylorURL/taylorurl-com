@@ -330,7 +330,8 @@
 
 /* ── The call screen ─────────────────────────────────────────────────────── */
 
-/* Three blocks: who is being called, what is done about it, and what to say.
+/* Three blocks: who is being called, what is done about it, and what to say -
+   with what the business looks like and where it is under the lines to say.
    A phone stacks them in that order, with the log form arriving under the
    number the moment the call is marked. A desk stands the first two side by
    side and the script under the business; a wide desk gives the script a
@@ -352,8 +353,12 @@
 }
 
 @media (min-width: 1024px) {
+  /* The second row takes whatever height the column spanning both rows has
+     over the first. Left to share it out, the grid opens a gap under the
+     business, between it and whatever stands under it. */
   .staff-call {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     grid-template-areas:
       'who desk'
       'script desk';
@@ -370,7 +375,7 @@
     grid-area: desk;
   }
 
-  .staff-script {
+  .staff-side {
     grid-area: script;
   }
 
@@ -398,12 +403,14 @@
 @media (min-width: 1280px) {
   .staff-call {
     grid-template-columns: 18rem minmax(0, 1fr) minmax(0, 25rem);
+    grid-template-rows: auto;
     grid-template-areas: 'who script desk';
     column-gap: var(--s-10);
   }
 
   .staff-call[data-marked='false'] {
     grid-template-columns: minmax(18rem, 24rem) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
     grid-template-areas:
       'who script'
       'desk script';
@@ -1152,6 +1159,69 @@ textarea.staff-input {
   font-size: var(--t-3);
   line-height: 1.6;
   color: var(--ink-soft);
+}
+
+/* ── What it looks like and where it is ──────────────────────────────────── */
+
+/* The script and the place share one column. The script is short and the
+   business beside it is long, so the place takes the height under the script
+   that would otherwise stand empty down to the bar. */
+.staff-side {
+  display: grid;
+  align-content: start;
+  gap: var(--s-5);
+  min-width: 0;
+}
+
+/* Photos and map side by side wherever the column can hold two of each at a
+   readable size, one over the other where it cannot. The width decides rather
+   than a breakpoint, because the column is a third of the screen on a wide
+   desk once the call is marked and two thirds of it before. */
+.staff-place {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: var(--s-5) var(--s-8);
+  align-items: start;
+}
+
+/* Two across, so four photos and the map beside them stand the same height:
+   two 4:3 tiles stacked are as tall as one 4:3 map is wide. */
+.staff-photos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-2);
+}
+
+.staff-photo,
+.staff-map {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--r-control);
+  background-color: var(--surface-1);
+  box-shadow: var(--edge);
+}
+
+.staff-photo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.staff-place .staff-read a {
+  color: var(--ink-mute);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* The name to ask for is the one thing in the facts said out loud, so it reads
+   at the weight of the number rather than of the address under it. */
+.staff-pairs dd.staff-contact {
+  font-weight: 600;
+  color: var(--ink);
 }
 
 /* ── Where the reader stands ─────────────────────────────────────────────── */
