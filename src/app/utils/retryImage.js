@@ -111,19 +111,72 @@ export function retryImage(event) {
   if (left > 1) image.setAttribute('data-retry', String(left - 1))
   else image.removeAttribute('data-retry')
 
-  let address
-  try {
-    address = new URL(image.src, window.location.href)
-  } catch {
-    return
-  }
   spent += 1
-  address.searchParams.set('retry', `${spent}.${TOKEN}`)
+  const token = `${spent}.${TOKEN}`
+
+  const address = retried(image.src, token)
+  if (!address) return
+
+  // A picture choosing between cuts does not use `src` at all. Width descriptors
+  // in `srcset` leave the attribute out of the running entirely, so moving it
+  // alone asks for nothing: the browser re-runs its selection over the same
+  // candidates, the cache hands back the answer it gave the first time, and the
+  // rung is spent on a request that was never made. The set is what the browser
+  // chooses from, so the set is what the marker has to reach. The process shots
+  // on the home page are the pictures here that carry one, and they are the
+  // reason this is written.
+  const cuts = image.getAttribute('srcset')
+  const retriedCuts = cuts ? retriedSet(cuts, token) : ''
 
   // Waited out rather than fired straight away. A ladder whose rungs all land
   // inside the same two-second outage is three ways of asking during the outage
   // and no way of asking after it.
   window.setTimeout(() => {
-    image.src = address.href
+    // Dropped rather than left standing when none of it parses, so that `src`
+    // governs and the rung is a real request either way. A wider cut than the
+    // reader needs is a picture they can see; a set the marker never reached is
+    // the first failure handed straight back.
+    if (cuts) {
+      if (retriedCuts) image.setAttribute('srcset', retriedCuts)
+      else image.removeAttribute('srcset')
+    }
+    image.src = address
   }, waitMs)
+}
+
+/**
+ * One address carrying this rung's marker, or null where it is not an address.
+ *
+ * @param {string} value
+ * @param {string} token
+ */
+function retried(value, token) {
+  if (!value) return null
+  try {
+    const address = new URL(value, window.location.href)
+    address.searchParams.set('retry', token)
+    return address.href
+  } catch {
+    return null
+  }
+}
+
+/**
+ * Every cut of a `srcset`, each carrying the marker and keeping the descriptor
+ * the markup wrote for it. The descriptor is what the browser picks by, so a set
+ * that lost them is a set it cannot choose from.
+ *
+ * @param {string} value
+ * @param {string} token
+ */
+function retriedSet(value, token) {
+  return value
+    .split(',')
+    .map(cut => {
+      const parts = cut.trim().split(/\s+/)
+      const address = retried(parts[0], token)
+      return address ? [address].concat(parts.slice(1)).join(' ') : null
+    })
+    .filter(Boolean)
+    .join(', ')
 }

@@ -276,10 +276,31 @@
     },
     {
       "source": "/(.*)\\.(webp|png|jpg|jpeg|avif|svg|ico)",
+      "missing": [
+        {
+          "type": "query",
+          "key": "retry"
+        }
+      ],
       "headers": [
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400, stale-while-revalidate=2592000"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)\\.(webp|png|jpg|jpeg|avif|svg|ico)",
+      "has": [
+        {
+          "type": "query",
+          "key": "retry"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
         }
       ]
     },
