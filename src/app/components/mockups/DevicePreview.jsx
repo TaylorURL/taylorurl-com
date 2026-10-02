@@ -3,6 +3,7 @@ import { Globe } from 'lucide-react'
 import { MAX_MS } from '@constants/animations'
 import { GROUNDS } from '@constants/grounds'
 import { portfolioPreviewSrc, portfolioScreenshotServiceUrl } from '@data/portfolio'
+import { RETRY_WAITS_MS } from '@utils/retryImage'
 import GlareHover from '@reactbits/GlareHover/GlareHover'
 
 /**
@@ -20,20 +21,34 @@ const PREVIEW_BOX = {
 }
 
 // How many times the site's own capture is asked for before the frame gives up
-// on it. Three, so two of them are retries, on the widening ladder below - the
-// one `lazyWithRetry` climbs for a chunk, spent here for the same reason: what
+// on it. One more than the ladder below has rungs, so the first ask is the
+// markup's and every rung after it is a retry - the ladder `lazyWithRetry`
+// climbs for a chunk, spent here for the same reason: what
 // these failures are is a request lost rather than a file gone. Leaving is not
 // free either, which is what settles the number: the screenshot service renders
 // on demand behind a ten-second wait, answers a two megabyte spinner while it
 // works, and belongs to somebody else, so asking twice more for a thirty
 // kilobyte file this site already serves is the cheaper thing to try by a wide
 // margin.
-const CAPTURE_ASKS = 3
+const CAPTURE_ASKS = RETRY_WAITS_MS.length + 1
 
-// Between the asks, widening. Long enough not to land in the same bad moment
-// the last request was lost in, short enough that a frame on screen is not
-// visibly empty while it waits.
-const RETRY_DELAY_MS = 350
+// Between the asks, widening, and taken from the ladder in `retryImage` rather
+// than named again here. The frames climb their own ladder because they have a
+// screenshot service past the end of it and a count shared across the page, but
+// the waits are not theirs to choose: what a lost capture is and what a lost
+// mark is are the same lost request, and the question of how long to wait out a
+// stall was measured once.
+//
+// These were 350ms and then 700ms, which is a ladder that finishes inside the
+// first 1.05 seconds. The outages these failures actually are - an edge without
+// the new build, a phone changing networks, a proxy refusing for a moment - run
+// two or three seconds, so all three asks were spent inside the one stall that
+// took the first, the frame reported a file that was present and answering the
+// whole time, and the reader was sent on to a two megabyte third-party render
+// behind a ten-second wait. #737 was that. Waiting the long rung out costs an
+// empty stage for a few seconds on a connection that is already stalling, which
+// is what the stage standing on its own is drawn for.
+const captureWait = attempt => RETRY_WAITS_MS[attempt] ?? RETRY_WAITS_MS[RETRY_WAITS_MS.length - 1]
 
 // Where a capture is looked for, in the order it is tried: the committed WebP,
 // the committed WebP at an address the browser holds no answer for, and finally
@@ -124,7 +139,7 @@ function PreviewImage({ project, device, priority, stageClassName }) {
     }
     spent += 1
     number.current = spent
-    waiting.current = setTimeout(() => setAttempt(attempt + 1), RETRY_DELAY_MS * (attempt + 1))
+    waiting.current = setTimeout(() => setAttempt(attempt + 1), captureWait(attempt))
   }, [attempt])
 
   // A capture that finished before React attached its handlers fired its load
