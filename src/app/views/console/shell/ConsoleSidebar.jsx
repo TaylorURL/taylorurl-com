@@ -1,5 +1,6 @@
 import { ChevronsLeft, Lock } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
+import { retryable } from '@utils/retryImage'
 import { GROUPS, sectionHref } from '../lib/sections'
 import { useModifierLabel } from '../lib/useConsoleShortcuts'
 import { ConsoleAccount } from './ConsoleAccount'
@@ -99,13 +100,19 @@ export function ConsoleSidebar({
           {/* The wordmark carries the name on its own, so the column drops to
               the leading glyph rather than shrinking six letters past reading
               when the rail narrows. */}
+          {/* On the ladder, because this is the file the console draws on
+              every page it has and an `<img>` that fails is finished: one
+              dropped request and the rail reads with a hole where the name goes
+              until the reader reloads. */}
           <img
+            key={collapsed ? 'glyph' : 'wordmark'}
             src={collapsed ? '/images/taylorurl-mark.png' : '/images/taylorurl-wordmark.png'}
             alt="TaylorURL"
             width={collapsed ? 300 : 874}
             height={collapsed ? 300 : 262}
             className={collapsed ? 'console-brand-glyph' : 'console-brand-logo'}
             draggable={false}
+            {...retryable()}
           />
           {!collapsed && (
             <>
