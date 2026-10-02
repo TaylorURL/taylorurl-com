@@ -251,11 +251,17 @@ function NavCover({ group, isActive, onCloseAll }) {
           request is made against whatever the connection is doing at that
           moment and is abandoned if the reader keeps moving - a dropped ask
           an `<img>` never repeats. And `vercel.json` headers `/images/(.*)`
-          `immutable` for a year whatever status it answers with, so the
-          failure is cached under the built address and the cover opens empty
-          on every page view after it until the reader clears their browser.
-          The marks and the process shots were given the ladder for exactly
-          this; the covers were drawn later and were missed. */}
+          whatever status it answers with, so the failure is stored under the
+          built address and every later mount is answered from the store with
+          nothing reaching the server. The marks and the process shots were
+          given the ladder for exactly this; the covers were drawn later and
+          were missed.
+
+          A cover meets that store more often than anything else here, because
+          a reader crosses the bar several times in a visit, which is why #750
+          has the ladder hand its budget back on a picture that drew. Counting
+          only down meant a cover recovered once had one rung where a fresh one
+          had two, and the mount after that had none and was filed. */}
       {feature.image && (
         <img
           src={feature.image}
