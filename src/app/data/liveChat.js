@@ -127,16 +127,26 @@ function rest(ms, signal) {
  * `why` is what the report would say, and it is null where there is nothing
  * worth saying. A probe that never arrived is a different fact from the two
  * above it: those are the endpoint answering, and this is nothing answering at
- * all. It stays a no - a browser that cannot reach the endpoint cannot reach
- * the assistant through it either - but it is not said out loud, because the
- * sentence would name the assistant for a fault that belongs to the connection,
- * and because the reporter's own fetch wrapper has already judged this exact
- * rejection with more to go on than there is here. It knows whether a
- * controller aborted the request, whether `pagehide` has fired and the reader
- * is simply leaving, and what the platform called it; a reader closing the tab
- * mid-probe produces a bare `TypeError: Failed to fetch` with no name on it,
- * indistinguishable from an outage by anything this function can see. Saying it
- * again from up here both files it twice and files it under the wrong cause.
+ * all. It is still a no - a browser that cannot reach the endpoint cannot reach
+ * the assistant through it either - and it is worth saying, once, if it is the
+ * answer every ask came back with.
+ *
+ * This used to say nothing, on the reasoning that the reporter's own fetch
+ * wrapper had already judged this exact rejection with more to go on than there
+ * is here. It had, and it judged it wrongly: it filed every failed knock as a
+ * `network` fault against a first-party endpoint that answers 200 to whoever
+ * reads the ticket afterwards, which is a question with no answer in it. The
+ * wrapper now holds this one request the way it holds the build check, for the
+ * same reason - the call site knocks four times and recovers on any yes - which
+ * leaves this function as the only thing that knows whether the door was
+ * unreachable for the whole of a round. So it says so, and `assistantUp` says
+ * it out loud only once every ask has been spent.
+ *
+ * A browser that reports itself offline is the exception, because then the no
+ * is a fact about the reader's connection rather than about the assistant, and
+ * the sentence would name the wrong thing. A single lost ask inside a round
+ * still says nothing: the yes that follows it ends the round before this ever
+ * reaches the telling.
  *
  * @returns {Promise<{ up: boolean, why: string|null }>}
  */
@@ -160,7 +170,10 @@ async function askOnce(signal) {
     // no would record an outage against a page the reader has already left. It
     // is passed on so the caller can drop it.
     if (cause.name === 'AbortError') throw cause
-    return { up: false, why: null }
+    if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+      return { up: false, why: null }
+    }
+    return { up: false, why: 'The door could not be reached.' }
   }
 }
 
