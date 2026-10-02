@@ -672,6 +672,30 @@ check(
   'the capture frame carries data-retry on a rung with nothing after it, so a capture that has genuinely gone missing is held rather than filed'
 )
 
+// Marking the rungs is half of it. The other half is how long the frame waits
+// between them, because a ladder the outage outlasts is as good as no ladder at
+// all. The frame named its own waits for a while - 350ms and then 700ms - which
+// put all three of its asks inside the first 1.05 seconds. Every outage these
+// failures actually are runs two or three, so the frame gave up before the stall
+// that took the first ask had even finished: it filed a fault against a capture
+// that was present and answering throughout, and sent the reader on to a two
+// megabyte render of the site from somebody else's service. #737 was that, on a
+// phone capture on a case study page. So the waits come from `retryImage`, which
+// measured them, and the count of asks is read off the same list - a frame
+// naming either for itself is free to drift back under the outage.
+check(
+  /RETRY_WAITS_MS/.test(FRAME) && !/RETRY_DELAY_MS/.test(FRAME),
+  "the capture frame names its own retry waits again; they have to come from retryImage's measured ladder or the frame gives up inside the stall that took the first ask"
+)
+check(
+  /CAPTURE_ASKS = RETRY_WAITS_MS\.length \+ 1/.test(FRAME),
+  'the capture frame counts its asks apart from the ladder it climbs, so a rung can be added to one without the other and the last wait is spent on an ask that is never made'
+)
+check(
+  /export const RETRY_WAITS_MS/.test(readFileSync(path.join(APP, 'utils/retryImage.js'), 'utf8')),
+  'retryImage no longer publishes its waits, so the capture frames have nothing to read and will name their own again'
+)
+
 // The process shots on the home page are the one place a picture the page
 // depends on is drawn from a `srcset`, and for as long as they were drawn with no
 // ladder at all they were the two files on this site a dropped packet could take
