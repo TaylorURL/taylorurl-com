@@ -9,6 +9,7 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { ABOUT } from '@data/pages/about'
 import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
+import { retryable } from '@utils/retryImage'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import CountUp from '@reactbits/CountUp/CountUp'
 import { AccentGradient } from '@reactbits/kit'
@@ -43,6 +44,14 @@ const VALUE_COUNT = String(ABOUT.values.length).padStart(2, '0')
  * The name, the title and the paragraph are the studio's one bio, read from the
  * module the mail signs off with, so the person a reply arrives from is the
  * person this page introduces.
+ *
+ * Being drawn once is also why the photograph is on the retry ladder. It is the
+ * only face on the site, so a dropped request leaves the page introducing a
+ * founder with an empty box where the face goes, and an `<img>` that fails
+ * never asks again - the reader reads the whole page that way and a reload is
+ * the only thing that fixes it. It is lazy, too, so its request is made on a
+ * scroll rather than with the document, which is the moment a connection is
+ * most likely to be doing something else.
  */
 function Founder() {
   return (
@@ -56,6 +65,7 @@ function Founder() {
         loading="lazy"
         decoding="async"
         className="border-hair-paper-strong h-24 w-24 shrink-0 rounded-md border object-cover"
+        {...retryable()}
       />
       <div className="max-w-[52ch]">
         <p className="text-[15px] font-semibold text-ink-paper">{BIO_NAME}</p>
