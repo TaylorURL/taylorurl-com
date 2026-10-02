@@ -16,12 +16,20 @@
  * Worse, and this is the half that makes it stick: `vercel.json` matches
  * `/images/(.*)` by pattern, and Vercel applies a header rule whatever the
  * status it is answering with. So an image request answered 404 or 502 comes
- * back carrying `public, max-age=31536000, immutable` - a failure the browser
- * is told to keep for a year and never revalidate. The next page view asks the
- * cache, the cache hands back the failure, nothing is sent, and the mark is
- * gone from every page of both sites until somebody clears their browser. That
- * is the same trap #570 found under `/assets/`, on a path nobody had looked at
- * because the file had never been missing.
+ * back carrying the caching that path declares - a failure the browser is told
+ * to keep. The next page view asks the store, the store hands back the failure,
+ * nothing is sent, and the picture is gone from every page until the entry
+ * expires. That is the same trap #570 found under `/assets/`, on a path nobody
+ * had looked at because the file had never been missing.
+ *
+ * Nothing can vary that header by status, so the length of the entry is the
+ * whole of what is under anyone's control here. `/images/` held a year of
+ * `immutable` until #750, which on an unhashed path was wrong on its own terms
+ * - a replaced photograph never reached a returning reader either - and it is
+ * what turned one lost request into a cover that opened empty for a year. It
+ * now carries the same day of caching with a month of background revalidation
+ * that every other image on the site has, so a stored failure is asked about
+ * again inside a day rather than outliving the reader's interest in the page.
  *
  * Which is why a rung here has to be an address the cache has no answer for.
  * Re-setting `src` to the same URL asks the cache, not the server, and on a
@@ -95,7 +103,40 @@ export const RETRY_ATTEMPTS = WAITS_MS.length
  * @returns {{ 'data-retry': string, onError: (event: { currentTarget: HTMLImageElement }) => void }}
  */
 export function retryable() {
-  return { 'data-retry': String(RETRY_ATTEMPTS), onError: retryImage }
+  return { 'data-retry': String(RETRY_ATTEMPTS), onError: retryImage, onLoad: restoreImage }
+}
+
+/**
+ * The budget handed back to a picture that is now on the screen.
+ *
+ * The ladder only ever counted down. An element that lost its first ask and got
+ * the picture on the next one kept the reduced count for the life of the
+ * document, so the following failure had one rung where the first had two, and
+ * the one after that had none and was filed - a reader who had already been
+ * recovered once was closer to a reported fault than a reader who had never
+ * failed at all.
+ *
+ * That is not a corner. `vercel.json` cannot vary a header by status, so a
+ * failed image answer is stored under the built address with the caching the
+ * path carries, and until it expires every later mount of that picture is
+ * answered from the store with the failure - instantly, with nothing reaching
+ * the server. So the first rung of every one of those mounts is spent before any
+ * request is made, and the reader has a single real ask left between a blink of
+ * their connection and a filed fault. The nav covers meet this before anything
+ * else on the site does, because they are drawn on a pointer crossing a trigger
+ * and a reader crosses the bar many times in a visit.
+ *
+ * A picture that has drawn is the proof the address answers, so the count goes
+ * back to full: what the attribute means is how many attempts are left before
+ * the loss is real, and from a drawn picture that is all of them.
+ *
+ * @param {{ currentTarget: HTMLImageElement }} event - The load that landed.
+ */
+export function restoreImage(event) {
+  const image = event && event.currentTarget
+  if (!image || !image.naturalWidth) return
+  if (image.getAttribute('data-retry') === String(RETRY_ATTEMPTS)) return
+  image.setAttribute('data-retry', String(RETRY_ATTEMPTS))
 }
 
 /**
