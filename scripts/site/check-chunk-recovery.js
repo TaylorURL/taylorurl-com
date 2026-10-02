@@ -1185,6 +1185,33 @@ check(
   `the reporter does not name ${SHEET_HANDLER}, so it cannot tell a sheet under recovery from one with nothing behind it`
 )
 
+// And the reporter's half of the build probe, which is the same shape again.
+//
+// `superseded` only ever runs because a chunk has already failed, so it is
+// always issued on a connection that has just dropped a request - and it is
+// issued against this document's own address. Its own failure answers nothing:
+// the call site reads anything short of a clear answer as "not superseded" and
+// its catch carries on down the ladder. Filed, it is a second ticket for one
+// event, and because the address is the page's own it reads as the page being
+// unreachable when the page was served fine and the reader was recovered. On
+// the home page that is the site root, so a dropped diagnostic arrives looking
+// like the front door being down. #728 was exactly that ticket: `Failed to
+// fetch fetching https://www.taylorurl.com/`, filed off a crawler whose
+// connection dropped the probe, against a site that was answering 200
+// throughout.
+//
+// The `build` token is written in one file and matched in the other, so the two
+// have to agree - a predicate testing for a parameter the probe stopped
+// carrying silently goes back to filing every dropped probe.
+check(
+  /function buildProbe\(/.test(PAGE) && PAGE.includes(`hold('probe'`),
+  'the reporter files the build probe as a site fault, so a dropped diagnostic is a second ticket for one failure and it names the page address as the thing that is down'
+)
+check(
+  /searchParams\.set\('build'/.test(laddering.source),
+  'the build probe no longer marks its request with a build token, so the reporter cannot tell it from a real request for the page and files it as one'
+)
+
 // And the sheets no markup names, which is where this was still open.
 //
 // Everything above covers the sheet Beasties deferred into the served head. A
