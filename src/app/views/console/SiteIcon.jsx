@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { capturedIcon, iconGround } from '@data/console/siteIcons'
+import { RETRY_ATTEMPTS, retryImage } from '@utils/retryImage'
 
 /**
  * A site's own mark, drawn so a column of them reads as one set.
@@ -28,6 +29,23 @@ import { capturedIcon, iconGround } from '@data/console/siteIcons'
  * the other two by definition. That is the fallback working rather than a
  * broken image, so each guess is marked `data-probe` and the page's error
  * collector holds it instead of filing it as a defect on the site.
+ *
+ * The committed mark is the opposite case and it needs the opposite treatment.
+ * It is a first-party file at a stable path, so a failure to load it is a
+ * request that was lost rather than an address that was wrong, and the answer
+ * is to ask again - `retryImage`, the same ladder the navigation mark, the
+ * footer, the review portraits and the capture frames climb. This element had
+ * no answer at all: `onError` returned early for a captured mark, so one
+ * dropped request was final. The browser fires `error` once, the box stays
+ * empty for the life of the document, and a reader who lost a packet reads the
+ * column with a hole in it until they reload. A health board drawing sixteen of
+ * these asks for sixteen pictures at once, which is the page on this site most
+ * likely to meet a stalled connection and lose every one of them together.
+ *
+ * Past the end of the ladder the mark is treated as a mark this host does not
+ * have, which drops it onto the favicon guesses and then the lettered tile. So
+ * a file that is genuinely gone still files its one report and the column still
+ * reads straight.
  */
 
 const CANDIDATES = ['/favicon.ico', '/favicon.png', '/favicon.svg']
@@ -68,16 +86,23 @@ function held(host) {
 }
 
 export function SiteIcon({ host, name, className = '' }) {
-  const captured = capturedIcon(host)
+  const committed = capturedIcon(host)
   const [attempt, setAttempt] = useState(() => (held(host) === undefined ? 0 : CANDIDATES.length))
   const [found, setFound] = useState(() => held(host) ?? null)
+  // Whether the committed mark has spent its ladder and genuinely lost. Until
+  // it has, the mark is still the mark; after it has, this host has no captured
+  // artwork as far as the rest of the component is concerned and takes the same
+  // route a host that never had any takes.
+  const [capturedLost, setCapturedLost] = useState(false)
 
   useEffect(() => {
     const known = held(host)
     setFound(known ?? null)
     setAttempt(known === undefined ? 0 : CANDIDATES.length)
+    setCapturedLost(false)
   }, [host])
 
+  const captured = capturedLost ? null : committed
   const live =
     found ?? (attempt < CANDIDATES.length ? `https://${host}${CANDIDATES[attempt]}` : null)
   const src = captured || live
@@ -101,6 +126,13 @@ export function SiteIcon({ host, name, className = '' }) {
 
   return (
     <img
+      // Keyed, so that a mark which has just lost its ladder and a mark for a
+      // different host both arrive as a fresh element carrying `data-retry`
+      // from the markup. The ladder writes that attribute on the DOM node
+      // itself, which React does not know it has changed, so re-rendering the
+      // same element with the same rendered value would leave a spent count
+      // standing.
+      key={`${host}:${captured ? 'mark' : 'live'}`}
       src={src}
       alt=""
       width="16"
@@ -109,12 +141,27 @@ export function SiteIcon({ host, name, className = '' }) {
       decoding="async"
       data-ground={iconGround(host)}
       data-probe={probing ? '' : undefined}
+      // Only the committed mark climbs. A probe is a guess at an address the
+      // site never gave us, and a guess that 404s is answered by trying the
+      // next one rather than by asking the same wrong path again.
+      data-retry={captured ? String(RETRY_ATTEMPTS) : undefined}
       className={`console-site-icon ${className}`}
       onLoad={() => {
         if (!captured) remember(host, src)
       }}
-      onError={() => {
-        if (captured) return
+      onError={event => {
+        if (captured) {
+          // A rung left means this is recoverable and the reporter is holding
+          // it; take the rung. The last rung removes the attribute before it
+          // fires, so a mark that is genuinely gone still files once and still
+          // gets a tile a reader can look at.
+          if (Number(event.currentTarget.getAttribute('data-retry') || 0) > 0) {
+            retryImage(event)
+            return
+          }
+          setCapturedLost(true)
+          return
+        }
         const next = attempt + 1
         setAttempt(next)
         if (next >= CANDIDATES.length) remember(host, null)

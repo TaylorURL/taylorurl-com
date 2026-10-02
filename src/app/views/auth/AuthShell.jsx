@@ -4,6 +4,7 @@ import { ArrowLeft, Eye, EyeOff } from 'lucide-react'
 import { m } from 'framer-motion'
 import ConsoleShell from '@components/account/ConsoleShell'
 import { fadeInUpMount } from '@constants/animations'
+import { retryable } from '@utils/retryImage'
 import AuthCase from './AuthCase'
 import AuthNext from './AuthNext'
 
@@ -151,6 +152,7 @@ export default function AuthShell({
       height="262"
       className="auth-back-logo"
       draggable={false}
+      {...retryable()}
     />
   )
 
