@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, ChevronDown } from 'lucide-react'
 import { NAV_DURATION, NAV_DURATION_SLOW, NAV_EASE } from '@constants/navigation'
+import { retryable } from '@utils/retryImage'
 
 /**
  * One group's trigger in the bar.
@@ -242,7 +243,19 @@ function NavCover({ group, isActive, onCloseAll }) {
     >
       {/* The photograph, under everything, fading into the sheet's own
           surface where the words are. It is drawn only while the group is
-          held, so a page whose menu is never opened never fetches it. */}
+          held, so a page whose menu is never opened never fetches it.
+
+          On the retry ladder, because being drawn late is what makes losing
+          one permanent. The cover mounts when a pointer crosses its trigger
+          and unmounts when the pointer travels to the next group, so its
+          request is made against whatever the connection is doing at that
+          moment and is abandoned if the reader keeps moving - a dropped ask
+          an `<img>` never repeats. And `vercel.json` headers `/images/(.*)`
+          `immutable` for a year whatever status it answers with, so the
+          failure is cached under the built address and the cover opens empty
+          on every page view after it until the reader clears their browser.
+          The marks and the process shots were given the ladder for exactly
+          this; the covers were drawn later and were missed. */}
       {feature.image && (
         <img
           src={feature.image}
@@ -252,6 +265,7 @@ function NavCover({ group, isActive, onCloseAll }) {
           loading="lazy"
           decoding="async"
           className="nav-cover-photo"
+          {...retryable()}
         />
       )}
       <span className="nav-cover-field" aria-hidden="true">
