@@ -1136,6 +1136,46 @@
           if (parsed.pathname !== location.pathname) return false
           return /^[0-9]+\.[a-z0-9]+$/.test(parsed.searchParams.get('build') || '')
         }
+        // The chat widget's own question, asked the same way and for the same
+        // reason, and the second request on this page whose failure the page has
+        // already decided means nothing.
+        //
+        // The widget knocks on this door before it draws itself, and the door is
+        // the only request on the site that waits on a machine in a house: the
+        // function behind it crosses the open internet to the assistant and
+        // answers what it found. That route loses a connection now and then with
+        // the assistant up throughout, which is exactly why the call site knocks
+        // four times, spreading the asks over a hundred seconds, and takes the
+        // first yes. A single ask that fails costs the visitor nothing - the next
+        // one draws the widget - and the asks resume whenever the tab comes back
+        // to the front, so one flaky minute files the same spurious fault several
+        // times over against an endpoint that is answering.
+        //
+        // Reported, it is a `network` fault naming a first-party API that returns
+        // 200 to anyone who asks it afterwards, which is unanswerable: by the
+        // time the ticket is read the route is back and the endpoint is healthy.
+        // That is `fp:bbb68a2c46e4`, 57 reports across three weeks and two
+        // tickets, every one of them a knock the widget went on to recover from.
+        //
+        // Held rather than reported, so the live console still shows the knock
+        // went unanswered. Nothing stops being seen: a no that survives all four
+        // asks is said out loud by the widget itself, in words naming the
+        // assistant, and that sentence reports through the console door - so a
+        // chat that is genuinely down files one fault explaining itself instead
+        // of four blaming the connection. The POST that sends a turn is not this
+        // request and still reports; a visitor who typed something and lost it
+        // is a real failure with a real cost.
+        function chatProbe(address, method) {
+          if (String(method || 'GET').toUpperCase() !== 'GET') return false
+          var parsed
+          try {
+            parsed = new URL(String(address || ''), location.href)
+          } catch (ignored) {
+            return false
+          }
+          if (parsed.origin !== location.origin) return false
+          return parsed.pathname === '/api/live-chat'
+        }
         // A request the page makes writes its own failure to the console when it
         // fails, and a collector that cannot be reached would then be the loudest
         // thing on the page. The same request issued inside a worker writes
@@ -1536,6 +1576,11 @@
           // here. The declaration puts the same word in front of all three.
           window.fetch = function fetch(input) {
             var target = typeof input === 'string' ? input : (input && input.url) || ''
+            // Read here rather than in the handler, because `init` is the
+            // caller's object and it is theirs to reuse once the call is made.
+            var init = arguments[1]
+            var verb =
+              (init && init.method) || (typeof input !== 'string' && input && input.method) || 'GET'
             // Reports about the reporter's own request would loop, so the endpoint passes through unwrapped.
             if (target.indexOf(endpoint) === 0) return originalFetch.apply(window, arguments)
             // Where the document stood when this request was asked for, read
@@ -1651,6 +1696,10 @@
                 }
                 if (buildProbe(target)) {
                   hold('probe', 'No answer to the build check from ' + target.split('?')[0], '')
+                  throw error
+                }
+                if (chatProbe(target, verb)) {
+                  hold('probe', 'No answer to the chat check from ' + target.split('?')[0], '')
                   throw error
                 }
                 // Filed with the stack the failure already carries. It was
