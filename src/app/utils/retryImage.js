@@ -42,7 +42,19 @@
 // finishes inside one second has already given up. Both numbers are the ones
 // `lazyWithRetry` arrived at by measuring, and there is no reason a picture
 // meets a different network than a script does.
-const WAITS_MS = [350, 5000]
+//
+// Exported, because the capture frames in `DevicePreview` climb a ladder of
+// their own - they have a screenshot service past the end of theirs and a count
+// shared across the page - and a second set of numbers is a second answer to a
+// question that has already been measured. Theirs were 350ms then 700ms, chosen
+// before these were, and 1.05 seconds is inside every outage this list exists to
+// outlast: a frame spent all three of its asks before the stall that took the
+// first one had finished, filed a fault against a file that was present and
+// answering throughout, and handed the reader somebody else's render of the site
+// instead of the thirty kilobytes this one serves. #737 was that, on a phone
+// capture on a case study page.
+export const RETRY_WAITS_MS = [350, 5000]
+const WAITS_MS = RETRY_WAITS_MS
 
 // How many retried addresses this document has already spent. Counted across
 // the whole page rather than per element, because the cache that makes a
