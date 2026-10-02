@@ -1103,6 +1103,39 @@
           }
           return false
         }
+        // The chunk ladder's own question, and the one request on this page
+        // whose failure the page has already decided means nothing.
+        //
+        // `superseded` in lazyWithRetry asks the server whether the document
+        // this build was served with is still the document being served, and it
+        // asks only because a chunk has already failed - so it is issued, by
+        // definition, on a connection that has just dropped a request, and it
+        // is issued against this document's own address with a `build` token on
+        // it. The call site treats anything short of a clear answer as "not
+        // superseded" on purpose: a probe that failed is no evidence either way,
+        // and its `catch` swallows the rejection and carries on down the ladder.
+        //
+        // Reported, it files a second fault for one event - the chunk that
+        // failed, and the question asked about that chunk - and the second one
+        // is filed against the page's own address, which reads as the page
+        // itself being unreachable when it was served fine and the reader was
+        // recovered. On the home page that address is the site root, so a
+        // dropped diagnostic arrives looking like the front door being down.
+        //
+        // Held rather than reported: the live console still shows the probe went
+        // unanswered, which is the thing worth being able to see, and the real
+        // failure keeps reporting through the ladder that owns it.
+        function buildProbe(address) {
+          var parsed
+          try {
+            parsed = new URL(String(address || ''), location.href)
+          } catch (ignored) {
+            return false
+          }
+          if (parsed.origin !== location.origin) return false
+          if (parsed.pathname !== location.pathname) return false
+          return /^[0-9]+\.[a-z0-9]+$/.test(parsed.searchParams.get('build') || '')
+        }
         // A request the page makes writes its own failure to the console when it
         // fails, and a collector that cannot be reached would then be the loudest
         // thing on the page. The same request issued inside a worker writes
@@ -1523,6 +1556,15 @@
                     hold('beacon', 'HTTP ' + response.status + ' from ' + where, '')
                     return response
                   }
+                  // The same diagnostic through the other door. An unhappy
+                  // status answers the probe's question no better than a dropped
+                  // request does, the call site reads both as "not superseded",
+                  // and filed it is the same spurious fault against the page's
+                  // own address.
+                  if (buildProbe(target)) {
+                    hold('probe', 'HTTP ' + response.status + ' from the build check', '')
+                    return response
+                  }
                   // A gateway timeout is this site's own proxy giving up on a
                   // slow upstream, which is the policy rather than a break: it
                   // holds a deadline and answers rather than keep a serverless
@@ -1605,6 +1647,10 @@
                 }
                 if (marketingBeacon(target)) {
                   hold('beacon', 'No answer from ' + target.split('?')[0], '')
+                  throw error
+                }
+                if (buildProbe(target)) {
+                  hold('probe', 'No answer to the build check from ' + target.split('?')[0], '')
                   throw error
                 }
                 // Filed with the stack the failure already carries. It was
