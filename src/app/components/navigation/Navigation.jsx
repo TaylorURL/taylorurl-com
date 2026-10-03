@@ -27,6 +27,7 @@ import { useScrolledPast } from '@hooks/scroll/useScrolledPast'
 import { useTheme } from '@hooks/theme/useTheme'
 import { SITE } from '../../../../lib/site/current.js'
 import QuietBoundary from '../app-shell/QuietBoundary'
+import { claimCaught } from '@utils/caughtErrors'
 import { lazyWithRetry } from '@utils/lazyWithRetry'
 import { retryable } from '@utils/retryImage'
 
@@ -44,7 +45,25 @@ const CLOSE_DELAY_MS = 180
 // somebody reaches for them rather than in the bundle every visitor is served.
 // NavUtility warms the same chunk when a pointer crosses the trigger, so by the
 // time the press lands it is usually already down.
-const SiteSearch = lazyWithRetry(() => import('./SiteSearch'))
+//
+// Held by name rather than handed straight to `lazyWithRetry`, because a
+// rejected `lazy` stays rejected for the life of the component: the second
+// press re-mounts the same copy and is handed the first press's failure with
+// nothing sent. A second attempt is a second component built from the same
+// import, and one made here at module scope is the only one this document
+// would ever get.
+const loadSiteSearch = () => import('./SiteSearch')
+
+// How many times a search that would not arrive is built again from scratch.
+//
+// One, and the press is what spends it. `LateChrome` renews on a move and on a
+// timer because the pieces under it arrive unasked and nobody is waiting on
+// one. The search is the opposite, and the reader reaching for it again is the
+// better signal of the two: it costs nothing on a page where nothing failed,
+// it carries the reader's own sense of how long to wait, and it never fires at
+// somebody who has stopped caring. Past it the notice stands and the reload it
+// names is the recovery.
+const SEARCH_RENEWALS = 1
 
 function Wordmark({ invert = false }) {
   return (
@@ -105,6 +124,27 @@ export default function Navigation() {
   const { signedIn, firstName, checking, signOut } = useSessionGlimpse()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  // Which copy of the search this document is on, and what the last one died
+  // of. The failure is held because the next copy needs it: the address it
+  // names is the one the module map is holding a rejection against, and asking
+  // anywhere else means starting from it.
+  const [searchAttempt, setSearchAttempt] = useState(0)
+  const searchCause = useRef(null)
+  // Spent when a renewal starts rather than when it fails, so nothing here can
+  // loop however many times the reader presses.
+  const searchSpent = useRef(0)
+  // Built here rather than in a `useMemo`, which React is free to discard and
+  // recompute - and recomputing this one is not a repeated calculation but a
+  // second component, which would fetch the chunk again underneath a panel the
+  // reader already has open.
+  const searchBuilt = useRef({ attempt: -1, Component: null })
+  if (searchBuilt.current.attempt !== searchAttempt) {
+    searchBuilt.current = {
+      attempt: searchAttempt,
+      Component: lazyWithRetry(loadSiteSearch, { after: searchCause.current }),
+    }
+  }
+  const SiteSearch = searchBuilt.current.Component
   const [accountOpen, setAccountOpen] = useState(false)
   const [changing, setChanging] = useState(false)
   // One panel, owned here: the shell renders a single viewport and the open
@@ -189,22 +229,52 @@ export default function Navigation() {
   // fetch and closes again with nothing said, which reads as a button that does
   // not work rather than as a search that could not be fetched.
   //
-  // It is also permanent, which is the part a reader could never guess. `lazy`
-  // records a rejected module for the life of the document, so the second press
-  // is not a second attempt: it is the first one's failure handed straight back.
-  // Every press after that fails in the same frame and just as quietly, and the
-  // search stays gone for as long as the page is open.
+  // What the notice used to say is that a reload is the entire recovery, and
+  // that was written for the one cause it assumed: a deploy had replaced the
+  // file and only a newer document carries the new address. But a build that
+  // has really been replaced never reaches here. `lazyWithRetry` asks the
+  // server whether the document it is running from is still being served, and
+  // fetches a new one itself where it is not - so a failure that arrives at
+  // this boundary is one whose build was still live and whose chunk was simply
+  // not reachable for a few seconds: a dropped request, a changing network, an
+  // edge that had not caught up. Those come back on their own, and the reader
+  // was being sent to reload a page that did not need reloading, over a panel
+  // that would have opened on the next press.
   //
-  // What has actually happened is that a deploy replaced the file this document
-  // was built to ask for, and only a newer document carries the new address. So
-  // a fresh page is the entire recovery, and it is the reader's to make rather
-  // than ours to take: reloading for them would throw away whatever they were
-  // part-way through typing, over a panel they can have back in a second. The
-  // notice names the one thing that works and then waits to be acted on.
-  const reportSearchUnavailable = useCallback(() => {
-    setSearchOpen(false)
-    toast('Search needs a fresh copy of this page. Reload to open it.', 'error')
-  }, [toast])
+  // Except that it could not, which is the part a reader could never guess.
+  // `lazy` records a rejected module for the life of the component, so a second
+  // press re-mounts the same copy and is handed the first press's failure in
+  // the same frame with nothing sent. So the second press is made into a real
+  // attempt: the renewal builds a second copy from the same import, and the
+  // failure travels with it, because the address the first pass died at is one
+  // the browser's module map will answer from memory and `lazyWithRetry` has to
+  // start past it.
+  //
+  // The reload notice is what is left when that is spent, and then it is true.
+  const reportSearchUnavailable = useCallback(
+    error => {
+      // Claimed before anything else. React announces a caught error by writing
+      // it to `console.error` and the reporter in the page head is listening,
+      // so a failure the next press will try again is filed as a fault the
+      // reader met before that press has happened - which reads from the queue
+      // exactly like a search nobody could open. The same rule `LateChrome` is
+      // held to, and the reason `caughtErrors` exists.
+      claimCaught(error)
+      searchCause.current = error
+      setSearchOpen(false)
+      if (searchSpent.current < SEARCH_RENEWALS) {
+        searchSpent.current += 1
+        setSearchAttempt(used => used + 1)
+        toast('Search didn’t open. Press it again.', 'error')
+        return
+      }
+      // Nothing is left to try, so the failure is news. Reported here rather
+      // than at the first press, for the reason the claim above is made.
+      console.error(error)
+      toast('Search needs a fresh copy of this page. Reload to open it.', 'error')
+    },
+    [toast]
+  )
 
   const closeAndRefocus = () => {
     const key = openGroup
@@ -484,7 +554,7 @@ export default function Navigation() {
           way it was; the notice is what keeps that from reading as a press that
           did nothing. */}
       {searchOpen && (
-        <QuietBoundary onFail={reportSearchUnavailable}>
+        <QuietBoundary key={searchAttempt} onFail={reportSearchUnavailable}>
           <Suspense fallback={null}>
             <SiteSearch onClose={() => setSearchOpen(false)} />
           </Suspense>
