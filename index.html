@@ -760,6 +760,41 @@
           if (String(stack || '')) return false
           return extensionApis.test(String(message || ''))
         }
+        // The same shape again, off a host bridge rather than an extension's.
+        //
+        // CefSharp is the .NET wrapper around Chromium, and it keeps the host
+        // objects it exposes to the page in a registry keyed by integer id. Ask
+        // one for a method the .NET side never registered and it rejects with
+        // `Object Not Found Matching Id:1, MethodName:update, ParamCount:4` -
+        // a sentence assembled by the bridge, not thrown by any script, so it
+        // arrives as a bare string with no stack behind it at all. The widest
+        // emitter of it by a long way is Microsoft Defender for Office 365 Safe
+        // Links, which opens every link in an incoming message in a headless
+        // CefSharp browser reporting an ordinary Windows Chrome user agent.
+        //
+        // Nothing this site serves has a host bridge to miss. An object
+        // registry addressed by id, method name and parameter count is not a
+        // thing any browser, any standard API or any dependency in this tree
+        // writes, and the string appears nowhere in the source or the build.
+        //
+        // What makes it worth naming rather than leaving to the tests above is
+        // that it cannot be deduped. The id and the method name vary per
+        // scanner session, so every visit files under a fresh fingerprint and
+        // the collector never sees two of them as one fault - it arrives
+        // forever as a first sighting. #170, #171, #205, #240, #700, #701 and
+        // the two this answers are the same scanner, eight separate
+        // investigations, each correctly concluding that the site is fine. A
+        // cold outreach send puts a link in a mailbox, so the arrivals come in
+        // pairs minutes apart and go on coming for as long as mail goes out.
+        //
+        // Both halves are required, and the stack half is what keeps this
+        // narrow: a site frame anywhere under a message of this shape hands the
+        // whole question back and it reports as it always has.
+        var hostBridgeMiss = /^Object Not Found Matching Id:\d+, MethodName:\S+, ParamCount:\d+$/
+        function hostBridgeOnly(message, stack) {
+          if (String(stack || '')) return false
+          return hostBridgeMiss.test(String(message || '').trim())
+        }
         // The same judgement where there is no `//` for `extensionOnly` to find.
         // An app that opens a link in its own web view injects its scripts the
         // way an extension does, but WebKit names those frames `user-script:`
@@ -1367,6 +1402,7 @@
           var judged = withoutOwnFetch(stack)
           if (extensionOnly(judged)) return
           if (extensionApiOnly(message, judged)) return
+          if (hostBridgeOnly(message, judged)) return
           if (injectedScriptOnly(judged)) return
           if (evaluatedScriptOnly(judged)) return
           sent += 1
