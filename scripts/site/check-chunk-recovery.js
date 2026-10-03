@@ -214,6 +214,47 @@ if (renewing) {
   )
 }
 
+// And the same two for the search, which had neither.
+//
+// Everything above this line is about the pieces that arrive unasked, and the
+// search was left out of all of it on the reading that a reload is its whole
+// recovery - that the file it wants is gone because a deploy deleted it, and
+// only a newer document carries the new address. That is one cause of a chunk
+// that will not load and it is the one that never reaches this boundary:
+// `lazyWithRetry` probes the served document and fetches a new one itself when
+// the build really has been replaced. What arrives here is the other kind, a
+// file that was there the whole time and unreachable for two or three seconds,
+// and the search answered it by closing, telling the reader to reload a page
+// that did not need reloading, and filing a fault against a chunk that was
+// answering. Then staying shut: `lazy` holds a rejection for the life of the
+// component, so every press after the first was the first one's failure handed
+// back in the same frame with nothing sent.
+//
+// A second copy built from the same import is the only way back to the chunk,
+// the press is what asks for it, and the failure has to travel across so the
+// new pass starts past the address the map is already answering for.
+const searchPanel = swept.find(
+  entry => entry.name === 'src/app/components/navigation/Navigation.jsx'
+)
+if (searchPanel) {
+  check(
+    /lazyWithRetry\([A-Za-z]/.test(searchPanel.source),
+    'the search is one lazy copy made once, so a press that fails is the last attempt this document can make - build it from a named loader so a renewal can make a second'
+  )
+  check(
+    /after: searchCause\.current/.test(searchPanel.source),
+    'the renewed search copy is built without `after`, so it opens at the address the last press already failed at and the module map answers it with nothing sent'
+  )
+  check(
+    /claimCaught\(/.test(searchPanel.source),
+    'the search does not claim its failure, so a press the next one would have answered is filed as a fault before that press has happened'
+  )
+  check(
+    /console\.error\(/.test(searchPanel.source),
+    'nothing reports a search that never came back, so a reader left without it leaves no ticket at all'
+  )
+}
+
 // The one import on this site that runs outside the ladder, and what it owes the
 // ladder afterwards.
 //
