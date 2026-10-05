@@ -207,7 +207,7 @@ export default async function handler(request, response) {
     job: 'previews',
     work: async ({ db, settings, counts }) => {
       if (!settings.sending_enabled || !ARMED) {
-        return { note: 'sending is switched off, so no preview letter went out' }
+        return { note: 'sending is switched off, so this run sent no preview letter' }
       }
       if (request.method === 'POST') {
         const slug = String(request.body?.slug ?? '')
