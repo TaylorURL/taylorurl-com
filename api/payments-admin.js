@@ -183,7 +183,7 @@ function troublesFor({ arrangement, invoices, charges, key, now, roster }) {
   if (arrangement?.lapsed) {
     troubles.push({
       code: 'lapsed',
-      note: 'Stripe stopped the subscription after the card kept failing. Nothing bills this client until a new subscription is started.',
+      note: 'Stripe stopped the subscription after the card kept failing. Nothing bills this client until you start a new one.',
     })
   } else if (arrangement?.status === 'canceled') {
     troubles.push({
