@@ -1027,10 +1027,29 @@ check(
 //
 // Run rather than read, same as the boot: the recovery is an attribute the
 // browser calls, so the attribute is read back off the element and called.
-function sheetAttempts() {
+// `moved` asks the document whether this build is still the one being served,
+// and the answer decides whether the reload is taken, so the probe is answered
+// here rather than left to the network. Resolved in step with the caller for the
+// same reason the timers are: the recovery is driven a rung at a time, and a
+// real promise would land its answer after the loop below had given up.
+const settled = value =>
+  value && typeof value.then === 'function'
+    ? value
+    : {
+        then(onOk, onNo) {
+          try {
+            return settled(onOk ? onOk(value) : value)
+          } catch (thrown) {
+            return settled(onNo ? onNo(thrown) : undefined)
+          }
+        },
+      }
+
+function sheetAttempts({ superseded = false, reloadedAt = null } = {}) {
   const inserted = []
   const timers = []
   const removed = []
+  const probed = []
   let reloads = 0
   const head = {
     insertBefore(node) {
@@ -1058,11 +1077,40 @@ function sheetAttempts() {
       delete this.written[name]
     },
   })
+  // The entry this document names, and what the server hands back for the same
+  // address. Superseded is the newer document naming a different one, which is
+  // the only state the reload is for.
+  const ENTRY = '/assets/index-TEST0000.js'
+  const held = reloadedAt === null ? {} : { 'taylorurl:chunk-reload-at': String(reloadedAt) }
   const stub = {
-    document: { createElement: element },
+    document: {
+      createElement: element,
+      querySelector: selector =>
+        /modulepreload/.test(selector) ? { href: `https://www.taylorurl.com${ENTRY}` } : null,
+    },
     setTimeout: (run, wait) => timers.push({ run, wait }),
     Number,
+    Date,
+    fetch: address => {
+      probed.push(address)
+      return settled({
+        ok: true,
+        text: () =>
+          settled(
+            superseded
+              ? '<link rel="modulepreload" href="/assets/index-TESTNEW1.js">'
+              : `<link rel="modulepreload" href="${ENTRY}">`
+          ),
+      })
+    },
+    sessionStorage: {
+      getItem: name => (name in held ? held[name] : null),
+      setItem: (name, value) => {
+        held[name] = String(value)
+      },
+    },
     location: {
+      pathname: '/console/staff',
       reload: () => {
         reloads += 1
       },
@@ -1113,7 +1161,7 @@ function sheetAttempts() {
     link = next
     attempt = Number(said[1])
   }
-  return { asked, filed, reloads, removed, served: first }
+  return { asked, filed, reloads, removed, probed, held, served: first }
 }
 
 const sheet = sheetAttempts()
@@ -1183,9 +1231,48 @@ check(
   sheet.asked.length === 3 && sheet.asked[2].wait === 5000,
   'every attempt at the sheet is spent inside the first second, so an outage lasting two or three leaves the reader on the inlined subset with the file answering again and nobody asking'
 )
+// A sheet that is still being served and did not arrive is what the ladder is
+// for, and a reload there fixes nothing and can happen again, so the document is
+// left alone.
 check(
-  sheet.reloads === 0,
-  'a sheet that did not arrive reloads the document, which races the reload the boot already does for the deploy that deleted it'
+  sheet.reloads === 0 && sheet.held['taylorurl:chunk-reload-at'] === undefined,
+  'a sheet that did not arrive reloads a document whose build is still the one being served, which recovers nothing and can happen again'
+)
+// A sheet a deploy deleted is the other half, and it was the half with nothing
+// behind it. The served sheet has the boot's reload above it; a route's own
+// sheet is appended by the preload helper after the boot has landed and given
+// its flag back, so until #760 the deploy case ended with the reader holding
+// none of that route's rules for the life of the page. The probe is the one
+// `lazyWithRetry` already asks, and the reload comes out of the same budget, so
+// three recoveries asking at once still cost the reader one document.
+const moved = sheetAttempts({ superseded: true })
+check(
+  moved.reloads === 1,
+  'a sheet the served document no longer names is asked for again and never reloaded, so the reader holds none of that route of rules for the life of the page'
+)
+check(
+  moved.filed === null,
+  'a sheet a deploy deleted files a fault against an address no build still has, on top of the reload that recovers the reader'
+)
+check(
+  moved.probed.length === 1 && /^\/console\/staff\?build=/.test(moved.probed[0]),
+  'the build probe asks at the address that just failed rather than the document, or asks at one the browser already has an answer for'
+)
+check(
+  typeof moved.held['taylorurl:chunk-reload-at'] === 'string',
+  'the sheet reloads without writing the guard, so the boundary and lazyWithRetry each get to spend the reload afterReload and the reader gets three documents'
+)
+// And spent, it reports. A reload already taken with the sheet still missing is
+// a reader nothing further is coming for, which is the reading `renew` carries
+// for the chunk.
+const afterReload = sheetAttempts({ superseded: true, reloadedAt: Date.now() })
+check(
+  afterReload.reloads === 0,
+  'the reload is taken afterReload with the guard already spent, so a sheet that stays missing is a tab that reloads forever'
+)
+check(
+  afterReload.filed instanceof Error && /stylesheet/i.test(afterReload.filed.message),
+  'a sheet still missing after the reload has been spent files nothing, so the reader nothing further is coming for reaches nobody'
 )
 // The reporter holds a sheet under recovery rather than filing it, so the fault
 // has to be filed from here or it is never filed at all.

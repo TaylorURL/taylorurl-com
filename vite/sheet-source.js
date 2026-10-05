@@ -59,15 +59,41 @@
  * for the chunk and the same interval, and it is what carries the recovery past
  * the outage rather than into it.
  *
- * It does not reload the document. A sheet a deploy has deleted is gone from
- * every address, and the file that would replace it is named only in a newer
- * document - but that deploy took the entry bundle with it, so `bootSource` is
- * already asking for that document one frame later. Reloading here as well
- * would be a second tab-wide reload racing the first over the same deploy, and
- * on a sheet that failed for any other reason it would be a reload that fixes
- * nothing and can happen again. The retry is what answers the failure this
- * actually sees: a sheet that is still on the server, still answering, and did
- * not arrive this once.
+ * And a sheet a deploy has deleted, which no rung of that ladder reaches.
+ *
+ * It is gone from every address, so asking again is asking a file that cannot
+ * come back; the name that replaced it is written only in a newer document. The
+ * rule here used to be that this one needed nothing, on the reading that the
+ * deploy took the entry bundle with it and `bootSource` is therefore already
+ * asking for that document one frame later - so a reload here would be a second
+ * tab-wide reload racing the first.
+ *
+ * That is true of the sheet the document was served with and false of the one a
+ * route brings. A code-split sheet is appended by Rollup's preload helper at the
+ * moment the route's chunk is imported, which is work the entry does: the boot
+ * has landed, `done` has given its flag back, and there is no reload behind this
+ * sheet at all. Measured against this build with `/console/staff`'s sheet
+ * refused and the served document naming a newer entry - the deploy case
+ * exactly - the ladder was spent at 521ms, 855ms, 1,559ms and 6,562ms, no
+ * reload was asked for, the chunk budget was never touched, and the reader held
+ * 0 of that route's 496 rules for the life of the page. #760 is that reader.
+ *
+ * So the question the chunk recovery asks is asked here too, and only once the
+ * ladder is gone: does the page this site serves right now still name the entry
+ * this document is running from. `lazyWithRetry.superseded` is where that probe
+ * and its reasoning are written out - it is asked of the document rather than of
+ * the sheet, because a sheet that is absent looks the same whether it was
+ * deleted or dropped, and only the document says which. Answered yes, the one
+ * recovery that works is taken; answered no, or not clearly, the failure is
+ * filed exactly as it was.
+ *
+ * It takes that reload out of `reloadGuard`'s budget rather than keeping one of
+ * its own, which is the whole of why that module holds the key instead of the
+ * boundary. Three recoveries now ask for the same reload - the boundary,
+ * `lazyWithRetry` and this - and a reader whose build moved under them gets one
+ * document, not three. Spent, this throws, for the reason `renew` throws: a
+ * reload already taken and the sheet still missing is a reader nothing further
+ * is coming for, and they are owed the report rather than silence.
  *
  * The fault is filed here, when the ladder is spent, rather than by the
  * reporter when the first request fails. Every other recovery on the site
@@ -166,6 +192,8 @@ export function sheetSource() {
 var ATTEMPTS=2
 var WAITS=1
 var WAIT_MS=5000
+var GUARD='taylorurl:chunk-reload-at'
+var GUARD_MS=20000
 var TOKEN=Math.random().toString(36).slice(2,8)
 function swap(link,attempt){
 var href=link.getAttribute('data-sheet')||link.href
@@ -183,10 +211,36 @@ link.parentNode.insertBefore(next,link.nextSibling)
 if(link.getAttribute('data-sheet'))link.parentNode.removeChild(link)
 else link.removeAttribute('onerror')
 }
+function spent(){
+try{
+var last=Number(sessionStorage.getItem(GUARD))
+return last!==last||Date.now()-last<GUARD_MS
+}catch(ignored){return true}
+}
+function renew(){
+if(spent())return false
+try{sessionStorage.setItem(GUARD,String(Date.now()))}catch(ignored){return false}
+location.reload()
+return true
+}
+function moved(answer){
+var tag=document.querySelector('link[rel="modulepreload"][href]')||document.querySelector('script[type="module"][src]')
+var address=tag&&(tag.href||tag.src)
+if(!address||typeof fetch!=='function'){answer(false);return}
+var entry=address.split('?')[0].split('/').pop()
+fetch(location.pathname+'?build='+TOKEN,{cache:'no-store'}).then(function(reply){
+return reply.ok?reply.text():''
+}).then(function(served){
+answer(Boolean(served)&&served.indexOf(entry)<0)
+},function(){answer(false)})
+}
 function lost(link){
 var href=link.getAttribute('data-sheet')||link.href
+moved(function(superseded){
+if(superseded&&renew())return
 setTimeout(function(){
 throw new Error('The page could not load its stylesheet: '+href)
+})
 })
 }
 window.${SHEET_HANDLER}=function(link,attempt){
