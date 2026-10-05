@@ -149,6 +149,19 @@ function verdictOf(standing, source) {
 }
 
 /**
+ * The grouping a review count is written with.
+ *
+ * Every page of this site is prerendered at build time and hydrated from that
+ * markup, so a number has to come out the same in both renders or React throws
+ * the subtree away and draws it again. A count formatted without a locale named
+ * reads whichever one is running it - the build machine's on the server, the
+ * reader's in the browser - and the two disagree for anybody whose numbers are
+ * not Latin digits grouped the English way. The locale is named here instead,
+ * and it is the one the sentence around the number is written in.
+ */
+const COUNT = new Intl.NumberFormat('en-US')
+
+/**
  * How many people said it, and what the network calls what they left.
  *
  * A network that has accredited a business nobody has yet written about says
@@ -164,7 +177,7 @@ function countOf(standing, source) {
   const count = standing.reviewCount
   if (!(count > 0)) return 'Rated by'
   const word = source.endorses ? 'recommendation' : 'review'
-  return `${count.toLocaleString()} ${word}${count === 1 ? '' : 's'} on`
+  return `${COUNT.format(count)} ${word}${count === 1 ? '' : 's'} on`
 }
 
 /**
@@ -180,12 +193,12 @@ function labelOf(standing, source) {
   const count = standing.reviewCount
   const on = source.label
   if (typeof standing.rating === 'number') {
-    return `${standing.rating} out of 5 based on ${count.toLocaleString()} ${on} review${
+    return `${standing.rating} out of 5 based on ${COUNT.format(count)} ${on} review${
       count === 1 ? '' : 's'
     }`
   }
   if (standing.seal) return `${standing.verdict}, on the ${on} profile`
-  return `Recommended by ${count.toLocaleString()} ${count === 1 ? 'person' : 'people'} on ${on}`
+  return `Recommended by ${COUNT.format(count)} ${count === 1 ? 'person' : 'people'} on ${on}`
 }
 
 /**
