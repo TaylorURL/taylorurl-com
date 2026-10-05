@@ -109,6 +109,7 @@ function fee(arrangement) {
 function standing(arrangement) {
   if (!arrangement) return { label: 'None', tone: 'plain' }
   if (arrangement.status === 'hand') return { label: 'By Hand', tone: 'warn' }
+  if (arrangement.lapsed) return { label: 'Lapsed', tone: 'bad' }
   if (arrangement.status === 'canceled') return { label: 'Cancelled', tone: 'bad' }
   if (arrangement.status === 'past_due' || arrangement.status === 'unpaid')
     return { label: 'Past Due', tone: 'bad' }

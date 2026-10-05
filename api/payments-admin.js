@@ -110,6 +110,10 @@ function arrangementFor({ subscriptions, invoices, key, cardOnFile, roster }) {
       source: 'stripe',
       status: chosen.status,
       collection: chosen.collection_method || null,
+      // Stripe ends a subscription by itself once every retry on a failed
+      // charge is spent. Nobody asked for that, and the client is usually
+      // still a client, so it is told apart from one who left.
+      lapsed: over && chosen.cancellation_details?.reason === 'payment_failed',
       endsAtPeriod: Boolean(chosen.cancel_at_period_end),
       startedAt: chosen.start_date || chosen.created || null,
       endedAt: chosen.ended_at || null,
@@ -141,6 +145,7 @@ function arrangementFor({ subscriptions, invoices, key, cardOnFile, roster }) {
     source: 'hand',
     status: 'hand',
     collection: 'send_invoice',
+    lapsed: false,
     endsAtPeriod: false,
     startedAt: last.created,
     endedAt: null,
@@ -175,7 +180,12 @@ function troublesFor({ arrangement, invoices, charges, key, now, roster }) {
   const byHand = roster.offStripe.get(key)
   if (byHand) troubles.push({ code: 'no-subscription', note: byHand })
 
-  if (arrangement?.status === 'canceled') {
+  if (arrangement?.lapsed) {
+    troubles.push({
+      code: 'lapsed',
+      note: 'Stripe stopped the subscription after the card kept failing. Nothing bills this client until you start a new one.',
+    })
+  } else if (arrangement?.status === 'canceled') {
     troubles.push({
       code: 'canceled',
       note: 'The subscription is cancelled. Nothing bills this client again.',

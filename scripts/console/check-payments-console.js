@@ -295,6 +295,56 @@ check('a yearly fee counts as a twelfth of itself in the monthly total', () => {
   same(totals.monthlyCents, 14999, 'the recurring total is every client at a month')
 })
 
+check('a subscription Stripe stopped over failed charges is not called cancelled', () => {
+  const lapsedSubscription = reason => ({
+    id: `sub_${reason}`,
+    customer: `cus_${reason}`,
+    status: 'canceled',
+    collection_method: 'charge_automatically',
+    start_date: 1000,
+    cancellation_details: { reason },
+    items: {
+      data: [
+        {
+          current_period_end: 9999,
+          price: { unit_amount: 4999, recurring: { interval: 'month', interval_count: 1 } },
+        },
+      ],
+    },
+  })
+  const { clients } = buildRecord({
+    ...FIXTURE,
+    customers: [
+      ...FIXTURE.customers,
+      { id: 'cus_payment_failed', email: 'lapsed@example.com', name: 'Casey Hart', created: 100 },
+      {
+        id: 'cus_cancellation_requested',
+        email: 'left@example.com',
+        name: 'Robin Vale',
+        created: 100,
+      },
+    ],
+    subscriptions: [
+      ...FIXTURE.subscriptions,
+      lapsedSubscription('payment_failed'),
+      lapsedSubscription('cancellation_requested'),
+    ],
+    roster: ROSTER,
+    now: 5000,
+  })
+  const lapsed = clients.find(one => one.key === 'lapsed@example.com')
+  const left = clients.find(one => one.key === 'left@example.com')
+  same(lapsed.arrangement.lapsed, true, 'a failed card is a lapse')
+  same(
+    lapsed.troubles.map(one => one.code).join(),
+    'lapsed',
+    'and says so instead of saying the client cancelled'
+  )
+  same(left.arrangement.lapsed, false, 'a requested cancellation is not a lapse')
+  same(left.troubles.map(one => one.code).join(), 'canceled', 'and still reads as cancelled')
+  same(read(PAGE).includes("label: 'Lapsed'"), true, 'the page has a word for it')
+})
+
 check('a client with no subscription behind them is flagged rather than hidden', () => {
   const { clients } = buildRecord({ ...FIXTURE, roster: ROSTER, now: 5000 })
   const byHand = clients.find(one => one.key === 'hand@example.com')
