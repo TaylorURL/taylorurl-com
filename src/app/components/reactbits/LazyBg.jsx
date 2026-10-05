@@ -2,8 +2,14 @@ import { Suspense, useEffect, useRef, useState } from 'react'
 import QuietBoundary from '../app-shell/QuietBoundary'
 import { lazyWithRetry } from '@utils/lazyWithRetry'
 
-const Aurora = lazyWithRetry(() => import('./Aurora/Aurora'))
-const Particles = lazyWithRetry(() => import('./Particles/Particles'))
+// Neither of these is worth a document. `renews` is what says so: the ladder
+// runs exactly as it does everywhere else, but a build that has been replaced
+// under the reader makes the wash leave rather than taking their page with it.
+// See `renew` in `lazyWithRetry` for what that reload costs a decoration.
+const BACKGROUND = { renews: false }
+
+const Aurora = lazyWithRetry(() => import('./Aurora/Aurora'), BACKGROUND)
+const Particles = lazyWithRetry(() => import('./Particles/Particles'), BACKGROUND)
 
 // How far ahead of the viewport a background is built. Far enough that it has
 // drawn its first frame before the section it sits behind is scrolled to, near
@@ -56,10 +62,17 @@ function NearViewport({ children }) {
  * until the reader is near them. Both draw decoration and nothing else, so a
  * visit that never reaches one never pays for it.
  *
- * Which is also why neither may answer for the page it sits behind. These mount
- * from a scroll, long after the document was served, and the chunk they ask for
- * is the deploy's to delete; without the boundary that rejection reached the
- * one above the routes, and a wash at the foot of a page reloaded the page.
+ * Which is also why neither may answer for the page it sits behind. The chunk
+ * they ask for is the deploy's to delete; without the boundary that rejection
+ * reached the one above the routes, and a wash at the foot of a page reloaded
+ * the page.
+ *
+ * And not only at the foot of one. `PageHero` carries a wash at the top of
+ * every secondary view, so the gate below opens on the first frame there and
+ * that background is asking for its chunk while the page is still arriving -
+ * before the route's own chunk has finished, and so first in line for anything
+ * a deploy has taken away. A background is the last thing on the page that
+ * should be deciding what happens to it, and it is the first one asked.
  */
 export function LazyAurora(props) {
   return (
