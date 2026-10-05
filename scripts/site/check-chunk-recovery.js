@@ -534,6 +534,22 @@ if (laddering) {
     /new Promise\(\(\) => \{\}\)/.test(laddering.source),
     'the pass settles after asking for the reload, so the boundary draws over a document that is already being replaced'
   )
+  // The same probe, asked for the other reason. A piece that leaves rather than
+  // reloading still has to say whether its chunk's absence is news, and the
+  // only thing that answers that is whether the build it belongs to is still
+  // the one being served. Without it a background nobody saw files a fault
+  // after every release, under a fingerprint carrying the chunk's own hash, so
+  // it arrives forever as a first sighting against a file nothing can recover.
+  check(
+    /if \(!renews && !checked && \(await superseded\(\)\)\) claimCaught\(lastError\)/.test(
+      laddering.source
+    ),
+    'a piece that leaves reports a chunk the deploy deleted as a fault the reader met, so every release files one no address can recover and no later report can ever join'
+  )
+  check(
+    /from '@utils\/caughtErrors'/.test(laddering.source),
+    'the ladder has no way to say a failure is accounted for, so anything it decides about one is already filed by the time a boundary catches it'
+  )
   check(
     /recentlyReloaded/.test(laddering.source) && /markReloaded/.test(laddering.source),
     "the ladder keeps a reload budget of its own, so a chunk that stays broken can spend the boundary's reload and its own and trap the tab in a loop"
