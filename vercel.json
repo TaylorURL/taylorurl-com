@@ -1,7 +1,9 @@
 {
   "cleanUrls": true,
   "trailingSlash": false,
-  "regions": ["pdx1"],
+  "regions": [
+    "pdx1"
+  ],
   "crons": [
     {
       "path": "/api/billing-reminders",
@@ -34,6 +36,10 @@
     {
       "path": "/api/outreach/watch",
       "schedule": "30 * * * *"
+    },
+    {
+      "path": "/api/outreach/previews",
+      "schedule": "0 15 * * 1-5"
     },
     {
       "path": "/api/new-business/source",
