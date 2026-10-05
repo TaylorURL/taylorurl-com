@@ -41,7 +41,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const CLOSED = new Set(['replied', 'unsubscribed', 'bounced', 'undeliverable'])
 
 const SITE_COLUMNS =
-  'id, slug, name, prospect_id, letter, message_id, sent_at, follow_up_due_at, follow_up_sent_at'
+  'id, slug, name, prospect_id, letter, shot_url, message_id, sent_at, follow_up_due_at, follow_up_sent_at'
 
 async function prospectOf(db, id) {
   const { data, error } = await db
