@@ -36,6 +36,10 @@
       "schedule": "30 * * * *"
     },
     {
+      "path": "/api/outreach/previews",
+      "schedule": "0 15 * * 1-5"
+    },
+    {
       "path": "/api/new-business/source",
       "schedule": "15 11 * * *"
     },
