@@ -150,6 +150,58 @@ for (const [file, piece] of [
   }
 }
 
+// And that the boundary those four are held to is still the thing that decides
+// it, because for a while it was not.
+//
+// The sentence above was written when a rejection was the only way a missing
+// chunk reached anybody, and a boundary that swallowed one ended the matter.
+// #760 put the reload inside the pass - as soon as `superseded` can prove the
+// build has been replaced, which it can before the ladder is halfway down - and
+// a reload taken there is taken below every boundary above it. So the check
+// above went on passing and the thing it was checking for stopped being true:
+// `LazyBg` had its QuietBoundary the whole time and the page still went.
+//
+// Measured against the built site with the Particles chunk refused and the
+// served document naming a newer entry: document at 81ms, 404 at 854ms, build
+// probe at 864ms, and the reader's portfolio page replaced at 936ms, over an
+// `aria-hidden` wash that takes no pointer and says nothing. That is #761.
+//
+// The backgrounds are the one piece on that list that is decoration all the way
+// down - no press opens them, nothing waits on them, and a visit that never
+// sees one is a visit that went perfectly. They stand the reload down, and the
+// ladder underneath them is untouched, so a chunk that is merely late still
+// arrives and one that is gone is still reported.
+const backgrounds = swept.find(entry => entry.name === 'src/app/components/reactbits/LazyBg.jsx')
+if (backgrounds) {
+  check(
+    /renews:\s*false/.test(backgrounds.source),
+    "the page backgrounds take the ladder's reload, so a deploy that replaces a chunk throws away the page a reader was on to redraw a decoration behind it"
+  )
+  // Named one at a time, because the shape this is watching for is one of the
+  // two being given the options and the other quietly keeping the default.
+  for (const bg of ['Aurora', 'Particles']) {
+    const built = new RegExp(`${bg} = lazyWithRetry\\(.*$`, 'm').exec(backgrounds.source)
+    check(
+      Boolean(built) && /\),\s*[A-Za-z_$]/.test(built[0]),
+      `${bg} is built with no options, so it keeps the default and reloads the page it decorates`
+    )
+  }
+}
+
+// That the ladder honours it, rather than reading it and asking anyway. The
+// probe is the whole of the reload path, so standing the probe down is what
+// stands the reload down - and it also takes the request away, which is the
+// second reason a decoration should not be making it.
+const ladderSource = readFileSync(path.join(ROOT, RETRY), 'utf8')
+check(
+  /renews = true/.test(ladderSource),
+  'lazyWithRetry has no `renews` option, so every caller takes the reload whether a new document helps its piece or not'
+)
+check(
+  /if \(renews && !checked\)/.test(ladderSource),
+  'the build probe is fired regardless of `renews`, so a piece that may not reload still pays for the question and still reaches renew()'
+)
+
 // That a piece which gave up is offered again to a reader who does not move.
 //
 // Everything above this line makes the failure cost the reader nothing at the

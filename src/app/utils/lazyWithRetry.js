@@ -278,6 +278,25 @@ async function superseded() {
 /**
  * The only recovery a superseded build has: a newer document.
  *
+ * Which is a recovery only for a piece that is the page. A route is: a reader
+ * looking at a view that cannot be built has nothing, and a new document is
+ * strictly more than that. The wash behind a hero is not, and for it the same
+ * reload is pure damage - it is `aria-hidden`, it takes no pointer, it says
+ * nothing, and a reader mid-scroll or mid-form on the page it decorates loses
+ * all of it so that a decoration can be drawn. `QuietBoundary` was written to
+ * stop exactly that and cannot: this reload is taken from inside the pass,
+ * below the boundary, so the rejection the boundary was going to swallow never
+ * reaches it. Measured against this build with the Particles chunk refused and
+ * the served document naming a newer entry: the document landed at 81ms, the
+ * chunk 404'd at 854ms, the build probe went out at 864ms and the reader's
+ * portfolio page was replaced at 936ms - over a background they had not seen
+ * and would not have missed.
+ *
+ * So the reload is the caller's to ask for rather than the ladder's to assume,
+ * and a piece that does not ask leaves instead. The ladder is unchanged for it:
+ * it still runs, it still reaches past an outage, and it still reports if it
+ * runs out, which is what keeps the file's absence visible.
+ *
  * Nothing is thrown and nothing ever resolves. The Suspense fallback holds for
  * the moment the reload takes, which is the last thing this document will draw,
  * and because the pass never rejects there is no boundary, no error screen and
@@ -347,13 +366,15 @@ export function warm(factory) {
  *
  * @param {() => Promise<{ default: React.ComponentType }>} factory - Dynamic
  *   import returning a module with a default-exported component.
- * @param {{ retries?: number, delayMs?: number, waits?: number, waitMs?: number, after?: unknown }} [options] -
+ * @param {{ retries?: number, delayMs?: number, waits?: number, waitMs?: number, after?: unknown, renews?: boolean }} [options] -
  *   `after` is what an earlier pass at this same piece died of, as an error or as
  *   a function returning one. Given one, the plain address is skipped: it is the
  *   address that already failed, and the module map will hand back that failure
  *   without sending anything. A function because the only caller that knows -
  *   `resolveArrival`, which asks for the landed route's chunk ahead of hydration
  *   - learns it after this map is built and before React calls the factory.
+ *   `renews` is whether this piece is worth a new document, for the reason given
+ *   above `renew`; a piece that is not sets it false and leaves instead.
  * @returns {React.LazyExoticComponent} A lazy component with retry built in.
  */
 export function lazyWithRetry(
@@ -364,6 +385,7 @@ export function lazyWithRetry(
     waits = DEFAULT_WAITS,
     waitMs = WAIT_MS,
     after = null,
+    renews = true,
   } = {}
 ) {
   return lazy(async () => {
@@ -431,7 +453,11 @@ export function lazyWithRetry(
         // because the answer decides whether the rungs that are left are worth
         // spending at all. The ladder below reaches past an outage; a build
         // that has been replaced is not an outage, and no address recovers it.
-        if (!checked) {
+        //
+        // Not asked at all for a piece that is not worth a document. The probe
+        // only ever decides whether to reload, so where there is no reload to
+        // take there is no question to ask, and the request is not made.
+        if (renews && !checked) {
           checked = true
           if (await superseded()) return renew(error)
         }
