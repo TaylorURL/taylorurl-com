@@ -119,7 +119,7 @@ export function PreviewsView({ token, area = 'work' }) {
       <Panel
         area="list"
         title="All Previews"
-        aside={`${fullCount(previews.length)} sites`}
+        aside={`${fullCount(previews.length)} ${previews.length === 1 ? 'site' : 'sites'}`}
         loading={!data}
         busy={loading && Boolean(data)}
       >
@@ -172,7 +172,8 @@ export function PreviewsView({ token, area = 'work' }) {
                         <>
                           <span className="block text-paper-soft">{whenAt(preview.opened_at)}</span>
                           <span className="text-paper-faint block text-[12px]">
-                            {fullCount(preview.open_count ?? 0)} opens
+                            {fullCount(preview.open_count ?? 0)}{' '}
+                            {preview.open_count === 1 ? 'open' : 'opens'}
                           </span>
                         </>
                       ) : (
