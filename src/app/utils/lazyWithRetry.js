@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 import { wait } from '@lib/time/wait.js'
+import { claimCaught } from '@utils/caughtErrors'
 import { markReloaded, recentlyReloaded } from '@utils/reloadGuard'
 
 const DEFAULT_RETRIES = 2
@@ -466,6 +467,28 @@ export function lazyWithRetry(
         if (attempt < last) await wait(attempt < retries ? delayMs * (attempt + 1) : waitMs)
       }
     }
+    // A piece that leaves rather than renewing has one question left, and it is
+    // the same one `renews` skipped on the way down.
+    //
+    // It was skipped because the probe only ever decided whether to reload, and
+    // a background has no reload to take. But the answer decides something else
+    // as well: whether a spent ladder is news. A chunk missing from a build that
+    // has been replaced is the deploy doing what a deploy does - every hashed
+    // file of the old build went at the same instant - and a reader who never
+    // saw an `aria-hidden` wash behind a heading met no fault at all. Reported
+    // anyway, it arrives under a fingerprint carrying the chunk's own hash, so
+    // it can never repeat and never accumulate: it is filed as a first sighting
+    // after every release, forever, against a file nothing can bring back.
+    //
+    // Which is the rule `caughtErrors` already holds every other recovery to.
+    // The claim is made here rather than in the boundary because here is the
+    // only place that knows why the chunk is absent; the boundary sees the same
+    // rejection either way. A build that is still current and will not serve
+    // this chunk is a real fault and still reports exactly as it did.
+    //
+    // Asked once, with nothing left to try, so it slows no attempt down - and
+    // not asked at all for a piece that renews, which has already asked.
+    if (!renews && !checked && (await superseded())) claimCaught(lastError)
     throw lastError
   })
 }
