@@ -56,6 +56,7 @@ import {
 } from '../../lib/tokens'
 import { useView } from '../../lib/views'
 import { NewBusinessView } from './NewBusinessView'
+import { PreviewsView } from './PreviewsView'
 import { Figures } from '../../Figures'
 import { fullCount, percent } from '../../../analytics/lib/format'
 
@@ -2326,13 +2327,15 @@ function MailPanel({
 /**
  * The section's views, first one the front. Each is one question: how the
  * pipeline stands, who is on file and what has been written to them, the
- * letters themselves, and what it is set up with.
+ * letters themselves, the sites built ahead of a first email, and what it is
+ * set up with.
  */
 const VIEWS = [
   { key: 'overview', label: 'Overview' },
   { key: 'mail', label: 'Mail' },
   { key: 'letters', label: 'Letters' },
   { key: 'new-business', label: 'New Businesses' },
+  { key: 'previews', label: 'Previews' },
   { key: 'settings', label: 'Settings' },
 ]
 
@@ -3629,6 +3632,8 @@ export default function OutreachPage() {
       ) : null}
 
       {view === 'new-business' ? <NewBusinessView token={token} area="work" /> : null}
+
+      {view === 'previews' ? <PreviewsView token={token} area="work" /> : null}
 
       {/* One business in full, over the table it was opened from. The head
           names the record rather than the business; the business is named
