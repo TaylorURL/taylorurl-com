@@ -89,7 +89,7 @@ const NUMBERS = [
     to: '/blog/how-fast-should-my-website-load',
     figure: '2.5s',
     label: 'is how long Google gives your main content to appear on *the screen*.',
-    cost: 'Miss it and Google ranks you below the sites that hit it, whatever your page says.',
+    cost: 'Google counts it when it ranks your page.',
     source: 'Google’s published target, from our article on how fast a site should load.',
   },
   {
@@ -97,7 +97,7 @@ const NUMBERS = [
     to: '/blog/how-fast-should-my-website-load',
     figure: '200ms',
     label: 'is how quickly a page should answer *a tap*.',
-    cost: 'Google grades every page on it, and the pages that miss rank below the ones that hit.',
+    cost: 'Google grades every page on it, and counts it when it ranks your page.',
     source: 'Google’s published target, from our article on how fast a site should load.',
   },
   {
@@ -376,9 +376,14 @@ const TEASERS = [
   },
   { slug: 'reading-a-web-design-quote-what-each-line-should-mean', accent: 'Quote', dek: 0 },
   { slug: 'what-mobile-first-actually-means', accent: '"Mobile-First"', dek: 1 },
-  { slug: 'why-your-wix-site-is-costing-you-customers', accent: 'Customers', dek: 1, dark: true },
+  {
+    slug: 'why-your-wix-site-is-costing-you-customers',
+    accent: 'Customers',
+    dek: 'Wix, Squarespace, and GoDaddy builders are slow, heavy with code you never asked for, and harder for Google to read.',
+    dark: true,
+  },
   { slug: 'why-nobodys-filling-out-your-contact-form', accent: 'Contact', dek: 1 },
-  { slug: 'small-business-website-mistakes', accent: 'Mistakes', dek: 1 },
+  { slug: 'small-business-website-mistakes', accent: 'Mistakes', dek: 0 },
   {
     slug: 'google-business-profile-the-most-important-free-tool',
     accent: 'Free',
@@ -401,9 +406,16 @@ const teaser = ({ slug, accent, dek, dark }) => {
     eyebrow: `From the Blog · ${article.category}`,
     readTime: article.readTime,
     headline,
-    dek: sentences(article.excerpt)[dek],
+    dek: typeof dek === 'string' ? dek : pick(sentences(article.excerpt), dek, slug),
     dark,
   }
+}
+
+/** One sentence of an excerpt, refusing an index the excerpt does not reach. */
+function pick(list, index, slug) {
+  if (index >= list.length)
+    throw new Error(`media-content: ${slug} has no sentence ${index} in its excerpt`)
+  return list[index]
 }
 
 // ---------------------------------------------------------------------------
@@ -699,7 +711,7 @@ const CAROUSELS = [
           {
             n: `06 · ${PROCESS_TIMELINE[5].duration}`,
             title: PROCESS_TIMELINE[5].title,
-            body: 'Hosting, backups and changes stay with us. You text us, and it is handled.',
+            body: 'Hosting, backups and changes stay with us. You text us, and we handle it.',
           },
         ],
       },
@@ -898,8 +910,38 @@ function videos(fx, trades) {
     html: `${fx.head(line, 0.1, 104)}${fx.path(path, 0.9)}`,
   })
   const tradeNames = trades.filter(trade => trade.id !== 'something-else').map(trade => trade.name)
+  const measured = month(recreation.measured)
 
-  return [
+  // What a reader who cannot see each video is given, written from the same
+  // content the scenes draw rather than read back off the page.
+  const alts = {
+    'video-check-off-wifi':
+      'Under a minute. Open your site on your phone, off wifi. Four questions: Can you read it without pinching? Can you hit every button with a thumb? Does the keyboard hide the submit button? Does it appear in under three seconds? More checks like this at taylorurl.com/blog.',
+    'video-53-percent':
+      '53% of mobile visitors leave a page that takes more than three seconds to load. Google research, cited on our blog. A site that loads in five has lost half of them before the first word. Check your own speed at taylorurl.com/speed-check.',
+    'video-before-after-recreation-baytown': `A recreation site in Baytown. Same site, same test. January, then ${measured.split(' ')[0]}. Mobile score: 72 in January 2026, ${recreation.mobile} in ${measured}. Desktop score: 74 in January 2026, ${recreation.desktop} in ${measured}. Every score we quote is one you can check yourself. Google PageSpeed Insights. January figures as published on our blog; ${measured} is the median of ${recreation.runs} runs.`,
+    'video-disagree-long-forms':
+      'Heard in the trade: "Long forms scare people off." The belief is struck through. What actually happens: the longest form we have built is the one people finish. Friction empties a form, and most of it is on a phone. Big fields, a keyboard that leaves the button visible, and no account to make first. Read the whole case at taylorurl.com/blog.',
+    'video-how-a-build-goes': `How a build goes, step by step. ${PROCESS_TIMELINE.map(
+      step => `${step.step}. ${step.title}, ${step.duration}.`
+    ).join(' ')} Most sites are live in two to four weeks. taylorurl.com/process.`,
+    'video-teaser-laptop-and-phone':
+      'From the blog: Why your site is fast on your laptop and slow on a phone. 10×: your laptop has ten times the processor of the phone your customer is holding, and a connection that does not drop. Read it at taylorurl.com/blog.',
+    'video-teaser-plumbers-website':
+      'From the blog, Trade Playbooks: What a plumber’s website has to do. Seven things: the number at the top; the hours, stated; the towns, by name; a page per job; your own photos; real reviews; fast on one bar. All seven, explained, at taylorurl.com/blog.',
+    'video-phone-call-bar':
+      'A call bar that follows. The number pinned to the bottom of every page on a phone. A phone shows a plumbing site scrolling past its job pages, water heaters, slab leaks, drain clearing, repipes and backflow testing, while a blue Call Now bar stays pinned to the bottom of the screen. See what each trade’s site needs at taylorurl.com/industries.',
+    'video-2-5-seconds':
+      '2.5 seconds is how long Google gives your main content to appear on the screen. Google counts it when it ranks your page. From our article on how fast a site should load. Test your site at taylorurl.com/speed-check.',
+    'video-trades-we-build-for': `Whatever the sign out front says. Trades we build for: ${tradeNames.join(', ')}. ${tradeNames.length} trades, each with a page of its own, at taylorurl.com/industries.`,
+  }
+  const withAlt = list =>
+    list.map(video => {
+      if (!alts[video.key]) throw new Error(`media-content: ${video.key} has no alt text`)
+      return { ...video, alt: alts[video.key] }
+    })
+
+  return withAlt([
     {
       key: 'video-check-off-wifi',
       format: 'check',
@@ -1159,7 +1201,7 @@ ${['Water heaters', 'Slab leaks', 'Drain clearing', 'Repipes', 'Backflow testing
         {
           from: 8.4,
           to: 14.4,
-          html: `${fx.head('Miss it and you rank below the sites that *hit* it.', 0.1, 116)}${fx.note('From our article on how fast a site should load.', 1.6)}`,
+          html: `${fx.head('Google counts it when it *ranks* your page.', 0.1, 116)}${fx.note('From our article on how fast a site should load.', 1.6)}`,
         },
         close(14.4, 18, 'Test your site at *taylorurl.com*.', 'taylorurl.com/speed-check'),
       ],
@@ -1190,7 +1232,7 @@ ${['Water heaters', 'Slab leaks', 'Drain clearing', 'Repipes', 'Backflow testing
         ),
       ],
     },
-  ]
+  ])
 }
 
 /** The library, in the order the manifest lists it. */
@@ -1203,6 +1245,7 @@ export async function library(fx) {
       ...item,
       format: 'number',
       eyebrow: 'By the Numbers',
+      headline: `${item.figure} ${item.label}`,
       dark: index % 3 === 2,
     })),
     ...CHECKS.map((item, index) => ({ ...item, format: 'check', dark: index % 3 === 1 })),
@@ -1238,13 +1281,20 @@ export async function library(fx) {
         to: `/areas/${area.slug}`,
         eyebrow: `Where We Build · ${counties.join(' and ')} ${counties.length > 1 ? 'Counties' : 'County'}`,
         town: `${area.name}*.*`,
+        headline: area.name,
         title: area.profile.local.title,
         lede: area.profile.lede,
         chips: area.trades.slice(0, 5).map(tradeName),
         dark: index % 4 === 2,
       }
     }),
-    ...FAQS.map((item, index) => ({ ...item, format: 'faq', to: '/faq', dark: index % 4 === 3 })),
+    ...FAQS.map((item, index) => ({
+      ...item,
+      headline: item.question,
+      format: 'faq',
+      to: '/faq',
+      dark: index % 4 === 3,
+    })),
   ].map(item => ({ ...item, kind: 'image', channels: ALL }))
 
   const carousels = [...CAROUSELS, storageCarousel()].map(item => ({
