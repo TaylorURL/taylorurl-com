@@ -833,6 +833,27 @@ check(
   'the ladder moves src alone; an element choosing between cuts ignores src, so every rung would be a request the browser never makes'
 )
 
+// The photograph beside a secondary page's headline is the same arrangement one
+// component over. It is one unhashed file under `/images/`, drawn from the
+// shared hero every view but the home page uses, and it was drawn with no
+// ladder at all: one `error` event, an empty column, and the day's
+// `Cache-Control` stored against the built address, so the reader who lost it
+// once went on losing it on every page that draws it. #768 was that, on the
+// enquiry page. Both halves are checked here for the reason they are checked on
+// the process shots - the element has to carry the ladder, and a failure that
+// settled before React attached its handler has to be read at mount, because
+// these routes are rendered to markup at build time and the attribute sitting
+// on the element is the reporter holding a loss nothing is recovering from.
+const HERO = readFileSync(path.join(APP, 'components/page-bands/PageHero.jsx'), 'utf8')
+check(
+  /\{\.\.\.retryable\(\)\}/.test(HERO),
+  "a secondary page's hero photograph is drawn with no ladder, so one dropped request takes it off every page that draws it until the reader's cache lets go"
+)
+check(
+  /naturalWidth !== 0/.test(HERO),
+  'a hero photograph that settled before React attached its handler is never read, and these routes are rendered to markup at build time, so that race is lost often rather than rarely'
+)
+
 /* ----------------------------------------------------------------------- *
  * The import that is the whole application.
  * ----------------------------------------------------------------------- */
