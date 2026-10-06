@@ -63,7 +63,9 @@ const SITE_COLUMNS =
 async function prospectOf(db, id) {
   const { data, error } = await db
     .from('outreach_prospects')
-    .select('id, name, email, stage, replied_at, bounced_at, unsub_token, contacted_at')
+    .select(
+      'id, name, email, stage, replied_at, bounced_at, unsub_token, contacted_at, rating_count'
+    )
     .eq('id', id)
     .maybeSingle()
   if (error) throw new Error(error.message)
@@ -87,12 +89,16 @@ async function sendOne(db, settings, site, prospect, kind, thread = null, nth = 
   const from = sender(settings)
   const track = randomUUID()
   const unsubscribe = prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
-  const letter = previewLetter({ ...site, email: prospect.email }, kind, {
-    track,
-    unsubscribe,
-    prior: thread,
-    nth,
-  })
+  const letter = previewLetter(
+    { ...site, email: prospect.email, rating_count: prospect.rating_count },
+    kind,
+    {
+      track,
+      unsubscribe,
+      prior: thread,
+      nth,
+    }
+  )
   const { data: message, error } = await db
     .from('outreach_messages')
     .insert({
