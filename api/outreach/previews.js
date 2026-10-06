@@ -15,6 +15,13 @@
  * bounced since is skipped and its follow-ups closed, since a nudge to
  * somebody who already answered is the one letter worse than none.
  *
+ * The first letter goes only to a business whose third letter is due - two
+ * letters sent, the second at least five days ago - and only once its site
+ * answers on its own subdomain. The routine checks both before it asks, and
+ * they are checked again here because this is the one place the letter can
+ * leave from: a letter pointing at a site that is not there yet is worse than
+ * a letter a day late.
+ *
  * Sending a preview also takes the prospect out of the cold letter's own
  * follow-up chain by clearing `next_due_at`. The preview letter replaces
  * whatever that chain had left to say, and two chains writing to one business
@@ -33,9 +40,12 @@ import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
 import {
   FOLLOW_UP_COUNT,
+  LETTERS_BEFORE_PREVIEW,
   LETTERS_IN_ALL,
   PREVIEW_FOLLOW_UP_DAYS,
+  PREVIEW_WAIT_DAYS,
   previewLetter,
+  previewUrl,
 } from '../../lib/outreach/previews.js'
 import { deliver, sender, unsubscribeUrl } from './send.js'
 
@@ -121,6 +131,44 @@ async function sendOne(db, settings, site, prospect, kind, thread = null, nth = 
   return { id: message.id, at, subject: letter.subject, providerId }
 }
 
+/**
+ * Why the preview is not yet this business's letter, or null when it is: the
+ * two letters before it have gone, the last of them five days or more ago.
+ */
+async function notDueYet(db, prospectId) {
+  const { data, error } = await db
+    .from('outreach_messages')
+    .select('sent_at')
+    .eq('prospect_id', prospectId)
+    .eq('direction', 'outbound')
+    .eq('status', 'sent')
+    .order('sent_at', { ascending: false })
+  if (error) throw new Error(error.message)
+  const sent = data ?? []
+  if (sent.length >= LETTERS_IN_ALL) return `it has had all ${LETTERS_IN_ALL} letters`
+  if (sent.length < LETTERS_BEFORE_PREVIEW) {
+    return `it has had ${sent.length} of the ${LETTERS_BEFORE_PREVIEW} letters that come first`
+  }
+  const due = Date.parse(sent[0].sent_at) + PREVIEW_WAIT_DAYS * DAY_MS
+  return due > Date.now() ? `its last letter went less than ${PREVIEW_WAIT_DAYS} days ago` : null
+}
+
+/** Why the site is not there to point at, or null when it serves its own page. */
+async function siteMissing(slug) {
+  const url = `${previewUrl(slug)}/`
+  try {
+    const answer = await fetch(url, {
+      headers: { 'User-Agent': 'preview-letter-check' },
+      signal: AbortSignal.timeout(20000),
+    })
+    const page = await answer.text()
+    if (answer.ok && page.includes(`__SLUG__ = ${JSON.stringify(slug)}`)) return null
+    return `${url} answered ${answer.status} without its preview`
+  } catch (cause) {
+    return `${url} did not answer: ${cause?.message || cause}`
+  }
+}
+
 async function sendFirst(db, settings, slug, counts) {
   const { data: site, error } = await db
     .from('preview_sites')
@@ -136,6 +184,11 @@ async function sendFirst(db, settings, slug, counts) {
   counts.examined = 1
   const bar = await barred(db, prospect)
   if (bar) return { note: `${slug} was not sent: ${bar}` }
+
+  const early = await notDueYet(db, prospect.id)
+  if (early) return { note: `${slug} was not sent: ${early}` }
+  const missing = await siteMissing(slug)
+  if (missing) return { note: `${slug} was not sent: ${missing}` }
 
   const sent = await sendOne(db, settings, site, prospect, 'first')
   const due = new Date(Date.parse(sent.at) + PREVIEW_FOLLOW_UP_DAYS * DAY_MS).toISOString()
