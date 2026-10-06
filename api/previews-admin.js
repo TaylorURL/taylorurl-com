@@ -1,7 +1,10 @@
 /**
  * previews-admin - every preview site the studio has built, and what has
  * happened since: when its letter went, whether it was opened, whether the
- * site was looked at, the follow-up, and any reply.
+ * site was looked at, the follow-up, and any reply. Beside each one, what its
+ * visits did on the site - read from `preview_behaviour()`, which rolls up the
+ * sessions /api/preview-events records - and, across previews, which sections
+ * and calls to action hold attention in each template.
  *
  * Read by the Previews view of the outreach console. Admin accounts only; it
  * writes nothing.
@@ -12,7 +15,7 @@ import { servedHereOr404 } from '../lib/http/guard.js'
 import { previewUrl } from '../lib/outreach/previews.js'
 
 const SITE_COLUMNS =
-  'slug, name, industry, prospect_id, created_at, sent_at, message_id, first_viewed_at, last_viewed_at, view_count, follow_up_due_at, follow_up_sent_at, follow_up_message_id'
+  'id, slug, name, industry, prospect_id, created_at, sent_at, message_id, first_viewed_at, last_viewed_at, view_count, follow_up_due_at, follow_up_sent_at, follow_up_message_id'
 
 /** Samples are the template showcases, not sites built for anybody. */
 const isSample = slug =>
@@ -28,7 +31,7 @@ async function board(db) {
 
   const messageIds = rows.flatMap(row => [row.message_id, row.follow_up_message_id]).filter(Boolean)
   const prospectIds = rows.map(row => row.prospect_id).filter(Boolean)
-  const [messages, prospects] = await Promise.all([
+  const [messages, prospects, behaviour] = await Promise.all([
     messageIds.length
       ? db
           .from('outreach_messages')
@@ -38,8 +41,12 @@ async function board(db) {
     prospectIds.length
       ? db.from('outreach_prospects').select('id, email, stage, replied_at').in('id', prospectIds)
       : { data: [] },
+    db.rpc('preview_behaviour'),
   ])
-  for (const read of [messages, prospects]) if (read.error) throw new Error(read.error.message)
+  for (const read of [messages, prospects, behaviour]) {
+    if (read.error) throw new Error(read.error.message)
+  }
+  const visits = behaviour.data?.sites ?? {}
   const message = new Map((messages.data ?? []).map(row => [row.id, row]))
   const prospect = new Map((prospects.data ?? []).map(row => [row.id, row]))
 
@@ -67,6 +74,7 @@ async function board(db) {
       follow_up_opened_at: follow.opened_at ?? null,
       replied_at: who.replied_at ?? null,
       stage: who.stage ?? null,
+      behaviour: visits[row.id] ?? null,
     }
   })
 
@@ -81,6 +89,7 @@ async function board(db) {
       followed_up: count(row => row.follow_up_sent_at),
       replied: count(row => row.replied_at),
     },
+    templates: behaviour.data?.templates ?? {},
   }
 }
 
