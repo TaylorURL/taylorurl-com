@@ -9,7 +9,7 @@
     "alt": "53% of mobile visitors leave a page that takes more than three seconds to load. What it costs you: A site that loads in five seconds has lost half its visitors before they read a word. Google research, cited in our article on why fast websites make more money.",
     "to": "/blog/why-fast-websites-make-more-money",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "53% of mobile visitors leave a page that takes more than three seconds to load."
   },
   {
     "key": "number-2-5-seconds",
@@ -18,10 +18,10 @@
     "files": ["number-2-5-seconds.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "2.5s is how long Google gives your main content to appear on the screen. What it costs you: Miss it and Google ranks you below the sites that hit it, whatever your page says. Google’s published target, from our article on how fast a site should load.",
+    "alt": "2.5s is how long Google gives your main content to appear on the screen. What it costs you: Google counts it when it ranks your page. Google’s published target, from our article on how fast a site should load.",
     "to": "/blog/how-fast-should-my-website-load",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "2.5s is how long Google gives your main content to appear on the screen."
   },
   {
     "key": "number-200-ms",
@@ -30,10 +30,10 @@
     "files": ["number-200-ms.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "200ms is how quickly a page should answer a tap. What it costs you: Google grades every page on it, and the pages that miss rank below the ones that hit. Google’s published target, from our article on how fast a site should load.",
+    "alt": "200ms is how quickly a page should answer a tap. What it costs you: Google grades every page on it, and counts it when it ranks your page. Google’s published target, from our article on how fast a site should load.",
     "to": "/blog/how-fast-should-my-website-load",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "200ms is how quickly a page should answer a tap."
   },
   {
     "key": "number-one-tenth",
@@ -45,7 +45,7 @@
     "alt": "1/10 of a laptop’s processor is what your customer’s phone has to work with. What it costs you: The page that snaps open on your desk can sit blank on her phone, and she backs out without calling. From our article on why a site is fast on a laptop and slow on a phone.",
     "to": "/blog/why-your-site-is-fast-on-your-laptop-and-slow-on-a-phone",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "1/10 of a laptop’s processor is what your customer’s phone has to work with."
   },
   {
     "key": "number-42-percent",
@@ -57,7 +57,7 @@
     "alt": "42% more requests for directions go to businesses with photos on their Google profile. What it costs you: A profile with no photos of your shop is sending those drives somewhere else. Google’s own data, cited in our article on the Google Business Profile.",
     "to": "/blog/google-business-profile-the-most-important-free-tool",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "42% more requests for directions go to businesses with photos on their Google profile."
   },
   {
     "key": "number-one-in-four",
@@ -69,7 +69,7 @@
     "alt": "1 in 4 adults in the US has some kind of disability. What it costs you: Low contrast, missing alt text and unlabeled forms shut them out, and the same fixes help you rank. From our article on accessibility, the requirement small business sites miss.",
     "to": "/blog/accessibility-the-website-requirement-youre-ignoring",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "1 in 4 adults in the US has some kind of disability."
   },
   {
     "key": "number-60-percent",
@@ -81,7 +81,7 @@
     "alt": "60%+ of searches happen on a phone, and for local businesses the share is higher. What it costs you: Google indexes the phone version of your site first, so that is the version it grades. From our article on what Google cares about in 2026.",
     "to": "/blog/what-google-actually-cares-about-in-2026",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "60%+ of searches happen on a phone, and for local businesses the share is higher."
   },
   {
     "key": "number-20-minutes",
@@ -93,7 +93,7 @@
     "alt": "20 min is about how long it takes to set up a Google Business Profile. What it costs you: A competitor who spent those twenty minutes is sitting above you in local search for that reason alone. From our articles on the Google Business Profile and on local SEO.",
     "to": "/blog/google-business-profile-the-most-important-free-tool",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "20 min is about how long it takes to set up a Google Business Profile."
   },
   {
     "key": "number-90-plus",
@@ -105,7 +105,7 @@
     "alt": "90+ is the mobile PageSpeed score to aim for. Run the test on your site. What it costs you: Wix, Squarespace and plugin-heavy WordPress sites tend to land between 30 and 60, which is normal for them and still slow. From our article on how fast a site should load.",
     "to": "/speed-check",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "90+ is the mobile PageSpeed score to aim for. Run the test on your site."
   },
   {
     "key": "check-off-wifi",
@@ -342,7 +342,7 @@
     "files": ["teaser-why-your-site-is-fast.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Site Speed. Why Your Site Is Fast on Your Laptop and Slow on a Phone Your site snaps up on your laptop and stalls on a phone in a truck in Mont Belvieu. Read it on the blog.",
+    "alt": "From the Blog · Site Speed. Why Your Site Is Fast on Your Laptop and Slow on a Phone. Your site snaps up on your laptop and stalls on a phone in a truck in Mont Belvieu. Read it on the blog.",
     "to": "/blog/why-your-site-is-fast-on-your-laptop-and-slow-on-a-phone",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Why Your Site Is Fast on Your Laptop and Slow on a Phone"
@@ -354,7 +354,7 @@
     "files": ["teaser-what-a-plumbers-website-has.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Tips for Owners. What a Plumber's Website Has to Do A burst pipe at 11pm is not a browsing session. Read it on the blog.",
+    "alt": "From the Blog · Tips for Owners. What a Plumber's Website Has to Do. A burst pipe at 11pm is not a browsing session. Read it on the blog.",
     "to": "/blog/what-a-plumbers-website-has-to-do",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "What a Plumber's Website Has to Do"
@@ -366,7 +366,7 @@
     "files": ["teaser-roofers-the-storm-week-your.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Tips for Owners. Roofers: The Storm Week Your Website Has to Handle A hail line rolls through Baytown and by morning half the neighborhood is calling roofers. Read it on the blog.",
+    "alt": "From the Blog · Tips for Owners. Roofers: The Storm Week Your Website Has to Handle. A hail line rolls through Baytown and by morning half the neighborhood is calling roofers. Read it on the blog.",
     "to": "/blog/roofers-the-storm-week-your-website-either-handles-or-not",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Roofers: The Storm Week Your Website Has to Handle"
@@ -378,7 +378,7 @@
     "files": ["teaser-hvac-the-two-seasons-your.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Tips for Owners. HVAC: The Two Seasons Your Website Has to Be Ready For A dead air conditioner in July and a furnace tune-up in November want different things from one HVAC website. Read it on the blog.",
+    "alt": "From the Blog · Tips for Owners. HVAC: The Two Seasons Your Website Has to Be Ready For. A dead air conditioner in July and a furnace tune-up in November want different things from one HVAC website. Read it on the blog.",
     "to": "/blog/hvac-the-two-seasons-your-website-has-to-be-ready-for",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "HVAC: The Two Seasons Your Website Has to Be Ready For"
@@ -390,7 +390,7 @@
     "files": ["teaser-electricians-a-pricing-page-that.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Tips for Owners. Electricians: A Pricing Page That Stops Tire-Kicker Calls A pricing page does not price the jobs, it filters the calls. Read it on the blog.",
+    "alt": "From the Blog · Tips for Owners. Electricians: A Pricing Page That Stops Tire-Kicker Calls. A pricing page does not price the jobs, it filters the calls. Read it on the blog.",
     "to": "/blog/electricians-a-pricing-page-that-stops-tire-kicker-calls",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Electricians: A Pricing Page That Stops Tire-Kicker Calls"
@@ -402,7 +402,7 @@
     "files": ["teaser-reading-a-web-design-quote.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Business. Reading a Web Design Quote: What Each Line Should Mean Every web design quote uses the same five or six line items. Read it on the blog.",
+    "alt": "From the Blog · Business. Reading a Web Design Quote: What Each Line Should Mean. Every web design quote uses the same five or six line items. Read it on the blog.",
     "to": "/blog/reading-a-web-design-quote-what-each-line-should-mean",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Reading a Web Design Quote: What Each Line Should Mean"
@@ -414,7 +414,7 @@
     "files": ["teaser-what-mobile-first-actually-means.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Design. What \"Mobile-First\" Actually Means It means the page was shaped by the worst conditions it will ever be opened in: a phone on one bar. Read it on the blog.",
+    "alt": "From the Blog · Design. What \"Mobile-First\" Actually Means. It means the page was shaped by the worst conditions it will ever be opened in: a phone on one bar. Read it on the blog.",
     "to": "/blog/what-mobile-first-actually-means",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "What \"Mobile-First\" Actually Means"
@@ -426,7 +426,7 @@
     "files": ["teaser-why-your-wix-site-is.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Site Speed. Why Your Wix Site Is Costing You Customers They are also slow, heavy with code you never asked for, and harder for Google to read. Read it on the blog.",
+    "alt": "From the Blog · Site Speed. Why Your Wix Site Is Costing You Customers. Wix, Squarespace, and GoDaddy builders are slow, heavy with code you never asked for, and harder for Google to read. Read it on the blog.",
     "to": "/blog/why-your-wix-site-is-costing-you-customers",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Why Your Wix Site Is Costing You Customers"
@@ -438,7 +438,7 @@
     "files": ["teaser-why-nobodys-filling-out-your.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Design. Why Nobody's Filling Out Your Contact Form What empties a form is friction, not length, and most of the friction is on a phone. Read it on the blog.",
+    "alt": "From the Blog · Design. Why Nobody's Filling Out Your Contact Form. What empties a form is friction, not length, and most of the friction is on a phone. Read it on the blog.",
     "to": "/blog/why-nobodys-filling-out-your-contact-form",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Why Nobody's Filling Out Your Contact Form"
@@ -450,7 +450,7 @@
     "files": ["teaser-small-business-website-mistakes.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Business. 5 Website Mistakes Small Businesses Keep Making undefined Read it on the blog.",
+    "alt": "From the Blog · Business. 5 Website Mistakes Small Businesses Keep Making. The five website mistakes small businesses keep making: no next step, stock photos, a hidden phone number, a broken phone layout, and a site nobody updates. Read it on the blog.",
     "to": "/blog/small-business-website-mistakes",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "5 Website Mistakes Small Businesses Keep Making"
@@ -462,7 +462,7 @@
     "files": ["teaser-google-business-profile-the-most.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · SEO. Google Business Profile: The Free Tool You're Not Using Your Google Business Profile is free, takes 20 minutes to set up, and decides whether local customers find you before they ever reach your website. Read it on the blog.",
+    "alt": "From the Blog · SEO. Google Business Profile: The Free Tool You're Not Using. Your Google Business Profile is free, takes 20 minutes to set up, and decides whether local customers find you before they ever reach your website. Read it on the blog.",
     "to": "/blog/google-business-profile-the-most-important-free-tool",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Google Business Profile: The Free Tool You're Not Using"
@@ -474,7 +474,7 @@
     "files": ["teaser-your-website-isnt-a-brochure.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "From the Blog · Business. Your Website Isn't a Brochure It should greet people, answer their questions, and ask for the call around the clock, the way a good salesperson does. Read it on the blog.",
+    "alt": "From the Blog · Business. Your Website Isn't a Brochure. It should greet people, answer their questions, and ask for the call around the clock, the way a good salesperson does. Read it on the blog.",
     "to": "/blog/your-website-isnt-a-brochure",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "Your Website Isn't a Brochure"
@@ -633,7 +633,7 @@
     "alt": "Where We Build · Harris and Chambers Counties. Baytown. Baytown is our own town. The office is in Baytown. We build for the shops on Garth Road, the trades working off Decker Drive, and the contractors at the plant gates. Trades: Plumbing, HVAC, Auto Repair, Restaurant, Barber Shop.",
     "to": "/areas/baytown",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Baytown"
   },
   {
     "key": "area-houston",
@@ -645,7 +645,7 @@
     "alt": "Where We Build · Harris County. Houston. Houston is too big to win on the city name alone. Houston is twenty-six miles west on I-10, and the largest market we build in. Websites for the shops, trades, offices, and independent pros working in any part of the city. Trades: Real Estate, Accounting, Law Firm, Restaurant, Hair Salon.",
     "to": "/areas/houston",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Houston"
   },
   {
     "key": "area-pasadena",
@@ -657,7 +657,7 @@
     "alt": "Where We Build · Harris County. Pasadena. Most of Pasadena buys through a purchasing office. Pasadena runs along SH 225, west of us on the south side of the ship channel. Websites for the shops, suppliers, and studios working that corridor, and for the ones selling to the street. Trades: Printing, Auto Repair, Towing, HVAC, Plumbing.",
     "to": "/areas/pasadena",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Pasadena"
   },
   {
     "key": "area-deer-park",
@@ -669,7 +669,7 @@
     "alt": "Where We Build · Harris County. Deer Park. Deer Park faces two ways at once. Deer Park is over the ship channel from us, with SH 225 down the middle of it and Center Street through the older half. Websites for the suppliers and the trades along both. Trades: HVAC, Electrical, Plumbing, Auto Repair, Fencing.",
     "to": "/areas/deer-park",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Deer Park"
   },
   {
     "key": "area-la-porte",
@@ -681,7 +681,7 @@
     "alt": "Where We Build · Harris County. La Porte. La Porte sells to a gate or to the water. La Porte is over the Fred Hartman Bridge from us, holding Bayport, Battleground, and Barbours Cut on one side and Sylvan Beach on the other. Websites for the businesses selling to a plant gate, and for the ones out on the water. Trades: Marine Services, Auto Repair, Plumbing, Towing, Concrete.",
     "to": "/areas/la-porte",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "La Porte"
   },
   {
     "key": "area-mont-belvieu",
@@ -693,7 +693,7 @@
     "alt": "Where We Build · Chambers County. Mont Belvieu. Mont Belvieu has caverns on one side and new streets on the other. Mont Belvieu is fourteen miles up SH 146 from us, on the salt dome holding the largest store of natural gas liquids in the country. Websites for the contractors working the caverns and the trades following Eagle Drive out into Riceland. Trades: Concrete, Fencing, Landscaping, HVAC, Storage.",
     "to": "/areas/mont-belvieu",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Mont Belvieu"
   },
   {
     "key": "area-galveston",
@@ -705,7 +705,7 @@
     "alt": "Where We Build · Galveston County. Galveston. Galveston has two markets, and a third that runs all year. Galveston is down SH 146 and over the causeway from us. Websites for the shops on the Strand, the trades along the Seawall, and the operators working the harbor. Trades: Restaurant, Marine Services, Towing, Storage, Hair Salon.",
     "to": "/areas/galveston",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Galveston"
   },
   {
     "key": "area-texas-city",
@@ -717,7 +717,7 @@
     "alt": "Where We Build · Galveston County. Texas City. Texas City works to a plant schedule. Texas City sits at the top of Galveston Bay, with the refineries along Loop 197 and the dike running five miles out into the water. Websites for the contractors, the marine trades, and the shops on Palmer Highway inside the loop. Trades: Marine Services, Plumbing, Auto Repair, Storage, Concrete.",
     "to": "/areas/texas-city",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Texas City"
   },
   {
     "key": "area-dayton",
@@ -729,7 +729,7 @@
     "alt": "Where We Build · Liberty County. Dayton. In Dayton the county name outranks the city name. Dayton is up SH 146 from us, where US-90 crosses SH 321 and the Grand Parkway now clips the edge of town. Websites for the trades and the agents working Liberty County. Trades: Real Estate, Fencing, Concrete, Landscaping, Plumbing.",
     "to": "/areas/dayton",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Dayton"
   },
   {
     "key": "area-huffman",
@@ -741,7 +741,7 @@
     "alt": "Where We Build · Harris County. Huffman. Huffman has no storefront to be seen from. Huffman is unincorporated Harris County, at the corner of FM 1960 and FM 2100. Websites for the businesses here, which have no downtown block to put a sign on and get found by search instead. Trades: Fencing, Landscaping, Marine Services, Storage, Pest Control.",
     "to": "/areas/huffman",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Huffman"
   },
   {
     "key": "area-liberty",
@@ -753,7 +753,7 @@
     "alt": "Where We Build · Liberty County. Liberty. The four questions a Liberty shop gets asked. Liberty is the county seat, thirty-three miles up SH 146, where 146 and US-90 run as one street through the middle of town. Websites for the shops around the square and the trades working the river bottom past it. Trades: Barber Shop, Hair Salon, Auto Repair, Fencing, Restaurant.",
     "to": "/areas/liberty",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Liberty"
   },
   {
     "key": "area-daisetta",
@@ -765,7 +765,7 @@
     "alt": "Where We Build · Liberty County. Daisetta. A Daisetta page has to cover a county. Daisetta is under a thousand people in Liberty County, so a business here competes for the same searches as towns twenty miles away. Websites written to reach all of them. Trades: Auto Repair, Fencing, Plumbing, Landscaping, Restaurant.",
     "to": "/areas/daisetta",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Daisetta"
   },
   {
     "key": "faq-how-long",
@@ -777,7 +777,7 @@
     "alt": "Question: How long does a build take? Answer: Most sites are live in two to four weeks. What usually moves that date is photos and content coming back slowly, so having those ready is the fastest thing you can do.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "How long does a build take?"
   },
   {
     "key": "faq-what-we-need",
@@ -789,7 +789,7 @@
     "alt": "Question: What do you need to get started? Answer: Your logo if you have one, whatever photos of the work you already have, and half an hour on the phone. We write the copy and design the site.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "What do you need to get started?"
   },
   {
     "key": "faq-redesign",
@@ -801,7 +801,7 @@
     "alt": "Question: Can you redesign an existing site? Answer: Yes. We look at what you have, work out which pages are costing you calls, and rebuild it. The layout, the order of the pages and the words all get rethought, not just the colors.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Can you redesign an existing site?"
   },
   {
     "key": "faq-wordpress",
@@ -813,7 +813,7 @@
     "alt": "Question: Do you use WordPress, Wix or Squarespace? Answer: No. Every site is written from scratch, so there is no theme to update and no plugin to break it at midnight. Across the client sites already live, Google’s PageSpeed test averages 98 on mobile and 100 on desktop.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Do you use WordPress, Wix or Squarespace?"
   },
   {
     "key": "faq-stop-monthly",
@@ -825,7 +825,7 @@
     "alt": "Question: Can the monthly be stopped? Answer: Yes, any time. There is no annual term to sign, no notice period and no cancellation fee.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Can the monthly be stopped?"
   },
   {
     "key": "faq-agency",
@@ -837,7 +837,7 @@
     "alt": "Question: How is this different from an agency? Answer: You talk to the people building the site. The team is small, so there is no account manager and no ticket queue. You text us, and we make the change.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "How is this different from an agency?"
   },
   {
     "key": "faq-ownership",
@@ -849,7 +849,7 @@
     "alt": "Question: Who owns what once the site is live? Answer: Your domain is registered in your name, and the text, photos, logo and brand marks you supply stay yours. TaylorURL keeps the source code and the platform it runs on.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Who owns what once the site is live?"
   },
   {
     "key": "faq-outside-houston",
@@ -861,7 +861,7 @@
     "alt": "Question: Do you only work with businesses near Houston? Answer: No. We are based in Baytown and most clients are around Houston and the bay, but the whole project runs fine by phone, text and email.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
-    "headline": "undefined"
+    "headline": "Do you only work with businesses near Houston?"
   },
   {
     "key": "carousel-plumber-seven-things",
@@ -956,7 +956,7 @@
       "How a build goes, step by step. Six steps, and most sites are live in two to four weeks. Swipe through.",
       "01, Day 1. First call. You tell us what the business does. We tell you straight whether we are the right fit. 02, Day 2-3. Plan and price. What gets built, what it costs and the date it goes live, in writing, before anything starts.",
       "03, Week 1. Design. Real pages with your own photos in them. We keep changing it until it looks like your business. 04, Week 2-3. Build. Built from scratch, with a preview link as it goes up.",
-      "05, Week 3-4. Review and launch. You click through every page and list what is off. We fix it and go live the day you say go. 06, Ongoing. After launch. Hosting, backups and changes stay with us. You text us, and it is handled.",
+      "05, Week 3-4. Review and launch. You click through every page and list what is off. We fix it and go live the day you say go. 06, Ongoing. After launch. Hosting, backups and changes stay with us. You text us, and we handle it.",
       "The whole process is on taylorurl.com. Each step, what you do in it, and what we do. taylorurl.com/process"
     ],
     "to": "/process",
@@ -1075,7 +1075,7 @@
     "poster": "video-check-off-wifi-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "Under a Minute. Open your site on your phone, off wifi. Four Questions. Can you read it without pinching? Can you hit every button with a thumb? Does the keyboard hide the submit button? Does it appear in under three seconds? More checks like this at taylorurl.com . taylorurl.com/blog.",
+    "alt": "Under a minute. Open your site on your phone, off wifi. Four questions: Can you read it without pinching? Can you hit every button with a thumb? Does the keyboard hide the submit button? Does it appear in under three seconds? More checks like this at taylorurl.com/blog.",
     "to": "/blog/what-mobile-first-actually-means",
     "channels": ["facebook", "instagram"],
     "headline": "The off-wifi check"
@@ -1088,7 +1088,7 @@
     "poster": "video-53-percent-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "53%. of mobile visitors leave a page that takes more than three seconds to load. Google research, cited on our blog. A site that loads in five has lost half of them before the first word. Check your own speed at taylorurl.com . taylorurl.com/speed-check.",
+    "alt": "53% of mobile visitors leave a page that takes more than three seconds to load. Google research, cited on our blog. A site that loads in five has lost half of them before the first word. Check your own speed at taylorurl.com/speed-check.",
     "to": "/blog/why-fast-websites-make-more-money",
     "channels": ["facebook", "instagram"],
     "headline": "53% leave after three seconds"
@@ -1101,7 +1101,7 @@
     "poster": "video-before-after-recreation-baytown-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "A Recreation Site in Baytown. Same site, same test. January, then October . Mobile Score. January 2026. October 2026. Desktop Score. January 2026. October 2026. Every score we quote is one you can check yourself . Google PageSpeed Insights. January figures as published on our blog; October 2026 is the median of 3 runs.",
+    "alt": "A recreation site in Baytown. Same site, same test. January, then October. Mobile score: 72 in January 2026, 96 in October 2026. Desktop score: 74 in January 2026, 100 in October 2026. Every score we quote is one you can check yourself. Google PageSpeed Insights. January figures as published on our blog; October 2026 is the median of 3 runs.",
     "to": "/portfolio",
     "channels": ["facebook", "instagram"],
     "headline": "Same site, measured twice"
@@ -1114,7 +1114,7 @@
     "poster": "video-disagree-long-forms-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "The Belief. What Actually Happens. The longest form we have built is the one people finish . Friction empties a form. Most of it is on a phone . Big fields, a keyboard that leaves the button visible, and no account to make first. Read the whole case on taylorurl.com . taylorurl.com/blog.",
+    "alt": "Heard in the trade: \"Long forms scare people off.\" The belief is struck through. What actually happens: the longest form we have built is the one people finish. Friction empties a form, and most of it is on a phone. Big fields, a keyboard that leaves the button visible, and no account to make first. Read the whole case at taylorurl.com/blog.",
     "to": "/blog/why-nobodys-filling-out-your-contact-form",
     "channels": ["facebook", "instagram"],
     "headline": "Long forms do not scare people off"
@@ -1127,7 +1127,7 @@
     "poster": "video-how-a-build-goes-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "How a build goes, step by step . 01First callDay 1. 02Plan and priceDay 2-3. 03DesignWeek 1. 04BuildWeek 2-3. 05Review and launchWeek 3-4. 06After launchOngoing. Most sites are live in two to four weeks . taylorurl.com/process.",
+    "alt": "How a build goes, step by step. 01. First call, Day 1. 02. Plan and price, Day 2-3. 03. Design, Week 1. 04. Build, Week 2-3. 05. Review and launch, Week 3-4. 06. After launch, Ongoing. Most sites are live in two to four weeks. taylorurl.com/process.",
     "to": "/process",
     "channels": ["facebook", "instagram"],
     "headline": "How a build goes"
@@ -1140,7 +1140,7 @@
     "poster": "video-teaser-laptop-and-phone-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "Why your site is fast on your laptop and slow on a phone . 10×. Your laptop has ten times the processor of the phone your customer is holding, and a connection that does not drop. Read it on taylorurl.com . taylorurl.com/blog.",
+    "alt": "From the blog: Why your site is fast on your laptop and slow on a phone. 10×: your laptop has ten times the processor of the phone your customer is holding, and a connection that does not drop. Read it at taylorurl.com/blog.",
     "to": "/blog/why-your-site-is-fast-on-your-laptop-and-slow-on-a-phone",
     "channels": ["facebook", "instagram"],
     "headline": "Fast on a laptop, slow on a phone"
@@ -1153,7 +1153,7 @@
     "poster": "video-teaser-plumbers-website-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "Trade Playbooks. What a plumber’s website has to do . Seven Things. The number at the top. The hours, stated. The towns, by name. A page per job. Your own photos. Real reviews. Fast on one bar. All seven, explained, on taylorurl.com . taylorurl.com/blog.",
+    "alt": "From the blog, Trade Playbooks: What a plumber’s website has to do. Seven things: the number at the top; the hours, stated; the towns, by name; a page per job; your own photos; real reviews; fast on one bar. All seven, explained, at taylorurl.com/blog.",
     "to": "/blog/what-a-plumbers-website-has-to-do",
     "channels": ["facebook", "instagram"],
     "headline": "What a plumber’s website has to do"
@@ -1166,7 +1166,7 @@
     "poster": "video-phone-call-bar-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "A call bar that follows . The number pinned to the bottom of every page on a phone. A phone showing a plumbing site scrolling past its job pages, water heaters, slab leaks, drain clearing, repipes and backflow testing, while a blue Call Now bar stays pinned to the bottom of the screen. See what each trade’s site needs on taylorurl.com . taylorurl.com/industries.",
+    "alt": "A call bar that follows. The number pinned to the bottom of every page on a phone. A phone shows a plumbing site scrolling past its job pages, water heaters, slab leaks, drain clearing, repipes and backflow testing, while a blue Call Now bar stays pinned to the bottom of the screen. See what each trade’s site needs at taylorurl.com/industries.",
     "to": "/industries/plumbing",
     "channels": ["facebook", "instagram"],
     "headline": "A call bar that follows"
@@ -1179,7 +1179,7 @@
     "poster": "video-2-5-seconds-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "2.5s. is how long Google gives your main content to appear on the screen. Miss it and you rank below the sites that hit it. From our article on how fast a site should load. Test your site at taylorurl.com . taylorurl.com/speed-check.",
+    "alt": "2.5 seconds is how long Google gives your main content to appear on the screen. Google counts it when it ranks your page. From our article on how fast a site should load. Test your site at taylorurl.com/speed-check.",
     "to": "/blog/how-fast-should-my-website-load",
     "channels": ["facebook", "instagram"],
     "headline": "Google gives you 2.5 seconds"
@@ -1192,7 +1192,7 @@
     "poster": "video-trades-we-build-for-poster.png",
     "width": 1080,
     "height": 1920,
-    "alt": "Whatever the sign out front says . Barber Shop. Hair Salon. Restaurant. Plumbing. HVAC. Electrical. Roofing. Fencing. Concrete. Landscaping. Pest Control. Auto Repair. Towing. Dentist. Chiropractor. Law Firm. Accounting. Fitness. Real Estate. Storage. Printing. Marine Services. 22 trades, each with a page of its own . taylorurl.com/industries.",
+    "alt": "Whatever the sign out front says. Trades we build for: Barber Shop, Hair Salon, Restaurant, Plumbing, HVAC, Electrical, Roofing, Fencing, Concrete, Landscaping, Pest Control, Auto Repair, Towing, Dentist, Chiropractor, Law Firm, Accounting, Fitness, Real Estate, Storage, Printing, Marine Services. 22 trades, each with a page of its own, at taylorurl.com/industries.",
     "to": "/industries",
     "channels": ["facebook", "instagram"],
     "headline": "Whatever the sign out front says"

@@ -23,7 +23,7 @@
  * Chromium is whatever `PLAYWRIGHT_CHROMIUM` names, else the newest one
  * Playwright has cached, else `/usr/bin/chromium-browser` (the Pi).
  */
-import { spawn } from 'node:child_process'
+import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -133,6 +133,14 @@ const RULES = [
   { why: 'solo framing', re: /\bone[- ]person\b|\bsolo\b/i },
   { why: 'an emoji', re: /\p{Extended_Pictographic}/u },
   { why: 'an em dash', re: /—/ },
+  { why: 'a value that never resolved', re: /\b(undefined|null|NaN)\b/ },
+]
+
+/** Spacing and punctuation an alt built from parts can come out with. */
+const ALT_RULES = [
+  { why: 'a space before punctuation', re: /\s[.,;:?!]/ },
+  { why: 'a doubled stop', re: /[.?!]\./ },
+  { why: 'a stop inside a sentence', re: /\d%\.\s+[a-z]/ },
 ]
 
 function guard(key, text) {
@@ -142,6 +150,16 @@ function guard(key, text) {
     if (re.test(text)) faults.push(`${why} (${text.match(re)[0].trim()})`)
   if (faults.length)
     throw new Error(`render-media: ${key} carries ${faults.join(', ')}:\n  ${text.slice(0, 400)}`)
+}
+
+/** An alt or a headline: every guard above, plus the ones a joined string can fail. */
+function altGuard(key, text) {
+  guard(key, text)
+  const faults = ALT_RULES.filter(({ re }) => re.test(text)).map(
+    ({ why, re }) => `${why} ("${text.match(re)[0]}")`
+  )
+  if (faults.length)
+    throw new Error(`render-media: ${key} alt has ${faults.join(', ')}:\n  ${text.slice(0, 400)}`)
 }
 
 const ROUTES = new Set(
@@ -266,7 +284,7 @@ function altFor(item) {
         )
         .join(' ')} ${p(item.source)}`
     case 'teaser':
-      return `${item.eyebrow}. ${p(item.headline)} ${p(item.dek)} Read it on the blog.`
+      return `${item.eyebrow}. ${stop(p(item.headline))} ${stop(p(item.dek))} Read it on the blog.`
     case 'trade':
       return `${item.eyebrow}. ${p(item.headline)} What the site has to do: ${item.items.map(p).join('; ')}.`
     case 'area':
@@ -304,7 +322,15 @@ async function settle(page, key) {
   const fit = await page.evaluate(() => window.__fit())
   if (fit.problems.length)
     throw new Error(`render-media: ${key} does not fit:\n  ${fit.problems.join('\n  ')}`)
-  guard(key, await page.evaluate(() => document.body.textContent.replace(/\s+/g, ' ')))
+  guard(
+    key,
+    await page.evaluate(() =>
+      (body => (
+        body.querySelectorAll('script').forEach(script => script.remove()),
+        body.textContent
+      ))(document.body.cloneNode(true)).replace(/\s+/g, ' ')
+    )
+  )
   return fit
 }
 
@@ -321,25 +347,6 @@ async function renderVideo(page, video, shared, runtime) {
   const poster = `${video.key}-poster.png`
   await page.setContent(T.videoPage(video, shared, runtime), { waitUntil: 'load' })
   await settle(page, video.key)
-
-  // The alt text is read off the page at the end of each scene, so it is the
-  // words the video actually shows, with every counter at its final figure.
-  const alt = []
-  for (const scene of video.scenes) {
-    await page.evaluate(t => window.__seek(t), scene.hold ? video.duration - 0.01 : scene.to - 0.05)
-    const lines = await page.evaluate(index => {
-      const root = document.querySelector(`[data-scene="${index}"]`)
-      const picked = []
-      for (const el of root.querySelectorAll(
-        '[data-alt], .vlabel, .vhead, .vbody, .vnote, .vfig, .vstep .t, .tl-step, .vpath, .roll .item'
-      )) {
-        if (picked.some(other => other.contains(el))) continue
-        picked.push(el)
-      }
-      return picked.map(el => el.dataset.alt || el.textContent.replace(/\s+/g, ' ').trim())
-    }, video.scenes.indexOf(scene))
-    alt.push(...lines.filter(Boolean).map(stop))
-  }
 
   await page.evaluate(t => window.__seek(t), video.poster)
   await page.screenshot({ path: join(OUT, poster), type: 'png' })
@@ -426,7 +433,7 @@ async function renderVideo(page, video, shared, runtime) {
     throw new Error(
       `render-media: ${file} is ${(bytes / 1048576).toFixed(2)} MB, over the 4 MB ceiling`
     )
-  return { file, poster, alt: alt.join(' ') }
+  return { file, poster, alt: video.alt }
 }
 
 /** Run `work` over `items` on `size` pages at once, keeping the input order. */
@@ -513,7 +520,8 @@ async function main() {
       )
       if (fit.shrunk.length) shrunk.push(`${item.key}: ${fit.shrunk.join(' ')}`)
       const alt = altFor(item)
-      guard(item.key, `${alt} ${p(item.headline)}`)
+      altGuard(item.key, alt)
+      altGuard(item.key, p(item.headline))
       manifest.set(item.key, { files: [file], alt })
     } else {
       const slides = slidesFor(item)
@@ -527,7 +535,7 @@ async function main() {
           `${item.key}#${index + 1}`
         )
         if (fit.shrunk.length) shrunk.push(`${item.key}#${index + 1}: ${fit.shrunk.join(' ')}`)
-        guard(item.key, slide.alt)
+        altGuard(item.key, slide.alt)
         files.push(file)
       }
       manifest.set(item.key, { files, alts: slides.map(slide => slide.alt) })
@@ -540,7 +548,8 @@ async function main() {
   await pool(browser, T.VIDEO, clips, 3, async (page, video) => {
     const started = Date.now()
     const result = await renderVideo(page, video, shared, runtime)
-    guard(video.key, `${result.alt} ${video.headline}`)
+    altGuard(video.key, result.alt)
+    altGuard(video.key, video.headline)
     manifest.set(video.key, { files: [result.file], poster: result.poster, alt: result.alt })
     console.log(`render-media: ${result.file} in ${((Date.now() - started) / 1000).toFixed(0)}s`)
   })
@@ -578,7 +587,20 @@ async function main() {
         throw new Error(`render-media: ${entry.key} names ${file}, which is not in ${OUT}`)
     }
   }
+  for (const entry of entries) {
+    for (const text of [entry.headline, ...(entry.alts ?? [entry.alt])]) altGuard(entry.key, text)
+  }
   writeFileSync(MANIFEST, `${JSON.stringify(entries, null, 2)}\n`)
+  // The repo is held to Prettier, and its JSON layout is not JSON.stringify's.
+  const formatted = spawnSync(
+    join(ROOT, 'node_modules', '.bin', 'prettier'),
+    ['--write', MANIFEST],
+    {
+      stdio: 'inherit',
+    }
+  )
+  if (formatted.status !== 0)
+    throw new Error('render-media: prettier could not format the manifest')
 
   if (!only && !skipVideo) {
     const named = new Set(
