@@ -18,7 +18,7 @@
  *   npm run check:social-voice
  */
 import { CADENCE } from '../../lib/social/buffer.js'
-import { CARDS } from '../../lib/social/cards.js'
+import { CARDS, LIBRARY } from '../../lib/social/cards.js'
 import { articleUrl, hasCopy, postText } from '../../lib/social/announce.js'
 import { MAX_SENTENCES, firstPerson, sentenceCount } from '../../lib/social/voice.js'
 import { cases, check, finish } from '../harness/checks.js'
@@ -72,6 +72,25 @@ function holds(where, text) {
 for (const card of CARDS) {
   holds(`${card.key} alt`, card.alt)
 }
+
+// The generated library's words, every slide of them: they publish as alt text
+// and they are the words printed on the media itself. Held to the voice and not
+// to the ceiling, because alt text is the image read out whole - a checklist
+// card's six steps are six sentences, and cutting the description to three
+// would hide half the card from whoever cannot see it.
+for (const entry of LIBRARY.filter(one => one.generated)) {
+  ;(entry.alts ?? [entry.alt]).forEach((text, index) => {
+    const found = firstPerson(text)
+    check(
+      `${entry.key} alt ${index + 1}: written as one person, on ${found.join(', ')}`,
+      found.length === 0
+    )
+  })
+}
+check(
+  'the voice rule reads a highway as a highway',
+  firstPerson('Twenty-six miles west on I-10.').length === 0
+)
 
 // Every announcement, composed. The article's own title and excerpt are not
 // the studio's words and are exempt from the voice rule — an author is free to

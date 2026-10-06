@@ -181,10 +181,21 @@ async function refusal(run) {
   throw new Error('the call was expected to throw and did not')
 }
 
+/** An image as a post is written with, and as Buffer answers it back. */
+const PICTURE = {
+  image: { url: 'https://www.taylorurl.com/social/trades.png', metadata: { altText: 'trades' } },
+}
+const HELD_PICTURE = {
+  type: 'image',
+  source: 'https://www.taylorurl.com/social/trades.png',
+  thumbnail: 'https://www.taylorurl.com/social/trades.png',
+  image: { altText: 'trades' },
+}
+
 check('a batch reads the wiring once, whatever it places', async () => {
   const { stub, run } = open(working)
   for (let index = 0; index < 3; index += 1) {
-    await post(run, { text: `post ${index}`, at: '2026-09-01T14:00:00.000Z' })
+    await post(run, { text: `post ${index}`, at: '2026-09-01T14:00:00.000Z', assets: [PICTURE] })
   }
 
   same(stub.count('Organizations'), 1, 'reads of the organization')
@@ -202,8 +213,22 @@ check('a promotion across two channels still reads the wiring once', async () =>
   // batch, and with one channel connected nothing here could tell the two
   // apart.
   const drafts = [
-    { id: 'fb-draft', channelId: 'fb', status: 'draft', text: 'a Page draft', dueAt: null },
-    { id: 'gb-draft', channelId: 'gb', status: 'draft', text: 'a profile draft', dueAt: null },
+    {
+      id: 'fb-draft',
+      channelId: 'fb',
+      status: 'draft',
+      text: 'a Page draft',
+      dueAt: null,
+      assets: [HELD_PICTURE],
+    },
+    {
+      id: 'gb-draft',
+      channelId: 'gb',
+      status: 'draft',
+      text: 'a profile draft',
+      dueAt: null,
+      assets: [HELD_PICTURE],
+    },
   ]
   const { stub, run } = open(
     workingWith({
@@ -232,7 +257,11 @@ check('a key on its own still places a post', async () => {
   const stub = service(working)
   globalThis.fetch = stub.get
   try {
-    const written = await post('a-key', { text: 'one', at: '2026-09-01T14:00:00.000Z' })
+    const written = await post('a-key', {
+      text: 'one',
+      at: '2026-09-01T14:00:00.000Z',
+      assets: [PICTURE],
+    })
     same(written.service, 'facebook', 'the service posted to')
     same(stub.requests.length, 3, 'requests for one post from a bare key')
   } finally {
@@ -351,6 +380,7 @@ check('a promotion stopped partway says what it moved', async () => {
     dueAt: null,
     text: `draft ${id}`,
     channelId: CHANNEL.id,
+    assets: [HELD_PICTURE],
   }))
 
   let edits = 0
@@ -631,6 +661,69 @@ check('discarding an id the queue does not hold deletes nothing', async () => {
   same(stub.count('Delete'), 0, 'requests made against an id the queue does not hold')
   same(gone.missing.length, 1, 'the id is reported')
   same(gone.discarded.length, 0, 'and nothing was taken out')
+})
+
+const HELD_VIDEO = {
+  type: 'video',
+  source: 'https://www.taylorurl.com/social/library/a-reel.mp4',
+  thumbnail: 'https://www.taylorurl.com/social/library/a-reel.png',
+  video: { title: 'a reel', thumbnailOffset: 0 },
+}
+
+check('a Page post with no media is refused before it reaches Buffer', async () => {
+  const { stub, run } = open(working)
+  const cause = await refusal(() => post(run, { text: 'words alone', draft: true }))
+  ok(/image or a video/.test(cause.message), `the reason is named: ${cause.message}`)
+  same(stub.count('Create'), 0, 'nothing was written')
+})
+
+check('a video draft is promoted as a reel, video and poster intact', async () => {
+  const drafts = [
+    {
+      id: 'reel',
+      channelId: 'fb',
+      status: 'draft',
+      text: 'a reel',
+      dueAt: null,
+      assets: [HELD_VIDEO],
+    },
+  ]
+  const { stub, run } = open(
+    workingWith({ Posts: { posts: { edges: drafts.map(node => ({ node })) } } })
+  )
+  await promote(run)
+
+  const edit = stub.requests.find(request => request.operation === 'Edit')
+  ok(edit, 'the draft was promoted')
+  same(edit.variables.input.metadata.facebook.type, 'reel', 'the type the Page is given')
+  same(edit.variables.input.assets[0].video.url, HELD_VIDEO.source, 'the video carried')
+  same(edit.variables.input.assets[0].video.thumbnailUrl, HELD_VIDEO.thumbnail, 'and its poster')
+})
+
+check('several images on Instagram are promoted as a carousel, every slide in order', async () => {
+  const slides = ['one', 'two', 'three'].map(name => ({
+    ...HELD_PICTURE,
+    source: `https://www.taylorurl.com/social/library/${name}.png`,
+  }))
+  const drafts = [
+    { id: 'deck', channelId: 'ig', status: 'draft', text: 'a deck', dueAt: null, assets: slides },
+  ]
+  const { stub, run } = open(
+    workingWith({
+      Channels: { channels: [INSTAGRAM_CHANNEL] },
+      Posts: { posts: { edges: drafts.map(node => ({ node })) } },
+    })
+  )
+  await promote(run)
+
+  const edit = stub.requests.find(request => request.operation === 'Edit')
+  same(edit.variables.input.metadata.instagram.type, 'carousel', 'the type Instagram is given')
+  same(edit.variables.input.metadata.instagram.shouldShareToFeed, true, 'still shared to the feed')
+  same(
+    edit.variables.input.assets.map(asset => asset.image.url.split('/').pop()).join(', '),
+    'one.png, two.png, three.png',
+    'every slide, in order'
+  )
 })
 
 await finish()

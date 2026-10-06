@@ -16,7 +16,7 @@
  *
  *   npm run check:article-posts
  */
-import { CADENCE } from '../../lib/social/buffer.js'
+import { CADENCE, metadataFor } from '../../lib/social/buffer.js'
 import { HELD, articleUrl, hasCopy, plan, postText } from '../../lib/social/announce.js'
 import { expect as check, fail, finish } from '../harness/checks.js'
 import { localReading } from './local-reading.js'
@@ -160,7 +160,8 @@ for (const [service, cadence] of Object.entries(CADENCE)) {
     check(new Date(item.dueAt) > NOW, `${item.service}: due ${item.dueAt} is not ahead of the run`)
     check(reading.hour === 9, `${item.service}: due at ${reading.hour}:00, not 9:00`)
     check(
-      item.metadata === CADENCE[item.service].metadata,
+      JSON.stringify(item.metadata) ===
+        JSON.stringify(metadataFor(CADENCE[item.service], item.assets)),
       `${item.service}: queued without the metadata its service needs`
     )
     check(item.text.includes(URL), `${item.service}: queued a post with no article address`)

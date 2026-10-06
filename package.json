@@ -2,7 +2,7 @@
   "name": "taylorurl",
   "private": true,
   "license": "UNLICENSED",
-  "version": "2026.41.9",
+  "version": "2026.41.10",
   "type": "module",
   "engines": {
     "node": "22"
@@ -35,6 +35,7 @@
     "social:promote": "node scripts/social/social.js promote",
     "social:cards": "node scripts/social/social.js cards",
     "social:announce": "node scripts/social/social.js announce",
+    "social:render": "node scripts/social/render-media.js",
     "check:portfolio-scores": "node scripts/portfolio/check-portfolio-scores.js",
     "check:onboarding-flow": "node scripts/onboarding/check-onboarding-flow.js",
     "check:payment-link": "node scripts/checkout/check-payment-link.js",
@@ -143,6 +144,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.3.0",
+    "playwright-core": "^1.63.0",
     "postcss": "^8.5.26",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.6.14",

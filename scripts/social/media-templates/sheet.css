@@ -1,0 +1,226 @@
+/*
+ * The chassis every library image and video frame is drawn on: the drawing-sheet
+ * grid, the registration marks, the label rail at the top and the footer rail at
+ * the bottom. The measures are the ones `brand/social/src/tulib.py` draws the
+ * twelve shipped cards with, so a library card sits beside them as one set.
+ *
+ * Every measure below is in delivered pixels on the short side of 1080, which is
+ * both 4:5 and 9:16 here, so the margins do not move between the two.
+ */
+:root {
+  --paper: #f0eee6;
+  --ink: #141413;
+  --blue: #1a4ed8;
+  --night: #262624;
+  --ground: var(--paper);
+  --fg: var(--ink);
+  --accent: var(--blue);
+  --fg-rgb: 20, 20, 19;
+  --grid: 0.045;
+  --tick: 0.28;
+  --label: 0.78;
+  --rule: 0.13;
+  --soft: 0.62;
+  --m: 96px;
+}
+.dark {
+  --ground: var(--night);
+  --fg: var(--paper);
+  --accent: #5c8cff;
+  --fg-rgb: 240, 238, 230;
+  --grid: 0.09;
+  --tick: 0.34;
+  --label: 0.74;
+  --rule: 0.16;
+  --soft: 0.7;
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  width: var(--w);
+  height: var(--h);
+  overflow: hidden;
+}
+body {
+  background: var(--ground);
+  color: var(--fg);
+  font-family: 'Geist', sans-serif;
+  font-feature-settings: 'ss01' 0;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: geometricPrecision;
+}
+.sheet {
+  position: absolute;
+  inset: 0;
+  background-color: var(--ground);
+  background-image:
+    linear-gradient(to right, rgba(var(--fg-rgb), var(--grid)) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(var(--fg-rgb), var(--grid)) 1px, transparent 1px);
+  background-size: 60px 60px;
+}
+.tick {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border-color: rgba(var(--fg-rgb), var(--tick));
+  border-style: solid;
+  border-width: 0;
+}
+.tick.tl {
+  left: 56px;
+  top: 56px;
+  border-left-width: 2px;
+  border-top-width: 2px;
+}
+.tick.tr {
+  right: 56px;
+  top: 56px;
+  border-right-width: 2px;
+  border-top-width: 2px;
+}
+.tick.bl {
+  left: 56px;
+  bottom: 56px;
+  border-left-width: 2px;
+  border-bottom-width: 2px;
+}
+.tick.br {
+  right: 56px;
+  bottom: 56px;
+  border-right-width: 2px;
+  border-bottom-width: 2px;
+}
+
+.eyebrow {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  top: 152px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  font-size: 21px;
+  line-height: 21px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(var(--fg-rgb), var(--label));
+  white-space: nowrap;
+}
+.eyebrow .lead {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+}
+.eyebrow .lead::before {
+  content: '';
+  width: 9px;
+  height: 9px;
+  background: var(--accent);
+  flex: none;
+  transform: translateY(1px);
+}
+.rule {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  height: 1px;
+  background: rgba(var(--fg-rgb), var(--rule));
+}
+.rule.top {
+  top: 206px;
+}
+.rule.bottom {
+  bottom: 180px;
+}
+.progress {
+  position: absolute;
+  left: var(--m);
+  top: 205px;
+  height: 3px;
+  width: 0;
+  background: var(--accent);
+}
+.foot {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  bottom: 110px;
+  height: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.mark {
+  height: 40px;
+  background: var(--accent);
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+}
+.foot .url {
+  font-family: 'Geist Mono', monospace;
+  font-size: 23px;
+  line-height: 1;
+  letter-spacing: 0.03em;
+  color: rgba(var(--fg-rgb), 0.8);
+  transform: translateY(3px);
+}
+
+/* The box the templates are handed: everything between the two rails. */
+.content {
+  position: absolute;
+  left: var(--m);
+  right: var(--m);
+  top: 206px;
+  bottom: 180px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.a {
+  color: var(--accent);
+}
+.head,
+.vhead {
+  text-wrap: balance;
+}
+.head {
+  font-weight: 600;
+  letter-spacing: -0.028em;
+  line-height: 0.96;
+}
+.body {
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.44;
+  color: rgba(var(--fg-rgb), var(--soft));
+  max-width: 848px;
+}
+.mono {
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.04em;
+}
+.label {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 500;
+  font-size: 21px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(var(--fg-rgb), var(--label));
+}
+.hair {
+  height: 1px;
+  background: rgba(var(--fg-rgb), var(--rule));
+}
+.note {
+  font-family: 'Geist Mono', monospace;
+  font-size: 21px;
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: rgba(var(--fg-rgb), 0.5);
+}
