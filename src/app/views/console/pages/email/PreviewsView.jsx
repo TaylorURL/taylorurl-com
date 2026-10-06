@@ -387,7 +387,11 @@ export function PreviewsView({ token, area = 'work' }) {
       <Panel
         area="sections"
         title="Sections That Hold Attention"
-        aside={template ? `${fullCount(attention.sessions)} sessions` : null}
+        aside={
+          template
+            ? `${fullCount(attention.sessions)} ${attention.sessions === 1 ? 'session' : 'sessions'}`
+            : null
+        }
         tools={
           templateKeys.length > 1 ? (
             <select
