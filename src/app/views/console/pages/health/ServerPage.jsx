@@ -13,12 +13,12 @@ import {
   Metric,
   Panel,
   PanelBody,
-  PanelFoot,
   SectionNotice,
+  SkeletonBar,
   SkeletonRows,
   StatCard,
 } from '../../ui'
-import { CELL_TIGHT, MONO_LABEL, ROW_HEIGHT, TH_TIGHT } from '../../lib/tokens'
+import { CELL_TIGHT, ROW_HEIGHT, TH_TIGHT } from '../../lib/tokens'
 import { recalledRows, rememberRows } from '../../lib/rowMemory'
 
 /**
@@ -79,15 +79,37 @@ const STALE_AFTER_MS = 5 * 60_000
 // placeholder rows stand where the readings are about to land.
 const ROWS_KEY = 'taylorurl_console_server_rows'
 
-// The column the table drops in a phone's width, where four of them - two of
-// which are a clock time under a relative one - leave the routine's own name a
-// column of about fifty pixels. When it will run next is the one a glance can
-// do without: the state beside it already carries the cadence, which is the
-// same answer said as a rule rather than as a time.
+// The order the routines table reads in: whatever needs a person first, then
+// everything else in the order the server lists it. Twelve rows is more than a
+// card shows at once, and a stopped routine sorted to the bottom of a table
+// that scrolls is a stopped routine nobody sees. A state the page cannot place
+// ranks with the ones that are behind, for the same reason it is drawn as one.
+const RANK = { down: 0, degraded: 1, operational: 2 }
+
+// Below the small width the table is one column: each row says its name, its
+// state, what it does, and its cadence and timings in a line underneath. Four
+// columns at 375px leave the routine's own name about fifty pixels and wrap
+// every description to eight lines.
 const FROM_SM = 'hidden sm:table-cell'
 
+// The cadence gets a column of its own once the desk is wide enough to give
+// it one, which is past the 1280px a laptop gives the console: there the four
+// fixed columns leave a routine's name a hundred and fifty pixels. Narrower
+// than that it sits under the state.
+const FROM_WIDE = 'hidden min-[1360px]:table-cell'
+
+// Every cell sets its content from the top, so a name, a badge and a time all
+// start on the same line however many lines the row runs to.
+const CELL = `${CELL_TIGHT} align-top`
+
 // The cells of the table in the order its head declares them.
-const ROUTINE_CELLS = [CELL_TIGHT, CELL_TIGHT, CELL_TIGHT, `${CELL_TIGHT} ${FROM_SM}`]
+const ROUTINE_CELLS = [
+  CELL,
+  `${CELL} ${FROM_SM}`,
+  `${CELL} ${FROM_WIDE}`,
+  `${CELL} ${FROM_SM}`,
+  `${CELL} ${FROM_SM}`,
+]
 
 /** How long until, in the same units, for something that has not happened yet. */
 function until(value, now) {
@@ -178,10 +200,40 @@ function nextLine(routine, now) {
 }
 
 /**
+ * When a routine last ran and when it runs next, said once in a line for the
+ * phone, where there is no room for the two columns that say it on a desk.
+ */
+function timingLine(routine, now) {
+  const next = routine.kind === 'service' ? null : until(routine.next_run, now)
+  return [routine.cadence, lastLine(routine, now), next && `next ${next}`]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+/**
+ * A relative time over the clock time it stands for.
+ *
+ * "4h ago" is what a glance wants and the clock time is what anybody comparing
+ * this against a log needs, so both are there and the first is the louder.
+ */
+function Moment({ line, at }) {
+  return (
+    <>
+      <span className="block text-[13px] tabular-nums">{line}</span>
+      {at && (
+        <span className="text-paper-faint mt-0.5 block text-[11px] tabular-nums">{when(at)}</span>
+      )}
+    </>
+  )
+}
+
+/**
  * Every routine, and whether it is doing what it is meant to.
  *
  * A table rather than a list of cards. Twelve routines is a column to scan
  * down for the one that is not green, and cards put that scan on two axes.
+ * Whatever needs a person is sorted to the top and says why under its name,
+ * so the answer is on screen without hovering a badge or scrolling the card.
  */
 function RoutineTable({ routines, loading, now, placeholder }) {
   const body = useRef(null)
@@ -199,23 +251,25 @@ function RoutineTable({ routines, loading, now, placeholder }) {
       note="Everything scheduled to run on the server, whether it is running, and when it last did."
     >
       <PanelBody className="overflow-x-auto">
-        {/* The widths are declared from the width they were measured at. On a
-            phone the three columns left share the table equally instead, since
-            a state held to seven rems and a time to nine leaves the name of the
-            routine less room than either of them. */}
-        <table className="console-table text-[13px] sm:min-w-[42rem]" aria-busy={loading}>
-          <thead>
+        <table className="console-table text-[13px]" aria-busy={loading}>
+          <thead className="hidden sm:table-header-group">
             <tr>
               <th scope="col" className={TH_TIGHT}>
                 Routine
               </th>
-              <th scope="col" className={`${TH_TIGHT} sm:w-[7rem]`}>
+              <th
+                scope="col"
+                className={`${TH_TIGHT} ${FROM_SM} sm:w-[8.5rem] min-[1360px]:w-[7rem]`}
+              >
                 State
               </th>
-              <th scope="col" className={`${TH_TIGHT} sm:w-[9rem]`}>
+              <th scope="col" className={`${TH_TIGHT} ${FROM_WIDE} min-[1360px]:w-[8.5rem]`}>
+                Cadence
+              </th>
+              <th scope="col" className={`${TH_TIGHT} ${FROM_SM} sm:w-[8rem]`}>
                 Last Run
               </th>
-              <th scope="col" className={`${TH_TIGHT} ${FROM_SM} sm:w-[9rem]`}>
+              <th scope="col" className={`${TH_TIGHT} ${FROM_SM} sm:w-[8rem]`}>
                 Next Run
               </th>
             </tr>
@@ -231,43 +285,57 @@ function RoutineTable({ routines, loading, now, placeholder }) {
             )}
             {routines.map(routine => {
               const state = STATE[routine.state] || STATE.degraded
+              const trouble = routine.state !== 'operational' && routine.detail
               return (
                 <tr key={routine.id} className="border-hair-paper border-t">
-                  <td className={CELL_TIGHT}>
-                    <span className="block font-medium">{routine.label}</span>
-                    <span className="mt-0.5 block text-[12px] leading-snug text-paper-soft">
+                  <td className={CELL}>
+                    <span className="flex items-center justify-between gap-3">
+                      <span className="min-w-0 font-medium text-ink-paper">{routine.label}</span>
+                      <span className="sm:hidden">
+                        <Badge tone={state.tone} title={routine.detail}>
+                          {state.label}
+                        </Badge>
+                      </span>
+                    </span>
+                    {/* One line on a desk, where the name is what is scanned
+                        and the sentence is there to confirm it; the whole
+                        sentence on a phone, where the row has the width to
+                        itself. */}
+                    <span
+                      className="mt-0.5 block text-[12px] leading-snug text-paper-soft sm:truncate"
+                      title={routine.does}
+                    >
                       {routine.does}
                     </span>
+                    {trouble && (
+                      <span className="console-trouble mt-1.5">
+                        <span className="console-trouble-mark" aria-hidden="true" />
+                        {routine.detail}
+                      </span>
+                    )}
+                    <span className="text-paper-faint mt-1.5 block text-[11px] tabular-nums sm:hidden">
+                      {timingLine(routine, now)}
+                    </span>
                   </td>
-                  <td className={CELL_TIGHT}>
+                  <td className={`${CELL} ${FROM_SM}`}>
                     <Badge tone={state.tone} title={routine.detail}>
                       {state.label}
                     </Badge>
-                    <span className="text-paper-faint mt-1 block text-[11px] leading-snug">
+                    <span className="text-paper-faint mt-1 block text-[11px] leading-snug min-[1360px]:hidden">
                       {routine.cadence}
                     </span>
                   </td>
-                  <td className={`${CELL_TIGHT} ${MONO_LABEL} text-paper-faint align-top`}>
-                    <span className="block">{lastLine(routine, now)}</span>
-                    {/* The exact moment under the relative one, because "4h
-                        ago" is what a glance wants and the clock time is what
-                        anybody comparing this against a log needs. */}
-                    {routine.last_run && (
-                      <span className="mt-0.5 block text-[11px]">{when(routine.last_run)}</span>
-                    )}
+                  <td className={`${CELL} ${FROM_WIDE} text-paper-mute`}>{routine.cadence}</td>
+                  <td className={`${CELL} ${FROM_SM}`}>
+                    <Moment line={lastLine(routine, now)} at={routine.last_run} />
                   </td>
-                  <td
-                    className={`${CELL_TIGHT} ${FROM_SM} ${MONO_LABEL} text-paper-faint align-top`}
-                  >
+                  <td className={`${CELL} ${FROM_SM}`}>
                     {/* A routine on a schedule the machine keeps outside its
                         own timers has no next fire to report, and the cadence
-                        beside its state is the whole of the answer. A service
-                        that has not stopped has no next run at all. Saying
-                        either beats an em dash, which reads as broken. */}
-                    <span className="block">{nextLine(routine, now)}</span>
-                    {routine.next_run && (
-                      <span className="mt-0.5 block text-[11px]">{when(routine.next_run)}</span>
-                    )}
+                        beside it is the whole of the answer. A service that has
+                        not stopped has no next run at all. Saying either beats
+                        an em dash, which reads as broken. */}
+                    <Moment line={nextLine(routine, now)} at={routine.next_run} />
                   </td>
                 </tr>
               )
@@ -275,27 +343,126 @@ function RoutineTable({ routines, loading, now, placeholder }) {
           </tbody>
         </table>
       </PanelBody>
-      <PanelFoot>
-        <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          {Object.values(STATE).map(state => (
-            <li key={state.label}>
-              <Badge tone={state.tone}>{state.label}</Badge>
-            </li>
-          ))}
-        </ul>
-      </PanelFoot>
+    </Panel>
+  )
+}
+
+/**
+ * One reading against the room there is for it: the figure, what it is out
+ * of, and a bar that fills to it.
+ *
+ * The bar is the same hairline track the share bars elsewhere in the console
+ * draw on. It takes the reading's tone, so a card filling up turns the bar
+ * amber before anybody has read the number on it.
+ */
+function Gauge({ label, percent, caption, tone, loading }) {
+  const known = typeof percent === 'number'
+  const fill = { plain: 'var(--accent)', warn: 'var(--warn)', danger: 'var(--danger-on-paper)' }
+  return (
+    <div className="px-5 py-3">
+      <div className="flex items-baseline gap-2">
+        <dt className="text-paper-mute flex-1 text-[13px]">{label}</dt>
+        <dd className="flex items-baseline gap-2 text-[13px] font-medium tabular-nums text-ink-paper">
+          {loading ? <SkeletonBar className="my-0.5 w-14" /> : known ? `${percent}%` : '—'}
+          {!loading && caption && (
+            <span className="text-paper-faint text-[12px] font-normal">{caption}</span>
+          )}
+        </dd>
+      </div>
+      <span
+        aria-hidden="true"
+        className="mt-2 block h-1 overflow-hidden rounded-[var(--r-tiny)] bg-[color:var(--paper-hairline-strong)]"
+      >
+        {!loading && known && (
+          <span
+            className="block h-full rounded-[var(--r-tiny)] transition-[width] duration-150 ease-out-soft"
+            style={{
+              width: `${Math.min(100, Math.max(2, percent))}%`,
+              backgroundColor: fill[tone] || fill.plain,
+            }}
+          />
+        )}
+      </span>
+    </div>
+  )
+}
+
+/**
+ * The gradual failures: a card filling up, a board running warm, a supply that
+ * cannot keep up.
+ *
+ * None of these breaks anything on the day it starts, and none of them raises
+ * an alert. They are here because the only way any of them was ever noticed
+ * was by somebody going and looking.
+ */
+function CapacityCard({ server, loading }) {
+  const disk = server?.disk
+  const memory = server?.memory
+  const load = server?.load
+  const held = server?.throttling
+  // A reading that could not be taken is a hole in the report rather than
+  // evidence of a healthy board, so it says which it is. What the board has
+  // been through since it started goes underneath rather than into the value,
+  // where a sentence that long wraps the label beside it.
+  const power = !held?.read
+    ? 'Not readable on this machine'
+    : held.now?.length
+      ? held.now[0]
+      : held.since_boot?.length
+        ? 'Steady now'
+        : 'Steady'
+  const since = held?.read && !held.now?.length ? held.since_boot?.[0] : null
+  return (
+    <Panel title="Capacity" loading={loading}>
+      <dl className="py-1">
+        <Gauge
+          label="Load"
+          percent={load?.percent}
+          caption={load?.cores === undefined ? undefined : `across ${load.cores} cores`}
+          tone={pressureTone(load?.percent, 80, 150)}
+          loading={loading}
+        />
+        <Gauge
+          label="Disk Used"
+          percent={disk?.percent}
+          caption={disk?.free_gb === undefined ? undefined : `${gigabytes(disk.free_gb)} free`}
+          tone={pressureTone(disk?.percent, 80, 92)}
+          loading={loading}
+        />
+        <Gauge
+          label="Memory Used"
+          percent={memory?.percent}
+          caption={
+            memory?.total_mb === undefined ? undefined : `of ${asGigabytes(memory.total_mb)}`
+          }
+          tone="plain"
+          loading={loading}
+        />
+        <div className="px-5 py-2.5">
+          <div className="flex items-baseline justify-between gap-4">
+            <dt className="text-paper-mute text-[13px]">Power</dt>
+            <dd className="text-right text-[13px] font-medium text-ink-paper">
+              {loading ? <SkeletonBar className="my-0.5 w-16" /> : power}
+            </dd>
+          </div>
+          {!loading && since && (
+            <dd className="text-paper-faint mt-1 text-[12px] leading-snug">
+              {since.charAt(0).toUpperCase() + since.slice(1)}.
+            </dd>
+          )}
+        </div>
+      </dl>
     </Panel>
   )
 }
 
 /** What the machine is, for whoever has to go and find it. */
-function MachineCard({ server, loading, now }) {
+function MachineCard({ server, loading }) {
   const host = server?.host
   return (
-    <Panel title="Machine" loading={loading} area="machine">
+    <Panel title="Machine" loading={loading}>
       <PanelBody>
         <dl>
-          <Metric label="Up for" value={uptimeSince(host?.booted_at, now)} loading={loading} />
           <Metric
             label="Started"
             value={when(host?.booted_at)}
@@ -315,65 +482,6 @@ function MachineCard({ server, loading, now }) {
   )
 }
 
-/**
- * The gradual failures: a card filling up, a board running warm, a supply that
- * cannot keep up.
- *
- * None of these breaks anything on the day it starts, and none of them raises
- * an alert. They are here because the only way any of them was ever noticed
- * was by somebody going and looking.
- */
-function PressureCard({ server, loading }) {
-  const disk = server?.disk
-  const memory = server?.memory
-  const held = server?.throttling
-  // A reading that could not be taken is a hole in the report rather than
-  // evidence of a healthy board, so it says which it is.
-  const power = !held?.read
-    ? 'not readable on this machine'
-    : held.now?.length
-      ? held.now[0]
-      : held.since_boot?.length
-        ? `steady now, though ${held.since_boot[0]}`
-        : 'steady'
-  return (
-    <Panel title="Capacity" loading={loading} area="pressure">
-      <PanelBody>
-        <dl>
-          <Metric
-            label="Disk Used"
-            value={disk?.percent === undefined ? '—' : `${disk.percent}%`}
-            caption={
-              disk?.free_gb === undefined ? undefined : `${gigabytes(disk.free_gb)} still free`
-            }
-            loading={loading}
-          />
-          <Metric
-            label="Memory Used"
-            value={memory?.percent === undefined ? '—' : `${memory.percent}%`}
-            caption={
-              memory?.total_mb === undefined
-                ? undefined
-                : `of ${asGigabytes(memory.total_mb)} on board`
-            }
-            loading={loading}
-          />
-          <Metric
-            label="Temperature"
-            value={
-              server?.temperature_c === null || server?.temperature_c === undefined
-                ? '—'
-                : `${server.temperature_c}°C`
-            }
-            loading={loading}
-          />
-          <Metric label="Power" value={power} loading={loading} />
-        </dl>
-      </PanelBody>
-    </Panel>
-  )
-}
-
 export default function ServerPage() {
   const { session } = useSession()
   const token = session?.access_token ?? null
@@ -382,13 +490,25 @@ export default function ServerPage() {
     enabled: Boolean(token),
   })
   const now = useNow(10_000)
-  const routines = useMemo(() => server?.routines ?? [], [server])
+  const routines = useMemo(
+    () =>
+      (server?.routines ?? [])
+        .map((routine, at) => ({ routine, at }))
+        .sort(
+          (a, b) =>
+            (RANK[a.routine.state] ?? RANK.degraded) - (RANK[b.routine.state] ?? RANK.degraded) ||
+            a.at - b.at
+        )
+        .map(({ routine }) => routine),
+    [server]
+  )
   const remembered = recalledRows(ROWS_KEY, 12, ROW_HEIGHT.serverRoutine)
 
   const overall = OVERALL[server?.overall] || OVERALL.degraded
   const stopped = routines.filter(routine => routine.state === 'down').length
   const behind = routines.filter(routine => routine.state === 'degraded').length
-  const load = server?.load
+  const host = server?.host
+  const temperature = server?.temperature_c
 
   // The reading's own age, taken from the moment the server says it built it
   // rather than from the moment this page fetched it. A feed can answer
@@ -402,7 +522,7 @@ export default function ServerPage() {
   // The server works that out for itself and sends the reasons along, which is
   // the only place some of them exist at all: a routine that is behind has a
   // row of its own to show it, and a card filling up or a supply that cannot
-  // keep up has nothing but a tile's colour. A tile that turns amber and never
+  // keep up has nothing but a bar's colour. A tile that turns amber and never
   // says what about is a tile that sends the reader looking through a table
   // where the answer is not.
   const notes = server?.notes ?? []
@@ -417,11 +537,11 @@ export default function ServerPage() {
     <ConsolePage
       areas={
         error || stale
-          ? ['note note', 'figures figures', 'routines machine', 'routines pressure']
-          : ['figures figures', 'routines machine', 'routines pressure']
+          ? ['note note', 'figures figures', 'routines side']
+          : ['figures figures', 'routines side']
       }
-      cols="minmax(0,2fr) minmax(20rem,1fr)"
-      rows={error || stale ? 'auto auto minmax(0,1fr) auto' : 'auto minmax(0,1fr) auto'}
+      cols="minmax(0,1fr) 20rem"
+      rows={error || stale ? 'auto auto minmax(0,1fr)' : 'auto minmax(0,1fr)'}
     >
       {(error || stale) && (
         <Area area="note">
@@ -455,30 +575,34 @@ export default function ServerPage() {
             loading={loading}
             tone={loading || stopped ? 'danger' : behind ? 'warn' : 'plain'}
           />
+          {/* How long it has been up, as a duration rather than a date: a
+              machine that restarted nine minutes ago is the interesting case,
+              and a boot stamp makes the reader do the subtraction. */}
           <StatCard
-            label="Load"
-            value={load?.percent === undefined ? '—' : `${load.percent}%`}
-            caption={load?.cores === undefined ? 'of its processors' : `across ${load.cores} cores`}
+            label="Up For"
+            value={uptimeSince(host?.booted_at, now)}
+            caption={host?.booted_at ? `since ${when(host.booted_at)}` : 'since it started'}
             loading={loading}
-            tone={loading ? 'plain' : pressureTone(load?.percent, 80, 150)}
           />
           <StatCard
-            label="Disk Used"
-            value={server?.disk?.percent === undefined ? '—' : `${server.disk.percent}%`}
-            caption={
-              server?.disk?.free_gb === undefined
-                ? 'of the card'
-                : `${gigabytes(server.disk.free_gb)} free`
-            }
+            label="Temperature"
+            value={temperature === null || temperature === undefined ? '—' : `${temperature}°C`}
+            caption="on the board"
             loading={loading}
-            tone={loading ? 'plain' : pressureTone(server?.disk?.percent, 80, 92)}
           />
         </m.div>
       </Area>
 
       <RoutineTable routines={routines} loading={loading} now={now} placeholder={remembered} />
-      <MachineCard server={server} loading={loading} now={now} />
-      <PressureCard server={server} loading={loading} />
+
+      {/* The two cards beside the table hold the height their facts need and
+          no more, rather than each stretching to half the column and leaving a
+          card of air under four lines. On a short screen the column scrolls
+          on its own, the way the table beside it does. */}
+      <Area area="side" className="overflow-y-auto [&>*]:flex-shrink-0">
+        <CapacityCard server={server} loading={loading} />
+        <MachineCard server={server} loading={loading} />
+      </Area>
     </ConsolePage>
   )
 }
