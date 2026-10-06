@@ -64,13 +64,19 @@ function useSecond(running) {
 }
 
 export default function WhoIsOn({ area }) {
-  const { inScope, live, liveForSite, liveNow, liveSites, siteId } = useConsole()
+  const { inScope, live, liveForSite, liveNow, liveSites, loading, overview, siteId } = useConsole()
   const body = useRef(null)
 
   // One site in scope lists its own readers; across more than one the rows are
   // every reader on every site in scope, each carrying the site they are on.
   const inScopeIds = new Set(inScope.map(row => row.site_id))
   const bulk = !siteId
+  // Across more than one site the rows are filtered by the sites in scope, and
+  // those are read from the windowed feed - which is empty for as long as a
+  // window change is out. Until it answers, the table is waiting rather than
+  // empty, and a read that failed says so rather than saying nobody is here.
+  const waiting = live.loading || (bulk && loading)
+  const failed = live.error || (bulk && overview.error) || null
   const rows = bulk
     ? liveSites
         .filter(entry => inScopeIds.has(entry.site_id))
@@ -87,15 +93,15 @@ export default function WhoIsOn({ area }) {
   const skeleton = recalledRows(REMEMBERED, 4, ROW_HEIGHT.plain)
 
   useEffect(() => {
-    if (!live.loading) rememberRows(REMEMBERED, body.current)
-  }, [live.loading, shown.length])
+    if (!waiting) rememberRows(REMEMBERED, body.current)
+  }, [waiting, shown.length])
 
   return (
-    <Panel area={area} title="Who Is On Now" aside={`${liveNow} reading`} loading={live.loading}>
+    <Panel area={area} title="Who Is On Now" aside={`${liveNow} reading`} loading={waiting}>
       <PanelBody>
         <table
           className={`w-full ${bulk ? 'md:min-w-[620px]' : 'md:min-w-[520px]'} table-fixed border-collapse text-[13px]`}
-          aria-busy={live.loading}
+          aria-busy={waiting}
         >
           <thead>
             <tr>
@@ -119,7 +125,7 @@ export default function WhoIsOn({ area }) {
             </tr>
           </thead>
           <tbody ref={body}>
-            {live.loading ? (
+            {waiting ? (
               <SkeletonRows
                 cols={cols}
                 rows={skeleton.rows}
@@ -177,7 +183,9 @@ export default function WhoIsOn({ area }) {
                 </tr>
               ))
             ) : (
-              <EmptyRow cols={cols}>Nobody is on the {bulk ? 'sites' : 'site'} right now.</EmptyRow>
+              <EmptyRow cols={cols}>
+                {failed || `Nobody is on the ${bulk ? 'sites' : 'site'} right now.`}
+              </EmptyRow>
             )}
           </tbody>
         </table>

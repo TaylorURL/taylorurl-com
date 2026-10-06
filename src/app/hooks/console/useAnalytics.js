@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { answerFor, NOTHING_HELD } from './feedState'
 import { usePoll } from './usePulse'
@@ -42,6 +42,13 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
   const [rejected, setRejected] = useState(false)
   const [fetchedAt, setFetchedAt] = useState(null)
   const failures = useRef(0)
+  // The newest read this feed has sent, and the means of calling it off. A read
+  // is filed only if it is still the newest when it lands, and a new one aborts
+  // the one before - so a slow answer to the last window, arriving after the
+  // answer to this one, can never put the feed back to waiting or file itself
+  // over the figures on screen.
+  const latest = useRef(0)
+  const inFlight = useRef(null)
 
   // The query string is the identity of this feed: a new site or window has to
   // restart the poll, but an object literal rebuilt on every render must not.
@@ -63,11 +70,18 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
 
   const load = useCallback(async () => {
     if (!token) return false
+    inFlight.current?.abort()
+    const controller = new AbortController()
+    inFlight.current = controller
+    const id = ++latest.current
+    const superseded = () => id !== latest.current
     try {
       const response = await fetch(`${ANALYTICS_PATH}?${query}&t=${Date.now()}`, {
         cache: 'no-store',
         headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
       })
+      if (superseded()) return true
       if (response.status === 401 || response.status === 403) {
         setRejected(true)
         setFailed({ key: query, value: REFUSED })
@@ -82,6 +96,7 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
         throw new Error(faultFromResponse(response, payload, NO_FIGURES))
       }
       const payload = await response.json()
+      if (superseded()) return true
       failures.current = 0
       setRejected(false)
       setHeld({ key: query, value: payload })
@@ -89,11 +104,23 @@ export function useAnalyticsFeed({ token, view, params, intervalMs, enabled = tr
       setFetchedAt(new Date())
       return true
     } catch (cause) {
+      // A read called off by a newer one, or overtaken while it was out, is not
+      // a failure of this feed: the newer read is the one that answers.
+      if (superseded()) return true
       failures.current += 1
       setFailed({ key: query, value: faultMessage(cause, NO_FIGURES) })
       return false
     }
   }, [token, query])
+
+  // Nothing is left reading, or filing what it read, for a page that has gone.
+  useEffect(
+    () => () => {
+      latest.current += 1
+      inFlight.current?.abort()
+    },
+    []
+  )
 
   usePoll(load, { enabled: Boolean(token) && enabled, intervalMs, failures })
 

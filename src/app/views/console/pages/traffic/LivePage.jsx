@@ -6,6 +6,7 @@ import { LiveHistory } from '../../../analytics/charts'
 import { fullCount } from '../../../analytics/lib/format'
 import {
   ConsolePage,
+  EmptyFill,
   Panel,
   PanelBody,
   PanelFill,
@@ -68,8 +69,18 @@ function label(at, step) {
 }
 
 export default function LivePage() {
-  const { days, inScope, liveForSite, liveLoading, liveSites, loading, siteId, siteIds } =
-    useConsole()
+  const {
+    days,
+    inScope,
+    live,
+    liveForSite,
+    liveLoading,
+    liveSites,
+    loading,
+    overview,
+    siteId,
+    siteIds,
+  } = useConsole()
   const { session } = useSession()
   const span = SPAN[days] ?? SPAN[1]
 
@@ -93,6 +104,8 @@ export default function LivePage() {
   // Which sites are in scope is read from the windowed feed, so across more
   // than one site the places are unknown for as long as a window change is.
   const placesLoading = liveLoading || (!siteId && loading)
+  // A read that failed has not said nobody is here, so it says that it failed.
+  const placesError = live.error || (!siteId && overview.error) || null
   const expectedPlaces = recalledCount(REMEMBERED_PLACES, 5)
 
   useEffect(() => {
@@ -129,21 +142,26 @@ export default function LivePage() {
         {/* The placeholder takes the same box the chart will, so the card
             reads the same shape before and after the record lands. */}
         <PanelFill minHeight={CHART_HEIGHT.hour}>
+          {/* Three answers, kept apart: still reading, could not read, and
+              read with nothing in it. Only the last is a finding about the
+              record, so only the last may say nothing was recorded. */}
           {recorded.loading ? (
             <SkeletonBox height="100%" />
+          ) : recorded.error ? (
+            <EmptyFill>{recorded.error}</EmptyFill>
           ) : history.length > 1 ? (
             <div className="px-3 pt-4">
               <LiveHistory series={history} fill />
             </div>
           ) : (
-            <div className="flex items-center justify-center px-5 text-[13px] text-paper-soft">
-              Nothing has been recorded over this window yet.
-            </div>
+            <EmptyFill>Nothing has been recorded over this window yet.</EmptyFill>
           )}
         </PanelFill>
         <PanelFoot>
           <span>Counted every minute.</span>
-          {!recorded.loading && peak ? <span>Most at once: {fullCount(peak)}</span> : null}
+          {!recorded.loading && !recorded.error && peak ? (
+            <span>Most at once: {fullCount(peak)}</span>
+          ) : null}
         </PanelFoot>
       </Panel>
 
@@ -159,7 +177,7 @@ export default function LivePage() {
             nameOf={row => row.name}
             valueOf={row => row.n}
             formatValue={fullCount}
-            empty={`Nobody is on the ${siteId ? 'site' : 'sites'} right now.`}
+            empty={placesError || `Nobody is on the ${siteId ? 'site' : 'sites'} right now.`}
             loading={placesLoading}
             expected={expectedPlaces}
           />
