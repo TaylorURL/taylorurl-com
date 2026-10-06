@@ -697,7 +697,11 @@ check('a video draft is promoted as a reel, video and poster intact', async () =
   ok(edit, 'the draft was promoted')
   same(edit.variables.input.metadata.facebook.type, 'reel', 'the type the Page is given')
   same(edit.variables.input.assets[0].video.url, HELD_VIDEO.source, 'the video carried')
-  same(edit.variables.input.assets[0].video.thumbnailUrl, HELD_VIDEO.thumbnail, 'and its poster')
+  same(
+    edit.variables.input.assets[0].video.thumbnailUrl,
+    undefined,
+    'and no thumbnail, which Buffer refuses on a video'
+  )
 })
 
 check('several images on Instagram are promoted as a carousel, every slide in order', async () => {
