@@ -1633,8 +1633,12 @@
 /* Forty-four pixels, the height of the bar's own controls, so a card head
    and a row of chips beside it sit on one line. The name and the aside share
    it; a note wraps under them onto a second. */
+/* It never gives up height to the body under it. A card is a column held to the
+   height of its cell, and a head allowed to shrink there stops at its own
+   forty-four pixel floor - which cuts a note on its second line in half while
+   the body below scrolls rows that had the room. */
 .console-card-head {
-  @apply flex min-h-[44px] flex-wrap items-center justify-between gap-x-4 gap-y-1 px-[18px] py-2;
+  @apply flex min-h-[44px] flex-shrink-0 flex-wrap items-center justify-between gap-x-4 gap-y-1 px-[18px] py-2;
   border-bottom: 1px solid var(--paper-hairline);
 }
 

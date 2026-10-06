@@ -89,15 +89,14 @@ export const ROW_HEIGHT = {
   statusSite: '73px',
   statusIssue: '100px',
   statusFixed: '125px',
-  // The Server section's routines: a routine's name over the sentence saying
-  // what it does, a badge over its cadence, and a relative time over the clock
-  // time in each of the last two columns - so every row is two lines and some
-  // are three where a description wraps. The mean over the whole table,
-  // measured in the work region a 1280px console gives it rather than at the
-  // viewport's own width, since the rail takes fifteen rems off it. Only a
-  // first visit reads it: after one, the placeholder is the size of the rows
-  // this reader last saw.
-  serverRoutine: '70px',
+  // The Server section's routines: a routine's name over one line saying what
+  // it does, a badge over its cadence, and a relative time over the clock time
+  // in each of the last two columns - so every row is two lines, and a third
+  // only where a routine is reporting a fault. Measured in the work region a
+  // 1280px console gives it rather than at the viewport's own width, since the
+  // rail takes fourteen rems off it. Only a first visit reads it: after one,
+  // the placeholder is the size of the rows this reader last saw.
+  serverRoutine: '67px',
 }
 
 // The console's controls, held once. Nothing about a select or a button
