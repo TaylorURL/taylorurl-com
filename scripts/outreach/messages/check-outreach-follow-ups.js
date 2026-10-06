@@ -135,49 +135,45 @@ const drawnFirst = segment =>
       entry.weight > 0
   )
 
-check('every step draws its letter, in every segment', () => {
-  // Step two is the second letter, the one that asks for a call. Every step
-  // after it is the introduction arriving again, so what is owed each time
-  // after that is what arrived at step one. A step that drew anything else
-  // would be the reader getting a letter the chain never meant for them.
+check('the cold chain is two letters and stops', () => {
+  // Step two is the second letter, the one that asks for a call. Nothing
+  // stands after it: the third letter a business receives is its preview
+  // site's, which the cold chain does not write, so a step past two that drew
+  // anything would be the introduction arriving a second time.
   for (const segment of SEGMENTS) {
     const row = inSegment(segment)
     same(segmentOf(row), segment, `${segment} row reads as its segment`)
     const first = pickVariant(row, VARIANTS, 0)
     ok(first, `nothing at all for ${segment}`)
     same(first.id, `${segment}-intro`, `the first letter for ${segment}`)
-    for (const step of [2, 3, 4, 13, 120]) {
-      const owed = step === 2 ? `${segment}-intro-meeting` : first.id
-      for (const roll of [0, 0.5, 0.99]) {
-        const picked = pickVariant({ ...row, variant_id: first.id }, VARIANTS, roll, step)
-        ok(picked, `nothing at step ${step} for ${segment}`)
-        same(picked.id, owed, `the letter drawn at step ${step}, roll ${roll}`)
-        ok(!picked.holdout, 'a holdout was drawn at a later step')
-      }
+    for (const roll of [0, 0.5, 0.99]) {
+      const picked = pickVariant({ ...row, variant_id: first.id }, VARIANTS, roll, 2)
+      ok(picked, `nothing at step 2 for ${segment}`)
+      same(picked.id, `${segment}-intro-meeting`, `the letter drawn at step 2, roll ${roll}`)
+      ok(!picked.holdout, 'a holdout was drawn at step 2')
     }
-  }
-})
-
-check('a chain has no step it runs out at', () => {
-  // A step nothing was registered for used to be where a business stopped
-  // hearing from the studio. The introduction repeats, so there is no such
-  // step and the chain ends only when the reader ends it.
-  for (const segment of SEGMENTS) {
-    for (const step of [1, 2, 5, 40, 500]) {
+    ok(liveAhead(VARIANTS, segment, 2, 'introduction'), `${segment} has no second letter ahead`)
+    for (const step of [3, 4, 13, 120]) {
       ok(
-        VARIANTS.some(entry => entry.segment === segment && sendsAt(entry, step)),
-        `${segment} has nothing at step ${step}`
+        !VARIANTS.some(
+          entry =>
+            entry.segment === segment &&
+            entry.family === 'introduction' &&
+            entry.status === 'live' &&
+            sendsAt(entry, step)
+        ),
+        `${segment} still draws a live letter at step ${step}`
       )
-      ok(liveAhead(VARIANTS, segment, step, 'introduction'), `${segment} runs out at step ${step}`)
+      ok(!liveAhead(VARIANTS, segment, step, 'introduction'), `${segment} runs on to step ${step}`)
     }
   }
 })
 
-check('a first-letter draw lands on the letter that repeats', () => {
+check('the first letter is drawn once and does not repeat', () => {
   const fresh = { ...CONTACTED, variant_id: null, stage: 'audited' }
   for (const roll of [0, 0.3, 0.6, 0.999]) {
     same(stepOf(pickVariant(fresh, VARIANTS, roll)), 1, `the step at ${roll}`)
-    same(pickVariant(fresh, VARIANTS, roll).repeats, true, `what was drawn at ${roll} repeats`)
+    same(pickVariant(fresh, VARIANTS, roll).repeats, false, `what was drawn at ${roll} repeats`)
   }
 })
 
@@ -186,7 +182,7 @@ check('nothing is drawn into a holdout at any step', () => {
     entry.segment === 'slow-site' ? { ...entry, weight: 100, status: 'live' } : entry
   )
   ok(holding.length, 'the holdouts are still readable for the rows that hold one')
-  for (const step of [1, 2, 9]) {
+  for (const step of [1, 2]) {
     for (const roll of [0, 0.5, 0.999]) {
       const picked = pickVariant(CONTACTED, VARIANTS, roll, step)
       ok(picked && !picked.holdout, `a business was held at step ${step} at ${roll}`)
@@ -219,7 +215,7 @@ check('a chain stays in the family it opened with, whatever else is live', () =>
   for (const segment of SEGMENTS) {
     const row = { ...inSegment(segment), variant_id: `${segment}-intro` }
     same(segmentOf(row), segment, 'the row reads as its segment')
-    for (const step of [2, 3, 7]) {
+    for (const step of [1, 2]) {
       for (const roll of [0, 0.5, 0.99]) {
         const picked = pickVariant(row, VARIANTS, roll, step)
         ok(picked, `nothing at step ${step} for ${segment}`)
@@ -449,11 +445,7 @@ check(
     const moved = writes.find(sets('update:outreach_prospects', 'step'))
     ok(moved, 'the business was not moved on')
     same(moved.payload.step, 2, 'the step on the business')
-    same(
-      moved.payload.next_due_at,
-      new Date(AFTERNOON + FOLLOW_UP_DAYS * DAY_MS).toISOString(),
-      'when the next letter is owed'
-    )
+    same(moved.payload.next_due_at, null, 'a letter owed after the second')
     ok(
       !writes.some(sets('update:outreach_prospects', 'variant_id')),
       'a follow-up stamped the business with a letter'
@@ -475,35 +467,20 @@ check(
   }
 )
 
-check('a business deep into its chain is still owed the next one', async () => {
-  // There is no last letter. A business that has heard the introduction twelve
-  // times is owed a thirteenth, because that is what it was told would happen
-  // and the only thing that stops it is the reader.
+check('a business past the second letter is sent nothing more by the cold chain', async () => {
+  // The introduction does not repeat. A business still standing past step two
+  // with a date on it is owed nothing the cold chain writes: its next letter
+  // is its preview site's, so the sender closes the chain instead of
+  // introducing the studio to it again.
   TRANSPORT.clear()
-  const { db, writes } = stubDb(plan({ due: [{ ...CONTACTED, step: 12 }] }))
+  const { db } = stubDb(plan({ due: [{ ...CONTACTED, step: 12 }] }))
 
   const answer = await atMidAfternoon(() =>
     sendWork({ db, settings: SENDING, counts: { examined: 0, changed: 0 } })
   )
 
-  same(answer.followed, 1, 'follow-ups sent')
-  same(answer.closed, 0, 'chains closed')
-  same(TRANSPORT.sent.length, 1, 'messages handed to the transport')
-  // The same letter as the first, arriving again. The subject is its own
-  // rather than threaded, since a
-  // reminder is the letter arriving again and not a reply to it, and it
-  // carries the unsubscribe line the second letter goes without.
-  const [mail] = TRANSPORT.sent
-  same(inserted(writes)[0]?.payload.variant_id, CONTACTED.variant_id, 'the letter drawn')
-  same(mail.subject, 'Trenton Taylor, TaylorURL', `the subject: ${mail.subject}`)
-  ok(/Unsubscribe:/.test(mail.text), 'a reminder went without the unsubscribe line')
-  const moved = writes.find(sets('update:outreach_prospects', 'step'))
-  same(moved.payload.step, 13, 'the step on the business')
-  same(
-    moved.payload.next_due_at,
-    new Date(AFTERNOON + FOLLOW_UP_DAYS * DAY_MS).toISOString(),
-    'when the next letter is owed'
-  )
+  same(answer.followed, 0, 'follow-ups sent')
+  same(TRANSPORT.sent.length, 0, 'messages handed to the transport')
 })
 
 check('the next letter is owed two weeks on', async () => {
@@ -534,11 +511,7 @@ check(
     same(mail?.subject, `Re: ${FIRST_MESSAGE.subject}`, `the subject: ${mail?.subject}`)
     const moved = writes.find(sets('update:outreach_prospects', 'step'))
     same(moved?.payload.step, 2, 'the step on the business')
-    same(
-      moved?.payload.next_due_at,
-      new Date(AFTERNOON + FOLLOW_UP_DAYS * DAY_MS).toISOString(),
-      'when the next letter is owed'
-    )
+    same(moved?.payload.next_due_at, null, 'a letter owed after the second')
   }
 )
 
