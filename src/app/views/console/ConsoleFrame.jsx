@@ -192,6 +192,17 @@ export default function ConsoleFrame() {
   // that either holds or does not.
   const projectFeed = preview ? { ...sampleProjects, phone: liveProjects.phone } : liveProjects
 
+  // The studio's own people looking at a prospect's preview site are not the
+  // prospect looking at it. The previews on *.taylorurl.com read this cookie
+  // and leave the visit uncounted, so signing in here once is enough for that
+  // browser.
+  useEffect(() => {
+    if (signedInRole !== 'admin' && signedInRole !== 'staff') return
+    if (!window.location.hostname.endsWith('taylorurl.com')) return
+    document.cookie =
+      'tu_staff=1; domain=.taylorurl.com; path=/; max-age=315360000; samesite=lax; secure'
+  }, [signedInRole])
+
   useEffect(() => {
     try {
       window.localStorage.setItem(NARROW_KEY, String(narrow))
