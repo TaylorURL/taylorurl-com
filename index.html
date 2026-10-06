@@ -2,6 +2,23 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- `globalThis` on an engine that does not have it.
+         The site reads `globalThis` for the browser's own globals - the session
+         store behind the campaign the reader arrived on, and the analytics and
+         pixel functions the conversion calls are handed - and so does every tag
+         the page loads. Both expect a name that has been in every shipping
+         browser since 2018, and some readers still arrive without it: a user
+         agent string says what a browser wants to be read as rather than what
+         its engine supports, and a proxy browser or a pinned webview reporting
+         itself as a current Chrome is the usual way one of those turns up.
+         Without the name, the page paints and then the first navigation inside
+         it throws on the way through the layout, and the boundary puts its
+         error screen over a page that had loaded - the enquiry page included.
+         One line, first in the document, so the site's own bundle and the
+         vendors' scripts both find the name where the language says it is. -->
+    <script>
+      if (typeof globalThis !== 'object') window.globalThis = window
+    </script>
     <link href="/favicon-32.png" rel="icon" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
