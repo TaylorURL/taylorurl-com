@@ -80,6 +80,16 @@ const NARROW_KEY = 'taylorurl_console_narrow'
 // the change rather than dropping the reader back on the whole account.
 const SCOPE_KEY = 'taylorurl_console_scope'
 
+// Both settings are read after the first render rather than during it. Every
+// console route is written to static HTML at build time and served whole, so
+// the render that adopts that markup has to come out as the markup it was
+// handed. The build has no store to read, so it writes the wide column and the
+// whole account; a render in the browser that already held the reader's
+// settings would draw a narrowed column into a wide one, and React answers a
+// tree that does not match by throwing the served page away and drawing it
+// again. The defaults stand for that one render and the remembered settings
+// arrive on the frame after it, which is the same shape `useModifierLabel` and
+// `useSessionGlimpse` already use for the same reason.
 function storedNarrow() {
   try {
     return window.localStorage.getItem(NARROW_KEY) === 'true'
@@ -118,9 +128,13 @@ export default function ConsoleFrame() {
   const location = useLocation()
   const token = session?.access_token ?? null
   const [days, setDays] = useState(7)
-  const [siteIds, setSiteIds] = useState(storedScope)
+  const [siteIds, setSiteIds] = useState([])
   const [path, setPath] = useState(null)
-  const [narrow, setNarrow] = useState(storedNarrow)
+  const [narrow, setNarrow] = useState(false)
+  // Whether the remembered settings have been read back yet. The two effects
+  // that persist them are the same two that would overwrite them with the
+  // defaults on the commit that adopts the page, so they wait for this.
+  const [adopted, setAdopted] = useState(false)
   const [drawer, setDrawer] = useState(false)
   const [searching, setSearching] = useState(false)
   const { choice, setChoice } = useTheme()
@@ -203,13 +217,24 @@ export default function ConsoleFrame() {
       'tu_staff=1; domain=.taylorurl.com; path=/; max-age=315360000; samesite=lax; secure'
   }, [signedInRole])
 
+  // The column width and the scope, picked up from the store once the served
+  // page has been adopted. Nothing is set where nothing is held, so a first
+  // visit does not pay a second render for a setting it has not made.
   useEffect(() => {
+    setAdopted(true)
+    const held = storedScope()
+    if (held.length) setSiteIds(held)
+    if (storedNarrow()) setNarrow(true)
+  }, [])
+
+  useEffect(() => {
+    if (!adopted) return
     try {
       window.localStorage.setItem(NARROW_KEY, String(narrow))
     } catch {
       // Nothing to do; the column simply starts wide next time.
     }
-  }, [narrow])
+  }, [adopted, narrow])
 
   // The drawer is a phone control and a route change is what it was opened to
   // do, so arriving somewhere closes it.
@@ -292,13 +317,14 @@ export default function ConsoleFrame() {
   }, [overview.data, siteIds, scopeKey, sites])
 
   useEffect(() => {
+    if (!adopted) return
     try {
       if (scopeKey) window.localStorage.setItem(SCOPE_KEY, scopeKey)
       else window.localStorage.removeItem(SCOPE_KEY)
     } catch {
       // Nothing to do; the console simply opens on every site next time.
     }
-  }, [scopeKey])
+  }, [adopted, scopeKey])
 
   // Every chooser goes through here, so a site picked in the column, in the
   // palette, or under the heading lands the console in the same state. The path
