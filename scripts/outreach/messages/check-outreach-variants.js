@@ -31,10 +31,8 @@ import {
   pickVariant,
   siteOpener,
   speedOpener,
-  sendsAt,
   stepOf,
   variantById,
-  withSettings,
 } from '../../../lib/outreach/variants.js'
 import { sinceFirst } from '../../../lib/outreach/openers/plain/meeting.js'
 import { CANDIDATE_COLUMNS } from '../../../lib/outreach/sending/queue.js'
@@ -227,39 +225,25 @@ check('every segment that sends has a first letter to open on', () => {
   }
 })
 
-// A chain used to be four different letters and had to have no gap in it and
-// an end. Now the introduction repeats and stands at every step, and the one
-// letter written for a later step takes step two from it. What has to hold is
-// that every step draws exactly the letter it should: a step that drew nothing
-// would be the month the sender quietly stopped writing, and a step that drew
-// between two letters would be half the businesses hearing the wrong one.
-check('every step draws its one letter, so a chain never runs out', () => {
+// The cold chain is the introduction and the meeting ask, and nothing after
+// them: the third letter a business receives is its preview site's. What has
+// to hold is that steps one and two each draw exactly their letter and that no
+// step past two draws anything, since a step that did would be the
+// introduction going to somebody a second time.
+check('steps one and two draw their letters and nothing comes after', () => {
   for (const segment of SENDING) {
     const row = { ...FITTING[segment], variant_id: `${segment}-intro` }
-    for (const step of [1, 2, 3, 12, 60]) {
-      ok(
-        VARIANTS.some(entry => entry.segment === segment && sendsAt(entry, step)),
-        `${segment} has nothing at step ${step}`
-      )
-      const owed = step === 2 ? `${segment}-intro-meeting` : `${segment}-intro`
+    for (const [step, owed] of [
+      [1, `${segment}-intro`],
+      [2, `${segment}-intro-meeting`],
+    ]) {
       for (const roll of [0, 0.5, 0.99]) {
         same(pickVariant(row, VARIANTS, roll, step)?.id, owed, `${segment} at step ${step}`)
       }
     }
-  }
-})
-
-// The second letter taking step two is a precedence rather than a gap in the
-// introduction, so switching it off in the console hands the step back
-// instead of leaving the business owed a letter nothing will write.
-check('switching the second letter off hands step two back to the introduction', () => {
-  const off = withSettings(
-    VARIANTS,
-    SENDING.map(segment => ({ id: `${segment}-intro-meeting`, status: 'paused' }))
-  )
-  for (const segment of SENDING) {
-    const row = { ...FITTING[segment], variant_id: `${segment}-intro` }
-    same(pickVariant(row, off, 0, 2)?.id, `${segment}-intro`, `${segment} at step two`)
+    for (const step of [3, 12, 60]) {
+      same(pickVariant(row, VARIANTS, 0, step), null, `${segment} at step ${step}`)
+    }
   }
 })
 
