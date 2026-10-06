@@ -1,10 +1,11 @@
 import { m, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { useAnnounceGround } from '@hooks/theme/useOnDarkBackground'
 import BlurText from '@reactbits/BlurText/BlurText'
 import { LazyParticles } from '@reactbits/LazyBg'
 import { useThemeTokens } from '@hooks/theme/useThemeTokens'
 import { fadeInUpMount, rise, settleIn } from '@constants/animations'
+import { retryable, retryImage } from '@utils/retryImage'
 import { SITE } from '../../../../lib/site/current.js'
 
 // How far apart the headline's words start, and how early the run is tripped.
@@ -41,6 +42,19 @@ export default function PageHero({ title, description, eyebrow, image, children 
   useAnnounceGround()
 
   const ref = useRef(null)
+
+  /* The photograph asks again for itself, and it is read at mount as well as
+     caught on the event. Every one of these routes is rendered to markup at
+     build time, so the request can start and finish while the document is
+     still being parsed and a failure that landed then fired into no handler at
+     all - with `data-retry` already on the element from the markup, which is
+     the reporter holding a loss for a recovery nothing ever started. The rung
+     the event would have taken is taken here instead. */
+  const readSettledPhoto = useCallback(node => {
+    if (!node || !node.complete || node.naturalWidth !== 0) return
+    if (node.hasAttribute('data-retry')) retryImage({ currentTarget: node })
+  }, [])
+
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
 
   const rawOpacity = useTransform(scrollYProgress, [0, 0.85], [1, reduced ? 1 : 0.2])
@@ -141,12 +155,14 @@ export default function PageHero({ title, description, eyebrow, image, children 
           {image && (
             <m.figure {...rise(0.12)} aria-hidden="true" className="hidden lg:block">
               <img
+                ref={readSettledPhoto}
                 src={image}
                 alt=""
                 width="768"
                 height="960"
                 decoding="async"
                 className="h-auto w-full rounded-[var(--r-feature)] object-cover shadow-[var(--edge),var(--raise-hi)]"
+                {...retryable()}
               />
             </m.figure>
           )}
