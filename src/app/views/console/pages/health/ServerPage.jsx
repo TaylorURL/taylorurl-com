@@ -579,9 +579,15 @@ export default function ServerPage() {
               machine that restarted nine minutes ago is the interesting case,
               and a boot stamp makes the reader do the subtraction. */}
           <StatCard
-            label="Up For"
+            label="Up for"
             value={uptimeSince(host?.booted_at, now)}
-            caption={host?.booted_at ? `since ${when(host.booted_at)}` : 'since it started'}
+            caption={
+              host?.booted_at
+                ? `since ${when(host.booted_at)}`
+                : loading
+                  ? 'since it started'
+                  : 'start time not reported'
+            }
             loading={loading}
           />
           <StatCard
