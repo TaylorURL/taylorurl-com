@@ -41,7 +41,7 @@ const GOOGLE_TYPES = new Set(['event', 'offer', 'whats_new'])
  * neither. Naming the three keeps a typo landing here rather than as a post
  * Buffer accepts and Instagram refuses when it is due.
  */
-const INSTAGRAM_TYPES = new Set(['post', 'reel', 'story'])
+const INSTAGRAM_TYPES = new Set(['post', 'reel', 'story', 'carousel'])
 
 /** Where the details for each Google post type are carried. */
 const GOOGLE_DETAILS = {
@@ -71,7 +71,7 @@ for (const [name, cadence] of Object.entries(CADENCE)) {
       // Instagram publishes nothing without media, and the queue is the only
       // thing that knows that before a post is due. A cadence that forgot to
       // say so writes captions that schedule cleanly and fail on the day.
-      check(`${name} declares it requires an image`, cadence.requiresImage === true)
+      check(`${name} declares it requires media`, cadence.requiresMedia === true)
       continue
     }
 
@@ -97,6 +97,35 @@ for (const [name, cadence] of Object.entries(CADENCE)) {
       }
     }
   }
+}
+
+// The weekly plan: every day it names is a day the channel publishes, every
+// kind is one the library holds, and a channel that takes a still alone is
+// never asked for a reel or a carousel.
+for (const [name, cadence] of Object.entries(CADENCE)) {
+  check(`${name} carries a weekly plan`, cadence.plan && typeof cadence.plan === 'object')
+  for (const [day, entry] of Object.entries(cadence.plan ?? {})) {
+    const weekday = Number(day)
+    check(
+      `${name} plans day ${day}, which it publishes on`,
+      !cadence.weekdays || cadence.weekdays.includes(weekday)
+    )
+    check(
+      `${name} day ${day} asks for a kind the library holds`,
+      ['image', 'carousel', 'video'].includes(entry.kind)
+    )
+    check(
+      `${name} day ${day} names formats`,
+      Array.isArray(entry.formats) && entry.formats.length > 0
+    )
+    if (name === 'googlebusiness')
+      check(`${name} day ${day} asks for a still`, entry.kind === 'image')
+  }
+  const days = cadence.weekdays ?? [0, 1, 2, 3, 4, 5, 6]
+  check(
+    `${name} plans every day it publishes`,
+    days.every(day => cadence.plan?.[day])
+  )
 }
 
 await finish()

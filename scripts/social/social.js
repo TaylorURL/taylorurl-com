@@ -14,7 +14,9 @@
  *   node scripts/social/social.js post --text-file draft.txt --draft
  *   node scripts/social/social.js post --text-file draft.txt --draft --channel googlebusiness
  *   node scripts/social/social.js post --text-file draft.txt --draft --channel instagram --image trades
+ *   node scripts/social/social.js post --text-file draft.txt --draft --channel facebook --media check-phone-speed
  *   node scripts/social/social.js cards --channel instagram
+ *   node scripts/social/social.js plan --channel facebook [--count 7]
  *   node scripts/social/social.js rewrite --file edits.json [--dry-run]
  *   node scripts/social/social.js promote
  *   node scripts/social/social.js failed
@@ -27,6 +29,7 @@ import { homedir } from 'node:os'
 import {
   CADENCE,
   connect,
+  freeSlots,
   discard,
   isFailed,
   post,
@@ -37,7 +40,15 @@ import {
   status,
   wiring,
 } from '../../lib/social/buffer.js'
-import { CARDS, assetFor, card, landingFor, leastRecentlyUsed } from '../../lib/social/cards.js'
+import {
+  LIBRARY,
+  assetsFor,
+  card,
+  cardOf,
+  landingFor,
+  leastRecentlyUsed,
+  upcoming,
+} from '../../lib/social/cards.js'
 import { announce } from '../../lib/social/announce.js'
 import { summary, watch } from '../../lib/social/watch.js'
 import { allowExtensionlessImports } from '../harness/extensionless-imports.js'
@@ -191,8 +202,92 @@ async function main() {
   const command = process.argv[2]
   const key = await apiKey()
 
+  // The mix rides on the answer: how many of the posts ahead carry a video, a
+  // carousel, an image or nothing, and which formats. A queue can hold a month
+  // of runway and still be the same post thirty times, and only this says so.
   if (command === 'status') {
-    console.log(JSON.stringify(await status(key), null, 2))
+    const run = connect(key)
+    const answer = await status(run)
+    const { organizationId, channels } = await wiring(run)
+    const all = await posts(run, organizationId)
+    const now = new Date().toISOString()
+    for (const channel of answer.channels) {
+      const id = channels.find(candidate => candidate.service === channel.service)?.id
+      const ahead = all.filter(
+        candidate =>
+          candidate.channelId === id &&
+          (candidate.status === 'draft' ||
+            (candidate.status === 'scheduled' && candidate.dueAt > now))
+      )
+      const kinds = { video: 0, carousel: 0, image: 0, none: 0 }
+      const formats = {}
+      for (const candidate of ahead) {
+        const media = cardOf(candidate)
+        const videos = (candidate.assets ?? []).filter(asset => asset.type === 'video').length
+        const images = (candidate.assets ?? []).filter(asset => asset.type === 'image').length
+        const kind = videos ? 'video' : images > 1 ? 'carousel' : images ? 'image' : 'none'
+        kinds[kind] += 1
+        if (media) formats[media.format] = (formats[media.format] ?? 0) + 1
+      }
+      channel.mix = { kinds, formats, textOnly: kinds.none }
+    }
+    console.log(JSON.stringify(answer, null, 2))
+    return
+  }
+
+  // What the next posts on a channel should be: each free slot after the
+  // drafts already waiting for one, the kind and format that weekday is for,
+  // and the media the channel has gone longest without that answers it. A run
+  // writes its posts in this order, so promote lays them onto these same days.
+  if (command === 'plan') {
+    const service = flag('--channel') ?? 'facebook'
+    const count = Number(flag('--count') ?? 7)
+    const run = connect(key)
+    const { organizationId, channels } = await wiring(run)
+    const channel = channels.find(candidate => candidate.service === service)
+    if (!channel) throw new Error(`no ${service} channel connected to this Buffer account`)
+
+    const all = await posts(run, organizationId)
+    const mine = all.filter(candidate => candidate.channelId === channel.id)
+    const waiting = mine.filter(candidate => candidate.status === 'draft').length
+    const scheduled = mine.filter(candidate => candidate.status === 'scheduled')
+    const slots = freeSlots(channel.cadence, scheduled, waiting + count).slice(waiting)
+    const taken = new Set()
+
+    // The posts already booked that carry nothing, each with the media its
+    // day calls for, so a run can rewrite them onto the plan without moving
+    // them. Spoken for first, so the free slots after them are offered
+    // something else.
+    const now = new Date()
+    const bare = scheduled
+      .filter(candidate => candidate.dueAt > now.toISOString() && !(candidate.assets ?? []).length)
+      .sort((a, b) => a.dueAt.localeCompare(b.dueAt))
+    const shape = entry => ({
+      dueAt: entry.dueAt,
+      kind: entry.kind,
+      formats: entry.formats,
+      long: entry.long,
+      media: entry.media && {
+        key: entry.media.key,
+        kind: entry.media.kind,
+        format: entry.media.format,
+        headline: entry.media.headline ?? null,
+        alts: entry.media.alts,
+        link: landingFor(entry.media, service),
+      },
+    })
+    const retrofit = upcoming(
+      channel.cadence,
+      service,
+      mine,
+      bare.map(candidate => candidate.dueAt),
+      now,
+      taken
+    ).map((entry, index) => ({ id: bare[index].id, text: bare[index].text, ...shape(entry) }))
+    const answer = upcoming(channel.cadence, service, mine, slots, now, taken).map(shape)
+    console.log(
+      JSON.stringify({ service, draftsWaiting: waiting, retrofit, plan: answer }, null, 2)
+    )
     return
   }
 
@@ -266,7 +361,9 @@ async function main() {
         service: service.get(candidate.channelId) ?? null,
         status: candidate.status,
         dueAt: candidate.dueAt ?? null,
-        hasImage: (candidate.assets ?? []).some(asset => asset.type === 'image'),
+        hasMedia: (candidate.assets ?? []).some(
+          asset => asset.type === 'image' || asset.type === 'video'
+        ),
         text: candidate.text ?? '',
       }))
     console.log(JSON.stringify({ failed: held }, null, 2))
@@ -294,6 +391,7 @@ async function main() {
   // too, and ordered least recently used with the never-run ones first.
   if (command === 'cards') {
     const service = flag('--channel') ?? 'instagram'
+    const kind = flag('--kind')
     const run = connect(key)
     const { organizationId, channels } = await wiring(run)
     const channel = channels.find(candidate => candidate.service === service)
@@ -305,8 +403,10 @@ async function main() {
     // the card here and then has to name a link; left to remember one, every
     // post got the front door, and a reader who tapped a card about the free
     // Google report landed on a page that does not mention it.
-    const ranked = leastRecentlyUsed(mine).map(entry => ({
+    const ranked = leastRecentlyUsed(mine, new Date(), { service, kind }).map(entry => ({
       key: entry.key,
+      kind: entry.kind,
+      format: entry.format,
       alt: entry.alt,
       to: entry.to,
       link: landingFor(entry, service),
@@ -316,14 +416,23 @@ async function main() {
     return
   }
 
-  // New words on posts the queue already holds. The file is a list of
-  // `{ id, text }`, which is the shape `status` and `cards` answer in, so a run
+  // New words on posts the queue already holds, and new media where an edit
+  // names a library key as `media`. The file is a list of
+  // `{ id, text, media? }`, which is the shape `status` and `cards` answer in, so a run
   // that reads the queue and rewrites part of it never has to retype an id.
   if (command === 'rewrite') {
     const file = flag('--file')
     if (!file) throw new Error('rewrite needs --file <edits.json>')
-    const edits = JSON.parse(readFileSync(file, 'utf8'))
-    if (!Array.isArray(edits)) throw new Error(`${file} is not a list of edits`)
+    const read = JSON.parse(readFileSync(file, 'utf8'))
+    if (!Array.isArray(read)) throw new Error(`${file} is not a list of edits`)
+    // `media` names a library key, the same as `post --media`, and becomes the
+    // assets the post carries from here on.
+    const edits = read.map(edit => {
+      if (!edit.media) return edit
+      const entry = card(edit.media)
+      if (!entry) throw new Error(`nothing in the library is called ${edit.media}`)
+      return { ...edit, assets: assetsFor(entry) }
+    })
 
     const answer = await rewrite(key, edits, { dryRun: process.argv.includes('--dry-run') })
     console.log(JSON.stringify(answer, null, 2))
@@ -351,14 +460,21 @@ async function main() {
     // the one it wrote for is a run whose choice is in its own log; one that
     // let the tool choose would pair a caption with whatever the rotation
     // happened to surface between the two calls.
-    const wanted = flag('--image')
+    const wanted = flag('--media') ?? flag('--image')
     if (wanted && !card(wanted)) {
-      throw new Error(`no card is called ${wanted}: ${CARDS.map(one => one.key).join(', ')}`)
+      throw new Error(
+        `nothing in the library is called ${wanted}: ${LIBRARY.map(one => one.key).join(', ')}`
+      )
     }
-    if (!wanted && CADENCE[service]?.requiresImage) {
-      throw new Error(`${service} needs --image <card>, because it publishes no post without one`)
+    if (wanted && !card(wanted).channels.includes(service)) {
+      throw new Error(`${wanted} is a ${card(wanted).kind} and ${service} does not take one`)
     }
-    const assets = wanted ? [assetFor(card(wanted))] : []
+    if (!wanted && CADENCE[service]?.requiresMedia) {
+      throw new Error(
+        `${service} needs --media <key>, because every post there carries an image, a carousel or a video`
+      )
+    }
+    const assets = wanted ? assetsFor(card(wanted)) : []
 
     // A caption that names no address gets the card's own, tagged for the
     // channel it is going out on. A caption that already carries a link is
@@ -376,9 +492,10 @@ async function main() {
   console.error(
     'usage: social.js status | social.js watch | social.js promote [--limit N] | ' +
       'social.js announce --slug SLUG [--dry-run] | ' +
-      'social.js cards [--channel SERVICE] | ' +
+      'social.js cards [--channel SERVICE] [--kind image|carousel|video] | ' +
+      'social.js plan [--channel SERVICE] [--count N] | ' +
       'social.js rewrite --file EDITS.json [--dry-run] | ' +
-      'social.js post --text-file F (--at ISO | --draft) [--channel SERVICE] [--image CARD] | ' +
+      'social.js post --text-file F (--at ISO | --draft) [--channel SERVICE] [--media KEY] | ' +
       'social.js failed [--requeue | --discard --id ID] [--id ID] [--dry-run]\n' +
       'watch exits 0 when the queue is publishing, 1 when something needs ' +
       'doing, and 2 when Buffer would not answer and it could not tell.'

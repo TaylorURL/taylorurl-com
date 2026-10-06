@@ -18,14 +18,36 @@
  *
  *   npm run check:social-assets
  */
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { CARDS, landingFor } from '../../lib/social/cards.js'
+import { CARDS, LIBRARY, landingFor } from '../../lib/social/cards.js'
 import { PORTFOLIO_PROJECTS } from '../../src/app/data/portfolio.js'
-import { STATIC_ROUTES } from '../../vite/site-routes.js'
+import {
+  AREA_ROUTES,
+  BLOG_ROUTES,
+  BLOG_SERIES_ROUTES,
+  INDUSTRY_ROUTES,
+  STATIC_ROUTES,
+  TOOL_ROUTES,
+} from '../../vite/site-routes.js'
 import { cases, check, finish } from '../harness/checks.js'
 
 const FOLDER = join(process.cwd(), 'public', 'social')
+const LIBRARY_FOLDER = join(FOLDER, 'library')
+
+/** A reel is 9:16; anything else is letterboxed or cropped in the feed. */
+const VERTICAL = 1080 / 1920
+
+/**
+ * Facebook and Instagram take far larger video, but Buffer fetches the file
+ * from the site when the post is due and the site ships it on every deploy, so
+ * a reel is held to a size that costs neither anything.
+ */
+const MAX_VIDEO_BYTES = 8 * 1024 * 1024
+
+/** Google takes a single still through Buffer, and nothing else. */
+const STILL_ONLY = new Set(['googlebusiness'])
+const SERVICES = new Set(['facebook', 'instagram', 'googlebusiness'])
 
 /**
  * The card families that name a client by construction.
@@ -88,12 +110,18 @@ const CLIENTS = clientTerms()
  * front of whoever tapped it, weeks after the post was written and with no
  * way to edit it.
  */
-const SERVED = new Set(STATIC_ROUTES.map(route => route.path))
+const SERVED = new Set(
+  [STATIC_ROUTES, BLOG_ROUTES, BLOG_SERIES_ROUTES, INDUSTRY_ROUTES, AREA_ROUTES, TOOL_ROUTES]
+    .flat()
+    .map(route => route.path)
+)
 
 check('the folder the catalogue names exists', existsSync(FOLDER))
 
 if (existsSync(FOLDER)) {
-  const onDisk = readdirSync(FOLDER).filter(name => !name.startsWith('.'))
+  const onDisk = readdirSync(FOLDER).filter(
+    name => !name.startsWith('.') && !statSync(join(FOLDER, name)).isDirectory()
+  )
   const named = new Set(CARDS.map(one => one.file))
 
   for (const card of CARDS) {
@@ -153,6 +181,97 @@ for (const card of CARDS) {
   )
 }
 
+// The generated library, held to the same rules and to the ones a carousel and a
+// reel add: every slide and every poster 4:5 or 9:16 as its kind says, every
+// video small enough to ship, and nothing Google cannot take offered to it.
+const generated = LIBRARY.filter(entry => entry.generated)
+const libraryNamed = new Set()
+for (const entry of generated) {
+  check(
+    `${entry.key} is an image, a carousel or a video`,
+    ['image', 'carousel', 'video'].includes(entry.kind)
+  )
+  check(
+    `${entry.key} names its format`,
+    typeof entry.format === 'string' && entry.format.length > 0
+  )
+  check(`${entry.key} names its files`, Array.isArray(entry.files) && entry.files.length > 0)
+  if (entry.kind === 'carousel') {
+    check(
+      `${entry.key} is a carousel of 2 to 10 slides`,
+      entry.files.length >= 2 && entry.files.length <= 10
+    )
+  } else {
+    check(`${entry.key} is one file`, entry.files.length === 1)
+  }
+  check(
+    `${entry.key} goes only to channels the queue knows`,
+    Array.isArray(entry.channels) &&
+      entry.channels.length > 0 &&
+      entry.channels.every(name => SERVICES.has(name))
+  )
+  if (entry.kind !== 'image') {
+    check(
+      `${entry.key} is not offered to a channel that takes a still alone`,
+      !entry.channels.some(name => STILL_ONLY.has(name))
+    )
+  }
+
+  const stills = entry.kind === 'video' ? [entry.poster].filter(Boolean) : entry.files
+  if (entry.kind === 'video') {
+    check(`${entry.key} carries a poster`, typeof entry.poster === 'string')
+    const path = join(LIBRARY_FOLDER, entry.files[0])
+    check(`${entry.key} is served from public/social/library`, existsSync(path))
+    check(`${entry.key} is an MP4`, entry.files[0].endsWith('.mp4'))
+    if (existsSync(path)) {
+      const bytes = statSync(path).size
+      check(
+        `${entry.key} is under ${MAX_VIDEO_BYTES} bytes, and it is ${bytes}`,
+        bytes <= MAX_VIDEO_BYTES
+      )
+    }
+    libraryNamed.add(entry.files[0])
+  }
+  for (const file of stills) {
+    libraryNamed.add(file)
+    const path = join(LIBRARY_FOLDER, file)
+    check(`${entry.key}: ${file} is served from public/social/library`, existsSync(path))
+    if (!existsSync(path)) continue
+    const size = pngSize(path)
+    check(`${entry.key}: ${file} is a PNG`, size !== null)
+    if (!size) continue
+    const want = entry.kind === 'video' ? VERTICAL : RATIO
+    check(
+      `${entry.key}: ${file} is ${entry.kind === 'video' ? '9:16' : '4:5'}, and it is ${size.width}x${size.height}`,
+      Math.abs(size.width / size.height - want) < RATIO_TOLERANCE
+    )
+  }
+
+  const alts = entry.kind === 'video' ? [entry.alt] : entry.alts
+  check(
+    `${entry.key} carries alt text for every file`,
+    alts.length === (entry.kind === 'video' ? 1 : entry.files.length) &&
+      alts.every(text => typeof text === 'string' && text.length > 20)
+  )
+
+  const haystack =
+    `${entry.key} ${entry.files.join(' ')} ${entry.headline ?? ''} ${alts.join(' ')}`.toLowerCase()
+  const named = CLIENTS.filter(term => haystack.includes(term))
+  check(`${entry.key} names no client, and it names ${named.join(', ')}`, named.length === 0)
+  check(`${entry.key} states no price`, !/\$\s?\d/.test(haystack))
+
+  const path = (entry.to ?? '').split('#')[0]
+  check(`${entry.key} names a page the site serves, and it is ${entry.to}`, SERVED.has(path))
+}
+
+if (existsSync(LIBRARY_FOLDER)) {
+  for (const file of readdirSync(LIBRARY_FOLDER).filter(name => !name.startsWith('.'))) {
+    check(`${file} is a file the library names`, libraryNamed.has(file))
+  }
+}
+
+check('every library key is its own', new Set(LIBRARY.map(one => one.key)).size === LIBRARY.length)
+
 // A catalogue that emptied itself would pass every check above it.
 check('the catalogue holds cards', CARDS.length > 0)
 check('every card key is its own', new Set(CARDS.map(one => one.key)).size === CARDS.length)
@@ -160,5 +279,5 @@ check('every card key is its own', new Set(CARDS.map(one => one.key)).size === C
 await finish()
 
 console.log(
-  `social assets holds ${cases.length} checks: ${CARDS.length} cards served, 4:5, and naming no client`
+  `social assets holds ${cases.length} checks: ${CARDS.length} cards and ${generated.length} library entries served, sized, and naming no client`
 )
