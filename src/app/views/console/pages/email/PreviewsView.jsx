@@ -276,7 +276,7 @@ export function PreviewsView({ token, area = 'work' }) {
         area="visits"
         title="Visitor Behaviour"
         aside={`${fullCount(visited.length)} ${visited.length === 1 ? 'prospect' : 'prospects'}`}
-        note="Real prospects only: the studio's own browsers and connections, bots and link scanners are left out, as they are from Site Views."
+        note="Real prospects only. This table leaves out the studio's own browsers and connections, bots and link scanners, the same as Site Views."
         loading={!data}
         busy={loading && Boolean(data)}
       >
@@ -413,7 +413,7 @@ export function PreviewsView({ token, area = 'work' }) {
           nameOf={row => sectionLabel(row.name)}
           valueOf={row => (row.sessions ? row.ms / row.sessions : 0)}
           formatValue={value => `${spoken(value)} avg`}
-          empty="No section time recorded for this template yet."
+          empty="No prospect has spent time on a section of this template yet."
           loading={!data && loading}
           dense
         />
@@ -432,7 +432,7 @@ export function PreviewsView({ token, area = 'work' }) {
           }
           valueOf={row => row.clicks}
           formatValue={value => `${fullCount(value)} ${value === 1 ? 'click' : 'clicks'}`}
-          empty="No call to action has been clicked or hovered on this template yet."
+          empty="No prospect has clicked or hovered a call to action on this template yet."
           loading={!data && loading}
           dense
         />
