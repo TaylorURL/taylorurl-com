@@ -7,11 +7,13 @@
  * secret, and what an admin can call from a session. A preview already sent
  * is refused rather than sent twice.
  *
- * A GET is the schedule's: every preview whose first letter went out at least
- * a week ago and has had no follow-up is sent one, threaded under the first.
- * A business that has replied, unsubscribed or bounced since is skipped and
- * its follow-up closed, since a nudge to somebody who already answered is the
- * one letter worse than none.
+ * A GET is the schedule's: every preview whose next follow-up has come due is
+ * sent it, threaded under the first letter. The follow-ups go a week apart,
+ * each a different one, until the business has been sent ten letters in all,
+ * cold ones included; the letter that makes ten is the last, and the business
+ * is then taken off the list. A business that has replied, unsubscribed or
+ * bounced since is skipped and its follow-ups closed, since a nudge to
+ * somebody who already answered is the one letter worse than none.
  *
  * Sending a preview also takes the prospect out of the cold letter's own
  * follow-up chain by clearing `next_due_at`. The preview letter replaces
@@ -29,7 +31,12 @@ import { randomUUID } from 'node:crypto'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
-import { PREVIEW_FOLLOW_UP_DAYS, previewLetter } from '../../lib/outreach/previews.js'
+import {
+  FOLLOW_UP_COUNT,
+  LETTERS_IN_ALL,
+  PREVIEW_FOLLOW_UP_DAYS,
+  previewLetter,
+} from '../../lib/outreach/previews.js'
 import { deliver, sender, unsubscribeUrl } from './send.js'
 
 export const config = { maxDuration: 300 }
@@ -66,7 +73,7 @@ async function barred(db, prospect) {
  * Drafts, delivers and records one letter. The row is written before the
  * transport is reached, so a crash leaves a draft rather than a second copy.
  */
-async function sendOne(db, settings, site, prospect, kind, thread = null) {
+async function sendOne(db, settings, site, prospect, kind, thread = null, nth = 0) {
   const from = sender(settings)
   const track = randomUUID()
   const unsubscribe = prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
@@ -74,6 +81,7 @@ async function sendOne(db, settings, site, prospect, kind, thread = null) {
     track,
     unsubscribe,
     prior: thread,
+    nth,
   })
   const { data: message, error } = await db
     .from('outreach_messages')
@@ -157,12 +165,46 @@ async function sendFirst(db, settings, slug, counts) {
   return { note: `${slug} sent to ${prospect.email}`, message: sent.id }
 }
 
+/** How many letters this studio has sent a business, of every kind. */
+async function lettersSent(db, prospectId) {
+  const { count, error } = await db
+    .from('outreach_messages')
+    .select('id', { count: 'exact', head: true })
+    .eq('prospect_id', prospectId)
+    .eq('direction', 'outbound')
+    .eq('status', 'sent')
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
+/**
+ * Takes a business off the list once it has been sent every letter it will
+ * be. The suppression row is what every sender reads before writing, so
+ * nothing else can reach it afterwards either.
+ */
+async function finish(db, site, prospect) {
+  await db.from('preview_sites').update({ follow_up_due_at: null }).eq('id', site.id)
+  const { error } = await db.from('suppression').upsert(
+    {
+      email: prospect.email.toLowerCase(),
+      reason: 'manual',
+      note: `Sent all ${LETTERS_IN_ALL} outreach letters, the last about ${site.slug}`,
+    },
+    { onConflict: 'email', ignoreDuplicates: true }
+  )
+  if (error) throw new Error(error.message)
+  const closed = await db
+    .from('outreach_prospects')
+    .update({ next_due_at: null, updated_at: new Date().toISOString() })
+    .eq('id', prospect.id)
+  if (closed.error) throw new Error(closed.error.message)
+}
+
 async function followUps(db, settings, counts) {
   const { data: due, error } = await db
     .from('preview_sites')
     .select(SITE_COLUMNS)
     .not('message_id', 'is', null)
-    .is('follow_up_sent_at', null)
     .not('follow_up_due_at', 'is', null)
     .lte('follow_up_due_at', new Date().toISOString())
     .order('follow_up_due_at', { ascending: true })
@@ -181,20 +223,43 @@ async function followUps(db, settings, counts) {
       done.push(`${site.slug} closed: ${bar}`)
       continue
     }
+    const nth = site.follow_ups ?? 0
+    const before = await lettersSent(db, prospect.id)
+    if (before >= LETTERS_IN_ALL || nth >= FOLLOW_UP_COUNT) {
+      await finish(db, site, prospect)
+      done.push(`${site.slug} finished after ${before} letters`)
+      continue
+    }
     const { data: first, error: read } = await db
       .from('outreach_messages')
       .select('subject, provider_id')
       .eq('id', site.message_id)
       .maybeSingle()
     if (read) throw new Error(read.message)
-    const sent = await sendOne(db, settings, site, prospect, 'follow_up', first)
+    // The letter that makes ten is the last one, so it is the closing note
+    // whichever follow-up it would otherwise have been.
+    const last = before + 1 >= LETTERS_IN_ALL || nth + 1 >= FOLLOW_UP_COUNT
+    const which = last ? FOLLOW_UP_COUNT - 1 : nth
+    const sent = await sendOne(db, settings, site, prospect, 'follow_up', first, which)
     const filed = await db
       .from('preview_sites')
-      .update({ follow_up_message_id: sent.id, follow_up_sent_at: sent.at })
+      .update({
+        follow_up_message_id: sent.id,
+        follow_up_sent_at: sent.at,
+        follow_ups: nth + 1,
+        follow_up_due_at: last
+          ? null
+          : new Date(Date.parse(sent.at) + PREVIEW_FOLLOW_UP_DAYS * DAY_MS).toISOString(),
+      })
       .eq('id', site.id)
     if (filed.error) throw new Error(filed.error.message)
     counts.changed += 1
-    done.push(`${site.slug} followed up`)
+    if (last) {
+      await finish(db, site, prospect)
+      done.push(`${site.slug} sent its last letter`)
+    } else {
+      done.push(`${site.slug} sent follow-up ${nth + 1}`)
+    }
   }
   return { note: done.length ? done.join('; ') : 'no preview follow-up is due' }
 }
