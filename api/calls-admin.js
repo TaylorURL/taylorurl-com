@@ -82,10 +82,7 @@ import {
   SORT_IDS,
 } from '../lib/outreach/prospects/callPrefs.js'
 import { callsToday, countsOf } from '../lib/outreach/prospects/callShift.js'
-import {
-  listingPhotos,
-  photoAddresses,
-} from '../lib/outreach/prospects/placePhotos.js'
+import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePhotos.js'
 
 const PROSPECTS = 'outreach_prospects'
 
