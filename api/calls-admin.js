@@ -11,19 +11,20 @@
  * and a business with no website of its own is the strongest lead the table
  * holds. This is the section that dials them.
  *
- * The whole callable set is read on every request rather than a page of it,
- * and that is deliberate. The ordering is not a column: a business's place is
+ * The whole callable set is ranked on every request rather than a page of it,
+ * and that is unavoidable. The ordering is not a column: a business's place is
  * a score built from its review count against the middle count for its own
  * trade, and a middle taken over one page is a different number on every page.
- * The set is about fifteen hundred rows of short columns, which is one round
- * trip; what travels back to the console is one page of it.
+ * So the ranking happens where the set already is - `call_list_page` in the
+ * database takes the middle, scores and orders every callable row, and cuts
+ * the page. One bounded round trip, and what travels back is the page.
  *
- * Both reads are totally ordered - `.order('id')` under the prospects read and
- * under the calls read - because `readAll` pages with `.range()` and this set
- * is already two pages deep. An unordered query paged that way can hand back
- * the same row twice and skip another, and on the calls read that is not a
- * cosmetic fault: a dropped newest call silently changes the run, the wait,
- * the place and the score of the business it belonged to.
+ * It used to be read out here instead, and the set outgrew that: a thousand
+ * rows is all one answer carries, so nearly four thousand businesses of wide
+ * columns became four seven-hundred-kilobyte requests gathered together, each
+ * under its own deadline. One of them queued past ten seconds discarded the
+ * three that had arrived and failed the whole read, which is what the console
+ * showed as a server error on a list the database can rank in milliseconds.
  *
  * Two verbs. GET answers the list, or with `photos` naming a business, that
  * business's photos off its Google listing. POST records one call - an outcome,
@@ -39,37 +40,31 @@
 
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { authorizeCaller, connect } from '../lib/db/clients.js'
-import { readAll, tableMissing } from '../lib/db/rows.js'
+import { tableMissing } from '../lib/db/rows.js'
 import { field, uuid } from '../lib/db/fields.js'
-import { sharesTrade } from '../lib/outreach/message.js'
+import { TRADE_ALIASES, sharesTrade } from '../lib/outreach/message.js'
 import { SOURCES, SPINE, keepLead } from '../lib/leads/spine.js'
 import { PORTFOLIO_PROJECTS } from '../src/app/data/portfolio.js'
 import {
   ASSIGNED_STANDINGS,
-  byCallOrder,
   callMakesLead,
   callPlace,
   defaultCallbackAt,
   interestIn,
   isCallable,
-  matchesControls,
-  medianOf,
   outcomeAsksInterest,
   outcomeEnds,
   outcomeTakesCallback,
   OUTCOME_IDS,
-  othersLast,
   ownerOf,
-  placeCalls,
   promiseOf,
   pullBand,
   pullOf,
   readyAt,
-  reviewsOf,
   scoreOf,
-  TRADE_FLOOR,
   triesRun,
 } from '../lib/outreach/prospects/calls.js'
+import { BOOKING_HOSTS, PLATFORM_HOSTS, PORTAL_HOSTS } from '../lib/outreach/prospects/platforms.js'
 // The page sizes, the score floors and the orders are the ones a caller's saved
 // setup is held to, and they are read from that module rather than written out
 // again here. Two copies is how an endpoint quietly refuses a value the desk
@@ -140,6 +135,29 @@ const COLUMNS = [
   'audit_emailed_by',
   'audit_emailed_to',
 ].join(', ')
+
+/** The row as the list draws it, cut to the columns this endpoint names. */
+function carried(row) {
+  const cut = {}
+  for (const column of CARRIED) cut[column] = row[column] ?? null
+  return cut
+}
+
+/** The column names on their own, which is what a returned row is cut to. */
+const CARRIED = COLUMNS.split(', ')
+
+/**
+ * The trades and the towns the studio holds work in, as the ranking asks for
+ * them: a trade is held as the slug the portfolio files work under, and a town
+ * lowercased. Built once per function instance off the portfolio itself, since
+ * neither moves inside a request.
+ */
+const PROOF_TRADES = [...new Set(PORTFOLIO_PROJECTS.flatMap(project => project.trades ?? []))]
+const PROOF_TOWNS = [
+  ...new Set(
+    PORTFOLIO_PROJECTS.map(project => String(project.town ?? '').toLowerCase()).filter(Boolean)
+  ),
+]
 
 /** A note is a person's own sentence, and the column holds this much of one. */
 const NOTE_MAX = 2000
@@ -237,36 +255,6 @@ function assignedTerm(value) {
 }
 
 /**
- * Every call on file, newest first, filed under the business it was placed to.
- *
- * Read whole rather than joined, because the join would be one query per page
- * of prospects and the table holds one row per call placed by one person - it
- * is small now and it is small in five years. Ordered on the id as well as the
- * instant, because `called_at` is not unique and a working session produces
- * bursts of calls inside the same second.
- */
-async function callsByProspect(db) {
-  const { rows } = await readAll(
-    () =>
-      db
-        .from(CALLS)
-        .select('id, prospect_id, outcome, note, interested, callback_at, called_at, called_by', {
-          count: 'exact',
-        })
-        .order('called_at', { ascending: false })
-        .order('id', { ascending: false }),
-    { max: SET_MAX * 4 }
-  )
-  const byProspect = new Map()
-  for (const call of rows) {
-    const held = byProspect.get(call.prospect_id)
-    if (held) held.push(call)
-    else byProspect.set(call.prospect_id, [call])
-  }
-  return byProspect
-}
-
-/**
  * The people a business can belong to.
  *
  * Both roles the caller door admits, which is the same set the role check lets
@@ -286,32 +274,6 @@ async function callers(db) {
     .order('full_name')
   if (error) throw error
   return (data || []).map(row => ({ id: row.id, name: row.full_name || null }))
-}
-
-/**
- * The middle review count for each trade, over the callable businesses in it.
- *
- * A trade holding fewer than TRADE_FLOOR of them gets no middle at all rather
- * than one taken over four rows, and every business in it reads `unread`.
- *
- * Counted the way the score counts, so a listing Google answered for with no
- * reviews is a zero in its trade's middle rather than missing from it - leaving
- * them out would take the middle from the businesses that can be found.
- */
-function mediansByTrade(callable) {
-  const counts = new Map()
-  for (const row of callable) {
-    const count = reviewsOf(row)
-    if (!row.trade || count === null) continue
-    const held = counts.get(row.trade)
-    if (held) held.push(count)
-    else counts.set(row.trade, [count])
-  }
-  const medians = new Map()
-  for (const [trade, values] of counts) {
-    if (values.length >= TRADE_FLOOR) medians.set(trade, medianOf(values))
-  }
-  return medians
 }
 
 /**
@@ -449,192 +411,93 @@ function drawn(row, { medians, calls, proof, now, named }) {
   }
 }
 
-/** The set split into the three things a caller can be looking at. */
-function placed(rows) {
-  const call = []
-  const resting = []
-  const finished = []
-  for (const row of rows) {
-    if (placeCalls(row.place)) call.push(row)
-    else if (row.place === 'resting' || row.place === 'promised') resting.push(row)
-    else finished.push(row)
-  }
-  return { call, resting, finished }
-}
-
-/** Every place counted, over whichever set is handed in. */
-function countPlaces(rows) {
-  const counted = { call: 0, due: 0, fresh: 0, ready: 0, resting: 0, booked: 0, closed: 0 }
-  for (const row of rows) {
-    if (placeCalls(row.place)) counted.call += 1
-    if (row.place === 'due') counted.due += 1
-    else if (row.place === 'fresh') counted.fresh += 1
-    else if (row.place === 'ready') counted.ready += 1
-    else if (row.place === 'resting' || row.place === 'promised') counted.resting += 1
-    else if (row.place === 'booked') counted.booked += 1
-    else if (row.place === 'closed') counted.closed += 1
-  }
-  return counted
-}
-
 /**
- * The list narrowed to what the console asked for.
+ * The whole list, filtered, counted and paged - by the database, in one call.
  *
- * The rule itself lives beside the score and the places rather than here,
- * because the exemption it carries - a business due back survives every
- * control but the search - is a statement about the list rather than about
- * this endpoint, and it is the one part of the narrowing worth proving.
- */
-function narrow(rows, controls) {
-  return rows.filter(row => matchesControls(row, controls))
-}
-
-/**
- * The four orders the list can be read in, each one the caller's own.
+ * The ranking is the reason this is a function rather than a select. A
+ * business's place is its review count against the middle count for its own
+ * trade, so the middle has to be taken over the whole callable set before a
+ * single row can be ordered, and a page cannot be cut until it is. Done out
+ * here that meant reading the set across - four pages of seven hundred
+ * kilobytes gathered together, each with its own deadline, where one page
+ * queued past its clock discarded the three that had arrived and failed the
+ * request whole. Done in Postgres the middle, the score, the order and the
+ * page are one bounded round trip, and the rows that travel are the page.
  *
- * Whichever order is picked, a business a colleague holds sits behind every
- * business the caller holds or nobody does, so two people on the list are not
- * both handed the same colleague's work at the top of it.
+ * The names of the columns the list draws are still this endpoint's, and the
+ * row that comes back is cut to them.
  */
-function sorted(rows, sort, now, you) {
-  const ordered = [...rows]
-  if (sort === 'waited') {
-    return ordered.sort(
-      othersLast(you, (one, two) => {
-        const a = one.ready_at ? Date.parse(one.ready_at) : Infinity
-        const b = two.ready_at ? Date.parse(two.ready_at) : Infinity
-        return a - b
-      })
-    )
-  }
-  if (sort === 'reviews') {
-    return ordered.sort(
-      othersLast(you, (one, two) => (two.rating_count ?? -1) - (one.rating_count ?? -1))
-    )
-  }
-  if (sort === 'newest') {
-    return ordered.sort(
-      othersLast(you, (one, two) =>
-        String(two.created_at ?? '').localeCompare(String(one.created_at ?? ''))
-      )
-    )
-  }
-  return ordered.sort(byCallOrder(now, you))
-}
-
-/**
- * The Finished view's own order: the last call first, whichever way the list
- * is sorted.
- *
- * It ignores the sort parameter deliberately. None of the four orders answers
- * the question this view is opened with, which is what happened most recently
- * - `newest` is when the listing was filed, which has nothing to do with it.
- */
-function byLastCall(rows) {
-  return [...rows].sort((one, two) =>
-    String(two.last_call?.called_at ?? '').localeCompare(String(one.last_call?.called_at ?? ''))
-  )
-}
-
-/** The whole list, filtered, counted and paged. */
 async function list(db, query, account) {
   const now = new Date()
-
-  const [{ rows, complete }, calls, people] = await Promise.all([
-    readAll(
-      () =>
-        db
-          .from(PROSPECTS)
-          // The count is what lets `readAll` ask for the pages after the first
-          // together rather than one after another. It is answered off the
-          // partial index over exactly this predicate, so it costs the request
-          // almost nothing and saves it two round trips.
-          .select(COLUMNS, { count: 'exact' })
-          .in('site_kind', ['none', 'social'])
-          .not('phone', 'is', null)
-          .order('id'),
-      { max: SET_MAX }
-    ),
-    callsByProspect(db),
-    callers(db),
-  ])
-
-  const named = new Map(people.map(one => [one.id, one.name]))
-  const callable = rows.filter(isCallable)
-  const medians = mediansByTrade(callable)
-  const proof = proofIndex(new Set(callable.map(row => row.trade).filter(Boolean)))
-  const drawnRows = callable.map(row => drawn(row, { medians, calls, proof, now, named }))
-
-  const buckets = placed(drawnRows)
-  // What this caller's day has come to, off the same read. `callsByProspect`
-  // has already fetched every call on file to rank the list, so counting one
-  // person's own day out of it is a pass over an array rather than a query.
-  //
-  // The counts alone. What they are measured against is on the account, the
-  // desk endpoint next door already carries it to the same console, and the
-  // console puts the two together.
-  const shift = countsOf(callsToday([...calls.values()].flat(), account.userId, now))
-  // The strip, the dropdowns and the soonest return all answer for the whole
-  // list rather than for the question just asked, so they stay steady while a
-  // caller narrows. The empty state reads the filtered figures instead, since
-  // it is answering that question and nothing else.
-  const totals = countPlaces(drawnRows)
-
   const view = oneOf(query.view, VIEWS, 'list')
   const sort = oneOf(query.sort, SORT_IDS, DEFAULT_SORT)
   const take = takeOf(query.take)
 
-  const pool =
-    view === 'resting' ? buckets.resting : view === 'finished' ? buckets.finished : buckets.call
+  const [{ data, error }, people] = await Promise.all([
+    db.rpc('call_list_page', {
+      p_view: view,
+      p_sort: view === 'resting' ? 'waited' : sort,
+      p_take: take,
+      p_page: pageOf(query.page),
+      p_state: term(query.state),
+      p_pull: term(query.pull),
+      p_min_score: floorOf(query.min_score),
+      p_town: term(query.town),
+      p_trade: term(query.trade),
+      p_search: term(query.search),
+      p_assigned: assignedTerm(query.assigned),
+      p_you: account.userId,
+      p_now: now.toISOString(),
+      // The three readings the score leans on that are not in the database: the
+      // trades and towns the studio holds work in, and the hosts that are a
+      // platform rather than a site of the business's own. They are the
+      // codebase's own lists, passed in rather than copied into the schema,
+      // where a second copy would answer differently the day one of them moved.
+      p_proof_trades: PROOF_TRADES,
+      p_proof_towns: PROOF_TOWNS,
+      p_trade_aliases: TRADE_ALIASES,
+      p_booking_hosts: BOOKING_HOSTS,
+      p_portal_hosts: PORTAL_HOSTS,
+      p_platform_hosts: PLATFORM_HOSTS,
+      p_max: SET_MAX,
+    }),
+    callers(db),
+  ])
+  if (error) throw error
 
-  const filtered = narrow(pool, {
-    state: term(query.state),
-    pull: term(query.pull),
-    minScore: floorOf(query.min_score),
-    town: term(query.town),
-    trade: term(query.trade),
-    search: term(query.search),
-    assigned: assignedTerm(query.assigned),
-    you: account.userId,
-  })
-
-  const ordered =
-    view === 'finished'
-      ? byLastCall(filtered)
-      : sorted(filtered, view === 'resting' ? 'waited' : sort, now, account.userId)
-
-  const page = pageOf(query.page)
-  const pages = Math.max(1, Math.ceil(ordered.length / take))
-  const held = Math.min(page, pages)
-  const from = (held - 1) * take
-
-  const backs = buckets.resting
-    .map(row => row.ready_at)
-    .filter(Boolean)
-    .sort()
+  const named = new Map(people.map(one => [one.id, one.name]))
+  const page = data.rows ?? []
+  const medians = new Map(
+    page
+      .filter(row => row.trade && row.trade_median !== null)
+      .map(row => [row.trade, row.trade_median])
+  )
+  const calls = new Map(page.map(row => [row.id, row.calls ?? []]))
+  const proof = proofIndex(new Set(page.map(row => row.trade).filter(Boolean)))
 
   return {
     status: 200,
     body: {
-      rows: ordered.slice(from, from + take),
-      page: held,
-      pages,
-      matched: ordered.length,
+      rows: page.map(row => drawn(carried(row), { medians, calls, proof, now, named })),
+      page: data.page,
+      pages: data.pages,
+      matched: data.matched,
       take,
       sort: view === 'finished' ? 'ended' : view === 'resting' ? 'waited' : sort,
       view,
-      bands: {
-        due: filtered.filter(row => row.place === 'due').length,
-        call: filtered.filter(row => row.place !== 'due').length,
-      },
-      totals,
-      shift,
-      matched_totals: countPlaces(filtered),
-      next_back: backs[0] ?? null,
-      towns: [...new Set(buckets.call.map(row => row.town).filter(Boolean))].sort(),
-      trades: [...new Set(buckets.call.map(row => row.trade).filter(Boolean))].sort(),
+      bands: data.bands,
+      totals: data.totals,
+      // What this caller's day has come to. The function hands back their own
+      // recent calls rather than counting the day itself, because the day is
+      // the studio's own working day in its own zone and that boundary is
+      // already settled in one place out here.
+      shift: countsOf(callsToday(data.my_calls ?? [], account.userId, now)),
+      matched_totals: data.matched_totals,
+      next_back: data.next_back ?? null,
+      towns: data.towns ?? [],
+      trades: data.trades ?? [],
       people,
-      complete,
+      complete: data.complete,
       cap: SET_MAX,
     },
   }
