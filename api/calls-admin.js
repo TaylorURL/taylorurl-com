@@ -84,6 +84,7 @@ const PROSPECTS = 'outreach_prospects'
 /** The key the map sweep searches with, which also reads a listing's photos. */
 const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY || ''
 const CALLS = 'outreach_calls'
+const PROFILES = 'profiles'
 
 /** The views, which decide which bucket of the set is answered for. */
 const VIEWS = Object.freeze(['list', 'resting', 'finished'])
@@ -254,6 +255,28 @@ function assignedTerm(value) {
 }
 
 /**
+ * The people a business can belong to.
+ *
+ * Both roles the caller door admits, which is the same set the role check lets
+ * through. It read the admins alone for as long as every account was one, and
+ * the day a representative was hired that became a hole with no symptom worth
+ * noticing: their calls were recorded, the businesses were handed to them, and
+ * every screen drew both as belonging to nobody, because a name was looked up
+ * in a list their account was never in. It is a handful of rows and it is read
+ * on every list, because a page that knows an id and not a name draws a
+ * business as belonging to nobody.
+ */
+async function callers(db) {
+  const { data, error } = await db
+    .from(PROFILES)
+    .select('id, full_name')
+    .in('role', ['admin', 'staff'])
+    .order('full_name')
+  if (error) throw error
+  return (data || []).map(row => ({ id: row.id, name: row.full_name || null }))
+}
+
+/**
  * The trades and towns the studio holds work in, as two sets built once per
  * request rather than a portfolio scan per row.
  *
@@ -389,7 +412,7 @@ function drawn(row, { medians, calls, proof, now, named }) {
 }
 
 /**
- * The whole list, filtered, counted and paged - in one call, by the database.
+ * The whole list, filtered, counted and paged - by the database, in one call.
  *
  * The ranking is the reason this is a function rather than a select. A
  * business's place is its review count against the middle count for its own
@@ -410,36 +433,38 @@ async function list(db, query, account) {
   const sort = oneOf(query.sort, SORT_IDS, DEFAULT_SORT)
   const take = takeOf(query.take)
 
-  const { data, error } = await db.rpc('call_list_page', {
-    p_view: view,
-    p_sort: view === 'resting' ? 'waited' : sort,
-    p_take: take,
-    p_page: pageOf(query.page),
-    p_state: term(query.state),
-    p_pull: term(query.pull),
-    p_min_score: floorOf(query.min_score),
-    p_town: term(query.town),
-    p_trade: term(query.trade),
-    p_search: term(query.search),
-    p_assigned: assignedTerm(query.assigned),
-    p_you: account.userId,
-    p_now: now.toISOString(),
-    // The three readings the score leans on that are not in the database: the
-    // trades and towns the studio holds work in, and the hosts that are a
-    // platform rather than a site of the business's own. They are the
-    // codebase's own lists, passed in rather than copied into the schema,
-    // where a second copy would answer differently the day one of them moved.
-    p_proof_trades: PROOF_TRADES,
-    p_proof_towns: PROOF_TOWNS,
-    p_trade_aliases: TRADE_ALIASES,
-    p_booking_hosts: BOOKING_HOSTS,
-    p_portal_hosts: PORTAL_HOSTS,
-    p_platform_hosts: PLATFORM_HOSTS,
-    p_max: SET_MAX,
-  })
+  const [{ data, error }, people] = await Promise.all([
+    db.rpc('call_list_page', {
+      p_view: view,
+      p_sort: view === 'resting' ? 'waited' : sort,
+      p_take: take,
+      p_page: pageOf(query.page),
+      p_state: term(query.state),
+      p_pull: term(query.pull),
+      p_min_score: floorOf(query.min_score),
+      p_town: term(query.town),
+      p_trade: term(query.trade),
+      p_search: term(query.search),
+      p_assigned: assignedTerm(query.assigned),
+      p_you: account.userId,
+      p_now: now.toISOString(),
+      // The three readings the score leans on that are not in the database: the
+      // trades and towns the studio holds work in, and the hosts that are a
+      // platform rather than a site of the business's own. They are the
+      // codebase's own lists, passed in rather than copied into the schema,
+      // where a second copy would answer differently the day one of them moved.
+      p_proof_trades: PROOF_TRADES,
+      p_proof_towns: PROOF_TOWNS,
+      p_trade_aliases: TRADE_ALIASES,
+      p_booking_hosts: BOOKING_HOSTS,
+      p_portal_hosts: PORTAL_HOSTS,
+      p_platform_hosts: PLATFORM_HOSTS,
+      p_max: SET_MAX,
+    }),
+    callers(db),
+  ])
   if (error) throw error
 
-  const people = data.people ?? []
   const named = new Map(people.map(one => [one.id, one.name]))
   const page = data.rows ?? []
   const medians = new Map(
