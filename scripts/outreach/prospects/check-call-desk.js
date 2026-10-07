@@ -92,7 +92,11 @@ import {
   ownerOf,
   PULLS,
 } from '../../../lib/outreach/prospects/calls.js'
-import { PHOTOS_SHOWN, placePhotos } from '../../../lib/outreach/prospects/placePhotos.js'
+import {
+  PHOTOS_SHOWN,
+  listingPhotos,
+  placePhotos,
+} from '../../../lib/outreach/prospects/placePhotos.js'
 import { mapFrameHref, mapQuery } from '../../../lib/outreach/prospects/map.js'
 import { read } from '../../harness/files.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
@@ -780,6 +784,43 @@ check('a listing that refuses is thrown without the key in it', async () => {
   }
   ok(said.includes('403'), 'the refusal does not say what Google answered')
   ok(!said.includes('sekret'), 'the refusal carries the key')
+})
+
+check('a refusal carries Google\u2019s status, so a throttle is not read as a fault', async () => {
+  const { fetcher } = google({ listing: 429 })
+  let refused = null
+  try {
+    await listingPhotos('ChIJ1', { key: 'sekret', fetcher })
+  } catch (cause) {
+    refused = cause
+  }
+  same(refused?.status, 429, 'the status Google answered')
+  ok(!String(refused?.message).includes('sekret'), 'the refusal carries the key')
+})
+
+check('a listing read is kept on the row rather than bought again', () => {
+  ok(/place_photos/.test(DOOR), 'the photo read no longer keeps what the listing answered')
+  ok(
+    /select\('place_id, place_photos'\)/.test(DOOR),
+    'the photo read no longer reads what is already on file'
+  )
+  ok(/PHOTOS_KEPT_MS/.test(DOOR), 'nothing bounds how long a kept reading is used')
+  ok(
+    /listingPhotos/.test(DOOR) && /photoAddresses/.test(DOOR),
+    'the endpoint still buys the whole read every time'
+  )
+})
+
+check('a refused listing read falls back to what is on file', () => {
+  const guard = DOOR.slice(DOOR.indexOf('async function photos('))
+  ok(
+    /if \(!kept\.photos\) \{[\s\S]{0,200}status: 502/.test(guard),
+    'a business never read before no longer answers 502 when Google refuses'
+  )
+  ok(
+    /listed = kept\.photos/.test(guard),
+    'a business already read no longer shows the photos on its row through a refusal'
+  )
 })
 
 check('the list endpoint reads photos for one business and keeps the key', () => {
