@@ -82,7 +82,10 @@ import {
   SORT_IDS,
 } from '../lib/outreach/prospects/callPrefs.js'
 import { callsToday, countsOf } from '../lib/outreach/prospects/callShift.js'
-import { placePhotos } from '../lib/outreach/prospects/placePhotos.js'
+import {
+  listingPhotos,
+  photoAddresses,
+} from '../lib/outreach/prospects/placePhotos.js'
 
 const PROSPECTS = 'outreach_prospects'
 
@@ -155,6 +158,22 @@ const NOT_RECORDED = 'That call could not be saved. Try again in a moment.'
 
 /** What is said when a business's photos will not come back. */
 const PHOTOS_UNREAD = 'The photos did not load.'
+
+/**
+ * How long the photo descriptors read off a Google listing are used for.
+ *
+ * Every arrival on a business used to spend a Place Details request on a list
+ * of photos that had not changed since the last caller looked, and the Google
+ * project's daily allowance for that request is finite: on 2026-10-07 it was
+ * spent, and the call screen answered a server error to every business for the
+ * rest of the quota day. A listing's photos are the ones its owner uploaded,
+ * so a month-old reading of them is the same reading.
+ *
+ * The addresses are not kept. Google signs those and they expire, so they are
+ * bought fresh on every arrival - which is the request that was never the
+ * expensive one.
+ */
+const PHOTOS_KEPT_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
  * What a driver said, turned into an answer the console can print.
@@ -848,18 +867,64 @@ async function claim(db, prospectId, userId) {
 async function photos(db, value) {
   const id = uuid(value)
   if (!id) return { status: 400, body: { error: 'That is not a business on the list.' } }
-  const { data, error } = await db.from(PROSPECTS).select('place_id').eq('id', id).maybeSingle()
+  const { data, error } = await db
+    .from(PROSPECTS)
+    .select('place_id, place_photos')
+    .eq('id', id)
+    .maybeSingle()
   if (error) return refusal(error, PHOTOS_UNREAD)
   if (!data) return { status: 404, body: { error: 'That business is not on the list.' } }
   if (!data.place_id) return { status: 200, body: { photos: [], listed: false } }
   if (!PLACES_KEY) return { status: 503, body: { error: 'Google photos are not set up here.' } }
-  try {
-    const found = await placePhotos(data.place_id, { key: PLACES_KEY })
-    return { status: 200, body: { photos: found, listed: true } }
-  } catch (cause) {
-    console.error('calls-admin photos: %s', cause.message)
-    return { status: 502, body: { error: PHOTOS_UNREAD } }
+
+  const kept = keptPhotos(data.place_photos)
+  let listed = kept.fresh ? kept.photos : null
+  if (!listed) {
+    try {
+      listed = await listingPhotos(data.place_id, { key: PLACES_KEY })
+      await keepPhotos(db, id, listed)
+    } catch (cause) {
+      // Where this business has been read before, Google refusing the listing
+      // read costs nothing: the descriptors on the row name the same photos.
+      if (!kept.photos) {
+        console.error('calls-admin photos: %s', cause.message)
+        return { status: 502, body: { error: PHOTOS_UNREAD } }
+      }
+      console.error('calls-admin photos: %s, showing what is on file', cause.message)
+      listed = kept.photos
+    }
   }
+  const found = await photoAddresses(listed, { key: PLACES_KEY })
+  return { status: 200, body: { photos: found, listed: true } }
+}
+
+/**
+ * The photo descriptors on a business's row, and whether they are recent
+ * enough to be used without asking Google again.
+ *
+ * Both answers matter separately. Fresh descriptors are used instead of a
+ * request; stale ones are still better than nothing when the request refuses.
+ */
+function keptPhotos(held) {
+  const photos = Array.isArray(held?.photos) ? held.photos : null
+  if (!photos) return { photos: null, fresh: false }
+  const at = Date.parse(held?.at ?? '')
+  const fresh = Number.isFinite(at) && Date.now() - at < PHOTOS_KEPT_MS
+  return { photos, fresh }
+}
+
+/**
+ * Keep what the listing answered on the business's row.
+ *
+ * It is written for the next caller rather than for this one, so a write that
+ * will not go through is logged and the photos are served anyway.
+ */
+async function keepPhotos(db, id, photos) {
+  const { error } = await db
+    .from(PROSPECTS)
+    .update({ place_photos: { at: new Date().toISOString(), photos } })
+    .eq('id', id)
+  if (error) console.error('calls-admin photos: not kept: %s', error.message)
 }
 
 export default async function handler(request, response) {
