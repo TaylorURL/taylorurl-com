@@ -23,14 +23,16 @@
 
 import { sender, deliver } from '../outreach/send.js'
 import { servedHereOr404 } from '../../lib/http/guard.js'
-import { checkAddress } from '../../lib/outreach/prospects/address.js'
+import { readAll } from '../../lib/db/rows.js'
+import { Undeliverable, checkAddress } from '../../lib/outreach/prospects/address.js'
+import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
 import { dayStartsAt } from '../../lib/outreach/sending/schedule.js'
 import { sendWindow, suppressed, writtenTo } from '../../lib/outreach/sending/queue.js'
 import { composeFor } from '../../lib/new-business/email.js'
 import { contactedRow, mirror } from '../../lib/new-business/mirror.js'
 import { runNewBusinessJob } from '../../lib/new-business/runtime.js'
 
-export const config = { maxDuration: 120 }
+export const config = { maxDuration: 300 }
 
 /** The most one run sends, so a day's cap is spread over the day's runs. */
 export const SEND_PER_RUN = 3
@@ -38,9 +40,46 @@ export const SEND_PER_RUN = 3
 /** Seconds between two sends in one run. */
 const SPACING_MS = 20_000
 
+/**
+ * What a run may spend on a catch-up's held letters, and what one of them
+ * needs before it is begun: the spacing in front of it and a send that runs to
+ * the transport's own timeout. A run at its normal three letters never comes
+ * near either.
+ */
+const RUN_BUDGET_MS = 250_000
+const LETTER_NEEDS_MS = SPACING_MS + 20_000
+
+/**
+ * The companies a catch-up holds: every one a send was attempted for between
+ * the catch-up's `heldSince` and its opening. Every send in that stretch was
+ * refused, so each is a letter the mailbox would have carried.
+ */
+async function heldLeads(db, catchUp) {
+  const { rows } = await readAll(() =>
+    db
+      .from('new_business_messages')
+      .select('lead_id', { count: 'exact' })
+      .gte('created_at', catchUp.heldSince)
+      .lt('created_at', catchUp.from)
+      .order('id')
+  )
+  return new Set(rows.map(row => row.lead_id).filter(Boolean))
+}
+
 const ARMED = process.env.OUTREACH_SEND_ARMED === 'true'
 
-async function sentToday(db, now) {
+async function sentToday(db, now, except = null) {
+  if (except?.size) {
+    const { rows } = await readAll(() =>
+      db
+        .from('new_business_messages')
+        .select('lead_id', { count: 'exact' })
+        .eq('status', 'sent')
+        .gte('sent_at', dayStartsAt(now))
+        .order('id')
+    )
+    return rows.filter(row => !except.has(row.lead_id)).length
+  }
   const { count, error } = await db
     .from('new_business_messages')
     .select('id', { count: 'exact', head: true })
@@ -64,7 +103,7 @@ async function writtenHere(db, emails) {
 async function outreachSettings(db) {
   const { data, error } = await db
     .from('outreach_settings')
-    .select('from_address, from_name')
+    .select('from_address, from_name, catch_up_from, catch_up_until, catch_up_held_since')
     .eq('id', 1)
     .maybeSingle()
   if (error) throw new Error(error.message)
@@ -90,21 +129,49 @@ export async function work({
 }) {
   if (!settings.sending_enabled) return { skipped: 'sending is switched off' }
   if (!ARMED) return { skipped: 'OUTREACH_SEND_ARMED is not on for this deployment' }
-  const window = sendWindow(now)
+
+  // The outreach catch-up covers this pipeline too: it shares the mailbox, so
+  // the letters a refusing mailbox held back here go out with the rest, ahead
+  // of the day's own and outside its cap. See lib/outreach/sending/catch-up.js.
+  const studio = await outreachSettings(db)
+  const catchUp = catchUpOf(studio, now)
+  const window = sendWindow(now, catchUp)
   if (!window.open) return { skipped: window.reason }
+  const heldBack = catchUp.today ? await heldLeads(db, catchUp) : null
+  const backlog = catchUp.active ? heldBack : null
+  const startedAt = Date.now()
 
-  const already = await sentToday(db, now)
+  const already = await sentToday(db, now, heldBack)
   const room = Math.min(SEND_PER_RUN, Math.max(0, Number(settings.daily_cap) - already))
-  if (!room) return { skipped: `the day's cap of ${settings.daily_cap} is reached` }
 
-  const { data: ready, error } = await db
-    .from('new_business_leads')
-    .select('*')
-    .eq('stage', 'emailable')
-    .not('email', 'is', null)
-    .order('formed_on', { ascending: false })
-    .limit(room * 5)
+  let owedBack = []
+  if (backlog?.size) {
+    const back = await db
+      .from('new_business_leads')
+      .select('*')
+      .eq('stage', 'emailable')
+      .not('email', 'is', null)
+      .in('id', [...backlog].slice(0, 100))
+      .order('formed_on', { ascending: false })
+    if (back.error) throw new Error(back.error.message)
+    owedBack = back.data ?? []
+  }
+  if (!room && !owedBack.length) {
+    return { skipped: `the day's cap of ${settings.daily_cap} is reached` }
+  }
+
+  const { data: fresh, error } = room
+    ? await db
+        .from('new_business_leads')
+        .select('*')
+        .eq('stage', 'emailable')
+        .not('email', 'is', null)
+        .order('formed_on', { ascending: false })
+        .limit(room * 5)
+    : { data: [], error: null }
   if (error) throw new Error(error.message)
+  const owedIds = new Set(owedBack.map(lead => lead.id))
+  const ready = owedBack.concat(fresh.filter(lead => !owedIds.has(lead.id)))
   if (!ready.length) return { sent: 0, note: 'Nobody is waiting to be written to.' }
 
   const emails = ready.map(lead => String(lead.email).toLowerCase())
@@ -114,10 +181,12 @@ export async function work({
     writtenHere(db, emails),
   ])
 
-  const from = sender(await outreachSettings(db))
-  const tally = { sent: 0, held: 0, undeliverable: 0, failed: 0 }
+  const from = sender(studio)
+  const tally = { sent: 0, held: 0, undeliverable: 0, failed: 0, caughtUp: 0, stoppedBy: null }
   for (const lead of ready) {
-    if (tally.sent >= room) break
+    const back = owedIds.has(lead.id)
+    if (!back && tally.sent - tally.caughtUp >= room) break
+    if (Date.now() - startedAt + LETTER_NEEDS_MS > RUN_BUDGET_MS) break
     counts.examined += 1
     const address = String(lead.email).toLowerCase()
 
@@ -171,6 +240,13 @@ export async function work({
       if (refused.verdict === 'undeliverable') await setStage(db, lead.id, 'undeliverable')
       tally.failed += 1
       counts.changed += 1
+      // A catch-up ends at the first refusal from the mail server, for every
+      // sender, rather than offering the same mailbox the rest of the backlog.
+      if (backlog && !(refused instanceof Undeliverable)) {
+        tally.stoppedBy = String(refused.message ?? refused).slice(0, 300)
+        await endCatchUp(db, tally.stoppedBy)
+        break
+      }
       continue
     }
 
@@ -178,14 +254,19 @@ export async function work({
     const prospectId = await mirror(db, contactedRow(lead, at))
     await setStage(db, lead.id, 'contacted', { contacted_at: at, prospect_id: prospectId })
     tally.sent += 1
+    if (back) tally.caughtUp += 1
     counts.changed += 1
   }
 
+  const own = tally.sent - tally.caughtUp
   return {
     ...tally,
-    sentToday: already + tally.sent,
+    sentToday: already + own,
     cap: settings.daily_cap,
-    note: `Sent ${tally.sent} (${already + tally.sent} of ${settings.daily_cap} today), held ${tally.held}, undeliverable ${tally.undeliverable}, failed ${tally.failed}.`,
+    note:
+      `Sent ${tally.sent} (${already + own} of ${settings.daily_cap} today), held ${tally.held}, undeliverable ${tally.undeliverable}, failed ${tally.failed}.` +
+      (backlog ? ` Catch-up: ${tally.caughtUp} held letters went.` : '') +
+      (tally.stoppedBy ? ` The mail server refused a send, so the catch-up is closed.` : ''),
   }
 }
 
