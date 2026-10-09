@@ -5,7 +5,6 @@ import { faultFromResponse, faultMessage } from '@utils/faults'
 import { ZONE } from '@lib/time/zone.js'
 import {
   Badge,
-  Board,
   ConsoleError,
   EmptyRow,
   Panel,
@@ -15,6 +14,7 @@ import {
   SkeletonRows,
 } from '../../ui'
 import { CELL_TIGHT as CELL, MONO_LABEL, SELECT, TH_TIGHT as TH } from '../../lib/tokens'
+import { useView } from '../../lib/views'
 import { fullCount } from '../../../analytics/lib/format'
 
 const PATH = '/api/previews-admin'
@@ -28,6 +28,18 @@ const COUNTS = [
   { key: 'viewed', label: 'Viewed Site' },
   { key: 'followed_up', label: 'Followed Up' },
   { key: 'replied', label: 'Replied' },
+]
+
+/**
+ * The three readings of the previews, under one switch. Each is a table or a
+ * ranking that needs the height of the room to be read, and stacked one over
+ * the next they left each other a few rows apiece, so the card holds whichever
+ * one is picked and the switch is held in the address like the Mail list's.
+ */
+const TABS = [
+  { key: 'sites', label: 'All Previews' },
+  { key: 'visits', label: 'Visitor Behaviour' },
+  { key: 'attention', label: 'Attention' },
 ]
 
 /** Each trade a preview is built for, in the console's words. */
@@ -149,38 +161,77 @@ export function PreviewsView({ token, area = 'work' }) {
     (a, b) => templates[b].sessions - templates[a].sessions
   )
   const [picked, setPicked] = useState('')
+  const [tab, go] = useView(TABS, { key: 'tab' })
   const template = templates[picked] ? picked : (templateKeys[0] ?? '')
   const attention = templates[template] ?? { sessions: 0, sections: [], ctas: [] }
 
-  return (
-    <Board
-      area={area}
-      areas={['counts counts', 'list list', 'visits visits', 'sections ctas']}
-      rows="auto minmax(0,1fr) minmax(0,1fr) auto"
-    >
-      <Panel area="counts" title="Previews" loading={loading && !data}>
-        <PanelBody>
-          <ConsoleError>{error}</ConsoleError>
-          <dl className="grid grid-cols-3 sm:grid-cols-6">
-            {COUNTS.map(({ key, label }) => (
-              <div key={key} className="grid gap-1 px-5 py-3">
-                <dt className={`${MONO_LABEL} text-paper-faint`}>{label}</dt>
-                <dd className="text-[18px] text-ink-paper">
-                  {data ? fullCount(counts[key] ?? 0) : <SkeletonBar className="my-1 w-8" />}
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </PanelBody>
-      </Panel>
+  const aside =
+    tab === 'sites'
+      ? `${fullCount(previews.length)} ${previews.length === 1 ? 'site' : 'sites'}`
+      : tab === 'visits'
+        ? `${fullCount(visited.length)} ${visited.length === 1 ? 'prospect' : 'prospects'}`
+        : template
+          ? `${fullCount(attention.sessions)} ${attention.sessions === 1 ? 'session' : 'sessions'}`
+          : null
 
-      <Panel
-        area="list"
-        title="All Previews"
-        aside={`${fullCount(previews.length)} ${previews.length === 1 ? 'site' : 'sites'}`}
-        loading={!data}
-        busy={loading && Boolean(data)}
-      >
+  return (
+    <Panel
+      area={area}
+      title="Previews"
+      aside={aside}
+      note={
+        tab === 'visits'
+          ? "Real prospects only. This table leaves out the studio's own browsers and connections, bots and link scanners, the same as Site Views."
+          : null
+      }
+      loading={!data}
+      busy={loading && Boolean(data)}
+    >
+      <ConsoleError>{error}</ConsoleError>
+      <dl className="border-hair-paper grid flex-shrink-0 grid-cols-3 border-b sm:grid-cols-6">
+        {COUNTS.map(({ key, label }) => (
+          <div key={key} className="grid gap-1 px-5 py-3">
+            <dt className={`${MONO_LABEL} text-paper-faint`}>{label}</dt>
+            <dd className="text-[18px] text-ink-paper">
+              {data ? fullCount(counts[key] ?? 0) : <SkeletonBar className="my-1 w-8" />}
+            </dd>
+          </div>
+        ))}
+      </dl>
+
+      <div className="border-hair-paper flex flex-shrink-0 flex-wrap items-center gap-3 border-b px-5 py-3">
+        <div className="console-segmented" role="group" aria-label="Previews">
+          {TABS.map(one => (
+            <button
+              key={one.key}
+              type="button"
+              onClick={() => go(one.key)}
+              aria-pressed={tab === one.key}
+            >
+              {one.label}
+            </button>
+          ))}
+        </div>
+        {tab === 'attention' &&
+          (templateKeys.length > 1 ? (
+            <select
+              aria-label="Template"
+              className={SELECT}
+              value={template}
+              onChange={event => setPicked(event.target.value)}
+            >
+              {templateKeys.map(key => (
+                <option key={key} value={key}>
+                  {industryOf(key)}
+                </option>
+              ))}
+            </select>
+          ) : template ? (
+            <span className={`${MONO_LABEL} text-paper-faint`}>{industryOf(template)}</span>
+          ) : null)}
+      </div>
+
+      {tab === 'sites' ? (
         <PanelBody className="overflow-x-auto">
           <table className="w-full min-w-[56rem] border-collapse">
             <thead>
@@ -270,16 +321,7 @@ export function PreviewsView({ token, area = 'work' }) {
             </tbody>
           </table>
         </PanelBody>
-      </Panel>
-
-      <Panel
-        area="visits"
-        title="Visitor Behaviour"
-        aside={`${fullCount(visited.length)} ${visited.length === 1 ? 'prospect' : 'prospects'}`}
-        note="Real prospects only. This table leaves out the studio's own browsers and connections, bots and link scanners, the same as Site Views."
-        loading={!data}
-        busy={loading && Boolean(data)}
-      >
+      ) : tab === 'visits' ? (
         <PanelBody className="overflow-x-auto">
           <table className="w-full min-w-[64rem] border-collapse">
             <thead>
@@ -382,65 +424,38 @@ export function PreviewsView({ token, area = 'work' }) {
             </tbody>
           </table>
         </PanelBody>
-      </Panel>
-
-      <Panel
-        area="sections"
-        title="Sections That Hold Attention"
-        aside={
-          template
-            ? `${fullCount(attention.sessions)} ${attention.sessions === 1 ? 'session' : 'sessions'}`
-            : null
-        }
-        tools={
-          templateKeys.length > 1 ? (
-            <select
-              aria-label="Template"
-              className={SELECT}
-              value={template}
-              onChange={event => setPicked(event.target.value)}
-            >
-              {templateKeys.map(key => (
-                <option key={key} value={key}>
-                  {industryOf(key)}
-                </option>
-              ))}
-            </select>
-          ) : template ? (
-            <span className={`${MONO_LABEL} text-paper-faint`}>{industryOf(template)}</span>
-          ) : null
-        }
-        loading={!data}
-      >
-        <RankedList
-          rows={attention.sections ?? []}
-          nameOf={row => sectionLabel(row.name)}
-          valueOf={row => (row.sessions ? row.ms / row.sessions : 0)}
-          formatValue={value => `${spoken(value)} avg`}
-          empty="No prospect has spent time on a section of this template yet."
-          loading={!data && loading}
-          dense
-        />
-      </Panel>
-
-      <Panel
-        area="ctas"
-        title="Calls to Action"
-        aside={template ? industryOf(template) : null}
-        loading={!data}
-      >
-        <RankedList
-          rows={attention.ctas ?? []}
-          nameOf={row =>
-            `${CLICK_KIND[row.kind] ?? 'Click'}: ${row.name}${row.hovers ? ` · ${fullCount(row.hovers)} ${row.hovers === 1 ? 'hover' : 'hovers'}` : ''}`
-          }
-          valueOf={row => row.clicks}
-          formatValue={value => `${fullCount(value)} ${value === 1 ? 'click' : 'clicks'}`}
-          empty="No prospect has clicked or hovered a call to action on this template yet."
-          loading={!data && loading}
-          dense
-        />
-      </Panel>
-    </Board>
+      ) : (
+        <PanelBody className="grid content-start lg:grid-cols-2">
+          <section>
+            <h3 className={`${MONO_LABEL} text-paper-faint px-5 pt-3`}>
+              Sections That Hold Attention
+            </h3>
+            <RankedList
+              rows={attention.sections ?? []}
+              nameOf={row => sectionLabel(row.name)}
+              valueOf={row => (row.sessions ? row.ms / row.sessions : 0)}
+              formatValue={value => `${spoken(value)} avg`}
+              empty="No prospect has spent time on a section of this template yet."
+              loading={!data && loading}
+              dense
+            />
+          </section>
+          <section>
+            <h3 className={`${MONO_LABEL} text-paper-faint px-5 pt-3`}>Calls to Action</h3>
+            <RankedList
+              rows={attention.ctas ?? []}
+              nameOf={row =>
+                `${CLICK_KIND[row.kind] ?? 'Click'}: ${row.name}${row.hovers ? ` · ${fullCount(row.hovers)} ${row.hovers === 1 ? 'hover' : 'hovers'}` : ''}`
+              }
+              valueOf={row => row.clicks}
+              formatValue={value => `${fullCount(value)} ${value === 1 ? 'click' : 'clicks'}`}
+              empty="No prospect has clicked or hovered a call to action on this template yet."
+              loading={!data && loading}
+              dense
+            />
+          </section>
+        </PanelBody>
+      )}
+    </Panel>
   )
 }
