@@ -6,6 +6,29 @@ import { useEffect, useRef } from 'react'
 const RETRY_MS = [3_000, 6_000, 15_000]
 
 /**
+ * How long to wait after a read that did not land.
+ *
+ * The step above, but never sooner than the failed read itself took. A blip
+ * fails in milliseconds and is retried in three seconds, which is what that
+ * cadence was written for. A read that fails by running out of time is the
+ * other case entirely: it held a server route and a database connection open
+ * for its whole deadline, and retrying it three seconds later asks for the
+ * same work again four times as often as the steady beat would - so a
+ * database already too slow to answer is given more to do, and every other
+ * read on the site queues behind the ones that are going to be thrown away.
+ * Waiting out the cost of the attempt keeps a slow read from becoming a
+ * faster one.
+ *
+ * @param {number[]} steps The cadence to take the step from.
+ * @param {number} failures How many reads in a row have not landed.
+ * @param {number} spent How long the one that just failed took.
+ * @returns {number} The wait, in milliseconds.
+ */
+function waitAfterFailure(steps, failures, spent) {
+  return Math.max(steps[Math.min(failures - 1, steps.length - 1)], spent)
+}
+
+/**
  * Re-runs one feed's read on a beat, so the section moves as the record does.
  *
  * The analytics feeds have polled this way since they were written, and every
@@ -45,12 +68,15 @@ export function usePulse(tick, { enabled, intervalMs, holdWhile = false }) {
     const run = async () => {
       if (cancelled) return
       let ok = true
+      let spent = 0
       if (document.visibilityState === 'visible' && !held.current) {
+        const began = Date.now()
         ok = (await beat.current()) !== false
+        spent = Date.now() - began
         failures.current = ok ? 0 : failures.current + 1
       }
       if (cancelled) return
-      const wait = ok ? intervalMs : RETRY_MS[Math.min(failures.current - 1, RETRY_MS.length - 1)]
+      const wait = ok ? intervalMs : waitAfterFailure(RETRY_MS, failures.current, spent)
       timer = window.setTimeout(run, wait)
     }
     timer = window.setTimeout(run, intervalMs)
@@ -95,10 +121,15 @@ export function usePoll(load, { enabled = true, intervalMs, retryMs = RETRY_MS, 
     const tick = async () => {
       if (cancelled) return
       let ok = true
-      if (first || document.visibilityState === 'visible') ok = await load()
+      let spent = 0
+      if (first || document.visibilityState === 'visible') {
+        const began = Date.now()
+        ok = await load()
+        spent = Date.now() - began
+      }
       first = false
       if (cancelled) return
-      const wait = ok ? intervalMs : retryMs[Math.min(failures.current - 1, retryMs.length - 1)]
+      const wait = ok ? intervalMs : waitAfterFailure(retryMs, failures.current, spent)
       timer = window.setTimeout(tick, wait)
     }
     tick()
