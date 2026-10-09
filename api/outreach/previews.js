@@ -45,7 +45,12 @@ import {
   LETTERS_BEFORE_PREVIEW,
   LETTERS_IN_ALL,
   PREVIEW_FOLLOW_UP_DAYS,
+  PREVIEW_FIRST_DAYS,
+  PREVIEW_FIRST_SENDER,
+  PREVIEW_LIFETIME_DAYS,
   PREVIEW_WAIT_DAYS,
+  isPreviewFirst,
+  previewFirstLetter,
   previewLetter,
   previewUrl,
 } from '../../lib/outreach/previews.js'
@@ -60,7 +65,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const CLOSED = new Set(['replied', 'unsubscribed', 'bounced', 'undeliverable'])
 
 const SITE_COLUMNS =
-  'id, slug, name, prospect_id, letter, shot_url, message_id, sent_at, follow_up_due_at, follow_up_sent_at'
+  'id, slug, name, prospect_id, letter, shot_url, message_id, sent_at, follow_up_due_at, follow_up_sent_at, follow_ups, expires_at'
 
 async function prospectOf(db, id) {
   const { data, error } = await db
@@ -86,21 +91,33 @@ async function barred(db, prospect) {
 /**
  * Drafts, delivers and records one letter. The row is written before the
  * transport is reached, so a crash leaves a draft rather than a second copy.
+ *
+ * A preview-first letter goes out as a note from Trenton: under his name, with
+ * no unsubscribe link in the letter and no list header on the envelope, since
+ * it is one person writing to one business rather than a list being sent.
  */
-async function sendOne(db, settings, site, prospect, kind, thread = null, nth = 0) {
-  const from = sender(settings)
+async function sendOne(
+  db,
+  settings,
+  site,
+  prospect,
+  kind,
+  thread = null,
+  nth = 0,
+  personal = false
+) {
+  const from = personal ? { ...sender(settings), name: PREVIEW_FIRST_SENDER } : sender(settings)
   const track = randomUUID()
-  const unsubscribe = prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
-  const letter = previewLetter(
-    { ...site, email: prospect.email, rating_count: prospect.rating_count },
-    kind,
-    {
-      track,
-      unsubscribe,
-      prior: thread,
-      nth,
-    }
-  )
+  const unsubscribe =
+    !personal && prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
+  const letter = personal
+    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, { track, prior: thread })
+    : previewLetter({ ...site, email: prospect.email, rating_count: prospect.rating_count }, kind, {
+        track,
+        unsubscribe,
+        prior: thread,
+        nth,
+      })
   const { data: message, error } = await db
     .from('outreach_messages')
     .insert({
@@ -198,19 +215,27 @@ async function sendFirst(db, settings, slug, counts) {
   const bar = await barred(db, prospect)
   if (bar) return { note: `${slug} was not sent: ${bar}` }
 
-  const early = await notDueYet(db, prospect.id)
+  // A business never written to opens on its preview, and only on the letters
+  // written for it; one already on the older chain gets the third letter when
+  // that is due.
+  const personal = (await lettersSent(db, prospect.id)) === 0
+  if (personal && !isPreviewFirst(site)) {
+    return { note: `${slug} was not sent: its preview-first letters are not written yet` }
+  }
+  const early = personal ? null : await notDueYet(db, prospect.id)
   if (early) return { note: `${slug} was not sent: ${early}` }
   const missing = await siteMissing(slug)
   if (missing) return { note: `${slug} was not sent: ${missing}` }
 
-  const sent = await sendOne(db, settings, site, prospect, 'first')
-  const due = new Date(Date.parse(sent.at) + PREVIEW_FOLLOW_UP_DAYS * DAY_MS).toISOString()
+  const sent = await sendOne(db, settings, site, prospect, 'first', null, 0, personal)
+  const after = days => new Date(Date.parse(sent.at) + days * DAY_MS).toISOString()
   const filed = await db
     .from('preview_sites')
     .update({
       message_id: sent.id,
       sent_at: sent.at,
-      follow_up_due_at: due,
+      follow_up_due_at: after(personal ? PREVIEW_FIRST_DAYS[0] : PREVIEW_FOLLOW_UP_DAYS),
+      expires_at: personal ? after(PREVIEW_LIFETIME_DAYS) : null,
       first_viewed_at: null,
       last_viewed_at: null,
       view_count: 0,
@@ -266,6 +291,52 @@ async function finish(db, site, prospect) {
   if (closed.error) throw new Error(closed.error.message)
 }
 
+/**
+ * One follow-up on the preview-first chain: the next of the three written for
+ * this business, each owed a fixed number of days after the first letter. The
+ * last one says the draft comes down, so the business is then taken off the
+ * list the way a finished older chain is.
+ */
+async function personalFollowUp(db, settings, site, prospect, counts) {
+  const nth = site.follow_ups ?? 0
+  if (nth >= PREVIEW_FIRST_DAYS.length) {
+    await db.from('preview_sites').update({ follow_up_due_at: null }).eq('id', site.id)
+    return `${site.slug} closed: every preview-first letter has gone`
+  }
+  const { data: first, error: read } = await db
+    .from('outreach_messages')
+    .select('subject, provider_id')
+    .eq('id', site.message_id)
+    .maybeSingle()
+  if (read) throw new Error(read.message)
+  const sent = await sendOne(db, settings, site, prospect, 'follow_up', first, nth, true)
+  const last = nth + 1 >= PREVIEW_FIRST_DAYS.length
+  const filed = await db
+    .from('preview_sites')
+    .update({
+      follow_up_message_id: sent.id,
+      follow_up_sent_at: sent.at,
+      follow_ups: nth + 1,
+      follow_up_due_at: last
+        ? null
+        : new Date(Date.parse(site.sent_at) + PREVIEW_FIRST_DAYS[nth + 1] * DAY_MS).toISOString(),
+    })
+    .eq('id', site.id)
+  if (filed.error) throw new Error(filed.error.message)
+  counts.changed += 1
+  if (!last) return `${site.slug} sent preview-first follow-up ${nth + 1}`
+  const { error } = await db.from('suppression').upsert(
+    {
+      email: prospect.email.toLowerCase(),
+      reason: 'manual',
+      note: `Sent every preview-first letter about ${site.slug}`,
+    },
+    { onConflict: 'email', ignoreDuplicates: true }
+  )
+  if (error) throw new Error(error.message)
+  return `${site.slug} sent its last preview-first letter`
+}
+
 async function followUps(db, settings, counts) {
   const { data: due, error } = await db
     .from('preview_sites')
@@ -287,6 +358,10 @@ async function followUps(db, settings, counts) {
       // console says the follow-up is not coming.
       await db.from('preview_sites').update({ follow_up_due_at: null }).eq('id', site.id)
       done.push(`${site.slug} closed: ${bar}`)
+      continue
+    }
+    if (site.expires_at && isPreviewFirst(site)) {
+      done.push(await personalFollowUp(db, settings, site, prospect, counts))
       continue
     }
     const nth = site.follow_ups ?? 0
