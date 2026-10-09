@@ -29,7 +29,7 @@
     },
     {
       "path": "/api/outreach/send",
-      "schedule": "*/10 13-23 * * *"
+      "schedule": "*/10 12-23 * * *"
     },
     {
       "path": "/api/outreach/watch",
@@ -49,7 +49,7 @@
     },
     {
       "path": "/api/new-business/send",
-      "schedule": "3,23,43 13-23 * * 1-6"
+      "schedule": "3,23,43 12-23 * * 1-6"
     },
     {
       "path": "/api/social-queue",

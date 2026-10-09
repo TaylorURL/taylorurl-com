@@ -38,6 +38,8 @@ import { randomUUID } from 'node:crypto'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
+import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
+import { Undeliverable } from '../../lib/outreach/prospects/address.js'
 import {
   FOLLOW_UP_COUNT,
   LETTERS_BEFORE_PREVIEW,
@@ -126,6 +128,11 @@ async function sendOne(db, settings, site, prospect, kind, thread = null, nth = 
       .from('outreach_messages')
       .update({ status: 'failed', error: String(cause?.message || cause).slice(0, 500) })
       .eq('id', message.id)
+    // A refusal from the mail server while the outreach catch-up is open ends
+    // it for every sender; see lib/outreach/sending/catch-up.js.
+    if (!(cause instanceof Undeliverable) && catchUpOf(settings).active) {
+      await endCatchUp(db, String(cause?.message || cause).slice(0, 300))
+    }
     throw cause
   }
   const at = new Date().toISOString()
