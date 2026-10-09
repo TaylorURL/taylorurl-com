@@ -911,12 +911,17 @@ async function firstLetters({
   // out of the day's figure, so they do not spend the cap the day's own letters
   // are paced by, and while the catch-up is open they go ahead of the
   // allowance, bounded only by the run's budget and the spacing.
+  //
+  // While outreach opens on the preview letter instead, the introduction is
+  // off: the day's own first letters stop here and the cap is the preview
+  // letters' to spend, while a catch-up's held letters still go.
+  const cap = settings.intro_letters_enabled === false ? 0 : settings.daily_cap
   const already = await sentToday(db, { firstOnly: ready, except: heldBack?.prospects })
-  const due = dueBy(settings.daily_cap, new Date())
-  const owed = Math.max(Math.min(settings.daily_cap, due) - already, 0)
+  const due = dueBy(cap, new Date())
+  const owed = Math.max(Math.min(cap, due) - already, 0)
   const allowance = Math.min(owed, SEND_PER_RUN_MAX)
   if (allowance <= 0 && !backlog?.firstLetters.size) {
-    const capped = already >= settings.daily_cap
+    const capped = already >= cap
     return { sending, allowance: 0, capped, waiting: !capped, due, already, window }
   }
 
