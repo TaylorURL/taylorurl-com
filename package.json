@@ -2,7 +2,7 @@
   "name": "taylorurl",
   "private": true,
   "license": "UNLICENSED",
-  "version": "2026.41.28",
+  "version": "2026.41.29",
   "type": "module",
   "engines": {
     "node": "22"
