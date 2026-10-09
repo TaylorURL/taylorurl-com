@@ -103,12 +103,21 @@ import { field } from '../../lib/db/fields.js'
 import { columnMissing } from '../../lib/db/rows.js'
 import {
   FOLLOW_UP_DAYS,
+  FOLLOW_UP_LIMIT,
   FOLLOW_UPS_PER_RUN,
   SEND_PER_RUN_MAX,
 } from '../../lib/outreach/sending/limits.js'
 import { dueBy, localDay } from '../../lib/outreach/sending/schedule.js'
 import {
+  catchUpOf,
+  endCatchUp,
+  firstLettersFor,
+  followUpsFor,
+  heldOf,
+} from '../../lib/outreach/sending/catch-up.js'
+import {
   candidates,
+  chainDueBy,
   dueFollowUps,
   existingMessages,
   firstMessages,
@@ -796,8 +805,17 @@ export async function work({ db, settings, counts }) {
   // Outside the window a run still composes and stores its drafts, so the text
   // is ready to read and goes out on the next run inside it. Nothing is lost by
   // running at midnight; it simply does not deliver.
-  const window = sendWindow()
+  //
+  // A catch-up that is open moves the window's opening forward and lifts the
+  // run's limits for the letters a refusing mailbox held back; see
+  // lib/outreach/sending/catch-up.js. `held` is read on the catch-up's whole
+  // day, so the letters it sent stay out of that day's cap; `backlog` is the
+  // same reading while the catch-up is open, which is what lifts the limits.
+  const catchUp = catchUpOf(settings, new Date())
+  const window = sendWindow(new Date(), catchUp)
   const sending = armed && window.open
+  const held = sending && catchUp.today ? await heldOf(db, catchUp) : null
+  const backlog = catchUp.active ? held : null
 
   // The registry as the console has set it, read once for the run. A variant
   // paused in the console stops being chosen on the next run and not before,
@@ -819,15 +837,29 @@ export async function work({ db, settings, counts }) {
     variants,
     ready,
     endsAt,
+    heldBack: held,
+    backlog,
   })
   // Follow-ups only ever go out, never wait as drafts, so a run that is not
   // sending has none to do. They are outside the cap and the ramp: what bounds
-  // them is what is due and what one invocation has time for.
+  // them is what is due and what one invocation has time for. A catch-up the
+  // mail server refused during the first letters sends nothing further.
   const later =
-    sending && ready
-      ? await followUps({ db, settings, counts, variants, endsAt })
+    sending && ready && !first.stoppedBy
+      ? await followUps({ db, settings, counts, variants, endsAt, backlog, catchUp })
       : { followed: 0, closed: 0, deferred: 0 }
-  return { ...first, ...later }
+
+  // The first refusal ends the catch-up for every sender, not just this run,
+  // so the next run and the other senders go back to the normal pace rather
+  // than each knocking on a mailbox that has started refusing again.
+  const stoppedBy = first.stoppedBy ?? later.stoppedBy ?? null
+  if (backlog && stoppedBy) await endCatchUp(db, stoppedBy)
+  const caughtUp = (first.caughtUp ?? 0) + (later.caughtUp ?? 0)
+  const note = backlog
+    ? `Catch-up: ${first.caughtUp ?? 0} held first letters and ${later.caughtUp ?? 0} held follow-ups went this run.` +
+      (stoppedBy ? ` The mail server refused a send, so the catch-up is closed: ${stoppedBy}` : '')
+    : undefined
+  return { ...first, ...later, ...(backlog ? { caughtUp, stoppedBy, note } : {}) }
 }
 
 /**
@@ -855,7 +887,18 @@ const writtenFor = at => `${localDay(at).date}:${partOfDay(at)}`
  * The first letters a run owes: the day's cap spread across the window, sent
  * to the businesses at the head of the queue.
  */
-async function firstLetters({ db, settings, counts, sending, window, variants, ready, endsAt }) {
+async function firstLetters({
+  db,
+  settings,
+  counts,
+  sending,
+  window,
+  variants,
+  ready,
+  endsAt,
+  heldBack = null,
+  backlog = null,
+}) {
   // The day's cap is spread across the window rather than sent on the first run
   // that finds it. Each invocation asks how many should have gone by now and
   // sends only the difference, so a missed run catches up on the next and two
@@ -863,11 +906,16 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
   // bounds the day, the schedule bounds this moment within it, and
   // SEND_PER_RUN_MAX bounds what this invocation can finish before the platform
   // stops it. A backlog longer than the last of them is left for the next run.
-  const already = await sentToday(db, { firstOnly: ready })
+  //
+  // A catch-up's held letters are the exception to all three. They are counted
+  // out of the day's figure, so they do not spend the cap the day's own letters
+  // are paced by, and while the catch-up is open they go ahead of the
+  // allowance, bounded only by the run's budget and the spacing.
+  const already = await sentToday(db, { firstOnly: ready, except: heldBack?.prospects })
   const due = dueBy(settings.daily_cap, new Date())
   const owed = Math.max(Math.min(settings.daily_cap, due) - already, 0)
   const allowance = Math.min(owed, SEND_PER_RUN_MAX)
-  if (allowance <= 0) {
+  if (allowance <= 0 && !backlog?.firstLetters.size) {
     const capped = already >= settings.daily_cap
     return { sending, allowance: 0, capped, waiting: !capped, due, already, window }
   }
@@ -878,7 +926,7 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
   if (!rows.length) return { sending, allowance, queue: 0, window }
 
   const addresses = rows.map(row => String(row.email).toLowerCase())
-  const held = await suppressed(db, addresses)
+  const suppressedHere = await suppressed(db, addresses)
   // Addresses this pipeline has already written to, whatever row carried the
   // letter. Two listings of one business share a mailbox and neither row knows
   // about the other, so without this the second is a first letter to somebody
@@ -913,9 +961,18 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
     repaired += 1
   }
 
-  const queue = queueFor({ candidates: rows, held, written: alreadyWritten, messages, sending })
+  const queue = queueFor({
+    candidates: rows,
+    held: suppressedHere,
+    written: alreadyWritten,
+    messages,
+    sending,
+  })
 
-  const run = queue.slice(0, allowance)
+  // The held letters first, every one still in the queue, and then the day's
+  // own allowance out of what is left. Outside a catch-up the first half is
+  // empty and this is the queue's head, as it always was.
+  const { run } = firstLettersFor(queue, allowance, backlog)
   const spacing = spacingFor(run.length)
   const tally = {
     drafted: 0,
@@ -929,6 +986,10 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
     // Businesses this run had the allowance for and not the minutes. They keep
     // their place at the head of the queue for the next one.
     postponed: 0,
+    // Held letters a catch-up carried, and what the mail server said when it
+    // refused one, which ends the catch-up.
+    caughtUp: 0,
+    stoppedBy: null,
   }
 
   for (const [position, prospect] of run.entries()) {
@@ -1080,6 +1141,13 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
           .eq('id', prospect.id)
         if (returned.error) throw new Error(returned.error.message)
         tally.failed += 1
+        // In a catch-up a refusal from the mail server ends the run's sending
+        // there, rather than offering the same mailbox the rest of the backlog.
+        if (backlog) {
+          tally.stoppedBy = String(refused.message ?? refused).slice(0, 300)
+          tally.postponed += run.length - position - 1
+          break
+        }
       }
     } else {
       const now = new Date().toISOString()
@@ -1101,6 +1169,7 @@ async function firstLetters({ db, settings, counts, sending, window, variants, r
       if (moved.error) throw new Error(moved.error.message)
       counts.changed += 1
       tally.sent += 1
+      if (backlog?.firstLetters.has(prospect.id)) tally.caughtUp += 1
     }
 
     if (position + 1 < run.length) await wait(spacing)
@@ -1145,10 +1214,36 @@ async function closeChain(db, prospect) {
  * sends at most FOLLOW_UPS_PER_RUN of them, since they run after its first
  * letters inside the same time.
  */
-async function followUps({ db, settings, counts, variants, endsAt }) {
-  const tally = { followed: 0, closed: 0, deferred: 0 }
-  const due = await dueFollowUps(db, new Date())
+async function followUps({
+  db,
+  settings,
+  counts,
+  variants,
+  endsAt,
+  backlog = null,
+  catchUp = null,
+}) {
+  const tally = { followed: 0, closed: 0, deferred: 0, caughtUp: 0, stoppedBy: null }
+  const now = new Date()
+
+  // In a catch-up the chain is read whole, and the follow-ups the refusals held
+  // back go first, outside FOLLOW_UPS_PER_RUN and spaced the way a run spaces a
+  // backlog of first letters. The day's own follow-ups follow them at the
+  // normal count. A held follow-up's due date was pushed a day on by each
+  // failure, so the read reaches a day past the catch-up's opening to find them.
+  let due
+  let owedBack = new Set()
+  if (backlog) {
+    const reach = Math.max(now.getTime(), Date.parse(catchUp.from) + DAY_MS)
+    const chain = await chainDueBy(db, new Date(reach))
+    const { back, rest } = followUpsFor(chain, backlog, catchUp, now, FOLLOW_UP_LIMIT)
+    owedBack = new Set(back.map(prospect => prospect.id))
+    due = back.concat(rest)
+  } else {
+    due = await dueFollowUps(db, now)
+  }
   if (!due.length) return tally
+  const backGap = spacingFor(owedBack.size)
 
   const held = await suppressed(
     db,
@@ -1166,13 +1261,16 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
   // stepped past rather than counted, so a paused step never spends the slots
   // the businesses behind it were owed.
   let handed = 0
+  let handedOwn = 0
   for (const prospect of due) {
-    if (handed >= FOLLOW_UPS_PER_RUN) break
+    const back = owedBack.has(prospect.id)
+    if (!back && handedOwn >= FOLLOW_UPS_PER_RUN) break
     // The same budget the first letters spent from. Reminders run after them,
     // so this is usually what stops the loop on a busy day rather than the
     // count, and a business left here is still owed: its next_due_at is
     // untouched and the next run reads it at the head of the line.
-    if (Date.now() + FOLLOW_UP_NEEDS_MS > endsAt) break
+    const gap = back ? backGap : SPACING_MAX_MS
+    if (Date.now() + (back ? SEND_TIMEOUT_MS + gap : FOLLOW_UP_NEEDS_MS) > endsAt) break
     // Read off the row rather than trusted from the query, so a read that
     // answered with something else cannot put a business on the chain.
     if (prospect.stage !== 'contacted' || !prospect.next_due_at || !prospect.email) continue
@@ -1216,8 +1314,9 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
       prior: prior ? { subject: prior.subject, sent_at: prior.sent_at } : null,
     })
 
-    if (handed) await wait(SPACING_MAX_MS)
+    if (handed) await wait(gap)
     handed += 1
+    if (!back) handedOwn += 1
 
     let providerId = null
     let refused = null
@@ -1252,6 +1351,12 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
           .eq('id', prospect.id)
         if (later.error) throw new Error(later.error.message)
         tally.deferred += 1
+        // A catch-up stops at the first refusal from the mail server.
+        if (backlog) {
+          counts.changed += 1
+          tally.stoppedBy = String(refused.message ?? refused).slice(0, 300)
+          break
+        }
       }
       counts.changed += 1
       continue
@@ -1269,6 +1374,7 @@ async function followUps({ db, settings, counts, variants, endsAt }) {
     if (moved.error) throw new Error(moved.error.message)
     counts.changed += 1
     tally.followed += 1
+    if (back) tally.caughtUp += 1
   }
 
   return tally
