@@ -233,3 +233,39 @@ function retriedSet(value, token) {
     .filter(Boolean)
     .join(', ')
 }
+
+/**
+ * A picture put back on the screen, asking again at its own address.
+ *
+ * The ladder is spent once and then it is finished, and for most of the
+ * pictures that carry it that is the whole story: the mark, the hero and the
+ * process shots are drawn for as long as the page is, so an element that lost
+ * its last rung is an element whose reader lost the picture and was told so.
+ *
+ * A nav cover is not drawn for as long as the page is. It is drawn when a
+ * pointer crosses its group's trigger, and the sheet keeps the last group it
+ * showed mounted after it closes, so the element outlives the open that spent
+ * its ladder by the whole of the rest of the visit. What that left was a cover
+ * standing blank with a spent `retry` address on it and no budget: the reader
+ * opened that menu again, and again, and nothing was asked for and nothing was
+ * drawn, long after the file had gone back to answering. #731 gave the covers
+ * the ladder and proved a cover recovers from one dropped ask; what it never
+ * reached was the second open of a cover whose ladder had already run out, and
+ * that is the state this answers.
+ *
+ * So an open hands the picture its budget back and puts it back on its own
+ * address, which is a real request at the file rather than a re-ask of a dead
+ * rung. A picture that has drawn is left alone - its address is answering and
+ * the built one may be a stored failure, so moving it back would blank a cover
+ * that is on the screen.
+ *
+ * @param {HTMLImageElement | null | undefined} image - The picture being shown again.
+ * @param {string} address - The address the markup draws it from.
+ */
+export function refreshImage(image, address) {
+  if (!image || !address) return
+  if (image.naturalWidth) return
+  image.setAttribute('data-retry', String(RETRY_ATTEMPTS))
+  if (image.getAttribute('src') === address) return
+  image.src = address
+}

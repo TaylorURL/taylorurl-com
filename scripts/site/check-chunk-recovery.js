@@ -833,6 +833,33 @@ check(
   'the ladder moves src alone; an element choosing between cuts ignores src, so every rung would be a request the browser never makes'
 )
 
+// A ladder is spent once, and for a picture drawn for as long as the page is
+// that is the end of it. A nav cover is drawn when a pointer crosses its
+// group's trigger, and the sheet keeps the last group it showed mounted after
+// it closes, so the element outlives the open that spent its budget. That left
+// a cover standing blank with a spent `retry` address on it and nothing to ask
+// again: the reader opened that menu over and over, no request was made, and
+// the picture stayed gone for the rest of the visit long after the file went
+// back to answering. #731 gave the covers the ladder and proved one recovers
+// from a single dropped ask; #787 was the second open of a cover whose ladder
+// had already run out. So an open hands the budget back and puts the address
+// back to the one the markup draws from, and a picture already on the screen
+// is left alone - its `retry` address is the one answering, and the built one
+// may be the stored failure that started this.
+check(
+  /export function refreshImage/.test(LADDER) && /if \(image\.naturalWidth\) return/.test(LADDER),
+  'the ladder cannot be handed back to a picture that is shown again, so a nav cover that spent its budget once is blank for the rest of the visit'
+)
+const SHEET = readFileSync(path.join(APP, 'components/navigation/NavMenu.jsx'), 'utf8')
+check(
+  /\{\.\.\.retryable\(\)\}/.test(SHEET),
+  'a navigation cover photograph is drawn with no ladder, so one dropped request empties the cover for the rest of the visit'
+)
+check(
+  /refreshImage\(/.test(SHEET) && /nav-cover-photo/.test(SHEET),
+  'an open no longer asks again for a cover it has nothing on the screen for, so a spent ladder is a blank cover every later time that menu is opened'
+)
+
 // The photograph beside a secondary page's headline is the same arrangement one
 // component over. It is one unhashed file under `/images/`, drawn from the
 // shared hero every view but the home page uses, and it was drawn with no

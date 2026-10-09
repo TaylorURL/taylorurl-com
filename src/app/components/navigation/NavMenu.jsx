@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowUpRight, ChevronDown } from 'lucide-react'
 import { NAV_DURATION, NAV_DURATION_SLOW, NAV_EASE } from '@constants/navigation'
-import { retryable } from '@utils/retryImage'
+import { refreshImage, retryable } from '@utils/retryImage'
 
 /**
  * One group's trigger in the bar.
@@ -372,6 +372,21 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
     observer.observe(el)
     return () => observer.disconnect()
   }, [held])
+
+  // The cover the open is about to show, asking again where it has nothing on
+  // the screen. The sheet keeps the last group it showed mounted once it
+  // closes, so a cover whose ladder spent itself is still in the document with
+  // a dead `retry` address on it and no budget left - and every later open
+  // showed that same blank element and asked for nothing. An open is the
+  // reader saying they want the picture, so it is where the budget goes back
+  // and where the address is put back to the one the markup draws from.
+  useEffect(() => {
+    if (!group?.feature?.image) return
+    refreshImage(
+      panelRef.current?.querySelector(`[data-nav-group="${group.key}"] img.nav-cover-photo`),
+      group.feature.image
+    )
+  }, [group, panelRef])
 
   const width = held ? room : 0
   const cover = Math.min(COVER_MAX, Math.max(COVER_MIN, Math.round(width * COVER_SHARE)))
