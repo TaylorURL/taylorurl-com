@@ -767,18 +767,55 @@ check(
 // exactly as `retryImage` drops it on its own last rung; hold that one too and
 // a capture that is really missing is held on every rung and files nothing at
 // all.
-const FRAME = readFileSync(path.join(APP, 'components/mockups/DevicePreview.jsx'), 'utf8')
+const FRAME = readFileSync(path.join(APP, 'components/mockups/captureLadder.js'), 'utf8')
 check(
   /'data-retry':/.test(FRAME),
-  'the capture frame no longer marks the rungs it is still climbing, so a capture fetched on the second ask is filed as a fault the reader met'
+  'the capture ladder no longer marks the rungs it is still climbing, so a capture fetched on the second ask is filed as a fault the reader met'
 )
 check(
   /CAPTURE_ASKS - 1 - attempt/.test(FRAME),
-  "the capture frame counts its remaining asks some other way; the attribute has to be gone before the last ask at this site's own file or a missing capture reports nothing"
+  "the capture ladder counts its remaining asks some other way; the attribute has to be gone before the last ask at this site's own file or a missing capture reports nothing"
 )
 check(
   /left > 0 \? \{ 'data-retry'/.test(FRAME),
-  'the capture frame carries data-retry on a rung with nothing after it, so a capture that has genuinely gone missing is held rather than filed'
+  'the capture ladder carries data-retry on a rung with nothing after it, so a capture that has genuinely gone missing is held rather than filed'
+)
+
+// And that both frames climb it. There are two places a client capture is
+// drawn - the device frames and the flat card frames - and for a long time they
+// were two answers to one question: the device frames climbed a ladder and
+// marked their rungs, and the card asked once, fell straight through to the
+// screenshot service and marked nothing. So the fix above reached half the
+// captures on the site, and the industry, area and case study pages went on
+// filing a report from every rung of a capture that was present and answering.
+// #842, #843 and #844 were three of those from one page view.
+//
+// A frame that imports the ladder cannot drift; one that writes its own can,
+// which is why this is checked rather than left to whoever edits next.
+for (const frame of [
+  'components/mockups/DevicePreview.jsx',
+  'components/mockups/PortfolioPreview.jsx',
+]) {
+  const source = readFileSync(path.join(APP, frame), 'utf8')
+  check(
+    /useCaptureLadder/.test(source),
+    `${frame} draws a capture without the shared ladder, so one dropped request is a fault filed against a file that is answering and a hole in the page the reader keeps`
+  )
+  check(
+    !/portfolioScreenshotServiceUrl/.test(source),
+    `${frame} reaches for the screenshot service itself, which is the end of a ladder it is no longer climbing`
+  )
+}
+
+// The end of the ladder is something drawn. The card frame had nothing past the
+// screenshot service: a frame that spent every rung and then met a service that
+// did not answer left the reader the browser's broken-image mark over a hole in
+// the middle of the proof, for the life of the page. A third party being slow
+// is not a reason to leave one.
+const CARD = readFileSync(path.join(APP, 'components/mockups/PortfolioPreview.jsx'), 'utf8')
+check(
+  /CapturePlate/.test(CARD) && /if \(!source\) return/.test(CARD),
+  'the card frame draws nothing once its ladder is spent, so a capture no address can answer for is a permanent hole in the page rather than a frame that stands on its own'
 )
 
 // Marking the rungs is half of it. The other half is how long the frame waits
