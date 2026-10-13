@@ -305,7 +305,7 @@ export function reviewCard(item) {
 }
 
 /**
- * `proof`: the morning's PageSpeed readings for the client sites the studio
+ * `proof`: the day's PageSpeed readings for the client sites the studio
  * keeps, each site by trade and town, with the average of both strategies.
  *
  * The table is the card. A reader is shown every reading the average was taken
