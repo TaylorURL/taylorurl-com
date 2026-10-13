@@ -38,7 +38,8 @@
  *
  * The answer is JSON on stdout. The last line on stderr is one sentence, and the
  * exit code says whether a person has to act on it: 0 when the run did its job
- * or had none to do, 1 when something needs looking at.
+ * or had none to do, 1 when something needs looking at. A listing whose reviews
+ * come back without their words is a 0: the API's limit, not the run's fault.
  */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
@@ -64,6 +65,7 @@ import {
   reviewCardItem,
   reviewPath,
   reviewTexts,
+  textUnavailable,
 } from '../../lib/social/reviews.js'
 import { altGuard, faults } from './media-guard.js'
 import { loadTrades } from './media-content.js'
@@ -296,26 +298,27 @@ async function review(now) {
   }
 
   // Google answers a listing's rating count whatever it does with the reviews
-  // behind it. A listing with ratings and no reviews returned is a listing this
-  // run could not read, and "nothing new" said over it would be untrue.
-  const unread = listing.count > 0 && !listing.reviews.length
+  // behind it, and some keys are never handed the reviews at all. That is said
+  // in the log as what it is, not as "nothing new", and the run ends clean: it
+  // is a limit nobody here can lift, and the same read cards the first review
+  // the day the words come back.
+  const unavailable = textUnavailable(listing)
   const summary = {
     command: 'review',
     dryRun,
     listing: { rating: listing.rating, ratings: listing.count, returned: listing.reviews.length },
+    reviewText: unavailable ? 'unavailable' : 'returned',
     skipped,
     alreadyCarded: done.length,
   }
 
   if (!card) {
     console.log(JSON.stringify({ ...summary, card: null }, null, 2))
-    if (unread) {
-      say(
-        `the Google listing carries ${listing.count} ratings and the Places API returned none of the reviews, so no review could be read`
-      )
-      return 1
-    }
-    say('no review is waiting to be carded')
+    say(
+      unavailable
+        ? `review text is unavailable from the Places API (the listing shows ${listing.count} ratings and none came back with words), so there is nothing to card`
+        : 'no review is waiting to be carded'
+    )
     return 0
   }
 
