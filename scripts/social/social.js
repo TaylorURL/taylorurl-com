@@ -479,9 +479,14 @@ async function main() {
     // A caption that names no address gets the card's own, tagged for the
     // channel it is going out on. A caption that already carries a link is
     // left alone: whoever wrote it was pointing somewhere on purpose, and a
-    // second address under the first is two things to tap.
+    // second address under the first is two things to tap. Instagram gets
+    // none either way, because it renders an address in a caption as plain
+    // text: the tagged link ends the post as a line nobody can tap and few
+    // would retype.
     const carried =
-      wanted && !/https?:\/\//.test(text) ? `${text}\n\n${landingFor(card(wanted), service)}` : text
+      wanted && service !== 'instagram' && !/https?:\/\//.test(text)
+        ? `${text}\n\n${landingFor(card(wanted), service)}`
+        : text
 
     console.log(
       JSON.stringify(await post(key, { text: carried, at, draft, assets, service }), null, 2)
