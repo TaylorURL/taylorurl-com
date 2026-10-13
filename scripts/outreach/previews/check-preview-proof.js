@@ -181,7 +181,7 @@ check('Google joins only once it holds more reviews than Trustpilot', () => {
   const ahead = proofLine({ ...LIVE, google: { rating: 4.9, reviewCount: 12 } }, FIRST)
   same(
     sentence(ahead),
-    'P.S. If you want to look me up first, TaylorURL is BBB accredited, rated 4.9 out of 5 from 12 reviews on Google and 4.3 from 7 on Trustpilot.',
+    'P.S. If you want to look me up first, TaylorURL is BBB accredited, rated 4.9 out of 5 from 12 reviews on Google and 4.3 from 7 reviews on Trustpilot.',
     'the line with Google ahead'
   )
   same(links(ahead).length, 2, 'links with Google ahead, which is said without one')

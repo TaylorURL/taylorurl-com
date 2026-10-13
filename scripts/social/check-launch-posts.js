@@ -83,7 +83,7 @@ check('the brief asks the question once, optional, with Yes and No and nothing e
   same(field.options.map(option => option.name).join(), 'Yes,No', 'how they read')
   same(
     field.help,
-    'Can we show your new site on our pages when it goes live?',
+    'Can we post your new site and your business name on our social pages when it goes live?',
     'the question as asked'
   )
 })

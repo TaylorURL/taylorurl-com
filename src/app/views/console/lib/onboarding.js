@@ -575,8 +575,8 @@ export const STEPS = [
       {
         key: 'contacts.showcase',
         kind: 'choice',
-        label: 'Your Site on Our Pages',
-        help: 'Can we show your new site on our pages when it goes live?',
+        label: 'Your Site on Our Social Pages',
+        help: 'Can we post your new site and your business name on our social pages when it goes live?',
         // Optional, so it carries no weight in the percent and holds nothing
         // up. Consent asked as a condition of finishing the form is not
         // consent, and a client who skips it has said no.
