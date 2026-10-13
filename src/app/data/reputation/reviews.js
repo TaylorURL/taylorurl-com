@@ -1,6 +1,7 @@
 import { PORTFOLIO_PROJECTS } from '../portfolio.js'
 import { BBB_EVALUATE_URL, BBB_PROFILE_URL, bbbAccredited } from './bbb.js'
 import { FACEBOOK_PAGE_URL } from './facebook.js'
+import { GOOGLE_EVALUATE_URL, GOOGLE_PROFILE_URL } from './google.js'
 import { REVIEW_MARKS } from './review-marks.js'
 import { TRUSTPILOT_EVALUATE_URL, TRUSTPILOT_PROFILE_URL } from './trustpilot.js'
 
@@ -30,23 +31,6 @@ const FACEBOOK_REVIEWS_URL = `${FACEBOOK_PAGE_URL}&sk=reviews`
  */
 const YELP_BUSINESS = 'taylor-url-houston'
 const YELP_PROFILE_URL = `https://www.yelp.com/biz/${YELP_BUSINESS}`
-
-/**
- * The Google listing, and the box a review is written in.
- *
- * The short link is the one the Business Profile manager issues, so it names
- * the listing by its own id. What it replaces was a listing search, and a
- * search resolves to whatever Google decides is closest: the same query run
- * from a signed-out browser returned a warehouse a few miles up the road
- * trading under a similar name, carrying a review button of its own. A link
- * that lands on the wrong listing does not fail where anybody can see it. It
- * takes the review with it.
- *
- * The two addresses are one address with `/review` on the end, which opens the
- * write box rather than the profile it sits behind.
- */
-const GOOGLE_PROFILE_URL = 'https://g.page/r/CTlYcg1CXgG7EAI'
-const GOOGLE_EVALUATE_URL = `${GOOGLE_PROFILE_URL}/review`
 
 /**
  * Every place this business is reviewed, held once.

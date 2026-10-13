@@ -39,6 +39,12 @@
  * through a run stops the run there with the same answer. A preview the
  * mailbox turned away keeps no draft and no failed row, so the routine asks
  * for it again once the mailbox opens; see lib/outreach/sending/mailbox.js.
+ *
+ * Every letter is drafted with the reviews postscript lib/outreach/proof.js
+ * writes, from a reading of Trustpilot and the Google listing taken here
+ * (GOOGLE_PLACES_API_KEY) and kept for an hour, so a run sending thirty letters
+ * reads each network once. A network that does not answer costs the line its
+ * figure, never the letter.
  */
 
 import { randomUUID } from 'node:crypto'
@@ -67,6 +73,7 @@ import {
   previewLetter,
   previewUrl,
 } from '../../lib/outreach/previews.js'
+import { proofNow } from '../../lib/outreach/proof.js'
 import { deliver, sender, unsubscribeUrl } from './send.js'
 
 export const config = { maxDuration: 300 }
@@ -126,13 +133,15 @@ async function sendOne(
   const track = randomUUID()
   const unsubscribe =
     !personal && prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
+  const proof = await proofNow()
   const letter = personal
-    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, { track, prior: thread })
+    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, { track, prior: thread, proof })
     : previewLetter({ ...site, email: prospect.email, rating_count: prospect.rating_count }, kind, {
         track,
         unsubscribe,
         prior: thread,
         nth,
+        proof,
       })
   const { data: message, error } = await db
     .from('outreach_messages')
