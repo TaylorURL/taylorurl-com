@@ -9,8 +9,8 @@
  *
  * Run on the Pi from `~/work/taylorurl-com` by `social-cards-run.sh`, which the
  * intelligence repository carries: the review card every morning ahead of the
- * daily social routine, and the proof card on weekday afternoons, after the
- * daily maintenance routine has taken the morning's readings. Running from the
+ * daily social routine, and the proof card at midday on weekdays, when every
+ * reading `site_speed` holds was taken that morning. Running from the
  * checkout of `develop` is deliberate: a change to what a card says reaches the
  * next run without waiting on a release of the site, because nothing here is
  * served by it.
@@ -422,7 +422,7 @@ async function proof(now) {
     if (detail.count < MIN_SITES) {
       console.log(JSON.stringify({ ...summary, proof: detail }, null, 2))
       say(
-        `only ${detail.count} client sites carry a phone and a desktop reading from ${due.date}, under the ${MIN_SITES} a proof card is drawn over, so the daily maintenance readings have not landed`
+        `only ${detail.count} client sites carry a phone and a desktop reading from ${due.date}, under the ${MIN_SITES} a proof card is drawn over, so the day's readings have not landed`
       )
       return 1
     }
