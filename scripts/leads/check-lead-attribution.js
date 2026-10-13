@@ -51,6 +51,8 @@ import {
   textBody,
 } from '../../api/contact.js'
 import { QUESTIONS, questionsFor } from '../../lib/enquiry/questions.js'
+import { referrerHost } from '../../lib/leads/record.js'
+import { arrivalFrom, keepLead } from '../../lib/leads/spine.js'
 import { escapeHtml } from '../../lib/mail/escape.js'
 import { campaignUrl } from '../../lib/mail/emailTemplate.js'
 import { SITE } from '../../lib/site/current.js'
@@ -886,6 +888,102 @@ check('an empty address claims nothing', () => {
   const seen = new Set()
   same(claimLead('start', '', { store: held, here: seen }), false, 'blank')
   same(claimLead('start', '   ', { store: held, here: seen }), false, 'spaces')
+})
+
+// -- What the lead keeps --------------------------------------------------------
+
+// A link off one of the studio's own posts, tagged the way the social plan tags
+// every one of them.
+const POST = { utm_source: 'fb', utm_medium: 'social', utm_campaign: 'speed-check-week-42' }
+
+/** A client that answers the lead function and keeps what it was asked. */
+function leadDb() {
+  const calls = []
+  const db = {
+    async rpc(name, args) {
+      calls.push({ name, args })
+      return { data: { ok: true, lead_id: 'lead-1', fresh: true }, error: null }
+    },
+  }
+  return { db, calls }
+}
+
+check('a referrer is kept as its host and nothing after it', () => {
+  // The path of somebody else's page can carry what a person searched for, and
+  // the site's name already says where the arrival came from.
+  same(
+    referrerHost('https://m.facebook.com/story.php?story_fbid=1&id=2'),
+    'm.facebook.com',
+    'a post'
+  )
+  same(referrerHost(REFERRER), 'syndicatedsearch.goog', 'a search partner')
+  same(
+    referrerHost('HTTPS://WWW.Google.COM./search?q=roofer'),
+    'www.google.com',
+    'cased and dotted'
+  )
+  same(referrerHost('l.facebook.com'), 'l.facebook.com', 'a host already reduced')
+  same(referrerHost('javascript:alert(1)'), null, 'a script')
+  same(referrerHost('ftp://files.example.com/'), null, 'not a page')
+  same(referrerHost('Call 555-0142 about your domain'), null, 'a sentence')
+  same(referrerHost('localhost'), null, 'no real host')
+  same(referrerHost(''), null, 'nothing')
+  same(referrerHost(undefined), null, 'not a string')
+})
+
+check('a tagged arrival files its tags and no referrer', () => {
+  // The tags name the post, which is the stronger answer, so the page the link
+  // was tapped on is not filed beside them.
+  const arrival = arrivalFrom({ campaign: POST, referrer: 'https://m.facebook.com/' })
+  same(JSON.stringify(arrival.campaign), JSON.stringify(POST), 'campaign')
+  same(arrival.referrer, null, 'referrer')
+})
+
+check('an untagged arrival files the host it came in from', () => {
+  const arrival = arrivalFrom({ campaign: null, referrer: 'https://l.facebook.com/l.php?u=x' })
+  same(arrival.campaign, null, 'campaign')
+  same(arrival.referrer, 'l.facebook.com', 'referrer')
+  // A held campaign that is all blanks is no campaign, so the referrer stands.
+  const blank = arrivalFrom({ campaign: { utm_source: '', utm_medium: '' }, referrer: REFERRER })
+  same(blank.campaign, null, 'blank tags')
+  same(blank.referrer, 'syndicatedsearch.goog', 'referrer beside blank tags')
+  same(JSON.stringify(arrivalFrom()), '{"campaign":null,"referrer":null}', 'a visit typed in')
+})
+
+check('a lead off a post is filed with the post', async () => {
+  const { db, calls } = leadDb()
+  const kept = await keepLead(
+    { source: 'speed-check', email: 'owner@example.com', campaign: POST, referrer: REFERRER },
+    db
+  )
+  same(kept.id, 'lead-1', 'the lead')
+  same(calls[0].name, 'lead_record', 'function')
+  same(calls[0].args.p_source, 'speed-check', 'the door is what they did')
+  same(calls[0].args.p_campaign.utm_source, 'fb', 'source')
+  same(calls[0].args.p_campaign.utm_campaign, 'speed-check-week-42', 'campaign')
+  same(calls[0].args.p_referrer, null, 'referrer')
+})
+
+check('an untagged lead is filed with the host it came in from', async () => {
+  const { db, calls } = leadDb()
+  await keepLead({ source: 'tools', email: 'owner@example.com', referrer: REFERRER }, db)
+  same(calls[0].args.p_campaign, null, 'campaign')
+  same(calls[0].args.p_referrer, 'syndicatedsearch.goog', 'referrer')
+})
+
+check('the enquiry door hands the lead the page the visit came in from', () => {
+  // The tools post through this door, so the Google Presence Check's enquiry
+  // files its arrival the same way the speed check files its own.
+  const text = readFileSync(join(ROOT, 'api/contact.js'), 'utf8')
+  const call = text.slice(text.indexOf('const lead = await keepLead({'))
+  same(call.slice(0, call.indexOf('})')).includes('referrer: enquiry.referrer'), true, 'referrer')
+})
+
+check('the console names an untagged lead by the site it came in from', () => {
+  const admin = readFileSync(join(ROOT, 'api/leads-admin.js'), 'utf8')
+  same(admin.includes("'referrer',"), true, 'the console reads the column')
+  const page = readFileSync(join(ROOT, 'src/app/views/console/pages/studio/LeadsPage.jsx'), 'utf8')
+  same(page.includes('return lead.referrer || null'), true, 'and draws it where there are no tags')
 })
 
 await finish()

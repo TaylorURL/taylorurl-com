@@ -173,12 +173,18 @@ function briefRows(lead) {
   return Array.isArray(lead.brief) ? lead.brief.filter(row => row?.label && row?.value) : []
 }
 
-/** The campaign tags, as a line, or nothing where the visit carried none. */
+/**
+ * The campaign tags, as a line, or the site the visit came in from where it
+ * carried none, or nothing where neither was known.
+ */
 function arrival(lead) {
   const tags = lead.campaign
-  if (!tags || typeof tags !== 'object') return null
-  const parts = [tags.utm_source, tags.utm_medium, tags.utm_campaign].filter(Boolean)
-  return parts.length ? parts.join(' / ') : null
+  const parts =
+    tags && typeof tags === 'object'
+      ? [tags.utm_source, tags.utm_medium, tags.utm_campaign].filter(Boolean)
+      : []
+  if (parts.length) return parts.join(' / ')
+  return lead.referrer || null
 }
 
 /** What the search box runs over: everything a lead is known by. */
