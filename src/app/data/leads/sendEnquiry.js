@@ -1,5 +1,5 @@
 import { faultFromResponse } from '../../utils/faults.js'
-import { campaignHeld } from './campaign.js'
+import { campaignHeld, referrerNow } from './campaign.js'
 import { claimLead, recordLead } from './conversion.js'
 
 const ENDPOINT = '/api/contact'
@@ -9,32 +9,6 @@ const FALLBACK_ERROR = "Couldn't send your message just now. Please try again."
 function pathNow() {
   try {
     return typeof location === 'undefined' ? '' : location.pathname
-  } catch {
-    return ''
-  }
-}
-
-/**
- * Where the visit came in from, where the browser names somewhere off this
- * site.
- *
- * Only a tagged link says which campaign brought somebody in, and most
- * arrivals carry no tags at all, so every one of them was reported as having
- * come from nowhere. The referrer is what the browser knows instead: a search
- * partner, a directory, a link on somebody else's page.
- *
- * It survives the whole visit rather than the first page of it, because the
- * router moves between pages without loading a document and the referrer
- * belongs to the document. A referrer naming this site is one page of a visit
- * pointing at the next, which says nothing about where the visit came from, so
- * it is dropped and the inquiry reads as direct.
- */
-function referrerNow() {
-  try {
-    if (typeof document === 'undefined' || !document.referrer) return ''
-    const from = new URL(document.referrer)
-    if (typeof location !== 'undefined' && from.host === location.host) return ''
-    return from.href
   } catch {
     return ''
   }

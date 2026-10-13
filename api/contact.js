@@ -19,9 +19,10 @@
  * enquiry, and cannot answer who sent it.
  *
  * An untagged arrival still came from somewhere, and the referrer is the only
- * thing that says where. It rides as far as the notice and no further: the
- * table answers which message produced an enquiry, and a page a visit came in
- * from is a fact about the person rather than about the campaign.
+ * thing that says where. It reaches the notice and the person's own lead, where
+ * its host is kept beside the campaign, and it stays out of the attribution
+ * table: that table answers which message produced an enquiry, and a page a
+ * visit came in from is a fact about the person rather than about the campaign.
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
@@ -375,6 +376,7 @@ export default async function handler(request, response) {
     trade: enquiry.projectType,
     note: enquiry.message,
     campaign: enquiry.campaign,
+    referrer: enquiry.referrer,
     path: enquiry.path,
   })
 

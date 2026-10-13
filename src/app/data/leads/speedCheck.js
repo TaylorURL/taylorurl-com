@@ -1,4 +1,5 @@
 import { faultFromResponse, faultMessage } from '@utils/faults'
+import { campaignHeld, referrerNow } from './campaign.js'
 
 const ENDPOINT = '/api/speed-check'
 
@@ -35,6 +36,10 @@ export function stageIndex(id) {
  * stages and nothing else. The reading is read out of the same last line either
  * way, so the wait degrades and the answer does not.
  *
+ * The campaign this browser is holding and the page the visit came in from go
+ * with the address, the same pair the enquiry forms send, so a reading taken
+ * off a post is filed against the post. Neither is anything the visitor typed.
+ *
  * @param {{site: string, email: string}} asked What the visitor typed.
  * @param {{onStage?: (id: string) => void, signal?: AbortSignal}} [options]
  * @returns {Promise<object>} The reading.
@@ -43,7 +48,12 @@ export async function runSpeedCheck({ site, email }, { onStage, signal } = {}) {
   const response = await fetch(ENDPOINT, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ site: site.trim(), email: email.trim() }),
+    body: JSON.stringify({
+      site: site.trim(),
+      email: email.trim(),
+      campaign: campaignHeld(),
+      referrer: referrerNow(),
+    }),
     signal,
   })
 

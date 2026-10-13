@@ -156,3 +156,34 @@ export function campaignHeld({ now = Date.now(), store = browserStore('localStor
   for (const field of HELD_FIELDS) found[field] = tag(held[field])
   return credited(found) ? found : null
 }
+
+/**
+ * Where the visit came in from, where the browser names somewhere off this
+ * site.
+ *
+ * Held here beside the campaign because every form that files an arrival asks
+ * both questions, and asks them of the same visit: the enquiry forms and the
+ * speed check send the two together, and the server keeps the referrer only
+ * where the campaign is empty.
+ *
+ * Only a tagged link says which campaign brought somebody in, and most
+ * arrivals carry no tags at all, so every one of them was reported as having
+ * come from nowhere. The referrer is what the browser knows instead: a search
+ * partner, a directory, a link on somebody else's page.
+ *
+ * It survives the whole visit rather than the first page of it, because the
+ * router moves between pages without loading a document and the referrer
+ * belongs to the document. A referrer naming this site is one page of a visit
+ * pointing at the next, which says nothing about where the visit came from, so
+ * it is dropped and the arrival reads as direct.
+ */
+export function referrerNow() {
+  try {
+    if (typeof document === 'undefined' || !document.referrer) return ''
+    const from = new URL(document.referrer)
+    if (typeof location !== 'undefined' && from.host === location.host) return ''
+    return from.href
+  } catch {
+    return ''
+  }
+}
