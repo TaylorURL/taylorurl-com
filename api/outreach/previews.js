@@ -32,6 +32,13 @@
  *
  * Both letters ride the cold letter's switches: nothing reaches the transport
  * unless `sending_enabled` and OUTREACH_SEND_ARMED are both on.
+ *
+ * They ride the cold letter's mailbox too. While Gmail has it resting, or it
+ * has carried its day's worth across every sender, a request is answered 503
+ * with the reason and nothing is drafted, and a refusal of the mailbox partway
+ * through a run stops the run there with the same answer. A preview the
+ * mailbox turned away keeps no draft and no failed row, so the routine asks
+ * for it again once the mailbox opens; see lib/outreach/sending/mailbox.js.
  */
 
 import { randomUUID } from 'node:crypto'
@@ -40,6 +47,12 @@ import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
 import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
 import { Undeliverable } from '../../lib/outreach/prospects/address.js'
+import {
+  MailboxClosed,
+  assertMailboxOpen,
+  mailboxStopOf,
+  readMailbox,
+} from '../../lib/outreach/sending/mailbox.js'
 import {
   FOLLOW_UP_COUNT,
   LETTERS_BEFORE_PREVIEW,
@@ -106,6 +119,9 @@ async function sendOne(
   nth = 0,
   personal = false
 ) {
+  // The mailbox is asked before the draft is written, so a letter it would
+  // turn away leaves nothing behind.
+  await assertMailboxOpen(db)
   const from = personal ? { ...sender(settings), name: PREVIEW_FIRST_SENDER } : sender(settings)
   const track = randomUUID()
   const unsubscribe =
@@ -141,6 +157,14 @@ async function sendOne(
       inReplyTo: thread?.provider_id ?? null,
     })
   } catch (cause) {
+    // A letter the mailbox turned away never reached the mail server, so its
+    // draft is taken back rather than filed as a refusal. Left at 'drafted', a
+    // preview letter for a business never written to would read to the cold
+    // queue as that business's own reviewed draft.
+    if (cause instanceof MailboxClosed) {
+      await db.from('outreach_messages').delete().eq('id', message.id).eq('status', 'drafted')
+      throw cause
+    }
     await db
       .from('outreach_messages')
       .update({ status: 'failed', error: String(cause?.message || cause).slice(0, 500) })
@@ -349,60 +373,107 @@ async function followUps(db, settings, counts) {
   if (error) throw new Error(error.message)
 
   const done = []
-  for (const site of due ?? []) {
-    counts.examined += 1
-    const prospect = await prospectOf(db, site.prospect_id)
-    const bar = await barred(db, prospect)
-    if (bar) {
-      // Closed rather than left due, so the row stops being offered and the
-      // console says the follow-up is not coming.
-      await db.from('preview_sites').update({ follow_up_due_at: null }).eq('id', site.id)
-      done.push(`${site.slug} closed: ${bar}`)
-      continue
+  try {
+    for (const site of due ?? []) {
+      counts.examined += 1
+      const prospect = await prospectOf(db, site.prospect_id)
+      const bar = await barred(db, prospect)
+      if (bar) {
+        // Closed rather than left due, so the row stops being offered and the
+        // console says the follow-up is not coming.
+        await db.from('preview_sites').update({ follow_up_due_at: null }).eq('id', site.id)
+        done.push(`${site.slug} closed: ${bar}`)
+        continue
+      }
+      if (site.expires_at && isPreviewFirst(site)) {
+        done.push(await personalFollowUp(db, settings, site, prospect, counts))
+        continue
+      }
+      const nth = site.follow_ups ?? 0
+      const before = await lettersSent(db, prospect.id)
+      if (before >= LETTERS_IN_ALL || nth >= FOLLOW_UP_COUNT) {
+        await finish(db, site, prospect)
+        done.push(`${site.slug} finished after ${before} letters`)
+        continue
+      }
+      const { data: first, error: read } = await db
+        .from('outreach_messages')
+        .select('subject, provider_id')
+        .eq('id', site.message_id)
+        .maybeSingle()
+      if (read) throw new Error(read.message)
+      // The letter that makes ten is the last one, so it is the closing note
+      // whichever follow-up it would otherwise have been.
+      const last = before + 1 >= LETTERS_IN_ALL || nth + 1 >= FOLLOW_UP_COUNT
+      const which = last ? FOLLOW_UP_COUNT - 1 : nth
+      const sent = await sendOne(db, settings, site, prospect, 'follow_up', first, which)
+      const filed = await db
+        .from('preview_sites')
+        .update({
+          follow_up_message_id: sent.id,
+          follow_up_sent_at: sent.at,
+          follow_ups: nth + 1,
+          follow_up_due_at: last
+            ? null
+            : new Date(Date.parse(sent.at) + PREVIEW_FOLLOW_UP_DAYS * DAY_MS).toISOString(),
+        })
+        .eq('id', site.id)
+      if (filed.error) throw new Error(filed.error.message)
+      counts.changed += 1
+      if (last) {
+        await finish(db, site, prospect)
+        done.push(`${site.slug} sent its last letter`)
+      } else {
+        done.push(`${site.slug} sent follow-up ${nth + 1}`)
+      }
     }
-    if (site.expires_at && isPreviewFirst(site)) {
-      done.push(await personalFollowUp(db, settings, site, prospect, counts))
-      continue
-    }
-    const nth = site.follow_ups ?? 0
-    const before = await lettersSent(db, prospect.id)
-    if (before >= LETTERS_IN_ALL || nth >= FOLLOW_UP_COUNT) {
-      await finish(db, site, prospect)
-      done.push(`${site.slug} finished after ${before} letters`)
-      continue
-    }
-    const { data: first, error: read } = await db
-      .from('outreach_messages')
-      .select('subject, provider_id')
-      .eq('id', site.message_id)
-      .maybeSingle()
-    if (read) throw new Error(read.message)
-    // The letter that makes ten is the last one, so it is the closing note
-    // whichever follow-up it would otherwise have been.
-    const last = before + 1 >= LETTERS_IN_ALL || nth + 1 >= FOLLOW_UP_COUNT
-    const which = last ? FOLLOW_UP_COUNT - 1 : nth
-    const sent = await sendOne(db, settings, site, prospect, 'follow_up', first, which)
-    const filed = await db
-      .from('preview_sites')
-      .update({
-        follow_up_message_id: sent.id,
-        follow_up_sent_at: sent.at,
-        follow_ups: nth + 1,
-        follow_up_due_at: last
-          ? null
-          : new Date(Date.parse(sent.at) + PREVIEW_FOLLOW_UP_DAYS * DAY_MS).toISOString(),
-      })
-      .eq('id', site.id)
-    if (filed.error) throw new Error(filed.error.message)
-    counts.changed += 1
-    if (last) {
-      await finish(db, site, prospect)
-      done.push(`${site.slug} sent its last letter`)
-    } else {
-      done.push(`${site.slug} sent follow-up ${nth + 1}`)
-    }
+  } catch (cause) {
+    // The mailbox turned a letter away, or Gmail refused it. Every letter
+    // behind this one would meet the same, so the run stops here and the
+    // rest stay due for the run after the mailbox opens.
+    const stop = mailboxStopOf(cause)
+    if (!stop) throw cause
+    return { ...resting(stop), note: [...done, `stopped: ${stop}`].join('; ') }
   }
   return { note: done.length ? done.join('; ') : 'no preview follow-up is due' }
+}
+
+/**
+ * The answer to a run the mailbox stopped: a 503, since the letters are not
+ * refused but put off, with the reason in words. The routine reads the status
+ * and asks again later rather than filing the preview as broken.
+ */
+const resting = reason => ({ status: 503, skipped: reason })
+
+/**
+ * One run of the job, for the request that started it: the first letter of the
+ * preview a POST names, or every follow-up that has come due.
+ */
+export async function work({ db, settings, counts, request }) {
+  if (!settings.sending_enabled || !ARMED) {
+    return { note: 'sending is switched off, so this run sent no preview letter' }
+  }
+  // The mailbox, asked before anything is read for the run. A request it
+  // cannot carry now is answered as one to make again, not as a failure.
+  const mailbox = await readMailbox(db, new Date(), settings)
+  if (!mailbox.open) {
+    const reason = `the mailbox is closed: ${mailbox.reason}`
+    return { ...resting(reason), note: `No preview letter was sent: ${reason}` }
+  }
+  if (request.method === 'POST') {
+    const slug = String(request.body?.slug ?? '')
+      .trim()
+      .toLowerCase()
+    if (!/^[a-z0-9-]{2,63}$/.test(slug)) return { error: 'name a preview by its slug' }
+    try {
+      return await sendFirst(db, settings, slug, counts)
+    } catch (cause) {
+      const stop = mailboxStopOf(cause)
+      if (!stop) throw cause
+      return { ...resting(stop), note: `${slug} was not sent: ${stop}` }
+    }
+  }
+  return followUps(db, settings, counts)
 }
 
 export default async function handler(request, response) {
@@ -411,18 +482,6 @@ export default async function handler(request, response) {
     request,
     response,
     job: 'previews',
-    work: async ({ db, settings, counts }) => {
-      if (!settings.sending_enabled || !ARMED) {
-        return { note: 'sending is switched off, so this run sent no preview letter' }
-      }
-      if (request.method === 'POST') {
-        const slug = String(request.body?.slug ?? '')
-          .trim()
-          .toLowerCase()
-        if (!/^[a-z0-9-]{2,63}$/.test(slug)) return { error: 'name a preview by its slug' }
-        return sendFirst(db, settings, slug, counts)
-      }
-      return followUps(db, settings, counts)
-    },
+    work: context => work({ ...context, request }),
   })
 }
