@@ -359,8 +359,42 @@ const sendPlan = extra => ({
   ],
   'select:outreach_prospects': { data: [SENDABLE], error: null },
   'select:suppression': { data: [], error: null },
+  'select:preview_sites': { data: [{ prospect_id: SENDABLE.id, expires_at: null }], error: null },
   'update:outreach_prospects': { error: null },
   ...extra,
+})
+
+check('no first letter goes to a business whose preview is not up', async () => {
+  TRANSPORT.clear()
+  const { db, asked } = stubDb(sendPlan({ 'select:preview_sites': { data: [], error: null } }))
+
+  const answer = await atMidAfternoon(() =>
+    sendWork({ db, settings: SETTINGS, counts: { examined: 0, changed: 0 } })
+  )
+
+  same(TRANSPORT.sent.length, 0, 'messages handed to the transport')
+  same(answer.queue, 0, 'businesses in the queue')
+  ok(!asked.includes('insert:outreach_messages'), 'a letter was drafted for it')
+  ok(!asked.includes('update:outreach_messages'), 'a draft it held was sent')
+})
+
+check('a preview that has come down starts no chain', async () => {
+  TRANSPORT.clear()
+  const { db } = stubDb(
+    sendPlan({
+      'select:preview_sites': {
+        data: [{ prospect_id: SENDABLE.id, expires_at: '2026-08-01T00:00:00.000Z' }],
+        error: null,
+      },
+    })
+  )
+
+  const answer = await atMidAfternoon(() =>
+    sendWork({ db, settings: SETTINGS, counts: { examined: 0, changed: 0 } })
+  )
+
+  same(TRANSPORT.sent.length, 0, 'messages handed to the transport')
+  same(answer.queue, 0, 'businesses in the queue')
 })
 
 check('a delivered message puts nobody on the mailing list', async () => {

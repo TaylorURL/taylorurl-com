@@ -22,6 +22,10 @@
  * measure all read the same letter, and lib/outreach/sending/queue.js takes every one
  * of them that carries an address.
  *
+ * The one thing asked of a business before it is written to is not in the
+ * letter: its preview. No chain starts until a site built in the business's own
+ * brand is up on its own subdomain, and `previewedOf` in that file is the test.
+ *
  * Ordering is still by audit score, worst first, because a business with a
  * slow site is the likeliest of them to want a new one even though the letter
  * does not say so. A business with no site of its own goes ahead of all of
@@ -123,6 +127,7 @@ import {
   firstMessages,
   followUpColumns,
   homeStage,
+  previewedOf,
   queueFor,
   sendWindow,
   sentToday,
@@ -914,7 +919,8 @@ async function firstLetters({
   //
   // While outreach opens on the preview letter instead, the introduction is
   // off: the day's own first letters stop here and the cap is the preview
-  // letters' to spend, while a catch-up's held letters still go.
+  // letters' to spend. A catch-up's held letters are not stopped by the switch,
+  // but they answer to the preview the queue below asks of every first letter.
   const cap = settings.intro_letters_enabled === false ? 0 : settings.daily_cap
   const already = await sentToday(db, { firstOnly: ready, except: heldBack?.prospects })
   const due = dueBy(cap, new Date())
@@ -966,8 +972,17 @@ async function firstLetters({
     repaired += 1
   }
 
+  // No chain starts without its preview. A business is written to only once a
+  // site built in its own brand is up on its own subdomain, whatever the switch
+  // above says and whatever a catch-up holds back, so no business is introduced
+  // before there is a site to show it. The repair above has already run over every row, since a stranded claim is put
+  // right whether or not its business has a preview.
+  const previewed = await previewedOf(
+    db,
+    rows.map(row => row.id)
+  )
   const queue = queueFor({
-    candidates: rows,
+    candidates: rows.filter(row => previewed.has(row.id)),
     held: suppressedHere,
     written: alreadyWritten,
     messages,
