@@ -54,7 +54,13 @@ const fails = code => async () => {
   throw Object.assign(new Error(`query failed: ${code}`), { code })
 }
 
-/** A stand-in for the domain cache, recording what was read and written. */
+/**
+ * A stand-in for the domain cache, recording what was read and written.
+ *
+ * `deliver` also asks the mailbox before the transport, so the settings row is
+ * answered too, as a mailbox with no rest and no cap: these cases are about the
+ * address, and lib/outreach/sending/mailbox.js has checks of its own.
+ */
 function cache(rows = []) {
   const held = new Map(rows.map(row => [row.domain, row]))
   const wrote = []
@@ -63,6 +69,13 @@ function cache(rows = []) {
     wrote,
     db: {
       from: table => {
+        if (table === 'outreach_settings') {
+          return {
+            select: () => ({
+              eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }),
+            }),
+          }
+        }
         if (table !== 'outreach_domains') throw new Error(`unexpected table ${table}`)
         return {
           select: () => ({
