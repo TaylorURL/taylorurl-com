@@ -201,8 +201,30 @@
     "outreach_runs": {
       "job": {
         "constraint": "outreach_runs_job_check",
-        "allows": ["source", "enrich", "audit", "send", "watch", "ramp", "lawsuits"],
-        "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'enrich'::text, 'audit'::text, 'send'::text, 'watch'::text, 'ramp'::text, 'lawsuits'::text])))"
+        "allows": [
+          "source",
+          "enrich",
+          "audit",
+          "send",
+          "watch",
+          "ramp",
+          "lawsuits",
+          "previews",
+          "texts"
+        ],
+        "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'enrich'::text, 'audit'::text, 'send'::text, 'watch'::text, 'ramp'::text, 'lawsuits'::text, 'previews'::text, 'texts'::text])))"
+      }
+    },
+    "outreach_texts": {
+      "direction": {
+        "constraint": "outreach_texts_direction_check",
+        "allows": ["outbound", "inbound"],
+        "definition": "CHECK ((direction = ANY (ARRAY['outbound'::text, 'inbound'::text])))"
+      },
+      "status": {
+        "constraint": "outreach_texts_status_check",
+        "allows": ["drafted", "sent", "delivered", "undelivered", "failed", "received"],
+        "definition": "CHECK ((status = ANY (ARRAY['drafted'::text, 'sent'::text, 'delivered'::text, 'undelivered'::text, 'failed'::text, 'received'::text])))"
       }
     },
     "outreach_variants": {
@@ -210,6 +232,32 @@
         "constraint": "outreach_variants_status_check",
         "allows": ["live", "paused", "draft"],
         "definition": "CHECK ((status = ANY (ARRAY['live'::text, 'paused'::text, 'draft'::text])))"
+      }
+    },
+    "preview_sites": {
+      "channel": {
+        "constraint": "preview_sites_channel_check",
+        "allows": ["email", "text"],
+        "definition": "CHECK ((channel = ANY (ARRAY['email'::text, 'text'::text])))"
+      },
+      "industry": {
+        "constraint": "preview_sites_industry_check",
+        "allows": [
+          "plumbing",
+          "barber",
+          "realestate",
+          "roofing",
+          "hvac",
+          "flooring",
+          "salon",
+          "fitness",
+          "printing",
+          "autorepair",
+          "professional",
+          "restaurant",
+          "recreation"
+        ],
+        "definition": "CHECK ((industry = ANY (ARRAY['plumbing'::text, 'barber'::text, 'realestate'::text, 'roofing'::text, 'hvac'::text, 'flooring'::text, 'salon'::text, 'fitness'::text, 'printing'::text, 'autorepair'::text, 'professional'::text, 'restaurant'::text, 'recreation'::text])))"
       }
     },
     "profiles": {
@@ -469,6 +517,13 @@
         "allows": ["unsubscribed", "bounced", "complained", "manual"],
         "definition": "CHECK ((reason = ANY (ARRAY['unsubscribed'::text, 'bounced'::text, 'complained'::text, 'manual'::text])))"
       }
+    },
+    "text_suppression": {
+      "reason": {
+        "constraint": "text_suppression_reason_check",
+        "allows": ["stop", "replied", "undeliverable", "finished", "manual"],
+        "definition": "CHECK ((reason = ANY (ARRAY['stop'::text, 'replied'::text, 'undeliverable'::text, 'finished'::text, 'manual'::text])))"
+      }
     }
   },
   "unread": [
@@ -548,9 +603,34 @@
       "definition": "CHECK (((ramp_floor >= 0) AND (ramp_floor <= 40)))"
     },
     {
+      "table": "outreach_settings",
+      "constraint": "outreach_settings_text_daily_cap_check",
+      "definition": "CHECK (((text_daily_cap >= 0) AND (text_daily_cap <= 200)))"
+    },
+    {
+      "table": "outreach_texts",
+      "constraint": "outreach_texts_check",
+      "definition": "CHECK (((direction = 'inbound'::text) OR (prospect_id IS NOT NULL)))"
+    },
+    {
+      "table": "outreach_texts",
+      "constraint": "outreach_texts_phone_check",
+      "definition": "CHECK ((phone ~ '^\\+1[0-9]{10}$'::text))"
+    },
+    {
+      "table": "outreach_texts",
+      "constraint": "outreach_texts_step_check",
+      "definition": "CHECK (((step IS NULL) OR ((step >= 0) AND (step <= 2))))"
+    },
+    {
       "table": "outreach_variants",
       "constraint": "outreach_variants_weight_check",
       "definition": "CHECK (((weight >= 0) AND (weight <= 100)))"
+    },
+    {
+      "table": "preview_sites",
+      "constraint": "preview_sites_slug_check",
+      "definition": "CHECK ((slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text))"
     },
     {
       "table": "project_onboarding",
@@ -591,6 +671,11 @@
       "table": "sunday_tasks",
       "constraint": "sunday_tasks_fire_minute_range",
       "definition": "CHECK (((fire_minute >= 0) AND (fire_minute <= 59)))"
+    },
+    {
+      "table": "text_suppression",
+      "constraint": "text_suppression_phone_check",
+      "definition": "CHECK ((phone ~ '^\\+1[0-9]{10}$'::text))"
     }
   ]
 }

@@ -40,6 +40,10 @@
       "schedule": "0 15 * * 1-5"
     },
     {
+      "path": "/api/outreach/texts",
+      "schedule": "20 14-23 * * 1-6"
+    },
+    {
       "path": "/api/new-business/source",
       "schedule": "15 11 * * *"
     },
