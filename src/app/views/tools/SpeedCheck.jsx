@@ -100,7 +100,7 @@ const SHOWS = {
 // Google's working-out of the same load on a phone, so the note says which is
 // which before the two numbers can be read as one contradicting the other.
 const STRIP_NOTE =
-  "Google's test recorded the screen as your page loaded over its own fast connection."
+  "Google's test recorded the screen as your page loaded over Google's own fast connection."
 
 const MARK_NOTES = {
   largest_contentful_paint: 'The marked frame is the first with the main content showing.',
@@ -144,7 +144,7 @@ function Filmstrip({ strip, host }) {
 
   return (
     <div>
-      <p className="section-label text-accent">What a Phone Showed, Frame by Frame</p>
+      <p className="section-label text-accent">What Google's Test Showed, Frame by Frame</p>
       <div className={`mt-5 ${GROUND.shell}`}>
         <ol
           className={`${GROUND.mesh} ${STRIP_COLUMNS[count] ?? STRIP_COLUMNS[12]}`}
