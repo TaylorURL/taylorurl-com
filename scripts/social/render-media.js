@@ -25,7 +25,7 @@
  * the sheet and the guards are in `media-sheet.js` and `media-guard.js`, shared
  * with the renderer that draws review and proof cards from live data.
  */
-import { spawn, spawnSync } from 'node:child_process'
+import { spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -33,13 +33,12 @@ import { PRERENDER_ROUTES } from '../../vite/site-routes.js'
 import * as T from './media-templates/templates.js'
 import { library } from './media-content.js'
 import { altGuard } from './media-guard.js'
-import { launch, renderStill, settle, sheet } from './media-sheet.js'
+import { launch, renderClip, renderStill, sheet } from './media-sheet.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..', '..')
 const OUT = join(ROOT, 'public', 'social', 'library')
 const MANIFEST = join(ROOT, 'lib', 'social', 'library.json')
-const FPS = 30
 const MAX_VIDEO_BYTES = 4 * 1024 * 1024
 
 const args = process.argv.slice(2)
@@ -48,12 +47,6 @@ const option = name => (args.includes(name) ? args[args.indexOf(name) + 1] : nul
 const only = option('--only')?.split(',').filter(Boolean) ?? null
 const skipVideo = flag('--skip-video')
 const copyOut = option('--copy')
-
-// ---------------------------------------------------------------------------
-// ffmpeg
-// ---------------------------------------------------------------------------
-
-const FFMPEG = process.env.FFMPEG || 'ffmpeg'
 
 // ---------------------------------------------------------------------------
 // Guards
@@ -131,93 +124,13 @@ function slidesFor(set) {
   ]
 }
 
-/** Frames straight into ffmpeg: no frame ever touches the disk. */
+/** One library video, cut by the sheet's own `renderClip`, with its poster beside it. */
 async function renderVideo(page, video, shared, runtime) {
   const file = `${video.key}.mp4`
   const poster = `${video.key}-poster.png`
-  await page.setContent(T.videoPage(video, shared, runtime), { waitUntil: 'load' })
-  await settle(page, video.key)
-
-  await page.evaluate(t => window.__seek(t), video.poster)
-  await page.screenshot({ path: join(OUT, poster), type: 'png' })
-
-  const frames = Math.round(video.duration * FPS)
-  const ffmpeg = spawn(
-    FFMPEG,
-    [
-      '-y',
-      '-loglevel',
-      'error',
-      '-f',
-      'image2pipe',
-      '-framerate',
-      String(FPS),
-      '-c:v',
-      'mjpeg',
-      '-i',
-      '-',
-      '-f',
-      'lavfi',
-      '-t',
-      String(video.duration),
-      '-i',
-      'anullsrc=channel_layout=stereo:sample_rate=48000',
-      '-map',
-      '0:v',
-      '-map',
-      '1:a',
-      '-vf',
-      'scale=in_range=full:out_range=limited,format=yuv420p',
-      '-c:v',
-      'libx264',
-      '-preset',
-      'slow',
-      '-crf',
-      '23',
-      '-pix_fmt',
-      'yuv420p',
-      '-color_range',
-      'tv',
-      '-profile:v',
-      'high',
-      '-level:v',
-      '4.1',
-      '-r',
-      String(FPS),
-      '-g',
-      String(FPS * 2),
-      '-c:a',
-      'aac',
-      '-b:a',
-      '48k',
-      '-shortest',
-      '-movflags',
-      '+faststart',
-      '-map_metadata',
-      '-1',
-      '-fflags',
-      '+bitexact',
-      '-flags:v',
-      '+bitexact',
-      '-flags:a',
-      '+bitexact',
-      join(OUT, file),
-    ],
-    { stdio: ['pipe', 'inherit', 'inherit'] }
-  )
-  const done = new Promise((resolve, reject) => {
-    ffmpeg.on('error', reject)
-    ffmpeg.on('close', code =>
-      code === 0 ? resolve() : reject(new Error(`render-media: ffmpeg exited ${code} on ${file}`))
-    )
+  await renderClip(page, T.videoPage(video, shared, runtime), video, join(OUT, file), {
+    poster: join(OUT, poster),
   })
-  for (let frame = 0; frame < frames; frame++) {
-    await page.evaluate(t => window.__seek(t), frame / FPS)
-    const jpeg = await page.screenshot({ type: 'jpeg', quality: 92 })
-    if (!ffmpeg.stdin.write(jpeg)) await new Promise(resolve => ffmpeg.stdin.once('drain', resolve))
-  }
-  ffmpeg.stdin.end()
-  await done
   const bytes = readFileSync(join(OUT, file)).length
   if (bytes > MAX_VIDEO_BYTES)
     throw new Error(

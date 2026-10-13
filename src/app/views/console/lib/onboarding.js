@@ -180,6 +180,22 @@ const REGISTRARS = [
   { id: 'dont_have', name: 'I do not have one' },
 ]
 
+/**
+ * Whether the studio may show the finished site, by name, on its own social
+ * pages the day it goes live.
+ *
+ * Two answers and no third, because the question has two outcomes and a "not
+ * sure" would be a third outcome nobody could act on. Nothing seeds it and
+ * nothing prefills it: the only yes is one the client pressed. Left alone it
+ * stays unanswered, and `lib/social/launches.js`, which reads it on launch day,
+ * reads unanswered exactly as it reads No - the launch is still posted, naming
+ * the trade and the town and never the business or a picture of its site.
+ */
+export const SHOWCASE = [
+  { id: 'yes', name: 'Yes' },
+  { id: 'no', name: 'No' },
+]
+
 const REACH_BY = [
   { id: 'word_of_mouth', name: 'Word of mouth' },
   { id: 'google_search', name: 'Google search' },
@@ -554,6 +570,18 @@ export const STEPS = [
         help: 'We never ask for the login. Pointing the address at the new site is a phone call near the end, and it takes five minutes.',
         required: false,
         options: REGISTRARS,
+        fill: null,
+      },
+      {
+        key: 'contacts.showcase',
+        kind: 'choice',
+        label: 'Your Site on Our Pages',
+        help: 'Can we show your new site on our pages when it goes live?',
+        // Optional, so it carries no weight in the percent and holds nothing
+        // up. Consent asked as a condition of finishing the form is not
+        // consent, and a client who skips it has said no.
+        required: false,
+        options: SHOWCASE,
         fill: null,
       },
     ],
