@@ -20,6 +20,7 @@
  */
 import { existsSync, readFileSync } from 'node:fs'
 import { BBB_SEAL_SRC, bbbAccredited } from '../../src/app/data/reputation/bbb.js'
+import { GOOGLE_PLACE_ID, GOOGLE_PROFILE_URL } from '../../src/app/data/reputation/google.js'
 import { REVIEW_SOURCES, reviewSource } from '../../src/app/data/reputation/reviews.js'
 import {
   REVIEW_STANDINGS,
@@ -111,6 +112,33 @@ if (Boolean(bbb?.seal) !== bbbAccredited()) {
 }
 if (bbb?.seal && bbb.seal.src !== BBB_SEAL_SRC) {
   fail(`bbb: a second copy of the seal path, ${JSON.stringify(bbb.seal.src)}`)
+}
+
+/**
+ * The listing number a Google identifier carries, read off the identifier.
+ *
+ * Both forms Google issues for a listing are a small protocol buffer written
+ * in url-safe base64, and both carry the listing's own 64-bit number as a
+ * fixed-width field: the short link's token as its first field, and the place
+ * id as the second field inside its first. So the two can be held together
+ * without asking Google anything, which is what lets this run anywhere.
+ */
+function listingNumber(token, offset) {
+  const bytes = Buffer.from(token.replace(/-/g, '+').replace(/_/g, '/'), 'base64')
+  return bytes.length >= offset + 8 ? bytes.readBigUInt64LE(offset).toString() : null
+}
+
+// The place id is what the outreach letters read the Google rating through,
+// and the short link is what every page sends a reader to. A place id for a
+// listing nearby would quote another business's rating as this one's, so the
+// two have to name the same listing.
+const linked = listingNumber(GOOGLE_PROFILE_URL.split('/').pop(), 1)
+const placed = /^ChIJ/.test(GOOGLE_PLACE_ID) ? listingNumber(GOOGLE_PLACE_ID, 12) : null
+if (!linked || linked !== placed) {
+  fail(
+    `google: the place id names listing ${placed ?? 'nothing'}, ` +
+      `but ${GOOGLE_PROFILE_URL} opens listing ${linked ?? 'nothing'}`
+  )
 }
 
 // The rail draws the registry's order and skips whatever has nothing published
