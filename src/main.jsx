@@ -6,6 +6,7 @@ import Providers from './app/Providers'
 import App from './app/App'
 import { resolveArrival, views } from './app/views'
 import { onCaughtError } from './app/utils/caughtErrors'
+import { takeEarlyPress } from './app/hooks/chrome/useEarlyPress'
 
 // Read before the router mounts. The address the browser opened is the only
 // one carrying the campaign tags, and the first navigation replaces it.
@@ -26,7 +27,12 @@ rememberCampaign(window.location.search)
 // what files it. Given here rather than left to React so that a piece with its
 // own recovery can report its own failure when that recovery is spent instead
 // of the moment it starts: see `app/utils/caughtErrors`.
-resolveArrival(window.location.pathname).then(arrival =>
+//
+// A button pressed before this point was pressed on markup nothing answers, and
+// the boot has been holding it. It is taken off the boot here, in the same tick
+// React puts its own listeners on, so no press is answered by both.
+resolveArrival(window.location.pathname).then(arrival => {
+  takeEarlyPress()
   hydrateRoot(
     document.getElementById('root'),
     <Providers>
@@ -36,4 +42,4 @@ resolveArrival(window.location.pathname).then(arrival =>
     </Providers>,
     { onCaughtError }
   )
-)
+})

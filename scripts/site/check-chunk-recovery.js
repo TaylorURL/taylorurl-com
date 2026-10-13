@@ -942,11 +942,24 @@ const boot = bootSource('/assets/index-TEST0000.js')
 
 async function runBoot(
   answers,
-  { session = {}, online = true, understands = true, storage = true } = {}
+  { session = {}, online = true, understands = true, storage = true, frames = true } = {}
 ) {
   const asked = []
   const shown = []
   let reloads = 0
+  // What the boot listens for, on the window and on the document, keyed by
+  // event type so a check can press the page the way a reader would.
+  const listening = {}
+  const onDocument = {}
+  const page = {}
+  const listen = into => ({
+    addEventListener: (type, run) => {
+      into[type] = run
+    },
+    removeEventListener: (type, run) => {
+      if (into[type] === run) delete into[type]
+    },
+  })
   const stub = {
     loader: address => {
       asked.push(address)
@@ -960,8 +973,13 @@ async function runBoot(
     document: {
       createElement: () => ({ style: {}, textContent: '', setAttribute() {} }),
       body: { appendChild: node => shown.push(node) },
+      ...listen(onDocument),
     },
-    requestAnimationFrame: run => run(),
+    window: page,
+    ...listen(listening),
+    // A document never given a frame is one opened behind another window or in
+    // a tab that is not in front: its frames do not come until it is shown.
+    requestAnimationFrame: frames ? run => run() : () => 0,
     setTimeout: run => run(),
     // A browser that will not give an inline module storage throws on every
     // one of these rather than answering empty, which takes the reload away
@@ -1000,7 +1018,7 @@ async function runBoot(
   // has finished: the wait between attempts is a stub that runs at once, so
   // nothing here is left in a real timer.
   await wait(0)
-  return { asked, reloads, session, shown }
+  return { asked, reloads, session, shown, listening, onDocument, page }
 }
 
 const filed = []
@@ -1108,6 +1126,66 @@ check(
 check(
   unstored.asked.length === 4,
   'a browser that refuses the boot storage loses the reload and the late attempt both, so nothing recovers it'
+)
+
+// A press is proof of a paint, so it starts the boot as surely as the two
+// frames do. Without it the frames were the only way in, and a document that is
+// never given one never asked for the bundle at all: every button on it stayed
+// dead for as long as the reader looked at it, and a reload was the way off.
+const unframed = await runBoot([null], { frames: false })
+check(
+  unframed.asked.length === 0,
+  'the boot asks for the bundle ahead of the first frame, which is the paint it exists to keep clear'
+)
+unframed.listening.pointerdown?.({})
+await wait(0)
+check(
+  unframed.asked.length === 1,
+  'a document that is never given a frame never asks for the bundle, so nothing pressed on it ever answers'
+)
+check(
+  !unframed.listening.pointerdown && !unframed.listening.keydown,
+  'the boot keeps listening for a press after it has started, and a second press asks for the bundle again'
+)
+const framedThenPressed = await runBoot([null])
+framedThenPressed.listening.pointerdown?.({})
+await wait(0)
+check(
+  framedThenPressed.asked.length === 1,
+  'a press after the frames have started the boot starts it a second time'
+)
+
+// The press itself, which a page that is not live yet spends on markup with no
+// handler. The boot holds the last control pressed and hands it to the page
+// when React takes the events over, so the page can press it again.
+const pressOn = control => ({ target: { closest: () => control } })
+const button = { tagName: 'BUTTON' }
+const later = { tagName: 'BUTTON' }
+const held = await runBoot([null])
+held.onDocument.click?.(pressOn(button))
+held.onDocument.click?.(pressOn(later))
+held.onDocument.click?.(pressOn(null))
+check(
+  typeof held.page.__earlyPress === 'function',
+  'the boot offers the page no way to take the presses it held, so a button pressed before the page was live is lost'
+)
+check(
+  held.page.__earlyPress?.() === later,
+  'the control handed over is not the last one the reader pressed before the page could answer'
+)
+check(
+  held.page.__earlyPress?.() === null,
+  'a held press is handed over twice, and pressed twice is a toggle left where it started'
+)
+check(
+  !held.onDocument.click,
+  'the boot keeps holding presses after React has taken them over, so one press is answered by both'
+)
+const linked = await runBoot([null])
+linked.onDocument.click?.(pressOn({ tagName: 'A' }))
+check(
+  linked.page.__earlyPress?.() === null,
+  'a link is held and pressed again, after it has already taken the reader where it goes'
 )
 
 await wait(0)
