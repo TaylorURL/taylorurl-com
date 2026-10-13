@@ -17,6 +17,11 @@
  *
  *   npm run check:generated-cards
  */
+import { spawnSync } from 'node:child_process'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { CADENCE, HORIZON_DAYS, connect, freeSlots } from '../../lib/social/buffer.js'
 import {
   BUCKET,
@@ -60,6 +65,7 @@ import {
   reviewPath,
   reviewTexts,
   splitSentences,
+  textUnavailable,
 } from '../../lib/social/reviews.js'
 import { PORTFOLIO_PROJECTS } from '../../src/app/data/portfolio.js'
 import { cases, check, finish, is, ok, raised, same } from '../harness/checks.js'
@@ -147,6 +153,53 @@ check('a refused or unreadable answer is a failed read, not an empty listing', a
     readListing('fixture-key', { get: listingOf(null, { json: false }) })
   )
   ok(garbled && /no JSON/.test(garbled.message), `a non-JSON answer read as ${garbled?.message}`)
+})
+
+check('ratings with no review text behind them read as unavailable, not as a failed read', () => {
+  same(textUnavailable({ count: 2, reviews: [] }), true, 'ratings and no reviews returned')
+  same(textUnavailable({ count: 0, reviews: [] }), false, 'a listing nobody has rated')
+  same(textUnavailable({ count: 3, reviews: [{ id: 'one' }] }), false, 'reviews returned')
+})
+
+const CLI = fileURLToPath(new URL('./generated-cards.js', import.meta.url))
+
+/**
+ * The review run against a fixture, read the way the runner on the Pi reads it:
+ * by its exit code and the last `generated-cards:` line it prints.
+ */
+function reviewRun(listing) {
+  const dir = mkdtempSync(join(tmpdir(), 'generated-cards-check-'))
+  try {
+    const file = join(dir, 'fixture.json')
+    writeFileSync(file, JSON.stringify({ listing, team: ['Pat Sample'], recorded: [] }))
+    const run = spawnSync(process.execPath, [CLI, 'review', '--fixture', file, '--out', dir], {
+      encoding: 'utf8',
+      timeout: 60_000,
+    })
+    const said = (run.stderr ?? '')
+      .split('\n')
+      .filter(line => line.startsWith('generated-cards: '))
+      .pop()
+    return { status: run.status, said: said?.slice('generated-cards: '.length) ?? '' }
+  } finally {
+    rmSync(dir, { recursive: true, force: true })
+  }
+}
+
+check('a listing whose reviews come back without words ends the run clean and says so', () => {
+  const { status, said } = reviewRun({ ...LISTING, reviews: [] })
+  same(status, 0, 'the exit code')
+  ok(/^review text is unavailable from the Places API\b/.test(said), `the run said "${said}"`)
+})
+
+check('a listing answering as another place still stops the run for a person', () => {
+  const { status, said } = reviewRun({
+    ...LISTING,
+    reviews: [],
+    googleMapsUri: 'https://maps.google.com/?cid=1',
+  })
+  same(status, 1, 'the exit code')
+  ok(/not the listing the profile names/.test(said), `the run said "${said}"`)
 })
 
 // ---------------------------------------------------------------------------
