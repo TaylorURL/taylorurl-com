@@ -20,7 +20,8 @@ import { useElapsed } from './lib/useElapsed'
  *
  * It is the same report the studio measures a site by anywhere else: Google's
  * mobile PageSpeed run, the band the score lands in, the categories the same
- * report marked short, and a capture of the page as it loaded. The endpoint
+ * report marked short, the frames the run recorded while the page loaded, and
+ * a capture of the page as it loaded. The endpoint
  * composes none of that - it reads it out of the modules the rest of the site
  * reads it out of - so a figure here and a figure quoted anywhere else are the
  * same figure.
@@ -56,6 +57,140 @@ function faultIn(field, values) {
     return 'That does not look like an email address.'
   }
   return null
+}
+
+/**
+ * The strip's columns, by how many frames it holds.
+ *
+ * A phone takes the strip in two rows and anything wider takes it in one, so
+ * each frame is drawn about the same size everywhere. Every class is written
+ * out, because the stylesheet is built by reading this file and a name put
+ * together at runtime is a name it never sees.
+ */
+const STRIP_COLUMNS = {
+  1: 'grid-cols-1',
+  2: 'grid-cols-2',
+  3: 'grid-cols-3',
+  4: 'grid-cols-4',
+  5: 'grid-cols-5',
+  6: 'grid-cols-3 sm:grid-cols-6',
+  7: 'grid-cols-4 sm:grid-cols-7',
+  8: 'grid-cols-4 sm:grid-cols-8',
+  9: 'grid-cols-5 sm:grid-cols-9',
+  10: 'grid-cols-5 sm:grid-cols-10',
+  11: 'grid-cols-6 sm:grid-cols-11',
+  12: 'grid-cols-6 sm:grid-cols-12',
+}
+
+// What each frame shows, as the end of the sentence its picture is described
+// by. The usable frames are described by whichever moment the strip was marked
+// at, since the two marks name different things.
+const SHOWS = {
+  blank: 'nothing on the screen yet',
+  painting: 'the page partly drawn',
+  painted: 'the page on the screen',
+  usable: {
+    largest_contentful_paint: 'the main content showing',
+    speed_index: 'most of the page drawn',
+  },
+}
+
+// The note under the strip, a sentence at a time. The frames come from one
+// load over Google's own connection, and the timings listed under them are
+// Google's working-out of the same load on a phone, so the note says which is
+// which before the two numbers can be read as one contradicting the other.
+const STRIP_NOTE =
+  "Google's test recorded the screen as your page loaded over Google's own fast connection."
+
+const MARK_NOTES = {
+  largest_contentful_paint: 'The marked frame is the first with the main content showing.',
+  speed_index: 'The marked frame is the first with most of the page drawn.',
+}
+
+const PHONE_NOTE =
+  'On a mid-range phone over a slower mobile connection, Google expects that to take'
+
+/** What one frame shows, said for somebody who cannot see it. */
+function frameAlt(frame, mark) {
+  const shows = frame.phase === 'usable' ? SHOWS.usable[mark] : SHOWS[frame.phase]
+  return `At ${frame.time}, ${shows || SHOWS.painted}`
+}
+
+/**
+ * The test load, frame by frame.
+ *
+ * The frames are Google's own, recorded while it loaded the page, so they show
+ * the reader their own site the way a visitor meets it: white for as long as it
+ * is white, half drawn for as long as it is half drawn. The marked frame is the
+ * first one usable, and it is marked by the selected cell's own fill rather
+ * than by a second colour, so the strip carries no verdict of its own beside
+ * the one the score already gives.
+ *
+ * Every frame is described by what it shows at its time, and the times read
+ * under each frame are left to the descriptions for a screen reader, which
+ * would otherwise hear each time twice.
+ */
+function Filmstrip({ strip, host }) {
+  const count = strip.frames.length
+  // Two rows on a phone leave one cell short on an odd count, and the last
+  // frame takes the gap rather than leaving an empty box at the end of the row.
+  const short = count > 5 && count % 2 === 1
+  const helper = 'speed-check-filmstrip-note'
+  const note = [STRIP_NOTE]
+  if (MARK_NOTES[strip.mark]) {
+    note.push(MARK_NOTES[strip.mark])
+    if (strip.phoneAt) note.push(`${PHONE_NOTE} ${strip.phoneAt}.`)
+  }
+
+  return (
+    <div>
+      <p className="section-label text-accent">What Google's Test Showed, Frame by Frame</p>
+      <div className={`mt-5 ${GROUND.shell}`}>
+        <ol
+          className={`${GROUND.mesh} ${STRIP_COLUMNS[count] ?? STRIP_COLUMNS[12]}`}
+          aria-label={`The test load of ${host}, frame by frame`}
+          aria-describedby={helper}
+        >
+          {strip.frames.map((frame, index) => (
+            <li
+              key={frame.at}
+              className={`p-2 ${GROUND.cell} ${
+                frame.marked ? 'bg-[color:var(--accent-fill)]' : GROUND.surface
+              } ${short && index === count - 1 ? 'col-span-2 sm:col-span-1' : ''}`}
+            >
+              <img
+                src={frame.src}
+                alt={frameAlt(frame, strip.mark)}
+                width={strip.width ?? undefined}
+                height={strip.height ?? undefined}
+                loading="lazy"
+                decoding="async"
+                className={`mx-auto block h-auto border ${GROUND.rule} ${
+                  short && index === count - 1 ? 'w-1/2 sm:w-full' : 'w-full'
+                }`}
+                style={
+                  strip.width && strip.height
+                    ? { aspectRatio: `${strip.width} / ${strip.height}` }
+                    : undefined
+                }
+              />
+              <p
+                aria-hidden="true"
+                className={`mt-2 text-center font-mono text-[12px] tabular-nums tracking-tight ${
+                  frame.marked ? 'font-semibold text-[color:var(--on-accent)]' : GROUND.meta
+                }`}
+              >
+                {frame.time}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </div>
+      <p id={helper} className={`mt-4 text-[14px] leading-relaxed ${GROUND.meta}`}>
+        {note.join(' ')}
+      </p>
+    </div>
+  )
 }
 
 /** One score in its band, as a cell of the mesh the categories are laid on. */
@@ -112,6 +247,8 @@ function Reading({ reading }) {
             . {reading.verify.tail}
           </p>
         </div>
+
+        {reading.filmstrip && <Filmstrip strip={reading.filmstrip} host={reading.host} />}
 
         <div>
           <p className="section-label text-accent">The Same Report, in Full</p>
@@ -312,6 +449,7 @@ export default function SpeedCheck() {
                     'How the page performs on a throttled phone, scored out of a hundred.',
                     'Accessibility, build quality, and search readiness from the same report.',
                     'The five timings the performance score is built from.',
+                    'What the screen showed at each step of the load.',
                     'What the page looked like when it finished loading.',
                   ]}
                   note="This measures speed. Rankings and competitor data are not part of it."

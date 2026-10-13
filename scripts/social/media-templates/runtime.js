@@ -10,6 +10,13 @@
  * `__seek(t)` puts a video at second `t`. Every moving piece is a pure function
  * of `t`, with no CSS animation and no clock, which is what lets the renderer
  * ask for frame 312 and get the same frame on every run.
+ *
+ * One piece shows pictures rather than moving type: `frames`, the recording of
+ * a client's site loading that a launch video plays inside its phone. Which
+ * picture is up is still a pure function of `t`, read off the set the page
+ * carries in `window.__frameSets`, but a picture swapped in has to decode
+ * before it is on the screen. `__ready()` answers once every swap made by the
+ * last seek has, and the renderer waits on it before it takes the frame.
  */
 ;(() => {
   const clamp = value => Math.max(0, Math.min(1, value))
@@ -70,6 +77,14 @@
     return { problems, shrunk }
   }
 
+  // Swaps a seek made that have not finished decoding, which `__ready` waits on.
+  let decoding = []
+  window.__ready = () => {
+    const waiting = decoding
+    decoding = []
+    return Promise.all(waiting)
+  }
+
   const progress = document.querySelector('.progress')
   const scenes = [...document.querySelectorAll('.scene')].map(el => ({
     el,
@@ -123,6 +138,20 @@
       const from = parseFloat(el.dataset.from)
       const to = parseFloat(el.dataset.to)
       el.style.transform = `translateY(${(from + (to - from) * p).toFixed(2)}px)`
+    } else if (fx === 'frames') {
+      // The newest picture whose moment has come, and the first one before
+      // any has: a phone that shows nothing before the recording starts reads
+      // as a phone that is off.
+      const set = (window.__frameSets || {})[el.dataset.frames] || []
+      let shown = set[0]
+      for (const frame of set) {
+        if (frame.at > since) break
+        shown = frame
+      }
+      if (shown && el.getAttribute('src') !== shown.src) {
+        el.setAttribute('src', shown.src)
+        decoding.push(el.decode().catch(() => null))
+      }
     } else if (fx === 'ring') {
       if (since < 0) {
         el.style.opacity = 0

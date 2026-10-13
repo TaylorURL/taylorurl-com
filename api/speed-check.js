@@ -1,7 +1,11 @@
 /**
  * speed-check - the reading behind the Speed Check page.
  *
- *   POST { site, email }   the mobile PageSpeed reading of that address
+ *   POST { site, email, campaign?, referrer? }   the mobile PageSpeed reading of that address
+ *
+ * `campaign` is the tags the page is holding for this browser and `referrer` is
+ * the page the visit came in from. Both are optional, and a body without them
+ * is a reading with no source on it, which is what a visit typed in by hand is.
  *
  * The same report, the same three bands and the same sentence about what a
  * score means that the outreach pipeline works from: `lib/outreach/audit/pagespeed.js`
@@ -22,8 +26,10 @@
  * stages and nothing else - the last line is the whole answer either way.
  *
  * What it writes: one row in `public.speed_checks`, opened before the work
- * starts so a run that dies still leaves the record of who asked, and, once a
- * reading comes back, one row in `public.outreach_prospects` through
+ * starts so a run that dies still leaves the record of who asked and where they
+ * arrived from, the frames of the test load in the bucket the capture already
+ * lives in, and, once a reading comes back, one row in
+ * `public.outreach_prospects` through
  * `lib/outreach/prospects/bridge.js`. An address given to get one answer is still not a
  * subscription: `public.subscribers` is where a subscription lives and nothing
  * here goes near it. The prospect is a lead, and it answers to every rule the
@@ -46,10 +52,11 @@ import { connect } from '../lib/db/clients.js'
 import { measure, reading } from '../lib/outreach/audit/pagespeed.js'
 import { bandOf } from '../lib/outreach/audit/bands.js'
 import { ensureShot } from '../lib/outreach/audit/shot.js'
+import { framesOf, keepFilmstrip } from '../lib/speed-check/filmstrip.js'
 import { suppressed } from '../lib/outreach/sending/queue.js'
 import { bridge } from '../lib/outreach/prospects/bridge.js'
 import { loadHeldDomains } from '../lib/outreach/prospects/exclusions.js'
-import { SOURCES, keepLead } from '../lib/leads/spine.js'
+import { SOURCES, arrivalFrom, keepLead } from '../lib/leads/spine.js'
 import { replyAddressFor } from '../lib/leads/relay.js'
 import { sendNotice, notice } from '../lib/mail/notice.js'
 import {
@@ -130,17 +137,21 @@ function say(response, payload) {
  * report is the answer and the picture is the evidence beside it: a capture
  * that will not render leaves the picture out, and one that holds the
  * invocation open past the report costs the reader the answer they came for.
+ *
+ * The frames come out of the report itself, so storing them waits on nothing
+ * but the bucket and runs beside the capture rather than after it. Either one
+ * failing leaves its own piece out and nothing else.
  */
 async function takeReading(db, row, url, response) {
   say(response, { stage: 'measuring' })
-  const measured = reading(await measure(url.toString(), { budgetMs: REPORT_BUDGET_MS }))
+  const report = await measure(url.toString(), { budgetMs: REPORT_BUDGET_MS })
+  const measured = reading(report)
 
   say(response, { stage: 'capturing' })
-  const shot = await ensureShot(
-    db,
-    { id: row.id, website: url.toString() },
-    { budgetMs: SHOT_BUDGET_MS }
-  )
+  const [shot, filmstrip] = await Promise.all([
+    ensureShot(db, { id: row.id, website: url.toString() }, { budgetMs: SHOT_BUDGET_MS }),
+    keepFilmstrip(db, framesOf(report)),
+  ])
 
   return {
     status: 'done',
@@ -152,6 +163,7 @@ async function takeReading(db, row, url, response) {
     band: bandOf(measured.scores.audit_score),
     audit_raw: measured.raw,
     shot_url: shot,
+    filmstrip,
   }
 }
 
@@ -299,6 +311,11 @@ export default async function handler(request, response) {
   const { url } = chosen
   const { email } = asked
   const host = url.hostname.toLowerCase()
+  // Where the visit came from, read once and filed twice: on the reading, which
+  // is what a count of readings by post is taken from, and on the lead, which
+  // keeps the first one a person ever arrived on. The page sends the campaign
+  // it is holding for this browser and the page the visit came in from.
+  const arrival = arrivalFrom({ campaign: body.campaign, referrer: body.referrer })
   const caller = callerHash(address, process.env.SPEED_CHECK_PEPPER || process.env.CRON_SECRET)
   const now = Date.now()
 
@@ -323,7 +340,7 @@ export default async function handler(request, response) {
     const { data: recent } = await db
       .from('speed_checks')
       .select(
-        'id, status, created_at, score, accessibility_score, best_practices_score, seo_score, band, audit_raw, shot_url'
+        'id, status, created_at, score, accessibility_score, best_practices_score, seo_score, band, audit_raw, shot_url, filmstrip'
       )
       .eq('host', host)
       .eq('status', 'done')
@@ -345,6 +362,8 @@ export default async function handler(request, response) {
     status: 'running',
     caller_hash: caller,
     suppressed: held.has(email),
+    campaign: arrival.campaign,
+    referrer: arrival.referrer,
   }
   const { data: row, error: openError } = await db
     .from('speed_checks')
@@ -360,6 +379,11 @@ export default async function handler(request, response) {
   // Somebody who typed their address in to have their own site measured is
   // asking about their own site, which is the warmest question this business
   // gets asked. The reading was being kept and the person asking was not.
+  //
+  // The door is the speed check whichever post sent them, because the door is
+  // what they did. Where they came from rides beside it, in the same campaign
+  // and referrer every other door files, so a lead off a Facebook post is a
+  // speed-check lead whose campaign names the post.
   const lead = await keepLead(
     {
       source: SOURCES.speedCheck,
@@ -367,6 +391,8 @@ export default async function handler(request, response) {
       email,
       website: url.toString(),
       note: `Ran a speed check on ${host}`,
+      campaign: arrival.campaign,
+      referrer: arrival.referrer,
     },
     db
   )
@@ -391,6 +417,7 @@ export default async function handler(request, response) {
         band: fresh.band,
         audit_raw: fresh.audit_raw,
         shot_url: fresh.shot_url,
+        filmstrip: fresh.filmstrip ?? null,
         reused_from: fresh.id,
       }
     } else {

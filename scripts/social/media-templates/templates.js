@@ -264,6 +264,185 @@ export function faqCard(item) {
 }
 
 // ---------------------------------------------------------------------------
+// Cards drawn from live data, 1080 x 1350
+// ---------------------------------------------------------------------------
+
+/** The five points of a star, as a clip path, so a rating is drawn rather than typed. */
+const STAR =
+  'polygon(50% 0%, 61.2% 34.5%, 97.6% 34.5%, 68.2% 55.9%, 79.4% 90.5%, 50% 69.1%, 20.6% 90.5%, 31.8% 55.9%, 2.4% 34.5%, 38.8% 34.5%)'
+
+/**
+ * `review`: a client's own words from the Google listing, and the stars they gave.
+ *
+ * The quote is escaped rather than read as copy, because it is somebody else's
+ * writing: an asterisk a reviewer typed is an asterisk, not an accent run. The
+ * stars are shapes rather than characters, so no glyph a font or a guard could
+ * read as an emoji stands in for the rating.
+ */
+export function reviewCard(item) {
+  const stars = Array.from(
+    { length: 5 },
+    (_, index) => `<i class="star${index < item.stars ? ' on' : ''}"></i>`
+  ).join('')
+  return {
+    eyebrow: item.eyebrow ?? 'Left on Google',
+    counter: item.counter ?? '',
+    dark: item.dark,
+    css: `
+.content { justify-content: center; gap: 48px; }
+.stars { display: flex; gap: 16px; }
+.star { width: 50px; height: 50px; background: rgba(var(--fg-rgb), 0.16); clip-path: ${STAR}; }
+.star.on { background: var(--accent); }
+.quote { display: flex; gap: 26px; align-items: flex-start; }
+.quote .open { font-weight: 600; font-size: 150px; line-height: 0.78; color: var(--accent); flex: none; }
+.quote .words { font-weight: 500; letter-spacing: -0.022em; line-height: 1.14; }
+.by { padding-top: 30px; border-top: 1px solid rgba(var(--fg-rgb), var(--rule)); display: flex; flex-direction: column; gap: 14px; }`,
+    inner: `
+<div class="stars" role="img" aria-label="${item.stars} of 5 stars">${stars}</div>
+<div class="quote"><span class="open">&ldquo;</span><div class="words" ${shrink(item.quoteSize ?? 70, 40)}>${escape(item.quote)}</div></div>
+<div class="by"><div class="label">${escape(item.attribution)}</div><div class="note">${rich(item.source)}</div></div>`,
+  }
+}
+
+/**
+ * `proof`: the day's PageSpeed readings for the client sites the studio
+ * keeps, each site by trade and town, with the average of both strategies.
+ *
+ * The table is the card. A reader is shown every reading the average was taken
+ * over, so the two large figures are checkable against the rows under them
+ * rather than being a number the studio asks to be taken on trust.
+ */
+export function proofCard(item) {
+  // Past eight rows the table is set tighter and the figures above it smaller,
+  // so a growing roster still fits one card rather than spilling onto a second
+  // that would be read without the first.
+  const dense = item.sites.length > 8
+  const rows = item.sites
+    .map(
+      site =>
+        `<div class="row"><span class="site" ${dense ? shrink(26, 19) : shrink(30, 22)}>${escape(site.label)}</span><span class="n">${site.mobile}</span><span class="n">${site.desktop}</span></div>`
+    )
+    .join('')
+  const figure = dense ? shrink(130, 76) : shrink(190, 110)
+  return {
+    eyebrow: item.eyebrow ?? 'Measured by Google',
+    counter: item.counter ?? '',
+    dark: item.dark,
+    css: `
+.content { justify-content: center; gap: ${dense ? 22 : 34}px; }
+.figs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.fig .v { font-weight: 600; letter-spacing: -0.05em; line-height: 0.86; color: var(--accent); white-space: nowrap; }
+.fig .label { margin-top: ${dense ? 12 : 18}px; }
+.table { display: flex; flex-direction: column; }
+.row { display: grid; grid-template-columns: 1fr 130px 130px; align-items: baseline; gap: 16px; padding: ${dense ? 5 : 10}px 0; border-bottom: 1px solid rgba(var(--fg-rgb), var(--rule)); }
+.row.top { padding-top: 0; }
+.row .n { font-family: 'Geist Mono', monospace; font-weight: 500; font-size: ${dense ? 24 : 28}px; text-align: right; }
+.row.top .n { font-size: 21px; }
+.row .site { font-weight: 450; line-height: 1.2; }`,
+    inner: `
+<div class="head" ${dense ? shrink(56, 40) : shrink(item.headSize ?? 66, 44)}>${rich(item.headline)}</div>
+<div class="figs">
+<div class="fig"><div class="v" ${figure}>${escape(item.mobile)}</div><div class="label">Phone, Average</div></div>
+<div class="fig"><div class="v" ${figure}>${escape(item.desktop)}</div><div class="label">Desktop, Average</div></div>
+</div>
+<div class="table"><div class="row top label"><span>Trade and Town</span><span class="n">Phone</span><span class="n">Desktop</span></div>${rows}</div>
+<div class="note">${rich(item.source)}</div>`,
+  }
+}
+
+/**
+ * The phone a launch is shown on: a bezel, an address bar carrying the site's
+ * own address, and the page as a phone of 390 by 844 drew it.
+ *
+ * Drawn here rather than borrowed from the library's `.phone`, which is a
+ * drawing of a site that does not exist and is shaped for one. This one holds
+ * a picture of a real page, so its screen is the page's own shape, and the bar
+ * above it says where the page was opened, which is the one thing a reader
+ * would check.
+ *
+ * @param {object} options
+ * @param {number} options.width The page's width on the sheet, in pixels.
+ * @param {string} options.domain What the address bar reads.
+ * @param {string} options.inner The picture: an `<img>` or a playing frame.
+ */
+function sitePhone({ width, domain, inner, at = null }) {
+  const height = Math.round((width * 844) / 390)
+  const bar = Math.round(width * 0.115)
+  const lead = at === null ? '' : ` fx" data-fx="fade" data-at="${at}`
+  return `<div class="lp${lead}" style="--lp-w:${width}px;--lp-h:${height}px;--lp-bar:${bar}px"><div class="lp-screen"><div class="lp-bar"><span class="lp-lock"></span>${escape(domain)}</div><div class="lp-page">${inner}</div></div></div>`
+}
+
+/** The phone's own measures, shared by the still and the video. */
+const PHONE_CSS = `
+.lp { flex: none; align-self: center; padding: calc(var(--lp-w) * 0.031); border-radius: calc(var(--lp-w) * 0.14); background: #141413; box-shadow: 0 40px 80px rgba(20,20,19,0.18); }
+.lp-screen { width: var(--lp-w); border-radius: calc(var(--lp-w) * 0.11); overflow: hidden; background: #fff; }
+.lp-bar { height: var(--lp-bar); display: flex; align-items: center; justify-content: center; gap: calc(var(--lp-bar) * 0.22); background: #efeee9; color: #3d3d3a; font-family: 'Geist Mono', monospace; font-size: calc(var(--lp-bar) * 0.4); letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; }
+.lp-lock { width: calc(var(--lp-bar) * 0.26); height: calc(var(--lp-bar) * 0.2); border-radius: 2px; background: #3d3d3a; position: relative; transform: translateY(calc(var(--lp-bar) * 0.05)); }
+.lp-lock::before { content: ''; position: absolute; left: 18%; right: 18%; bottom: 80%; height: 75%; border: 2px solid #3d3d3a; border-bottom: 0; border-radius: 99px 99px 0 0; }
+.lp-page { width: var(--lp-w); height: var(--lp-h); background: #fff; }
+.lp-page img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }`
+
+/**
+ * `launch`: a client's new site, said without naming them.
+ *
+ * Used where the client did not say yes to being shown, so it carries no name,
+ * no address and no picture of the site: what the business is and where, the
+ * three things the site lets its customers do, and the day it went live.
+ */
+export function launchCard(item) {
+  return {
+    eyebrow: item.eyebrow ?? 'Just Launched',
+    counter: item.counter ?? '',
+    dark: item.dark,
+    css: `
+.content { justify-content: center; gap: 44px; }
+.needs .label { margin-bottom: 8px; }
+.need { display: flex; gap: 22px; align-items: baseline; padding: 22px 0; border-bottom: 1px solid rgba(var(--fg-rgb), var(--rule)); }
+.need::before { content: ''; flex: none; width: 10px; height: 10px; background: var(--accent); transform: translateY(-6px); }
+.need span { line-height: 1.3; }`,
+    inner: `
+<div class="head" ${shrink(item.headSize ?? 92, 60)}>${rich(item.headline)}</div>
+<div class="needs"><div class="label">${escape(item.listLabel)}</div>${item.items
+      .map(entry => `<div class="need"><span ${shrink(38, 28)}>${escape(entry)}</span></div>`)
+      .join('')}</div>
+<div class="note">${escape(item.source)}</div>`,
+  }
+}
+
+/**
+ * `launch-site`: a client's new site, by name, with the site itself on a phone.
+ *
+ * The still the Business Profile carries for a launch the client said yes to,
+ * because a profile post takes no video. The page on the phone is the site as
+ * it stood once loaded, photographed on the same emulated phone the video
+ * records, and the column beside it is the same three lines the video carries.
+ */
+export function launchSiteCard(item) {
+  return {
+    eyebrow: item.eyebrow ?? 'Just Launched',
+    counter: item.counter ?? '',
+    dark: item.dark,
+    css: `${PHONE_CSS}
+.lp { box-shadow: none; }
+.content { flex-direction: row; align-items: center; gap: 44px; }
+.side { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 30px; align-self: stretch; }
+.needs .label { margin-bottom: 4px; }
+.need { display: flex; gap: 18px; align-items: baseline; padding: 16px 0; border-bottom: 1px solid rgba(var(--fg-rgb), var(--rule)); }
+.need::before { content: ''; flex: none; width: 9px; height: 9px; background: var(--accent); transform: translateY(-5px); }
+.need span { line-height: 1.28; }`,
+    inner: `
+<div class="side">
+<div class="head" ${shrink(item.headSize ?? 76, 44)}>${rich(item.headline)}</div>
+<div class="needs"><div class="label">${escape(item.listLabel)}</div>${item.items
+      .map(entry => `<div class="need"><span ${shrink(30, 22)}>${escape(entry)}</span></div>`)
+      .join('')}</div>
+<div class="note">${escape(item.source)}</div>
+</div>
+${sitePhone({ width: 330, domain: item.domain, inner: `<img src="${item.shot}" alt="">` })}`,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Carousel slides, 1080 x 1350
 // ---------------------------------------------------------------------------
 
@@ -394,6 +573,11 @@ export const VIDEO_CSS = `
  * the timeline the runtime seeks through.
  */
 export function videoPage(video, shared, runtime) {
+  // A video that plays recorded pictures carries them as data, handed to the
+  // runtime before it runs, so a frame never waits on a request.
+  const frames = video.frames
+    ? `window.__frameSets = ${JSON.stringify(video.frames).replace(/</g, '\\u003c')};\n`
+    : ''
   const inner = video.scenes
     .map(
       (scene, index) =>
@@ -407,11 +591,11 @@ export function videoPage(video, shared, runtime) {
       counter: video.counter ?? '',
       dark: video.dark,
       inner,
-      css: VIDEO_CSS,
+      css: `${VIDEO_CSS}${video.css ?? ''}`,
       progress: true,
     },
     shared,
-    `${runtime}\nwindow.__duration = ${video.duration};`
+    `${frames}${runtime}\nwindow.__duration = ${video.duration};`
   )
 }
 
@@ -447,4 +631,69 @@ export const fx = {
 </div>`,
   path: (text, at = 0) =>
     `<div class="vpath fx" data-fx="type" data-at="${at}" data-text="${escape(text)}"></div>`,
+}
+
+/**
+ * `launch`: the video a launch the client said yes to goes out as, about
+ * fifteen seconds long.
+ *
+ * Three scenes. The business's name over the site loading on a phone, played
+ * as it was recorded, then a slow scroll down the page once it has settled; the
+ * three things the site lets its customers do; and who built it, with the
+ * number. The first scene is already standing at the first frame, because the
+ * first frame is the cover a feed shows before anybody presses play, and a
+ * cover of an empty sheet says nothing.
+ *
+ * @param {object} item
+ * @param {string} item.key What a refusal names.
+ * @param {string} item.name The business, as the client wrote it.
+ * @param {string} item.domain The site's address, as the phone's bar reads it.
+ * @param {string[]} item.lines The three lines, as the card sets them.
+ * @param {{at: number, src: string}[]} item.frames The recording, from
+ *   `frameTimeline`, timed from the moment it starts playing, half a second in.
+ * @param {string} item.counter The date in the top rail.
+ * @param {string} item.close The last scene's line, and `path` what types under it.
+ */
+export function launchClip(item) {
+  const play = 0.5
+  const opens = -0.5
+  return {
+    key: item.key,
+    eyebrow: 'Just Launched',
+    counter: item.counter,
+    duration: 15,
+    poster: 3,
+    css: `${PHONE_CSS}
+.scene.launch { gap: 40px; }`,
+    frames: { site: item.frames },
+    scenes: [
+      {
+        from: opens,
+        to: 8.6,
+        align: 'launch',
+        // The name is the client's and can run long, so its floor sits below
+        // the library's: a name on four lines still leaves the phone its room.
+        html: `<div class="vhead" data-fx="words" data-at="-1" ${shrink(92, 52)}>${words(`*${item.name}* is live.`)}</div>${sitePhone(
+          {
+            width: 500,
+            domain: item.domain,
+            at: -1,
+            inner: `<img class="fx" data-fx="frames" data-frames="site" data-at="${play - opens}" alt="">`,
+          }
+        )}${fx.note('We opened the site on a mid-range phone over 4G.', 0.6)}`,
+      },
+      {
+        from: 8.6,
+        to: 12.4,
+        align: 'top',
+        html: `${fx.head('What customers can *do* now.', 0.1, 104)}${fx.steps(item.lines, 0.8, 0.8, false)}`,
+      },
+      {
+        from: 12.4,
+        to: 15,
+        hold: true,
+        html: `${fx.head(item.close, 0.1, 104)}${fx.path(item.path, 0.9)}`,
+      },
+    ],
+  }
 }

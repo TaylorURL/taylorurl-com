@@ -36,9 +36,10 @@ const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..', '..')
  *
  * `trades.js` pulls its card icons from `lucide-react` and the tool marks from a
  * component, neither of which loads in plain Node. The list itself is data, so
- * the import lines come off and each name they bound is declared empty.
+ * the import lines come off and each name they bound is declared empty. The
+ * proof card in `generated-cards.js` names its sites' trades from the same list.
  */
-async function loadTrades() {
+export async function loadTrades() {
   let source = readFileSync(join(ROOT, 'src/app/data/towns-and-trades/trades.js'), 'utf8')
   const bound = []
   source = source.replace(/^import\s*\{([^}]*)\}\s*from\s*['"][^'"]+['"]\s*;?/gm, (_, list) => {

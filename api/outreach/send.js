@@ -95,7 +95,10 @@
  * What stops it: either switch being off stops the transport but not the
  * drafting. The day's cap stops the drafting too, and so does an empty queue.
  * Missing mail credentials stop an armed run outright rather than quietly
- * leaving messages unsent.
+ * leaving messages unsent. A mailbox that is resting after Gmail refused it, or
+ * that has carried its day's worth across every sender, stops a run that would
+ * send before it drafts anything, and a refusal of the mailbox partway through
+ * stops the run at that letter; see lib/outreach/sending/mailbox.js.
  */
 
 import { servedHereOr404 } from '../../lib/http/guard.js'
@@ -164,6 +167,15 @@ import {
   assertDeliverable,
   checkAddress,
 } from '../../lib/outreach/prospects/address.js'
+import {
+  MailboxClosed,
+  assertMailboxOpen,
+  mailboxClosedReason,
+  mailboxStopOf,
+  noteCarried,
+  readMailbox,
+  restIfRefused,
+} from '../../lib/outreach/sending/mailbox.js'
 
 const SMTP_HOST = process.env.OUTREACH_SMTP_HOST || 'smtp.gmail.com'
 const SMTP_PORT = Number(process.env.OUTREACH_SMTP_PORT || 465)
@@ -621,30 +633,48 @@ async function hold(db, prospect, holdout) {
  * so by the time a message reaches this the answer is already in the process
  * cache and costs nothing.
  *
+ * The mailbox is asked here for the same reason. Every cold letter leaves from
+ * the one Gmail mailbox, and Gmail judges it by everything it carries, so a
+ * mailbox Gmail has refused, or one that has carried its day's worth, turns the
+ * letter away before the transport is touched, whichever sender is asking. A
+ * refusal of the mailbox itself rests it on the way out, so the next letter
+ * from any sender is turned away here rather than offered to a server that has
+ * already said no. See lib/outreach/sending/mailbox.js.
+ *
  * @param {object} db A service-role client, which holds the domain cache.
  * @param {() => object} [transport] The mail client, built once per instance.
  * @throws {Undeliverable} Before the transport is touched, when the address fails.
+ * @throws {MailboxClosed} Before the transport is touched, when the mailbox is
+ *   resting or full.
  */
 export async function deliver(db, message, from, unsubscribe, transport = mailer, thread = null) {
   await assertDeliverable(db, message.to_address)
-  const sent = await transport().sendMail({
-    from,
-    to: message.to_address,
-    subject: message.subject,
-    text: message.body_text,
-    html: message.body_html || undefined,
-    // A follow-up names the message it follows, which is what a mail client
-    // reads to keep the two in one thread.
-    ...(thread?.inReplyTo ? { inReplyTo: thread.inReplyTo, references: thread.inReplyTo } : {}),
-    ...(unsubscribe
-      ? {
-          headers: {
-            'List-Unsubscribe': `<${unsubscribe}>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-          },
-        }
-      : {}),
-  })
+  await assertMailboxOpen(db)
+  let sent
+  try {
+    sent = await transport().sendMail({
+      from,
+      to: message.to_address,
+      subject: message.subject,
+      text: message.body_text,
+      html: message.body_html || undefined,
+      // A follow-up names the message it follows, which is what a mail client
+      // reads to keep the two in one thread.
+      ...(thread?.inReplyTo ? { inReplyTo: thread.inReplyTo, references: thread.inReplyTo } : {}),
+      ...(unsubscribe
+        ? {
+            headers: {
+              'List-Unsubscribe': `<${unsubscribe}>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+            },
+          }
+        : {}),
+    })
+  } catch (cause) {
+    await restIfRefused(db, cause)
+    throw cause
+  }
+  noteCarried(db)
   return field(sent?.messageId, 500)
 }
 
@@ -819,6 +849,24 @@ export async function work({ db, settings, counts }) {
   const catchUp = catchUpOf(settings, new Date())
   const window = sendWindow(new Date(), catchUp)
   const sending = armed && window.open
+
+  // A run that would reach the transport asks the mailbox first. A mailbox
+  // Gmail has rested, or one that has carried its day's worth, is left alone:
+  // nothing is drafted for it and nothing is offered to it, and the businesses
+  // in the queue keep their places for the run after it opens. A run that is
+  // only drafting has no use for the mailbox and does not ask.
+  if (sending) {
+    const mailbox = await readMailbox(db, new Date(), settings)
+    if (!mailbox.open) {
+      return {
+        sending,
+        window,
+        skipped: `the mailbox is closed: ${mailbox.reason}`,
+        note: `Nothing was drafted or sent, because the mailbox is closed: ${mailbox.reason}`,
+      }
+    }
+  }
+
   const held = sending && catchUp.today ? await heldOf(db, catchUp) : null
   const backlog = catchUp.active ? held : null
 
@@ -848,9 +896,10 @@ export async function work({ db, settings, counts }) {
   // Follow-ups only ever go out, never wait as drafts, so a run that is not
   // sending has none to do. They are outside the cap and the ramp: what bounds
   // them is what is due and what one invocation has time for. A catch-up the
-  // mail server refused during the first letters sends nothing further.
+  // mail server refused during the first letters sends nothing further, and
+  // nor does a run whose first letters found the mailbox refused or closed.
   const later =
-    sending && ready && !first.stoppedBy
+    sending && ready && !first.stoppedBy && !first.mailboxClosed
       ? await followUps({ db, settings, counts, variants, endsAt, backlog, catchUp })
       : { followed: 0, closed: 0, deferred: 0 }
 
@@ -859,12 +908,27 @@ export async function work({ db, settings, counts }) {
   // than each knocking on a mailbox that has started refusing again.
   const stoppedBy = first.stoppedBy ?? later.stoppedBy ?? null
   if (backlog && stoppedBy) await endCatchUp(db, stoppedBy)
+  const mailboxClosed = first.mailboxClosed ?? later.mailboxClosed ?? null
   const caughtUp = (first.caughtUp ?? 0) + (later.caughtUp ?? 0)
+  const stopped = stoppedBy
+    ? ` The mail server refused a send, and the run stopped there: ${stoppedBy}`
+    : mailboxClosed
+      ? ` The run stopped where the mailbox closed: ${mailboxClosed}`
+      : ''
   const note = backlog
     ? `Catch-up: ${first.caughtUp ?? 0} held first letters and ${later.caughtUp ?? 0} held follow-ups went this run.` +
-      (stoppedBy ? ` The mail server refused a send, so the catch-up is closed: ${stoppedBy}` : '')
-    : undefined
-  return { ...first, ...later, ...(backlog ? { caughtUp, stoppedBy, note } : {}) }
+      (stoppedBy
+        ? ` The mail server refused a send, so the catch-up is closed: ${stoppedBy}`
+        : '') +
+      (mailboxClosed ? ` The run stopped where the mailbox closed: ${mailboxClosed}` : '')
+    : stopped.trim() || undefined
+  return {
+    ...first,
+    ...later,
+    ...(backlog ? { caughtUp, stoppedBy } : {}),
+    ...(mailboxClosed ? { mailboxClosed } : {}),
+    ...(note ? { note } : {}),
+  }
 }
 
 /**
@@ -1010,6 +1074,8 @@ async function firstLetters({
     // refused one, which ends the catch-up.
     caughtUp: 0,
     stoppedBy: null,
+    // Why the mailbox turned the run away partway, where it did.
+    mailboxClosed: null,
   }
 
   for (const [position, prospect] of run.entries()) {
@@ -1019,6 +1085,15 @@ async function firstLetters({
     // the same order and carries on; a run the platform stops instead leaves
     // whatever it was holding claimed.
     if (sending && Date.now() + firstLetterNeedsMs(spacing) > endsAt) {
+      tally.postponed += run.length - position
+      break
+    }
+    // The mailbox is asked before anything is spent on this business too, so
+    // one that has filled or been rested since the top of the run stops it
+    // here, ahead of a draft and a claim, with the rest of the queue as it was.
+    const closed = sending ? await mailboxClosedReason(db) : null
+    if (closed) {
+      tally.mailboxClosed = closed
       tally.postponed += run.length - position
       break
     }
@@ -1143,6 +1218,24 @@ async function firstLetters({
       refused = cause
     }
 
+    // A letter the mailbox turned away never reached the mail server, so it is
+    // not a failed letter and is not filed as one. The draft stays at
+    // 'drafted' and the prospect goes back to where its own kind waits, which
+    // is the pair the queue already puts at its head once sending opens again:
+    // the same words go out, under the same row, on the run after the mailbox
+    // opens. The run stops here, since every letter behind this one would be
+    // turned away for the same reason.
+    if (refused instanceof MailboxClosed) {
+      const returned = await db
+        .from('outreach_prospects')
+        .update({ stage: home })
+        .eq('id', prospect.id)
+      if (returned.error) throw new Error(returned.error.message)
+      tally.mailboxClosed = refused.reason
+      tally.postponed += run.length - position
+      break
+    }
+
     if (refused) {
       console.error('outreach send: %s failed: %s', message.to_address, refused.message)
       await markFailed(db, message, refused)
@@ -1161,10 +1254,14 @@ async function firstLetters({
           .eq('id', prospect.id)
         if (returned.error) throw new Error(returned.error.message)
         tally.failed += 1
-        // In a catch-up a refusal from the mail server ends the run's sending
-        // there, rather than offering the same mailbox the rest of the backlog.
-        if (backlog) {
-          tally.stoppedBy = String(refused.message ?? refused).slice(0, 300)
+        // A refusal of the mailbox itself ends the run's sending there, and
+        // `deliver` has already rested it, so nothing behind this letter is
+        // offered to a server that has just said no. In a catch-up any refusal
+        // from the mail server does the same, rather than offering the same
+        // mailbox the rest of the backlog.
+        const stop = mailboxStopOf(refused)
+        if (backlog || stop) {
+          tally.stoppedBy = String(stop ?? refused.message ?? refused).slice(0, 300)
           tally.postponed += run.length - position - 1
           break
         }
@@ -1243,7 +1340,14 @@ async function followUps({
   backlog = null,
   catchUp = null,
 }) {
-  const tally = { followed: 0, closed: 0, deferred: 0, caughtUp: 0, stoppedBy: null }
+  const tally = {
+    followed: 0,
+    closed: 0,
+    deferred: 0,
+    caughtUp: 0,
+    stoppedBy: null,
+    mailboxClosed: null,
+  }
   const now = new Date()
 
   // In a catch-up the chain is read whole, and the follow-ups the refusals held
@@ -1324,6 +1428,15 @@ async function followUps({
       continue
     }
 
+    // The mailbox is asked before the follow-up is drafted, so a mailbox that
+    // has filled or been rested since the top of the run stops the run here and
+    // the business stays owed exactly as it was.
+    const closed = await mailboxClosedReason(db)
+    if (closed) {
+      tally.mailboxClosed = closed
+      break
+    }
+
     const prior = first.get(prospect.id) ?? null
     const shot = await warmShot(db, prospect, letter)
     const message = await draft(db, prospect, from, shot, letter, {
@@ -1353,6 +1466,22 @@ async function followUps({
       refused = cause
     }
 
+    // A follow-up the mailbox turned away never reached the mail server. A
+    // follow-up is never left waiting as a draft - the next run writes the
+    // business's letter afresh from its step and due date, which nothing here
+    // has moved - so its draft is taken back rather than filed as failed, and
+    // the run stops.
+    if (refused instanceof MailboxClosed) {
+      const undone = await db
+        .from('outreach_messages')
+        .delete()
+        .eq('id', message.id)
+        .eq('status', 'drafted')
+      if (undone.error) throw new Error(undone.error.message)
+      tally.mailboxClosed = refused.reason
+      break
+    }
+
     if (refused) {
       console.error(
         'outreach send: follow-up to %s failed: %s',
@@ -1371,10 +1500,12 @@ async function followUps({
           .eq('id', prospect.id)
         if (later.error) throw new Error(later.error.message)
         tally.deferred += 1
-        // A catch-up stops at the first refusal from the mail server.
-        if (backlog) {
+        // A refusal of the mailbox stops the run here, and so does any
+        // refusal from the mail server in a catch-up.
+        const stop = mailboxStopOf(refused)
+        if (backlog || stop) {
           counts.changed += 1
-          tally.stoppedBy = String(refused.message ?? refused).slice(0, 300)
+          tally.stoppedBy = String(stop ?? refused.message ?? refused).slice(0, 300)
           break
         }
       }

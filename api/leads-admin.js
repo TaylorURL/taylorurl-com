@@ -74,6 +74,7 @@ const COLUMNS = [
   'note',
   'brief',
   'campaign',
+  'referrer',
   'path',
   'step',
   'first_seen',

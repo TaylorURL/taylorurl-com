@@ -15,6 +15,12 @@
  *   - The address is checked the way outreach checks one. An address the
  *     check refuses marks the company 'undeliverable'.
  *
+ * The mailbox is outreach's too, and so is its rest and its cap. A run asks
+ * it first and does nothing while it is closed, and a refusal of the mailbox
+ * ends the run at that letter rather than at the end of the batch, with the
+ * companies behind it left exactly as they were; see
+ * lib/outreach/sending/mailbox.js.
+ *
  * Newest companies go first, since the email is about their having just
  * started. A company written to is mirrored onto outreach_prospects at
  * 'contacted', which is what lets the inbox watcher see its replies and
@@ -26,6 +32,13 @@ import { servedHereOr404 } from '../../lib/http/guard.js'
 import { readAll } from '../../lib/db/rows.js'
 import { Undeliverable, checkAddress } from '../../lib/outreach/prospects/address.js'
 import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
+import {
+  MAILBOX_COLUMNS,
+  MailboxClosed,
+  mailboxClosedReason,
+  mailboxStopOf,
+  readMailbox,
+} from '../../lib/outreach/sending/mailbox.js'
 import { dayStartsAt } from '../../lib/outreach/sending/schedule.js'
 import { sendWindow, suppressed, writtenTo } from '../../lib/outreach/sending/queue.js'
 import { composeFor } from '../../lib/new-business/email.js'
@@ -103,7 +116,9 @@ async function writtenHere(db, emails) {
 async function outreachSettings(db) {
   const { data, error } = await db
     .from('outreach_settings')
-    .select('from_address, from_name, catch_up_from, catch_up_until, catch_up_held_since')
+    .select(
+      `from_address, from_name, catch_up_from, catch_up_until, catch_up_held_since, ${MAILBOX_COLUMNS}`
+    )
     .eq('id', 1)
     .maybeSingle()
   if (error) throw new Error(error.message)
@@ -137,6 +152,13 @@ export async function work({
   const catchUp = catchUpOf(studio, now)
   const window = sendWindow(now, catchUp)
   if (!window.open) return { skipped: window.reason }
+
+  // The mailbox, asked before anything is read for the run. While Gmail has it
+  // resting, or it has carried its day's worth across every sender, no company
+  // is written to and none is touched.
+  const mailbox = await readMailbox(db, now, studio)
+  if (!mailbox.open) return { skipped: `the mailbox is closed: ${mailbox.reason}` }
+
   const heldBack = catchUp.today ? await heldLeads(db, catchUp) : null
   const backlog = catchUp.active ? heldBack : null
   const startedAt = Date.now()
@@ -182,7 +204,15 @@ export async function work({
   ])
 
   const from = sender(studio)
-  const tally = { sent: 0, held: 0, undeliverable: 0, failed: 0, caughtUp: 0, stoppedBy: null }
+  const tally = {
+    sent: 0,
+    held: 0,
+    undeliverable: 0,
+    failed: 0,
+    caughtUp: 0,
+    stoppedBy: null,
+    mailboxClosed: null,
+  }
   for (const lead of ready) {
     const back = owedIds.has(lead.id)
     if (!back && tally.sent - tally.caughtUp >= room) break
@@ -211,6 +241,15 @@ export async function work({
       continue
     }
 
+    // The mailbox is asked again before each letter, so one that has filled or
+    // been rested since the top of the run stops it here, with this company and
+    // every one behind it left where they wait.
+    const closed = await mailboxClosedReason(db)
+    if (closed) {
+      tally.mailboxClosed = closed
+      break
+    }
+
     const message = composeFor(lead, now)
     if (tally.sent) await wait(SPACING_MS)
 
@@ -220,6 +259,14 @@ export async function work({
       providerId = await deliver(db, message, from, message.unsubscribe, transport)
     } catch (cause) {
       refused = cause
+    }
+
+    // A letter the mailbox turned away never reached the mail server, so no
+    // row is written for it and the company stays 'emailable', to be written
+    // to on the run after the mailbox opens.
+    if (refused instanceof MailboxClosed) {
+      tally.mailboxClosed = refused.reason
+      break
     }
 
     const at = new Date().toISOString()
@@ -240,11 +287,15 @@ export async function work({
       if (refused.verdict === 'undeliverable') await setStage(db, lead.id, 'undeliverable')
       tally.failed += 1
       counts.changed += 1
-      // A catch-up ends at the first refusal from the mail server, for every
-      // sender, rather than offering the same mailbox the rest of the backlog.
-      if (backlog && !(refused instanceof Undeliverable)) {
-        tally.stoppedBy = String(refused.message ?? refused).slice(0, 300)
-        await endCatchUp(db, tally.stoppedBy)
+      // A refusal of the mailbox itself ends the run at this letter, and
+      // `deliver` has already rested it, so the companies behind it are not
+      // offered to a server that has just said no. A catch-up ends at the first
+      // refusal from the mail server of any kind, for every sender, rather than
+      // offering the same mailbox the rest of the backlog.
+      const stop = mailboxStopOf(refused)
+      if (stop || (backlog && !(refused instanceof Undeliverable))) {
+        tally.stoppedBy = String(stop ?? refused.message ?? refused).slice(0, 300)
+        if (backlog) await endCatchUp(db, tally.stoppedBy)
         break
       }
       continue
@@ -266,7 +317,15 @@ export async function work({
     note:
       `Sent ${tally.sent} (${already + own} of ${settings.daily_cap} today), held ${tally.held}, undeliverable ${tally.undeliverable}, failed ${tally.failed}.` +
       (backlog ? ` Catch-up: ${tally.caughtUp} held letters went.` : '') +
-      (tally.stoppedBy ? ` The mail server refused a send, so the catch-up is closed.` : ''),
+      (tally.stoppedBy && backlog
+        ? ` The mail server refused a send, so the catch-up is closed.`
+        : '') +
+      (tally.stoppedBy && !backlog
+        ? ` The mail server refused a send, and the run stopped there: ${tally.stoppedBy}`
+        : '') +
+      (tally.mailboxClosed
+        ? ` The run stopped where the mailbox closed: ${tally.mailboxClosed}`
+        : ''),
   }
 }
 
