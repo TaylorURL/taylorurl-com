@@ -21,18 +21,19 @@
  * this build prerenders.
  *
  * Chromium is whatever `PLAYWRIGHT_CHROMIUM` names, else the newest one
- * Playwright has cached, else `/usr/bin/chromium-browser` (the Pi).
+ * Playwright has cached, else `/usr/bin/chromium-browser` (the Pi). Finding it,
+ * the sheet and the guards are in `media-sheet.js` and `media-guard.js`, shared
+ * with the renderer that draws review and proof cards from live data.
  */
 import { spawn, spawnSync } from 'node:child_process'
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs'
-import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { chromium } from 'playwright-core'
-import { PORTFOLIO_PROJECTS } from '../../src/app/data/portfolio.js'
 import { PRERENDER_ROUTES } from '../../vite/site-routes.js'
 import * as T from './media-templates/templates.js'
 import { library } from './media-content.js'
+import { altGuard } from './media-guard.js'
+import { launch, renderStill, settle, sheet } from './media-sheet.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(HERE, '..', '..')
@@ -49,45 +50,8 @@ const skipVideo = flag('--skip-video')
 const copyOut = option('--copy')
 
 // ---------------------------------------------------------------------------
-// Chromium and ffmpeg
+// ffmpeg
 // ---------------------------------------------------------------------------
-
-function findChromium() {
-  if (process.env.PLAYWRIGHT_CHROMIUM) return process.env.PLAYWRIGHT_CHROMIUM
-  const caches = [
-    process.env.PLAYWRIGHT_BROWSERS_PATH,
-    join(homedir(), 'Library', 'Caches', 'ms-playwright'),
-    join(homedir(), '.cache', 'ms-playwright'),
-  ].filter(dir => dir && existsSync(dir))
-  const binaries = [
-    'chrome-headless-shell-mac-arm64/chrome-headless-shell',
-    'chrome-headless-shell-mac-x64/chrome-headless-shell',
-    'chrome-headless-shell-linux64/chrome-headless-shell',
-    'chrome-headless-shell-linux-arm64/chrome-headless-shell',
-    'chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing',
-    'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
-    'chrome-linux64/chrome',
-    'chrome-linux/chrome',
-  ]
-  for (const cache of caches) {
-    const builds = readdirSync(cache)
-      .filter(name => /^chromium(_headless_shell)?-\d+$/.test(name))
-      .sort(
-        (a, b) =>
-          Number(b.split('-').pop()) - Number(a.split('-').pop()) ||
-          (a.includes('headless') ? -1 : 1)
-      )
-    for (const build of builds) {
-      for (const binary of binaries) {
-        const path = join(cache, build, binary)
-        if (existsSync(path)) return path
-      }
-    }
-  }
-  if (existsSync('/usr/bin/chromium-browser')) return '/usr/bin/chromium-browser'
-  if (existsSync('/usr/bin/chromium')) return '/usr/bin/chromium'
-  throw new Error('render-media: no Chromium found. Set PLAYWRIGHT_CHROMIUM to a chrome binary.')
-}
 
 const FFMPEG = process.env.FFMPEG || 'ffmpeg'
 
@@ -95,159 +59,13 @@ const FFMPEG = process.env.FFMPEG || 'ffmpeg'
 // Guards
 // ---------------------------------------------------------------------------
 
-/**
- * Every way a client could be named in a line of copy: the business name, its
- * first word and first two words, the host it is served from and the host's
- * stem. The first word is matched as a whole word and in its own case, so
- * "Compound" the business is caught and "compound" the adjective would not be.
- * The extra names are ones the articles print beside a client: a parent company
- * and an owner's first name.
- */
-function clientPatterns() {
-  const terms = new Set(['SRM', 'Angie', 'go-kart', 'TX-146'])
-  const loose = new Set()
-  for (const project of PORTFOLIO_PROJECTS.filter(entry => entry.kind === 'client')) {
-    const parts = project.name.split(/\s+/)
-    terms.add(project.name)
-    terms.add(parts[0])
-    if (parts.length > 1) terms.add(parts.slice(0, 2).join(' '))
-    const host = project.displayUrl.replace(/^www\./, '')
-    loose.add(host)
-    loose.add(host.split('.')[0])
-  }
-  const escape = value => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  return [
-    ...[...terms].map(term => ({
-      term,
-      re: new RegExp(`(^|[^A-Za-z0-9])${escape(term)}(?![A-Za-z0-9])`),
-    })),
-    ...[...loose].map(term => ({ term, re: new RegExp(escape(term), 'i') })),
-  ]
-}
-
-const CLIENTS = clientPatterns()
-const RULES = [
-  { why: 'a price', re: /\$\s?\d|\b\d[\d,]*\s?dollars?\b|\bstarting at\b|\bfrom \$|\bUSD\b/i },
-  { why: 'first-person voice', re: /(^|[^A-Za-z-])(I|I'm|I've|I'll|I'd)(?![A-Za-z'’-])/ },
-  { why: 'first-person voice', re: /\b(me|my|mine|myself)\b/i },
-  { why: 'solo framing', re: /\bone[- ]person\b|\bsolo\b/i },
-  { why: 'an emoji', re: /\p{Extended_Pictographic}/u },
-  { why: 'an em dash', re: /—/ },
-  { why: 'a value that never resolved', re: /\b(undefined|null|NaN)\b/ },
-]
-
-/** Spacing and punctuation an alt built from parts can come out with. */
-const ALT_RULES = [
-  { why: 'a space before punctuation', re: /\s[.,;:?!]/ },
-  { why: 'a doubled stop', re: /[.?!]\./ },
-  { why: 'a stop inside a sentence', re: /\d%\.\s+[a-z]/ },
-]
-
-function guard(key, text) {
-  const faults = []
-  for (const { term, re } of CLIENTS) if (re.test(text)) faults.push(`client name "${term}"`)
-  for (const { why, re } of RULES)
-    if (re.test(text)) faults.push(`${why} (${text.match(re)[0].trim()})`)
-  if (faults.length)
-    throw new Error(`render-media: ${key} carries ${faults.join(', ')}:\n  ${text.slice(0, 400)}`)
-}
-
-/** An alt or a headline: every guard above, plus the ones a joined string can fail. */
-function altGuard(key, text) {
-  guard(key, text)
-  const faults = ALT_RULES.filter(({ re }) => re.test(text)).map(
-    ({ why, re }) => `${why} ("${text.match(re)[0]}")`
-  )
-  if (faults.length)
-    throw new Error(`render-media: ${key} alt has ${faults.join(', ')}:\n  ${text.slice(0, 400)}`)
-}
+// The text rules themselves are in `media-guard.js` and the fit and the read-back
+// in `media-sheet.js`, shared with `generated-cards.js`, so a card drawn on the
+// Pi from live data is refused for exactly what a library card is refused for.
 
 const ROUTES = new Set(
   PRERENDER_ROUTES.map(route => (typeof route === 'string' ? route : route.path))
 )
-
-// ---------------------------------------------------------------------------
-// Shared page assets
-// ---------------------------------------------------------------------------
-
-function fontFaces() {
-  const face = (family, file) =>
-    `@font-face { font-family: '${family}'; src: url(data:font/woff2;base64,${readFileSync(join(ROOT, 'public', 'fonts', file)).toString('base64')}) format('woff2'); font-weight: 100 900; font-style: normal; font-display: block; }`
-  return [
-    face('Geist', 'geist-variable.woff2'),
-    face('Geist Mono', 'geist-mono-variable.woff2'),
-  ].join('\n')
-}
-
-/**
- * The wordmark, cropped to its ink and turned into a mask.
- *
- * The shipped PNG sits in a square that is mostly empty and carries a coloured
- * halo, so it is thresholded and cropped the way `brand/social/src/tulib.py`
- * does it, and only the alpha is kept: the mark is then drawn in whatever the
- * accent is on that sheet. `base` is where the baseline falls in the crop, so
- * the mark sits on the same line as the address beside it.
- */
-async function wordmark(browser) {
-  const page = await browser.newPage()
-  const png = readFileSync(join(ROOT, 'public', 'images', 'TaylorURL-Logo.png')).toString('base64')
-  const result = await page.evaluate(async source => {
-    const image = new Image()
-    image.src = source
-    await image.decode()
-    const canvas = document.createElement('canvas')
-    canvas.width = image.width
-    canvas.height = image.height
-    const context = canvas.getContext('2d')
-    context.drawImage(image, 0, 0)
-    const data = context.getImageData(0, 0, canvas.width, canvas.height)
-    let x0 = canvas.width
-    let y0 = canvas.height
-    let x1 = 0
-    let y1 = 0
-    for (let y = 0; y < canvas.height; y++) {
-      for (let x = 0; x < canvas.width; x++) {
-        const i = (y * canvas.width + x) * 4
-        const on = data.data[i + 3] >= 90
-        data.data[i] = 255
-        data.data[i + 1] = 255
-        data.data[i + 2] = 255
-        data.data[i + 3] = on ? 255 : 0
-        if (on) {
-          x0 = Math.min(x0, x)
-          y0 = Math.min(y0, y)
-          x1 = Math.max(x1, x)
-          y1 = Math.max(y1, y)
-        }
-      }
-    }
-    context.putImageData(data, 0, 0)
-    const width = x1 - x0 + 1
-    const height = y1 - y0 + 1
-    const crop = document.createElement('canvas')
-    crop.width = width
-    crop.height = height
-    crop.getContext('2d').drawImage(canvas, x0, y0, width, height, 0, 0, width, height)
-    const alpha = crop.getContext('2d').getImageData(0, 0, width, height).data
-    const rows = []
-    for (let y = 0; y < height; y++) {
-      let count = 0
-      for (let x = 0; x < width; x++) if (alpha[(y * width + x) * 4 + 3]) count++
-      rows.push(count)
-    }
-    const floor = rows[height - 1] * 3
-    let base = height - 1
-    for (let y = height - 1; y > 0; y--) {
-      if (rows[y] > floor) {
-        base = y
-        break
-      }
-    }
-    return { url: crop.toDataURL('image/png'), aspect: width / height, base: base / height }
-  }, `data:image/png;base64,${png}`)
-  await page.close()
-  return result
-}
 
 // ---------------------------------------------------------------------------
 // Rendering
@@ -311,34 +129,6 @@ function slidesFor(set) {
       alt: `${p(set.close.headline)} ${p(set.close.body)} ${set.close.path}`,
     },
   ]
-}
-
-async function settle(page, key) {
-  await page.evaluate(() => document.fonts.ready)
-  const fonts = await page.evaluate(
-    () => document.fonts.check('600 80px Geist') && document.fonts.check('500 21px "Geist Mono"')
-  )
-  if (!fonts) throw new Error(`render-media: ${key} rendered without Geist`)
-  const fit = await page.evaluate(() => window.__fit())
-  if (fit.problems.length)
-    throw new Error(`render-media: ${key} does not fit:\n  ${fit.problems.join('\n  ')}`)
-  guard(
-    key,
-    await page.evaluate(() =>
-      (body => (
-        body.querySelectorAll('script').forEach(script => script.remove()),
-        body.textContent
-      ))(document.body.cloneNode(true)).replace(/\s+/g, ' ')
-    )
-  )
-  return fit
-}
-
-async function renderStill(page, html, file, key) {
-  await page.setContent(html, { waitUntil: 'load' })
-  const fit = await settle(page, key)
-  await page.screenshot({ path: join(OUT, file), type: 'png' })
-  return fit
 }
 
 /** Frames straight into ffmpeg: no frame ever touches the disk. */
@@ -492,16 +282,8 @@ async function main() {
 
   const chosen = item => !only || only.some(part => item.key.includes(part))
   mkdirSync(OUT, { recursive: true })
-  const browser = await chromium.launch({
-    executablePath: findChromium(),
-    args: ['--font-render-hinting=none', '--disable-lcd-text'],
-  })
-  const shared = {
-    fontFaces: fontFaces(),
-    css: readFileSync(join(HERE, 'media-templates', 'sheet.css'), 'utf8'),
-    mark: await wordmark(browser),
-  }
-  const runtime = readFileSync(join(HERE, 'media-templates', 'runtime.js'), 'utf8')
+  const browser = await launch()
+  const { shared, runtime } = await sheet(browser)
   const previous = existsSync(MANIFEST) ? JSON.parse(readFileSync(MANIFEST, 'utf8')) : []
   const before = new Map(previous.map(entry => [entry.key, entry]))
   const manifest = new Map()
@@ -512,10 +294,10 @@ async function main() {
     if (item.kind === 'image') {
       const spec = TEMPLATES[item.format](item)
       const file = `${item.key}.png`
-      const fit = await renderStill(
+      const { fit } = await renderStill(
         page,
         T.page({ size: T.IMAGE, ...spec }, shared, runtime),
-        file,
+        join(OUT, file),
         item.key
       )
       if (fit.shrunk.length) shrunk.push(`${item.key}: ${fit.shrunk.join(' ')}`)
@@ -528,10 +310,10 @@ async function main() {
       const files = []
       for (const [index, slide] of slides.entries()) {
         const file = `${item.key}-${index + 1}.png`
-        const fit = await renderStill(
+        const { fit } = await renderStill(
           page,
           T.page({ size: T.IMAGE, ...slide.spec }, shared, runtime),
-          file,
+          join(OUT, file),
           `${item.key}#${index + 1}`
         )
         if (fit.shrunk.length) shrunk.push(`${item.key}#${index + 1}: ${fit.shrunk.join(' ')}`)

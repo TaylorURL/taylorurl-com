@@ -264,6 +264,93 @@ export function faqCard(item) {
 }
 
 // ---------------------------------------------------------------------------
+// Cards drawn from live data, 1080 x 1350
+// ---------------------------------------------------------------------------
+
+/** The five points of a star, as a clip path, so a rating is drawn rather than typed. */
+const STAR =
+  'polygon(50% 0%, 61.2% 34.5%, 97.6% 34.5%, 68.2% 55.9%, 79.4% 90.5%, 50% 69.1%, 20.6% 90.5%, 31.8% 55.9%, 2.4% 34.5%, 38.8% 34.5%)'
+
+/**
+ * `review`: a client's own words from the Google listing, and the stars they gave.
+ *
+ * The quote is escaped rather than read as copy, because it is somebody else's
+ * writing: an asterisk a reviewer typed is an asterisk, not an accent run. The
+ * stars are shapes rather than characters, so no glyph a font or a guard could
+ * read as an emoji stands in for the rating.
+ */
+export function reviewCard(item) {
+  const stars = Array.from(
+    { length: 5 },
+    (_, index) => `<i class="star${index < item.stars ? ' on' : ''}"></i>`
+  ).join('')
+  return {
+    eyebrow: item.eyebrow ?? 'Left on Google',
+    counter: item.counter ?? '',
+    dark: item.dark,
+    css: `
+.content { justify-content: center; gap: 48px; }
+.stars { display: flex; gap: 16px; }
+.star { width: 50px; height: 50px; background: rgba(var(--fg-rgb), 0.16); clip-path: ${STAR}; }
+.star.on { background: var(--accent); }
+.quote { display: flex; gap: 26px; align-items: flex-start; }
+.quote .open { font-weight: 600; font-size: 150px; line-height: 0.78; color: var(--accent); flex: none; }
+.quote .words { font-weight: 500; letter-spacing: -0.022em; line-height: 1.14; }
+.by { padding-top: 30px; border-top: 1px solid rgba(var(--fg-rgb), var(--rule)); display: flex; flex-direction: column; gap: 14px; }`,
+    inner: `
+<div class="stars" role="img" aria-label="${item.stars} of 5 stars">${stars}</div>
+<div class="quote"><span class="open">&ldquo;</span><div class="words" ${shrink(item.quoteSize ?? 70, 40)}>${escape(item.quote)}</div></div>
+<div class="by"><div class="label">${escape(item.attribution)}</div><div class="note">${rich(item.source)}</div></div>`,
+  }
+}
+
+/**
+ * `proof`: the morning's PageSpeed readings for the client sites the studio
+ * keeps, each site by trade and town, with the average of both strategies.
+ *
+ * The table is the card. A reader is shown every reading the average was taken
+ * over, so the two large figures are checkable against the rows under them
+ * rather than being a number the studio asks to be taken on trust.
+ */
+export function proofCard(item) {
+  // Past eight rows the table is set tighter and the figures above it smaller,
+  // so a growing roster still fits one card rather than spilling onto a second
+  // that would be read without the first.
+  const dense = item.sites.length > 8
+  const rows = item.sites
+    .map(
+      site =>
+        `<div class="row"><span class="site" ${dense ? shrink(26, 19) : shrink(30, 22)}>${escape(site.label)}</span><span class="n">${site.mobile}</span><span class="n">${site.desktop}</span></div>`
+    )
+    .join('')
+  const figure = dense ? shrink(130, 76) : shrink(190, 110)
+  return {
+    eyebrow: item.eyebrow ?? 'Measured by Google',
+    counter: item.counter ?? '',
+    dark: item.dark,
+    css: `
+.content { justify-content: center; gap: ${dense ? 22 : 34}px; }
+.figs { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.fig .v { font-weight: 600; letter-spacing: -0.05em; line-height: 0.86; color: var(--accent); white-space: nowrap; }
+.fig .label { margin-top: ${dense ? 12 : 18}px; }
+.table { display: flex; flex-direction: column; }
+.row { display: grid; grid-template-columns: 1fr 130px 130px; align-items: baseline; gap: 16px; padding: ${dense ? 5 : 10}px 0; border-bottom: 1px solid rgba(var(--fg-rgb), var(--rule)); }
+.row.top { padding-top: 0; }
+.row .n { font-family: 'Geist Mono', monospace; font-weight: 500; font-size: ${dense ? 24 : 28}px; text-align: right; }
+.row.top .n { font-size: 21px; }
+.row .site { font-weight: 450; line-height: 1.2; }`,
+    inner: `
+<div class="head" ${dense ? shrink(56, 40) : shrink(item.headSize ?? 66, 44)}>${rich(item.headline)}</div>
+<div class="figs">
+<div class="fig"><div class="v" ${figure}>${escape(item.mobile)}</div><div class="label">Phone, Average</div></div>
+<div class="fig"><div class="v" ${figure}>${escape(item.desktop)}</div><div class="label">Desktop, Average</div></div>
+</div>
+<div class="table"><div class="row top label"><span>Trade and Town</span><span class="n">Phone</span><span class="n">Desktop</span></div>${rows}</div>
+<div class="note">${rich(item.source)}</div>`,
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Carousel slides, 1080 x 1350
 // ---------------------------------------------------------------------------
 
