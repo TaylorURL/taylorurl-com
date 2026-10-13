@@ -471,6 +471,10 @@ const sendPlan = (candidates, extra = {}) => ({
   ],
   'select:outreach_prospects': { data: candidates, error: null },
   'select:suppression': { data: [], error: null },
+  'select:preview_sites': {
+    data: candidates.map(row => ({ prospect_id: row.id, expires_at: null })),
+    error: null,
+  },
   'insert:outreach_messages': drafted,
   'update:outreach_prospects': { error: null },
   ...extra,

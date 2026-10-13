@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { DeferredWaiting } from '@components/app-shell/Waiting'
 import ErrorBoundary from '@components/app-shell/ErrorBoundary'
 import { useClickEffect } from '@hooks/chrome/useClickEffect'
+import { useEarlyPress } from '@hooks/chrome/useEarlyPress'
 import AppRoutes from './routes'
 
 /**
@@ -13,6 +14,7 @@ import AppRoutes from './routes'
  */
 export default function App({ views }) {
   useClickEffect()
+  useEarlyPress()
 
   return (
     <ErrorBoundary>

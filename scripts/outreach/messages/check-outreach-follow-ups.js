@@ -391,6 +391,10 @@ const plan = ({
     { data: first, error: null },
   ],
   'select:suppression': { data: suppressed.map(email => ({ email })), error: null },
+  'select:preview_sites': {
+    data: queue.map(row => ({ prospect_id: row.id, expires_at: null })),
+    error: null,
+  },
   'insert:outreach_messages': drafted,
   'update:outreach_messages': { error: null },
   'update:outreach_prospects': { error: null },

@@ -110,6 +110,29 @@
  * the notice exists for. A build that shipped broken syntax is still told
  * nothing here, because the sentence would be a guess: the page is not coming
  * back on a reload and the reader's browser is not the reason.
+ *
+ * And the controls are dead on a boot that does land, for as long as it takes
+ * to. Every question on the FAQ, every group in the bar and the menu on a phone
+ * is a button, and a button the bundle has not adopted yet does nothing when it
+ * is pressed: the press is spent on markup with no handler, React never hears
+ * of it, and the reader is left looking at a page that ignored them. Measured
+ * against the built site with its scripts held back a second and a half, a
+ * question pressed at 0.6s stayed shut after the page went live at 6.1s, and a
+ * reader who pressed it once had no way to know a second press would now work.
+ *
+ * So the last control pressed before the bundle takes over is held, and handed
+ * to the page to press again once it is live (`useEarlyPress`). Only the last
+ * one: a reader who pressed three things while nothing answered wants the one
+ * they are pressing now. A link is not held, because a link answers on its own
+ * and has already gone where it was going.
+ *
+ * The press also starts the boot, rather than waiting on the two frames. The
+ * frames are there so the bundle cannot hold back a first paint, and a press is
+ * proof of one. Without it the frames were the only way in, and a document that
+ * is never given a frame - opened behind another window, or loaded in a tab
+ * that was not in front - never asked for the bundle at all: driven against the
+ * built site with no frames, the page was still dead eleven seconds after the
+ * press, which is the dead page a reload was the only way off.
  */
 export function bootSource(src) {
   return `(function(){
@@ -158,7 +181,25 @@ else notice(STALLED)
 var said=(error&&error.message)||String(error)
 return Promise.reject(new Error('The page could not start: '+said))
 }
-requestAnimationFrame(function(){requestAnimationFrame(function(){
+var pressed=null
+function hold(event){
+var target=event.target
+var control=target&&target.closest?target.closest('button,[role="button"]'):null
+if(control&&control.tagName!=='A')pressed=control
+}
+document.addEventListener('click',hold,true)
+window.__earlyPress=function(){
+document.removeEventListener('click',hold,true)
+var control=pressed
+pressed=null
+return control
+}
+var begun=false
+function boot(){
+if(begun)return
+begun=true
+removeEventListener('pointerdown',boot,true)
+removeEventListener('keydown',boot,true)
 start(entry).then(done,function(error){
 if(parseFailure(error))return lost(error)
 if(navigator.onLine!==false&&once()){location.reload();return}
@@ -168,6 +209,9 @@ return new Promise(function(resolve){setTimeout(resolve,WAIT_MS)}).then(function
 return start(late).then(done,lost)
 })
 })
-})})
+}
+addEventListener('pointerdown',boot,true)
+addEventListener('keydown',boot,true)
+requestAnimationFrame(function(){requestAnimationFrame(boot)})
 })()`
 }
