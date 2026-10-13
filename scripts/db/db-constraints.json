@@ -281,6 +281,18 @@
         "definition": "CHECK ((strategy = ANY (ARRAY['mobile'::text, 'desktop'::text])))"
       }
     },
+    "social_generated_cards": {
+      "kind": {
+        "constraint": "social_generated_cards_kind_check",
+        "allows": ["review", "proof"],
+        "definition": "CHECK ((kind = ANY (ARRAY['review'::text, 'proof'::text])))"
+      },
+      "state": {
+        "constraint": "social_generated_cards_state_check",
+        "allows": ["skipped", "drawn", "queued"],
+        "definition": "CHECK ((state = ANY (ARRAY['skipped'::text, 'drawn'::text, 'queued'::text])))"
+      }
+    },
     "speed_checks": {
       "band": {
         "constraint": "speed_checks_band_check",
