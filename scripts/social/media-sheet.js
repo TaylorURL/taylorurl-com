@@ -2,15 +2,17 @@
  * The browser a card is drawn in, and the sheet every card is drawn on.
  *
  * Shared by `render-media.js`, which renders the library on a workstation, and
- * `generated-cards.js`, which renders review and proof cards on the Pi. Both
- * open the same Chromium the same way, embed the same two faces, mask the same
- * wordmark and settle every page through the same fit and the same guard, so a
- * card drawn from a review this morning sits beside one drawn from an article
- * last month as one set rather than as a near copy.
+ * `generated-cards.js`, which renders review, proof and launch cards and launch
+ * videos on the Pi. Both open the same Chromium the same way, embed the same two
+ * faces, mask the same wordmark, settle every page through the same fit and the
+ * same guard and cut every video with the same encoder settings, so a card drawn
+ * from a review this morning sits beside one drawn from an article last month as
+ * one set rather than as a near copy.
  *
  * Chromium is whatever `PLAYWRIGHT_CHROMIUM` names, else the newest one
  * Playwright has cached, else `/usr/bin/chromium-browser` (the Pi).
  */
+import { spawn } from 'node:child_process'
 import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
@@ -168,9 +170,10 @@ export async function sheet(browser) {
  *
  * The faces have to have loaded, the type has to fit its box at or above its
  * floor, and the text the page actually shows - read back after layout, not the
- * copy it was handed - has to pass every guard.
+ * copy it was handed - has to pass every guard. `allow` is the one business a
+ * page may name, and only a launch the client said yes to passes one.
  */
-export async function settle(page, key) {
+export async function settle(page, key, { allow = [] } = {}) {
   await page.evaluate(() => document.fonts.ready)
   const fonts = await page.evaluate(
     () => document.fonts.check('600 80px Geist') && document.fonts.check('500 21px "Geist Mono"')
@@ -186,7 +189,8 @@ export async function settle(page, key) {
         body.querySelectorAll('script').forEach(script => script.remove()),
         body.textContent
       ))(document.body.cloneNode(true)).replace(/\s+/g, ' ')
-    )
+    ),
+    { allow }
   )
   return fit
 }
@@ -198,11 +202,135 @@ export async function settle(page, key) {
  * @param {string} html The whole page, from `templates.page`.
  * @param {string|null} path Where the PNG is written, or null to keep it in memory.
  * @param {string} key What a refusal names.
+ * @param {{allow?: string[]}} [options] What `settle` takes.
  * @returns {Promise<{fit: object, png: Buffer}>}
  */
-export async function renderStill(page, html, path, key) {
+export async function renderStill(page, html, path, key, options = {}) {
   await page.setContent(html, { waitUntil: 'load' })
-  const fit = await settle(page, key)
+  const fit = await settle(page, key, options)
   const png = await page.screenshot({ ...(path ? { path } : {}), type: 'png' })
   return { fit, png }
+}
+
+/** The frame rate every video is cut at. */
+export const FPS = 30
+
+/** The encoder, which is whatever `FFMPEG` names, else the one on the path. */
+const FFMPEG = process.env.FFMPEG || 'ffmpeg'
+
+/**
+ * A video page cut into an MP4: every frame seeked, photographed and piped
+ * straight into ffmpeg, so no frame ever touches the disk.
+ *
+ * The page is settled first, which is the same fit and the same guard a still
+ * passes, and then asked for frame after frame. A page that has to wait for
+ * something before a frame is true - a recorded frame of a site still decoding
+ * - says so through `window.__ready`, and each frame is taken only once it
+ * resolves. The library's pages carry nothing to wait for, so for them the
+ * frame is taken the moment the seek returns, exactly as it always was.
+ *
+ * The encoding is fixed rather than tuned per video: H.264 high profile in
+ * limited range, a silent AAC track because some feeds refuse a video with no
+ * audio at all, a keyframe every two seconds, and every timestamp and metadata
+ * field stripped, so the same page cuts the same bytes on every run.
+ *
+ * @param {object} page A Playwright page sized to `VIDEO`.
+ * @param {string} html The whole page, from `templates.videoPage`.
+ * @param {object} video The video: `key`, `duration` in seconds and `poster`,
+ *   the second the poster is taken at.
+ * @param {string} path Where the MP4 is written.
+ * @param {{poster?: string|null, allow?: string[]}} [options] Where the poster
+ *   PNG is written, if anywhere, and what `settle` takes.
+ * @returns {Promise<{fit: object, poster: Buffer}>}
+ */
+export async function renderClip(page, html, video, path, { poster = null, allow = [] } = {}) {
+  await page.setContent(html, { waitUntil: 'load' })
+  const fit = await settle(page, video.key, { allow })
+  const ready = () => page.evaluate(() => (window.__ready ? window.__ready() : null))
+
+  await page.evaluate(t => window.__seek(t), video.poster)
+  await ready()
+  const still = await page.screenshot({ ...(poster ? { path: poster } : {}), type: 'png' })
+
+  const frames = Math.round(video.duration * FPS)
+  const ffmpeg = spawn(
+    FFMPEG,
+    [
+      '-y',
+      '-loglevel',
+      'error',
+      '-f',
+      'image2pipe',
+      '-framerate',
+      String(FPS),
+      '-c:v',
+      'mjpeg',
+      '-i',
+      '-',
+      '-f',
+      'lavfi',
+      '-t',
+      String(video.duration),
+      '-i',
+      'anullsrc=channel_layout=stereo:sample_rate=48000',
+      '-map',
+      '0:v',
+      '-map',
+      '1:a',
+      '-vf',
+      'scale=in_range=full:out_range=limited,format=yuv420p',
+      '-c:v',
+      'libx264',
+      '-preset',
+      'slow',
+      '-crf',
+      '23',
+      '-pix_fmt',
+      'yuv420p',
+      '-color_range',
+      'tv',
+      '-profile:v',
+      'high',
+      '-level:v',
+      '4.1',
+      '-r',
+      String(FPS),
+      '-g',
+      String(FPS * 2),
+      '-c:a',
+      'aac',
+      '-b:a',
+      '48k',
+      '-shortest',
+      '-movflags',
+      '+faststart',
+      '-map_metadata',
+      '-1',
+      '-fflags',
+      '+bitexact',
+      '-flags:v',
+      '+bitexact',
+      '-flags:a',
+      '+bitexact',
+      path,
+    ],
+    { stdio: ['pipe', 'inherit', 'inherit'] }
+  )
+  const done = new Promise((resolve, reject) => {
+    ffmpeg.on('error', reject)
+    ffmpeg.on('close', code =>
+      code === 0
+        ? resolve()
+        : reject(new Error(`render-media: ffmpeg exited ${code} on ${video.key}`))
+    )
+  })
+  for (let frame = 0; frame < frames; frame++) {
+    await page.evaluate(t => window.__seek(t), frame / FPS)
+    await ready()
+    const jpeg = await page.screenshot({ type: 'jpeg', quality: 92 })
+    if (!ffmpeg.stdin.write(jpeg)) await new Promise(resolve => ffmpeg.stdin.once('drain', resolve))
+  }
+  ffmpeg.stdin.end()
+  await done
+  return { fit, poster: still }
 }

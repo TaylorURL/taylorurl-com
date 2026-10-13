@@ -45,7 +45,7 @@ import {
   stepRank,
   withAnswer,
 } from '../../src/app/views/console/lib/onboarding.js'
-import { cases, check, finish, report, same } from '../harness/checks.js'
+import { cases, check, finish, ok, report, same } from '../harness/checks.js'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
 const read = path => readFileSync(join(HERE, '../..', path), 'utf8')
@@ -360,6 +360,35 @@ check('the two fields with no list of their own are given one to draw', () => {
   }
 
   report(faults)
+})
+
+check('being shown on the studio pages is asked, and never assumed', () => {
+  // The launch run names a client on the studio's own pages only on a stored
+  // yes, so the answer must be one the client pressed. A prefill, a seed or a
+  // required flag would each manufacture that yes, or make a client give it to
+  // reach the end of the form, and none of those is consent.
+  const field = STEPS.flatMap(step => step.fields).find(one => one.key === 'contacts.showcase')
+  ok(field, 'the brief does not ask about being shown')
+  if (!field) return
+  same(field.kind, 'choice', 'the kind of answer')
+  same(field.required, false, 'whether it is required')
+  same(field.fill, null, 'where it is prefilled from')
+  same(field.seed, undefined, 'its seed')
+  same(field.options.map(option => option.id).join(), 'yes,no', 'what it offers')
+  ok(/^[A-Z]/.test(field.help) && /\?$/.test(field.help), 'the question is not asked as one')
+
+  const brief = [
+    { label: 'Business Type', value: 'Plumbing' },
+    { label: 'How It Should Feel', value: 'Hard-wearing and practical' },
+  ]
+  const filled = prefill({}, { project: { business_name: 'Bellview Plumbing' }, brief })
+  same(filled.contacts?.showcase, undefined, 'what a prefill puts there')
+  const whole = answeredWhole()
+  same(
+    onboardingPercent(withAnswer(whole, field.key, 'no')),
+    onboardingPercent(whole),
+    'the figure a no gives against leaving it alone'
+  )
 })
 
 check('what counts as answered is not merely what is present', () => {

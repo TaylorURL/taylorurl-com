@@ -284,8 +284,8 @@
     "social_generated_cards": {
       "kind": {
         "constraint": "social_generated_cards_kind_check",
-        "allows": ["review", "proof"],
-        "definition": "CHECK ((kind = ANY (ARRAY['review'::text, 'proof'::text])))"
+        "allows": ["review", "proof", "launch"],
+        "definition": "CHECK ((kind = ANY (ARRAY['review'::text, 'proof'::text, 'launch'::text])))"
       },
       "state": {
         "constraint": "social_generated_cards_state_check",
