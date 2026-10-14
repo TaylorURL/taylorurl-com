@@ -59,7 +59,7 @@ const CLOSED_AS = {
   manual: 'Closed',
 }
 
-const NO_REPLY = 'The answer did not go. Try again in a moment.'
+const NO_REPLY = 'The console could not send your text. Try again in a moment.'
 
 /** Each trade a preview is built for, in the console's words. */
 const INDUSTRY = {

@@ -91,7 +91,7 @@ check('the follow-ups are short, carry no picture and the last says when it come
   same(nudge.mediaUrl, null, 'nudge picture')
   same(last.mediaUrl, null, 'last picture')
   // 2026-11-06 at 15:00 UTC is a Friday morning in Central.
-  ok(last.body.includes('It comes down Friday.'), `the last says: ${last.body}`)
+  ok(last.body.includes("I'm taking it down Friday."), `the last says: ${last.body}`)
   ok(nudge.body.length <= 160 && last.body.length <= 160, 'a follow-up runs past one text')
   same(PREVIEW_TEXT_DAYS.length, 2, 'follow-ups')
 })
