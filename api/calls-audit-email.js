@@ -430,7 +430,7 @@ export async function send({
   // A resolver having a bad afternoon is not a fact about the address, so an
   // unsettled reading is let through and the transport decides. Only a domain
   // that has said outright it takes no mail is refused here.
-  const deliverable = await checkAddress(db, email)
+  const deliverable = await checkAddress(db, email, { now: now.getTime() })
   if (deliverable.verdict === 'undeliverable') {
     return {
       status: 422,
