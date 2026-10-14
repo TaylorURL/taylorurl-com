@@ -45,6 +45,14 @@
  * (GOOGLE_PLACES_API_KEY) and kept for an hour, so a run sending thirty letters
  * reads each network once. A network that does not answer costs the line its
  * figure, never the letter.
+ *
+ * A preview filed with channel 'text' is a business the studio holds a phone
+ * number for and no address. Its first text goes from here on the same POST,
+ * which carries `channel: 'text'`, through lib/outreach/preview-texts.js, and
+ * never touches the mailbox: it is held instead by the text line's own
+ * switches, hours and daily cap in lib/outreach/sending/texts.js, and answered
+ * 503 with the reason when the line is closed, so the routine asks again
+ * later. Its two follow-ups go from api/outreach/texts.js.
  */
 
 import { randomUUID } from 'node:crypto'
@@ -74,6 +82,13 @@ import {
   previewUrl,
 } from '../../lib/outreach/previews.js'
 import { proofNow } from '../../lib/outreach/proof.js'
+import {
+  PREVIEW_TEXT_DAYS,
+  PREVIEW_TEXT_LIFETIME_DAYS,
+  sendPreviewText,
+  textBarred,
+} from '../../lib/outreach/preview-texts.js'
+import { textLineOf, textsSentToday, usPhone } from '../../lib/outreach/sending/texts.js'
 import { deliver, sender, unsubscribeUrl } from './send.js'
 
 export const config = { maxDuration: 300 }
@@ -85,7 +100,7 @@ const DAY_MS = 24 * 60 * 60 * 1000
 const CLOSED = new Set(['replied', 'unsubscribed', 'bounced', 'undeliverable'])
 
 const SITE_COLUMNS =
-  'id, slug, name, prospect_id, letter, shot_url, message_id, sent_at, follow_up_due_at, follow_up_sent_at, follow_ups, expires_at'
+  'id, slug, name, prospect_id, letter, shot_url, message_id, sent_at, follow_up_due_at, follow_up_sent_at, follow_ups, expires_at, channel'
 
 async function prospectOf(db, id) {
   const { data, error } = await db
@@ -240,6 +255,7 @@ async function sendFirst(db, settings, slug, counts) {
     .maybeSingle()
   if (error) throw new Error(error.message)
   if (!site) return { error: `no preview is filed as ${slug}` }
+  if (site.channel === 'text') return { error: `${slug} is filed to go by text` }
   if (site.sent_at) return { note: `${slug} was already sent on ${site.sent_at}` }
   if (!site.prospect_id) return { error: `${slug} names no prospect to write to` }
 
@@ -287,6 +303,99 @@ async function sendFirst(db, settings, slug, counts) {
   if (moved.error) throw new Error(moved.error.message)
   counts.changed = 1
   return { note: `${slug} sent to ${prospect.email}`, message: sent.id }
+}
+
+/**
+ * Sets a business aside from the text previews for good, with the reason, so
+ * the routine stops offering its site to a line that will never carry it.
+ */
+async function setAside(db, prospect, slug, reason) {
+  const { error } = await db
+    .from('outreach_prospects')
+    .update({
+      preview_skipped_at: new Date().toISOString(),
+      preview_skip_reason: reason.slice(0, 300),
+    })
+    .eq('id', prospect.id)
+  if (error) throw new Error(error.message)
+  return { note: `${slug} was not sent: ${reason}` }
+}
+
+/**
+ * The first text of a preview filed for a business the studio can only text.
+ *
+ * The same refusals as a letter, read for a number rather than an address: a
+ * preview already sent, a business that has replied or been closed, a number
+ * closed to texts or already texted, a site not yet serving its own page. A
+ * refusal about the business sets it aside, since nothing later changes it. The
+ * line is asked last, for its switches, its hours and the day's cap, so a
+ * refusal that is about this business is never reported as one about the line.
+ */
+async function sendFirstText(db, settings, site, counts) {
+  if (site.sent_at) return { note: `${site.slug} was already sent on ${site.sent_at}` }
+  if (!site.prospect_id) return { error: `${site.slug} names no prospect to text` }
+  const { data: prospect, error } = await db
+    .from('outreach_prospects')
+    .select('id, name, phone, stage, replied_at, contacted_at')
+    .eq('id', site.prospect_id)
+    .maybeSingle()
+  if (error) throw new Error(error.message)
+  if (!prospect) return { error: `${site.slug} names a prospect that is not filed` }
+  counts.examined = 1
+  const phone = usPhone(prospect.phone)
+  if (!phone) return setAside(db, prospect, site.slug, 'it has no number that takes a text')
+  if (prospect.replied_at || CLOSED.has(prospect.stage)) {
+    return setAside(db, prospect, site.slug, `it is ${prospect.stage}`)
+  }
+  const bar = await textBarred(db, phone)
+  if (bar) return setAside(db, prospect, site.slug, bar)
+  const texted = await db
+    .from('outreach_texts')
+    .select('id', { count: 'exact', head: true })
+    .eq('phone', phone)
+    .eq('direction', 'outbound')
+    .not('sent_at', 'is', null)
+  if (texted.error) throw new Error(texted.error.message)
+  if (texted.count) return setAside(db, prospect, site.slug, 'its number has been texted before')
+  const missing = await siteMissing(site.slug)
+  if (missing) return { note: `${site.slug} was not sent: ${missing}` }
+
+  const line = textLineOf(settings)
+  if (!line.open)
+    return { ...resting(line.reason), note: `${site.slug} was not sent: ${line.reason}` }
+  const spent = await textsSentToday(db)
+  if (spent >= (settings.text_daily_cap ?? 0)) {
+    const reason = `the day's ${settings.text_daily_cap ?? 0} texts have gone`
+    return { ...resting(reason), note: `${site.slug} was not sent: ${reason}` }
+  }
+
+  const sent = await sendPreviewText(db, { site, prospect, phone, step: 0, service: line.service })
+  if (sent.refused) return setAside(db, prospect, site.slug, sent.refused)
+  const after = days => new Date(Date.parse(sent.at) + days * DAY_MS).toISOString()
+  const filed = await db
+    .from('preview_sites')
+    .update({
+      sent_at: sent.at,
+      follow_up_due_at: after(PREVIEW_TEXT_DAYS[0]),
+      expires_at: after(PREVIEW_TEXT_LIFETIME_DAYS),
+      follow_ups: 0,
+      first_viewed_at: null,
+      last_viewed_at: null,
+      view_count: 0,
+    })
+    .eq('id', site.id)
+  if (filed.error) throw new Error(filed.error.message)
+  const moved = await db
+    .from('outreach_prospects')
+    .update({
+      stage: 'contacted',
+      contacted_at: prospect.contacted_at ?? sent.at,
+      updated_at: sent.at,
+    })
+    .eq('id', prospect.id)
+  if (moved.error) throw new Error(moved.error.message)
+  counts.changed = 1
+  return { note: `${site.slug} texted to ${phone.slice(0, -4)}****`, text: sent.id }
 }
 
 /** How many letters this studio has sent a business, of every kind. */
@@ -454,11 +563,35 @@ async function followUps(db, settings, counts) {
  */
 const resting = reason => ({ status: 503, skipped: reason })
 
+/** The preview a POST names, or null when it names none that could exist. */
+function slugOf(request) {
+  const slug = String(request.body?.slug ?? '')
+    .trim()
+    .toLowerCase()
+  return /^[a-z0-9-]{2,63}$/.test(slug) ? slug : null
+}
+
 /**
  * One run of the job, for the request that started it: the first letter of the
  * preview a POST names, or every follow-up that has come due.
  */
 export async function work({ db, settings, counts, request }) {
+  // A preview that goes by text says so in the POST, and is answered before the
+  // mailbox is read, since the mailbox has no say over a text. A letter's POST
+  // reads nothing until the mailbox has opened.
+  if (request.method === 'POST' && request.body?.channel === 'text') {
+    const slug = slugOf(request)
+    if (!slug) return { error: 'name a preview by its slug' }
+    const { data: site, error } = await db
+      .from('preview_sites')
+      .select(SITE_COLUMNS)
+      .eq('slug', slug)
+      .maybeSingle()
+    if (error) throw new Error(error.message)
+    if (!site) return { error: `no preview is filed as ${slug}` }
+    if (site.channel !== 'text') return { error: `${slug} is filed to go by letter` }
+    return sendFirstText(db, settings, site, counts)
+  }
   if (!settings.sending_enabled || !ARMED) {
     return { note: 'sending is switched off, so this run sent no preview letter' }
   }
@@ -470,10 +603,7 @@ export async function work({ db, settings, counts, request }) {
     return { ...resting(reason), note: `No preview letter was sent: ${reason}` }
   }
   if (request.method === 'POST') {
-    const slug = String(request.body?.slug ?? '')
-      .trim()
-      .toLowerCase()
-    if (!/^[a-z0-9-]{2,63}$/.test(slug)) return { error: 'name a preview by its slug' }
+    const slug = slugOf(request)
     try {
       return await sendFirst(db, settings, slug, counts)
     } catch (cause) {

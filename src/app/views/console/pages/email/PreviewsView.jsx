@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ExternalLink } from 'lucide-react'
-import { readEndpoint } from '@hooks/console/endpoint'
+import { readEndpoint, writeEndpoint } from '@hooks/console/endpoint'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { ZONE } from '@lib/time/zone.js'
 import {
@@ -13,7 +13,14 @@ import {
   SkeletonBar,
   SkeletonRows,
 } from '../../ui'
-import { CELL_TIGHT as CELL, MONO_LABEL, SELECT, TH_TIGHT as TH } from '../../lib/tokens'
+import {
+  BUTTON,
+  CELL_TIGHT as CELL,
+  FIELD,
+  MONO_LABEL,
+  SELECT,
+  TH_TIGHT as TH,
+} from '../../lib/tokens'
 import { useView } from '../../lib/views'
 import { fullCount } from '../../../analytics/lib/format'
 
@@ -40,7 +47,19 @@ const TABS = [
   { key: 'sites', label: 'All Previews' },
   { key: 'visits', label: 'Visitor Behaviour' },
   { key: 'attention', label: 'Attention' },
+  { key: 'texts', label: 'Texts' },
 ]
+
+/** Why a number is closed to the line, in the console's words. */
+const CLOSED_AS = {
+  stop: 'Texted STOP',
+  replied: 'Replied',
+  undeliverable: 'Cannot Take Texts',
+  finished: 'All Texts Sent',
+  manual: 'Closed',
+}
+
+const NO_REPLY = 'The console could not send your text. Try again in a moment.'
 
 /** Each trade a preview is built for, in the console's words. */
 const INDUSTRY = {
@@ -165,14 +184,17 @@ export function PreviewsView({ token, area = 'work' }) {
   const template = templates[picked] ? picked : (templateKeys[0] ?? '')
   const attention = templates[template] ?? { sessions: 0, sections: [], ctas: [] }
 
+  const threads = data?.texts ?? []
   const aside =
-    tab === 'sites'
-      ? `${fullCount(previews.length)} ${previews.length === 1 ? 'site' : 'sites'}`
-      : tab === 'visits'
-        ? `${fullCount(visited.length)} ${visited.length === 1 ? 'prospect' : 'prospects'}`
-        : template
-          ? `${fullCount(attention.sessions)} ${attention.sessions === 1 ? 'session' : 'sessions'}`
-          : null
+    tab === 'texts'
+      ? `${fullCount(threads.length)} ${threads.length === 1 ? 'thread' : 'threads'}`
+      : tab === 'sites'
+        ? `${fullCount(previews.length)} ${previews.length === 1 ? 'site' : 'sites'}`
+        : tab === 'visits'
+          ? `${fullCount(visited.length)} ${visited.length === 1 ? 'prospect' : 'prospects'}`
+          : template
+            ? `${fullCount(attention.sessions)} ${attention.sessions === 1 ? 'session' : 'sessions'}`
+            : null
 
   return (
     <Panel
@@ -424,6 +446,18 @@ export function PreviewsView({ token, area = 'work' }) {
             </tbody>
           </table>
         </PanelBody>
+      ) : tab === 'texts' ? (
+        <PanelBody>
+          {!data && loading ? (
+            <SkeletonRows cols={1} rows={4} />
+          ) : !threads.length ? (
+            <p className="text-paper-faint px-5 py-6">No preview has been texted yet.</p>
+          ) : (
+            threads.map(thread => (
+              <TextThread key={thread.phone} token={token} thread={thread} onSent={read} />
+            ))
+          )}
+        </PanelBody>
       ) : (
         <PanelBody className="grid content-start lg:grid-cols-2">
           <section>
@@ -457,5 +491,102 @@ export function PreviewsView({ token, area = 'work' }) {
         </PanelBody>
       )}
     </Panel>
+  )
+}
+
+/**
+ * One text thread: the business, its preview, each text in the order it went,
+ * and a box to answer from the same line. A number that texted STOP shows no
+ * box, since the line cannot text it.
+ */
+function TextThread({ token, thread, onSent }) {
+  const [draft, setDraft] = useState('')
+  const [sending, setSending] = useState(false)
+  const [fault, setFault] = useState(null)
+
+  const send = async event => {
+    event.preventDefault()
+    if (!draft.trim() || sending) return
+    setSending(true)
+    try {
+      const { response, payload } = await writeEndpoint(token, PATH, {
+        phone: thread.phone,
+        body: draft,
+      })
+      if (!response.ok) throw faultFromResponse(response, payload, NO_REPLY)
+      setDraft('')
+      setFault(null)
+      onSent()
+    } catch (cause) {
+      setFault(faultMessage(cause, NO_REPLY))
+    } finally {
+      setSending(false)
+    }
+  }
+
+  return (
+    <section className="border-hair-paper border-b px-5 py-4">
+      <header className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span className="text-ink-paper">{thread.name ?? 'Unknown business'}</span>
+        <span className="text-paper-faint text-[12px]">{thread.phone}</span>
+        {thread.url && (
+          <a
+            href={thread.url}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1 text-[12px] text-accent"
+          >
+            {hostOf(thread.url)}
+            <ExternalLink className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
+          </a>
+        )}
+        {thread.closed && (
+          <Badge tone={thread.closed === 'replied' ? 'good' : 'warn'}>
+            {CLOSED_AS[thread.closed] ?? 'Closed'}
+          </Badge>
+        )}
+      </header>
+      <ol className="mt-3 grid gap-2">
+        {thread.texts.map(text => (
+          <li
+            key={text.id}
+            className={`max-w-[36rem] rounded-md px-3 py-2 text-[13px] ${
+              text.direction === 'inbound'
+                ? 'justify-self-start bg-[color:var(--paper-field)] text-ink-paper'
+                : 'border-hair-paper justify-self-end border text-paper-soft'
+            }`}
+          >
+            <p className="whitespace-pre-wrap">{text.body}</p>
+            <p className="text-paper-faint mt-1 text-[11px]">
+              {whenAt(text.at)}
+              {text.direction === 'outbound' && text.status !== 'sent'
+                ? ` · ${text.status === 'delivered' ? 'Delivered' : text.error || text.status}`
+                : ''}
+            </p>
+          </li>
+        ))}
+      </ol>
+      {thread.closed !== 'stop' && (
+        <form onSubmit={send} className="mt-3 grid gap-2">
+          <textarea
+            aria-label={`Answer ${thread.name ?? thread.phone}`}
+            className={`${FIELD} min-h-[4.5rem] resize-y`}
+            value={draft}
+            maxLength={1600}
+            onChange={event => setDraft(event.target.value)}
+          />
+          <div className="flex items-center gap-3">
+            <button type="submit" className={BUTTON} disabled={sending || !draft.trim()}>
+              {sending ? 'Sending' : 'Send Text'}
+            </button>
+            {fault && (
+              <span className={`${MONO_LABEL} text-[color:var(--warn)]`} role="status">
+                {fault}
+              </span>
+            )}
+          </div>
+        </form>
+      )}
+    </section>
   )
 }
