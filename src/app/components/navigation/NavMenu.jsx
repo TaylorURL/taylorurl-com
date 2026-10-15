@@ -331,7 +331,12 @@ const COVER_SHARE = 0.26
  * past either end leaves rather than cycling. A closed sheet is inert, which
  * is what keeps its destinations out of the tab order and out of the
  * accessibility tree, and takes no pointer, so the faded card is not a pane
- * of glass over the page. It is not hidden by `visibility` as well: a sheet
+ * of glass over the page. The anchor it hangs from takes none either, and it
+ * is the anchor that has to: a closed sheet keeps the last group's size so
+ * the next open grows from it, the anchor wraps that size, and the pointer the
+ * bar hands down made the anchor itself the pane - the top of every page under
+ * the bar answered nothing once a group had been opened, until a reload put
+ * the size back to nothing. It is not hidden by `visibility` as well: a sheet
  * hidden that way cannot take focus on the frame it opens, which is the frame
  * a keyboard opens it on.
  */
@@ -432,7 +437,11 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
   const quick = { duration: NAV_DURATION, ease: NAV_EASE }
 
   return (
-    <div ref={anchorRef} className="nav-sheet-anchor hidden lg:block">
+    <div
+      ref={anchorRef}
+      className="nav-sheet-anchor hidden lg:block"
+      style={{ pointerEvents: open ? 'auto' : 'none' }}
+    >
       <m.div
         id={panelId}
         ref={panelRef}
@@ -449,7 +458,6 @@ export function NavPanelViewport({ group, panelId, onClose, onCloseAll, panelRef
             ? { duration: 0 }
             : { width: slow, height: slow, opacity: quick, y: quick, scale: quick }
         }
-        style={{ pointerEvents: open ? 'auto' : 'none' }}
         className="nav-sheet"
         onKeyDown={handleKey}
       >
