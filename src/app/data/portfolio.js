@@ -136,7 +136,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'Removal, trimming, stump grinding, and storm work, out of a Pasadena family business started in 2000. Every service and every town the trucks work has a page of its own, and on a phone the number to call stays pinned to the bottom of the screen.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 5, measured: '2026-10-17' },
+    pagespeed: { mobile: 95, desktop: 100, runs: 5, measured: '2026-10-19' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-18' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-19' },
     hasStudy: true,
   },
   {
@@ -165,7 +165,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-10-17' },
+    pagespeed: { mobile: 97, desktop: 99, runs: 3, measured: '2026-10-19' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-18' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-10-19' },
     hasStudy: true,
   },
   {
@@ -208,7 +208,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Liberty, Texas',
     description:
       'Fades taken to skin, beard shaping cut to match the head, and straight razor shaves, on Main Street in Liberty since 2018. Tuesday through Thursday is by appointment and Friday is the walk-in day, which is the one thing most callers are ringing to find out.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-18' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-19' },
     hasStudy: true,
   },
   {
@@ -223,7 +223,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'A Houston credit-education practice with four services compared side by side, an education section on the five factors behind a score, and every page published in English and Spanish. It states plainly that it is not a law firm and guarantees no outcome.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-18' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-10-19' },
     hasStudy: true,
   },
   {
@@ -254,7 +254,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-17' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-19' },
     hasStudy: true,
   },
 ]
