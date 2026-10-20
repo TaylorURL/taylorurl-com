@@ -381,6 +381,27 @@ if (laddering) {
     'the long wait is declared and never spent, so the ladder still ends where the quick pair does'
   )
 
+  // And a rung is worth nothing at all to a chunk the engine will not read.
+  //
+  // The boot tells three failures apart for the entry, and the third is a body
+  // that will not parse: no better at another address, so `start` stops its
+  // ladder on one, and no better in a new document, so `boot` refuses the
+  // reload - a reload is how that becomes an endless one. The route's chunk was
+  // given neither half. A parse error names no address in its sentence, so
+  // every rung re-imports the same specifier and is handed the module map's own
+  // rejection with nothing sent, the reader holds the fallback through the
+  // five-second wait for it, and the build probe can then reload a document
+  // served either side of a release over an error the newer document throws
+  // too. #879 arrived from the boundary that caught one.
+  check(
+    /function parseFailure/.test(laddering.source),
+    'the ladder cannot tell a chunk the engine refused to parse from a request that did not land, so it spends every rung and the long wait on a failure that is refused identically every time'
+  )
+  check(
+    /if \(parseFailure\(error\)\) throw error/.test(laddering.source),
+    'a chunk that will not parse is carried down the ladder and into the build probe, so the reader waits out the rungs and can be reloaded for an error a newer document throws too'
+  )
+
   // And the rungs have to land somewhere this browser holds no answer for, not
   // just somewhere this document holds no rejection for.
   //

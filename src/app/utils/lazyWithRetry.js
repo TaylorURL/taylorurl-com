@@ -82,6 +82,22 @@ const FORGIVEN = 2
 const MODULE_URL = /\bhttps?:\/\/[^\s'")]+\.m?js\b/i
 
 /**
+ * A failure that is the engine refusing to read the chunk, rather than the
+ * network refusing to deliver it.
+ *
+ * The same question `vite/boot-source.js` asks of the entry, worded the same
+ * way, because it decides the same thing: a body that will not parse parses no
+ * better at another address and no better in a new document, so neither of the
+ * recoveries this file is built out of is worth anything to it.
+ *
+ * @param {unknown} error - What the failed import threw.
+ * @returns {boolean} True where the chunk's body could not be parsed.
+ */
+function parseFailure(error) {
+  return Boolean(error) && error.name === 'SyntaxError'
+}
+
+/**
  * The same chunk, at an address the browser has no answer cached for.
  *
  * A module that failed to load is recorded as failed in the module map, and the
@@ -422,6 +438,36 @@ export function lazyWithRetry(
         return await again
       } catch (error) {
         lastError = error
+        // A chunk the engine cannot parse.
+        //
+        // The third of the three failures `vite/boot-source.js` tells apart for
+        // the entry, and the one the route's chunk was never told about. Both
+        // recoveries below are built on a file that is absent and could arrive:
+        // the ladder asks again, and the build probe fetches the document that
+        // names the file which replaced it. A body that will not parse is
+        // present and refused identically every time - no better at another
+        // address, which is why `start` stops its ladder on one, and no better
+        // in a new document, which is why `boot` refuses the reload rather than
+        // taking it. A reload is how that becomes an endless one.
+        //
+        // What it cost here was both of them. A parse error names no address in
+        // its sentence, so `refetch` finds none and every rung re-imports the
+        // same specifier - which is the module map's own rejection handed back
+        // with nothing sent - and the reader holds the Suspense fallback
+        // through the long wait as well. Then the build probe fires, and a
+        // document served either side of a release is reloaded under a reader
+        // for an error the newer document throws too.
+        //
+        // Filed, and filed exactly as loudly as it was: this is the branch
+        // `lost` takes for a build that shipped syntax the engine cannot read,
+        // and it is the only branch reachable from here. The entry compiled, or
+        // React would not be running this pass to ask - so `tooOld` is the
+        // entry's question and it stays with the entry.
+        //
+        // Settled before the teardown question below, because a request torn
+        // down with its own document is worded as a fetch that did not land and
+        // never as a token the parser did not expect.
+        if (parseFailure(error)) throw error
         // A request the document was not there to receive an answer to.
         //
         // `Failed to fetch dynamically imported module` is what the browser
