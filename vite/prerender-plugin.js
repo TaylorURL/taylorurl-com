@@ -127,6 +127,20 @@ function outputPathFor(outDir, route) {
  * waits on. Named low, it takes the bandwidth the first screen has finished
  * with, and what stands there in the meantime is the whole document, every
  * link on it an address that answers on its own.
+ *
+ * Every preload the build wrote for the entry's own static dependencies is
+ * named low the same way, and re-laid behind the entry's. Low because the
+ * reasoning above is theirs too: nothing above the fold waits on the motion
+ * library either. Behind the entry's because the entry has to stay the first
+ * `modulepreload` in the head - `vite/sheet-source.js` and
+ * `utils/lazyWithRetry.js` both read that tag to learn which build the document
+ * was served from, and each takes the first one it finds.
+ *
+ * They are not left untagged, which is what this used to do to the motion
+ * chunk. A dependency with no tag is not fetched early and late; it is not
+ * fetched at all until the boot's `import()` instantiates the graph, and the
+ * entry cannot execute through the round trip that follows. That cost the
+ * phone two seconds of hydration it was never charged for on paper.
  */
 function paintFirst(head) {
   const entry = head.match(/<script type="module" crossorigin src="([^"]+)"><\/script>/)
@@ -134,7 +148,16 @@ function paintFirst(head) {
   const [tag, src] = entry
   const preload = `<link rel="modulepreload" crossorigin fetchpriority="low" href="${src}">`
   const boot = `<script type="module">${bootSource(src)}</script>`
-  return head.replace(tag, `${preload}${boot}`)
+  const deps = []
+  const lifted = head.replace(/<link rel="modulepreload"[^>]*>/g, found => {
+    deps.push(
+      found
+        .replace(/ fetchpriority="[^"]*"/, '')
+        .replace('<link rel="modulepreload"', '<link rel="modulepreload" fetchpriority="low"')
+    )
+    return ''
+  })
+  return lifted.replace(tag, `${preload}${deps.join('')}${boot}`)
 }
 
 // Every route reuses the same built <head> (hashed asset tags, site-wide meta)

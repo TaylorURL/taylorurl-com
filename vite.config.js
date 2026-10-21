@@ -61,15 +61,23 @@ export default defineConfig({
     // same thing more slowly. es2022 is the floor every browser that supports
     // modules already clears.
     target: 'es2022',
-    // The motion library is a static import of the entry, so it is fetched
-    // either way; the preload tag only decides whether it is fetched at the
-    // same moment as the stylesheet. Nothing above the fold waits on it - the
-    // bar and the hero are painted from the served markup - so the fifty
-    // kilobytes it takes are fifty the sheet and the fonts behind the sheet do
-    // not have to share a phone's first second with.
-    modulePreload: {
-      resolveDependencies: (_url, deps) => deps.filter(dep => !dep.includes('framer-motion')),
-    },
+    // The entry's own static dependencies keep their preload tags, and the
+    // prerender hands every one of them the same low priority the entry gets,
+    // so none of them shares a phone's first second with the sheet or the two
+    // faces behind it.
+    //
+    // The motion library used to be filtered out of this list, on the reading
+    // that a static import of the entry is fetched either way and the tag only
+    // decides when. It is not: the boot in `vite/prerender-plugin.js` holds the
+    // entry's `import()` until the document has finished parsing and two frames
+    // have gone by, and nothing asks for a dependency that carries no tag until
+    // that import instantiates the graph. Measured on the built site from a
+    // phone, the entry was in hand at 574ms and the motion chunk was not asked
+    // for until 2,468ms - a round trip the entry could not execute through, with
+    // the landed route's own chunk queued behind it and the page hydrating at
+    // 2,782ms. The tag is what lets it arrive in the same breath as the entry
+    // and sit in the cache until the boot wants it.
+    modulePreload: true,
     rollupOptions: {
       output: {
         manualChunks: {
