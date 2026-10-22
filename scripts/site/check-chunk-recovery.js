@@ -255,6 +255,31 @@ check(
   /onCaughtError/.test(rooting),
   'the root leaves a caught error for React to announce, so a piece with a recovery above it files a fault before the recovery has run'
 )
+// And the other announcement React makes about the same failure.
+//
+// A concurrent render that throws is retried by rendering the whole root
+// synchronously, and when that pass succeeds React reports `Error('There was an
+// error during concurrent rendering...', { cause: thrown })`. Left to React
+// that notice goes through `reportError`, so it reaches the page as an uncaught
+// error carrying a scheduler frame - while the failure itself reaches a
+// boundary in the synchronous pass and is announced there. One chunk whose body
+// would not parse therefore filed #920 and #921 in the same second: the
+// recovery, naming no page, component or file, and the fault, naming the line
+// that announced it.
+const announcing = readFileSync(path.join(ROOT, 'src/app/utils/caughtErrors.js'), 'utf8')
+check(
+  /onRecoverableError/.test(rooting),
+  'the root leaves a render React recovered from for React to announce, so a failure a boundary already absorbed is filed a second time as an uncaught error naming the scheduler'
+)
+check(
+  /export function onRecoverableError/.test(announcing) && /\.cause/.test(announcing),
+  'the recovery notice reports itself rather than the failure it recovered from, so the ticket carries a paragraph about rendering and nothing about what broke'
+)
+check(
+  /const announced = new WeakSet\(\)/.test(announcing) &&
+    /announced\.has\(error\)/.test(announcing),
+  'nothing holds the two announcements of one failure together, so a single chunk files two tickets and neither one names it'
+)
 if (renewing) {
   check(
     /claimCaught\(/.test(renewing.source),

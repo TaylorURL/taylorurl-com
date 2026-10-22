@@ -5,7 +5,7 @@ import './index.css'
 import Providers from './app/Providers'
 import App from './app/App'
 import { resolveArrival, views } from './app/views'
-import { onCaughtError } from './app/utils/caughtErrors'
+import { onCaughtError, onRecoverableError } from './app/utils/caughtErrors'
 import { takeEarlyPress } from './app/hooks/chrome/useEarlyPress'
 
 // Read before the router mounts. The address the browser opened is the only
@@ -28,6 +28,13 @@ rememberCampaign(window.location.search)
 // own recovery can report its own failure when that recovery is spent instead
 // of the moment it starts: see `app/utils/caughtErrors`.
 //
+// The recovery notice is handed over for the same reason. React reports a
+// concurrent render it retried and recovered by itself, and the default handler
+// puts that notice through `reportError` - so a failure a boundary already
+// absorbed arrives a second time as an uncaught error, naming the scheduler
+// rather than anything on the page. Given here, it reports the failure it
+// recovered from instead of itself, and the two announcements are one report.
+//
 // A button pressed before this point was pressed on markup nothing answers, and
 // the boot has been holding it. It is taken off the boot here, in the same tick
 // React puts its own listeners on, so no press is answered by both.
@@ -40,6 +47,6 @@ resolveArrival(window.location.pathname).then(arrival => {
         <App views={{ ...views, ...arrival }} />
       </BrowserRouter>
     </Providers>,
-    { onCaughtError }
+    { onCaughtError, onRecoverableError }
   )
 })

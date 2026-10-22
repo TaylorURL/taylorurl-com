@@ -1015,6 +1015,63 @@
           }
           return ''
         }
+        // The frames of the fault, where a console call is carrying one.
+        //
+        // The capture above answers where the call came from, and for a logged
+        // error that is the wrong question. React announces every error a
+        // boundary catches by writing the error itself to `console.error`, so
+        // the frames the wrapper takes are the announcement - the anonymous
+        // microtask in `app/utils/caughtErrors` - and the throw is nowhere in
+        // them. #879 resolved one of those columns by hand to establish that
+        // much, and #921 arrived two days later with the identical column,
+        // because the error passed alongside has carried its own stack the
+        // whole time and nothing was reading it.
+        //
+        // So an error logged with a stack reports from that stack, and a call
+        // logging no error keeps the captured frames exactly as before - which
+        // is what the extension test downstream was built to read, and it
+        // reads an error's own frames the same way: site code is served from
+        // this origin and an extension's is not, whichever stack it came from.
+        function loggedStack(args, captured) {
+          for (var i = 0; i < args.length; i += 1) {
+            var value = args[i]
+            var stack = null
+            try {
+              stack = value && typeof value === 'object' ? value.stack : null
+            } catch (ignored) {}
+            if (typeof stack === 'string' && stack) return stack
+          }
+          return callerFrames(captured)
+        }
+        // The chain under an error that was raised about another error.
+        //
+        // One fault wears two sentences on this page and the outer one says
+        // nothing. React retries a concurrent render that threw by rendering
+        // the whole root synchronously, and when that pass succeeds it reports
+        // `Error(..., { cause: thrown })` - the recovery announcing itself,
+        // with the failure it recovered from hung off it. Filed without the
+        // chain that is a scheduler frame and a paragraph about rendering,
+        // naming no page, no component and no file: #920 was that, filed in the
+        // same second as #921, which was the cause of it.
+        //
+        // Four deep and skipping anything already walked, because a cause is a
+        // reference like any other and nothing says it points away from here.
+        function causeChain(error, stack) {
+          var text = String(stack || '')
+          var seen = [error]
+          var next = error
+          for (var depth = 0; depth < 4; depth += 1) {
+            try {
+              next = next && typeof next === 'object' ? next.cause : null
+            } catch (ignored) {
+              return text
+            }
+            if (!next || seen.indexOf(next) > -1) return text
+            seen.push(next)
+            text += '\nCaused by: ' + describe(next)
+          }
+          return text
+        }
         // The site's tags fan out to endpoints the site never names. It writes
         // one script tag for Google's tag library and one for the Meta pixel,
         // and the vendor's script does the rest: the conversion beacon at
@@ -1569,7 +1626,7 @@
                 report(
                   'uncaught',
                   event.message || describe(event.error),
-                  event.error && event.error.stack
+                  causeChain(event.error, event.error && event.error.stack)
                 )
               }
             } finally {
@@ -1581,7 +1638,7 @@
         window.addEventListener('unhandledrejection', function (event) {
           try {
             var reason = event.reason
-            report('rejection', describe(reason), reason && reason.stack)
+            report('rejection', describe(reason), causeChain(reason, reason && reason.stack))
           } finally {
             if (!loud) event.preventDefault()
           }
@@ -1602,7 +1659,11 @@
             } catch (error) {
               where = error.stack
             }
-            report('console', flatten(arguments, 0), callerFrames(where))
+            report(
+              'console',
+              flatten(arguments, 0),
+              causeChain(arguments[0], loggedStack(arguments, where))
+            )
             if (loud) original.apply(console, arguments)
           }
         })
