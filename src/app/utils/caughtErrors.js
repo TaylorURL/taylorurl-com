@@ -44,6 +44,34 @@ export function claimCaught(error) {
   if (error !== null && typeof error === 'object') claimed.add(error)
 }
 
+// Which failures have been announced already, so that one fault is one
+// report. Weak for the same reason as the set above.
+const announced = new WeakSet()
+
+/**
+ * Writes a failure out once, where nothing else has claimed or announced it.
+ *
+ * @param {unknown} error - What is being reported.
+ * @param {{ componentStack?: string }} [info] - Where it was caught.
+ */
+function announce(error, info) {
+  if (error !== null && typeof error === 'object') {
+    if (claimed.has(error)) return
+    if (announced.has(error)) return
+    announced.add(error)
+  }
+  // One argument, because that is what React passed and because the error
+  // carries its own stack - which is the thing the collector reads to name the
+  // file that failed. The component stack is worth having in front of whoever
+  // is running the site locally and is not worth changing a ticket's identity
+  // over.
+  if (import.meta.env.DEV && info && info.componentStack) {
+    console.error(error, info.componentStack)
+    return
+  }
+  console.error(error)
+}
+
 /**
  * React's announcement of an error an error boundary caught.
  *
@@ -51,16 +79,34 @@ export function claimCaught(error) {
  * @param {{ componentStack?: string }} [info] - Where it was caught.
  */
 export function onCaughtError(error, info) {
+  queueMicrotask(() => announce(error, info))
+}
+
+/**
+ * React's announcement that it recovered from an error by itself.
+ *
+ * Left to React this is the one failure on the site that is reported twice. A
+ * concurrent render that throws is retried by rendering the whole root
+ * synchronously, and when that pass succeeds React reports
+ * `Error('There was an error during concurrent rendering but React was able to
+ * recover...', { cause: thrown })` - which the default handler hands to
+ * `reportError`, so it reaches the page as an uncaught error. The failure
+ * itself reaches a boundary in the synchronous pass and is announced by
+ * `onCaughtError` above. One chunk that would not parse therefore filed #920
+ * and #921 in the same second: the recovery notice, carrying a scheduler frame
+ * and no page, component or file in it, and the fault, carrying the
+ * announcement's own frame.
+ *
+ * So the recovery reports the fault it recovered from rather than itself, and
+ * the set above makes that one report however the two microtasks fall. A
+ * recoverable error React raised about nothing in particular - a hydration
+ * mismatch, which carries no cause - is still written out exactly as it was.
+ *
+ * @param {unknown} error - What React recovered from.
+ */
+export function onRecoverableError(error) {
   queueMicrotask(() => {
-    if (error !== null && typeof error === 'object' && claimed.has(error)) return
-    // One argument, because that is what React passed and what the collector
-    // has been fingerprinting these by. The component stack is worth having in
-    // front of whoever is running the site locally and is not worth changing a
-    // ticket's identity over.
-    if (import.meta.env.DEV && info && info.componentStack) {
-      console.error(error, info.componentStack)
-      return
-    }
-    console.error(error)
+    const cause = error !== null && typeof error === 'object' ? error.cause : null
+    announce(cause !== null && cause !== undefined ? cause : error)
   })
 }

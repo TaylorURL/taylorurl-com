@@ -951,13 +951,81 @@ check(
     'so the guard has widened off transport failures and onto the site’s own faults'
 )
 
+// What a boundary announces has to name the file that failed.
+//
+// React announces every error a boundary catches by writing the error itself
+// to `console.error`, and the wrapper above captured its own frames for it -
+// which are the announcement, the anonymous microtask in
+// `app/utils/caughtErrors`, and never the throw. So a chunk whose body would
+// not parse was filed under the column of the line that reported it: #879
+// resolved one of those by hand to establish that much, and #921 arrived two
+// days later with the identical column and nothing in it to work from. The
+// error passed alongside has carried its own stack the whole time.
+const announced = collector()
+announced.from(
+  'https://www.taylorurl.com/assets/index-abcd1234.js',
+  'function announce() {\n' +
+    '  var fault = new Error("Unexpected token \'=\'")\n' +
+    "  fault.name = 'SyntaxError'\n" +
+    '  fault.stack = "SyntaxError: Unexpected token \'=\'\\n    at https://www.taylorurl.com/assets/Particles-7f3a9c21.js:1:4096"\n' +
+    '  console.error(fault)\n' +
+    '}\n' +
+    'announce()'
+)
+check(
+  announced.posted.length === 1,
+  'a boundary announced a failure and nothing was filed, so the reporter has gone quiet on the ' +
+    'one path every caught error on the site comes through'
+)
+check(
+  /Particles-7f3a9c21\.js/.test((announced.posted[0] || {}).stack || ''),
+  'an error logged with its own stack was filed under the frames of the line that logged it, so ' +
+    'a chunk that will not parse is reported as the announcement that reported it and whoever ' +
+    'reads the ticket is given no file at all'
+)
+
+// And a recovery has to name what it recovered from.
+//
+// React retries a concurrent render that threw by rendering the whole root
+// synchronously, and when that pass succeeds it reports `Error(..., { cause:
+// thrown })` through `reportError` - so it reaches this page as an uncaught
+// error whose stack is the scheduler handing the work back. #920 was that,
+// filed in the same second as #921, which was its cause: between them two
+// tickets named one chunk's parse failure and neither named the chunk.
+const recovered = collector()
+const fault = new Error("Unexpected token '='")
+fault.name = 'SyntaxError'
+fault.stack =
+  "SyntaxError: Unexpected token '='\n    at https://www.taylorurl.com/assets/Particles-7f3a9c21.js:1:4096"
+const recovery = new Error(
+  'There was an error during concurrent rendering but React was able to recover by instead ' +
+    'synchronously rendering the entire root.',
+  { cause: fault }
+)
+recovery.stack =
+  'Error: There was an error during concurrent rendering\n' +
+  '    at https://www.taylorurl.com/assets/index-abcd1234.js:9:124242\n' +
+  '    at MessagePort.Oe (https://www.taylorurl.com/assets/index-abcd1234.js:2:2543)'
+recovered.throws({ message: recovery.message, error: recovery })
+check(
+  recovered.posted.length === 1,
+  'React reported a render it recovered from and nothing was filed, so an error the reader did ' +
+    'meet can reach the page as a recovery notice and go unreported'
+)
+check(
+  /Particles-7f3a9c21\.js/.test((recovered.posted[0] || {}).stack || ''),
+  'an error raised about another error was filed without the chain under it, so the report is a ' +
+    'scheduler frame and a paragraph about rendering with no page, component or file in it'
+)
+
 await finish({
   hint: 'a line an extension wrote is the browser talking; only the site answers here',
 })
 
 console.log(
   `check-console-reports: ${cases.length} checks hold — the console path files with the frames it ` +
-    'came from, an extension writing to it is ruled the browser rather than the site, a throw ' +
-    'the browser refused to describe is held rather than filed, and the output the site writes ' +
-    'itself still reports'
+    'came from, an error logged with a stack of its own files from that stack, an error raised ' +
+    'about another one carries the chain under it, an extension writing to the console is ruled ' +
+    'the browser rather than the site, a throw the browser refused to describe is held rather ' +
+    'than filed, and the output the site writes itself still reports'
 )
