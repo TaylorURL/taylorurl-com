@@ -12,10 +12,10 @@ import {
  *
  * Trustpilot is deliberately absent. It answers a program through the TrustBox
  * endpoint, so its standing is read live and `trustpilot-standing.js` is the
- * floor under that read. The four below answer nothing a page can ask: Google's
+ * floor under that read. The three below answer nothing a page can ask: Google's
  * aggregate sits behind a key issued per listing, BBB publishes its grade as a
- * page and nothing else, Yelp turns away every request that is not a browser,
- * and Facebook's page rating is behind a token that expires. So each of them is
+ * page and nothing else, and Facebook's page rating is behind a token that
+ * expires. So each of them is
  * read by a person off the profile itself and written down here, with the day
  * it was read beside it.
  *
@@ -53,9 +53,6 @@ export const REVIEW_STANDINGS = {
     capturedAt: '2026-09-04',
   },
   google: { rating: 5, reviewCount: 2, capturedAt: '2026-09-04' },
-  // The listing is claimed and carries no recommended reviews yet, so Yelp
-  // publishes no rating for it and this site has none to show.
-  yelp: { reviewCount: 0, capturedAt: '2026-09-04' },
   // Facebook asks whether somebody recommends a business rather than for a
   // score out of five, so this is a count with no rating beside it on purpose.
   facebook: { reviewCount: 2, capturedAt: '2026-09-04' },

@@ -16,7 +16,7 @@ const ORIGINAL_POSTS = [
     content: [
       {
         type: 'p',
-        text: 'Yes, your business needs a website, even with a Facebook page, a Google Business listing, and a Yelp profile already bringing people in. Every one of those platforms belongs to somebody else, and that is the whole argument.',
+        text: 'Yes, your business needs a website, even with a Facebook page and a Google Business Profile already bringing people in, because both of those platforms belong to somebody else.',
       },
       {
         type: 'p',
