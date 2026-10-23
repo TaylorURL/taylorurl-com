@@ -4,7 +4,6 @@ import {
   MarkInstagram,
   MarkLinkedIn,
   MarkX,
-  MarkYelp,
 } from '@components/marks/brandMarks'
 import { SOCIAL_LINKS } from '@constants/navigation'
 
@@ -15,7 +14,6 @@ const BRAND_MARKS = {
   instagram: MarkInstagram,
   x: MarkX,
   linkedin: MarkLinkedIn,
-  yelp: MarkYelp,
   google: MarkGoogle,
 }
 

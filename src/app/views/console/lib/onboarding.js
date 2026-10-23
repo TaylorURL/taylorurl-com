@@ -155,7 +155,6 @@ const SOCIAL_NETWORKS = [
   { id: 'linkedin', name: 'LinkedIn' },
   { id: 'x', name: 'X' },
   { id: 'nextdoor', name: 'Nextdoor' },
-  { id: 'yelp', name: 'Yelp' },
   { id: 'other', name: 'Somewhere else' },
 ]
 
