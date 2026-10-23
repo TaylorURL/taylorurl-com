@@ -91,7 +91,7 @@ const SPLIT_COLUMN = 'sm:grid-flow-col sm:grid-cols-2 sm:grid-rows-[repeat(var(-
  * An entry with no address is dropped rather than drawn, which is the rule the
  * menu and the reviews already answer to: BBB is off the row for exactly as
  * long as `@data/bbb` publishes no profile, and back on it the day it does,
- * with nothing here to change. The same one line adds Google or Yelp.
+ * with nothing here to change. The same one line adds Google.
  *
  * Marks rather than named rows, because five networks written out is five rows
  * of a column that is already the tallest thing down here, and the row says the

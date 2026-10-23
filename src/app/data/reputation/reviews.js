@@ -17,22 +17,6 @@ import { TRUSTPILOT_EVALUATE_URL, TRUSTPILOT_PROFILE_URL } from './trustpilot.js
 const FACEBOOK_REVIEWS_URL = `${FACEBOOK_PAGE_URL}&sk=reviews`
 
 /**
- * The Yelp listing, keyed on the name its page ends in the way Trustpilot's is
- * keyed on the domain. It is somewhere reviews are read rather than somewhere
- * they are asked for: Yelp suppresses reviews that were solicited and can
- * penalize a listing for the asking, so no address for leaving one is held
- * here.
- *
- * Yelp built the listing under Houston, so the key names a city that is not the
- * one the site claims. The key is the listing's own identifier rather than a
- * statement of where the work is, and Yelp redirects it to whatever the listing
- * is renamed to, so it survives the listing being corrected. The listing is
- * unclaimed, which is why it is absent from the `sameAs` in `index.html`.
- */
-const YELP_BUSINESS = 'taylor-url-houston'
-const YELP_PROFILE_URL = `https://www.yelp.com/biz/${YELP_BUSINESS}`
-
-/**
  * Every place this business is reviewed, held once.
  *
  * The menu builds both of its columns from this, the home page draws its cards
@@ -44,9 +28,8 @@ const YELP_PROFILE_URL = `https://www.yelp.com/biz/${YELP_BUSINESS}`
  *
  * `reads` is where reviews can be read and `writes` is where one can be left.
  * Either may be empty, and empty means the surface draws nothing rather than
- * drawing a row that leads nowhere: Yelp has no address for leaving a review
- * because soliciting one there can cost the listing, and BBB has neither until
- * the profile is published. A network is never described in copy as missing,
+ * drawing a row that leads nowhere: BBB has neither until the profile is
+ * published. A network is never described in copy as missing,
  * because a reader has no use for the absence.
  *
  * `holds` is what is on the other end, in a line, for the surfaces that set one
@@ -98,16 +81,6 @@ export const REVIEW_SOURCES = [
     holds: 'Ratings on the Google listing, as customers left them.',
     featureLine: 'Ratings left on the listing by people searching nearby.',
     publisher: { name: 'Google', url: 'https://www.google.com/maps' },
-  },
-  {
-    key: 'yelp',
-    label: 'Yelp',
-    longLabel: 'Listed on Yelp',
-    reads: YELP_PROFILE_URL,
-    writes: '',
-    holds: 'What clients wrote on the Yelp listing.',
-    featureLine: 'What clients wrote on the Yelp listing.',
-    publisher: { name: 'Yelp', url: 'https://www.yelp.com' },
   },
   {
     key: 'facebook',

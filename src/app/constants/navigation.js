@@ -204,10 +204,7 @@ export const INSTAGRAM_URL = 'https://www.instagram.com/taylorwebdev/'
 // named the same way in either, and adding one is a row in the data rather than
 // a column here. A column draws only the networks carrying an address for it,
 // so one with nowhere to send a reader is dropped rather than drawn, which is
-// what keeps the panel from offering a page that is not there. Yelp is the
-// standing case in the writing column: it suppresses reviews that were asked
-// for and can penalize the listing for the asking, so it holds no address for
-// leaving one.
+// what keeps the panel from offering a page that is not there.
 //
 // `summarised` is what the reading column sets: the column that leaves a review
 // has said what every row on it does in its own head, and a line under each row
@@ -247,7 +244,7 @@ const reviewColumn = (head, link, summarised) => ({
 //
 // Written against the key for the reason the studies above are. This and the
 // columns are every reach into `@data/reviews` this file makes outside a
-// function body, and what sits behind them is five networks with their labels,
+// function body, and what sits behind them is four networks with their labels,
 // their publishers and their profile addresses, the client quotes filed on two
 // of them, and the portfolio each reviewer is placed by.
 const featureSource = IS_SECOND_SITE
@@ -563,7 +560,7 @@ const STUDIO_NAV_GROUPS = [
 // ones, /contact the ways to start a conversation.
 //
 // Two things this list does not reach, and the footer is where they stay. The
-// reviews are five profiles on networks this site does not own and there is no
+// reviews are four profiles on networks this site does not own and there is no
 // /reviews page to send a phone to, so a row here would be a section whose
 // every destination leaves. The status board sits under the footer's Legal
 // column and is a page for the clients already under care, not a thing a
@@ -674,11 +671,6 @@ export const SOCIAL_LINKS = [
     brand: 'instagram',
     label: 'Instagram',
     href: INSTAGRAM_URL,
-  },
-  {
-    brand: 'yelp',
-    label: 'Yelp',
-    href: 'https://www.yelp.com/biz/taylor-url-houston',
   },
 ]
 

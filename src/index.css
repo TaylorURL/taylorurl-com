@@ -225,7 +225,6 @@
   --tp-star: #00b67a;
   --tp-ink: #005128;
   --google-blue: #4285f4;
-  --yelp-red: #d32323;
   --fb-blue: #0866ff;
   --li-blue: #0a66c2;
   /* Instagram publishes its mark as a gradient rather than as one colour,
@@ -477,7 +476,6 @@
      on this setting the bright star green takes the type and the dark one stays
      behind white ink on a filled button. */
   --tp-ink: #00b67a;
-  --yelp-red: #ff3b3b;
   --bbb-blue: #4eb4d8;
   /* The ground is what changed, so the shapes drawn on it are pulled back toward
      it: the gold star settles at 5.1 and the Trustpilot tile at 3.5, both still
@@ -610,11 +608,10 @@
   --accent-hi: var(--accent-hi-bright);
   --accent-loud: var(--accent-hi-bright);
   --mark-invert: 1;
-  /* The two borrowed brand colours cut for a light sheet disappear into a slab:
-     the dark Trustpilot green all but vanishes at 1.8, and Yelp's red lands
-     near 3:1. A slab takes the same steps the dark setting takes. */
+  /* The borrowed brand colours cut for a light sheet disappear into a slab:
+     the dark Trustpilot green all but vanishes at 1.8. A slab takes the same
+     steps the dark setting takes. */
   --tp-ink: var(--tp-star);
-  --yelp-red: #ff3b3b;
   --bbb-blue: #4eb4d8;
 }
 
@@ -669,10 +666,9 @@
   --key-lift-soft: 0 1px 2px rgb(10 10 10 / 5%);
   --plane-ground: #ffffff;
   /* The borrowed brand colours follow the sheet rather than the setting: the
-     bright star green is a shape on white, and Yelp's dark red is the step
-     that carries type on it. */
+     bright star green is a shape on white, and the dark green is the step that
+     carries type on it. */
   --tp-ink: #005128;
-  --yelp-red: #d32323;
   --bbb-blue: #015a75;
   /* A sheet is white whatever the setting is, and white is the ground these
      colours were cut for, so nothing is held back on one. Without this a sheet
@@ -1663,10 +1659,6 @@
 
   [data-mark='google'] {
     --mark-brand: var(--google-blue);
-  }
-
-  [data-mark='yelp'] {
-    --mark-brand: var(--yelp-red);
   }
 
   [data-mark='bbb'] {

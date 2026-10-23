@@ -1,10 +1,4 @@
-import {
-  MarkBbb,
-  MarkFacebook,
-  MarkGoogle,
-  MarkTrustpilot,
-  MarkYelp,
-} from '@components/marks/brandMarks'
+import { MarkBbb, MarkFacebook, MarkGoogle, MarkTrustpilot } from '@components/marks/brandMarks'
 
 /**
  * How each review network is drawn, keyed the way `REVIEW_SOURCES` keys them.
@@ -30,7 +24,6 @@ const REVIEW_SOURCE_DRAWING = {
     stars: 'var(--google-gold)',
     fill: 'var(--google-blue)',
   },
-  yelp: { mark: MarkYelp, ink: 'var(--yelp-red)', fill: 'var(--yelp-red)' },
   facebook: { mark: MarkFacebook, ink: 'var(--fb-blue)', fill: 'var(--fb-blue)' },
 }
 

@@ -10,7 +10,7 @@
  * A module is emitted into the chunk that reaches it, whole. `@constants/navigation`
  * is in the chrome of every page, so reading this one string off the registry
  * put the registry itself on the critical path, and with it went everything any
- * other page reads out of that file: five networks with their labels, publishers
+ * other page reads out of that file: four networks with their labels, publishers
  * and profile addresses, the client quotes filed on two of them, and the whole
  * portfolio behind the town each reviewer is placed by. taylor.website publishes
  * no reviews and lists no clients, and it downloaded all of it before drawing
