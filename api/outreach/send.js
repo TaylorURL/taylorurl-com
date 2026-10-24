@@ -171,14 +171,27 @@ import {
   MailboxClosed,
   assertMailboxOpen,
   mailboxClosedReason,
+  mailboxRefusalOf,
   mailboxStopOf,
   noteCarried,
   readMailbox,
   restIfRefused,
+  restingNow,
 } from '../../lib/outreach/sending/mailbox.js'
+import {
+  envelopeOf,
+  noteSent,
+  pickSender,
+  readSenders,
+  senderFor,
+  studioSender,
+  withMailbox,
+} from '../../lib/outreach/sending/senders.js'
 
 const SMTP_HOST = process.env.OUTREACH_SMTP_HOST || 'smtp.gmail.com'
 const SMTP_PORT = Number(process.env.OUTREACH_SMTP_PORT || 465)
+/** Where a sender marked `relay` goes; see lib/outreach/sending/senders.js. */
+const RELAY_HOST = process.env.OUTREACH_RELAY_HOST || 'smtp-relay.gmail.com'
 const SMTP_USER = process.env.OUTREACH_SMTP_USER || ''
 const SMTP_PASSWORD = process.env.OUTREACH_SMTP_PASSWORD || ''
 
@@ -299,13 +312,13 @@ const FOLLOW_UP_NEEDS_MS = SEND_TIMEOUT_MS + SPACING_MAX_MS
  * sender's name.
  *
  * @param {string} token The prospect's `unsub_token`.
+ * @param {string} [origin] The host of the address the letter leaves from, so
+ *   the way off the list stands on the domain the letter came from.
  * @returns {string} The absolute URL, or an empty string where the row carries
  *   no token yet.
  */
-export function unsubscribeUrl(token) {
-  return token
-    ? `${OUTREACH_ORIGIN}/api/outreach/unsubscribe?token=${encodeURIComponent(token)}`
-    : ''
+export function unsubscribeUrl(token, origin = OUTREACH_ORIGIN) {
+  return token ? `${origin}/api/outreach/unsubscribe?token=${encodeURIComponent(token)}` : ''
 }
 
 /**
@@ -327,7 +340,9 @@ export function unsubscribeUrl(token) {
  *   under it. The client work the message shows is added here, so a letter
  *   that points at it says the same thing the pictures under it show. `at` is
  *   the moment the letter is written for, which is what its greeting reads the
- *   half of the day off; a caller that names none is writing for now.
+ *   half of the day off; a caller that names none is writing for now. `origin`
+ *   is the host of the address it leaves from, which its links stand on; a
+ *   caller that names none writes from the first address.
  * @returns {{ subject: string, text: string, html: string, variant: string }}
  *   The message, and the id of the variant it was written under.
  * @throws {Error} When no variant fits the prospect, since a message with no
@@ -364,6 +379,7 @@ export function compose(
   }
   const where = serviceArea(prospect.town)
   const work = workFor(prospect)
+  const origin = context.origin ?? OUTREACH_ORIGIN
   // What a letter is given to write with. The number is here because the cold
   // letter hopes to be rung rather than replied to, and the portfolio is here
   // for the paused families alone: the letter that sends offers one address,
@@ -372,11 +388,11 @@ export function compose(
     ...context,
     work,
     phone: REPLY_PHONE,
-    site: workUrl(track),
+    site: workUrl(track, origin),
   })
   const contact = {
     phone: REPLY_PHONE,
-    unsubscribe: unsubscribeUrl(prospect.unsub_token),
+    unsubscribe: unsubscribeUrl(prospect.unsub_token, origin),
   }
 
   // A plain letter is its paragraphs and nothing else, rendered bare. It is
@@ -392,6 +408,7 @@ export function compose(
       at: context.at ?? new Date(),
       paragraphs: opener.paragraphs,
       track,
+      origin,
       // The studio's own signature goes under the letter, and the studio's own
       // address is what it links to. It is a place to look rather than an
       // invitation, the way a number on a business card is. The unsubscribe
@@ -426,6 +443,7 @@ export function compose(
     close: opener.close,
     work,
     track,
+    origin,
     contact,
   }
 
@@ -437,22 +455,54 @@ export function compose(
   }
 }
 
-let transport = null
+const transports = new Map()
 
-/** The mail server the message goes through, built once per function instance. */
-function mailer() {
-  if (!transport) {
-    transport = nodemailer.createTransport({
-      host: SMTP_HOST,
-      port: SMTP_PORT,
-      secure: SMTP_PORT === 465,
-      auth: { user: SMTP_USER, pass: SMTP_PASSWORD },
-      connectionTimeout: SEND_TIMEOUT_MS,
-      greetingTimeout: SEND_TIMEOUT_MS,
-      socketTimeout: SEND_TIMEOUT_MS,
-    })
+/**
+ * The mail server the message goes through, built once per login per function
+ * instance. A sender that is a mailbox of its own logs in as itself; every
+ * other letter goes under the studio's login. See
+ * lib/outreach/sending/senders.js.
+ */
+function mailer(login = null, relay = false) {
+  const auth = login ?? { user: SMTP_USER, pass: SMTP_PASSWORD }
+  const host = relay ? RELAY_HOST : SMTP_HOST
+  const key = `${auth.user}@${host}`
+  if (!transports.has(key)) {
+    transports.set(
+      key,
+      nodemailer.createTransport({
+        host,
+        port: SMTP_PORT,
+        secure: SMTP_PORT === 465,
+        auth,
+        connectionTimeout: SEND_TIMEOUT_MS,
+        greetingTimeout: SEND_TIMEOUT_MS,
+        socketTimeout: SEND_TIMEOUT_MS,
+      })
+    )
   }
-  return transport
+  return transports.get(key)
+}
+
+/**
+ * Every address a cold letter may leave from, with its room for the day; see
+ * lib/outreach/sending/senders.js.
+ *
+ * @throws {Error} When the row names no address and the deployment has no login.
+ */
+export async function readRoster(db, settings, now = new Date()) {
+  const roster = await readSenders(
+    db,
+    settings,
+    { primary: SMTP_USER, origin: OUTREACH_ORIGIN },
+    now
+  )
+  if (!roster.senders.length) {
+    throw new Error(
+      'no from address; set from_address in outreach_settings or OUTREACH_SMTP_USER on the deployment'
+    )
+  }
+  return withMailbox(roster, restingNow(db, settings, now) ?? { open: true })
 }
 
 /** The sender both the draft and the send carry. */
@@ -474,18 +524,28 @@ export function sender(settings) {
  * all. It carries no unsubscribe header, because it is on no list, and it
  * writes nothing: a proof is not a relationship with anyone.
  *
- * @param {{from: object, to: string, subject: string, text: string, html: string}} message
+ * @param {{from: object, sender?: object, to: string, subject: string, text: string, html: string}} message
  * @param {() => object} [transport] The mail client, built once per instance.
  * @returns {Promise<string>} The id the mail server accepted it under.
  * @throws {Error} When the deployment has no mail login to send with.
  */
-export async function deliverProof({ from, to, subject, text, html }, transport = mailer) {
+export async function deliverProof(
+  { from, sender: on = null, to, subject, text, html },
+  transport = mailer
+) {
   if (!SMTP_USER || !SMTP_PASSWORD) {
     throw new Error(
       'the deployment has no mail login; set OUTREACH_SMTP_USER and OUTREACH_SMTP_PASSWORD'
     )
   }
-  const sent = await transport().sendMail({ from, to, subject, text, html })
+  // A proof from an address on the roster goes the way that address sends.
+  const sent = await transport(on?.login ?? null, Boolean(on?.relay)).sendMail({
+    from,
+    to,
+    subject,
+    text,
+    html,
+  })
   return field(sent?.messageId, 500)
 }
 
@@ -501,6 +561,7 @@ function lettered(prospect, from, shot, variant, chain) {
   const track = randomUUID()
   const { subject, text, html } = compose(prospect, shot, track, variant, {
     prior: chain.prior ?? null,
+    origin: from.origin,
   })
   return {
     subject,
@@ -649,11 +710,12 @@ async function hold(db, prospect, holdout) {
  */
 export async function deliver(db, message, from, unsubscribe, transport = mailer, thread = null) {
   await assertDeliverable(db, message.to_address)
-  await assertMailboxOpen(db)
+  // Only the studio's own login answers to the studio's mailbox.
+  if (studioSender(from)) await assertMailboxOpen(db)
   let sent
   try {
-    sent = await transport().sendMail({
-      from,
+    sent = await transport(from.login ?? null, Boolean(from.relay)).sendMail({
+      from: envelopeOf(from),
       to: message.to_address,
       subject: message.subject,
       text: message.body_text,
@@ -671,10 +733,20 @@ export async function deliver(db, message, from, unsubscribe, transport = mailer
         : {}),
     })
   } catch (cause) {
-    await restIfRefused(db, cause)
-    throw cause
+    // A mailbox of its own refusing says nothing about the studio's, so only a
+    // refusal under the studio's login rests it and stops the run. The refused
+    // mailbox is shut for the rest of this run instead, and the letter fails
+    // in words the run reads as about this one letter, so the others go on.
+    if (studioSender(from)) {
+      await restIfRefused(db, cause)
+      throw cause
+    }
+    const refusal = mailboxRefusalOf(cause)
+    if (!refusal) throw cause
+    from.today = from.daily ?? from.today
+    throw new Error(`${from.address} was refused by Gmail (${refusal.kind}), shut for this run`)
   }
-  noteCarried(db)
+  if (studioSender(from)) noteCarried(db)
   return field(sent?.messageId, 500)
 }
 
@@ -985,8 +1057,17 @@ async function firstLetters({
   // off: the day's own first letters stop here and the cap is the preview
   // letters' to spend. A catch-up's held letters are not stopped by the switch,
   // but they answer to the preview the queue below asks of every first letter.
-  const cap = settings.intro_letters_enabled === false ? 0 : settings.daily_cap
+  //
+  // The day's cap is also no more than the addresses can carry between them:
+  // each has a day of its own, warming up or resting on its bounces, and what
+  // they have left is the most this day can still send; see
+  // lib/outreach/sending/senders.js.
+  const roster = await readRoster(db, settings)
   const already = await sentToday(db, { firstOnly: ready, except: heldBack?.prospects })
+  const cap = Math.min(
+    settings.intro_letters_enabled === false ? 0 : settings.daily_cap,
+    already + roster.capacity
+  )
   const due = dueBy(cap, new Date())
   const owed = Math.max(Math.min(cap, due) - already, 0)
   const allowance = Math.min(owed, SEND_PER_RUN_MAX)
@@ -994,8 +1075,6 @@ async function firstLetters({
     const capped = already >= cap
     return { sending, allowance: 0, capped, waiting: !capped, due, already, window }
   }
-
-  const from = sender(settings)
 
   const rows = await candidates(db)
   if (!rows.length) return { sending, allowance, queue: 0, window }
@@ -1070,6 +1149,8 @@ async function firstLetters({
     // Businesses this run had the allowance for and not the minutes. They keep
     // their place at the head of the queue for the next one.
     postponed: 0,
+    // Businesses left for the next day because no address had room for them.
+    unsent: 0,
     // Held letters a catch-up carried, and what the mail server said when it
     // refused one, which ends the catch-up.
     caughtUp: 0,
@@ -1180,11 +1261,28 @@ async function firstLetters({
     // no reader sees. Waiting here is waiting the run already does between
     // sends, and a capture that cannot be taken leaves the message without one
     // rather than with a frame that will not fill.
+    // The address the letter leaves from. A draft keeps the one it was written
+    // from while that address still has room; one whose address is resting or
+    // full is written again from another, since its links name the first. A
+    // business no address has room for waits for the next day, and so does
+    // every one behind it. A run that only drafts writes from the first
+    // address when none has room, and the run that sends it moves it.
+    const usable = one => Boolean(one?.open && one.daily - one.today > 0)
+    const kept = held ? senderFor(roster.senders, held.from_address) : null
+    const moved = Boolean(held && !usable(kept))
+    const from = usable(kept)
+      ? kept
+      : (pickSender(roster.senders, prospect) ?? (sending ? null : roster.senders[0]))
+    if (!from) {
+      tally.unsent += run.length - position
+      break
+    }
+
     const shot = await warmShot(db, prospect, variant)
     // The letter a draft already in hand is written again under: a fresh pick
     // where the one it named has been retired, and the one it named where only
-    // its greeting has gone out of date.
-    const rewriting = stale ? variant : dated ? under : null
+    // its greeting has gone out of date or its address has stopped sending.
+    const rewriting = stale ? variant : dated || moved ? under : null
     const message = rewriting
       ? await redraft(db, held, prospect, from, shot, rewriting, { ready, step: 1 })
       : (held ?? (await draft(db, prospect, from, shot, variant, { ready, step: 1 })))
@@ -1269,6 +1367,7 @@ async function firstLetters({
     } else {
       const now = new Date().toISOString()
       await markSent(db, message, providerId, now)
+      noteSent(from)
       // `contacted_at` is the whole record that this business has been written
       // to, and the queue reads it to leave the business alone afterwards. It
       // is set for a message that actually left and for nothing else: a draft
@@ -1377,7 +1476,10 @@ async function followUps({
     db,
     due.map(row => row.id)
   )
-  const from = sender(settings)
+  // A follow-up leaves from the address the first letter did, so it threads
+  // under it and a reply comes back to the same name. It is outside the day's
+  // cap, so it is not held to the address's room either.
+  const roster = await readRoster(db, settings)
 
   // The run walks the list in the order it is owed and stops once it has
   // handed FOLLOW_UPS_PER_RUN letters to the transport. A business the run
@@ -1438,6 +1540,7 @@ async function followUps({
     }
 
     const prior = first.get(prospect.id) ?? null
+    const from = senderFor(roster.senders, prior?.from_address) ?? roster.senders[0]
     const shot = await warmShot(db, prospect, letter)
     const message = await draft(db, prospect, from, shot, letter, {
       ready: true,

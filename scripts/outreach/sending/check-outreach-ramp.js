@@ -29,7 +29,7 @@ import { fail, finish, is as expect } from '../../harness/checks.js'
 // carry, which is the point above which a larger cap changes nothing anyway.
 const SWEEP_TO = DELIVERS_A_DAY * 4
 
-const NOW = new Date('2026-08-29T12:00:00Z')
+const NOW = new Date('2026-08-28T12:00:00Z')
 const DAY_MS = 24 * 60 * 60 * 1000
 
 /** The local date `back` days before the moment every case is decided at. */
@@ -108,7 +108,7 @@ for (const rate of [BOUNCE_STEPS_UNDER, 3, BOUNCE_ROLLS_BACK_OVER]) {
   // A halt is what stops it starting again on its own, so the next morning has
   // to hold on the record rather than on the rate.
   const after = decide({
-    ...state({ cap: 15, floor: 15, haltedAt: '2026-08-29T12:00:00.000Z' }),
+    ...state({ cap: 15, floor: 15, haltedAt: '2026-08-28T12:00:00.000Z' }),
     record: record({ sent: 200, bounced: 0 }),
   })
   expect('a halted ramp holds on a clean window', after.action, 'hold')
