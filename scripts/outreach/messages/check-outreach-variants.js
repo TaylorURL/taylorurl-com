@@ -268,7 +268,7 @@ check('the second letter asks once, in the introduction chain, and opens on the 
       `${entry.id} carries styling of its own`
     )
     ok(
-      message.text.includes('I sent you an email a couple of weeks ago introducing myself.'),
+      message.text.includes('I wrote to you a couple of weeks ago about '),
       `${entry.id} does not open on the first letter`
     )
     ok(message.text.includes(`/portfolio?`), `${entry.id} does not link the work`)
@@ -298,7 +298,7 @@ check('the second letter says how long ago the first one went', () => {
     prior: { ...CONTEXT.prior, sent_at: ago(30) },
   })
   ok(
-    opened.paragraphs[0].startsWith('I sent you an email about a month ago introducing myself.'),
+    opened.paragraphs[0].startsWith('I wrote to you about a month ago about '),
     `the opening line: ${opened.paragraphs[0]}`
   )
 })

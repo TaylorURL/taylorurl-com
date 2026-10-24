@@ -176,7 +176,8 @@ check('the letter names the suit, the site and nothing it cannot back', () => {
   ok(letter.plain, 'a plain letter')
   same(letter.subject, 'Trenton Taylor, TaylorURL', 'the same sender as the introduction')
   ok(
-    text.includes('Riverside Dance Studio was sued on September 14 because riversidedance.example'),
+    text.includes('the accessibility suit filed against Riverside Dance Studio on September 14') &&
+      text.includes('riversidedance.example'),
     'the suit, with the company form dropped'
   )
   ok(text.includes('555'), 'carries the number')

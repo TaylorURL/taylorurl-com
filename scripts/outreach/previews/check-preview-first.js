@@ -17,6 +17,7 @@ import {
   isPreviewFirst,
   previewFirstLetter,
   previewUrl,
+  spokenName,
 } from '../../../lib/outreach/previews.js'
 import { check, finish, ok, same } from '../../harness/checks.js'
 
@@ -105,6 +106,29 @@ check('a letter naming a picture it does not carry is refused', () => {
     refused = true
   }
   ok(refused, 'sent with a missing picture')
+})
+check('the letters name the business the way a person would, not as it is filed', () => {
+  same(spokenName('XENOS MARINE LLC'), 'Xenos Marine', 'capitals and the company form')
+  same(spokenName('Torcsill Foundations LLC (Pasadena, TX)'), 'Torcsill Foundations', 'the town')
+  same(spokenName('BAY AREA HVAC LLC'), 'Bay Area HVAC', 'initials kept')
+  same(spokenName("Joe's Tacos"), "Joe's Tacos", 'a name already in ordinary case')
+  const filed = {
+    ...site,
+    name: 'XENOS MARINE LLC',
+    letter: {
+      ...site.letter,
+      first: [
+        'Hi,',
+        'So I built XENOS MARINE LLC a new website:',
+        '{link}',
+        'XENOS MARINE is ready.',
+      ],
+    },
+  }
+  const text = previewFirstLetter(filed, -1, { track: 't' }).text
+  ok(text.includes('So I built Xenos Marine a new website'), text)
+  ok(text.includes('Xenos Marine is ready.'), text)
+  ok(!text.includes('XENOS'), 'the filed name survives')
 })
 check('the follow-ups fall inside the draft lifetime', () =>
   ok(
