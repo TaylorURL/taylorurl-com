@@ -35,6 +35,7 @@ const {
   SENDER_DAILY,
   WARM_UP,
   dailyFor,
+  hasOwnSenders,
   loginKeyOf,
   loginOf,
   ownLogins,
@@ -43,6 +44,7 @@ const {
   restOf,
   rosterOf,
   sendersOf,
+  withMailbox,
 } = await import('../../../lib/outreach/sending/senders.js')
 const { refusedAtSource, work } = await import('../../../api/outreach/watch.js')
 
@@ -122,6 +124,24 @@ check('an entry marked relay is a mailbox of its own that needs no password', ()
   const roster = rosterOf(SETTINGS, FALLBACK, 'trenton@other.example|Other|2026-10-01|relay')
   same(roster[1].login, null, 'login')
   same(roster[1].relay, true, 'relay on the roster')
+})
+
+check('a resting studio mailbox shuts only the addresses that go under its login', () => {
+  const senders = [
+    open('trenton@first.example', 30, 0, { login: null, relay: false }),
+    open('trenton@other.example', 30, 4, { login: null, relay: true }),
+  ]
+  same(withMailbox({ senders, capacity: 56 }, { open: true }).capacity, 56, 'open mailbox')
+  const shut = withMailbox({ senders, capacity: 56 }, { open: false })
+  alike(
+    shut.senders.map(one => one.open),
+    [false, true],
+    'the studio shut, the relay open'
+  )
+  same(shut.capacity, 26, 'the day left to the relay')
+  ok(hasOwnSenders('trenton@other.example|Other|2026-10-01|relay', {}), 'a relay address')
+  ok(!hasOwnSenders(ADDED, {}), 'aliases alone')
+  ok(!hasOwnSenders(`trenton@other.example|Other|${RESTING}|relay`, {}), 'a relay set to rest')
 })
 
 check('a week is judged once it has enough letters in it, and rests over five per cent', () => {

@@ -90,7 +90,13 @@ import {
 } from '../../lib/outreach/preview-texts.js'
 import { textLineOf, textsSentToday, usPhone } from '../../lib/outreach/sending/texts.js'
 import { deliver, readRoster, unsubscribeUrl } from './send.js'
-import { noteSent, pickSender, senderFor } from '../../lib/outreach/sending/senders.js'
+import {
+  noteSent,
+  pickSender,
+  hasOwnSenders,
+  senderFor,
+  studioSender,
+} from '../../lib/outreach/sending/senders.js'
 
 export const config = { maxDuration: 300 }
 
@@ -142,9 +148,6 @@ async function sendOne(
   nth = 0,
   personal = false
 ) {
-  // The mailbox is asked before the draft is written, so a letter it would
-  // turn away leaves nothing behind.
-  await assertMailboxOpen(db)
   // The address it leaves from: the one the thread began on, so a follow-up
   // threads under it, or for a first letter whichever address has room; see
   // lib/outreach/sending/senders.js. None with room is a letter put off, the
@@ -156,6 +159,10 @@ async function sendOne(
   if (!picked) {
     throw new MailboxClosed({ reason: 'no sending address has room left today' })
   }
+  // The studio's mailbox is asked before the draft is written, so a letter it
+  // would turn away leaves nothing behind. An address of its own is not held
+  // to it; the roster has already shut the studio's while it rests.
+  if (studioSender(picked)) await assertMailboxOpen(db)
   const from = personal ? { ...picked, name: PREVIEW_FIRST_SENDER } : picked
   const track = randomUUID()
   const unsubscribe =
@@ -615,9 +622,12 @@ export async function work({ db, settings, counts, request }) {
     return { note: 'sending is switched off, so this run sent no preview letter' }
   }
   // The mailbox, asked before anything is read for the run. A request it
-  // cannot carry now is answered as one to make again, not as a failure.
+  // cannot carry now is answered as one to make again, not as a failure. A
+  // first letter can still leave from an address of its own while the studio's
+  // rests, so a named preview goes on to the roster, which says whether any
+  // address has room.
   const mailbox = await readMailbox(db, new Date(), settings)
-  if (!mailbox.open) {
+  if (!mailbox.open && !(request.method === 'POST' && mailbox.resting && hasOwnSenders())) {
     const reason = `the mailbox is closed: ${mailbox.reason}`
     return { ...resting(reason), note: `No preview letter was sent: ${reason}` }
   }

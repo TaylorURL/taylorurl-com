@@ -176,6 +176,7 @@ import {
   noteCarried,
   readMailbox,
   restIfRefused,
+  restingNow,
 } from '../../lib/outreach/sending/mailbox.js'
 import {
   envelopeOf,
@@ -183,6 +184,8 @@ import {
   pickSender,
   readSenders,
   senderFor,
+  studioSender,
+  withMailbox,
 } from '../../lib/outreach/sending/senders.js'
 
 const SMTP_HOST = process.env.OUTREACH_SMTP_HOST || 'smtp.gmail.com'
@@ -499,7 +502,7 @@ export async function readRoster(db, settings, now = new Date()) {
       'no from address; set from_address in outreach_settings or OUTREACH_SMTP_USER on the deployment'
     )
   }
-  return roster
+  return withMailbox(roster, restingNow(db, settings, now) ?? { open: true })
 }
 
 /** The sender both the draft and the send carry. */
@@ -697,7 +700,8 @@ async function hold(db, prospect, holdout) {
  */
 export async function deliver(db, message, from, unsubscribe, transport = mailer, thread = null) {
   await assertDeliverable(db, message.to_address)
-  await assertMailboxOpen(db)
+  // Only the studio's own login answers to the studio's mailbox.
+  if (studioSender(from)) await assertMailboxOpen(db)
   let sent
   try {
     sent = await transport(from.login ?? null, Boolean(from.relay)).sendMail({
@@ -723,7 +727,7 @@ export async function deliver(db, message, from, unsubscribe, transport = mailer
     // refusal under the studio's login rests it and stops the run. The refused
     // mailbox is shut for the rest of this run instead, and the letter fails
     // in words the run reads as about this one letter, so the others go on.
-    if (!from.login && !from.relay) {
+    if (studioSender(from)) {
       await restIfRefused(db, cause)
       throw cause
     }
@@ -732,7 +736,7 @@ export async function deliver(db, message, from, unsubscribe, transport = mailer
     from.today = from.daily ?? from.today
     throw new Error(`${from.address} was refused by Gmail (${refusal.kind}), shut for this run`)
   }
-  if (!from.login && !from.relay) noteCarried(db)
+  if (studioSender(from)) noteCarried(db)
   return field(sent?.messageId, 500)
 }
 
