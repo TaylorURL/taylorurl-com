@@ -99,7 +99,7 @@ import {
   followUpColumns,
   variantSettings,
 } from '../lib/outreach/sending/queue.js'
-import { loadHeldDomains, squash } from '../lib/outreach/prospects/exclusions.js'
+import { heldDomainsLoaded, loadHeldDomains, squash } from '../lib/outreach/prospects/exclusions.js'
 import {
   VARIANTS,
   VARIANT_STATUSES,
@@ -699,19 +699,27 @@ async function chains(db, now = new Date()) {
   ])
 
   const sentDrafts = drafts.rows.filter(row => row.sent_at)
-  const draftIds = [...new Set(sentDrafts.map(row => row.prospect_id).filter(Boolean))]
-  const repliedDrafts = draftIds.length
+  const draftIds = new Set(sentDrafts.map(row => row.prospect_id).filter(Boolean))
+
+  // Which of the drafts were answered is read as what it is: every business
+  // that ever wrote back, which is a small set because a reply is rare,
+  // narrowed here against the drafts' own ids.
+  //
+  // It was asked the other way about - the drafts' ids handed over in a single
+  // `.in('id', draftIds)` - and that is the shape #565 was filed for. A filter
+  // on a list is not sent as a body: PostgREST takes it in the query string,
+  // so the whole list travels in the address line, and an address line has a
+  // length the server refuses past. #565 met that at 640 ids and 25,318
+  // characters. This list is every preview ever sent, so it only grows, and a
+  // read built that way has a date on it rather than a bug in it. #788
+  // answered the identical shape the identical way for the bounce notices.
+  const replies = draftIds.size
     ? await readAll(
-        () =>
-          db
-            .from('outreach_prospects')
-            .select('id')
-            .in('id', draftIds)
-            .not('replied_at', 'is', null),
+        () => db.from('outreach_prospects').select('id').not('replied_at', 'is', null),
         { max: SUMMARY_LIMIT }
       )
     : { rows: [] }
-  const answered = new Set(repliedDrafts.rows.map(row => row.id))
+  const answered = new Set(replies.rows.map(row => row.id).filter(id => draftIds.has(id)))
 
   const cold = [SIGNED, `Re: ${SIGNED}`]
   const sample = drafts.rows.find(row => row.subject)?.subject ?? null
@@ -2148,19 +2156,29 @@ export default async function handler(request, response) {
     return
   }
 
-  // The console reads the same queue the sender does, and the queue will not
-  // judge a domain until the held list is loaded.
-  if (!(await loadHeldDomains(connected.db))) {
-    response.status(503).json({ error: 'The held-domain list could not be read.' })
-    return
-  }
-
   response.setHeader('Cache-Control', 'private, no-store')
 
   try {
     const caller = await authorizeAdmin(connected, authorization)
     if (caller.error) {
       response.status(caller.status).json({ error: caller.error })
+      return
+    }
+
+    // The console reads the same queue the sender does, and the queue will not
+    // judge a domain until the held list is loaded.
+    //
+    // Once per warm function rather than once per request, which is how
+    // lib/outreach/prospects/bridge.js and api/calls-audit-email.js already
+    // read it. The list is the studio's own domains and the ones asked for; it
+    // changes rarely and nothing on this route writes it. Read again on every
+    // request it was an extra round trip on every poll of every open console,
+    // and it sat on the one path here that answers 503 - so the cheapest read
+    // the route makes was the first to be refused when the database was busy,
+    // and it failed the request at the door, before the view it was turning
+    // away had been asked for at all.
+    if (!heldDomainsLoaded() && !(await loadHeldDomains(connected.db))) {
+      response.status(503).json({ error: 'The held-domain list could not be read.' })
       return
     }
 
