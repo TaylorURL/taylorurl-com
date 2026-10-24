@@ -83,7 +83,8 @@ const PULSE_MS = 30_000
  *   acting: string|null, running: string[], refresh: () => Promise<void>,
  *   act: (body: object, key: string) => Promise<object|null>,
  *   run: (job: string) => Promise<object|null>,
- *   preview: (variant: string) => Promise<object>}}
+ *   preview: (variant: string) => Promise<object>,
+ *   chainLetter: (chain: string, nth: number) => Promise<object>}}
  */
 export function useOutreachFeed({ token, enabled, filters, openId }) {
   const [held, setHeld] = useState(NOTHING_HELD)
@@ -236,6 +237,24 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
     [token]
   )
 
+  // One letter of one chain, rendered against a real business on it.
+  const chainLetter = useCallback(
+    async (chain, nth) => {
+      if (!token) return { error: 'Sign in to render a preview.' }
+      try {
+        const { response, payload } = await readEndpoint(
+          token,
+          `${OUTREACH_PATH}?view=step&chain=${encodeURIComponent(chain)}&nth=${nth}&t=${Date.now()}`
+        )
+        if (!response.ok) return { error: faultFromResponse(response, payload, NO_PREVIEW) }
+        return payload
+      } catch (cause) {
+        return { error: faultMessage(cause, NO_PREVIEW) }
+      }
+    },
+    [token]
+  )
+
   // The identity of the list changes on every start and finish, so the count
   // is what the interval hangs on: a second job starting joins a poll that is
   // already running rather than restarting it.
@@ -296,5 +315,6 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
     act,
     run,
     preview,
+    chainLetter,
   }
 }
