@@ -610,6 +610,7 @@ const draftFor = (id, row) => ({
   body_text: 'text',
   body_html: '<p>text</p>',
   to_address: row.email,
+  from_address: 'studio@example.com',
   status: 'drafted',
   variant_id: 'no-site-intro',
   created_at: '2026-08-29T17:30:00.000Z',
@@ -620,12 +621,20 @@ const DRAFT_B = draftFor('m-b', B)
 
 /**
  * The reads a send run makes, answered in order. Where the mailbox has a cap,
- * its own count of the cold letters comes first; then what the day's cap has
- * been spent on, the addresses already written to, and the drafts.
+ * its own count of the cold letters comes first; then the sending addresses'
+ * week, which is empty so the one address has its whole day; then what the
+ * day's cap has been spent on, the addresses already written to, and the
+ * drafts.
  */
+const NO_WEEK = [
+  { data: [], error: null },
+  { data: [], error: null },
+  { data: [], error: null },
+]
 const outreachPlan = ({ mailboxCount = null, extra = {} } = {}) => ({
   'select:outreach_messages': [
     ...(mailboxCount === null ? [] : [{ count: mailboxCount, error: null }]),
+    ...NO_WEEK,
     { count: 0, error: null },
     { data: [], error: null },
     { data: [DRAFT_A, DRAFT_B], error: null },
@@ -754,7 +763,15 @@ const previewsPlan = ({ mailboxCount = null } = {}) => ({
   'select:outreach_messages': [
     ...(mailboxCount === null ? [] : [{ count: mailboxCount, error: null }]),
     { count: 2, data: null, error: null },
-    { data: { subject: 'Your listing', provider_id: '<first@example.com>' }, error: null },
+    {
+      data: {
+        subject: 'Your listing',
+        from_address: 'studio@example.com',
+        provider_id: '<first@example.com>',
+      },
+      error: null,
+    },
+    ...NO_WEEK,
   ],
   'insert:outreach_messages': [
     { data: { ...letterTo(A.email), id: 'm-s1' }, error: null },

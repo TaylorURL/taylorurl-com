@@ -295,6 +295,19 @@ const prospectRead = state => {
  * `select:outreach_prospects:due` is the follow-up read's own fixture, and
  * `prospectRead` above says how each read is recognised.
  */
+/**
+ * Which read of `outreach_messages` a query is, where it is one of the three
+ * the sending addresses' week is read from (lib/outreach/sending/senders.js).
+ * Those are answered under `select:outreach_messages:roster` and leave the
+ * plain list to the reads these cases are about.
+ */
+function messageRead(state) {
+  const inbound = state.where.some(
+    clause => clause.how === 'eq' && clause.column === 'direction' && clause.value === 'inbound'
+  )
+  return inbound || state.columns === 'prospect_id, from_address, sent_at, step' ? 'roster' : null
+}
+
 function stubDb(plan) {
   const asked = []
   const writes = []
@@ -311,7 +324,9 @@ function stubDb(plan) {
             const role =
               state.op === 'select' && state.table === 'outreach_prospects'
                 ? prospectRead(state)
-                : null
+                : state.op === 'select' && state.table === 'outreach_messages'
+                  ? messageRead(state)
+                  : null
             asked.push({ key, role, where: state.where })
             if (state.op !== 'select')
               writes.push({ key, payload: state.payload, where: state.where })
@@ -383,6 +398,7 @@ const plan = ({
   'select:outreach_prospects:priority': { data: [], error: null },
   'select:outreach_prospects:scored': { data: queue, error: null },
   'select:outreach_prospects:due': { data: due, error: null },
+  'select:outreach_messages:roster': { data: [], error: null },
   // Two reads land here where the queue is empty: the day's count, then the
   // first letter a follow-up threads under. A case that gives the run a
   // candidate adds the two the queue makes and overrides this.
@@ -455,7 +471,9 @@ check(
       'a follow-up stamped the business with a letter'
     )
 
-    const capRead = asked.find(call => call.key === 'select:outreach_messages')
+    const capRead = asked.find(
+      call => call.key === 'select:outreach_messages' && call.role === null
+    )
     ok(
       capRead.where.some(clause => clause.how === 'or' && /step/.test(String(clause.column))),
       'the cap counted follow-ups'
@@ -608,7 +626,7 @@ check('without the chain’s columns, first letters go and the chain is not read
     !asked.some(call => call.role === 'due'),
     'the chain was read over columns the database does not have'
   )
-  const capRead = asked.find(call => call.key === 'select:outreach_messages')
+  const capRead = asked.find(call => call.key === 'select:outreach_messages' && call.role === null)
   ok(
     !capRead.where.some(clause => clause.how === 'or'),
     'the cap asked for a column that is not there'
@@ -706,6 +724,7 @@ check('a draft written before the letters existed is drafted again under one', a
     body_text: 'the old words',
     body_html: '<p>the old words</p>',
     to_address: 'maria@example.com',
+    from_address: 'studio@example.com',
     status: 'drafted',
     variant_id: null,
     created_at: '2026-08-28T17:00:00.000Z',
@@ -766,6 +785,7 @@ check('a draft written under a letter, on the day it goes, goes as it was writte
     body_text: 'the words as reviewed',
     body_html: '<p>the words as reviewed</p>',
     to_address: 'maria@example.com',
+    from_address: 'studio@example.com',
     status: 'drafted',
     variant_id: 'slow-site-intro',
     // Midday in Texas, an hour before the run, so the draft and the delivery
@@ -814,6 +834,7 @@ check('a draft held past its own day is written again before it goes', async () 
     body_text: 'the words as they stood a week ago',
     body_html: '<p>the words as they stood a week ago</p>',
     to_address: 'maria@example.com',
+    from_address: 'studio@example.com',
     status: 'drafted',
     variant_id: 'slow-site-intro',
     // Yesterday, at the hour the run fires at, so the half of the day reads
@@ -860,6 +881,7 @@ check('a draft written under a retired family is written again before it goes', 
     body_text: 'the laid-out words',
     body_html: '<p>the laid-out words</p>',
     to_address: 'maria@example.com',
+    from_address: 'studio@example.com',
     status: 'drafted',
     variant_id: 'slow-site-audit',
     created_at: '2026-08-28T17:00:00.000Z',

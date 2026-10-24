@@ -337,6 +337,7 @@ const DRAFTED = {
   body_text: 'text',
   body_html: '<p>html</p>',
   to_address: 'owner@example.com',
+  from_address: 'studio@example.com',
   status: 'drafted',
   variant_id: 'no-site-intro',
   created_at: '2026-08-29T17:00:00.000Z',
@@ -346,13 +347,18 @@ const DRAFTED = {
 /**
  * The reads a send run makes before it reaches its queue, answered in order.
  *
- * Three of them land on `outreach_messages`: what the cap has been spent on
- * today, the addresses already written to, and the draft this prospect is
- * holding. The middle one answers with nothing here, since these checks are
- * about a business hearing from the studio for the first time.
+ * Six of them land on `outreach_messages`. The first three are the sending
+ * addresses' week - letters sent, bounces, refusals at source - and answer with
+ * nothing, so the one address has its whole day. Then what the cap has been
+ * spent on today, the addresses already written to, and the draft this
+ * prospect is holding. The fifth answers with nothing here, since these checks
+ * are about a business hearing from the studio for the first time.
  */
 const sendPlan = extra => ({
   'select:outreach_messages': [
+    { data: [], error: null },
+    { data: [], error: null },
+    { data: [], error: null },
     { count: 0, error: null },
     { data: [], error: null },
     { data: [DRAFTED], error: null },

@@ -451,6 +451,7 @@ const DRAFTED = {
   body_text: 'text',
   body_html: '<p>html</p>',
   to_address: 'maria@example.com',
+  from_address: 'studio@example.com',
   status: 'drafted',
   created_at: '2026-08-29T17:00:00.000Z',
   sent_at: null,
@@ -459,12 +460,19 @@ const DRAFTED = {
 /**
  * The reads a send run makes before it reaches its queue, answered in order.
  *
- * Three land on `outreach_messages`: the day's count, the addresses already
- * written to, and the draft the prospect holds. The middle answers with
+ * Six land on `outreach_messages`: the sending addresses' week, empty so the
+ * one address has its whole day; the day's count, the addresses already
+ * written to, and the draft the prospect holds. The fifth answers with
  * nothing, since every case here is a business hearing from the studio first.
  */
+const NO_WEEK = [
+  { data: [], error: null },
+  { data: [], error: null },
+  { data: [], error: null },
+]
 const sendPlan = (candidates, extra = {}) => ({
   'select:outreach_messages': [
+    ...NO_WEEK,
     { count: 0, error: null },
     { data: [], error: null },
     { data: [], error: null },
@@ -591,6 +599,7 @@ check('a draft already written is delivered as it was, and nothing is chosen for
   const { db, writes, asked } = stubDb(
     sendPlan([{ ...SCORED }], {
       'select:outreach_messages': [
+        ...NO_WEEK,
         { count: 0, error: null },
         { data: [], error: null },
         { data: [DRAFTED], error: null },

@@ -472,7 +472,7 @@ check('the sender drafts both kinds of letter with a reading', () => {
   const source = readFileSync(new URL('../../../api/outreach/previews.js', import.meta.url), 'utf8')
   ok(/const proof = await proofNow\(\)/.test(source), 'the sender takes no reading')
   ok(
-    /previewFirstLetter\([^)]*proof \}\)/.test(source),
+    /previewFirstLetter\([^)]*\bproof\b/.test(source),
     'the preview-first letter is drafted without it'
   )
   ok(
