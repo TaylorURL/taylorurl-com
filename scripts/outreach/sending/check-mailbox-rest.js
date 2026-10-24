@@ -600,6 +600,7 @@ const prospect = (id, email) => ({
   site_kind: 'social',
   stage: 'enriched',
   unsub_token: `11111111-1111-1111-1111-11111111111${id.length}`,
+  preview_skipped_at: '2026-08-27T17:00:00.000Z',
 })
 const A = prospect('p-a', ALPHA)
 const B = prospect('p-b', BRAVO)
@@ -641,13 +642,6 @@ const outreachPlan = ({ mailboxCount = null, extra = {} } = {}) => ({
   ],
   'select:outreach_prospects': { data: [A, B], error: null },
   'select:suppression': { data: [], error: null },
-  'select:preview_sites': {
-    data: [
-      { prospect_id: A.id, expires_at: null },
-      { prospect_id: B.id, expires_at: null },
-    ],
-    error: null,
-  },
   ...extra,
 })
 
@@ -742,14 +736,23 @@ const site = (id, prospectId) => ({
   slug: `${id}-preview`,
   name: `Business ${id}`,
   prospect_id: prospectId,
-  letter: null,
+  letter: {
+    version: 2,
+    subject: 'Trenton Taylor - TaylorURL',
+    first: ['Hi,', 'I built a draft site for you.', '{link}'],
+    follow_ups: [
+      ['Hi,', 'The draft is still up: {url}'],
+      ['Hi,', 'Still up: {url}'],
+      ['Hi,', 'Taking it down Friday.'],
+    ],
+  },
   shot_url: null,
   message_id: `first-${id}`,
-  sent_at: iso(-10 * 24 * HOUR),
+  sent_at: iso(-4 * 24 * HOUR),
   follow_up_due_at: iso(-HOUR),
   follow_up_sent_at: null,
   follow_ups: 0,
-  expires_at: null,
+  expires_at: iso(17 * 24 * HOUR),
 })
 const onChain = row => ({ ...row, stage: 'contacted', replied_at: null, bounced_at: null })
 
@@ -762,7 +765,6 @@ const previewsPlan = ({ mailboxCount = null } = {}) => ({
   'select:suppression': { data: [], error: null },
   'select:outreach_messages': [
     ...(mailboxCount === null ? [] : [{ count: mailboxCount, error: null }]),
-    { count: 2, data: null, error: null },
     {
       data: {
         subject: 'Your listing',

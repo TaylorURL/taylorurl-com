@@ -19,12 +19,7 @@
  */
 import { readFileSync } from 'node:fs'
 import { postscriptText } from '../../../lib/outreach/message.js'
-import {
-  FOLLOW_UP_COUNT,
-  PREVIEW_FIRST_DAYS,
-  previewFirstLetter,
-  previewLetter,
-} from '../../../lib/outreach/previews.js'
+import { PREVIEW_FIRST_DAYS, previewFirstLetter } from '../../../lib/outreach/previews.js'
 import {
   previewCampaign,
   proofLine,
@@ -95,7 +90,7 @@ const read = async (answers, key = 'a-places-key') => {
 const sentence = line =>
   line.parts.map(part => (typeof part === 'string' ? part : part.text)).join('')
 const links = line => line.parts.filter(part => typeof part !== 'string')
-const FIRST = { campaign: previewCampaign('first', -1, PREVIEW_FIRST_DAYS), nth: -1 }
+const FIRST = { campaign: previewCampaign(-1, PREVIEW_FIRST_DAYS), nth: -1 }
 
 // ── The reading ─────────────────────────────────────────────────────────
 
@@ -267,22 +262,15 @@ check('every link is the profile itself, tagged with the letter it came out of',
 })
 
 check('a profile that already carries a query keeps it under the tags', () => {
-  const url = new URL(
-    taggedProfile('https://www.facebook.com/profile.php?id=123', 'preview-letter')
-  )
+  const url = new URL(taggedProfile('https://www.facebook.com/profile.php?id=123', 'preview-first'))
   same(url.searchParams.get('id'), '123', 'the profile id')
-  same(url.searchParams.get('utm_campaign'), 'preview-letter', 'the campaign')
+  same(url.searchParams.get('utm_campaign'), 'preview-first', 'the campaign')
 })
 
-check('every letter in both threads is counted under a name of its own', () => {
-  const names = [
-    ...[-1, 0, 1, 2].map(nth => previewCampaign('first', nth, PREVIEW_FIRST_DAYS)),
-    ...[-1, ...Array.from({ length: FOLLOW_UP_COUNT }, (_, nth) => nth)].map(nth =>
-      previewCampaign('preview', nth)
-    ),
-  ]
+check('every letter in the chain is counted under a name of its own', () => {
+  const names = [-1, 0, 1, 2].map(nth => previewCampaign(nth, PREVIEW_FIRST_DAYS))
   same(
-    names.slice(0, 4).join(','),
+    names.join(','),
     'preview-first,preview-first-day-3,preview-first-day-8,preview-first-day-18',
     'the preview-first names'
   )
@@ -317,7 +305,6 @@ const SITE = {
     },
   },
 }
-const UNSUBSCRIBE = 'https://www.baytownwebdevelopment.com/api/outreach/unsubscribe?t=fixture'
 const READINGS = [
   LIVE,
   { ...LIVE, google: { rating: 4.9, reviewCount: 12 } },
@@ -332,29 +319,8 @@ function letters(proof) {
     out.push({
       name: `preview-first ${nth}`,
       personal: true,
-      campaign: previewCampaign('first', nth, PREVIEW_FIRST_DAYS),
+      campaign: previewCampaign(nth, PREVIEW_FIRST_DAYS),
       letter: previewFirstLetter(SITE, nth, { track: 'fixture-track', proof }),
-    })
-  }
-  out.push({
-    name: 'preview letter',
-    campaign: previewCampaign('preview', -1),
-    letter: previewLetter(SITE, 'first', {
-      track: 'fixture-track',
-      unsubscribe: UNSUBSCRIBE,
-      proof,
-    }),
-  })
-  for (let nth = 0; nth < FOLLOW_UP_COUNT; nth += 1) {
-    out.push({
-      name: `preview follow-up ${nth + 1}`,
-      campaign: previewCampaign('preview', nth),
-      letter: previewLetter(SITE, 'follow_up', {
-        track: 'fixture-track',
-        unsubscribe: UNSUBSCRIBE,
-        nth,
-        proof,
-      }),
     })
   }
   return out
@@ -444,8 +410,8 @@ check('no postscript carries a dash, an emoji or an exclamation mark', () => {
     { trustpilot: null, google: null, bbb: false },
   ]
   for (const proof of readings) {
-    for (let nth = -1; nth < FOLLOW_UP_COUNT; nth += 1) {
-      const line = proofLine(proof, { campaign: 'preview-letter', nth })
+    for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
+      const line = proofLine(proof, { campaign: 'preview-first', nth })
       const words = postscriptText(line)
       if (/[‒-―−]|\s-\s|--/.test(words)) faults.push(`a dash in: ${words}`)
       if (/\p{Extended_Pictographic}/u.test(words)) faults.push(`an emoji in: ${words}`)
@@ -456,9 +422,8 @@ check('no postscript carries a dash, an emoji or an exclamation mark', () => {
 })
 
 check('a thread does not open two letters in a row on the same words', () => {
-  const opening = nth =>
-    sentence(proofLine(LIVE, { campaign: 'preview-letter', nth })).split(',')[0]
-  for (let nth = -1; nth < FOLLOW_UP_COUNT - 1; nth += 1) {
+  const opening = nth => sentence(proofLine(LIVE, { campaign: 'preview-first', nth })).split(',')[0]
+  for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length - 1; nth += 1) {
     ok(
       opening(nth) !== opening(nth + 1),
       `letters ${nth} and ${nth + 1} both open "${opening(nth)}"`
@@ -468,16 +433,11 @@ check('a thread does not open two letters in a row on the same words', () => {
 
 // ── The sender ──────────────────────────────────────────────────────────
 
-check('the sender drafts both kinds of letter with a reading', () => {
+check('the sender drafts every letter with a reading', () => {
   const source = readFileSync(new URL('../../../api/outreach/previews.js', import.meta.url), 'utf8')
-  ok(/const proof = await proofNow\(\)/.test(source), 'the sender takes no reading')
   ok(
-    /previewFirstLetter\([^)]*\bproof\b/.test(source),
-    'the preview-first letter is drafted without it'
-  )
-  ok(
-    /previewLetter\([\s\S]*?proof,\s*\}\)/.test(source),
-    'the older preview letter is drafted without it'
+    /previewFirstLetter\([\s\S]*?proof: await proofNow\(\)/.test(source),
+    'the letter is drafted without a reading'
   )
 })
 

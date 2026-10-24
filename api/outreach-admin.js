@@ -46,8 +46,8 @@
  *   { action: 'proof', id, from?, to? } one variant sent to the studio's own
  *                                       inbox, as it would go; `from` and `to`
  *                                       may name addresses on the roster
- *   { action: 'preview-proof', kind, nth, from? }
- *                                       one preview letter sent the same way;
+ *   { action: 'preview-proof', nth, from? }
+ *                                       one draft preview letter sent the same way;
  *                                       either may carry a `label` that
  *                                       replaces [Proof] in the subject
  *   { action: 'new-business-proof', from?, label? }
@@ -101,13 +101,11 @@ import {
 } from '../lib/outreach/sending/queue.js'
 import { loadHeldDomains, squash } from '../lib/outreach/prospects/exclusions.js'
 import {
-  HOLDOUTS,
   VARIANTS,
   VARIANT_STATUSES,
   WEIGHT_MAX,
   familyAhead,
   fits,
-  isHoldoutId,
   letterSourceOf,
   liveAhead,
   withSettings,
@@ -118,15 +116,17 @@ import { isYoung } from '../lib/outreach/prospects/youth.js'
 import { STAGES } from '../lib/outreach/prospects/stages.js'
 import { ranksAhead } from '../lib/outreach/sending/rank.js'
 import { storedShot } from '../lib/outreach/audit/shot.js'
-import { compose, deliverProof, readRoster, sender, unsubscribeUrl } from './outreach/send.js'
+import { compose, deliverProof, readRoster, sender } from './outreach/send.js'
 import { envelopeOf, senderFor } from '../lib/outreach/sending/senders.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
 import { composeFor } from '../lib/new-business/email.js'
+import { LAWSUIT_SOURCE } from '../lib/outreach/prospects/lawsuits.js'
+import { FOLLOW_UP_DAYS } from '../lib/outreach/sending/limits.js'
 import {
+  PREVIEW_FIRST_DAYS,
   PREVIEW_FIRST_SENDER,
   isPreviewFirst,
   previewFirstLetter,
-  previewLetter,
 } from '../lib/outreach/previews.js'
 import { dayStartsAt, reachesMore, slotsAt } from '../lib/outreach/sending/schedule.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
@@ -514,54 +514,66 @@ async function board(db, query) {
   // of it: the board reports a day's sending that has not happened yet, or
   // none of the sending that has.
   const since = dayStartsAt()
-  const [page, summary, total, today, contacted, replied, rotation, saved, history, stored] =
-    await Promise.all([
-      prospects(db, query),
-      readAll(
-        () =>
-          db
-            .from('outreach_prospects')
-            .select(
-              'stage, town, trade, audit_score, website, site_kind, source, rating_count, ' +
-                'business_status'
-            ),
-        { max: SUMMARY_LIMIT }
-      ),
-      countOf(db.from('outreach_prospects').select('id', { count: 'exact', head: true })),
-      countOf(
+  const [
+    page,
+    summary,
+    total,
+    today,
+    contacted,
+    replied,
+    rotation,
+    saved,
+    history,
+    stored,
+    chained,
+  ] = await Promise.all([
+    prospects(db, query),
+    readAll(
+      () =>
         db
           .from('outreach_prospects')
-          .select('id', { count: 'exact', head: true })
-          .gte('contacted_at', since)
-      ),
-      countOf(
-        db
-          .from('outreach_prospects')
-          .select('id', { count: 'exact', head: true })
-          .not('contacted_at', 'is', null)
-      ),
-      countOf(
-        db
-          .from('outreach_prospects')
-          .select('id', { count: 'exact', head: true })
-          .not('replied_at', 'is', null)
-      ),
-      // The rotation: every business standing at 'contacted' with a date to
-      // hear from the studio again. A reply, an opt-out or a bounce moves the
-      // stage, and the end of a chain takes the date away, so this counts the
-      // businesses actually due another letter rather than everyone ever
-      // written to.
-      countOf(
-        db
-          .from('outreach_prospects')
-          .select('id', { count: 'exact', head: true })
-          .eq('stage', 'contacted')
-          .not('next_due_at', 'is', null)
-      ),
-      settings(db),
-      runs(db),
-      variantSettings(db),
-    ])
+          .select(
+            'stage, town, trade, audit_score, website, site_kind, source, rating_count, ' +
+              'business_status'
+          ),
+      { max: SUMMARY_LIMIT }
+    ),
+    countOf(db.from('outreach_prospects').select('id', { count: 'exact', head: true })),
+    countOf(
+      db
+        .from('outreach_prospects')
+        .select('id', { count: 'exact', head: true })
+        .gte('contacted_at', since)
+    ),
+    countOf(
+      db
+        .from('outreach_prospects')
+        .select('id', { count: 'exact', head: true })
+        .not('contacted_at', 'is', null)
+    ),
+    countOf(
+      db
+        .from('outreach_prospects')
+        .select('id', { count: 'exact', head: true })
+        .not('replied_at', 'is', null)
+    ),
+    // The rotation: every business standing at 'contacted' with a date to
+    // hear from the studio again. A reply, an opt-out or a bounce moves the
+    // stage, and the end of a chain takes the date away, so this counts the
+    // businesses actually due another letter rather than everyone ever
+    // written to.
+    countOf(
+      db
+        .from('outreach_prospects')
+        .select('id', { count: 'exact', head: true })
+        .eq('stage', 'contacted')
+        .not('next_due_at', 'is', null)
+    ),
+    settings(db),
+    runs(db),
+    variantSettings(db),
+    chains(db),
+  ])
 
   const counts = Object.fromEntries(STAGES.map(name => [name, 0]))
   // Prospects that have been scored and not yet written to, whose sites are
@@ -614,12 +626,120 @@ async function board(db, query) {
       settings: saved,
       runs: history,
       variants: describeVariants(stored),
+      chains: chained,
       prospects: page.rows,
       matching: page.matching,
       page: page.page,
       size: page.size,
     },
   }
+}
+
+/**
+ * The four outreach chains, in the order a business is matched to them, and
+ * how many businesses stand at each of their letters.
+ *
+ * Each count is of businesses rather than messages, and each letter's count
+ * is of the businesses sent that letter or a later one, so a chain reads as a
+ * funnel: waiting, then each email in turn, then replied. A business is on
+ * one chain alone; see `coldChainOf` in lib/outreach/sending/queue.js for the
+ * two the cold sender writes, api/outreach/previews.js for the draft preview
+ * and api/new-business/ for the new business email.
+ */
+async function chains(db) {
+  const prospectsOn = chain => {
+    const read = db
+      .from('outreach_prospects')
+      .select('id', { count: 'exact', head: true })
+      .not('email', 'is', null)
+    return chain === 'lawsuit'
+      ? read.eq('source', LAWSUIT_SOURCE)
+      : read.not('preview_skipped_at', 'is', null).or(`source.is.null,source.neq.${LAWSUIT_SOURCE}`)
+  }
+  const cold = async chain => {
+    const [waiting, first, second, replied] = await Promise.all([
+      countOf(
+        prospectsOn(chain)
+          .is('contacted_at', null)
+          .in('stage', [...WAITING_STAGES])
+      ),
+      countOf(prospectsOn(chain).not('contacted_at', 'is', null)),
+      countOf(prospectsOn(chain).gte('step', 2)),
+      countOf(prospectsOn(chain).not('replied_at', 'is', null)),
+    ])
+    return { waiting, sent: [first, second], replied }
+  }
+
+  const [lawsuit, intro, drafts, leads] = await Promise.all([
+    cold('lawsuit'),
+    cold('intro'),
+    readAll(
+      () =>
+        db
+          .from('preview_sites')
+          .select('prospect_id, sent_at, follow_ups')
+          .eq('letter->>version', '2'),
+      { max: SUMMARY_LIMIT }
+    ),
+    readAll(() => db.from('new_business_leads').select('stage, contacted_at'), {
+      max: SUMMARY_LIMIT,
+    }),
+  ])
+
+  const sentDrafts = drafts.rows.filter(row => row.sent_at)
+  const draftIds = sentDrafts.map(row => row.prospect_id).filter(Boolean)
+  const draftReplied = draftIds.length
+    ? await countOf(
+        db
+          .from('outreach_prospects')
+          .select('id', { count: 'exact', head: true })
+          .in('id', draftIds)
+          .not('replied_at', 'is', null)
+      )
+    : 0
+  const preview = {
+    waiting: drafts.rows.length - sentDrafts.length,
+    sent: [0, ...PREVIEW_FIRST_DAYS].map(
+      (_, nth) => sentDrafts.filter(row => (row.follow_ups ?? 0) >= nth).length
+    ),
+    replied: draftReplied,
+  }
+  const business = {
+    waiting: leads.rows.filter(row => !row.contacted_at && row.stage === 'emailable').length,
+    sent: [leads.rows.filter(row => row.contacted_at).length],
+    replied: leads.rows.filter(row => row.stage === 'replied').length,
+  }
+
+  return [
+    {
+      key: 'lawsuit',
+      name: 'Lawsuit',
+      entry: 'Found in a website accessibility suit, with an email address.',
+      days: [0, FOLLOW_UP_DAYS],
+      ...lawsuit,
+    },
+    {
+      key: 'new-business',
+      name: 'New Business',
+      entry: 'Newly registered with the state, with an email address.',
+      days: [0],
+      ...business,
+    },
+    {
+      key: 'draft-preview',
+      name: 'Draft Preview',
+      entry: 'An email address and a built draft with its four letters written.',
+      days: [0, ...PREVIEW_FIRST_DAYS],
+      ...preview,
+    },
+    {
+      key: 'cold-intro',
+      name: 'Cold Intro',
+      entry: 'An email address and no draft coming.',
+      days: [0, FOLLOW_UP_DAYS],
+      ...intro,
+    },
+  ]
 }
 
 /** One business in full, with every message to and from it, oldest first. */
@@ -761,9 +881,8 @@ async function mail(db) {
     ),
     // Every business holding an id, with whether it wrote back. A reply is on
     // the business because the mailbox matches one on the address it came
-    // from. A holdout has no messages to count, so this is the whole of its
-    // row, and beside a variant it says how many were given the message
-    // against how many it reached.
+    // from. Beside a variant it says how many were given the message against
+    // how many it reached.
     readAll(
       () =>
         db
@@ -948,7 +1067,7 @@ function describeVariant(variant, stored) {
     name: variant.name,
     about: variant.about ?? null,
     segment: variant.segment,
-    family: variant.holdout ? null : (variant.family ?? null),
+    family: variant.family ?? null,
     plain: Boolean(variant.plain),
     step: variant.step ?? 1,
     // Whether the letter stands at every step from its own onwards. The letter
@@ -960,24 +1079,20 @@ function describeVariant(variant, stored) {
     weight: variant.weight,
     needs: [...variant.needs],
     condition: variant.condition ?? null,
-    holdout: Boolean(variant.holdout),
     updated_at: stored?.updated_at ?? null,
   }
 }
 
-/**
- * Every variant and every holdout as the console reads them, with what is
- * stored laid over the registry.
- */
+/** Every variant as the console reads it, with what is stored laid over the registry. */
 function describeVariants(rows) {
   const stored = new Map(rows.map(row => [row.id, row]))
-  return [...withSettings(VARIANTS, rows), ...withSettings(HOLDOUTS, rows)].map(variant =>
+  return withSettings(VARIANTS, rows).map(variant =>
     describeVariant(variant, stored.get(variant.id))
   )
 }
 
-/** The variants and the holdouts together, as the console has set them. */
-const everything = rows => [...withSettings(VARIANTS, rows), ...withSettings(HOLDOUTS, rows)]
+/** The variants as the console has set them. */
+const everything = rows => withSettings(VARIANTS, rows)
 
 /** A row of counts with the rates they come to, each against what was sent. */
 function withRates(row) {
@@ -994,12 +1109,10 @@ function withRates(row) {
 /**
  * What went out under each variant, and what came back.
  *
- * One row per variant and per holdout in the registry's order, counted over
- * every message that actually left and every business given the id, followed
- * by a row for each id the registry no longer knows and one for the messages
- * sent before any id was recorded, each only where it has something to count.
- * A holdout's row is the businesses held out and nothing else, since nothing
- * was sent to them: that is the floor.
+ * One row per variant in the registry's order, counted over every message
+ * that actually left and every business given the id, followed by a row for
+ * each id the registry no longer knows and one for the messages sent before
+ * any id was recorded, each only where it has something to count.
  *
  * Four things come back. An open and a click are on the message, read off its
  * own picture and its own link. An inquiry is on the message too, matched on
@@ -1016,8 +1129,7 @@ function withRates(row) {
  * console shows is `lettersByName` over it, since a letter registered once per
  * segment is one letter and not five.
  *
- * @param {ReadonlyArray<object>} variants The variants and the holdouts, as
- *   the console has set them.
+ * @param {ReadonlyArray<object>} variants The variants, as the console has set them.
  * @param {Array<{variant_id: string|null, opened_at: string|null, clicked_at: string|null, enquired_at?: string|null}>} messages
  *   Every outbound message that was sent.
  * @param {Array<{variant_id: string, replied_at?: string|null}>} [prospects]
@@ -1065,7 +1177,6 @@ export function variantResults(variants, messages, prospects = []) {
     weight: null,
     needs: [],
     condition: null,
-    holdout: isHoldoutId(id),
   })
   for (const [id, counts] of buckets) {
     if (id === '' || known.has(id) || !(counts.sent || counts.assigned)) continue
@@ -1195,9 +1306,6 @@ function priorFor(prospect, shot, variant, registry = VARIANTS) {
  */
 export async function preview(db, query) {
   const asked = String(query.variant ?? '')
-  if (isHoldoutId(asked)) {
-    return { status: 400, body: { error: 'A holdout sends nothing, so there is nothing to show.' } }
-  }
   const variant = VARIANTS.find(entry => entry.id === asked)
   if (!variant) return { status: 400, body: { error: 'Pick a variant to preview.' } }
 
@@ -1604,9 +1712,6 @@ export const proofTag = body => {
  */
 export async function proof(db, body, registry = VARIANTS, post = deliverProof) {
   const id = String(body.id ?? '')
-  if (isHoldoutId(id)) {
-    return { status: 400, body: { error: 'A holdout sends nothing, so there is nothing to send.' } }
-  }
   const variant = registry.find(entry => entry.id === id)
   if (!variant) return { status: 400, body: { error: 'That variant is not one the sender knows.' } }
 
@@ -1726,21 +1831,18 @@ export async function newBusinessProof(db, body, post = deliverProof) {
 }
 
 /**
- * One preview letter sent to the studio's own inbox, as it would go.
+ * One draft preview letter sent to the studio's own inbox, as it would go.
  *
- * `kind` is 'preview' for the letter that carries a draft site to a business
- * already written to, or 'personal' for the preview-first letters written for
- * one business; `nth` is -1 for the first letter and 0 onward for each
- * follow-up. The letter is drawn from the most recent preview that has one,
- * from an address on the roster, and its unsubscribe link names no business.
- * Nothing is written.
+ * `nth` is -1 for the first letter and 0 onward for each follow-up. The letter
+ * is drawn from the most recent preview with its four letters written, from an
+ * address on the roster, and greeted the way the business would be. Nothing is
+ * written.
  *
  * @param {object} db A service-role client.
- * @param {{kind?: string, nth?: number, from?: string}} body
+ * @param {{nth?: number, from?: string}} body
  * @param {Function} [post] The delivery, which a check replaces.
  */
 export async function previewProof(db, body, post = deliverProof) {
-  const personal = body.kind === 'personal'
   const nth = Number.isInteger(body.nth) ? body.nth : -1
   const { data: rows, error } = await db
     .from('preview_sites')
@@ -1749,7 +1851,7 @@ export async function previewProof(db, body, post = deliverProof) {
     .order('created_at', { ascending: false })
     .limit(200)
   if (error) return refusal(error, 'The previews could not be read.')
-  const site = (rows ?? []).find(row => (personal ? isPreviewFirst(row) : !isPreviewFirst(row)))
+  const site = (rows ?? []).find(isPreviewFirst)
   if (!site) return NOBODY
 
   const saved = await settings(db)
@@ -1758,34 +1860,20 @@ export async function previewProof(db, body, post = deliverProof) {
     (body.from && senderFor(roster.senders, body.from)) ||
     roster.senders.find(one => one.open) ||
     roster.senders[0]
-  const from = personal ? { ...picked, name: PREVIEW_FIRST_SENDER } : picked
+  const from = { ...picked, name: PREVIEW_FIRST_SENDER }
   // The address the business would be written to, so the proof is greeted the
   // way the real letter would be.
   const { data: reader } = await db
-    .from('prospects')
+    .from('outreach_prospects')
     .select('email')
     .eq('id', site.prospect_id)
     .maybeSingle()
   const email = reader?.email ?? null
-  const first = personal
-    ? previewFirstLetter(site, -1, { track: null, origin: from.origin, email })
-    : previewLetter(site, 'first', {
-        track: null,
-        origin: from.origin,
-        unsubscribe: unsubscribeUrl('proof', from.origin),
-      })
+  const first = previewFirstLetter(site, -1, { track: null, origin: from.origin, email })
   const letter =
     nth < 0
       ? first
-      : personal
-        ? previewFirstLetter(site, nth, { track: null, prior: first, origin: from.origin, email })
-        : previewLetter(site, 'follow_up', {
-            track: null,
-            origin: from.origin,
-            unsubscribe: unsubscribeUrl('proof', from.origin),
-            prior: first,
-            nth,
-          })
+      : previewFirstLetter(site, nth, { track: null, prior: first, origin: from.origin, email })
   const subject = `${proofTag(body)} ${letter.subject}`
   try {
     await post({
@@ -1804,17 +1892,7 @@ export async function previewProof(db, body, post = deliverProof) {
       body: { error: `The proof did not leave. The mail server said: ${said}` },
     }
   }
-  return {
-    status: 200,
-    body: {
-      ok: true,
-      kind: personal ? 'personal' : 'preview',
-      nth,
-      to: STUDIO_INBOX,
-      subject,
-      slug: site.slug,
-    },
-  }
+  return { status: 200, body: { ok: true, nth, to: STUDIO_INBOX, subject, slug: site.slug } }
 }
 
 /**
@@ -1830,28 +1908,14 @@ export async function previewProof(db, body, post = deliverProof) {
  * the stored weight where it is and a row written for the first time takes the
  * column's own default for whatever it was not given.
  *
- * A holdout is set the same way, under its own id. It sends nothing, so it is
- * never the last thing a segment can send under and no change to it is
- * refused on that ground.
- *
  * @param {object} db A service-role client.
  * @param {object} body The request body.
  * @param {ReadonlyArray<object>} [registry] The variants, which a check hands in.
- * @param {ReadonlyArray<object>} [holdouts] The holdouts, likewise.
  */
-export async function setVariant(db, body, registry = VARIANTS, holdouts = HOLDOUTS) {
+export async function setVariant(db, body, registry = VARIANTS) {
   const id = String(body.id ?? '')
-  const known = registry.find(entry => entry.id === id) ?? holdouts.find(entry => entry.id === id)
+  const known = registry.find(entry => entry.id === id)
   if (!known) return { status: 400, body: { error: 'That variant is not one the sender knows.' } }
-  // A holdout is a record of businesses that were once given no letter. The
-  // sender draws nobody into one now, so a weight set here would be a switch
-  // that reads as holding people back and does nothing at all.
-  if (known.holdout) {
-    return {
-      status: 409,
-      body: { error: 'Nobody is held out any more. Every business gets the introduction.' },
-    }
-  }
 
   const patch = {}
   if (body.status !== undefined) {
@@ -1893,9 +1957,7 @@ export async function setVariant(db, body, registry = VARIANTS, holdouts = HOLDO
     if (saved.error) return refusal(saved.error, VARIANT_FAILED)
 
     const row = saved.data ?? { id, ...patch }
-    const variant = withSettings(known.holdout ? holdouts : registry, [row]).find(
-      entry => entry.id === id
-    )
+    const variant = withSettings(registry, [row]).find(entry => entry.id === id)
     return { status: 200, body: { ok: true, variant: describeVariant(variant, row) } }
   } catch (cause) {
     return refusal(cause, VARIANT_FAILED)
