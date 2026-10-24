@@ -20,10 +20,8 @@
  *   npm run check:outreach-variant-writes
  */
 import {
-  HOLDOUTS,
   VARIANTS,
   WEIGHT_MAX,
-  holdoutId,
   withSettings,
   wouldEmptySegment,
 } from '../../../lib/outreach/variants.js'
@@ -57,6 +55,7 @@ const prospectRead = state => {
   if (state.where.some(clause => clause.how === 'or')) return 'priority'
   if (state.order.some(by => by.column === 'audit_score')) return 'scored'
   if (state.order.some(by => by.column === 'created_at')) return 'filed'
+  if (state.where.some(clause => clause.how === 'eq' && clause.column === 'id')) return 'one'
   throw new Error('a read of the businesses the plan does not know')
 }
 
@@ -149,14 +148,14 @@ const upserts = writes => writes.filter(write => write.key === 'upsert:outreach_
 // ── The overlay ──────────────────────────────────────────────────────────
 
 check('what is stored is laid over the registry, and nothing else moves', () => {
-  const laid = withSettings(VARIANTS, [{ id: 'slow-site-audit', status: 'paused', weight: 3 }])
+  const laid = withSettings(VARIANTS, [{ id: 'slow-site-intro', status: 'paused', weight: 3 }])
   same(laid.length, VARIANTS.length, 'variants after the overlay')
-  const changed = laid.find(one => one.id === 'slow-site-audit')
+  const changed = laid.find(one => one.id === 'slow-site-intro')
   same(changed.status, 'paused', 'the stored status')
   same(changed.weight, 3, 'the stored weight')
-  same(changed.open, VARIANTS.find(one => one.id === 'slow-site-audit').open, 'the opener')
+  same(changed.open, VARIANTS.find(one => one.id === 'slow-site-intro').open, 'the opener')
   for (const one of laid) {
-    if (one.id === 'slow-site-audit') continue
+    if (one.id === 'slow-site-intro') continue
     same(
       one,
       VARIANTS.find(other => other.id === one.id),
@@ -174,10 +173,10 @@ check('what is stored is laid over the registry, and nothing else moves', () => 
 check('a stored row the registry cannot use leaves the default standing', () => {
   const rows = [
     { id: 'retired-long-ago', status: 'paused', weight: 0 },
-    { id: 'slow-site-audit', status: 'gone', weight: 'lots' },
-    { id: 'no-site-listing', weight: -1 },
-    { id: 'fair-site-audit', weight: 1.5 },
-    { id: 'sound-site-audit', weight: WEIGHT_MAX + 1 },
+    { id: 'slow-site-intro', status: 'gone', weight: 'lots' },
+    { id: 'no-site-intro', weight: -1 },
+    { id: 'fair-site-intro', weight: 1.5 },
+    { id: 'sound-site-intro', weight: WEIGHT_MAX + 1 },
     null,
     {},
   ]
@@ -320,27 +319,12 @@ check('the last live first letter in a segment cannot be paused', async () => {
 
 check('the last live variant in a segment cannot be weighted to nothing', async () => {
   const { db, writes } = stubDb({
-    'select:outreach_variants': { data: allBut('slow-site', 'slow-site-audit'), error: null },
+    'select:outreach_variants': { data: allBut('slow-site', 'slow-site-intro'), error: null },
   })
-  const answer = await setVariant(db, { id: 'slow-site-audit', weight: 0 })
+  const answer = await setVariant(db, { id: 'slow-site-intro', weight: 0 })
   same(answer.status, 409, 'the status')
   same(writes.length, 0, 'writes made')
 })
-
-check(
-  'one of several live letters in a segment can be paused under the code’s own defaults',
-  async () => {
-    const { db, writes } = stubDb({
-      'upsert:outreach_variants': {
-        data: { id: 'slow-site-audit', status: 'paused', weight: 1, updated_at: null },
-        error: null,
-      },
-    })
-    const answer = await setVariant(db, { id: 'slow-site-audit', status: 'paused' })
-    same(answer.status, 200, 'the status')
-    same(upserts(writes).length, 1, 'rows written')
-  }
-)
 
 check('what is already stored is read before the last live variant is counted', async () => {
   // The registry ships two live; the store has paused one; pausing the other
@@ -447,7 +431,7 @@ check('any other refusal of the read stops the caller', async () => {
 })
 
 check('what is stored is read back as it was stored', async () => {
-  const stored = [{ id: 'slow-site-audit', status: 'paused', weight: 2, updated_at: null }]
+  const stored = [{ id: 'slow-site-intro', status: 'paused', weight: 2, updated_at: null }]
   const { db } = stubDb({ 'select:outreach_variants': { data: stored, error: null } })
   const rows = await variantSettings(db)
   same(rows, stored, 'the rows read')
@@ -457,26 +441,26 @@ check('what is stored is read back as it was stored', async () => {
 
 check('what went out is counted per variant, with what came back', () => {
   const sent = [
-    { variant_id: 'slow-site-audit', opened_at: '2026-08-29T18:00:00Z', clicked_at: null },
-    { variant_id: 'slow-site-audit', opened_at: null, clicked_at: null },
+    { variant_id: 'slow-site-intro', opened_at: '2026-08-29T18:00:00Z', clicked_at: null },
+    { variant_id: 'slow-site-intro', opened_at: null, clicked_at: null },
     {
-      variant_id: 'slow-site-audit',
+      variant_id: 'slow-site-intro',
       opened_at: '2026-08-29T18:00:00Z',
       clicked_at: '2026-08-29T18:10:00Z',
     },
-    { variant_id: 'no-site-listing', opened_at: null, clicked_at: null },
+    { variant_id: 'no-site-intro', opened_at: null, clicked_at: null },
   ]
   const rows = variantResults(VARIANTS, sent)
   same(rows.length, VARIANTS.length, 'rows, one per variant and nothing else')
-  const slow = rows.find(row => row.id === 'slow-site-audit')
+  const slow = rows.find(row => row.id === 'slow-site-intro')
   same(slow.sent, 3, 'sent under the speed reading')
   same(slow.opened, 2, 'opened')
   same(slow.clicked, 1, 'clicked')
   same(Math.round(slow.open_rate * 10) / 10, 66.7, 'the open rate')
   same(Math.round(slow.click_rate * 10) / 10, 33.3, 'the click rate')
-  same(slow.name, 'Speed Reading', 'the name beside the count')
+  same(slow.name, 'Introduction', 'the name beside the count')
   same(slow.segment, 'slow-site', 'the segment beside the count')
-  const fair = rows.find(row => row.id === 'fair-site-audit')
+  const fair = rows.find(row => row.id === 'fair-site-intro')
   same(fair.sent, 0, 'sent under a variant nothing went out under')
   same(fair.open_rate, null, 'the open rate of nothing')
   ok(!('open' in slow), 'the opener travelled with the counts')
@@ -485,25 +469,24 @@ check('what went out is counted per variant, with what came back', () => {
 check('a reply and an inquiry are counted under the letter that prompted them', () => {
   const sent = [
     {
-      variant_id: 'slow-site-audit',
+      variant_id: 'slow-site-intro',
       opened_at: '2026-08-29T18:00:00Z',
       clicked_at: '2026-08-29T18:10:00Z',
       enquired_at: '2026-08-29T18:12:00Z',
     },
-    { variant_id: 'slow-site-audit', opened_at: null, clicked_at: null, enquired_at: null },
+    { variant_id: 'slow-site-intro', opened_at: null, clicked_at: null, enquired_at: null },
     { variant_id: 'slow-site-holding', opened_at: null, clicked_at: null, enquired_at: null },
     { variant_id: 'slow-site-holding', opened_at: null, clicked_at: null, enquired_at: null },
     { variant_id: null, opened_at: null, clicked_at: null, enquired_at: '2026-08-29T18:12:00Z' },
   ]
   const given = [
-    { variant_id: 'slow-site-audit', replied_at: '2026-08-30T15:00:00Z' },
-    { variant_id: 'slow-site-audit', replied_at: null },
+    { variant_id: 'slow-site-intro', replied_at: '2026-08-30T15:00:00Z' },
+    { variant_id: 'slow-site-intro', replied_at: null },
     { variant_id: 'slow-site-holding', replied_at: '2026-08-30T15:00:00Z' },
     { variant_id: 'slow-site-holding', replied_at: '2026-08-30T16:00:00Z' },
-    { variant_id: holdoutId('slow-site'), replied_at: null },
   ]
-  const rows = variantResults([...VARIANTS, ...HOLDOUTS], sent, given)
-  const speed = rows.find(row => row.id === 'slow-site-audit')
+  const rows = variantResults(VARIANTS, sent, given)
+  const speed = rows.find(row => row.id === 'slow-site-intro')
   same(speed.sent, 2, 'sent under the speed reading')
   same(speed.enquired, 1, 'inquiries under it')
   same(speed.replied, 1, 'replies under it')
@@ -514,21 +497,12 @@ check('a reply and an inquiry are counted under the letter that prompted them', 
   same(holding.reply_rate, 100, 'its reply rate')
   same(holding.enquired, 0, 'inquiries under it')
   same(holding.enquiry_rate, 0, 'its inquiry rate')
-  const held = rows.find(row => row.id === holdoutId('slow-site'))
-  same(held.assigned, 1, 'businesses held out')
-  same(held.replied, 0, 'replies from businesses sent nothing')
-  same(held.reply_rate, null, 'the reply rate of nothing sent')
   const before = rows.find(row => row.id === null)
   same(before.enquired, 1, 'inquiries before ids were recorded')
   same(before.replied, null, 'replies before ids were recorded, which nothing counted')
   same(before.reply_rate, null, 'the reply rate of what was not counted')
-  const shown = rows.find(row => row.id === 'fair-site-audit')
+  const shown = rows.find(row => row.id === 'fair-site-intro')
   same(shown.condition, null, 'a letter with no condition')
-  same(
-    rows.find(row => row.id === 'fair-site-search').condition,
-    'the SEO score is under 90',
-    'a letter with one'
-  )
 })
 
 check('a message sent under an id the registry no longer knows keeps its count', () => {
@@ -593,29 +567,25 @@ check('a variant nothing knows cannot be previewed', async () => {
 
 check('a preview is the composer against the next business in the queue for it', async () => {
   const { db } = stubDb({ 'select:outreach_prospects': { data: [SOCIAL, SCORED], error: null } })
-  const answer = await preview(db, { variant: 'slow-site-audit' })
+  const answer = await preview(db, { variant: 'slow-site-intro' })
   same(answer.status, 200, 'the status')
-  same(answer.body.variant, 'slow-site-audit', 'the variant rendered')
+  same(answer.body.variant, 'slow-site-intro', 'the variant rendered')
   same(answer.body.prospect.id, 'p2', 'the business rendered for')
   same(answer.body.prospect.queued, true, 'whether it is waiting in the queue')
   same(answer.body.prospect.segment, 'slow-site', 'the segment it reads as')
-  same(answer.body.subject, 'your site on a phone', 'the subject')
+  same(answer.body.subject, 'Trenton Taylor, TaylorURL', 'the subject')
   ok(answer.body.html.includes('Bayside Electrical'), 'the laid-out half names the business')
-  ok(
-    answer.body.text.includes('https://baysideelectrical.example.com'),
-    'the plain half names the page measured'
-  )
-  ok(answer.body.text.includes('31 out of 100'), 'the plain half carries the score')
+  ok(answer.body.text.includes('Bayside Electrical'), 'the plain half names the business')
   ok(!answer.body.html.includes('/api/outreach/open?'), 'a preview carries an open counter')
 })
 
 check(
   'a business already holding another variant is passed over for one holding none',
   async () => {
-    const held = { ...SCORED, id: 'p3', variant_id: 'no-site-listing' }
+    const held = { ...SCORED, id: 'p3', variant_id: 'no-site-intro' }
     const free = { ...SCORED, id: 'p4', email: 'maria@example.com' }
     const { db } = stubDb({ 'select:outreach_prospects': { data: [held, free], error: null } })
-    const answer = await preview(db, { variant: 'slow-site-audit' })
+    const answer = await preview(db, { variant: 'slow-site-intro' })
     same(answer.body.prospect.id, 'p4', 'the business rendered for')
   }
 )
@@ -625,7 +595,7 @@ check('with nothing waiting, a business on file that reads as the segment is use
     'select:outreach_prospects': { data: [], error: null },
     'select:outreach_prospects:filed': { data: [SOCIAL, SCORED], error: null },
   })
-  const answer = await preview(db, { variant: 'no-site-listing' })
+  const answer = await preview(db, { variant: 'no-site-intro' })
   same(answer.status, 200, 'the status')
   same(answer.body.prospect.id, 'p1', 'the business rendered for')
   same(answer.body.prospect.queued, false, 'whether it is waiting in the queue')
@@ -636,7 +606,7 @@ check('with nothing waiting, a business on file that reads as the segment is use
 
 check('a segment nobody on file is in has nothing to render against', async () => {
   const { db } = stubDb({ 'select:outreach_prospects': { data: [SOCIAL], error: null } })
-  const answer = await preview(db, { variant: 'sound-site-audit' })
+  const answer = await preview(db, { variant: 'sound-site-intro' })
   same(answer.status, 404, 'the status')
 })
 
@@ -679,15 +649,6 @@ check('a proof of a variant nothing knows is refused before anything is read', a
   same(writes.length, 0, 'writes made')
 })
 
-check('a holdout has no proof to send', async () => {
-  const { db, asked } = stubDb({})
-  const { sent, post } = postbox()
-  const answer = await proof(db, { id: holdoutId('slow-site') }, VARIANTS, post)
-  same(answer.status, 400, 'the status')
-  same(asked.length, 0, 'reads made')
-  same(sent.length, 0, 'proofs sent')
-})
-
 check(
   'a proof is the composer against the business the preview would choose, sent to the studio and written nowhere',
   async () => {
@@ -696,27 +657,27 @@ check(
       'select:outreach_settings': SAVED,
     })
     const { sent, post } = postbox()
-    const answer = await proof(db, { id: 'slow-site-audit' }, VARIANTS, post)
+    const answer = await proof(db, { id: 'slow-site-intro' }, VARIANTS, post)
     same(answer.status, 200, 'the status')
     same(answer.body.ok, true, 'whether it says it went')
-    same(answer.body.variant, 'slow-site-audit', 'the variant sent')
+    same(answer.body.variant, 'slow-site-intro', 'the variant sent')
     same(answer.body.to, STUDIO_INBOX, 'where it says it went')
     same(answer.body.prospect.id, 'p2', 'the business it was written for')
     same(answer.body.prospect.queued, true, 'whether that business is waiting in the queue')
     same(sent.length, 1, 'proofs sent')
     const [handed] = sent
     same(handed.to, STUDIO_INBOX, 'the address handed to the mailer')
-    same(handed.subject, '[Proof] your site on a phone', 'the subject')
+    same(handed.subject, '[Proof] Trenton Taylor, TaylorURL', 'the subject')
     same(handed.from.address, 'trenton@example.com', 'the address it left from')
     same(handed.from.name, 'Trenton Taylor, TaylorURL', 'the name it left under')
     ok(handed.html.includes('Bayside Electrical'), 'the laid-out half names the business')
-    ok(handed.text.includes('31 out of 100'), 'the plain half carries the score')
+    ok(handed.text.includes('Bayside Electrical'), 'the plain half names the business')
     ok(!handed.html.includes('/api/outreach/open?'), 'a proof carries an open counter')
     same(writes.length, 0, 'writes made')
   }
 )
 
-/** A preview with a preview-first set written for it, and one without. */
+/** A preview with its four letters written, and one without. */
 const PERSONAL_SITE = {
   id: 's1',
   slug: 'bayside-electrical',
@@ -741,26 +702,28 @@ const PLAIN_SITE = {
 check(
   'a preview proof is the letter a business would get, sent to the studio and written nowhere',
   async () => {
-    const { db, writes } = stubDb({
+    const { db, writes, asked } = stubDb({
       'select:preview_sites': { data: [PLAIN_SITE, PERSONAL_SITE], error: null },
       'select:outreach_settings': SAVED,
       'select:outreach_messages': { data: [], error: null },
+      'select:outreach_prospects:one': { data: { email: 'maria@bayside.example' }, error: null },
     })
     const { sent, post } = postbox()
-    const first = await previewProof(db, { kind: 'personal' }, post)
+    const first = await previewProof(db, {}, post)
     same(first.status, 200, 'the status')
-    same(first.body.slug, 'bayside-electrical', 'the preview it was drawn from')
+    same(first.body.slug, 'bayside-electrical', 'the preview with its letters written')
     same(sent[0].subject, '[Proof] Trenton Taylor - TaylorURL', 'the subject')
-    same(sent[0].from.name, 'Trenton Taylor', 'the name a personal letter leaves under')
+    same(sent[0].from.name, 'Trenton Taylor', 'the name the letter leaves under')
     same(sent[0].to, STUDIO_INBOX, 'the address handed to the mailer')
-    const later = await previewProof(db, { kind: 'preview', nth: 0 }, post)
-    same(later.body.slug, 'gulf-roofing', 'the preview a draft-site letter is drawn from')
+    ok(asked.includes('select:outreach_prospects'), 'the business the proof is greeted as was read')
+    const later = await previewProof(db, { nth: 0 }, post)
+    same(later.body.slug, 'bayside-electrical', 'the preview a follow-up is drawn from')
     ok(
       sent[1].subject.startsWith('[Proof] Re: '),
       `a follow-up answers the first: ${sent[1].subject}`
     )
     ok(!sent[1].html.includes('/api/outreach/open?'), 'a proof carries an open counter')
-    await previewProof(db, { kind: 'preview', nth: 1, label: 'Chain 1 [x]\nEmail 5' }, post)
+    await previewProof(db, { nth: 1, label: 'Chain 1 [x]\nEmail 5' }, post)
     ok(
       sent[2].subject.startsWith('[Chain 1 x Email 5] Re: '),
       `a label names the proof on one line: ${sent[2].subject}`
@@ -807,7 +770,7 @@ check('a proof goes to the studio whatever address the body names', async () => 
   const { sent, post } = postbox()
   const answer = await proof(
     db,
-    { id: 'no-site-listing', to: 'somebody@example.com' },
+    { id: 'no-site-intro', to: 'somebody@example.com' },
     VARIANTS,
     post
   )
@@ -821,7 +784,7 @@ check('a proof the mail server refuses is answered rather than reported as sent'
     'select:outreach_prospects': { data: [SOCIAL, SCORED], error: null },
     'select:outreach_settings': SAVED,
   })
-  const answer = await proof(db, { id: 'slow-site-audit' }, VARIANTS, async () => {
+  const answer = await proof(db, { id: 'slow-site-intro' }, VARIANTS, async () => {
     throw new Error('the mail server is unwell')
   })
   same(answer.status, 502, 'the status')
@@ -835,100 +798,28 @@ check('a proof the mail server refuses is answered rather than reported as sent'
 check('a proof for a segment nobody on file is in has nothing to send', async () => {
   const { db } = stubDb({ 'select:outreach_prospects': { data: [SOCIAL], error: null } })
   const { sent, post } = postbox()
-  const answer = await proof(db, { id: 'sound-site-audit' }, VARIANTS, post)
+  const answer = await proof(db, { id: 'sound-site-intro' }, VARIANTS, post)
   same(answer.status, 404, 'the status')
   same(sent.length, 0, 'proofs sent')
 })
 
-// ── The holdout ──────────────────────────────────────────────────────────
-
-check('a holdout cannot be set at all, and nothing is written when one is tried', async () => {
-  // Nobody is held out. A weight set here would read in the console as
-  // withholding letters from a slice of a segment and would do nothing at all,
-  // which is worse than the switch not being there.
-  const { db, writes } = stubDb({
-    'upsert:outreach_variants': {
-      data: { id: holdoutId('slow-site'), status: 'live', weight: 1, updated_at: null },
-      error: null,
-    },
-  })
-  for (const change of [{ weight: 1 }, { weight: 0 }, { status: 'live' }, { status: 'paused' }]) {
-    const answer = await setVariant(db, { id: holdoutId('slow-site'), ...change })
-    same(answer.status, 409, `the status for ${JSON.stringify(change)}`)
-  }
-  same(writes.length, 0, 'writes made')
-})
-
-check('a holdout weighing anything does not let the last live variant be paused', async () => {
-  const { db, writes } = stubDb({
-    'select:outreach_variants': {
-      data: [
-        { id: holdoutId('slow-site'), status: 'live', weight: 5 },
-        ...allBut('slow-site', 'slow-site-audit'),
-      ],
-      error: null,
-    },
-  })
-  const answer = await setVariant(db, { id: 'slow-site-audit', status: 'paused' })
-  same(answer.status, 409, 'the status')
-  same(writes.length, 0, 'writes made')
-})
-
-check('a holdout beside two live variants keeps a segment no more alive than one', () => {
-  const beside = [...PAIR, { ...entry({ id: 'slow-site-holdout', weight: 5 }), holdout: true }]
-  same(wouldEmptySegment(beside, 'one', { status: 'paused' }), false, 'the first of two')
-  const oneLeft = [
-    entry({ id: 'one', status: 'paused' }),
-    entry({ id: 'two' }),
-    { ...entry({ id: 'slow-site-holdout', weight: 5 }), holdout: true },
-  ]
-  same(wouldEmptySegment(oneLeft, 'two', { status: 'paused' }), true, 'the last of two')
-})
-
-check('a holdout has nothing to preview', async () => {
-  const { db, asked } = stubDb({})
-  const answer = await preview(db, { variant: holdoutId('slow-site') })
-  same(answer.status, 400, 'the status')
-  same(asked.length, 0, 'reads made')
-})
-
-check('what is stored is laid over the holdouts the way it is over the variants', () => {
-  const laid = withSettings(HOLDOUTS, [{ id: holdoutId('fair-site'), weight: 3 }])
-  same(laid.length, HOLDOUTS.length, 'holdouts after the overlay')
-  const changed = laid.find(one => one.id === holdoutId('fair-site'))
-  same(changed.weight, 3, 'the stored weight')
-  same(changed.holdout, true, 'whether it is still a holdout')
-  for (const one of laid) {
-    if (one.id === holdoutId('fair-site')) continue
-    same(one.weight, 0, `${one.id} weight`)
-  }
-})
-
 check('the businesses given each id are counted beside what was sent', () => {
   const given = [
-    { variant_id: 'slow-site-audit' },
-    { variant_id: 'slow-site-audit' },
-    { variant_id: holdoutId('slow-site') },
+    { variant_id: 'slow-site-intro' },
     { variant_id: 'retired-long-ago' },
     { variant_id: null },
   ]
-  const sent = [{ variant_id: 'slow-site-audit', opened_at: null, clicked_at: null }]
-  const rows = variantResults([...VARIANTS, ...HOLDOUTS], sent, given)
-  const slow = rows.find(row => row.id === 'slow-site-audit')
-  same(slow.assigned, 2, 'businesses given the speed reading')
+  const sent = [{ variant_id: 'slow-site-intro', opened_at: null, clicked_at: null }]
+  const rows = variantResults(VARIANTS, sent, given)
+  const slow = rows.find(row => row.id === 'slow-site-intro')
+  same(slow.assigned, 1, 'businesses given the introduction')
   same(slow.sent, 1, 'messages sent under it')
-  const held = rows.find(row => row.id === holdoutId('slow-site'))
-  ok(held, 'the holdout has no row')
-  same(held.holdout, true, 'whether the row says it is a holdout')
-  same(held.assigned, 1, 'businesses held out')
-  same(held.sent, 0, 'messages sent to the held out')
-  same(held.open_rate, null, 'the open rate of nothing')
   const retired = rows.find(row => row.id === 'retired-long-ago')
   ok(retired, 'an id nothing knows but a business holds has no row')
   same(retired.assigned, 1, 'businesses holding the retired id')
   same(retired.sent, 0, 'messages sent under the retired id')
   ok(!rows.some(row => row.id === null), 'a row for nothing')
-  same(rows.length, VARIANTS.length + HOLDOUTS.length + 1, 'rows')
+  same(rows.length, VARIANTS.length + 1, 'rows')
 })
 
 check('the row for the messages before ids carries no count of businesses', () => {

@@ -11,20 +11,14 @@
  * except reach the transport, leaving both halves on the row as a draft to be
  * read.
  *
- * There is one message and every business gets it. It is an introduction: who
- * is writing, what they do, where they do it, a promise that nothing else is
- * coming, and the studio's own signature under it. It makes no claim about the
- * reader's own site, quotes no reading and carries no capture, so nothing
- * about a business has to be known before it can be written to.
- *
- * That is why the queue is as wide as it is. A business with no site of its
- * own, one whose site scored ninety-six, and one nothing has managed to
- * measure all read the same letter, and lib/outreach/sending/queue.js takes every one
- * of them that carries an address.
- *
- * The one thing asked of a business before it is written to is not in the
- * letter: its preview. No chain starts until a site built in the business's own
- * brand is up on its own subdomain, and `previewedOf` in that file is the test.
+ * It writes two of the four outreach chains, and `coldChainOf` in
+ * lib/outreach/sending/queue.js says which a business is on: the lawsuit
+ * chain, for a business found in a website accessibility suit, and the cold
+ * intro, for a business the preview routine has set aside because no draft
+ * will be built for it. Each is two letters, two weeks apart, and then it
+ * ends. The draft preview chain is api/outreach/previews.js's and the new
+ * business email is api/new-business/'s, so a business waiting on its draft
+ * hears nothing from here.
  *
  * Ordering is still by audit score, worst first, because a business with a
  * slow site is the likeliest of them to want a new one even though the letter
@@ -34,12 +28,9 @@
  * what goes out is the message that was reviewed rather than a fresh
  * composition of it.
  *
- * The openers live under lib/outreach/openers/, one file each, and
- * lib/outreach/variants.js is the registry. One letter is live there, once for
- * each segment, and everything else is paused: those letters wrote every
- * message this pipeline sent before, and their ids are stored on those rows.
- * `pickVariant` settles which entry a business is written under, a business
- * keeps the one it was first given, and every message carries the id it was
+ * The openers live under lib/outreach/openers/plain/, one file each, and
+ * lib/outreach/variants.js is the registry. `pickVariant` settles which entry
+ * a business is written under, and every message carries the id it was
  * written under. `compose` assembles the chrome around the opener, and
  * lib/outreach/message.js renders the result twice.
  *
@@ -130,7 +121,7 @@ import {
   firstMessages,
   followUpColumns,
   homeStage,
-  previewedOf,
+  coldChainOf,
   queueFor,
   sendWindow,
   sentToday,
@@ -1053,21 +1044,13 @@ async function firstLetters({
   // are paced by, and while the catch-up is open they go ahead of the
   // allowance, bounded only by the run's budget and the spacing.
   //
-  // While outreach opens on the preview letter instead, the introduction is
-  // off: the day's own first letters stop here and the cap is the preview
-  // letters' to spend. A catch-up's held letters are not stopped by the switch,
-  // but they answer to the preview the queue below asks of every first letter.
-  //
   // The day's cap is also no more than the addresses can carry between them:
   // each has a day of its own, warming up or resting on its bounces, and what
   // they have left is the most this day can still send; see
   // lib/outreach/sending/senders.js.
   const roster = await readRoster(db, settings)
   const already = await sentToday(db, { firstOnly: ready, except: heldBack?.prospects })
-  const cap = Math.min(
-    settings.intro_letters_enabled === false ? 0 : settings.daily_cap,
-    already + roster.capacity
-  )
+  const cap = Math.min(settings.daily_cap, already + roster.capacity)
   const due = dueBy(cap, new Date())
   const owed = Math.max(Math.min(cap, due) - already, 0)
   const allowance = Math.min(owed, SEND_PER_RUN_MAX)
@@ -1115,17 +1098,12 @@ async function firstLetters({
     repaired += 1
   }
 
-  // No chain starts without its preview. A business is written to only once a
-  // site built in its own brand is up on its own subdomain, whatever the switch
-  // above says and whatever a catch-up holds back, so no business is introduced
-  // before there is a site to show it. The repair above has already run over every row, since a stranded claim is put
-  // right whether or not its business has a preview.
-  const previewed = await previewedOf(
-    db,
-    rows.map(row => row.id)
-  )
+  // Only the lawsuit and cold intro chains start here; every other business is
+  // waiting on its draft, which is its first letter; see `coldChainOf`. The
+  // repair above has already run over every row, since a stranded claim is put
+  // right whichever chain its business is on.
   const queue = queueFor({
-    candidates: rows.filter(row => previewed.has(row.id)),
+    candidates: rows.filter(row => coldChainOf(row)),
     held: suppressedHere,
     written: alreadyWritten,
     messages,

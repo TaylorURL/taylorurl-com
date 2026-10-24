@@ -17,8 +17,6 @@ import {
   BOUNCE_STEPS_UNDER,
   FOLLOW_UP_DAYS,
   FOLLOW_UPS_PER_RUN,
-  queueFloorFor,
-  ROTATION_TARGET,
 } from '../../../../../../lib/outreach/sending/limits.js'
 import { ZONE } from '@lib/time/zone.js'
 import { DELIVERS_A_DAY } from '@lib/outreach/sending/schedule.js'
@@ -71,25 +69,12 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  * and where one business is looked up - all five under one switch, since they
  * are the same list read at different moments.
  *
- * What the strip is about is the rotation. Outreach is an introduction, a
- * meeting ask two weeks on and the introduction again every two weeks after
- * that, sent to every business alike until they reply or take themselves off,
- * so the two figures that say whether it is working are how many businesses
- * are on that rotation and how many are queued to join it. Both are drawn against a target - ROTATION_TARGET and
- * queueFloorFor in lib/outreach/sending/limits.js - because either one alone is a
- * number with nothing to be read against, and the queue falling under its floor
- * is the single reading that says the pipeline has stopped feeding the
- * rotation. The floor is the cap's own two days once the cap is set high
- * enough to need them, so raising the cap raises what the queue is read
- * against and the reading keeps meaning what it meant at the old figure.
- *
- * Nothing here splits, weights or holds anybody back. There was a time when
- * each segment drew a first letter from several by their shares, kept a share
- * of businesses aside to measure them against, and handed off to a different
- * letter at each step of a four-step chain; the console had a slider for every
- * part of it. All of that is gone, and what is left in its place is a list of
- * one letter and a record of what the retired ones brought back. The retired
- * letters are still here because every message they sent still names them.
+ * Outreach is four chains, matched in order with the first match winning and
+ * a business never moving between them: lawsuit, new business, draft preview
+ * and cold intro. The front leads with the four of them and how far their
+ * businesses have got, and nothing is texted. The strip is the cold sender's
+ * own two chains, lawsuit and cold intro: who is owed a second letter, who is
+ * waiting on a first, and the day's sending.
  *
  * The section splits into views, one question each, and every view is laid
  * out to fit the room under the figures: what does not fit moves inside its
@@ -1137,12 +1122,17 @@ const stepOfMessage = (message, letters) =>
   message.step ?? letters.find(entry => entry.id === message.variant_id)?.step ?? null
 
 /**
- * The marks beside a letter's name. The accent belongs to the one that sends;
- * a retired letter takes the ink, since it is a record rather than something
- * running.
+ * The marks beside a letter's name. The accent belongs to one that sends; a
+ * letter switched off takes the ink.
  */
 const SENDING_TONE = 'bg-[color:var(--accent-fill)]'
-const RETIRED_TONE = 'bg-[color:var(--paper-ink-faint)] opacity-40'
+const PAUSED_TONE = 'bg-[color:var(--paper-ink-faint)] opacity-40'
+
+/** The chains the Letters view lists, by the family their letters are filed under. */
+const LETTER_CHAINS = [
+  { family: 'lawsuit', name: 'Lawsuit' },
+  { family: 'introduction', name: 'Cold Intro' },
+]
 
 /**
  * One switch: on or off, and nothing else to read.
@@ -1171,14 +1161,8 @@ function Toggle({ on, label, busy, onChange }) {
  * One letter in the list: its name, which puts it on the stage, what it says
  * in a sentence, and whether it is being sent. Everything else about the
  * letter is on the stage, where there is room to read it.
- *
- * A retired letter carries no switch. It is listed because every message it
- * sent still names it, which is a record to read rather than a decision left
- * to make, and a switch beside it is one stray press away from putting a
- * letter nobody has read in years back on the rotation. Bringing one back is
- * a change to the registry in lib/outreach/variants.js, where the words are.
  */
-function LetterRow({ variant, tone, selected, retired, saving, onOpen, onSet }) {
+function LetterRow({ variant, tone, selected, saving, onOpen, onSet }) {
   const on = variant.status === 'live'
   return (
     <li
@@ -1199,14 +1183,12 @@ function LetterRow({ variant, tone, selected, retired, saving, onOpen, onSet }) 
           {variant.condition ? ` Only where ${variant.condition}.` : ''}
         </span>
       </button>
-      {retired ? null : (
-        <Toggle
-          on={on}
-          label={`Send ${variant.name}`}
-          busy={saving}
-          onChange={next => onSet({ status: next ? 'live' : 'paused' })}
-        />
-      )}
+      <Toggle
+        on={on}
+        label={`Send ${variant.name}`}
+        busy={saving}
+        onChange={next => onSet({ status: next ? 'live' : 'paused' })}
+      />
     </li>
   )
 }
@@ -1475,8 +1457,7 @@ const sendsAt = (entry, step) =>
  */
 const lettersAt = (letters, segment, step) => {
   const live = letters.filter(
-    entry =>
-      !entry.holdout && entry.segment === segment && sendsAt(entry, step) && entry.status === 'live'
+    entry => entry.segment === segment && sendsAt(entry, step) && entry.status === 'live'
   )
   const own = live.filter(entry => (entry.step ?? 1) === step && entry.weight > 0)
   return own.length ? own : live
@@ -1790,7 +1771,7 @@ function PastRow({ row, letters, onOpenProspect, onOpenLetter }) {
 function ResultRow({ row, onOpenLetter }) {
   // A row is one letter rather than one registration, so the kind it was
   // written for is the kinds it covers. The letter that sends covers all of
-  // them, which is the whole point of it; a retired one covers whatever it was
+  // them; an id the registry no longer knows covers whatever it was
   // registered against, and naming the first of several would read as a letter
   // that went to a fifth of the list.
   const covered = row.segments ?? (row.segment ? [row.segment] : [])
@@ -1813,7 +1794,7 @@ function ResultRow({ row, onOpenLetter }) {
   return (
     <tr className="border-hair-paper border-t align-top">
       <td className={CELL}>
-        {row.name && row.id && !row.holdout ? (
+        {row.name && row.id ? (
           <button
             type="button"
             onClick={() => onOpenLetter(row.id)}
@@ -2266,7 +2247,7 @@ function MailPanel({
               ) : half === 'next' ? (
                 <EmptyRow cols={COLUMNS.next.length}>
                   Nothing is queued. A business joins the queue once it has an address on file and
-                  its site has been scored, which the Enrich and Audit jobs do.
+                  is on the lawsuit chain or the cold intro.
                 </EmptyRow>
               ) : half === 'past' ? (
                 <EmptyRow cols={COLUMNS.past.length}>
@@ -2286,9 +2267,9 @@ function MailPanel({
       {!loading && half === 'variants' ? (
         <PanelFoot>
           <p className="leading-relaxed">
-            Each row is what went out under one letter and what came back, with each rate against
-            what was sent. One letter sends and the rest are retired, so every row below it is a
-            record of what the pipeline used to say rather than a reading on anything running.
+            Each row is what went out under one lawsuit or cold intro letter and what came back,
+            with each rate against what was sent. A row with no name is a letter retired before the
+            chains were split, kept for the messages it sent.
           </p>
         </PanelFoot>
       ) : null}
@@ -2338,6 +2319,71 @@ const VIEWS = [
   { key: 'previews', label: 'Previews' },
   { key: 'settings', label: 'Settings' },
 ]
+
+/**
+ * The four outreach chains, in the order a business is matched to them, each
+ * with its letters and how many businesses have reached each one.
+ *
+ * A business enters the first chain whose test it meets and never moves to
+ * another, and one with no email address is sent nothing, so the four columns
+ * are the whole of what outreach sends. Each figure under a letter counts the
+ * businesses sent that letter, read off the server in `chains`.
+ */
+function ChainsPanel({ chains, loading, area }) {
+  return (
+    <Panel area={area} title="Chains" aside="first match wins, no texting" loading={loading}>
+      <PanelBody>
+        <ol className="grid gap-px sm:grid-cols-2 xl:grid-cols-4">
+          {(loading ? [] : (chains ?? [])).map((chain, index) => (
+            <li
+              key={chain.key}
+              className="border-hair-paper grid content-start gap-2 border-b px-5 py-4"
+            >
+              <span className="flex items-baseline gap-2">
+                <span className={`${MONO_LABEL} text-paper-faint`}>{index + 1}</span>
+                <span className="text-[14px] font-semibold text-ink-paper">{chain.name}</span>
+              </span>
+              <span className="text-[12px] leading-relaxed text-paper-soft">{chain.entry}</span>
+              <dl className="mt-1 grid gap-1">
+                <ChainStep label="Waiting" count={chain.waiting} />
+                {chain.days.map((day, nth) => (
+                  <ChainStep
+                    key={day}
+                    label={`Email ${nth + 1} of ${chain.days.length}, day ${day}`}
+                    count={chain.sent?.[nth] ?? 0}
+                  />
+                ))}
+                <ChainStep label="Replied" count={chain.replied} tone="good" />
+              </dl>
+            </li>
+          ))}
+          {loading
+            ? [0, 1, 2, 3].map(key => (
+                <li key={key} className="grid gap-2 px-5 py-4">
+                  <SkeletonBar className="w-24" />
+                  <SkeletonBar className="w-40" />
+                </li>
+              ))
+            : null}
+        </ol>
+      </PanelBody>
+    </Panel>
+  )
+}
+
+/** One letter of a chain and how many businesses it has gone to. */
+function ChainStep({ label, count, tone }) {
+  return (
+    <div className="flex items-baseline justify-between gap-3">
+      <dt className={`${MONO_LABEL} text-paper-faint`}>{label}</dt>
+      <dd
+        className={`font-mono text-[12px] tabular-nums ${count && tone ? TONE[tone] : 'text-paper-soft'}`}
+      >
+        {fullCount(count ?? 0)}
+      </dd>
+    </div>
+  )
+}
 
 // How many of the queue the front shows. The whole of it is the Mail view's;
 // the front says who is next, which the head of the line answers.
@@ -2433,8 +2479,8 @@ function TodayPanel({ mail, loading, error, onOpenMail, onOpenProspect, area }) 
               </ul>
             ) : (
               <p className="px-5 py-8 text-center text-[13px] text-paper-soft">
-                Nothing is queued. A business joins the queue once it has an address on file and its
-                site has been scored.
+                Nothing is queued. A business joins the queue once it has an address on file and is
+                on the lawsuit chain or the cold intro.
               </p>
             )}
           </PanelBody>
@@ -2445,7 +2491,7 @@ function TodayPanel({ mail, loading, error, onOpenMail, onOpenProspect, area }) 
           {loading ? (
             <SkeletonBar className="w-64" />
           ) : (
-            `${fullCount(mail?.next_total)} in the queue, up to ${fullCount(mail?.cap)} a day, 8:00am to 5:00pm Central, Monday to Saturday.`
+            `${fullCount(mail?.next_total)} in the queue, up to ${fullCount(mail?.cap)} a day, 8:00am to 5:00pm Central, Monday to Friday.`
           )}
         </span>
         <button type="button" onClick={() => onOpenMail('next')} className={QUIET}>
@@ -2806,76 +2852,45 @@ export default function OutreachPage() {
 
   const cap = settings?.daily_cap ?? 0
   const today = data?.contacted_today ?? 0
-  // The two figures the rotation is read by: how many businesses are on it,
-  // and how many are waiting to join. The queue is the mail view's own count,
-  // since it is the length of the line the sender works rather than a stage.
+  // How many businesses are owed a second letter, and how many are waiting on
+  // a first. The queue is the mail view's own count, since it is the length of
+  // the line the sender works rather than a stage.
   const rotation = data?.rotation ?? 0
   const queued = mail?.next_total ?? null
-  // What the queue is read against, which moves with the cap. A floor left at
-  // its standing figure under a cap larger than it is a floor the day walks
-  // past, and the tile would read good on the morning the queue emptied.
-  const queueFloor = queueFloorFor(cap)
   /**
-   * The rotation, as records.
-   *
-   * Every figure on this strip is already measured out of something - a
-   * target, a floor, the day's cap, everybody ever written to - so the
-   * promoted one is drawn on that scale with the bar it answers to marked on
-   * it. A queue under its floor is the one thing here that may need a person:
-   * the sourcing sweeps harder on its own while it is short, so one that
-   * stays short is a map with nothing left on it or a search quota spent, and
-   * it takes the lede on its own when it happens.
+   * The cold sender's two chains, as records: the businesses owed their second
+   * letter, the ones waiting on their first, and the day's sending.
    */
   const outreachFigures = useMemo(() => {
     const contacted = data?.contacted_ever ?? 0
     const replied = data?.replied ?? 0
-    const short = queued === null ? 0 : Math.max(0, queueFloor - queued)
 
     return [
       {
         key: 'rotation',
-        label: 'In Rotation',
-        gloss: `Businesses hearing from the studio every ${FOLLOW_UP_DAYS} days.`,
-        value: `${fullCount(rotation)} / ${fullCount(ROTATION_TARGET)}`,
-        caption: `${fullCount(Math.max(0, ROTATION_TARGET - rotation))} short of the target`,
+        label: 'Owed Email 2',
+        gloss: `Lawsuit and cold intro businesses owed their second letter, ${FOLLOW_UP_DAYS} days after the first.`,
+        value: fullCount(rotation),
+        caption: `${fullCount(contacted)} written to ever`,
         tone: rotation ? 'good' : 'plain',
         loading,
         facts: [
-          [fullCount(rotation), 'on the rotation'],
-          [fullCount(ROTATION_TARGET), 'the target'],
+          [fullCount(rotation), 'owed email 2'],
           [fullCount(contacted), 'written to ever'],
         ],
-        room: {
-          kind: 'progress',
-          at: rotation,
-          of: ROTATION_TARGET,
-          target: ROTATION_TARGET,
-          note: `${fullCount(rotation)} of a ${fullCount(ROTATION_TARGET)} rotation`,
-        },
       },
       {
         key: 'queued',
         label: 'Queued',
-        gloss: 'Waiting on a first letter.',
-        value: `${fullCount(queued)} / ${fullCount(queueFloor)}`,
-        caption: short ? `${fullCount(short)} under the floor` : 'above the floor',
-        tone: queued === null ? 'plain' : queued < queueFloor ? 'warn' : 'good',
-        urgent: queued !== null && queued < queueFloor,
+        gloss: 'Lawsuit and cold intro businesses waiting on their first letter.',
+        value: fullCount(queued),
+        caption: cap ? `up to ${fullCount(cap)} a day` : null,
+        tone: 'plain',
         loading: mailLoading,
         facts: [
           [fullCount(queued), 'in the line'],
-          [fullCount(queueFloor), 'the floor'],
           [fullCount(cap), 'a day at most'],
         ],
-        room: {
-          kind: 'progress',
-          at: queued || 0,
-          of: Math.max(queueFloor, queued || 0),
-          target: queueFloor,
-          note: short
-            ? `${fullCount(short)} short of the floor the day walks past`
-            : `${fullCount(queued)} waiting, floor of ${fullCount(queueFloor)}`,
-        },
       },
       {
         key: 'today',
@@ -2922,7 +2937,7 @@ export default function OutreachPage() {
         loading,
       },
     ]
-  }, [cap, data, loading, mailLoading, queued, queueFloor, rotation, today])
+  }, [cap, data, loading, mailLoading, queued, rotation, today])
 
   const sending = Boolean(settings?.sending_enabled)
   const sourcing = Boolean(settings?.sourcing_enabled)
@@ -2983,13 +2998,8 @@ export default function OutreachPage() {
   // live one, so the stage is never an empty frame beside the list.
   useEffect(() => {
     if (view !== 'letters' || !variants.length) return
-    const named = letterParam
-      ? variants.find(entry => entry.id === letterParam && !entry.holdout)
-      : null
-    const first =
-      named ??
-      variants.find(entry => !entry.holdout && entry.status === 'live') ??
-      variants.find(entry => !entry.holdout)
+    const named = letterParam ? variants.find(entry => entry.id === letterParam) : null
+    const first = named ?? variants.find(entry => entry.status === 'live') ?? variants[0]
     if (first && first.id !== selected && previewing !== first.id) previewVariant(first.id)
   }, [view, letterParam, variants, selected, previewing, previewVariant])
   // The registry holds one entry per letter per segment, and the letter that
@@ -3005,8 +3015,8 @@ export default function OutreachPage() {
       return true
     })
   }
-  const sendingLetters = byName(variants.filter(entry => !entry.holdout && entry.status === 'live'))
-  const retiredLetters = byName(variants.filter(entry => !entry.holdout && entry.status !== 'live'))
+  const letterList = byName(variants)
+  const sendingLetters = letterList.filter(entry => entry.status === 'live')
   const staged = selected ? (variants.find(entry => entry.id === selected) ?? null) : null
   // Matched on the name rather than the id, because both lists are one row per
   // letter and a letter registered once per segment has five ids. Matching on
@@ -3262,10 +3272,12 @@ export default function OutreachPage() {
       {view === 'overview' ? (
         <Board
           area="work"
-          areas={['pipeline state', 'pipeline today']}
+          areas={['chains chains', 'pipeline state', 'pipeline today']}
           cols="minmax(0,1fr) minmax(0,1fr)"
-          rows="auto minmax(0,1fr)"
+          rows="auto auto minmax(0,1fr)"
         >
+          <ChainsPanel area="chains" chains={data?.chains} loading={loading} />
+
           <Panel
             area="pipeline"
             title="Pipeline"
@@ -3394,7 +3406,7 @@ export default function OutreachPage() {
               title="Letters"
               aside={
                 sendingLetters.length
-                  ? `${fullCount(sendingLetters.length)} sending, ${fullCount(retiredLetters.length)} retired`
+                  ? `${fullCount(sendingLetters.length)} of ${fullCount(letterList.length)} sending`
                   : undefined
               }
               loading={loading}
@@ -3409,66 +3421,37 @@ export default function OutreachPage() {
                   <ul>
                     <li className="border-hair-paper border-b px-5 py-3">
                       <p className="text-[12px] leading-relaxed text-paper-soft">
-                        Every business gets the introduction first, the meeting ask {FOLLOW_UP_DAYS}{' '}
-                        days later, and the introduction again every {FOLLOW_UP_DAYS} days after
-                        that until it replies or takes itself off the list. Nothing is drawn and
-                        nothing is split, so what one business reads is what all of them read. Press
-                        a name to read it.
+                        The lawsuit chain and the cold intro are two letters each, {FOLLOW_UP_DAYS}{' '}
+                        days apart, and then they end. The draft preview letters are written for
+                        each business and are in Previews; the new business email is in New
+                        Businesses. Press a name to read it.
                       </p>
                     </li>
-                    <li className="border-hair-paper border-b py-1">
-                      <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-5 pb-2 pt-3">
-                        <span className={`${MONO_LABEL} text-ink-paper`}>Sending</span>
-                        <span className="text-paper-faint text-[11px]">
-                          the letters every business hears, {FOLLOW_UP_DAYS} days apart
-                        </span>
-                      </span>
-                      <ul className="divide-hair-paper divide-y">
-                        {sendingLetters.map(entry => (
-                          <LetterRow
-                            key={entry.id}
-                            variant={entry}
-                            tone={SENDING_TONE}
-                            selected={selected === entry.id}
-                            saving={acting === `variant:${entry.id}`}
-                            onOpen={openLetter}
-                            onSet={setters[entry.id]}
-                          />
-                        ))}
-                      </ul>
-                    </li>
-                    {retiredLetters.length ? (
-                      <li className="py-1">
+                    {LETTER_CHAINS.map(chain => (
+                      <li key={chain.family} className="border-hair-paper border-b py-1">
                         <span className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 px-5 pb-2 pt-3">
-                          <span className={`${MONO_LABEL} text-ink-paper`}>Retired</span>
-                          <span className="text-paper-faint text-[11px]">
-                            {fullCount(retiredLetters.length)} kept for the messages they sent
-                          </span>
+                          <span className={`${MONO_LABEL} text-ink-paper`}>{chain.name}</span>
                         </span>
                         <ul className="divide-hair-paper divide-y">
-                          {retiredLetters.map(entry => (
-                            <LetterRow
-                              key={entry.id}
-                              variant={entry}
-                              tone={RETIRED_TONE}
-                              retired
-                              selected={selected === entry.id}
-                              onOpen={openLetter}
-                            />
-                          ))}
+                          {letterList
+                            .filter(entry => entry.family === chain.family)
+                            .map(entry => (
+                              <LetterRow
+                                key={entry.id}
+                                variant={entry}
+                                tone={entry.status === 'live' ? SENDING_TONE : PAUSED_TONE}
+                                selected={selected === entry.id}
+                                saving={acting === `variant:${entry.id}`}
+                                onOpen={openLetter}
+                                onSet={setters[entry.id]}
+                              />
+                            ))}
                         </ul>
                       </li>
-                    ) : null}
+                    ))}
                   </ul>
                 )}
               </PanelBody>
-              <PanelFoot>
-                <p className="leading-relaxed">
-                  A retired letter takes no new businesses and keeps the ones it already went to.
-                  They are kept rather than deleted because every message they sent still names
-                  them, and a name nothing answers to is a message nobody can read back.
-                </p>
-              </PanelFoot>
             </Panel>
           }
         >

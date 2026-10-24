@@ -327,6 +327,9 @@ const SENDABLE = {
   site_kind: 'social',
   stage: 'enriched',
   unsub_token: '11111111-1111-1111-1111-111111111111',
+  // Set aside by the preview routine, so no draft is coming and the business
+  // is on the cold intro.
+  preview_skipped_at: '2026-08-27T17:00:00.000Z',
 }
 
 /** A message already composed, so the run delivers rather than writes one. */
@@ -365,31 +368,16 @@ const sendPlan = extra => ({
   ],
   'select:outreach_prospects': { data: [SENDABLE], error: null },
   'select:suppression': { data: [], error: null },
-  'select:preview_sites': { data: [{ prospect_id: SENDABLE.id, expires_at: null }], error: null },
   'update:outreach_prospects': { error: null },
   ...extra,
 })
 
-check('no first letter goes to a business whose preview is not up', async () => {
+check('no first letter goes to a business still waiting on its draft', async () => {
   TRANSPORT.clear()
-  const { db, asked } = stubDb(sendPlan({ 'select:preview_sites': { data: [], error: null } }))
-
-  const answer = await atMidAfternoon(() =>
-    sendWork({ db, settings: SETTINGS, counts: { examined: 0, changed: 0 } })
-  )
-
-  same(TRANSPORT.sent.length, 0, 'messages handed to the transport')
-  same(answer.queue, 0, 'businesses in the queue')
-  ok(!asked.includes('insert:outreach_messages'), 'a letter was drafted for it')
-  ok(!asked.includes('update:outreach_messages'), 'a draft it held was sent')
-})
-
-check('a preview that has come down starts no chain', async () => {
-  TRANSPORT.clear()
-  const { db } = stubDb(
+  const { db, asked } = stubDb(
     sendPlan({
-      'select:preview_sites': {
-        data: [{ prospect_id: SENDABLE.id, expires_at: '2026-08-01T00:00:00.000Z' }],
+      'select:outreach_prospects': {
+        data: [{ ...SENDABLE, preview_skipped_at: null }],
         error: null,
       },
     })
@@ -401,6 +389,8 @@ check('a preview that has come down starts no chain', async () => {
 
   same(TRANSPORT.sent.length, 0, 'messages handed to the transport')
   same(answer.queue, 0, 'businesses in the queue')
+  ok(!asked.includes('insert:outreach_messages'), 'a letter was drafted for it')
+  ok(!asked.includes('update:outreach_messages'), 'a draft it held was sent')
 })
 
 check('a delivered message puts nobody on the mailing list', async () => {

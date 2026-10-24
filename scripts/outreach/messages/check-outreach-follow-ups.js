@@ -18,7 +18,6 @@
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import { FOLLOW_UP_DAYS } from '../../../lib/outreach/sending/limits.js'
 import {
-  HOLDOUTS,
   VARIANTS,
   pickVariant,
   liveAhead,
@@ -64,6 +63,8 @@ const CONTACTED = {
   seo_score: 100,
   stage: 'contacted',
   unsub_token: UNSUB,
+  // Set aside by the preview routine, so the business is on the cold intro.
+  preview_skipped_at: '2026-08-20T18:00:00.000Z',
   // A letter that is still sending, since a business holding a retired one is
   // owed nothing more and every case about a chain running on would be asking
   // about a chain that has closed.
@@ -137,9 +138,7 @@ const drawnFirst = segment =>
 
 check('the cold chain is two letters and stops', () => {
   // Step two is the second letter, the one that asks for a call. Nothing
-  // stands after it: the third letter a business receives is its preview
-  // site's, which the cold chain does not write, so a step past two that drew
-  // anything would be the introduction arriving a second time.
+  // stands after it: the cold intro is two letters and then it ends.
   for (const segment of SEGMENTS) {
     const row = inSegment(segment)
     same(segmentOf(row), segment, `${segment} row reads as its segment`)
@@ -150,7 +149,6 @@ check('the cold chain is two letters and stops', () => {
       const picked = pickVariant({ ...row, variant_id: first.id }, VARIANTS, roll, 2)
       ok(picked, `nothing at step 2 for ${segment}`)
       same(picked.id, `${segment}-intro-meeting`, `the letter drawn at step 2, roll ${roll}`)
-      ok(!picked.holdout, 'a holdout was drawn at step 2')
     }
     ok(liveAhead(VARIANTS, segment, 2, 'introduction'), `${segment} has no second letter ahead`)
     for (const step of [3, 4, 13, 120]) {
@@ -174,19 +172,6 @@ check('the first letter is drawn once and does not repeat', () => {
   for (const roll of [0, 0.3, 0.6, 0.999]) {
     same(stepOf(pickVariant(fresh, VARIANTS, roll)), 1, `the step at ${roll}`)
     same(pickVariant(fresh, VARIANTS, roll).repeats, false, `what was drawn at ${roll} repeats`)
-  }
-})
-
-check('nothing is drawn into a holdout at any step', () => {
-  const holding = HOLDOUTS.map(entry =>
-    entry.segment === 'slow-site' ? { ...entry, weight: 100, status: 'live' } : entry
-  )
-  ok(holding.length, 'the holdouts are still readable for the rows that hold one')
-  for (const step of [1, 2]) {
-    for (const roll of [0, 0.5, 0.999]) {
-      const picked = pickVariant(CONTACTED, VARIANTS, roll, step)
-      ok(picked && !picked.holdout, `a business was held at step ${step} at ${roll}`)
-    }
   }
 })
 
@@ -225,11 +210,11 @@ check('a chain stays in the family it opened with, whatever else is live', () =>
   }
 })
 
-check('a business holding a letter from before families reads as the designed chain', () => {
-  same(familyHeld({ variant_id: null }), 'designed', 'a business holding nothing')
-  same(familyHeld({ variant_id: 'retired-long-ago' }), 'designed', 'a letter nothing knows')
-  same(familyHeld({ variant_id: 'slow-site-audit' }), 'designed', 'a designed letter')
-  same(familyHeld({ variant_id: 'slow-site-plain' }), 'plain', 'a plain letter')
+check('a business holding a letter the registry no longer knows is in no family', () => {
+  same(familyHeld({ variant_id: null }), null, 'a business holding nothing')
+  same(familyHeld({ variant_id: 'retired-long-ago' }), null, 'a letter nothing knows')
+  same(familyHeld({ variant_id: 'slow-site-intro' }), 'introduction', 'the cold intro')
+  same(familyHeld({ variant_id: 'slow-site-lawsuit' }), 'lawsuit', 'the lawsuit letter')
 })
 
 check('the one letter a segment has left may not be paused', () => {
@@ -407,10 +392,6 @@ const plan = ({
     { data: first, error: null },
   ],
   'select:suppression': { data: suppressed.map(email => ({ email })), error: null },
-  'select:preview_sites': {
-    data: queue.map(row => ({ prospect_id: row.id, expires_at: null })),
-    error: null,
-  },
   'insert:outreach_messages': drafted,
   'update:outreach_messages': { error: null },
   'update:outreach_prospects': { error: null },
@@ -491,9 +472,8 @@ check(
 
 check('a business past the second letter is sent nothing more by the cold chain', async () => {
   // The introduction does not repeat. A business still standing past step two
-  // with a date on it is owed nothing the cold chain writes: its next letter
-  // is its preview site's, so the sender closes the chain instead of
-  // introducing the studio to it again.
+  // with a date on it is owed nothing: the cold intro has ended, so the sender
+  // closes the chain instead of introducing the studio to it again.
   TRANSPORT.clear()
   const { db } = stubDb(plan({ due: [{ ...CONTACTED, step: 12 }] }))
 
@@ -506,15 +486,14 @@ check('a business past the second letter is sent nothing more by the cold chain'
 })
 
 check('the next letter is owed two weeks on', async () => {
-  // The second letter follows the first by two weeks, and the introduction
-  // comes round on the same gap after it.
+  // The second letter follows the first by two weeks.
   same(FOLLOW_UP_DAYS, 14, 'days between letters')
 })
 
 check(
   'a business opened under a retired letter is sent the second letter, not dropped',
   async () => {
-    // The laid-out letters stopped going out while businesses were still part
+    // Retired letters stopped going out while businesses were still part
     // way through them. The chain goes on in what still sends rather than
     // ending the day its next letter comes due, so those businesses hear the
     // same second letter as everybody else, threaded under the first they got.
@@ -905,12 +884,7 @@ check('a draft written under a retired family is written again before it goes', 
   same(inserted(writes).length, 0, 'message rows written afresh')
   const rewritten = writes.find(sets('update:outreach_messages', 'variant_id'))
   ok(rewritten, 'the draft was not written again')
-  ok(rewritten.payload.variant_id !== laid.variant_id, 'the retired letter was written again')
-  same(
-    familyOf(VARIANTS.find(entry => entry.id === rewritten.payload.variant_id)) === 'designed',
-    false,
-    'the family written under'
-  )
+  same(rewritten.payload.variant_id, 'slow-site-intro', 'the letter written under')
   ok(TRANSPORT.sent[0]?.text !== laid.body_text, 'the laid-out words went as they were')
 
   // Both rows say the same letter, or the results count one and the follow-up
