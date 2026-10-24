@@ -175,6 +175,7 @@ async function sendOne(
         prior: thread,
         proof,
         origin: from.origin,
+        email: prospect.email,
       })
     : previewLetter({ ...site, email: prospect.email, rating_count: prospect.rating_count }, kind, {
         track,

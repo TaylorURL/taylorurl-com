@@ -245,16 +245,15 @@ check('the email names the company and its site, and carries its own way off the
     unsub_token: '00000000-0000-4000-8000-000000000001',
   }
   const at = new Date('2026-09-30T15:00:00Z')
-  const [opening] = paragraphsFor(lead, at)
-  ok(opening.startsWith("Congratulations on getting Stinky's Cookies off the ground."), opening)
-  ok(opening.includes('registered in Texas this month'), opening)
-  ok(opening.includes('stinkyscookies.com'), opening)
+  const [opening, offer] = paragraphsFor(lead, at)
+  ok(opening.startsWith("Saw Stinky's Cookies got registered with the state this month."), opening)
+  ok(offer.includes('stinkyscookies.com'), offer)
   const message = composeFor(lead, at)
   same(message.to_address, 'jane@stinkyscookies.example', 'lowercased address')
   ok(message.body_text.includes(unsubscribeUrlFor(lead.unsub_token)), 'unsubscribe in the text')
   ok(message.body_html.includes('/api/new-business/unsubscribe?token='), 'unsubscribe in the html')
   ok(!message.body_html.includes('/api/outreach/open'), 'no tracking pixel')
-  ok(message.body_html.includes('getting Stinky'), 'the words are still inside it')
+  ok(message.body_html.includes('Saw Stinky'), 'the words are still inside it')
 })
 
 check(
