@@ -71,10 +71,11 @@ import { fullCount, percent } from '../../../analytics/lib/format'
  *
  * Outreach is four chains, matched in order with the first match winning and
  * a business never moving between them: lawsuit, new business, draft preview
- * and cold intro. The front leads with the four of them and how far their
- * businesses have got, and nothing is texted. The strip is the cold sender's
- * own two chains, lawsuit and cold intro: who is owed a second letter, who is
- * waiting on a first, and the day's sending.
+ * and cold intro. The front is the four of them as lanes, each the letters it
+ * sends in order with the day, subject and figures of every one and the email
+ * itself a press away, and nothing is texted. The strip is the four summed:
+ * who is owed their next email now, who is waiting on a first, who has been
+ * written to, the day's first emails and who wrote back.
  *
  * The section splits into views, one question each, and every view is laid
  * out to fit the room under the figures: what does not fit moves inside its
@@ -1942,7 +1943,8 @@ function MailPanel({
   const bounces = mail?.bounces
   const days = bounces?.days || []
   const sending = mail?.sending
-  const results = mail?.results || []
+  // A letter retired with the old flows has no name and belongs to no chain.
+  const results = (mail?.results || []).filter(row => row.name)
   const filed = prospects.rows
   const showing =
     half === 'next'
@@ -2306,13 +2308,14 @@ function MailPanel({
 }
 
 /**
- * The section's views, first one the front. Each is one question: how the
- * pipeline stands, who is on file and what has been written to them, the
- * letters themselves, the sites built ahead of a first email, and what it is
- * set up with.
+ * The section's views, first one the front. Each is one question: where every
+ * business stands on its chain, how the pipeline that feeds the chains stands,
+ * who is on file and what has been written to them, the letters themselves,
+ * the sites built ahead of a first email, and what it is set up with.
  */
 const VIEWS = [
-  { key: 'overview', label: 'Overview' },
+  { key: 'chains', label: 'Chains' },
+  { key: 'overview', label: 'Pipeline' },
   { key: 'mail', label: 'Mail' },
   { key: 'letters', label: 'Letters' },
   { key: 'new-business', label: 'New Businesses' },
@@ -2322,65 +2325,224 @@ const VIEWS = [
 
 /**
  * The four outreach chains, in the order a business is matched to them, each
- * with its letters and how many businesses have reached each one.
+ * laid out as the letters it sends in sequence.
  *
  * A business enters the first chain whose test it meets and never moves to
- * another, and one with no email address is sent nothing, so the four columns
- * are the whole of what outreach sends. Each figure under a letter counts the
- * businesses sent that letter, read off the server in `chains`.
+ * another, and one with no email address is sent nothing, so the four lanes
+ * are the whole of what outreach sends. Each lane reads left to right the way
+ * a business goes through it: waiting for its first email, then each email on
+ * its day with its subject, who it has gone to, who wrote back after it and
+ * who is owed the next one, and the email itself one press away. The figures
+ * are the server's, read off `chains`.
  */
-function ChainsPanel({ chains, loading, area }) {
+function ChainLanes({ chains, loading, onRead, area }) {
   return (
     <Panel area={area} title="Chains" aside="first match wins, no texting" loading={loading}>
       <PanelBody>
-        <ol className="grid gap-px sm:grid-cols-2 xl:grid-cols-4">
-          {(loading ? [] : (chains ?? [])).map((chain, index) => (
-            <li
-              key={chain.key}
-              className="border-hair-paper grid content-start gap-2 border-b px-5 py-4"
-            >
-              <span className="flex items-baseline gap-2">
-                <span className={`${MONO_LABEL} text-paper-faint`}>{index + 1}</span>
-                <span className="text-[14px] font-semibold text-ink-paper">{chain.name}</span>
-              </span>
-              <span className="text-[12px] leading-relaxed text-paper-soft">{chain.entry}</span>
-              <dl className="mt-1 grid gap-1">
-                <ChainStep label="Waiting" count={chain.waiting} />
-                {chain.days.map((day, nth) => (
-                  <ChainStep
-                    key={day}
-                    label={`Email ${nth + 1} of ${chain.days.length}, day ${day}`}
-                    count={chain.sent?.[nth] ?? 0}
-                  />
-                ))}
-                <ChainStep label="Replied" count={chain.replied} tone="good" />
-              </dl>
-            </li>
-          ))}
-          {loading
-            ? [0, 1, 2, 3].map(key => (
-                <li key={key} className="grid gap-2 px-5 py-4">
-                  <SkeletonBar className="w-24" />
-                  <SkeletonBar className="w-40" />
-                </li>
-              ))
-            : null}
-        </ol>
+        {loading ? (
+          <div className="grid gap-6 px-5 py-5">
+            {[0, 1, 2, 3].map(key => (
+              <div key={key} className="grid gap-3">
+                <SkeletonBar className="w-40" />
+                <SkeletonBar className="h-24 w-full" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ol className="divide-hair-paper divide-y">
+            {(chains ?? []).map((chain, index) => (
+              <ChainLane key={chain.key} chain={chain} place={index + 1} onRead={onRead} />
+            ))}
+          </ol>
+        )}
       </PanelBody>
     </Panel>
   )
 }
 
-/** One letter of a chain and how many businesses it has gone to. */
-function ChainStep({ label, count, tone }) {
+/** One chain: its rule, its totals, and its letters in order. */
+function ChainLane({ chain, place, onRead }) {
+  const steps = chain.steps ?? []
+  const rate = chain.sent ? percent((chain.replied / chain.sent) * 100) : null
+  return (
+    <li className="grid gap-4 px-5 py-5">
+      <header className="flex flex-wrap items-start justify-between gap-x-6 gap-y-2">
+        <span className="flex min-w-0 items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-[color:var(--accent-fill)] font-mono text-[11px] font-semibold text-[color:var(--on-accent)]"
+          >
+            {place}
+          </span>
+          <span className="grid min-w-0 gap-0.5">
+            <span className="text-[15px] font-semibold text-ink-paper">
+              {chain.name}
+              <span className="text-paper-faint ml-2 font-mono text-[11px] font-normal">
+                {steps.length === 1 ? 'one email' : `${steps.length} emails`}
+              </span>
+            </span>
+            <span className="text-[12px] leading-relaxed text-paper-soft">{chain.entry}</span>
+          </span>
+        </span>
+        <dl className="flex flex-wrap gap-x-5 gap-y-1">
+          <LaneTotal label="Written To" value={fullCount(chain.sent)} />
+          <LaneTotal
+            label="Replied"
+            value={`${fullCount(chain.replied)}${rate ? ` · ${rate}` : ''}`}
+            tone={chain.replied ? 'good' : null}
+          />
+        </dl>
+      </header>
+
+      <ol className="flex flex-wrap items-stretch gap-2">
+        <StepCard
+          first
+          label="Waiting"
+          note={
+            chain.waiting
+              ? 'Matched to this chain and in line for the first email.'
+              : 'Nobody is in line for the first email.'
+          }
+        >
+          <StepFigure label="In line" value={chain.waiting} strong />
+        </StepCard>
+        {steps.map(step => (
+          <StepCard
+            key={step.nth}
+            label={`Email ${step.nth} · Day ${step.day}`}
+            subject={step.subject}
+            sample={chain.per_business}
+            onRead={() => onRead(chain, step)}
+          >
+            <StepFigure label="Sent" value={step.sent} strong />
+            <StepFigure label="Replied after it" value={step.replied} tone="good" />
+            {step.nth < steps.length ? (
+              <StepFigure
+                label={`Owed email ${step.nth + 1} now`}
+                value={step.owed}
+                tone="accent"
+                aside={
+                  step.next > step.owed ? `${fullCount(step.next - step.owed)} booked later` : null
+                }
+              />
+            ) : (
+              <span className="text-paper-faint text-[11px] leading-relaxed">
+                The chain ends here.
+              </span>
+            )}
+          </StepCard>
+        ))}
+      </ol>
+    </li>
+  )
+}
+
+/** A total in a lane's head. */
+function LaneTotal({ label, value, tone }) {
+  return (
+    <span className="grid gap-0.5 text-right">
+      <dt className={`${MONO_LABEL} text-paper-faint`}>{label}</dt>
+      <dd className={`font-mono text-[13px] tabular-nums ${tone ? TONE[tone] : 'text-ink-paper'}`}>
+        {value}
+      </dd>
+    </span>
+  )
+}
+
+/**
+ * One stop in a lane: the waiting line, or one email with its day, subject and
+ * figures. The arrow before every stop after the first is what makes the row
+ * read as a sequence rather than a set of cards.
+ */
+function StepCard({ first, label, subject, sample, note, onRead, children }) {
+  return (
+    <li className="flex min-w-[11.5rem] flex-1 basis-[11.5rem] items-stretch gap-2">
+      {first ? null : (
+        <ChevronRight
+          className="text-paper-faint hidden h-4 w-4 flex-shrink-0 self-center sm:block"
+          strokeWidth={1.75}
+          aria-hidden="true"
+        />
+      )}
+      <div className="border-hair-paper grid flex-1 content-start gap-2 rounded-md border bg-[color:var(--paper-field)] px-3 py-3">
+        <span className={`${MONO_LABEL} text-ink-paper`}>{label}</span>
+        {subject !== undefined ? (
+          <span className="truncate text-[12px] text-paper-soft" title={subject ?? undefined}>
+            {subject
+              ? sample
+                ? `e.g. "${subject}"`
+                : `"${subject}"`
+              : 'Subject written per business'}
+          </span>
+        ) : null}
+        {note ? <span className="text-paper-faint text-[11px] leading-relaxed">{note}</span> : null}
+        <dl className="grid gap-1">{children}</dl>
+        {onRead ? (
+          <button type="button" onClick={onRead} className={`${QUIET} justify-self-start`}>
+            Read the Email
+            <ChevronRight className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
+          </button>
+        ) : null}
+      </div>
+    </li>
+  )
+}
+
+/** One figure on a stop. */
+function StepFigure({ label, value, tone, strong, aside }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt className={`${MONO_LABEL} text-paper-faint`}>{label}</dt>
       <dd
-        className={`font-mono text-[12px] tabular-nums ${count && tone ? TONE[tone] : 'text-paper-soft'}`}
+        className={`font-mono tabular-nums ${strong ? 'text-[15px] text-ink-paper' : 'text-[12px]'} ${!strong ? (value && tone ? TONE[tone] : 'text-paper-soft') : ''}`}
       >
-        {fullCount(count ?? 0)}
+        {fullCount(value ?? 0)}
+        {aside ? <span className="text-paper-faint ml-1 text-[10px]">({aside})</span> : null}
       </dd>
+    </div>
+  )
+}
+
+/**
+ * One chain letter as it would arrive, rendered against a real business on
+ * that chain, in the panel that opens over the lanes.
+ */
+function ChainLetter({ letter, reading }) {
+  if (reading || !letter) {
+    return (
+      <div className="grid gap-3 px-5 py-4">
+        <SkeletonBar className="w-full max-w-[26rem]" />
+        <SkeletonBar className="w-full max-w-[22rem]" />
+      </div>
+    )
+  }
+  if (letter.error) {
+    return (
+      <p
+        role="status"
+        className="px-5 py-4 text-[13px] leading-relaxed text-[color:var(--danger-on-paper)]"
+      >
+        {letter.error}
+      </p>
+    )
+  }
+  return (
+    <div className="flex min-h-[32rem] flex-1 flex-col">
+      <div className="border-hair-paper grid gap-1 border-b px-5 py-3">
+        <span className={`${MONO_LABEL} text-paper-faint`}>Subject</span>
+        <span className="text-[13px] font-medium text-ink-paper">{letter.subject}</span>
+        {letter.business ? (
+          <span className="text-paper-faint text-[11px]">
+            Written for {letter.business}, a real business on this chain.
+          </span>
+        ) : null}
+      </div>
+      <iframe
+        title="The email as it would arrive"
+        sandbox=""
+        srcDoc={letter.html}
+        className="console-letter min-h-[28rem] w-full flex-1"
+      />
     </div>
   )
 }
@@ -2764,6 +2926,10 @@ export default function OutreachPage() {
   const [proofed, setProofed] = useState(null)
   // The letter on the stage.
   const [selected, setSelected] = useState(null)
+  // One chain letter open over the lanes: which chain and email, and the
+  // letter once it has rendered.
+  const [reading, setReading] = useState(null)
+  const [chainRead, setChainRead] = useState(null)
   const [part, setPart] = useState('html')
 
   // A read per keystroke would spend a request on every prefix of a name.
@@ -2803,6 +2969,7 @@ export default function OutreachPage() {
     act,
     run,
     preview: readPreview,
+    chainLetter,
   } = useOutreachFeed({ token, enabled: Boolean(token), filters, openId })
 
   const [edited, setEdited] = useState(null)
@@ -2852,92 +3019,68 @@ export default function OutreachPage() {
 
   const cap = settings?.daily_cap ?? 0
   const today = data?.contacted_today ?? 0
-  // How many businesses are owed a second letter, and how many are waiting on
-  // a first. The queue is the mail view's own count, since it is the length of
-  // the line the sender works rather than a stage.
-  const rotation = data?.rotation ?? 0
-  const queued = mail?.next_total ?? null
+  const chained = useMemo(() => data?.chains ?? [], [data])
   /**
-   * The cold sender's two chains, as records: the businesses owed their second
-   * letter, the ones waiting on their first, and the day's sending.
+   * The four chains summed: who is owed their next email now, who is in line
+   * for a first, everyone written to on a chain, the day's first emails and
+   * who wrote back. Each is the sum of the lanes below it, so the strip and
+   * the lanes never disagree.
    */
   const outreachFigures = useMemo(() => {
-    const contacted = data?.contacted_ever ?? 0
-    const replied = data?.replied ?? 0
-
+    const sum = pick => chained.reduce((total, chain) => total + (pick(chain) ?? 0), 0)
+    const owed = sum(chain => (chain.steps ?? []).reduce((all, one) => all + (one.owed ?? 0), 0))
+    const waiting = sum(chain => chain.waiting)
+    const written = sum(chain => chain.sent)
+    const replied = sum(chain => chain.replied)
+    const rate = written ? (replied / written) * 100 : null
     return [
       {
-        key: 'rotation',
-        label: 'Owed Email 2',
-        gloss: `Lawsuit and cold intro businesses owed their second letter, ${FOLLOW_UP_DAYS} days after the first.`,
-        value: fullCount(rotation),
-        caption: `${fullCount(contacted)} written to ever`,
-        tone: rotation ? 'good' : 'plain',
+        key: 'owed',
+        label: 'Owed Now',
+        gloss: 'Businesses whose next email in their chain is due today or overdue.',
+        value: fullCount(owed),
+        caption: 'next email due',
+        tone: owed ? 'good' : 'plain',
         loading,
-        facts: [
-          [fullCount(rotation), 'owed email 2'],
-          [fullCount(contacted), 'written to ever'],
-        ],
       },
       {
-        key: 'queued',
-        label: 'Queued',
-        gloss: 'Lawsuit and cold intro businesses waiting on their first letter.',
-        value: fullCount(queued),
-        caption: cap ? `up to ${fullCount(cap)} a day` : null,
+        key: 'waiting',
+        label: 'Waiting',
+        gloss: 'Businesses matched to a chain and in line for its first email.',
+        value: fullCount(waiting),
+        caption: 'in line for a first email',
         tone: 'plain',
-        loading: mailLoading,
-        facts: [
-          [fullCount(queued), 'in the line'],
-          [fullCount(cap), 'a day at most'],
-        ],
+        loading,
+      },
+      {
+        key: 'written',
+        label: 'Written To',
+        gloss: 'Businesses sent at least one email on one of the four chains.',
+        value: fullCount(written),
+        caption: 'across the four chains',
+        tone: 'plain',
+        loading,
       },
       {
         key: 'today',
-        label: 'Contacted Today',
-        gloss: 'First letters sent since midnight.',
-        value: `${fullCount(today)} / ${fullCount(cap)}`,
-        caption: cap ? `${fullCount(Math.max(0, cap - today))} left in the day` : null,
-        tone: cap && today >= cap ? 'warn' : 'plain',
+        label: 'Sent Today',
+        gloss: 'First emails sent since midnight, Central.',
+        value: fullCount(today),
+        caption: 'first emails since midnight',
+        tone: 'plain',
         loading,
-        room: cap
-          ? {
-              kind: 'progress',
-              at: today,
-              of: cap,
-              target: cap,
-              note: `${fullCount(today)} of the day's ${fullCount(cap)}`,
-            }
-          : null,
       },
       {
         key: 'replied',
         label: 'Replied',
-        gloss: 'Wrote back to a letter.',
+        gloss: 'Businesses on a chain who wrote back.',
         value: fullCount(replied),
-        caption: `of ${fullCount(contacted)} contacted`,
+        caption: rate === null ? null : `${percent(rate)} of ${fullCount(written)}`,
         tone: replied ? 'good' : 'plain',
-        loading,
-        room: contacted
-          ? {
-              kind: 'progress',
-              at: replied,
-              of: contacted,
-              note: `${fullCount(replied)} of ${fullCount(contacted)} wrote back`,
-            }
-          : null,
-      },
-      {
-        key: 'rate',
-        label: 'Reply Rate',
-        gloss: 'Replies as a share of everybody ever written to.',
-        value: percent(data?.reply_rate),
-        caption: `${fullCount(replied)} of ${fullCount(contacted)}`,
-        tone: data?.reply_rate ? 'good' : 'plain',
         loading,
       },
     ]
-  }, [cap, data, loading, mailLoading, queued, rotation, today])
+  }, [chained, loading, today])
 
   const sending = Boolean(settings?.sending_enabled)
   const sourcing = Boolean(settings?.sourcing_enabled)
@@ -2973,6 +3116,18 @@ export default function OutreachPage() {
     },
     [readPreview]
   )
+  const readChainLetter = async (chain, step) => {
+    const asked = { chain: chain.key, nth: step.nth, name: chain.name }
+    setReading(asked)
+    setChainRead(null)
+    const letter = await chainLetter(chain.key, step.nth)
+    setChainRead({ ...asked, ...letter })
+  }
+  const closeChainLetter = () => {
+    setReading(null)
+    setChainRead(null)
+  }
+
   const proofVariant = async id => {
     const answer = await act({ action: 'proof', id }, `proof:${id}`)
     if (answer?.ok) setProofed({ id, to: answer.to, name: answer.prospect?.name ?? null })
@@ -3262,22 +3417,72 @@ export default function OutreachPage() {
       <Area area="stats">
         <ConsoleError>{error}</ConsoleError>
 
-        <Figures figures={outreachFigures} pinned="rotation" busy={loading} />
+        <Figures figures={outreachFigures} pinned="owed" busy={loading} />
       </Area>
 
       <Area area="views">
         <ViewNav views={views} current={view} onPick={key => go(key)} label="Outreach views" />
       </Area>
 
+      {view === 'chains' ? (
+        <Board area="work" areas={['state', 'chains']} rows="auto minmax(0,1fr)">
+          {/* The two readings that decide whether anything is happening at
+              all - whether sourcing is on and whether sending is on - and the
+              way in by hand. */}
+          <Area area="state">
+            <m.div {...fadeInUp} className="console-card">
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
+                {/* A switch read before the settings land is a switch reported
+                    off, which is the one reading a reader acts on. It waits
+                    with the rest of the strip instead. */}
+                <span className="inline-flex items-center gap-1.5">
+                  <span className={`${MONO_LABEL} text-paper-faint`}>Sourcing</span>
+                  {loading ? (
+                    <SkeletonBar className="w-8" />
+                  ) : (
+                    <Chip tone={sourcing ? 'good' : 'muted'}>{sourcing ? 'On' : 'Off'}</Chip>
+                  )}
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className={`${MONO_LABEL} text-paper-faint`}>Sending</span>
+                  {loading ? (
+                    <SkeletonBar className="w-8" />
+                  ) : (
+                    <Chip tone={sending ? 'good' : 'muted'}>{sending ? 'On' : 'Off'}</Chip>
+                  )}
+                </span>
+                <span className="text-paper-faint text-[12px]">
+                  Emails go 8:00am to 5:00pm Central, Monday to Friday.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPanel('add')}
+                  aria-haspopup="dialog"
+                  className={`${QUIET} sm:ml-auto`}
+                >
+                  <Plus className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
+                  Add Prospect
+                </button>
+              </div>
+            </m.div>
+          </Area>
+
+          <ChainLanes
+            area="chains"
+            chains={data?.chains}
+            loading={loading}
+            onRead={readChainLetter}
+          />
+        </Board>
+      ) : null}
+
       {view === 'overview' ? (
         <Board
           area="work"
-          areas={['chains chains', 'pipeline state', 'pipeline today']}
+          areas={['pipeline today']}
           cols="minmax(0,1fr) minmax(0,1fr)"
-          rows="auto auto minmax(0,1fr)"
+          rows="minmax(0,1fr)"
         >
-          <ChainsPanel area="chains" chains={data?.chains} loading={loading} />
-
           <Panel
             area="pipeline"
             title="Pipeline"
@@ -3333,44 +3538,6 @@ export default function OutreachPage() {
               </details>
             </PanelBody>
           </Panel>
-
-          {/* The two readings that decide whether anything is happening at
-              all - whether sourcing is on and whether sending is on - and the
-              way in by hand. */}
-          <Area area="state">
-            <m.div {...fadeInUp} className="console-card">
-              <div className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3">
-                {/* A switch read before the settings land is a switch reported
-                    off, which is the one reading a reader acts on. It waits
-                    with the rest of the strip instead. */}
-                <span className="inline-flex items-center gap-1.5">
-                  <span className={`${MONO_LABEL} text-paper-faint`}>Sourcing</span>
-                  {loading ? (
-                    <SkeletonBar className="w-8" />
-                  ) : (
-                    <Chip tone={sourcing ? 'good' : 'muted'}>{sourcing ? 'On' : 'Off'}</Chip>
-                  )}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <span className={`${MONO_LABEL} text-paper-faint`}>Sending</span>
-                  {loading ? (
-                    <SkeletonBar className="w-8" />
-                  ) : (
-                    <Chip tone={sending ? 'good' : 'muted'}>{sending ? 'On' : 'Off'}</Chip>
-                  )}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setPanel('add')}
-                  aria-haspopup="dialog"
-                  className={`${QUIET} sm:ml-auto`}
-                >
-                  <Plus className="h-3 w-3" strokeWidth={1.75} aria-hidden="true" />
-                  Add Prospect
-                </button>
-              </div>
-            </m.div>
-          </Area>
 
           <TodayPanel
             area="today"
@@ -3617,6 +3784,17 @@ export default function OutreachPage() {
       {view === 'new-business' ? <NewBusinessView token={token} area="work" /> : null}
 
       {view === 'previews' ? <PreviewsView token={token} area="work" /> : null}
+
+      {/* One chain email as it would arrive, over the lanes it was opened
+          from. */}
+      <SidePanel
+        open={Boolean(reading)}
+        title={reading ? `${reading.name}, Email ${reading.nth}` : 'Email'}
+        onClose={closeChainLetter}
+        loading={Boolean(reading && !chainRead)}
+      >
+        <ChainLetter letter={chainRead} reading={Boolean(reading && !chainRead)} />
+      </SidePanel>
 
       {/* One business in full, over the table it was opened from. The head
           names the record rather than the business; the business is named
