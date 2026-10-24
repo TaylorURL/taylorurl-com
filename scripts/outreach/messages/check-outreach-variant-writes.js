@@ -760,6 +760,11 @@ check(
       `a follow-up answers the first: ${sent[1].subject}`
     )
     ok(!sent[1].html.includes('/api/outreach/open?'), 'a proof carries an open counter')
+    await previewProof(db, { kind: 'preview', nth: 1, label: 'Chain 1 [x]\nEmail 5' }, post)
+    ok(
+      sent[2].subject.startsWith('[Chain 1 x Email 5] Re: '),
+      `a label names the proof on one line: ${sent[2].subject}`
+    )
     same(writes.length, 0, 'writes made')
   }
 )

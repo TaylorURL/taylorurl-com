@@ -47,7 +47,9 @@
  *                                       inbox, as it would go; `from` and `to`
  *                                       may name addresses on the roster
  *   { action: 'preview-proof', kind, nth, from? }
- *                                       one preview letter sent the same way
+ *                                       one preview letter sent the same way;
+ *                                       either may carry a `label` that
+ *                                       replaces [Proof] in the subject
  *
  * A variant write carries its status and its weight and nothing else. The
  * words a variant opens with are code, in lib/outreach/variants.js, and a
@@ -1569,6 +1571,19 @@ export async function addProspect(db, body) {
 }
 
 /**
+ * The tag a proof's subject opens with: `[Proof]`, or `[label]` where the body
+ * names one, so a set of proofs can be read in the order a business gets them.
+ * It is cut to one short line and keeps nothing a subject cannot carry.
+ */
+export const proofTag = body => {
+  const label = String(body?.label ?? '')
+    .replace(/[\s[\]]+/g, ' ')
+    .trim()
+    .slice(0, 120)
+  return `[${label || 'Proof'}]`
+}
+
+/**
  * One variant sent to the studio's own inbox, as it would go.
  *
  * The preview shows a letter in the console; a proof puts it in a mail
@@ -1613,7 +1628,7 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
     variant,
     priorFor(prospect, shot, variant, registry)
   )
-  const subject = `[Proof] ${message.subject}`
+  const subject = `${proofTag(body)} ${message.subject}`
 
   try {
     await post({
@@ -1713,7 +1728,7 @@ export async function previewProof(db, body, post = deliverProof) {
             prior: first,
             nth,
           })
-  const subject = `[Proof] ${letter.subject}`
+  const subject = `${proofTag(body)} ${letter.subject}`
   try {
     await post({
       from: envelopeOf(from),
