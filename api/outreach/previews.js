@@ -59,6 +59,7 @@ import { randomUUID } from 'node:crypto'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
+import { sendsOn } from '../../lib/outreach/sending/schedule.js'
 import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
 import { Undeliverable } from '../../lib/outreach/prospects/address.js'
 import {
@@ -89,7 +90,14 @@ import {
   textBarred,
 } from '../../lib/outreach/preview-texts.js'
 import { textLineOf, textsSentToday, usPhone } from '../../lib/outreach/sending/texts.js'
-import { deliver, sender, unsubscribeUrl } from './send.js'
+import { deliver, readRoster, unsubscribeUrl } from './send.js'
+import {
+  noteSent,
+  pickSender,
+  hasOwnSenders,
+  senderFor,
+  studioSender,
+} from '../../lib/outreach/sending/senders.js'
 
 export const config = { maxDuration: 300 }
 
@@ -106,7 +114,7 @@ async function prospectOf(db, id) {
   const { data, error } = await db
     .from('outreach_prospects')
     .select(
-      'id, name, email, stage, replied_at, bounced_at, unsub_token, contacted_at, rating_count'
+      'id, name, email, town, stage, replied_at, bounced_at, unsub_token, contacted_at, rating_count'
     )
     .eq('id', id)
     .maybeSingle()
@@ -141,18 +149,36 @@ async function sendOne(
   nth = 0,
   personal = false
 ) {
-  // The mailbox is asked before the draft is written, so a letter it would
-  // turn away leaves nothing behind.
-  await assertMailboxOpen(db)
-  const from = personal ? { ...sender(settings), name: PREVIEW_FIRST_SENDER } : sender(settings)
+  // The address it leaves from: the one the thread began on, so a follow-up
+  // threads under it, or for a first letter whichever address has room; see
+  // lib/outreach/sending/senders.js. None with room is a letter put off, the
+  // way a closed mailbox puts one off.
+  const roster = await readRoster(db, settings)
+  const picked = thread
+    ? (senderFor(roster.senders, thread.from_address) ?? roster.senders[0])
+    : pickSender(roster.senders, prospect)
+  if (!picked) {
+    throw new MailboxClosed({ reason: 'no sending address has room left today' })
+  }
+  // The studio's mailbox is asked before the draft is written, so a letter it
+  // would turn away leaves nothing behind. An address of its own is not held
+  // to it; the roster has already shut the studio's while it rests.
+  if (studioSender(picked)) await assertMailboxOpen(db)
+  const from = personal ? { ...picked, name: PREVIEW_FIRST_SENDER } : picked
   const track = randomUUID()
   const unsubscribe =
-    !personal && prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
+    !personal && prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token, from.origin) : null
   const proof = await proofNow()
   const letter = personal
-    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, { track, prior: thread, proof })
+    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, {
+        track,
+        prior: thread,
+        proof,
+        origin: from.origin,
+      })
     : previewLetter({ ...site, email: prospect.email, rating_count: prospect.rating_count }, kind, {
         track,
+        origin: from.origin,
         unsubscribe,
         prior: thread,
         nth,
@@ -206,6 +232,7 @@ async function sendOne(
     .update({ status: 'sent', sent_at: at, provider_id: providerId, error: null })
     .eq('id', message.id)
   if (marked.error) throw new Error(marked.error.message)
+  if (!thread) noteSent(picked)
   return { id: message.id, at, subject: letter.subject, providerId }
 }
 
@@ -447,7 +474,7 @@ async function personalFollowUp(db, settings, site, prospect, counts) {
   }
   const { data: first, error: read } = await db
     .from('outreach_messages')
-    .select('subject, provider_id')
+    .select('subject, from_address, provider_id')
     .eq('id', site.message_id)
     .maybeSingle()
   if (read) throw new Error(read.message)
@@ -516,7 +543,7 @@ async function followUps(db, settings, counts) {
       }
       const { data: first, error: read } = await db
         .from('outreach_messages')
-        .select('subject, provider_id')
+        .select('subject, from_address, provider_id')
         .eq('id', site.message_id)
         .maybeSingle()
       if (read) throw new Error(read.message)
@@ -595,10 +622,17 @@ export async function work({ db, settings, counts, request }) {
   if (!settings.sending_enabled || !ARMED) {
     return { note: 'sending is switched off, so this run sent no preview letter' }
   }
+  // Outreach is a weekday thing; see lib/outreach/sending/schedule.js.
+  if (!sendsOn(new Date())) {
+    return { note: 'it is the weekend in Texas, so this run sent no preview letter' }
+  }
   // The mailbox, asked before anything is read for the run. A request it
-  // cannot carry now is answered as one to make again, not as a failure.
+  // cannot carry now is answered as one to make again, not as a failure. A
+  // first letter can still leave from an address of its own while the studio's
+  // rests, so a named preview goes on to the roster, which says whether any
+  // address has room.
   const mailbox = await readMailbox(db, new Date(), settings)
-  if (!mailbox.open) {
+  if (!mailbox.open && !(request.method === 'POST' && mailbox.resting && hasOwnSenders())) {
     const reason = `the mailbox is closed: ${mailbox.reason}`
     return { ...resting(reason), note: `No preview letter was sent: ${reason}` }
   }

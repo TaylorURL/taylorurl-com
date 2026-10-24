@@ -3,6 +3,8 @@
  *
  * What it does: opens the same Workspace account the messages are sent from,
  * this time over IMAP, and looks at everything that arrived in the last week.
+ * A sending address that is a mailbox of its own is opened beside it, since
+ * that is where its replies and bounces land.
  * A message from an address the pipeline has written to is a reply. A message
  * from a mail server reporting a permanent failure is a hard bounce. Anything
  * else in the mailbox is somebody else's business and is left alone.
@@ -82,6 +84,7 @@ import { field } from '../../lib/db/fields.js'
 import { readAutoReply, readOptOut } from '../../lib/outreach/sending/replies.js'
 import { SOURCES, SPINE, keepLead } from '../../lib/leads/spine.js'
 import { sendNotice, notice } from '../../lib/mail/notice.js'
+import { ownLogins } from '../../lib/outreach/sending/senders.js'
 
 const IMAP_HOST = process.env.OUTREACH_IMAP_HOST || 'imap.gmail.com'
 const IMAP_PORT = Number(process.env.OUTREACH_IMAP_PORT || 993)
@@ -152,6 +155,14 @@ const ORIGINAL_RECIPIENT = /^original-recipient:\s*rfc822;\s*<?([^\s>]+)>?/im
 const FAILED_RECIPIENTS = /^x-failed-recipients:\s*<?([^\s,>]+)>?/im
 const DELIVERY_STATUS = /^status:\s*([245])\.\d+\.\d+/im
 const DIAGNOSTIC_CODE = /^diagnostic-code:\s*smtp;\s*([245])\d\d/im
+const ORIGINAL_MESSAGE_ID = /^x-original-message-id:\s*(<[^\s>]+>)/im
+// Gmail's own refusals, written by Google about a letter it would not carry
+// rather than by the business's server about an address that is not there.
+// 69585 is "Message rejected", its outbound spam filter; 22839 is the daily
+// sending limit. Neither names a Remote-MTA, since the letter never left.
+const GOOGLE_REFUSAL = /support\.google\.com\/mail\/answer\/(69585|22839)/i
+const REPORTED_BY_GOOGLE = /^reporting-mta:\s*dns;\s*googlemail\.com/im
+const REMOTE_MTA = /^remote-mta:/im
 
 /** The address out of a "Name <box@example.com>" pair, lowercased. */
 const addressOf = value =>
@@ -365,13 +376,83 @@ function bounceDetail(report, headerText) {
   return { recipient: recipient ? addressOf(recipient) : null, permanent: severity === '5' }
 }
 
+/**
+ * Whether a bounce is Google turning the letter away on its own way out, which
+ * says something about the address it left from and nothing about the one it
+ * was going to.
+ *
+ * Such a letter never reached the business, so the business is not held off
+ * anything: the letter is taken back as failed, a preview it carried is put
+ * back to be sent again, and the notice is filed as a failure against the
+ * sending address, which is what lib/outreach/sending/senders.js rests an
+ * address on. Filed as a hard bounce, as it was until October 2026, it
+ * suppressed every business Gmail's filter happened to stop, and their
+ * previews with them.
+ */
+export function refusedAtSource(report) {
+  const text = String(report ?? '')
+  return GOOGLE_REFUSAL.test(text) && REPORTED_BY_GOOGLE.test(text) && !REMOTE_MTA.test(text)
+}
+
+/**
+ * Takes back the letter a refusal at source is about: marks it failed and, if
+ * it was a preview's first letter, clears the preview's sending so the
+ * routine offers it again. The letter is found by the Message-ID the report
+ * quotes, and failing that is the business's latest one.
+ */
+async function takeBack(db, prospect, report, reason) {
+  const original = ORIGINAL_MESSAGE_ID.exec(String(report ?? ''))?.[1] ?? null
+  let query = db
+    .from('outreach_messages')
+    .select('id')
+    .eq('prospect_id', prospect.id)
+    .eq('direction', 'outbound')
+    .eq('status', 'sent')
+  query = original
+    ? query.eq('provider_id', original)
+    : query.order('sent_at', { ascending: false })
+  const { data, error } = await query.limit(1)
+  if (error) throw new Error(error.message)
+  const letter = data?.[0]
+  if (!letter) return
+  const failed = await db
+    .from('outreach_messages')
+    .update({ status: 'failed', error: reason.slice(0, 500) })
+    .eq('id', letter.id)
+  if (failed.error) throw new Error(failed.error.message)
+  const reset = await db
+    .from('preview_sites')
+    .update({ message_id: null, sent_at: null, follow_up_due_at: null, expires_at: null })
+    .eq('message_id', letter.id)
+  if (reset.error) throw new Error(reset.error.message)
+}
+
 /** Everything in the mailbox from the last week, with its structure and headers. */
-async function readMailbox() {
+/**
+ * Every inbox a letter can be answered in: the studio's, and each sending
+ * address that is a mailbox of its own (lib/outreach/sending/senders.js). An
+ * inbox that cannot be opened is skipped with a line in the log rather than
+ * costing the run the others; the studio's own is read first and is not
+ * skipped, since its failure is the run's.
+ */
+async function readMailboxes() {
+  const messages = await readMailbox({ user: USER, pass: PASSWORD })
+  for (const login of ownLogins()) {
+    try {
+      messages.push(...(await readMailbox(login)))
+    } catch (cause) {
+      console.error('outreach watch: %s could not be read: %s', login.user, cause?.message)
+    }
+  }
+  return messages
+}
+
+async function readMailbox(auth) {
   const client = new ImapFlow({
     host: IMAP_HOST,
     port: IMAP_PORT,
     secure: true,
-    auth: { user: USER, pass: PASSWORD },
+    auth,
     logger: false,
     emitLogs: false,
   })
@@ -741,7 +822,7 @@ async function forward(message, prospect) {
  * @param {{examined: number, changed: number}} run.counts Raised as it goes.
  * @param {() => Promise<object[]>} [run.read] Where the messages come from.
  */
-export async function work({ db, counts, read = readMailbox }) {
+export async function work({ db, counts, read = readMailboxes }) {
   if (!USER || !PASSWORD) {
     return { error: 'OUTREACH_SMTP_USER or OUTREACH_SMTP_PASSWORD is not set' }
   }
@@ -774,6 +855,7 @@ export async function work({ db, counts, read = readMailbox }) {
     automatic: 0,
     optOuts: 0,
     bounces: 0,
+    refused: 0,
     ignored: 0,
     soft: 0,
     forwarded: 0,
@@ -797,6 +879,26 @@ export async function work({ db, counts, read = readMailbox }) {
       }
       if (!permanent) {
         tally.soft += 1
+        continue
+      }
+
+      if (refusedAtSource(message.body)) {
+        await takeBack(db, prospect, message.body, 'Gmail refused it before delivery')
+        // Last, for the reason the hard bounce's row below is last.
+        const filed = await db.from('outreach_messages').insert({
+          prospect_id: prospect.id,
+          direction: 'inbound',
+          subject,
+          body_text: field(message.body, BODY_LIMIT),
+          from_address: addressOf(message.envelope?.from?.[0]?.address),
+          to_address: to,
+          status: 'failed',
+          provider_id: providerId,
+          sent_at: arrived,
+        })
+        if (filed.error) throw new Error(filed.error.message)
+        counts.changed += 1
+        tally.refused += 1
         continue
       }
 

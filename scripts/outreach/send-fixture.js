@@ -32,7 +32,7 @@ process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
 process.env.OUTREACH_SEND_ARMED = 'true'
 
 /** The instant every send case is run at, and the one the address is settled at. */
-export const AFTERNOON = new Date('2026-08-29T18:00:00.000Z').getTime()
+export const AFTERNOON = new Date('2026-08-28T18:00:00.000Z').getTime()
 
 /** Settles the address check for `email` at `AFTERNOON`, as a domain with a mail server. */
 export const settleAddress = email =>

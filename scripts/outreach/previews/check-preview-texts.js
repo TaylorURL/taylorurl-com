@@ -34,12 +34,12 @@ check('a listed number reads as one string however it was written', () => {
 })
 
 // 2026-10-14 is a Wednesday; Central is five hours behind UTC that week.
-check('a text leaves between 9:00 and 17:00 Central and not on a Sunday', () => {
+check('a text leaves between 9:00 and 17:00 Central and not on a weekend', () => {
   ok(!inTextHours(new Date('2026-10-14T13:59:00Z')), '8:59 on a Wednesday is open')
   ok(inTextHours(new Date('2026-10-14T14:00:00Z')), '9:00 on a Wednesday is closed')
   ok(inTextHours(new Date('2026-10-14T21:59:00Z')), '16:59 on a Wednesday is closed')
   ok(!inTextHours(new Date('2026-10-14T22:00:00Z')), '17:00 on a Wednesday is open')
-  ok(inTextHours(new Date('2026-10-17T15:00:00Z')), '10:00 on a Saturday is closed')
+  ok(!inTextHours(new Date('2026-10-17T15:00:00Z')), '10:00 on a Saturday is open')
   ok(!inTextHours(new Date('2026-10-18T17:00:00Z')), 'noon on a Sunday is open')
   // After the clocks go back, nine in the morning is fifteen hundred UTC.
   ok(!inTextHours(new Date('2026-11-04T14:30:00Z')), '8:30 in November is open')

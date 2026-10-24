@@ -41,7 +41,7 @@
     },
     {
       "path": "/api/outreach/texts",
-      "schedule": "20 14-23 * * 1-6"
+      "schedule": "20 14-23 * * 1-5"
     },
     {
       "path": "/api/new-business/source",
@@ -53,7 +53,7 @@
     },
     {
       "path": "/api/new-business/send",
-      "schedule": "3,23,43 12-23 * * 1-6"
+      "schedule": "3,23,43 12-23 * * 1-5"
     },
     {
       "path": "/api/social-queue",
