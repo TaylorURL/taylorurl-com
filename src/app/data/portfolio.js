@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-23' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-24' },
     hasStudy: true,
   },
   {
@@ -165,7 +165,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 97, desktop: 99, runs: 3, measured: '2026-10-22' },
+    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-10-24' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-22' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-24' },
     hasStudy: true,
   },
   {
@@ -208,7 +208,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Liberty, Texas',
     description:
       'Fades taken to skin, beard shaping cut to match the head, and straight razor shaves, on Main Street in Liberty since 2018. Tuesday through Thursday is by appointment and Friday is the walk-in day, which is the one thing most callers are ringing to find out.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-20' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-24' },
     hasStudy: true,
   },
   {
@@ -238,7 +238,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Daisetta, Texas',
     description:
       'Two half-days in Daisetta for kids five to twelve, with no tryouts and no bench. A parent registers, orders the shirts, and pays without being made to create a login first, then signs in later to follow it.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-23' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-24' },
     hasStudy: true,
   },
   {
