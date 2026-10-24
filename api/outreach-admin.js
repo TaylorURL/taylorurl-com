@@ -43,8 +43,9 @@
  *   { action: 'variant', id, status, weight }
  *                                       whether one variant is sent and how
  *                                       much of its segment it takes
- *   { action: 'proof', id }             one variant sent to the studio's own
- *                                       inbox, as it would go
+ *   { action: 'proof', id, from?, to? } one variant sent to the studio's own
+ *                                       inbox, as it would go; `from` and `to`
+ *                                       may name addresses on the roster
  *
  * A variant write carries its status and its weight and nothing else. The
  * words a variant opens with are code, in lib/outreach/variants.js, and a
@@ -111,7 +112,8 @@ import { isYoung } from '../lib/outreach/prospects/youth.js'
 import { STAGES } from '../lib/outreach/prospects/stages.js'
 import { ranksAhead } from '../lib/outreach/sending/rank.js'
 import { storedShot } from '../lib/outreach/audit/shot.js'
-import { compose, deliverProof, sender } from './outreach/send.js'
+import { compose, deliverProof, readRoster, sender } from './outreach/send.js'
+import { envelopeOf, senderFor } from '../lib/outreach/sending/senders.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
 import { dayStartsAt, reachesMore, slotsAt } from '../lib/outreach/sending/schedule.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
@@ -1582,6 +1584,16 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
   const variant = registry.find(entry => entry.id === id)
   if (!variant) return { status: 400, body: { error: 'That variant is not one the sender knows.' } }
 
+  // A proof may name an address on the roster to leave from, which is how a new
+  // address is tried before a business hears from it, and another address on
+  // the roster to go to. Neither reaches past the studio's own addresses.
+  const roster = body.from || body.to ? await readRoster(db, await settings(db)) : null
+  const chosen = body.from ? senderFor(roster.senders, body.from) : null
+  if (body.from && !chosen) {
+    return { status: 400, body: { error: 'That address is not one the sender sends from.' } }
+  }
+  const to = (body.to && senderFor(roster.senders, body.to)?.address) || STUDIO_INBOX
+
   const sample = await sampleFor(db, variant)
   if (!sample) return NOBODY
   const { prospect, queued } = sample
@@ -1597,8 +1609,9 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
 
   try {
     await post({
-      from: sender(saved),
-      to: STUDIO_INBOX,
+      from: chosen ? envelopeOf(chosen) : sender(saved),
+      ...(chosen ? { sender: chosen } : {}),
+      to,
       subject,
       text: message.text,
       html: message.html,
@@ -1626,7 +1639,7 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
     body: {
       ok: true,
       variant: variant.id,
-      to: STUDIO_INBOX,
+      to,
       subject,
       prospect: {
         id: prospect.id,

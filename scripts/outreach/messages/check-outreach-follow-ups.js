@@ -68,9 +68,9 @@ const CONTACTED = {
   // owed nothing more and every case about a chain running on would be asking
   // about a chain that has closed.
   variant_id: 'slow-site-intro',
-  contacted_at: '2026-08-25T18:00:00.000Z',
+  contacted_at: '2026-08-24T18:00:00.000Z',
   step: 1,
-  next_due_at: '2026-08-28T18:00:00.000Z',
+  next_due_at: '2026-08-27T18:00:00.000Z',
 }
 
 /** The first letter that business was sent, as the mail server filed it. */
@@ -79,7 +79,7 @@ const FIRST_MESSAGE = {
   prospect_id: 'p2',
   subject: 'Trenton Taylor, TaylorURL',
   provider_id: '<first-1@example.com>',
-  sent_at: '2026-08-25T18:00:00.000Z',
+  sent_at: '2026-08-24T18:00:00.000Z',
 }
 
 const SENDING = {
@@ -251,7 +251,7 @@ check('the one letter a segment has left may not be paused', () => {
 })
 
 check('the next letter is owed a set number of days on', () => {
-  const at = '2026-08-25T18:00:00.000Z'
+  const at = '2026-08-24T18:00:00.000Z'
   same(
     new Date(dueAfter(at)).getTime() - new Date(at).getTime(),
     FOLLOW_UP_DAYS * DAY_MS,
@@ -727,7 +727,7 @@ check('a draft written before the letters existed is drafted again under one', a
     from_address: 'studio@example.com',
     status: 'drafted',
     variant_id: null,
-    created_at: '2026-08-28T17:00:00.000Z',
+    created_at: '2026-08-27T17:00:00.000Z',
     sent_at: null,
   }
   const { db, writes } = stubDb({
@@ -790,7 +790,7 @@ check('a draft written under a letter, on the day it goes, goes as it was writte
     variant_id: 'slow-site-intro',
     // Midday in Texas, an hour before the run, so the draft and the delivery
     // fall in one half of one day.
-    created_at: '2026-08-29T17:00:00.000Z',
+    created_at: '2026-08-28T17:00:00.000Z',
     sent_at: null,
   }
   const { db, writes } = stubDb({
@@ -839,7 +839,7 @@ check('a draft held past its own day is written again before it goes', async () 
     variant_id: 'slow-site-intro',
     // Yesterday, at the hour the run fires at, so the half of the day reads
     // the same and the date is the whole of the difference.
-    created_at: '2026-08-28T18:00:00.000Z',
+    created_at: '2026-08-27T18:00:00.000Z',
     sent_at: null,
   }
   const { db, writes } = stubDb({
@@ -884,7 +884,7 @@ check('a draft written under a retired family is written again before it goes', 
     from_address: 'studio@example.com',
     status: 'drafted',
     variant_id: 'slow-site-audit',
-    created_at: '2026-08-28T17:00:00.000Z',
+    created_at: '2026-08-27T17:00:00.000Z',
     sent_at: null,
   }
   const { db, writes } = stubDb({

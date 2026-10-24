@@ -340,7 +340,7 @@ const DRAFTED = {
   from_address: 'studio@example.com',
   status: 'drafted',
   variant_id: 'no-site-intro',
-  created_at: '2026-08-29T17:00:00.000Z',
+  created_at: '2026-08-28T17:00:00.000Z',
   sent_at: null,
 }
 

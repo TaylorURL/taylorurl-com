@@ -524,18 +524,28 @@ export function sender(settings) {
  * all. It carries no unsubscribe header, because it is on no list, and it
  * writes nothing: a proof is not a relationship with anyone.
  *
- * @param {{from: object, to: string, subject: string, text: string, html: string}} message
+ * @param {{from: object, sender?: object, to: string, subject: string, text: string, html: string}} message
  * @param {() => object} [transport] The mail client, built once per instance.
  * @returns {Promise<string>} The id the mail server accepted it under.
  * @throws {Error} When the deployment has no mail login to send with.
  */
-export async function deliverProof({ from, to, subject, text, html }, transport = mailer) {
+export async function deliverProof(
+  { from, sender: on = null, to, subject, text, html },
+  transport = mailer
+) {
   if (!SMTP_USER || !SMTP_PASSWORD) {
     throw new Error(
       'the deployment has no mail login; set OUTREACH_SMTP_USER and OUTREACH_SMTP_PASSWORD'
     )
   }
-  const sent = await transport().sendMail({ from, to, subject, text, html })
+  // A proof from an address on the roster goes the way that address sends.
+  const sent = await transport(on?.login ?? null, Boolean(on?.relay)).sendMail({
+    from,
+    to,
+    subject,
+    text,
+    html,
+  })
   return field(sent?.messageId, 500)
 }
 

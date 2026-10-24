@@ -59,6 +59,7 @@ import { randomUUID } from 'node:crypto'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
+import { sendsOn } from '../../lib/outreach/sending/schedule.js'
 import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
 import { Undeliverable } from '../../lib/outreach/prospects/address.js'
 import {
@@ -620,6 +621,10 @@ export async function work({ db, settings, counts, request }) {
   }
   if (!settings.sending_enabled || !ARMED) {
     return { note: 'sending is switched off, so this run sent no preview letter' }
+  }
+  // Outreach is a weekday thing; see lib/outreach/sending/schedule.js.
+  if (!sendsOn(new Date())) {
+    return { note: 'it is the weekend in Texas, so this run sent no preview letter' }
   }
   // The mailbox, asked before anything is read for the run. A request it
   // cannot carry now is answered as one to make again, not as a failure. A

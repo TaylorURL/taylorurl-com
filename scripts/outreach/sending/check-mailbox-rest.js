@@ -613,7 +613,7 @@ const draftFor = (id, row) => ({
   from_address: 'studio@example.com',
   status: 'drafted',
   variant_id: 'no-site-intro',
-  created_at: '2026-08-29T17:30:00.000Z',
+  created_at: '2026-08-28T17:30:00.000Z',
   sent_at: null,
 })
 const DRAFT_A = draftFor('m-a', A)
