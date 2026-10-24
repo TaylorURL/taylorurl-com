@@ -268,7 +268,7 @@ check('the second letter asks once, in the introduction chain, and opens on the 
       `${entry.id} carries styling of its own`
     )
     ok(
-      message.text.includes('I wrote to you a couple of weeks ago about '),
+      /my (?:email|note) from a couple of weeks ago\./.test(message.text),
       `${entry.id} does not open on the first letter`
     )
     ok(message.text.includes(`/portfolio?`), `${entry.id} does not link the work`)
@@ -298,24 +298,21 @@ check('the second letter says how long ago the first one went', () => {
     prior: { ...CONTEXT.prior, sent_at: ago(30) },
   })
   ok(
-    opened.paragraphs[0].startsWith('I wrote to you about a month ago about '),
+    /my (?:email|note) from about a month ago\./.test(opened.paragraphs[0]),
     `the opening line: ${opened.paragraphs[0]}`
   )
 })
 
-// The letter names two clients and links the page they are on. A client
-// taken off the portfolio would leave the letter pointing a reader at a page
-// that does not have them, so the names are held to the page.
-check('the clients the second letter names are on the portfolio it links', () => {
+// The letter names a client and links the page it is on. A client taken off
+// the portfolio would leave the letter pointing a reader at a page that does
+// not have them, so the name is held to the page.
+check('the client the second letter names is on the portfolio it links', () => {
   const opened = variantById('slow-site-intro-meeting').open(FITTING['slow-site'], WHERE, null, {
     ...CONTEXT,
     site: 'https://example.com/portfolio',
   })
   const words = opened.paragraphs.join(' ')
-  for (const [name, town] of [
-    ['Speedway 146', 'Baytown'],
-    ['Impressiva Printing', 'Pasadena'],
-  ]) {
+  for (const [name, town] of [['Speedway 146', 'Baytown']]) {
     ok(words.includes(`${name} in ${town}`), `the letter no longer names ${name}`)
     const project = PORTFOLIO_PROJECTS.find(entry => entry.name === name)
     ok(project, `${name} is not on the portfolio`)
@@ -605,43 +602,22 @@ for (const entry of VARIANTS) {
   )
 }
 
-// A plain letter greets the half of the day it lands in, read in Central,
-// where every business written to keeps its hours. A letter saying good
-// morning at four in the afternoon is the one line in it a reader can tell a
-// machine wrote, so both halves are held to the moment the letter was written
-// for rather than to the zone the composer happened to run in.
-check('a plain letter greets the half of the day it is written for', () => {
+// A plain letter greets the reader the way a person types to somebody local:
+// "Hi Danny," where the address gives a name and "Hi," where it does not.
+check('a plain letter greets the reader by first name where the address gives one', () => {
   const entry = VARIANTS.find(one => one.plain && one.status === 'live')
   ok(entry, 'no live plain letter to greet with')
   const named = { ...suited(entry), email: 'danny@example.com' }
-  // Nine thirty and half past three in Central, on a date either side of which
-  // the offset is the same, so the check reads the hour and not the calendar.
-  const halves = [
-    ['2026-09-10T14:30:00Z', 'morning'],
-    ['2026-09-10T20:30:00Z', 'afternoon'],
-  ]
-  for (const [at, half] of halves) {
-    const message = compose(named, SHOT, TRACK, entry, { ...CONTEXT, at: new Date(at) })
-    for (const [which, body] of [
-      ['laid-out', message.html],
-      ['plain', message.text],
-    ]) {
-      ok(
-        body.includes(`Good ${half}, Danny,`),
-        `the ${which} half does not greet the ${half}: ${entry.id}`
-      )
-    }
+  const message = compose(named, SHOT, TRACK, entry, CONTEXT)
+  for (const [which, body] of [
+    ['laid-out', message.html],
+    ['plain', message.text],
+  ]) {
+    ok(body.includes('Hi Danny,'), `the ${which} half does not greet Danny: ${entry.id}`)
   }
-
-  // An address that opens on nothing this pipeline reads as a name is greeted
-  // by the half of the day alone, which is how a person writes when they do
-  // not know who they are writing to.
   const unnamed = { ...suited(entry), email: 'info@example.com' }
-  const message = compose(unnamed, SHOT, TRACK, entry, {
-    ...CONTEXT,
-    at: new Date('2026-09-10T14:30:00Z'),
-  })
-  ok(message.text.startsWith('Good morning,\n'), 'an unnamed address is greeted with a name')
+  const plain = compose(unnamed, SHOT, TRACK, entry, CONTEXT)
+  ok(plain.text.startsWith('Hi,\n'), 'an unnamed address is greeted with a name')
 })
 
 // ── Run them ────────────────────────────────────────────────────────────

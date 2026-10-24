@@ -126,8 +126,7 @@ check('the letters name the business the way a person would, not as it is filed'
     },
   }
   const text = previewFirstLetter(filed, -1, { track: 't' }).text
-  ok(text.includes('So I built Xenos Marine a new website'), text)
-  ok(text.includes('Xenos Marine is ready.'), text)
+  ok(text.includes('Xenos Marine'), text)
   ok(!text.includes('XENOS'), 'the filed name survives')
 })
 check('the follow-ups fall inside the draft lifetime', () =>

@@ -1759,8 +1759,16 @@ export async function previewProof(db, body, post = deliverProof) {
     roster.senders.find(one => one.open) ||
     roster.senders[0]
   const from = personal ? { ...picked, name: PREVIEW_FIRST_SENDER } : picked
+  // The address the business would be written to, so the proof is greeted the
+  // way the real letter would be.
+  const { data: reader } = await db
+    .from('prospects')
+    .select('email')
+    .eq('id', site.prospect_id)
+    .maybeSingle()
+  const email = reader?.email ?? null
   const first = personal
-    ? previewFirstLetter(site, -1, { track: null, origin: from.origin })
+    ? previewFirstLetter(site, -1, { track: null, origin: from.origin, email })
     : previewLetter(site, 'first', {
         track: null,
         origin: from.origin,
@@ -1770,7 +1778,7 @@ export async function previewProof(db, body, post = deliverProof) {
     nth < 0
       ? first
       : personal
-        ? previewFirstLetter(site, nth, { track: null, prior: first, origin: from.origin })
+        ? previewFirstLetter(site, nth, { track: null, prior: first, origin: from.origin, email })
         : previewLetter(site, 'follow_up', {
             track: null,
             origin: from.origin,
