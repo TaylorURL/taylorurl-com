@@ -32,7 +32,15 @@ import { fail, finish } from '../harness/checks.js'
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
 /** Domains the studio owns, which are its own to publish. */
-const OURS = ['taylorurl.com', 'taylor.website', 'taylorwebsite.com', 'baytownwebdevelopment.com']
+const OURS = [
+  'taylorurl.com',
+  'taylor.website',
+  'taylorwebsite.com',
+  'baytownwebdevelopment.com',
+  'gettaylorurl.com',
+  'baytownwebdesign.com',
+  'lonestarsite.com',
+]
 
 /** Hosts a fixture may use because nobody can register them. RFC 2606 and 6761. */
 const RESERVED = /(^|\.)(example\.(com|org|net)|example|test|invalid|localhost)$/

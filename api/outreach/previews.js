@@ -89,7 +89,8 @@ import {
   textBarred,
 } from '../../lib/outreach/preview-texts.js'
 import { textLineOf, textsSentToday, usPhone } from '../../lib/outreach/sending/texts.js'
-import { deliver, sender, unsubscribeUrl } from './send.js'
+import { deliver, readRoster, unsubscribeUrl } from './send.js'
+import { noteSent, pickSender, senderFor } from '../../lib/outreach/sending/senders.js'
 
 export const config = { maxDuration: 300 }
 
@@ -106,7 +107,7 @@ async function prospectOf(db, id) {
   const { data, error } = await db
     .from('outreach_prospects')
     .select(
-      'id, name, email, stage, replied_at, bounced_at, unsub_token, contacted_at, rating_count'
+      'id, name, email, town, stage, replied_at, bounced_at, unsub_token, contacted_at, rating_count'
     )
     .eq('id', id)
     .maybeSingle()
@@ -144,15 +145,32 @@ async function sendOne(
   // The mailbox is asked before the draft is written, so a letter it would
   // turn away leaves nothing behind.
   await assertMailboxOpen(db)
-  const from = personal ? { ...sender(settings), name: PREVIEW_FIRST_SENDER } : sender(settings)
+  // The address it leaves from: the one the thread began on, so a follow-up
+  // threads under it, or for a first letter whichever address has room; see
+  // lib/outreach/sending/senders.js. None with room is a letter put off, the
+  // way a closed mailbox puts one off.
+  const roster = await readRoster(db, settings)
+  const picked = thread
+    ? (senderFor(roster.senders, thread.from_address) ?? roster.senders[0])
+    : pickSender(roster.senders, prospect)
+  if (!picked) {
+    throw new MailboxClosed({ reason: 'no sending address has room left today' })
+  }
+  const from = personal ? { ...picked, name: PREVIEW_FIRST_SENDER } : picked
   const track = randomUUID()
   const unsubscribe =
-    !personal && prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token) : null
+    !personal && prospect.unsub_token ? unsubscribeUrl(prospect.unsub_token, from.origin) : null
   const proof = await proofNow()
   const letter = personal
-    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, { track, prior: thread, proof })
+    ? previewFirstLetter(site, kind === 'first' ? -1 : nth, {
+        track,
+        prior: thread,
+        proof,
+        origin: from.origin,
+      })
     : previewLetter({ ...site, email: prospect.email, rating_count: prospect.rating_count }, kind, {
         track,
+        origin: from.origin,
         unsubscribe,
         prior: thread,
         nth,
@@ -206,6 +224,7 @@ async function sendOne(
     .update({ status: 'sent', sent_at: at, provider_id: providerId, error: null })
     .eq('id', message.id)
   if (marked.error) throw new Error(marked.error.message)
+  if (!thread) noteSent(picked)
   return { id: message.id, at, subject: letter.subject, providerId }
 }
 
@@ -447,7 +466,7 @@ async function personalFollowUp(db, settings, site, prospect, counts) {
   }
   const { data: first, error: read } = await db
     .from('outreach_messages')
-    .select('subject, provider_id')
+    .select('subject, from_address, provider_id')
     .eq('id', site.message_id)
     .maybeSingle()
   if (read) throw new Error(read.message)
@@ -516,7 +535,7 @@ async function followUps(db, settings, counts) {
       }
       const { data: first, error: read } = await db
         .from('outreach_messages')
-        .select('subject, provider_id')
+        .select('subject, from_address, provider_id')
         .eq('id', site.message_id)
         .maybeSingle()
       if (read) throw new Error(read.message)
