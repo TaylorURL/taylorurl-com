@@ -36,7 +36,7 @@ import { OFFLINE } from '../../harness/offline.js'
 // Nothing here may reach the network.
 globalThis.fetch = OFFLINE
 
-const { preview, proof, setVariant, variantResults } =
+const { preview, previewProof, proof, setVariant, variantResults } =
   await import('../../../api/outreach-admin.js')
 
 // ── The database stand-in ────────────────────────────────────────────────
@@ -712,6 +712,54 @@ check(
     ok(handed.html.includes('Bayside Electrical'), 'the laid-out half names the business')
     ok(handed.text.includes('31 out of 100'), 'the plain half carries the score')
     ok(!handed.html.includes('/api/outreach/open?'), 'a proof carries an open counter')
+    same(writes.length, 0, 'writes made')
+  }
+)
+
+/** A preview with a preview-first set written for it, and one without. */
+const PERSONAL_SITE = {
+  id: 's1',
+  slug: 'bayside-electrical',
+  name: 'Bayside Electrical',
+  prospect_id: 'p2',
+  shot_url: null,
+  letter: {
+    version: 2,
+    subject: 'Trenton Taylor - TaylorURL',
+    first: ['I built a draft site for Bayside Electrical.', '{link}'],
+    follow_ups: [['Still up here.', '{link}'], ['One more look?'], ['It comes down Friday.']],
+  },
+}
+const PLAIN_SITE = {
+  ...PERSONAL_SITE,
+  id: 's2',
+  slug: 'gulf-roofing',
+  name: 'Gulf Roofing',
+  letter: null,
+}
+
+check(
+  'a preview proof is the letter a business would get, sent to the studio and written nowhere',
+  async () => {
+    const { db, writes } = stubDb({
+      'select:preview_sites': { data: [PLAIN_SITE, PERSONAL_SITE], error: null },
+      'select:outreach_settings': SAVED,
+      'select:outreach_messages': { data: [], error: null },
+    })
+    const { sent, post } = postbox()
+    const first = await previewProof(db, { kind: 'personal' }, post)
+    same(first.status, 200, 'the status')
+    same(first.body.slug, 'bayside-electrical', 'the preview it was drawn from')
+    same(sent[0].subject, '[Proof] Trenton Taylor - TaylorURL', 'the subject')
+    same(sent[0].from.name, 'Trenton Taylor', 'the name a personal letter leaves under')
+    same(sent[0].to, STUDIO_INBOX, 'the address handed to the mailer')
+    const later = await previewProof(db, { kind: 'preview', nth: 0 }, post)
+    same(later.body.slug, 'gulf-roofing', 'the preview a draft-site letter is drawn from')
+    ok(
+      sent[1].subject.startsWith('[Proof] Re: '),
+      `a follow-up answers the first: ${sent[1].subject}`
+    )
+    ok(!sent[1].html.includes('/api/outreach/open?'), 'a proof carries an open counter')
     same(writes.length, 0, 'writes made')
   }
 )

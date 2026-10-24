@@ -46,6 +46,8 @@
  *   { action: 'proof', id, from?, to? } one variant sent to the studio's own
  *                                       inbox, as it would go; `from` and `to`
  *                                       may name addresses on the roster
+ *   { action: 'preview-proof', kind, nth, from? }
+ *                                       one preview letter sent the same way
  *
  * A variant write carries its status and its weight and nothing else. The
  * words a variant opens with are code, in lib/outreach/variants.js, and a
@@ -112,9 +114,15 @@ import { isYoung } from '../lib/outreach/prospects/youth.js'
 import { STAGES } from '../lib/outreach/prospects/stages.js'
 import { ranksAhead } from '../lib/outreach/sending/rank.js'
 import { storedShot } from '../lib/outreach/audit/shot.js'
-import { compose, deliverProof, readRoster, sender } from './outreach/send.js'
+import { compose, deliverProof, readRoster, sender, unsubscribeUrl } from './outreach/send.js'
 import { envelopeOf, senderFor } from '../lib/outreach/sending/senders.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
+import {
+  PREVIEW_FIRST_SENDER,
+  isPreviewFirst,
+  previewFirstLetter,
+  previewLetter,
+} from '../lib/outreach/previews.js'
 import { dayStartsAt, reachesMore, slotsAt } from '../lib/outreach/sending/schedule.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
 import { field, uuid } from '../lib/db/fields.js'
@@ -1653,6 +1661,90 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
 }
 
 /**
+ * One preview letter sent to the studio's own inbox, as it would go.
+ *
+ * `kind` is 'preview' for the letter that carries a draft site to a business
+ * already written to, or 'personal' for the preview-first letters written for
+ * one business; `nth` is -1 for the first letter and 0 onward for each
+ * follow-up. The letter is drawn from the most recent preview that has one,
+ * from an address on the roster, and its unsubscribe link names no business.
+ * Nothing is written.
+ *
+ * @param {object} db A service-role client.
+ * @param {{kind?: string, nth?: number, from?: string}} body
+ * @param {Function} [post] The delivery, which a check replaces.
+ */
+export async function previewProof(db, body, post = deliverProof) {
+  const personal = body.kind === 'personal'
+  const nth = Number.isInteger(body.nth) ? body.nth : -1
+  const { data: rows, error } = await db
+    .from('preview_sites')
+    .select('*')
+    .not('prospect_id', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(200)
+  if (error) return refusal(error, 'The previews could not be read.')
+  const site = (rows ?? []).find(row => (personal ? isPreviewFirst(row) : !isPreviewFirst(row)))
+  if (!site) return NOBODY
+
+  const saved = await settings(db)
+  const roster = await readRoster(db, saved)
+  const picked =
+    (body.from && senderFor(roster.senders, body.from)) ||
+    roster.senders.find(one => one.open) ||
+    roster.senders[0]
+  const from = personal ? { ...picked, name: PREVIEW_FIRST_SENDER } : picked
+  const first = personal
+    ? previewFirstLetter(site, -1, { track: null, origin: from.origin })
+    : previewLetter(site, 'first', {
+        track: null,
+        origin: from.origin,
+        unsubscribe: unsubscribeUrl('proof', from.origin),
+      })
+  const letter =
+    nth < 0
+      ? first
+      : personal
+        ? previewFirstLetter(site, nth, { track: null, prior: first, origin: from.origin })
+        : previewLetter(site, 'follow_up', {
+            track: null,
+            origin: from.origin,
+            unsubscribe: unsubscribeUrl('proof', from.origin),
+            prior: first,
+            nth,
+          })
+  const subject = `[Proof] ${letter.subject}`
+  try {
+    await post({
+      from: envelopeOf(from),
+      sender: from,
+      to: STUDIO_INBOX,
+      subject,
+      text: letter.text,
+      html: letter.html,
+    })
+  } catch (cause) {
+    const said = cause?.message || String(cause)
+    console.error('outreach-admin: the preview proof did not leave: %s', said)
+    return {
+      status: 502,
+      body: { error: `The proof did not leave. The mail server said: ${said}` },
+    }
+  }
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      kind: personal ? 'personal' : 'preview',
+      nth,
+      to: STUDIO_INBOX,
+      subject,
+      slug: site.slug,
+    },
+  }
+}
+
+/**
  * One variant's status and weight, written and nothing else.
  *
  * The id has to be one the registry knows, because a row for a variant that
@@ -1796,6 +1888,7 @@ export default async function handler(request, response) {
       else if (action === 'add') answer = await addProspect(connected.db, body)
       else if (action === 'variant') answer = await setVariant(connected.db, body)
       else if (action === 'proof') answer = await proof(connected.db, body)
+      else if (action === 'preview-proof') answer = await previewProof(connected.db, body)
       else answer = { status: 400, body: { error: 'Unknown action.' } }
     }
 
