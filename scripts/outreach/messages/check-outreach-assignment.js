@@ -19,15 +19,9 @@
  */
 
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
-import {
-  HOLDOUTS,
-  VARIANTS,
-  familyOf,
-  holdoutId,
-  pickVariant,
-  variantById,
-} from '../../../lib/outreach/variants.js'
-import { CANDIDATE_COLUMNS, queueFor } from '../../../lib/outreach/sending/queue.js'
+import { VARIANTS, pickVariant, variantById } from '../../../lib/outreach/variants.js'
+import { LAWSUIT_SOURCE } from '../../../lib/outreach/prospects/lawsuits.js'
+import { CANDIDATE_COLUMNS } from '../../../lib/outreach/sending/queue.js'
 import { answersFrom, captureOnFile, refused } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { atMidAfternoon, settleAddress, TRANSPORT } from '../send-fixture.js'
@@ -54,6 +48,8 @@ const BASE = {
   email: 'owner@example.com',
   unsub_token: UNSUB,
   variant_id: null,
+  // Set aside by the preview routine, so these businesses are on the cold intro.
+  preview_skipped_at: '2026-08-27T17:00:00.000Z',
 }
 
 /** A business with no site of its own, waiting where its kind waits. */
@@ -100,14 +96,11 @@ const UNMEASURED = {
 }
 
 /**
- * A business no letter can be chosen for.
- *
- * Every segment has a live letter now, the unmeasured included, so the only
- * way to reach this is a row stamped with an id from a registry this one
- * cannot reason about. Rolling such a business again would overwrite a
- * conversation nobody here can read, so it is left where it stands.
+ * A business no letter can be chosen for: one on the lawsuit chain whose
+ * filing date was never read, which the lawsuit letter cannot be written
+ * without.
  */
-const UNFITTING = { ...UNMEASURED, variant_id: 'a-registry-ago' }
+const UNFITTING = { ...UNMEASURED, source: LAWSUIT_SOURCE, case_filed_on: null }
 
 const row = over => ({ ...SCORED, ...over })
 
@@ -134,17 +127,13 @@ check('a business already holding a variant keeps it whatever the roll', () => {
   }
 })
 
-check('a held variant whose family is retired is drawn again, and never held out', () => {
-  // The introduction letters for the segment still send, so what is gone is
-  // the family rather than the segment, which is the case a business given a
-  // designed letter and never written to stands in.
+check('a held id the registry no longer knows is drawn again', () => {
+  // A business stamped with a letter retired before the chains were split and
+  // never written to: leaving the stamp would hold it for a letter no draw can
+  // produce.
   const held = row({ variant_id: 'no-site-listing' })
   for (const roll of [0, 0.5, 0.99]) {
-    const drawn = pickVariant(held, VARIANTS, roll)
-    ok(drawn, `the pick at ${roll}`)
-    ok(drawn.id !== 'no-site-listing', `the retired letter was kept at ${roll}`)
-    same(familyOf(drawn) === 'designed', false, `the family drawn at ${roll}`)
-    same(drawn.holdout ?? false, false, `a business already written for was held out at ${roll}`)
+    same(pickVariant(held, VARIANTS, roll)?.id, 'slow-site-intro', `the pick at ${roll}`)
   }
 })
 
@@ -159,10 +148,6 @@ check('a held variant is kept even once it has been paused', () => {
     'no-site-intro',
     'the pick'
   )
-})
-
-check('a held id the registry no longer knows fits nothing, and is not rolled again', () => {
-  same(pickVariant(row({ variant_id: 'retired-long-ago' }), VARIANTS, 0), null, 'the pick')
 })
 
 check('a variant is never given to a row missing something it needs', () => {
@@ -270,20 +255,6 @@ check('the roll spreads one kind of business across every letter written for it'
   same([...chosen].sort().join(' '), [...written].sort().join(' '), 'the letters chosen')
 })
 
-check('a letter the row fails the test for takes no slice of the draw', () => {
-  // The scored business is sound on SEO, so the search reading is out and the
-  // draw runs over the letters left, which a roll near the end lands on the
-  // last of: the introduction, which is last in the registry.
-  const picked = pickVariant(SCORED, VARIANTS, 0.999)
-  same(picked.id, 'slow-site-intro', 'the last slice')
-  for (const roll of [0, 0.3, 0.6, 0.999]) {
-    ok(
-      pickVariant(SCORED, VARIANTS, roll).id !== 'slow-site-search',
-      `the search reading was chosen at ${roll} for a site sound on SEO`
-    )
-  }
-})
-
 check('every kind of business the registry writes for is given the variant for its kind', () => {
   const fits = {
     'no-site': SOCIAL,
@@ -316,51 +287,6 @@ check('the candidate read carries the variant a business already holds', () => {
   ok(columns.includes('variant_id'), 'variant_id is not read with the candidate')
 })
 
-// ── The holdout, retired ─────────────────────────────────────────────────
-
-/** The holdouts with one segment's holding a weight, the way the console set one. */
-const holding = (segment, weight) =>
-  HOLDOUTS.map(entry => (entry.segment === segment ? { ...entry, weight, status: 'live' } : entry))
-
-check('nothing is drawn into a holdout, whatever the roll and whatever it weighs', () => {
-  // A holdout was a slice of a segment given no letter at all, so that what
-  // the letters did could be read against a group that heard nothing. One
-  // letter goes to everybody now, so there is nothing to measure and nobody to
-  // withhold it from. A weight set in the console changes none of that.
-  const letter = (picked, what) => {
-    ok(picked && !picked.holdout, `${what}: a business was held`)
-    ok(typeof picked.open === 'function', `${what}: what was drawn cannot be opened`)
-  }
-  for (const roll of [0, 0.5, 0.74, 0.95, 0.999, 1]) {
-    letter(pickVariant(SCORED, VARIANTS, roll), `the code's own holdouts at ${roll}`)
-    letter(pickVariant(SCORED, VARIANTS, roll), `a stored weight at ${roll}`)
-  }
-  same(
-    holding('slow-site', 9).find(entry => entry.weight === 9).segment,
-    'slow-site',
-    'the fixture'
-  )
-})
-
-check('a business already held out is drawn again rather than left held', () => {
-  // Nothing was ever written to it, so there is no voice to keep and no
-  // conversation to be consistent with. It is a business the pipeline has not
-  // spoken to, which is exactly what the queue is for.
-  const drawn = pickVariant({ ...SCORED, variant_id: holdoutId('slow-site') }, VARIANTS, 0)
-  same(drawn.id, 'slow-site-intro', 'what a once-held business is given')
-  same(drawn.holdout ?? false, false, 'whether it is still a holdout')
-})
-
-check('a business once held out is back in the queue', () => {
-  const queue = queueFor({
-    candidates: [{ ...SCORED, variant_id: holdoutId('slow-site') }, { ...SOCIAL }],
-    held: new Set(),
-    messages: new Map(),
-    sending: false,
-  })
-  same(queue.length, 2, 'businesses in the queue')
-})
-
 // ── Composing ────────────────────────────────────────────────────────────
 
 check('a composed message says which variant it was written under', () => {
@@ -373,10 +299,10 @@ check('a composed message says which variant it was written under', () => {
 })
 
 check('a variant handed to the composer is the one it opens with', () => {
-  const listing = variantById('no-site-listing')
-  const message = compose(SCORED, null, null, listing)
-  same(message.variant, 'no-site-listing', 'the id')
-  same(message.subject, 'no website of your own', `the subject reads: ${message.subject}`)
+  const intro = variantById('no-site-intro')
+  const message = compose(SCORED, null, null, intro)
+  same(message.variant, 'no-site-intro', 'the id')
+  same(message.subject, intro.open(SCORED, '', null).subject, 'the subject')
 })
 
 check('a business nothing fits is refused rather than sent an empty message', () => {
@@ -479,10 +405,6 @@ const sendPlan = (candidates, extra = {}) => ({
   ],
   'select:outreach_prospects': { data: candidates, error: null },
   'select:suppression': { data: [], error: null },
-  'select:preview_sites': {
-    data: candidates.map(row => ({ prospect_id: row.id, expires_at: null })),
-    error: null,
-  },
   'insert:outreach_messages': drafted,
   'update:outreach_prospects': { error: null },
   ...extra,
@@ -668,10 +590,9 @@ check('pausing the one letter stops the sending rather than sending under it', a
   same(inserted(writes).length, 0, 'message rows written')
 })
 
-check('a business holding a letter from a retired family is drafted under a live one', async () => {
-  // What the businesses stamped with a designed letter and never written to
-  // stood in: the stamp names a letter no draw can produce, and leaving it
-  // there is a queue holding people for a message that is never coming.
+check('a business holding a retired letter is drafted under a live one', async () => {
+  // The stamp names a letter no draw can produce, and leaving it there is a
+  // queue holding people for a message that is never coming.
   const { db, writes } = stubDb(sendPlan([{ ...SCORED, variant_id: 'slow-site-audit' }]))
 
   const answer = await atMidAfternoon(() =>
@@ -680,8 +601,7 @@ check('a business holding a letter from a retired family is drafted under a live
 
   same(answer.drafted, 1, 'messages drafted')
   const drawn = inserted(writes)[0].payload.variant_id
-  ok(drawn !== 'slow-site-audit', 'the retired letter was drafted again')
-  same(familyOf(variantById(drawn)) === 'designed', false, 'the family drafted under')
+  same(drawn, 'slow-site-intro', 'the letter drafted')
 })
 
 check('a database without the variant settings sends under the code’s own defaults', async () => {
@@ -713,36 +633,34 @@ async function withRoll(roll, run) {
   }
 }
 
-check('a holdout brought live in the console still holds nobody back', async () => {
-  // The console refuses this write now, and the sender would ignore it anyway.
-  // Both matter: one is the door and the other is the lock behind it.
-  const { db, writes } = stubDb(
-    sendPlan([{ ...SCORED }], {
-      'select:outreach_variants': {
-        data: [{ id: holdoutId('slow-site'), status: 'live', weight: 9 }],
-        error: null,
-      },
-    })
-  )
-  const counts = { examined: 0, changed: 0 }
+check('a business waiting on its draft is not written to here', async () => {
+  const { db, writes } = stubDb(sendPlan([{ ...SCORED, preview_skipped_at: null }]))
 
-  const answer = await withRoll(0.999, () =>
-    atMidAfternoon(() => sendWork({ db, settings: DRAFTING, counts }))
+  const answer = await atMidAfternoon(() =>
+    sendWork({ db, settings: DRAFTING, counts: { examined: 0, changed: 0 } })
   )
 
-  same(answer.held ?? 0, 0, 'businesses held out')
-  same(answer.drafted, 1, 'messages drafted')
-  same(inserted(writes)[0].payload.variant_id, 'slow-site-intro', 'the draft')
+  same(answer.drafted ?? 0, 0, 'messages drafted')
+  same(inserted(writes).length, 0, 'message rows written')
 })
 
-check('a business already held out is written to like any other', async () => {
-  const { db, writes } = stubDb(sendPlan([{ ...SCORED, variant_id: holdoutId('slow-site') }]))
-  const counts = { examined: 0, changed: 0 }
+check('a business in a lawsuit is written the lawsuit letter with no draft', async () => {
+  const sued = {
+    ...SCORED,
+    preview_skipped_at: null,
+    source: LAWSUIT_SOURCE,
+    case_name: 'Doe v. Bayside Electrical',
+    case_court: 'District Court, S.D. Texas',
+    case_filed_on: '2026-09-30',
+  }
+  const { db, writes } = stubDb(sendPlan([sued]))
 
-  const answer = await atMidAfternoon(() => sendWork({ db, settings: DRAFTING, counts }))
+  const answer = await atMidAfternoon(() =>
+    sendWork({ db, settings: DRAFTING, counts: { examined: 0, changed: 0 } })
+  )
 
   same(answer.drafted, 1, 'messages drafted')
-  same(inserted(writes)[0].payload.variant_id, 'slow-site-intro', 'the draft')
+  same(inserted(writes)[0].payload.variant_id, 'slow-site-lawsuit', 'the draft')
 })
 
 // ── Run them ────────────────────────────────────────────────────────────

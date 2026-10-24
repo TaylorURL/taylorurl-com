@@ -22,15 +22,10 @@ import { BIO_NAME, BIO_PHONE } from '../../../lib/mail/bio.js'
 import { PORTFOLIO_PROJECTS } from '../../../src/app/data/portfolio.js'
 import { SEGMENTS, segmentOf } from '../../../lib/outreach/segments.js'
 import {
-  HOLDOUTS,
   VARIANTS,
   VARIANT_STATUSES,
   fits,
-  holdoutId,
-  isHoldoutId,
   pickVariant,
-  siteOpener,
-  speedOpener,
   stepOf,
   variantById,
 } from '../../../lib/outreach/variants.js'
@@ -323,14 +318,13 @@ check('the client the second letter names is on the portfolio it links', () => {
   }
 })
 
-check('a step is a whole number from one, and a holdout stands at the first', () => {
+check('a step is a whole number from one', () => {
   for (const entry of VARIANTS) {
     ok(
       Number.isInteger(stepOf(entry)) && stepOf(entry) >= 1,
       `${entry.id} is at step ${entry.step}`
     )
   }
-  for (const entry of HOLDOUTS) same(stepOf(entry), 1, `${entry.id} step`)
 })
 
 check('a letter with a test on the row says the same thing in words', () => {
@@ -339,17 +333,6 @@ check('a letter with a test on the row says the same thing in words', () => {
     same(typeof entry.condition === 'string', tested, `${entry.id} condition and test disagree`)
     if (tested) ok(entry.condition.trim(), `${entry.id} has an empty condition`)
   }
-})
-
-check('a letter with a test is written for the businesses that pass it and no other', () => {
-  const short = { ...FITTING['fair-site'], seo_score: 60 }
-  const clean = { ...FITTING['fair-site'], seo_score: 100 }
-  const search = variantById('fair-site-search')
-  ok(search && typeof search.when === 'function', 'the search reading has no test')
-  same(fits(search, short), true, 'a site short on SEO')
-  same(fits(search, clean), false, 'a site sound on SEO')
-  same(fits(search, { ...short, seo_score: null }), false, 'a site with no SEO reading')
-  same(fits(variantById('fair-site-audit'), clean), true, 'the speed reading on the same site')
 })
 
 check('a letter is written for its own segment and no other', () => {
@@ -375,52 +358,19 @@ check('a variant is found by its id and an unknown id finds nothing', () => {
   same(variantById(undefined), null, 'no id')
 })
 
-check('the two openers the sender has always used are the ones registered', () => {
-  const listing = variantById('no-site-listing')
-  const speed = variantById('slow-site-audit')
-  ok(listing && speed, 'the two original variants are not both registered')
-  same(
-    JSON.stringify(listing.open(FITTING['no-site'], WHERE)),
-    JSON.stringify(siteOpener(FITTING['no-site'], WHERE)),
-    'the listing opener'
-  )
-  same(speed.open, speedOpener, 'the speed opener')
-})
-
-// ── The holdouts ─────────────────────────────────────────────────────────
-
-check('there is one holdout for every segment a variant is written for, and no other', () => {
-  const covered = [...new Set(VARIANTS.map(entry => entry.segment))]
-  same(HOLDOUTS.length, covered.length, 'holdouts')
-  for (const segment of covered) {
-    const held = HOLDOUTS.filter(entry => entry.segment === segment)
-    same(held.length, 1, `holdouts for ${segment}`)
-    same(held[0].id, holdoutId(segment), `the id of the ${segment} holdout`)
+check('the registry holds the cold intro and the lawsuit chain and nothing else', () => {
+  const families = [...new Set(VARIANTS.map(entry => entry.family))].sort()
+  same(families.join(','), 'introduction,lawsuit', 'families')
+  for (const family of families) {
+    const steps = [...new Set(VARIANTS.filter(e => e.family === family).map(stepOf))].sort()
+    same(steps.join(','), '1,2', `${family} steps`)
   }
+  for (const entry of VARIANTS) same(entry.status, 'live', `${entry.id} status`)
 })
 
-check('a holdout ships weighing nothing, paused, with nothing to open and nothing it needs', () => {
-  for (const entry of HOLDOUTS) {
-    // Nothing is held out any more, and a holdout that could be brought live
-    // in the console would be a switch that reads as withholding letters and
-    // does nothing at all. It weighs nought and is paused, and both the picker
-    // and the console's own write refuse to move it.
-    same(entry.weight, 0, `${entry.id} weighs`)
-    same(entry.status, 'paused', `${entry.id} is`)
-    same(entry.open, null, `${entry.id} opens with`)
-    same(entry.holdout, true, `${entry.id} says it is a holdout`)
-    same(entry.needs.length, 0, `${entry.id} needs`)
-    same(entry.name, 'Holdout', `${entry.id} is called`)
-    ok(Object.isFrozen(entry), `${entry.id} can be edited`)
-  }
-  ok(Object.isFrozen(HOLDOUTS), 'the holdouts can be edited')
-})
-
-check('a holdout id is told from a variant id by its suffix alone', () => {
-  for (const entry of HOLDOUTS) ok(isHoldoutId(entry.id), `${entry.id} is not read as a holdout`)
-  for (const entry of VARIANTS) ok(!isHoldoutId(entry.id), `${entry.id} is read as a holdout`)
-  ok(!isHoldoutId(null) && !isHoldoutId(undefined) && !isHoldoutId(''), 'nothing is read as one')
-  ok(isHoldoutId('retired-holdout'), 'a holdout the registry has forgotten is not read as one')
+check('an id the registry no longer knows is drawn again among what sends', () => {
+  const row = { ...FITTING['slow-site'], variant_id: 'slow-site-plain' }
+  same(pickVariant(row)?.id, 'slow-site-intro', 'the letter drawn')
 })
 
 // ── What each opener answers with ────────────────────────────────────────
