@@ -49,7 +49,8 @@
  *   { action: 'preview-proof', kind, nth, from? }
  *                                       one preview letter sent the same way;
  *                                       either may carry a `label` that
- *                                       replaces [Proof] in the subject
+ *                                       replaces [Proof] in the subject, and a
+ *                                       personal one a `letter` of its own
  *
  * A variant write carries its status and its weight and nothing else. The
  * words a variant opens with are code, in lib/outreach/variants.js, and a
@@ -1699,8 +1700,24 @@ export async function previewProof(db, body, post = deliverProof) {
     .order('created_at', { ascending: false })
     .limit(200)
   if (error) return refusal(error, 'The previews could not be read.')
-  const site = (rows ?? []).find(row => (personal ? isPreviewFirst(row) : !isPreviewFirst(row)))
-  if (!site) return NOBODY
+  const drawn = (rows ?? []).find(row => (personal ? isPreviewFirst(row) : !isPreviewFirst(row)))
+  if (!drawn) return NOBODY
+  // A personal proof may carry wording of its own, laid over the drawn row's
+  // pictures, so a letter not yet written for any business can be read in the
+  // inbox the way one would arrive. It goes to the studio alone, like any proof.
+  const site =
+    personal && body.letter && typeof body.letter === 'object'
+      ? {
+          ...drawn,
+          letter: { ...drawn.letter, ...body.letter, images: drawn.letter.images, version: 2 },
+        }
+      : drawn
+  if (personal && !isPreviewFirst(site)) {
+    return {
+      status: 400,
+      body: { error: 'That wording needs a subject, a first letter and three follow-ups.' },
+    }
+  }
 
   const saved = await settings(db)
   const roster = await readRoster(db, saved)

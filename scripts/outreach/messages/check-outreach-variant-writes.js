@@ -765,6 +765,28 @@ check(
       sent[2].subject.startsWith('[Chain 1 x Email 5] Re: '),
       `a label names the proof on one line: ${sent[2].subject}`
     )
+    const own = await previewProof(
+      db,
+      {
+        kind: 'personal',
+        nth: 2,
+        letter: {
+          subject: 'Own words',
+          first: ['Hi,', 'First.'],
+          follow_ups: [['One.'], ['Two.'], ['Three, the last.']],
+        },
+      },
+      post
+    )
+    same(own.status, 200, 'a proof with wording of its own')
+    ok(sent.at(-1).text.includes('Three, the last.'), 'the wording handed in is the one sent')
+    same(sent.at(-1).to, STUDIO_INBOX, 'where wording of its own goes')
+    const short = await previewProof(
+      db,
+      { kind: 'personal', letter: { follow_ups: [['One.']] } },
+      post
+    )
+    same(short.status, 400, 'wording without three follow-ups')
     same(writes.length, 0, 'writes made')
   }
 )
