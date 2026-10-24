@@ -111,7 +111,7 @@ import {
   withSettings,
   wouldEmptySegment,
 } from '../lib/outreach/variants.js'
-import { segmentOf } from '../lib/outreach/segments.js'
+import { SEGMENTS, segmentOf } from '../lib/outreach/segments.js'
 import { isYoung } from '../lib/outreach/prospects/youth.js'
 import { STAGES } from '../lib/outreach/prospects/stages.js'
 import { ranksAhead } from '../lib/outreach/sending/rank.js'
@@ -119,7 +119,8 @@ import { storedShot } from '../lib/outreach/audit/shot.js'
 import { compose, deliverProof, readRoster, sender } from './outreach/send.js'
 import { envelopeOf, senderFor } from '../lib/outreach/sending/senders.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
-import { composeFor } from '../lib/new-business/email.js'
+import { SUBJECT as NEW_BUSINESS_SUBJECT, composeFor } from '../lib/new-business/email.js'
+import { BIO_NAME } from '../lib/mail/bio.js'
 import { LAWSUIT_SOURCE } from '../lib/outreach/prospects/lawsuits.js'
 import { FOLLOW_UP_DAYS } from '../lib/outreach/sending/limits.js'
 import {
@@ -636,49 +637,60 @@ async function board(db, query) {
 }
 
 /**
- * The four outreach chains, in the order a business is matched to them, and
- * how many businesses stand at each of their letters.
+ * The four outreach chains, in the order a business is matched to them, each
+ * as its letters in sequence and where its businesses stand at every one.
  *
- * Each count is of businesses rather than messages, and each letter's count
- * is of the businesses sent that letter or a later one, so a chain reads as a
- * funnel: waiting, then each email in turn, then replied. A business is on
- * one chain alone; see `coldChainOf` in lib/outreach/sending/queue.js for the
- * two the cold sender writes, api/outreach/previews.js for the draft preview
- * and api/new-business/ for the new business email.
+ * Each count is of businesses rather than messages. A letter's `sent` is the
+ * businesses sent that letter, `replied` the ones who wrote back while it was
+ * the last they had, `next` the ones it was the last letter for and who are
+ * booked for the one after, and `owed` the part of `next` whose day has come.
+ * A business is on one chain alone; see `coldChainOf` in
+ * lib/outreach/sending/queue.js for the two the cold sender writes,
+ * api/outreach/previews.js for the draft preview and api/new-business/ for the
+ * new business email.
+ *
+ * The cold intro is read off the letter a business was sent rather than the
+ * mark that queued it: everyone the cold sender opened with an introduction is
+ * on that chain, which includes the businesses written to before the mark was
+ * there to set. Letters from families since retired belong to no chain and are
+ * not counted under one.
  */
-async function chains(db) {
-  const prospectsOn = chain => {
-    const read = db
-      .from('outreach_prospects')
-      .select('id', { count: 'exact', head: true })
-      .not('email', 'is', null)
-    return chain === 'lawsuit'
-      ? read.eq('source', LAWSUIT_SOURCE)
-      : read.not('preview_skipped_at', 'is', null).or(`source.is.null,source.neq.${LAWSUIT_SOURCE}`)
-  }
-  const cold = async chain => {
-    const [waiting, first, second, replied] = await Promise.all([
-      countOf(
-        prospectsOn(chain)
+async function chains(db, now = new Date()) {
+  const coldColumns = 'step, stage, replied_at, next_due_at'
+  const onLawsuit = read => read.eq('source', LAWSUIT_SOURCE)
+  const offLawsuit = read => read.or(`source.is.null,source.neq.${LAWSUIT_SOURCE}`)
+  const waitingOn = narrow =>
+    countOf(
+      narrow(
+        db
+          .from('outreach_prospects')
+          .select('id', { count: 'exact', head: true })
+          .not('email', 'is', null)
           .is('contacted_at', null)
           .in('stage', [...WAITING_STAGES])
-      ),
-      countOf(prospectsOn(chain).not('contacted_at', 'is', null)),
-      countOf(prospectsOn(chain).gte('step', 2)),
-      countOf(prospectsOn(chain).not('replied_at', 'is', null)),
-    ])
-    return { waiting, sent: [first, second], replied }
-  }
+      )
+    )
+  const writtenOn = narrow =>
+    readAll(
+      () =>
+        narrow(db.from('outreach_prospects').select(coldColumns).not('contacted_at', 'is', null)),
+      { max: SUMMARY_LIMIT }
+    )
 
-  const [lawsuit, intro, drafts, leads] = await Promise.all([
-    cold('lawsuit'),
-    cold('intro'),
+  const [lawsuitWaiting, lawsuitRows, introWaiting, introRows, drafts, leads] = await Promise.all([
+    waitingOn(onLawsuit),
+    writtenOn(onLawsuit),
+    waitingOn(read => offLawsuit(read.not('preview_skipped_at', 'is', null))),
+    writtenOn(read => offLawsuit(read.like('variant_id', '%-intro'))),
     readAll(
       () =>
         db
           .from('preview_sites')
-          .select('prospect_id, sent_at, follow_ups')
-          .eq('letter->>version', '2'),
+          .select(
+            'prospect_id, sent_at, follow_ups, follow_up_due_at, expires_at, subject:letter->>subject'
+          )
+          .eq('letter->>version', '2')
+          .order('sent_at', { ascending: false, nullsFirst: false }),
       { max: SUMMARY_LIMIT }
     ),
     readAll(() => db.from('new_business_leads').select('stage, contacted_at'), {
@@ -687,59 +699,122 @@ async function chains(db) {
   ])
 
   const sentDrafts = drafts.rows.filter(row => row.sent_at)
-  const draftIds = sentDrafts.map(row => row.prospect_id).filter(Boolean)
-  const draftReplied = draftIds.length
-    ? await countOf(
-        db
-          .from('outreach_prospects')
-          .select('id', { count: 'exact', head: true })
-          .in('id', draftIds)
-          .not('replied_at', 'is', null)
+  const draftIds = [...new Set(sentDrafts.map(row => row.prospect_id).filter(Boolean))]
+  const repliedDrafts = draftIds.length
+    ? await readAll(
+        () =>
+          db
+            .from('outreach_prospects')
+            .select('id')
+            .in('id', draftIds)
+            .not('replied_at', 'is', null),
+        { max: SUMMARY_LIMIT }
       )
-    : 0
-  const preview = {
-    waiting: drafts.rows.length - sentDrafts.length,
-    sent: [0, ...PREVIEW_FIRST_DAYS].map(
-      (_, nth) => sentDrafts.filter(row => (row.follow_ups ?? 0) >= nth).length
-    ),
-    replied: draftReplied,
-  }
-  const business = {
-    waiting: leads.rows.filter(row => !row.contacted_at && row.stage === 'emailable').length,
-    sent: [leads.rows.filter(row => row.contacted_at).length],
-    replied: leads.rows.filter(row => row.stage === 'replied').length,
-  }
+    : { rows: [] }
+  const answered = new Set(repliedDrafts.rows.map(row => row.id))
+
+  const cold = [SIGNED, `Re: ${SIGNED}`]
+  const sample = drafts.rows.find(row => row.subject)?.subject ?? null
+  const draftDays = [0, ...PREVIEW_FIRST_DAYS]
 
   return [
     {
       key: 'lawsuit',
       name: 'Lawsuit',
       entry: 'Found in a website accessibility suit, with an email address.',
-      days: [0, FOLLOW_UP_DAYS],
-      ...lawsuit,
+      waiting: lawsuitWaiting,
+      ...chainOf(coldStanding(lawsuitRows.rows), [0, FOLLOW_UP_DAYS], cold, now),
     },
     {
       key: 'new-business',
       name: 'New Business',
       entry: 'Newly registered with the state, with an email address.',
-      days: [0],
-      ...business,
+      waiting: leads.rows.filter(row => !row.contacted_at && row.stage === 'emailable').length,
+      ...chainOf(
+        leads.rows
+          .filter(row => row.contacted_at)
+          .map(row => ({ letters: 1, replied: row.stage === 'replied', due: null })),
+        [0],
+        [NEW_BUSINESS_SUBJECT],
+        now
+      ),
     },
     {
       key: 'draft-preview',
       name: 'Draft Preview',
       entry: 'An email address and a built draft with its four letters written.',
-      days: [0, ...PREVIEW_FIRST_DAYS],
-      ...preview,
+      waiting: drafts.rows.length - sentDrafts.length,
+      per_business: true,
+      ...chainOf(
+        sentDrafts.map(row => ({
+          letters: (row.follow_ups ?? 0) + 1,
+          replied: answered.has(row.prospect_id),
+          due: row.expires_at ? row.follow_up_due_at : null,
+        })),
+        draftDays,
+        draftDays.map((_, nth) =>
+          sample ? (nth ? `Re: ${sample.replace(/^Re:\s*/i, '')}` : sample) : null
+        ),
+        now
+      ),
     },
     {
       key: 'cold-intro',
       name: 'Cold Intro',
       entry: 'An email address and no draft coming.',
-      days: [0, FOLLOW_UP_DAYS],
-      ...intro,
+      waiting: introWaiting,
+      ...chainOf(coldStanding(introRows.rows), [0, FOLLOW_UP_DAYS], cold, now),
     },
   ]
+}
+
+/** The subject the cold letters and the new business email open under. */
+const SIGNED = `${BIO_NAME}, TaylorURL`
+
+/**
+ * Where each business the cold sender wrote to stands: how many letters it
+ * has had, whether it wrote back, and when the next is booked. One still on
+ * the chain is at 'contacted'; a reply, a bounce or an opt-out moves the stage
+ * and ends it.
+ */
+export function coldStanding(rows) {
+  return rows.map(row => ({
+    letters: Math.max(1, row.step ?? 1),
+    replied: Boolean(row.replied_at),
+    due: row.stage === 'contacted' ? (row.next_due_at ?? null) : null,
+  }))
+}
+
+/**
+ * One chain's letters, each with its day, subject and where the businesses
+ * stand at it, from where each business stands.
+ *
+ * @param {Array<{letters: number, replied: boolean, due: string|null}>} standing
+ * @param {number[]} days The day each letter goes, counted from the first.
+ * @param {Array<string|null>} subjects Each letter's subject.
+ */
+export function chainOf(standing, days, subjects, now = new Date()) {
+  const last = days.length
+  const at = row => Math.min(Math.max(1, row.letters), last)
+  const steps = days.map((day, index) => {
+    const nth = index + 1
+    const here = standing.filter(row => at(row) === nth)
+    const booked = nth < last ? here.filter(row => !row.replied && row.due) : []
+    return {
+      nth,
+      day,
+      subject: subjects[index] ?? null,
+      sent: standing.filter(row => at(row) >= nth).length,
+      replied: here.filter(row => row.replied).length,
+      next: booked.length,
+      owed: booked.filter(row => Date.parse(row.due) <= now.getTime()).length,
+    }
+  })
+  return {
+    sent: standing.length,
+    replied: standing.filter(row => row.replied).length,
+    steps,
+  }
 }
 
 /** One business in full, with every message to and from it, oldest first. */
@@ -1335,9 +1410,95 @@ export async function preview(db, query) {
   }
 }
 
+/** The registry letters each cold chain sends, in order, by the end of their ids. */
+const CHAIN_LETTERS = {
+  lawsuit: ['lawsuit', 'lawsuit-follow-up'],
+  'cold-intro': ['intro', 'intro-meeting'],
+}
+
+/**
+ * One letter of one chain, rendered as it would be sent to a real business on
+ * that chain, for the console to show beside the chain.
+ *
+ * The cold chains' letters are the registry's, rendered the way `preview`
+ * renders them against the first segment that has a business to render for.
+ * The draft preview's are the most recent built draft's own four, and the
+ * new business email is written for the most recent lead with an address.
+ * Nothing is written and nothing is sent.
+ */
+export async function step(db, query) {
+  const chain = String(query.chain ?? '')
+  const nth = Number.parseInt(String(query.nth ?? '1'), 10)
+  if (!Number.isInteger(nth) || nth < 1) return { status: 400, body: { error: 'Pick a letter.' } }
+  const shown = (subject, html, text, business) => ({
+    status: 200,
+    body: { chain, nth, subject, html, text, business },
+  })
+
+  const ends = CHAIN_LETTERS[chain]
+  if (ends) {
+    const end = ends[nth - 1]
+    if (!end) return { status: 400, body: { error: 'That chain has no such letter.' } }
+    for (const segment of SEGMENTS) {
+      const answer = await preview(db, { variant: `${segment}-${end}` })
+      if (answer.status === 200) {
+        const { subject, html, text, prospect: business } = answer.body
+        return shown(subject, html, text, business?.name ?? null)
+      }
+    }
+    return NOBODY
+  }
+
+  if (chain === 'new-business') {
+    if (nth !== 1) return { status: 400, body: { error: 'That chain has no such letter.' } }
+    const { data, error } = await db
+      .from('new_business_leads')
+      .select('*')
+      .not('email', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(1)
+    if (error) return refusal(error, 'The new businesses could not be read.')
+    const lead = data?.[0]
+    if (!lead) return NOBODY
+    const letter = composeFor({ ...lead, unsub_token: 'preview' })
+    return shown(letter.subject, letter.body_html, letter.body_text, lead.name ?? null)
+  }
+
+  if (chain === 'draft-preview') {
+    if (nth > PREVIEW_FIRST_DAYS.length + 1) {
+      return { status: 400, body: { error: 'That chain has no such letter.' } }
+    }
+    const { data: rows, error } = await db
+      .from('preview_sites')
+      .select('*')
+      .not('prospect_id', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(200)
+    if (error) return refusal(error, 'The previews could not be read.')
+    const site = (rows ?? []).find(isPreviewFirst)
+    if (!site) return NOBODY
+    const { data: reader } = await db
+      .from('outreach_prospects')
+      .select('name, email')
+      .eq('id', site.prospect_id)
+      .maybeSingle()
+    const context = { track: null, email: reader?.email ?? null }
+    let letter
+    try {
+      const first = previewFirstLetter(site, -1, context)
+      letter = nth === 1 ? first : previewFirstLetter(site, nth - 2, { ...context, prior: first })
+    } catch (cause) {
+      return { status: 404, body: { error: cause?.message || 'That letter is not written.' } }
+    }
+    return shown(letter.subject, letter.html, letter.text, reader?.name ?? site.slug ?? null)
+  }
+
+  return { status: 400, body: { error: 'Pick a chain.' } }
+}
+
 // The reads a GET may ask for by name. Anything else is the board, which is
 // what the console opens the section on.
-const VIEWS = { prospect, mail, preview }
+const VIEWS = { prospect, mail, preview, step }
 
 /**
  * The switches, the cap and the lists, written one field at a time.
