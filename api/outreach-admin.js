@@ -50,6 +50,8 @@
  *                                       one preview letter sent the same way;
  *                                       either may carry a `label` that
  *                                       replaces [Proof] in the subject
+ *   { action: 'new-business-proof', from?, label? }
+ *                                       the new-business email sent the same way
  *
  * A variant write carries its status and its weight and nothing else. The
  * words a variant opens with are code, in lib/outreach/variants.js, and a
@@ -119,6 +121,7 @@ import { storedShot } from '../lib/outreach/audit/shot.js'
 import { compose, deliverProof, readRoster, sender, unsubscribeUrl } from './outreach/send.js'
 import { envelopeOf, senderFor } from '../lib/outreach/sending/senders.js'
 import { STUDIO_INBOX } from '../lib/outreach/message.js'
+import { composeFor } from '../lib/new-business/email.js'
 import {
   PREVIEW_FIRST_SENDER,
   isPreviewFirst,
@@ -1676,6 +1679,53 @@ export async function proof(db, body, registry = VARIANTS, post = deliverProof) 
 }
 
 /**
+ * The email a newly registered business is sent, written for the most recent
+ * lead that has an address and sent to the studio's own inbox as it would go.
+ * Nothing is written, and its unsubscribe link names no lead.
+ *
+ * @param {object} db A service-role client.
+ * @param {{from?: string, label?: string}} body
+ * @param {Function} [post] The delivery, which a check replaces.
+ */
+export async function newBusinessProof(db, body, post = deliverProof) {
+  const { data: leads, error } = await db
+    .from('new_business_leads')
+    .select('*')
+    .not('email', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+  if (error) return refusal(error, 'The new businesses could not be read.')
+  const lead = leads?.[0]
+  if (!lead) return NOBODY
+  const saved = await settings(db)
+  const roster = await readRoster(db, saved)
+  const from =
+    (body.from && senderFor(roster.senders, body.from)) ||
+    roster.senders.find(one => one.open) ||
+    roster.senders[0]
+  const letter = composeFor({ ...lead, unsub_token: 'proof' })
+  const subject = `${proofTag(body)} ${letter.subject}`
+  try {
+    await post({
+      from: envelopeOf(from),
+      sender: from,
+      to: STUDIO_INBOX,
+      subject,
+      text: letter.body_text,
+      html: letter.body_html,
+    })
+  } catch (cause) {
+    const said = cause?.message || String(cause)
+    console.error('outreach-admin: the new-business proof did not leave: %s', said)
+    return {
+      status: 502,
+      body: { error: `The proof did not leave. The mail server said: ${said}` },
+    }
+  }
+  return { status: 200, body: { ok: true, to: STUDIO_INBOX, subject } }
+}
+
+/**
  * One preview letter sent to the studio's own inbox, as it would go.
  *
  * `kind` is 'preview' for the letter that carries a draft site to a business
@@ -1904,6 +1954,7 @@ export default async function handler(request, response) {
       else if (action === 'variant') answer = await setVariant(connected.db, body)
       else if (action === 'proof') answer = await proof(connected.db, body)
       else if (action === 'preview-proof') answer = await previewProof(connected.db, body)
+      else if (action === 'new-business-proof') answer = await newBusinessProof(connected.db, body)
       else answer = { status: 400, body: { error: 'Unknown action.' } }
     }
 

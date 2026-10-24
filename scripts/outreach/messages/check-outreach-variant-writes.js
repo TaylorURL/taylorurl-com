@@ -36,7 +36,7 @@ import { OFFLINE } from '../../harness/offline.js'
 // Nothing here may reach the network.
 globalThis.fetch = OFFLINE
 
-const { preview, previewProof, proof, setVariant, variantResults } =
+const { newBusinessProof, preview, previewProof, proof, setVariant, variantResults } =
   await import('../../../api/outreach-admin.js')
 
 // ── The database stand-in ────────────────────────────────────────────────
@@ -765,6 +765,36 @@ check(
       sent[2].subject.startsWith('[Chain 1 x Email 5] Re: '),
       `a label names the proof on one line: ${sent[2].subject}`
     )
+    same(writes.length, 0, 'writes made')
+  }
+)
+
+check(
+  'a new-business proof is the email a new company gets, sent to the studio and written nowhere',
+  async () => {
+    const { db, writes } = stubDb({
+      'select:new_business_leads': {
+        data: [
+          {
+            id: 'lead-1',
+            name: 'GULF COAST PAVING LLC',
+            email: 'owner@gulfcoastpaving.example',
+            website: 'https://gulfcoastpaving.example',
+            formed_on: '2026-09-30',
+            unsub_token: 'real-token',
+          },
+        ],
+        error: null,
+      },
+      'select:outreach_settings': SAVED,
+      'select:outreach_messages': { data: [], error: null },
+    })
+    const { sent, post } = postbox()
+    const answer = await newBusinessProof(db, { label: 'Chain 4 - Email 1 of 1' }, post)
+    same(answer.status, 200, 'the status')
+    same(sent[0].to, STUDIO_INBOX, 'the address handed to the mailer')
+    same(sent[0].subject, '[Chain 4 - Email 1 of 1] Trenton Taylor, TaylorURL', 'the subject')
+    ok(!sent[0].text.includes('real-token'), 'the unsubscribe link names no lead')
     same(writes.length, 0, 'writes made')
   }
 )
