@@ -24,9 +24,9 @@ const UNSUB = 'edc4380d-a697-4860-8725-487112d8c945'
 
 const preview = {
   subject: 'Trenton Taylor - TaylorURL',
-  body_text: 'Hi Marco,\n\nhttps://castanon.taylorurl.com\n',
+  body_text: 'Hi Sam,\n\nhttps://sampleworks.taylorurl.com\n',
   body_html:
-    '<p>Hi Marco,</p>\n<p><a href="https://castanon.taylorurl.com">castanon.taylorurl.com</a></p>\n' +
+    '<p>Hi Sam,</p>\n<p><a href="https://sampleworks.taylorurl.com">sampleworks.taylorurl.com</a></p>\n' +
     `<img src="https://lonestarsite.com/api/outreach/open?t=${TRACK}" alt="" width="1" height="1">\n</body>`,
 }
 
@@ -43,7 +43,7 @@ check('a preview copy keeps its subject, its words and its preview link', () => 
   const copy = copyOf(preview, [TRACK, null])
   same(copy.subject, preview.subject, 'subject')
   same(copy.text, preview.body_text, 'plain half')
-  ok(copy.html.includes('href="https://castanon.taylorurl.com"'), 'the preview link is kept')
+  ok(copy.html.includes('href="https://sampleworks.taylorurl.com"'), 'the preview link is kept')
 })
 
 check('a copy carries no open square', () => {
@@ -63,10 +63,10 @@ check('a copy carries neither the tracking token nor the unsubscribe token', () 
 
 const lead = {
   id: 'lead-1',
-  name: 'DIM HOUR LLC',
+  name: 'SAMPLE WORKS LLC',
   formed_on: '2026-10-02',
-  website: 'https://dimhour.com',
-  email: 'support@dimhour.com',
+  website: 'https://sampleworks.example.com',
+  email: 'hello@sampleworks.example.com',
   unsub_token: '49a17073-557d-49ab-a59e-716971d59487',
 }
 const sentAt = '2026-10-26T13:03:32.275Z'
@@ -104,7 +104,7 @@ check(
         id: 'm1',
         ...preview,
         from_address: 'studio@example.com',
-        to_address: 'marco@example.com',
+        to_address: 'sam@example.com',
         track_token: TRACK,
         variant_id: null,
         sent_at: '2026-10-26T13:18:24.578Z',
