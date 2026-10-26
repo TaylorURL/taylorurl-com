@@ -7,6 +7,12 @@
  * one, and actually looked at. The body is sent as text/plain so the browser
  * never asks first, and nothing the page could act on comes back.
  *
+ * A batch from a mail scanner's network, or from an agent that says it is
+ * automated, is dropped here before it reaches the database: the same question
+ * /api/preview-view asks before a view is counted (lib/outreach/scanners.js).
+ * The answer for an address is kept for the life of the instance, so a reader
+ * sending a batch every ten seconds is looked up once.
+ *
  * Everything else is decided in the database by `preview_track()`, which asks
  * `preview_view_ours()` - the same function `preview_site()` asks before it
  * counts a view - whether the caller is on one of the studio's own connections,
@@ -23,6 +29,7 @@ import { UUID_PATTERN } from '../lib/db/fields.js'
 import { readBody } from '../lib/http/body.js'
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { callerAddress, callerWindow } from '../lib/http/rate.js'
+import { judgeVisit } from '../lib/outreach/scanners.js'
 
 /** The most a batch can be, in characters, and in events. */
 const MAX_BODY = 48 * 1024
@@ -51,6 +58,21 @@ const TEMPLATE = /^[a-z]{2,24}$/
 // A reader sends a batch every ten seconds at most, and more on a hidden tab
 // or a page change. Thirty a minute is a busy reader on a fast click-through.
 const batches = callerWindow({ limit: 30, windowMs: 60 * 1000 })
+
+// Whether an address and agent belong to a person, as judged the first time
+// they sent a batch. Cleared whole when it grows, which costs a lookup each.
+const judged = new Map()
+const JUDGED_MAX = 500
+
+async function fromPerson(address, agent) {
+  const key = `${address} ${agent}`
+  if (!judged.has(key)) {
+    if (judged.size >= JUDGED_MAX) judged.clear()
+    const visit = await judgeVisit(address, agent)
+    judged.set(key, !visit.scanner && !visit.automated)
+  }
+  return judged.get(key)
+}
 
 const text = (value, n) => (typeof value === 'string' ? value.slice(0, n) : undefined)
 const number = value => (Number.isFinite(value) ? Math.round(value) : undefined)
@@ -135,7 +157,8 @@ export default async function handler(request, response) {
   }
 
   const connected = connect()
-  if (!connected) {
+  const agent = String(request.headers['user-agent'] ?? '').slice(0, 400)
+  if (!connected || !(await fromPerson(address, agent))) {
     response.status(204).end()
     return
   }
