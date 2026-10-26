@@ -101,21 +101,23 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   const query = queryOf(filters)
 
   const load = useCallback(async () => {
-    if (!token || !enabled) return
+    if (!token || !enabled) return true
     try {
       const { response, payload } = await readEndpoint(
         token,
         `${OUTREACH_PATH}?${query}&t=${Date.now()}`
       )
-      if (!alive.current) return
+      if (!alive.current) return true
       if (!response.ok) {
         setFailed({ key: query, value: faultFromResponse(response, payload, NO_BOARD) })
-        return
+        return false
       }
       setHeld({ key: query, value: payload })
       setFailed(NOTHING_HELD)
+      return true
     } catch (cause) {
       if (alive.current) setFailed({ key: query, value: faultMessage(cause, NO_BOARD) })
+      return false
     }
   }, [token, enabled, query, alive])
 
@@ -124,21 +126,23 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   }, [load])
 
   const loadProfile = useCallback(async () => {
-    if (!token || !enabled || !openId) return
+    if (!token || !enabled || !openId) return true
     try {
       const { response, payload } = await readEndpoint(
         token,
         `${OUTREACH_PATH}?view=prospect&id=${encodeURIComponent(openId)}&t=${Date.now()}`
       )
-      if (!alive.current) return
+      if (!alive.current) return true
       if (!response.ok) {
         setProfileError(faultFromResponse(response, payload, NO_PROSPECT))
-        return
+        return false
       }
       setProfile(payload)
       setProfileError(null)
+      return true
     } catch (cause) {
       if (alive.current) setProfileError(faultMessage(cause, NO_PROSPECT))
+      return false
     }
   }, [token, enabled, openId, alive])
 
@@ -151,21 +155,23 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   }, [loadProfile])
 
   const loadMail = useCallback(async () => {
-    if (!token || !enabled) return
+    if (!token || !enabled) return true
     try {
       const { response, payload } = await readEndpoint(
         token,
         `${OUTREACH_PATH}?view=mail&t=${Date.now()}`
       )
-      if (!alive.current) return
+      if (!alive.current) return true
       if (!response.ok) {
         setMailError(faultFromResponse(response, payload, NO_QUEUE))
-        return
+        return false
       }
       setMail(payload)
       setMailError(null)
+      return true
     } catch (cause) {
       if (alive.current) setMailError(faultMessage(cause, NO_QUEUE))
+      return false
     }
   }, [token, enabled, alive])
 
@@ -265,24 +271,34 @@ export function useOutreachFeed({ token, enabled, filters, openId }) {
   // own, and both used to sit unseen until something on this page was touched.
   // A running job already re-reads every few seconds, so the beat stands off
   // while one is, and while any change is in flight.
-  usePulse(
-    async () => {
-      await Promise.all([load(), loadMail()])
-    },
-    {
-      enabled: Boolean(token) && enabled,
-      intervalMs: PULSE_MS,
-      holdWhile: Boolean(acting) || busy,
-    }
-  )
-  useEffect(() => {
-    if (!busy) return undefined
-    const timer = setInterval(() => {
-      load()
-      loadMail()
-    }, RUN_POLL_MS)
-    return () => clearInterval(timer)
-  }, [busy, load, loadMail])
+  // Both reads report whether they landed, and the beat is told. Resolving
+  // nothing read as a beat however the read went, so the back-off written for
+  // exactly this route - never ask again sooner than the attempt that timed
+  // out took - could not engage and the cadence stayed flat through a
+  // failure. That is the amplifier #792 removed from the beat itself, left
+  // live here by a tick that never said no.
+  const beat = useCallback(async () => {
+    const landed = await Promise.all([load(), loadMail()])
+    return landed.every(Boolean)
+  }, [load, loadMail])
+
+  usePulse(beat, {
+    enabled: Boolean(token) && enabled,
+    intervalMs: PULSE_MS,
+    holdWhile: Boolean(acting) || busy,
+  })
+
+  // While a job runs the same two reads go again far more often, and that
+  // shorter beat goes through the same guard rather than a bare interval. An
+  // interval fires on the clock whether the last read came back or not, so
+  // two reads that each hold a route and a database connection for their
+  // whole ten-second deadline were being reissued every four seconds on top
+  // of themselves - a database too slow to answer handed more to do, which is
+  // how this route takes the whole console's shared door down with it.
+  usePulse(beat, {
+    enabled: Boolean(token) && enabled && busy,
+    intervalMs: RUN_POLL_MS,
+  })
 
   // Filed under the filter that asked for it: a new stage, town, sort or page
   // is a different question, and the board on screen is not its answer.
