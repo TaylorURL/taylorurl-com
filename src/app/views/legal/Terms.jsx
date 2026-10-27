@@ -225,7 +225,7 @@ export default function Terms() {
               >
                 {SUPPORT_EMAIL}
               </a>{' '}
-              or call {COMPANY_PHONE}, and the person who answers is the person who does the work.
+              or call {COMPANY_PHONE}.
             </>
           ),
         }}

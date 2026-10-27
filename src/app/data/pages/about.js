@@ -31,7 +31,7 @@ const STUDIO_ABOUT = {
 
   hero: {
     eyebrow: 'About Me',
-    title: 'One person builds your site and brings you customers.',
+    title: 'I build websites that bring you customers.',
     description:
       'I am Trenton Taylor, a web designer and developer. I answer the phone, I build the site, and when your hours change you text me. Most of my clients are shops and trades around Baytown and the Houston area.',
   },
@@ -41,7 +41,7 @@ const STUDIO_ABOUT = {
     heading: 'Baytown shops end up with one of two websites.',
     paragraphs: [
       'One is an agency build that cost more than the shop could justify and looks like every other site that agency sells. The other went up on a free builder years back and still shows hours that changed a while ago.',
-      'I started TaylorURL in Baytown to be the third option. I build the site myself and stay the person who answers when it needs to change. It is just me, so there is no account manager to hand you off to.',
+      'I started TaylorURL in Baytown to be the third option. Every site starts from an empty file, and when yours needs to change, you text me and I change it. There is no account manager and no support queue in between.',
       'Hosting, backups, monitoring and any update you need are in the price, and if the monthly ever changes you hear about it in writing well before it is charged. The domain is yours and stays in your name.',
     ],
   },
@@ -73,9 +73,9 @@ const STUDIO_ABOUT = {
     },
     {
       icon: Headphones,
-      title: 'You talk to the person doing the work',
+      title: 'Your messages land on my phone',
       description:
-        'No account manager sits between you and the build. You send a message, it lands on my phone, and the answer usually comes back inside the hour.',
+        'No account manager sits between you and the build. You text or email, I read it, and the answer usually comes back inside the hour.',
     },
     {
       icon: Zap,
@@ -87,7 +87,7 @@ const STUDIO_ABOUT = {
       icon: Shield,
       title: 'Built for local businesses',
       description:
-        'Plumbers, barbers, printers, restaurants, contractors. Businesses that get looked up on a phone before anyone walks in, and that need one person to call when the hours change.',
+        'Plumbers, barbers, printers, restaurants, contractors. Businesses that get looked up on a phone before anyone walks in, and that need somebody who picks up when the hours change.',
     },
   ],
 

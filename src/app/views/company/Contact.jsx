@@ -3,6 +3,7 @@ import { m } from 'framer-motion'
 import { ArrowUpRight, Check, ChevronDown, Clock, Mail, Phone } from 'lucide-react'
 import BbbSeal from '@components/reviews/BbbSeal'
 import PageHero from '@components/page-bands/PageHero'
+import Portrait from '@components/people/Portrait'
 import Seo from '@components/Seo'
 import { useToast } from '@hooks/chrome/useToast'
 import {
@@ -16,6 +17,7 @@ import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@co
 import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
+import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { faultMessage } from '@utils/faults'
 import { CONTACT } from '@data/pages/contact'
@@ -212,6 +214,18 @@ export default function Contact() {
                 <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
                   {CONTACT.aside.para}
                 </p>
+                {/* Who reads the message, said the way a byline says it: the
+                    face, the name and the paragraph every reply is signed with. */}
+                <div className="border-hair-paper mt-8 border-t pt-7">
+                  <div className="flex items-center gap-4">
+                    <Portrait size={64} alt="" />
+                    <div>
+                      <p className="text-[15px] font-semibold text-ink-paper">{BIO_NAME}</p>
+                      <p className="section-label-sm text-paper-faint mt-1">{BIO_TITLE}</p>
+                    </div>
+                  </div>
+                  <p className="mt-5 text-[14px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
+                </div>
               </div>
 
               <SpotlightCard

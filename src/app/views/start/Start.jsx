@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Phone } from 'lucide-react'
 import PageHero from '@components/page-bands/PageHero'
+import Portrait from '@components/people/Portrait'
 import Seo from '@components/Seo'
 import SendButton from '@components/conversion/SendButton'
 import ReviewStandingRail from '@components/reviews/ReviewStandingRail'
@@ -11,6 +12,7 @@ import { CONTACT_METHODS, DEFAULT_CONTACT_METHOD } from '@constants/navigation'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { START_ADD_ONS, START_SERVICES } from '@data/pages/services'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
+import { BIO_NAME } from '@lib/mail/bio.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { faultMessage } from '@utils/faults'
 import { submitEnquiry } from '@data/leads/sendEnquiry'
@@ -244,7 +246,7 @@ export default function Start() {
                     Tell me about the business
                   </h2>
                   <p className={`mt-1.5 text-[14px] ${GROUND.body}`}>
-                    A few short answers. The person who reads them is the one who replies.
+                    A few short answers, and I reply, usually within the hour.
                   </p>
                 </div>
                 <span className={`section-label-sm ${GROUND.meta}`}>About 2 Min</span>
@@ -529,6 +531,12 @@ export default function Start() {
                 className={`hidden rounded-[var(--r-card)] p-7 lg:block ${SLAB.section}`}
               >
                 <p className="section-label-sm text-accent">Rather Talk?</p>
+                <div className="mt-4 flex items-center gap-3">
+                  <Portrait size={44} alt="" />
+                  <p className={`text-[15px] font-semibold tracking-tight ${SLAB.title}`}>
+                    {BIO_NAME}
+                  </p>
+                </div>
                 <a
                   href={SITE.phoneHref}
                   className="mt-3 block text-[30px] font-semibold tracking-tightest text-ink transition-colors hover:text-accent"
@@ -536,8 +544,8 @@ export default function Start() {
                   {SITE.phone}
                 </a>
                 <p className={`mt-3 text-[14px] leading-relaxed ${SLAB.body}`}>
-                  I do the work and I answer the phone. Tell me what the business does and you get
-                  the same written plan and price.
+                  Call or text me. Tell me what the business does and you get the same written plan
+                  and price.
                 </p>
                 <a href={SITE.phoneHref} className="btn btn-secondary mt-5 w-full">
                   Call for a Plan and Price

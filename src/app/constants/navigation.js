@@ -370,7 +370,7 @@ const STUDIO_NAV_GROUPS = [
           {
             to: '/about',
             label: 'About Trenton',
-            summary: 'The one person who builds it, and who you talk to while it runs.',
+            summary: 'How TaylorURL started, how I work, and how to reach me.',
             mark: MarkSquare,
           },
           {

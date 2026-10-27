@@ -137,7 +137,7 @@ const STUDIO = {
   catalogName: 'Small business website and software services',
   hero: {
     eyebrow: 'What I Do',
-    title: 'One person builds it, hosts it, and answers when you call.',
+    title: 'I build it, host it, and answer when you call.',
     description:
       'A website for shops, restaurants, trades, and pros around Baytown and the Houston area. Booking, company email, ad tracking, SEO, and hosting are part of it. I quote apps and automation on their own. You get a plan and a price before any work starts.',
   },
@@ -179,7 +179,7 @@ const STUDIO = {
     heading: 'Get a plan',
     accentText: 'and a price.',
     description:
-      'Tell me what the business needs. I answer myself, usually within the hour, and you get the plan and the price before any work starts.',
+      'Tell me what the business needs. I usually answer within the hour, and you get the plan and the price before any work starts.',
     secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
@@ -208,7 +208,7 @@ const SECOND_SITE = {
       { icon: FileText, label: 'A scope and a price in writing' },
       { icon: CalendarCheck, label: 'A finish date before work starts' },
       { icon: ListChecks, label: 'What is not included, named first' },
-      { icon: UserRound, label: 'One person on the work' },
+      { icon: UserRound, label: 'A direct line, no ticket queue' },
       { icon: Clock, label: 'A reply usually within the hour' },
       { icon: Handshake, label: 'No term to sign' },
     ],
@@ -218,7 +218,7 @@ const SECOND_SITE = {
     heading: 'Say which one',
     accentText: 'you need.',
     description:
-      'Tell me what the work is and what it has to do when it is done. I answer myself, usually within the hour, and you get the scope and the price in writing before anything starts.',
+      'Tell me what the work is and what it has to do when it is done. I usually answer within the hour, and you get the scope and the price in writing before anything starts.',
     secondary: null,
   },
 }

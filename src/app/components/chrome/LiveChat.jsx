@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, m, useReducedMotion } from 'framer-motion'
 import { ArrowUp, Mail, MessageSquare, Phone, RotateCcw, X } from 'lucide-react'
-import {
-  BRAND_SHORT_NAME,
-  COMPANY_PHONE,
-  COMPANY_PHONE_HREF,
-  SUPPORT_EMAIL,
-} from '@constants/navigation'
+import { COMPANY_PHONE, COMPANY_PHONE_HREF, SUPPORT_EMAIL } from '@constants/navigation'
 import { assistantUp, dropThread, sendTurn, threadHeld } from '@app/data/liveChat'
 import { EASE } from '@constants/animations'
 import { useScrollLock } from '@hooks/scroll/useScrollLock'
 import { useMediaQuery } from '@hooks/useMediaQuery'
+import Portrait from '@components/people/Portrait'
+import { BIO_NAME } from '@lib/mail/bio.js'
 import { faultMessage } from '@utils/faults'
 
 /**
@@ -18,9 +15,9 @@ import { faultMessage } from '@utils/faults'
  * phone.
  *
  * It answers a stranger's first question at the hour they thought of it, and
- * its one job after that is to put them in front of Trenton, the one person
- * who does the work. It opens under the company's own name and says what it is
- * in the line underneath, because a visitor who thinks a person is typing finds
+ * its one job after that is to put them in front of Trenton, so it opens on
+ * the face and the name, the way a message from a person does, and says what it
+ * is in the line underneath, because a visitor who thinks a person is typing finds
  * out otherwise on the first reply.
  *
  * There are two shells around one thread. On a pointer-sized screen the panel
@@ -298,9 +295,10 @@ function Conversation({
           roomy ? 'py-2.5' : 'py-3.5'
         }`}
       >
+        <Portrait size={36} alt="" eager />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[14px] font-semibold leading-tight text-[color:var(--paper-ink)]">
-            {BRAND_SHORT_NAME}
+            {BIO_NAME}
           </span>
           <span className="block truncate text-[12px] leading-tight text-[color:var(--paper-ink-mute)]">
             Assistant
@@ -342,12 +340,6 @@ function Conversation({
             transition={{ duration: 0.34, ease: EASE }}
             className="space-y-4"
           >
-            <p
-              className={`leading-relaxed text-paper-soft ${roomy ? 'text-[15px]' : 'text-[14px]'}`}
-            >
-              TaylorURL is Trenton Taylor, a web designer and developer in Baytown, building and
-              looking after websites for business owners across Southeast Texas.
-            </p>
             <p
               className={`leading-relaxed text-[color:var(--paper-ink)] ${
                 roomy ? 'text-[15px]' : 'text-[14px]'

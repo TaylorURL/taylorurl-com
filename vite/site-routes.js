@@ -137,8 +137,7 @@ const STUDIO_STATIC_ROUTES = [
   {
     path: '/about',
     name: 'About',
-    summary:
-      'Trenton Taylor, the one person behind TaylorURL, and how a project runs from start to finish.',
+    summary: 'How TaylorURL started, how I work, and how a project runs from start to finish.',
     group: 'company',
     changefreq: 'monthly',
     priority: '0.8',
