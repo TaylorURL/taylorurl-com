@@ -47,7 +47,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'What Should You Cut?' },
       {
         type: 'p',
-        text: 'If your homepage is not converting, the fix is almost never to add something. Cut the padding, tighten the message, and make the next step obvious enough that nobody has to hunt for it. A homepage should feel like a handshake: quick, confident, and over. If you want a second opinion on what yours could lose, send us the address.',
+        text: 'If your homepage is not converting, the fix is almost never to add something. Cut the padding, tighten the message, and make the next step obvious enough that nobody has to hunt for it. A homepage should feel like a handshake: quick, confident, and over. If you want a second opinion on what yours could lose, send me the address.',
       },
     ],
   },
@@ -133,12 +133,12 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'Why Do Cheap Sites Get Rebuilt?' },
       {
         type: 'p',
-        text: 'The pattern we see is a business buying a cheap site, outgrowing it inside a year, and paying for a complete rebuild. That is two invoices for one site. A site built properly the first time grows with the business instead of being thrown away.',
+        text: 'The pattern I see is a business buying a cheap site, outgrowing it inside a year, and paying for a complete rebuild. That is two invoices for one site. A site built properly the first time grows with the business instead of being thrown away.',
       },
       { type: 'h2', text: 'What Does Spending Once Look Like?' },
       {
         type: 'p',
-        text: 'A custom site loads fast, ranks, turns visitors into calls, and does not need rebuilding when the business changes. We quote ours for the project, with a written plan and price before any work begins, so the number you agree to is the number you pay. The real cost of a cheap website is every customer it fails to convert and every hour you spend fixing it.',
+        text: 'A custom site loads fast, ranks, turns visitors into calls, and does not need rebuilding when the business changes. I quote mine for the project, with a written plan and price before any work begins, so the number you agree to is the number you pay. The real cost of a cheap website is every customer it fails to convert and every hour you spend fixing it.',
       },
     ],
   },
@@ -153,7 +153,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: 'Picking a web developer without getting burned comes down to a few checks you can run before you sign anything. Clients have come to us after a developer took the deposit and stopped answering, after a site took six months to launch, and after code so bad it had to be scrapped. Every one of those had a warning sign up front.',
+        text: 'Picking a web developer without getting burned comes down to a few checks you can run before you sign anything. Clients have come to me after a developer took the deposit and stopped answering, after a site took six months to launch, and after code so bad it had to be scrapped. Every one of those had a warning sign up front.',
       },
       { type: 'h2', text: 'Can You Visit the Sites They Built?' },
       {
@@ -182,7 +182,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'Can You Work With Them?' },
       {
         type: 'p',
-        text: 'Do they reply within a reasonable time? Do they explain things without talking down to you? The most skilled developer in the world is no use if every conversation is a chore. Find someone who treats you like a client they want to keep. We answer within the hour, and every job starts with a written plan and a price, so you can run these checks on us first.',
+        text: 'Do they reply within a reasonable time? Do they explain things without talking down to you? The most skilled developer in the world is no use if every conversation is a chore. Find someone who treats you like a client they want to keep. I answer within the hour, and every job starts with a written plan and a price, so you can run these checks on me first.',
       },
     ],
   },
@@ -190,14 +190,14 @@ export const BLOG_ARTICLES_1 = [
     slug: 'why-nobodys-filling-out-your-contact-form',
     title: "Why Nobody's Filling Out Your Contact Form",
     excerpt:
-      'The longest form we have ever built is also the one people finish. What empties a form is friction, not length, and most of the friction is on a phone.',
+      'The longest form I have ever built is also the one people finish. What empties a form is friction, not length, and most of the friction is on a phone.',
     category: 'Design',
     date: 'January 25, 2026',
     readTime: '5 min read',
     content: [
       {
         type: 'p',
-        text: 'Nobody is filling out your contact form because of friction, and length is only a small part of friction. The longest form we have ever built asks for a position, full contact details, four previous employers, a personal history section, and a signed acknowledgment. It gets finished more often than most four-field contact boxes do.',
+        text: 'Nobody is filling out your contact form because of friction, and length is only a small part of friction. The longest form I have ever built asks for a position, full contact details, four previous employers, a personal history section, and a signed acknowledgment. It gets finished more often than most four-field contact boxes do.',
       },
       {
         type: 'p',
@@ -238,7 +238,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'What Happens After They Press Send?' },
       {
         type: 'p',
-        text: 'A box under the word "Contact" is not a reason to type anything. "Send this and I will come back within one business day with a quote" is. Set an expectation you can keep, then keep it, and the box stops being empty. Ours says you usually get a reply within the hour.',
+        text: 'A box under the word "Contact" is not a reason to type anything. "Send this and I will come back within one business day with a quote" is. Set an expectation you can keep, then keep it, and the box stops being empty. Mine says you usually get a reply within the hour.',
       },
     ],
   },
@@ -253,7 +253,7 @@ export const BLOG_ARTICLES_1 = [
     content: [
       {
         type: 'p',
-        text: 'Image optimization is the easiest speed win there is, because oversized images are almost always the biggest reason a site is slow. We audit pages loading 10MB of images when the whole homepage should come in under 2MB. Fixing that takes an afternoon and no code.',
+        text: 'Image optimization is the easiest speed win there is, because oversized images are almost always the biggest reason a site is slow. I audit pages loading 10MB of images when the whole homepage should come in under 2MB. Fixing that takes an afternoon and no code.',
       },
       { type: 'h2', text: 'Why Are Images So Heavy?' },
       {
@@ -277,7 +277,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'How Much Faster Does It Get?' },
       {
         type: 'p',
-        text: 'We have watched a page go from eight seconds to under two on images alone, with no code change, no hosting change, and no redesign. Faster pages keep more of the people who arrive, and Google reads speed as a ranking input. If you do one thing for your site this week, do this, and if you would rather hand it off, changes like that are inside the monthly care.',
+        text: 'I have watched a page go from eight seconds to under two on images alone, with no code change, no hosting change, and no redesign. Faster pages keep more of the people who arrive, and Google reads speed as a ranking input. If you do one thing for your site this week, do this, and if you would rather hand it off, changes like that are inside the monthly care.',
       },
     ],
   },
@@ -316,7 +316,7 @@ export const BLOG_ARTICLES_1 = [
       { type: 'h2', text: 'How Do You Know If It Is Working?' },
       {
         type: 'p',
-        text: 'You would not hire a salesperson and never check the numbers. Track the traffic, look at which pages get visited, see where people leave. A contact page with 100 views and no submissions is telling you something. A website is a tool to measure, maintain, and improve, which is most of what the monthly care on our sites is for.',
+        text: 'You would not hire a salesperson and never check the numbers. Track the traffic, look at which pages get visited, see where people leave. A contact page with 100 views and no submissions is telling you something. A website is a tool to measure, maintain, and improve, which is most of what the monthly care on my sites is for.',
       },
     ],
   },

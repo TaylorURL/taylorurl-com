@@ -88,7 +88,7 @@ export default function Industries() {
         eyebrow="Start"
         title={
           <>
-            Tell us about <span className="text-accent">your shop</span>.
+            Tell me about <span className="text-accent">your shop</span>.
           </>
         }
         description="Pick the trade, check the software you already run, and get a plan and a price back. Most sites are live in two to four weeks."

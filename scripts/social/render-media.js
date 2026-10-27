@@ -15,8 +15,8 @@
  * copy and of `t`, never of a clock.
  *
  * Nothing is written that fails a guard. Every page's text is read back out of
- * the browser after layout and checked for client names, prices, first-person
- * voice and emoji; copy that does not fit its box at its smallest permitted
+ * the browser after layout and checked for client names, prices, the voice of a
+ * team and emoji; copy that does not fit its box at its smallest permitted
  * size fails the run instead of shipping clipped; and every `to` must be a page
  * this build prerenders.
  *

@@ -42,7 +42,7 @@ const COVERS = [
   },
   {
     title: 'Payment That Lands',
-    body: 'Checkout through Stripe, Square, or PayPal, with the money going into your account and not through ours.',
+    body: 'Checkout through Stripe, Square, or PayPal, with the money going into your account and not through mine.',
   },
   {
     title: 'Quote and Intake Forms',
@@ -102,7 +102,7 @@ const TERMS = [
   },
   {
     title: 'What It Costs to Run',
-    body: 'Booking, ordering, and payment are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so you get the number in writing and agree to it before anything starts. What a payment processor charges per transaction is billed by them, not through us.',
+    body: 'Booking, ordering, and payment are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so you get the number in writing and agree to it before anything starts. What a payment processor charges per transaction is billed by them, not through me.',
   },
 ]
 
@@ -167,7 +167,7 @@ export default function OnlineTools() {
         ground="paper"
         eyebrow="Link or Built In"
         title="When you need it built in, and when a link will do."
-        lede="Plenty of businesses are fine with a booking link. We settle which you need on the first call, before we quote anything."
+        lede="Plenty of businesses are fine with a booking link. I settle which you need on the first call, before I quote anything."
       >
         <FactMesh items={FIT} ground="paper" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
@@ -194,7 +194,7 @@ export default function OnlineTools() {
         eyebrow="Let’s Talk"
         heading="Take the booking"
         accentText="on the site."
-        description="Tell us what the business runs on now and what a customer should be able to do without calling. You get the plan and the price before any work starts."
+        description="Tell me what the business runs on now and what a customer should be able to do without calling. You get the plan and the price before any work starts."
         primaryLabel={START_LINK.label}
         primaryTo={START_LINK.to}
         secondaryLabel="Ask a Question"

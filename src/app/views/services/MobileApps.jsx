@@ -129,7 +129,7 @@ export default function MobileApps() {
       <PageHero
         eyebrow="Mobile Apps"
         title="An iOS and Android app for the customers who keep coming back."
-        description="iOS and Android apps for your business around Baytown: booking, ordering, loyalty, or the tool your crew carries on the job. Built by the same team that builds the site, and you get the price in writing before any work starts."
+        description="iOS and Android apps for your business around Baytown: booking, ordering, loyalty, or the tool your crew carries on the job. Built by the same person who builds the site, and you get the price in writing before any work starts."
       />
 
       <ServiceSection
@@ -157,7 +157,7 @@ export default function MobileApps() {
         ground="paper"
         eyebrow="Site or App"
         title="When you need one, and when the site is enough."
-        lede="Most businesses do not need an app. The first call settles which you need before we quote anything."
+        lede="Most businesses do not need an app. The first call settles which you need before I quote anything."
       >
         <FactMesh items={FIT} ground="paper" columns={{ base: 1, sm: 2 }} />
       </ServiceSection>
@@ -180,7 +180,7 @@ export default function MobileApps() {
         eyebrow="Let’s Talk"
         heading="Get your app"
         accentText="on both stores."
-        description="Tell us what it has to do and who will open it. You get a plan and a price before any work starts, and a straight answer if the site would do the job."
+        description="Tell me what it has to do and who will open it. You get a plan and a price before any work starts, and a straight answer if the site would do the job."
         primaryLabel="Start a Project"
         primaryTo="/start"
         secondaryLabel="Ask a Question"

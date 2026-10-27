@@ -625,7 +625,7 @@ async function cutClip(browser, video, allow) {
 }
 
 /** The line the last scene of a launch video says, over the number. */
-const CLOSE = 'We build sites like this for *local* businesses.'
+const CLOSE = 'I build sites like this for *local* businesses.'
 
 /**
  * One launch, drawn, stored and queued, or resumed from where a run left it.

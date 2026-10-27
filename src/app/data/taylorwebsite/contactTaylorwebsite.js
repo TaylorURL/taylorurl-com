@@ -21,20 +21,20 @@ export const CONTACT_PAGE = {
   seo: {
     title: 'Contact a Software Engineer',
     description:
-      'Tell us what the work is and what it has to do. You usually get a reply within the hour, and a scope and a price in writing before anything starts.',
+      'Tell me what the work is and what it has to do. You usually get a reply within the hour, and a scope and a price in writing before anything starts.',
   },
 
   hero: {
     eyebrow: 'Get in Touch',
     title: 'A scope and a price, before any work starts.',
     description:
-      'Tell us what you need built, what your tracking is getting wrong, or who you want to reach. You usually get a reply within the hour, and nothing is charged to find out what it costs.',
+      'Tell me what you need built, what your tracking is getting wrong, or who you want to reach. You usually get a reply within the hour, and nothing is charged to find out what it costs.',
   },
 
   aside: {
     eyebrow: 'Who Answers',
-    heading: 'A small team scopes it, builds it, and answers you.',
-    para: 'A system to build, tracking that reports the wrong number, or outbound nobody at your company has time to run. Tell us what the work is and what it has to do when it is done.',
+    heading: 'One person scopes it, builds it, and answers you.',
+    para: 'A system to build, tracking that reports the wrong number, or outbound nobody at your company has time to run. Tell me what the work is and what it has to do when it is done.',
   },
 
   place: {
@@ -47,7 +47,7 @@ export const CONTACT_PAGE = {
     {
       title: 'First call',
       description:
-        'You tell us what the work is and what it has to do. We ask what we need to scope it, and say so if the work is not worth doing.',
+        'You tell me what the work is and what it has to do. I ask what I need to scope it, and say so if the work is not worth doing.',
     },
     {
       title: 'Scope and price',
@@ -57,12 +57,12 @@ export const CONTACT_PAGE = {
     {
       title: 'The work',
       description:
-        'We do it, show you where it stands as it goes, and hand it over in your name. A small job runs a week or two, a full build six to twelve.',
+        'I do it, show you where it stands as it goes, and hand it over in your name. A small job runs a week or two, a full build six to twelve.',
     },
   ],
 
   form: {
-    heading: 'Tell us about the work',
+    heading: 'Tell me about the work',
     confirmation:
       'Thanks. You usually get a reply within the hour, and a scope and a price before any work starts.',
     submit: 'Get a Scope and a Price',
@@ -93,7 +93,7 @@ export const CONTACT_PAGE = {
     'A scope and a price in writing',
     'A finish date agreed before work starts',
     'What is not included, named up front',
-    'A small team on the work, start to finish',
+    'One person on the work, start to finish',
     'Repositories and accounts in your name',
     'A written account of what was done',
     'Replies usually inside the hour',

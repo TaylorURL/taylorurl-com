@@ -69,7 +69,7 @@ const COMMON_TRADES = ['plumbing', 'hvac', 'auto-repair', 'restaurant', 'real-es
 const TOWN_PROFILES = {
   Baytown: {
     client: 'speedway-146',
-    lede: 'The office is in Baytown. We build for the shops on Garth Road, the trades working off Decker Drive, and the contractors at the plant gates.',
+    lede: 'The office is in Baytown. I build for the shops on Garth Road, the trades working off Decker Drive, and the contractors at the plant gates.',
     search:
       'Web design in Baytown, TX for local shops, trades, and contractors. Custom sites built, hosted, and looked after here, with Speedway 146 on TX-146 already live.',
     work: {
@@ -78,22 +78,22 @@ const TOWN_PROFILES = {
         'The outdoor go-kart track at 6750 TX-146, open Thursday through Sunday. Wristbands, party packages, and bounce house rentals go through a cart and a Stripe checkout, and staff work orders and live track traffic from a panel on the same site.',
     },
     local: {
-      title: 'Baytown is our own town.',
+      title: 'Baytown is my own town.',
       counties: ['Harris', 'Chambers'],
       body: [
         'A first meeting here is a drive across town and a look at the place itself, which tends to turn up the details nobody thinks to mention on a call.',
-        'The plants along the ship channel run around the clock and so do the crews supplying them, so a fair number of the sites we build here have to answer at hours nobody is in the office. Hours, an address, a number worth tapping, and a booking form carry most of that.',
-        'Baytown also sits in two counties, and the city grew out of Goose Creek and Pelly. Those names still turn up in searches, so we put them on the page and match them to the Google Business Profile.',
+        'The plants along the ship channel run around the clock and so do the crews supplying them, so a fair number of the sites I build here have to answer at hours nobody is in the office. Hours, an address, a number worth tapping, and a booking form carry most of that.',
+        'Baytown also sits in two counties, and the city grew out of Goose Creek and Pelly. Those names still turn up in searches, so I put them on the page and match them to the Google Business Profile.',
       ],
       nearby: ['Highlands', 'Cedar Bayou', 'Goose Creek', 'Pelly', 'Channelview', 'Deer Park'],
     },
     close:
-      'The office is here, so we can usually come and look at the place this week. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'The office is here, so I can usually come and look at the place this week. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Houston: {
     client: 'delux-financial-solutions',
-    lede: 'Houston is twenty-six miles west on I-10, and the largest market we build in. Websites for the shops, trades, offices, and independent pros working in any part of the city.',
+    lede: 'Houston is twenty-six miles west on I-10, and the largest market I build in. Websites for the shops, trades, offices, and independent pros working in any part of the city.',
     search:
       'Web design in Houston, TX and Harris County for small businesses in any part of the city. Built and hosted from Baytown. See Delux Financial Solutions, live.',
     work: {
@@ -105,17 +105,17 @@ const TOWN_PROFILES = {
       title: 'Houston is too big to win on the city name alone.',
       counties: ['Harris'],
       body: [
-        'Two million people means every keyword with a budget behind it already has an agency on it, so the searches worth having name a part of town and a trade as well as the city. We write the page for the part of Houston a business actually trades in, and the city name sits on it beside that rather than instead of it.',
-        'Around Houston, most of the businesses we build for sell by quote rather than off a shelf. A broker wins on the quote sheet, which puts the weight on proof of work and on a form that asks for the detail a price depends on.',
+        'Two million people means every keyword with a budget behind it already has an agency on it, so the searches worth having name a part of town and a trade as well as the city. I write the page for the part of Houston a business actually trades in, and the city name sits on it beside that rather than instead of it.',
+        'Around Houston, most of the businesses I build for sell by quote rather than off a shelf. A broker wins on the quote sheet, which puts the weight on proof of work and on a form that asks for the detail a price depends on.',
       ],
     },
     close:
-      'Tell us which part of Houston the business trades in and what it sells. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me which part of Houston the business trades in and what it sells. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Pasadena: {
     client: 'impressiva-printing',
-    lede: 'Pasadena runs along SH 225, west of us on the south side of the ship channel. Websites for the shops, suppliers, and studios working that corridor, and for the ones selling to the street.',
+    lede: 'Pasadena runs along SH 225, west of Baytown on the south side of the ship channel. Websites for the shops, suppliers, and studios working that corridor, and for the ones selling to the street.',
     search:
       'Web design in Pasadena, TX for shops and suppliers along SH-225 and Spencer Highway. Custom sites built and hosted locally. See the Impressiva Printing portal.',
     work: {
@@ -127,36 +127,36 @@ const TOWN_PROFILES = {
       title: 'Most of Pasadena buys through a purchasing office.',
       counties: ['Harris'],
       body: [
-        'A lot of what we have built in Pasadena gets read by somebody buying for a plant. Safety supply, machine work, uniforms, signage, and turnaround catering all sell into the corridor along SH 225, and that reader is after capabilities, capacities, certifications, and a way to send a spec.',
+        'A lot of what I have built in Pasadena gets read by somebody buying for a plant. Safety supply, machine work, uniforms, signage, and turnaround catering all sell into the corridor along SH 225, and that reader is after capabilities, capacities, certifications, and a way to send a spec.',
         'Impressiva is the clearest case of it. A print job starts with a spec and ends with an invoice, so the site collects the detail a price depends on in the order somebody can actually answer it, and the shop sends a price the same day.',
-        'The city is also big enough that nobody searches the whole of it. Spencer Highway, Red Bluff, Fairmont Parkway, and the Beltway side each pull their own traffic, and we name the stretch a business sits on.',
+        'The city is also big enough that nobody searches the whole of it. Spencer Highway, Red Bluff, Fairmont Parkway, and the Beltway side each pull their own traffic, and I name the stretch a business sits on.',
       ],
       nearby: ['South Houston', 'Deer Park', 'Galena Park', 'Genoa'],
     },
     close:
-      'Tell us what the business does and whether it sells to a purchasing office or to the street. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me what the business does and whether it sells to a purchasing office or to the street. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   'Deer Park': {
-    lede: 'Deer Park is over the ship channel from us, with SH 225 down the middle of it and Center Street through the older half. Websites for the suppliers and the trades along both.',
+    lede: 'Deer Park is over the ship channel from Baytown, with SH 225 down the middle of it and Center Street through the older half. Websites for the suppliers and the trades along both.',
     search:
       'Web design in Deer Park, TX for suppliers and trades on SH 225 and Center Street. Built in Baytown, over the ship channel. A plan and a price before any work.',
     local: {
       title: 'Deer Park faces two ways at once.',
       counties: ['Harris'],
       body: [
-        'The refinery and chemical gates face SH 225 and the town faces Center Street, and a business here is usually selling to one side or the other. We write the page for whichever it is, in the words that side uses, because a page hedged between the two tends to read as neither.',
-        'Supplier sites in Deer Park age badly when they lead with the name of the company they last invoiced. We put the certifications and the scope first instead, because those hold when a plant changes hands.',
+        'The refinery and chemical gates face SH 225 and the town faces Center Street, and a business here is usually selling to one side or the other. I write the page for whichever it is, in the words that side uses, because a page hedged between the two tends to read as neither.',
+        'Supplier sites in Deer Park age badly when they lead with the name of the company they last invoiced. I put the certifications and the scope first instead, because those hold when a plant changes hands.',
         'The town also calls itself the Birthplace of Texas and people search it that way, so it goes on the page next to Deer Park, TX and the towns either side.',
       ],
       nearby: ['La Porte', 'Pasadena', 'Shoreacres', 'Baytown'],
     },
     close:
-      'Tell us what the business does and which of the plants it works for, if any. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me what the business does and which of the plants it works for, if any. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   'La Porte': {
-    lede: 'La Porte is over the Fred Hartman Bridge from us, holding Bayport, Battleground, and Barbours Cut on one side and Sylvan Beach on the other. Websites for the businesses selling to a plant gate, and for the ones out on the water.',
+    lede: 'La Porte is over the Fred Hartman Bridge from Baytown, holding Bayport, Battleground, and Barbours Cut on one side and Sylvan Beach on the other. Websites for the businesses selling to a plant gate, and for the ones out on the water.',
     search:
       'Web design in La Porte, TX for shops and contractors at Bayport, Battleground, and Barbours Cut. Built over the Fred Hartman Bridge. A plan and a price first.',
     local: {
@@ -170,29 +170,29 @@ const TOWN_PROFILES = {
       nearby: ['Shoreacres', 'Morgan’s Point', 'Seabrook', 'Deer Park', 'Bayport', 'Barbours Cut'],
     },
     close:
-      'Tell us whether the work is inside the fence line or out on the water. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me whether the work is inside the fence line or out on the water. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   'Mont Belvieu': {
-    lede: 'Mont Belvieu is fourteen miles up SH 146 from us, on the salt dome holding the largest store of natural gas liquids in the country. Websites for the contractors working the caverns and the trades following Eagle Drive out into Riceland.',
+    lede: 'Mont Belvieu is fourteen miles up SH 146 from Baytown, on the salt dome holding the largest store of natural gas liquids in the country. Websites for the contractors working the caverns and the trades following Eagle Drive out into Riceland.',
     search:
       'Web design in Mont Belvieu, TX for contractors at the storage caverns and trades building out Eagle Drive. A plan and a price first, fourteen miles down SH 146.',
     local: {
       title: 'Mont Belvieu has caverns on one side and new streets on the other.',
       counties: ['Chambers'],
       body: [
-        'Buyers on the cavern side already know the vocabulary, so the technical pages we write for them use it instead of explaining it. The Mont Belvieu price is what American propane and butane trade against, and a site pitched at a general audience reads like it came from out of town.',
+        'Buyers on the cavern side already know the vocabulary, so the technical pages I write for them use it instead of explaining it. The Mont Belvieu price is what American propane and butane trade against, and a site pitched at a general audience reads like it came from out of town.',
         'The other half of the work follows Eagle Drive, where most of the new building is. Fencing, concrete, dirt work, roofing, and lawn crews are competing on search out in Riceland long before there is a sign on the road.',
         'Where SH 146 meets I-10 there is fuel, hotels, and drive-through food, while the town itself sits south of that on FM 1942. A search made at seventy miles an hour and one made from a driveway want different pages, and running both usually beats splitting the difference.',
       ],
       nearby: ['Cove', 'Barbers Hill', 'Old River-Winfree', 'Anahuac', 'Baytown'],
     },
     close:
-      'Tell us whether the business sells to the caverns or to the neighborhoods. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me whether the business sells to the caverns or to the neighborhoods. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Galveston: {
-    lede: 'Galveston is down SH 146 and over the causeway from us. Websites for the shops on the Strand, the trades along the Seawall, and the operators working the harbor.',
+    lede: 'Galveston is down SH 146 and over the causeway from Baytown. Websites for the shops on the Strand, the trades along the Seawall, and the operators working the harbor.',
     search:
       'Web design in Galveston, TX for Strand shops, Seawall trades, and the marine and rental businesses on the island. A plan and a price before any work starts.',
     local: {
@@ -201,12 +201,12 @@ const TOWN_PROFILES = {
       body: [
         'The Strand is Galveston’s harbor-side historic block and the Seawall is ten miles of Gulf front and beach access. They are separate markets with separate searches, and a page that claims both vaguely tends to rank for neither.',
         'Anything seasonal needs hours, prices, and an open-or-closed notice the owner can change from a phone in a minute. A rental books solid in July, sits empty in February, and has hurricane season sitting on the peak of it.',
-        'UTMB runs four hospitals and a national laboratory on the island, which is a year-round market the beach calendar never touches. Where a business sells to somebody on that payroll, or to a family visiting somebody in its care, we say so on the page.',
+        'UTMB runs four hospitals and a national laboratory on the island, which is a year-round market the beach calendar never touches. Where a business sells to somebody on that payroll, or to a family visiting somebody in its care, I say so on the page.',
       ],
       nearby: ['Pelican Island', 'Jamaica Beach', 'Bolivar Peninsula', 'Texas City', 'La Marque'],
     },
     close:
-      'Tell us whether the season carries the business or the whole year does. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me whether the season carries the business or the whole year does. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   'Texas City': {
@@ -217,19 +217,19 @@ const TOWN_PROFILES = {
       title: 'Texas City works to a plant schedule.',
       counties: ['Galveston'],
       body: [
-        'Marathon and Valero are the two refineries in Texas City, and they award the contracting that keeps them turning on capability and safety record. We put both near the top of the page, because that is the part anyone checks.',
+        'Marathon and Valero are the two refineries in Texas City, and they award the contracting that keeps them turning on capability and safety record. I put both near the top of the page, because that is the part anyone checks.',
         'A turnaround arrives in a hurry and goes to whoever answers. Scope, certifications, crew size, and how fast a crew can mobilize belong on the page in plain numbers, because a contact form and a promise to reply inside two business days lose that work.',
         'The port has a terminal railway of its own, so freight, storage, and repair businesses here quote against a rail schedule about as often as a road one. The site is where a shipper checks whether you can meet it.',
       ],
       nearby: ['La Marque', 'Bayou Vista', 'Hitchcock', 'Santa Fe', 'Dickinson', 'Galveston'],
     },
     close:
-      'Tell us how much of the work moves by rail or by water. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me how much of the work moves by rail or by water. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Dayton: {
     client: 'dylan-jordan-real-estate',
-    lede: 'Dayton is up SH 146 from us, where US-90 crosses SH 321 and the Grand Parkway now clips the edge of town. Websites for the trades and the agents working Liberty County.',
+    lede: 'Dayton is up SH 146 from Baytown, where US-90 crosses SH 321 and the Grand Parkway now clips the edge of town. Websites for the trades and the agents working Liberty County.',
     search:
       'Web design in Dayton, TX and Liberty County for trades and agents working US-90 and SH-321. Built and hosted nearby. See the Dylan Jordan listing site.',
     work: {
@@ -242,13 +242,13 @@ const TOWN_PROFILES = {
       counties: ['Liberty'],
       body: [
         'A Dayton business whose site says Houston is competing with every firm inside the Beltway and ranking against none of them. Liberty County, Dayton, and the towns either side are what people actually type.',
-        'The listing site we built here is the clearest case: buyers search across four towns at once, so we built the pages for somebody who has never driven through Dayton.',
+        'The listing site I built here is the clearest case: buyers search across four towns at once, so I built the pages for somebody who has never driven through Dayton.',
         'The Grand Parkway put the town inside a commute it was not in before, and subdivisions are arriving faster than the trades that service them. A household three weeks into a new build has nobody to ask, so they search, and the first credible name tends to get the call.',
       ],
       nearby: ['Liberty', 'Cleveland', 'Hardin', 'Ames', 'Kenefick', 'Huffman'],
     },
     close:
-      'Tell us which of the towns around Dayton the business works in. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me which of the towns around Dayton the business works in. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Huffman: {
@@ -265,14 +265,14 @@ const TOWN_PROFILES = {
       title: 'Huffman has no storefront to be seen from.',
       counties: ['Harris'],
       body: [
-        'There is no city hall here and no municipal directory, so whatever the site says is what the town says about the business, and the Google Business Profile is standing in for a sign on a road. We set the two up together and keep the details matching.',
+        'There is no city hall here and no municipal directory, so whatever the site says is what the town says about the business, and the Google Business Profile is standing in for a sign on a road. I set the two up together and keep the details matching.',
         'Houston is twenty-five miles out, far enough that people look locally first and near enough that they will drive in when nobody local answers. Ranking locally and answering quickly are the same piece of work.',
         'Work around Lake Houston moves with the weather, so boats, docks, trailers, and land clearing all have a season. A site somebody can change themselves catches that while it is being searched for.',
       ],
       nearby: ['Atascocita', 'Crosby', 'Barrett', 'Kingwood', 'Dayton'],
     },
     close:
-      'Tell us what the business does and how far out from Huffman it travels. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me what the business does and how far out from Huffman it travels. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Liberty: {
@@ -289,14 +289,14 @@ const TOWN_PROFILES = {
       title: 'The four questions a Liberty shop gets asked.',
       counties: ['Liberty'],
       body: [
-        'Are you open, do you take walk-ins, do you come out this far, what does it start at? Every trade in Liberty gets asked those before anything else, so we answer all four at the top of the page and build the rest of it underneath.',
+        'Are you open, do you take walk-ins, do you come out this far, what does it start at? Every trade in Liberty gets asked those before anything else, so I answer all four at the top of the page and build the rest of it underneath.',
         'Around the square the title companies, abstractors, surveyors, and attorneys all work from the same county records, and their customers search the county name as much as the town. Professional services here rank on both.',
         'Further out, the Trinity sets the calendar for restoration, elevation, septic, and dirt work, which all move when the water does. A site for that work has to be able to say so the week it matters.',
       ],
       nearby: ['Dayton', 'Hardin', 'Ames', 'Hull', 'Daisetta', 'Cleveland'],
     },
     close:
-      'Tell us what the business does and how far out it travels. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me what the business does and how far out it travels. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Dickinson: {
@@ -319,7 +319,7 @@ const TOWN_PROFILES = {
       nearby: ['San Leon', 'Bacliff', 'League City', 'Kemah', 'Santa Fe', 'Texas City'],
     },
     close:
-      'Tell us what the business does, on the water or off it. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me what the business does, on the water or off it. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 
   Daisetta: {
@@ -336,13 +336,13 @@ const TOWN_PROFILES = {
       title: 'A Daisetta page has to cover a county.',
       counties: ['Liberty'],
       body: [
-        'The customers are in Liberty, Hull, Devers, and Hardin as much as in town, so we name those places on the page and the search finds it there. The school district joins Hull and Daisetta and people search for either, so both names go on one page rather than two.',
+        'The customers are in Liberty, Hull, Devers, and Hardin as much as in town, so I name those places on the page and the search finds it there. The school district joins Hull and Daisetta and people search for either, so both names go on one page rather than two.',
         'A camp, a team, or a name on a sponsor wall is how a good deal of local advertising works out here. The site is where that name leads, and it has to be worth arriving at when it does.',
       ],
       nearby: ['Hull', 'Liberty', 'Devers', 'Hardin', 'Ames', 'Cleveland'],
     },
     close:
-      'Tell us how far across Liberty County the business reaches. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
+      'Tell me how far across Liberty County the business reaches. You usually get a reply within the hour and a plan and a price before any work starts. Most sites are live in two to four weeks.',
   },
 }
 

@@ -78,7 +78,7 @@ const SOFTWARE = [
     slug: 'ai-integration',
     name: 'AI Integration',
     summary:
-      'AI we set up around your business to manage email or take repetitive work off your team.',
+      'AI set up around your business to manage email or take repetitive work off your team.',
   },
 ]
 

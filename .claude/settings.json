@@ -4,6 +4,9 @@
     "pr": ""
   },
   "includeCoAuthoredBy": false,
+  "permissions": {
+    "allow": ["mcp__claude-in-chrome", "mcp__remote-devices"]
+  },
   "hooks": {
     "SessionStart": [
       {

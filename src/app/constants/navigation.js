@@ -369,8 +369,8 @@ const STUDIO_NAV_GROUPS = [
           },
           {
             to: '/about',
-            label: 'About Us',
-            summary: 'The team that builds it, and who you talk to while it runs.',
+            label: 'About Trenton',
+            summary: 'The one person who builds it, and who you talk to while it runs.',
             mark: MarkSquare,
           },
           {
