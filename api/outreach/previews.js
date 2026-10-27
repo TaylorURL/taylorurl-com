@@ -19,11 +19,7 @@
  * is worse than a letter a day late.
  *
  * A GET is the schedule's: every preview whose next letter has come due is
- * sent it, threaded under the first. Inside the sending hours it also sends
- * the first letter of every draft that was built and filed but not sent, under
- * the same checks as a POST. The routine builds overnight, outside the hours,
- * and a draft it could not send then must not sit waiting for a run that
- * never comes. A business that has replied,
+ * sent it, threaded under the first. A business that has replied,
  * unsubscribed or bounced since is skipped and its letters closed, since a
  * nudge to somebody who already answered is the one letter worse than none.
  *
@@ -55,7 +51,7 @@ import { randomUUID } from 'node:crypto'
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { runJob } from '../../lib/outreach/runtime.js'
 import { suppressed } from '../../lib/outreach/sending/queue.js'
-import { CLOSES, OPENS, localDay, sendsOn } from '../../lib/outreach/sending/schedule.js'
+import { sendsOn } from '../../lib/outreach/sending/schedule.js'
 import { catchUpOf, endCatchUp } from '../../lib/outreach/sending/catch-up.js'
 import { Undeliverable } from '../../lib/outreach/prospects/address.js'
 import {
@@ -373,51 +369,6 @@ async function followUps(db, settings, counts) {
   return { note: done.length ? done.join('; ') : 'no preview follow-up is due' }
 }
 
-// The most unsent drafts one scheduled run sends the first letter of. Each
-// letter checks its site answers first, so a run of them is not quick.
-const FIRST_BATCH = 10
-
-/**
- * The first letter of every draft built and filed but not yet sent, oldest
- * first, each through the same checks a POST makes, so a draft the routine
- * could not send in its own run goes in the next scheduled one.
- */
-async function firstLetters(db, settings, counts) {
-  const { data: waiting, error } = await db
-    .from('preview_sites')
-    .select('slug')
-    .is('sent_at', null)
-    .not('prospect_id', 'is', null)
-    .eq('channel', 'email')
-    .order('created_at', { ascending: true })
-    .limit(FIRST_BATCH)
-  if (error) throw new Error(error.message)
-
-  const done = []
-  for (const { slug } of waiting ?? []) {
-    const one = { examined: 0, changed: 0 }
-    try {
-      const answer = await sendFirst(db, settings, slug, one)
-      done.push(answer.note || answer.error)
-    } catch (cause) {
-      const stop = mailboxStopOf(cause)
-      if (!stop) throw cause
-      done.push(`stopped: ${stop}`)
-      return { done, stopped: stop }
-    } finally {
-      counts.examined += one.examined
-      counts.changed += one.changed
-    }
-  }
-  return { done, stopped: null }
-}
-
-/** Whether the sending hours are open now, on a day letters leave at all. */
-function inHours(now = new Date()) {
-  const { minutes } = localDay(now)
-  return sendsOn(now) && minutes >= OPENS && minutes < CLOSES
-}
-
 /**
  * The answer to a run the mailbox stopped: a 503, since the letters are not
  * refused but put off, with the reason in words. The routine reads the status
@@ -435,8 +386,7 @@ function slugOf(request) {
 
 /**
  * One run of the job, for the request that started it: the first letter of the
- * preview a POST names, or, on the schedule, the first letters of the drafts
- * left unsent and every follow-up that has come due.
+ * preview a POST names, or every follow-up that has come due.
  */
 export async function work({ db, settings, counts, request }) {
   if (!settings.sending_enabled || !ARMED) {
@@ -452,8 +402,7 @@ export async function work({ db, settings, counts, request }) {
   // rests, so a named preview goes on to the roster, which says whether any
   // address has room.
   const mailbox = await readMailbox(db, new Date(), settings)
-  const ownRoom = mailbox.resting && hasOwnSenders()
-  if (!mailbox.open && !(request.method === 'POST' && ownRoom) && !(inHours() && ownRoom)) {
+  if (!mailbox.open && !(request.method === 'POST' && mailbox.resting && hasOwnSenders())) {
     const reason = `the mailbox is closed: ${mailbox.reason}`
     return { ...resting(reason), note: `No preview letter was sent: ${reason}` }
   }
@@ -467,21 +416,7 @@ export async function work({ db, settings, counts, request }) {
       return { ...resting(stop), note: `${slug} was not sent: ${stop}` }
     }
   }
-  // The drafts left unsent go first, since each is a business that has heard
-  // nothing yet; a follow-up is a day or two less urgent.
-  let first = { done: [], stopped: null }
-  if (inHours()) {
-    first = await firstLetters(db, settings, counts)
-    if (first.stopped) {
-      return { ...resting(first.stopped), note: first.done.join('; ') }
-    }
-  }
-  if (!mailbox.open) {
-    const reason = `the mailbox is closed: ${mailbox.reason}`
-    return { note: [...first.done, `no follow-up was sent: ${reason}`].join('; ') }
-  }
-  const later = await followUps(db, settings, counts)
-  return { ...later, note: [...first.done, later.note].filter(Boolean).join('; ') }
+  return followUps(db, settings, counts)
 }
 
 export default async function handler(request, response) {
