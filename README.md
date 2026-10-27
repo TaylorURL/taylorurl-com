@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-2026.44.11-2f6bff?style=for-the-badge" alt="Version 2026.44.11" />
+  <img src="https://img.shields.io/badge/version-2026.44.12-2f6bff?style=for-the-badge" alt="Version 2026.44.12" />
 </p>
 
 TaylorURL builds websites and web apps for local businesses around Houston. This repo is the studio's own site, plus the console clients sign in to while their site is being built.
