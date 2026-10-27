@@ -2,10 +2,9 @@
 
 Buffer fetches these when a post falls due, so what a card says is published to
 Instagram three times a week whether or not anybody reread it lately. They had
-been shipped as PNGs with no generator behind them, which is why nine of them
-went on saying "I build" and "one person, start to finish" for a year after that
-stopped being true: the words were only in the pixels, and nothing in the tree
-could be edited to change them.
+been shipped as PNGs with no generator behind them, so the words were only in
+the pixels and nothing in the tree could be edited to change them. TaylorURL is
+one person, and every card here says so in the first person singular.
 
 This builds the ones whose copy the studio actually writes. The layouts are the
 shipped ones, measured off the cards themselves rather than reinvented, so a
@@ -61,7 +60,7 @@ def be_the_one(path):
         head_size=168,
         base=556,
         lead=161,
-        body="We build the websites that get the click, for shops around Baytown "
+        body="I build the websites that get the click, for shops around Baytown "
         "and clients anywhere.",
         body_base=830,
     )
@@ -79,7 +78,7 @@ def check_yourself(path):
         head_size=108,
         base=502,
         lead=103.5,
-        body="Four things, graded on every site there is. Run it on any site we have "
+        body="Four things, graded on every site there is. Run it on any site I have "
         "built and read the result yourself.",
         body_base=790,
     )
@@ -91,13 +90,13 @@ def watched(path):
         "WATCHED AFTER LAUNCH",
         [
             [("When something", None)],
-            [("breaks, we know", None)],
+            [("breaks, I know", None)],
             [("before ", BLUE), ("you call.", None)],
         ],
         head_size=112,
         base=523,
         lead=107,
-        body="Every site we look after reports its uptime and its errors to a page "
+        body="Every site I look after reports its uptime and its errors to a page "
         "anyone can open.",
         body_base=821,
     )
@@ -106,10 +105,10 @@ def watched(path):
 def one_person(path):
     # The file keeps its name because the name is what `utm_campaign` carries,
     # and renaming it would split this card's reading in `analytics_events` at
-    # the day of the rename. The label is the half that was actually wrong.
+    # the day of the rename.
     return say(
         path,
-        "THE PEOPLE BUILDING IT",
+        "ONE PERSON, START TO FINISH",
         [
             [("You talk to", None)],
             [("whoever", BLUE), (" is", None)],
@@ -135,7 +134,7 @@ def get_started(path):
         head_size=168,
         base=463,
         lead=161,
-        body="Tell us about the business and what you need. A reply usually comes "
+        body="Tell me about the business and what you need. A reply usually comes "
         "back within the hour, no sales pitch, honest answers.",
         body_base=897,
     )
@@ -146,7 +145,7 @@ def stay_focused(path):
         path,
         "GO LIVE",
         [
-            [("We keep it", None)],
+            [("I keep it", None)],
             [("online, fast,", BLUE)],
             [("and safe", BLUE), (".", None)],
         ],
@@ -166,7 +165,7 @@ STEP_X = 192
 
 def included(path):
     """What every site gets, as four things with a line between each."""
-    sheet = Sheet(W, H, label="EVERY SITE WE BUILD")
+    sheet = Sheet(W, H, label="EVERY SITE I BUILD")
     c, m = sheet.c, sheet.m
     title = font(47, "bold")
     body = font(28, "regular")
@@ -181,7 +180,7 @@ def included(path):
             "Google grades every site on four things and publishes the report free.",
         ),
         ("Watched after launch", "Uptime and errors reported to a page anyone can open."),
-        ("The people building it", "The same number after launch as before it."),
+        ("One person, start to finish", "The same number after launch as before it."),
     ]
 
     y = 325
@@ -208,17 +207,17 @@ def process(path):
     steps = [
         (
             "Get in Touch",
-            "Call, text, or email. Tell us what your business does and what you need. "
+            "Call, text, or email. Tell me what your business does and what you need. "
             "You get a straight answer, not a sales pitch.",
         ),
         (
-            "We Build It",
-            "We get to work and show you progress as we go. You can give feedback any "
+            "I Build It",
+            "I get to work and show you progress as I go. You can give feedback any "
             "time. No drawn-out timelines and no surprises at the end.",
         ),
         (
             "Go Live",
-            "Your site goes live. We keep it online, fast, and safe so you can stay "
+            "Your site goes live. I keep it online, fast, and safe so you can stay "
             "focused on running the business.",
         ),
     ]
@@ -261,7 +260,7 @@ def relabel(path, source, label):
 
 
 def trades(path):
-    return relabel(path, path, "TRADES WE BUILD FOR")
+    return relabel(path, path, "TRADES I BUILD FOR")
 
 
 CARDS = {

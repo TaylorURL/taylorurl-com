@@ -345,7 +345,7 @@ check('every letter carries the postscript once in each half, under the signatur
       if (html.indexOf('P.S.') < html.indexOf('/images/email/signature.png')) {
         faults.push(`${one.name}: the postscript sits above the signature`)
       }
-      const signed = one.personal ? 'Trenton Taylor | CEO' : 'Trenton Taylor\nTaylorURL'
+      const signed = one.personal ? 'Trenton Taylor | Owner' : 'Trenton Taylor\nTaylorURL'
       if (text.indexOf('P.S.') < text.indexOf(signed)) {
         faults.push(`${one.name}: the text postscript sits above the signature`)
       }

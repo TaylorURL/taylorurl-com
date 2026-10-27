@@ -29,17 +29,10 @@ const VALUE_COUNT = String(ABOUT.values.length).padStart(2, '0')
 /**
  * The one face on the site, at the foot of the story that explains it.
  *
- * The portrait used to hang on the home page, the contact page, the first step
- * of the configurator and the head of the chat panel, from a time when the
- * company and the person were the same thing. They are not, and a face repeated
- * across five surfaces makes the claim that they still are: a reader who meets
- * it on the front door reads a one-man shop, whatever the sentence beside it
- * says about a team.
- *
- * So it is drawn once, here, where the page has already said who does the work
- * and the founder is the last thing left to say. The title carries the weight -
- * a name over "CEO" is a seat in a company, and the same name over
- * a photograph anywhere else is just the company.
+ * TaylorURL is one person, so this face is the whole company: the person who
+ * builds the site is the one who answers the phone after it launches. It is
+ * drawn once, here, where the page has already said what the work is and the
+ * person doing it is the last thing left to say.
  *
  * The name, the title and the paragraph are the studio's one bio, read from the
  * module the mail signs off with, so the person a reply arrives from is the
@@ -285,7 +278,7 @@ export default function About() {
                   </div>
                   <div className="border-hair-paper border-l pl-4">
                     <p className="section-label-sm mb-2 flex items-center gap-2 text-accent">
-                      <Monitor className="h-3 w-3" /> Us
+                      <Monitor className="h-3 w-3" /> Me
                     </p>
                     <p className="text-[13px] text-paper-soft">{step.me}</p>
                   </div>

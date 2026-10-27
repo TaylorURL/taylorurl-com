@@ -209,7 +209,7 @@ export default function Portfolio() {
       <PageHero
         eyebrow="Portfolio"
         title="Every site on this page is live."
-        description={`${spellCount(CLIENT_PROJECTS.length)} businesses around Baytown and Houston, each site built, hosted, and looked after by the same small team. Open any of them, then read how it was put together.`}
+        description={`${spellCount(CLIENT_PROJECTS.length)} businesses around Baytown and Houston, each site built, hosted, and looked after by the same person. Open any of them, then read how it was put together.`}
       />
 
       <section className="section-y-lg relative overflow-hidden bg-paper">
@@ -229,7 +229,7 @@ export default function Portfolio() {
             Want your business <span className="text-accent">in this list</span>?
           </>
         }
-        description="Tell us what your business needs and get a plan and a price back before any work starts. Most sites are live in two to four weeks."
+        description="Tell me what your business needs and get a plan and a price back before any work starts. Most sites are live in two to four weeks."
       />
     </div>
   )

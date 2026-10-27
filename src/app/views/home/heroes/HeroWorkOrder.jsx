@@ -16,7 +16,7 @@ export default function HeroWorkOrder() {
 
           <h1 className="display-1 mt-8 font-semibold leading-[0.94] tracking-tightest text-ink [text-wrap:balance]">
             <m.span {...rise(0.08)} className="block">
-              Hire the team{' '}
+              Hire the person{' '}
             </m.span>
             <m.span {...rise(0.16)} className="block">
               who <AccentGradient>builds it</AccentGradient>.
@@ -27,7 +27,7 @@ export default function HeroWorkOrder() {
             {...rise(0.28)}
             className="mt-8 max-w-[46ch] text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
           >
-            You talk to the people doing the work, from the first message to launch day and long
+            You talk to the person doing the work, from the first message to launch day and long
             after it.
           </m.p>
 

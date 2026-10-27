@@ -92,7 +92,7 @@ check('a {url} inside a sentence becomes the address', () => {
 })
 check('every letter closes on the drawn signature and the typed one', () => {
   ok(first.html.includes('/images/email/signature.png'), 'no drawn signature')
-  ok(first.text.includes('Trenton Taylor | CEO'), 'no typed signature')
+  ok(first.text.includes('Trenton Taylor | Owner'), 'no typed signature')
 })
 check('no ground is painted behind the letter', () =>
   ok(!/background(-color)?:/i.test(first.html), 'the letter paints a background')

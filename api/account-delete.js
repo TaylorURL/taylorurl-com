@@ -45,7 +45,7 @@ export default async function handler(request, response) {
 
   if (!SERVICE_KEY) {
     response.status(503).json({
-      error: 'Your account cannot be closed from here. Get in touch and we will close it for you.',
+      error: 'Your account cannot be closed from here. Get in touch and I will close it for you.',
     })
     return
   }

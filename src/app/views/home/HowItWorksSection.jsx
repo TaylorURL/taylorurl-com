@@ -73,7 +73,7 @@ function artefactFor(index, launched) {
   if (index === 0)
     return <PageShot shot="step-enquiry" alt="The enquiry form, with the fields it asks for" />
   if (index === 1)
-    return <PageShot shot="step-plan" alt="The plan and price step, with your part and ours" />
+    return <PageShot shot="step-plan" alt="The plan and price step, with your part and mine" />
   return launched ? (
     <CaptureShot
       project={launched}
@@ -150,8 +150,8 @@ export default function HowItWorksSection() {
                 as="p"
                 className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right"
               >
-                First message to live website, usually two to four weeks. A small team to talk to,
-                and we keep it online after that.
+                First message to live website, usually two to four weeks. One person to talk to, and
+                I keep it online after that.
               </Reveal>
             </>
           )}

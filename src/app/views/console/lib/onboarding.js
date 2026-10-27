@@ -270,7 +270,7 @@ export const STEPS = [
     id: 'ideas',
     label: 'Your Ideas',
     eyebrow: 'In Your Words',
-    title: 'Tell us about the business in your own words.',
+    title: 'Tell me about the business in your own words.',
     description:
       'This is the part nobody else can write. There are tools beside every box to help you say it, and none of it has to be polished.',
     weight: 20,
@@ -555,7 +555,7 @@ export const STEPS = [
         key: 'contacts.current_site',
         kind: 'url',
         label: 'Your Website Today',
-        help: 'If you have one. It is where the words and photographs we already have live.',
+        help: 'If you have one. It is where the words and photographs you already have live.',
         required: false,
         // The website typed on the pay form travels to Stripe metadata and is
         // never written to a table this side can read, so there is nothing to
@@ -566,7 +566,7 @@ export const STEPS = [
         key: 'contacts.registrar',
         kind: 'choice',
         label: 'Where Your Web Address Is Registered',
-        help: 'We never ask for the login. Pointing the address at the new site is a phone call near the end, and it takes five minutes.',
+        help: 'I never ask for the login. Pointing the address at the new site is a phone call near the end, and it takes five minutes.',
         required: false,
         options: REGISTRARS,
         fill: null,
@@ -574,8 +574,8 @@ export const STEPS = [
       {
         key: 'contacts.showcase',
         kind: 'choice',
-        label: 'Your Site on Our Social Pages',
-        help: 'Can we post your new site and your business name on our social pages when it goes live?',
+        label: 'Your Site on My Social Pages',
+        help: 'Can I post your new site and your business name on my social pages when it goes live?',
         // Optional, so it carries no weight in the percent and holds nothing
         // up. Consent asked as a condition of finishing the form is not
         // consent, and a client who skips it has said no.
@@ -725,7 +725,7 @@ export const STEPS = [
         key: 'customers.compete',
         kind: 'chips',
         label: 'Who You Lose Work To',
-        help: 'Names or websites. We look at what they do and do it better.',
+        help: 'Names or websites. I look at what they do and do it better.',
         required: false,
         fill: null,
       },

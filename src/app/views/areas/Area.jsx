@@ -71,7 +71,7 @@ export default function Area() {
   })
   const description =
     profile?.search ||
-    `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from a small team in Baytown.`
+    `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from one person in Baytown.`
 
   const bands = profile ? ['work', 'local', 'trades'] : ['work', 'trades']
   const groundFor = band => groundAt(bands.indexOf(band))
@@ -121,7 +121,7 @@ export default function Area() {
         title={`Websites for ${area.name} businesses.`}
         description={
           profile?.lede ||
-          `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after by a small team.`
+          `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after by one person.`
         }
       />
 
@@ -138,7 +138,7 @@ export default function Area() {
         description={
           profile?.work?.description ||
           (leadTown
-            ? `We built this one for a business in ${leadTown}, and we still host it and look after it.`
+            ? `I built this one for a business in ${leadTown}, and I still host it and look after it.`
             : undefined)
         }
         meta={local.length ? `${area.name}, Texas` : `Near ${area.name}, Texas`}
@@ -188,7 +188,7 @@ export default function Area() {
         }
         description={
           profile?.close ||
-          `Tell us what your ${area.name} business needs and you get a plan and a price back. Most sites are live in two to four weeks.`
+          `Tell me what your ${area.name} business needs and you get a plan and a price back. Most sites are live in two to four weeks.`
         }
       />
     </div>

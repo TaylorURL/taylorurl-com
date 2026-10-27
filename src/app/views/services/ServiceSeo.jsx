@@ -109,7 +109,7 @@ export default function ServiceSeo() {
       />
       <PageHero
         eyebrow="SEO"
-        title="Found on Google, and we keep at it every month."
+        title="Found on Google, and I keep at it every month."
         description="The search work sits inside the monthly fee that keeps the site running. There is no separate SEO bill, and no promise about where you land."
       />
 
@@ -158,7 +158,7 @@ export default function ServiceSeo() {
         eyebrow="Let’s Talk"
         heading="Get found where"
         accentText="you work."
-        description="Tell us about the business and the towns it serves. The search work starts with the build and does not stop at launch."
+        description="Tell me about the business and the towns it serves. The search work starts with the build and does not stop at launch."
         primaryLabel="Start a Project"
         primaryTo="/start"
         secondaryLabel="Ask a Question"

@@ -54,7 +54,7 @@ export const HOME = {
     eyebrow: 'TaylorURL LLC · Companies anywhere',
     headline: ['Software built.', 'Tracking fixed.'],
     headlineAccent: 'Outbound run.',
-    lede: 'The same small team does all three. A scope and a price in writing before any work starts, and a written account of what was done at the end.',
+    lede: 'One engineer does all three. A scope and a price in writing before any work starts, and a written account of what was done at the end.',
   },
 
   lines: {
@@ -72,27 +72,27 @@ export const HOME = {
     eyebrow: 'Process',
     headingLine: 'From first message',
     accentText: 'to handover.',
-    lede: 'A small team from the first message to the handover, and a price agreed in writing before any work starts.',
+    lede: 'One engineer from the first message to the handover, and a price agreed in writing before any work starts.',
   },
 
   steps: [
     {
       step: '1',
       stage: 'You Start',
-      title: 'Tell us what the work is',
+      title: 'Tell me what the work is',
       description:
         'Send the form and say what you need built or fixed and what it has to do when it is done. A few sentences is plenty. You usually get a reply within the hour.',
     },
     {
       step: '2',
-      stage: 'We Scope It',
+      stage: 'I Scope It',
       title: 'A price and a date in writing',
       description:
         'A call, then a read of how the job runs now. What gets built, how long it takes, what it costs, and what is not included, all before anything is charged.',
     },
     {
       step: '3',
-      stage: 'We Build',
+      stage: 'I Build',
       title: 'The work, then the handover',
       description:
         'You see where it stands as it goes rather than in a status email. At the end the repositories and the accounts are in your name, with a written account of what was done.',

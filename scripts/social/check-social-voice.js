@@ -1,8 +1,8 @@
 /**
  * Holds everything this account can publish to the two rules in `voice.js`.
  *
- * The studio is more than one person, and a post written as "I build" says
- * otherwise to every reader who meets it. The other checks in this folder
+ * TaylorURL is one person, and a post written as "we build" or "a small team"
+ * says otherwise to every reader who meets it. The other checks in this folder
  * answer whether a post can be placed at all — the right metadata, a card the
  * site serves, a slot inside the horizon — and none of them read the words.
  * This one reads nothing else.
@@ -20,7 +20,7 @@
 import { CADENCE } from '../../lib/social/buffer.js'
 import { CARDS, LIBRARY } from '../../lib/social/cards.js'
 import { articleUrl, hasCopy, postText } from '../../lib/social/announce.js'
-import { MAX_SENTENCES, firstPerson, sentenceCount } from '../../lib/social/voice.js'
+import { MAX_SENTENCES, sentenceCount, teamVoice } from '../../lib/social/voice.js'
 import { cases, check, finish } from '../harness/checks.js'
 
 // The same article the post checks compose against, so a failure here and a
@@ -35,8 +35,8 @@ const ARTICLE = {
 
 /** A post held to both rules at once, named by where it came from. */
 function holds(where, text) {
-  const found = firstPerson(text)
-  check(`${where}: written as one person, on ${found.join(', ')}`, found.length === 0)
+  const found = teamVoice(text)
+  check(`${where}: written as a team, on ${found.join(', ')}`, found.length === 0)
   const count = sentenceCount(text)
   check(`${where}: ${count} sentences, and the ceiling is ${MAX_SENTENCES}`, count <= MAX_SENTENCES)
 }
@@ -58,13 +58,18 @@ function holds(where, text) {
     'a phone sign-off costs nothing',
     sentenceCount('Call or text (281) 862-8687\nhttps://www.taylorurl.com/contact') === 0
   )
-  check('the pronoun is caught', firstPerson('I build the websites.').length === 1)
-  check('the possessive is caught', firstPerson('Sites I look after.').length === 1)
+  check('the pronoun is caught', teamVoice('We build the websites.').length === 1)
+  check('the possessive is caught', teamVoice('Sites our clients own.').length === 1)
+  check('the object is caught', teamVoice('Text us about the site.').length === 1)
   check(
-    'a solo phrasing with no pronoun is caught',
-    firstPerson('A one-person studio.').length === 1
+    'a team claim with no pronoun is caught',
+    teamVoice('A small team in Baytown.').length === 1
   )
-  check('ordinary copy is left alone', firstPerson('We build the websites.').length === 0)
+  check('ordinary copy is left alone', teamVoice('I build the websites.').length === 0)
+  check(
+    "the reader's own team is left alone",
+    teamVoice('Take the calls off your team.').length === 0
+  )
 }
 
 // Every card's alt text. Buffer requires one on every image, so this is copy
@@ -80,21 +85,25 @@ for (const card of CARDS) {
 // would hide half the card from whoever cannot see it.
 for (const entry of LIBRARY.filter(one => one.generated)) {
   ;(entry.alts ?? [entry.alt]).forEach((text, index) => {
-    const found = firstPerson(text)
+    const found = teamVoice(text)
     check(
-      `${entry.key} alt ${index + 1}: written as one person, on ${found.join(', ')}`,
+      `${entry.key} alt ${index + 1}: written as a team, on ${found.join(', ')}`,
       found.length === 0
     )
   })
 }
 check(
   'the voice rule reads a highway as a highway',
-  firstPerson('Twenty-six miles west on I-10.').length === 0
+  teamVoice('Twenty-six miles west on I-10, where US-90 begins.').length === 0
+)
+check(
+  'the voice rule reads a country as a country',
+  teamVoice('1 in 4 adults in the US has some kind of disability.').length === 0
 )
 
 // Every announcement, composed. The article's own title and excerpt are not
 // the studio's words and are exempt from the voice rule — an author is free to
-// write "I" in a piece — but the post they end up inside is still held to the
+// write "we" in a piece — but the post they end up inside is still held to the
 // ceiling as a whole.
 for (const [service, cadence] of Object.entries(CADENCE)) {
   if (cadence.announces === false || !hasCopy(service)) continue
@@ -111,11 +120,8 @@ for (const [service, cadence] of Object.entries(CADENCE)) {
     .split('\n')
     .filter(line => !ARTICLE.excerpt.includes(line.trim()))
     .join('\n')
-  const found = firstPerson(written)
-  check(
-    `${service}: announcement written as one person, on ${found.join(', ')}`,
-    found.length === 0
-  )
+  const found = teamVoice(written)
+  check(`${service}: announcement written as a team, on ${found.join(', ')}`, found.length === 0)
 }
 
 // A long excerpt gives way to the ceiling rather than overrunning it. The

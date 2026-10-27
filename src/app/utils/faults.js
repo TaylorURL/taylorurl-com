@@ -94,7 +94,7 @@ const KNOWN = [
   ],
   [
     /signups not allowed|signup_disabled/,
-    'New accounts are closed at the moment. Get in touch and we will open one.',
+    'New accounts are closed at the moment. Get in touch and I will open one.',
   ],
   [
     /for security purposes.*after \d+ seconds|over_request_rate_limit/,

@@ -26,10 +26,10 @@ const STUDIO = {
   costTitle: 'What It Costs to Run',
   asides: [{ to: '/process', label: 'How a Build Runs' }],
   cta: {
-    heading: 'Tell us what',
+    heading: 'Tell me what',
     accentText: 'you need.',
     description:
-      'Say what the business does and what the site has to do. We read every message and answer it ourselves, usually within the hour, and you get the plan and the price before any work starts.',
+      'Say what the business does and what the site has to do. I read every message and answer it myself, usually within the hour, and you get the plan and the price before any work starts.',
     secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
@@ -42,7 +42,7 @@ const SECOND_SITE = {
     heading: 'Start with',
     accentText: 'a call.',
     description:
-      'Tell us what the work is and what it has to do when it is done. We read it and answer it ourselves, usually within the hour, and you get the scope and the price in writing before anything is charged.',
+      'Tell me what the work is and what it has to do when it is done. I read it and answer it myself, usually within the hour, and you get the scope and the price in writing before anything is charged.',
     secondary: null,
   },
 }

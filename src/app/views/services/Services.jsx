@@ -45,7 +45,7 @@ const STUDIO_ROWS = {
   'new-website': {
     mark: MarkFrame,
     description:
-      'Designed from scratch around your business and the customers you want walking in. It looks like you, because it was drawn from what you told us on the first call.',
+      'Designed from scratch around your business and the customers you want walking in. It looks like you, because it was drawn from what you told me on the first call.',
     features: [
       'Designed around your business, not a template',
       'Opened and checked on phones, tablets, and computers',
@@ -57,7 +57,7 @@ const STUDIO_ROWS = {
   redesign: {
     mark: MarkRefit,
     description:
-      'If your site looks dated or isn’t bringing in business, we rebuild it from the ground up so you finally look as good online as you do in person.',
+      'If your site looks dated or isn’t bringing in business, I rebuild it from the ground up so you finally look as good online as you do in person.',
     features: [
       'A new look, built on what the business actually sells',
       'Keep what’s working, drop the clutter',
@@ -136,10 +136,10 @@ const STUDIO = {
   serviceName: 'Small business websites, apps, and software',
   catalogName: 'Small business website and software services',
   hero: {
-    eyebrow: 'What We Do',
-    title: 'A small team builds it, hosts it, and answers when you call.',
+    eyebrow: 'What I Do',
+    title: 'One person builds it, hosts it, and answers when you call.',
     description:
-      'A website for shops, restaurants, trades, and pros around Baytown and the Houston area. Booking, company email, ad tracking, SEO, and hosting are part of it. We quote apps and automation on their own. You get a plan and a price before any work starts.',
+      'A website for shops, restaurants, trades, and pros around Baytown and the Houston area. Booking, company email, ad tracking, SEO, and hosting are part of it. I quote apps and automation on their own. You get a plan and a price before any work starts.',
   },
   // The URL the row's schematic is drawn under. A path is set only for the
   // lines whose work is easiest to show on one; the rest sit on the home page
@@ -157,7 +157,7 @@ const STUDIO = {
     },
     {
       eyebrow: 'Separate Projects',
-      heading: 'Apps and automation, each one a project we quote on its own.',
+      heading: 'Apps and automation, each one a project I quote on its own.',
       pages: SOFTWARE_SERVICE_PAGES,
     },
   ],
@@ -179,7 +179,7 @@ const STUDIO = {
     heading: 'Get a plan',
     accentText: 'and a price.',
     description:
-      'Tell us what the business needs. We answer ourselves, usually within the hour, and you get the plan and the price before any work starts.',
+      'Tell me what the business needs. I answer myself, usually within the hour, and you get the plan and the price before any work starts.',
     secondary: { label: 'Ask a Question', to: '/contact' },
   },
 }
@@ -192,7 +192,7 @@ const SECOND_SITE = {
   serviceName: 'Software engineering, tracking repair, and outbound email',
   catalogName: 'Engineering, tracking, and outbound services',
   hero: {
-    eyebrow: 'What We Do',
+    eyebrow: 'What I Do',
     title: 'Software built to order, tracking repaired, outbound run.',
     description:
       'Three services, for companies anywhere. The scope, the price, and the finish date come back in writing after the first call, and what is not included is named before anything starts.',
@@ -208,7 +208,7 @@ const SECOND_SITE = {
       { icon: FileText, label: 'A scope and a price in writing' },
       { icon: CalendarCheck, label: 'A finish date before work starts' },
       { icon: ListChecks, label: 'What is not included, named first' },
-      { icon: UserRound, label: 'A small team on the work' },
+      { icon: UserRound, label: 'One person on the work' },
       { icon: Clock, label: 'A reply usually within the hour' },
       { icon: Handshake, label: 'No term to sign' },
     ],
@@ -218,7 +218,7 @@ const SECOND_SITE = {
     heading: 'Say which one',
     accentText: 'you need.',
     description:
-      'Tell us what the work is and what it has to do when it is done. We answer ourselves, usually within the hour, and you get the scope and the price in writing before anything starts.',
+      'Tell me what the work is and what it has to do when it is done. I answer myself, usually within the hour, and you get the scope and the price in writing before anything starts.',
     secondary: null,
   },
 }
@@ -426,14 +426,14 @@ export default function Services() {
           <div className="container-rail relative">
             <m.div {...fadeInUp} className="grid items-end gap-10 lg:grid-cols-[1.4fr_1fr]">
               <div>
-                <p className="section-label mb-6 text-accent">Where We Work</p>
+                <p className="section-label mb-6 text-accent">Where I Work</p>
                 <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink-paper [text-wrap:balance]">
                   Local businesses across <br />
                   <AccentGradient>the Houston area.</AccentGradient>
                 </h2>
               </div>
               <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-                Based in Baytown, TX. We work with shops, restaurants, trades, contractors, and
+                Based in Baytown, TX. I work with shops, restaurants, trades, contractors, and
                 independent pros across the surrounding towns and neighborhoods.
               </p>
             </m.div>

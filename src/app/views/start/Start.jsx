@@ -48,7 +48,7 @@ const NOT_SENT = 'Your message did not send. Everything you typed is still here,
 // What stands under the send button. Each clause answers one reason not to
 // press it.
 const FINE_PRINT =
-  'Asking is free and you do not need an account. You pay nothing until you have a written price, and we only call if you ask us to.'
+  'Asking is free and you do not need an account. You pay nothing until you have a written price, and I only call if you ask me to.'
 
 // The photograph beside the headline on a wide screen: a shopfront, because
 // that is whose site the form is about.
@@ -68,12 +68,12 @@ const PROMISES = [
 // nothing.
 const NEXT = [
   {
-    title: 'We reply',
-    body: 'We read what you wrote and reply with any questions we still have.',
+    title: 'I reply',
+    body: 'I read what you wrote and reply with any questions I still have.',
   },
   {
     title: 'Plan and price',
-    body: 'We send a written plan with what we will build, how long it takes and what it costs. You pay nothing before you have it.',
+    body: 'I send a written plan with what I will build, how long it takes and what it costs. You pay nothing before you have it.',
   },
   {
     title: 'Build and go live',
@@ -125,12 +125,12 @@ export default function Start() {
       return { field: 'company', fault: 'Add the name of the business.' }
     }
     if (!isValidEmail(held.email)) {
-      return { field: 'email', fault: 'Check the email address. That is where we send the reply.' }
+      return { field: 'email', fault: 'Check the email address. That is where I send the reply.' }
     }
     if (held.contactMethod === 'phone' && !hasMinLength(held.phone, 7)) {
       return {
         field: 'phone',
-        fault: 'We need a phone number to call you. Pick email if you would rather skip it.',
+        fault: 'I need a phone number to call you. Pick email if you would rather skip it.',
       }
     }
     if (!held.service) {
@@ -186,7 +186,7 @@ export default function Start() {
     <div>
       <Seo
         title="Start a Website, App or Software Project"
-        description="Tell us what you need built: a website, a mobile or desktop app, or software. We are a small team in Baytown. We reply within an hour in most cases, and you get a written plan and price before you pay anything."
+        description="Tell me what you need built: a website, an app, or software. I reply within an hour in most cases, and you get a written plan and price before you pay anything."
         path="/start"
         schema={[
           breadcrumbSchema([
@@ -203,8 +203,8 @@ export default function Start() {
       />
       <PageHero
         eyebrow="Start a Project"
-        title="Tell us what you need built, and we will send you a written plan and price."
-        description="We operate out of Baytown and we will reply within an hour in most cases."
+        title="Tell me what you need built, and I will send you a written plan and price."
+        description="I work out of Baytown and I will reply within an hour in most cases."
         image={HERO_PHOTO}
       >
         <ul className="flex flex-wrap gap-x-8 gap-y-3">
@@ -241,7 +241,7 @@ export default function Start() {
               >
                 <div>
                   <h2 className={`text-[20px] font-semibold tracking-tight ${GROUND.title}`}>
-                    Tell us about the business
+                    Tell me about the business
                   </h2>
                   <p className={`mt-1.5 text-[14px] ${GROUND.body}`}>
                     A few short answers. The person who reads them is the one who replies.
@@ -258,7 +258,7 @@ export default function Start() {
                   <div>
                     <p className="section-label-sm text-accent">Message Sent</p>
                     <p className={`text-[15px] ${GROUND.title}`}>
-                      Thanks. We will get back to you within an hour in most cases.
+                      Thanks. I will get back to you within an hour in most cases.
                     </p>
                   </div>
                 </div>
@@ -345,7 +345,7 @@ export default function Start() {
                           </p>
                         ) : (
                           <p id="email-note" className={`mt-2 text-[13px] ${GROUND.meta}`}>
-                            We send the plan and price here.
+                            I send the plan and price here.
                           </p>
                         )}
                       </div>
@@ -378,7 +378,7 @@ export default function Start() {
                           </p>
                         ) : (
                           <p id="phone-note" className={`mt-2 text-[13px] ${GROUND.meta}`}>
-                            Optional. We only call if you ask us to.
+                            Optional. I only call if you ask me to.
                           </p>
                         )}
                       </div>
@@ -500,7 +500,7 @@ export default function Start() {
                         placeholder="yourbusiness.com"
                       />
                       <p id="website-note" className={`mt-2 text-[13px] ${GROUND.meta}`}>
-                        Optional. We look at it before we reply.
+                        Optional. I look at it before I reply.
                       </p>
                     </div>
                   </fieldset>
@@ -536,8 +536,8 @@ export default function Start() {
                   {SITE.phone}
                 </a>
                 <p className={`mt-3 text-[14px] leading-relaxed ${SLAB.body}`}>
-                  The same small team that does the work answers the phone. Tell us what the
-                  business does and you get the same written plan and price.
+                  I do the work and I answer the phone. Tell me what the business does and you get
+                  the same written plan and price.
                 </p>
                 <a href={SITE.phoneHref} className="btn btn-secondary mt-5 w-full">
                   Call for a Plan and Price

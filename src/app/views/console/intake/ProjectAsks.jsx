@@ -151,7 +151,7 @@ export default function ProjectAsks({ project, onTick, onAnswer, onSend, onRemov
 
   return (
     <Panel
-      title="What We Need From You"
+      title="What I Need From You"
       aside={outstanding ? `${outstanding} outstanding` : 'All in'}
     >
       <ul className="console-asks">
@@ -196,7 +196,7 @@ export default function ProjectAsks({ project, onTick, onAnswer, onSend, onRemov
       </ul>
       <PanelFoot>
         {outstanding
-          ? 'Nothing here is graded. Send what you have and we will ask if we need more.'
+          ? 'Nothing here is graded. Send what you have and I will ask if I need more.'
           : 'Everything asked for is in. Anything else you send is a phone call away.'}
       </PanelFoot>
     </Panel>

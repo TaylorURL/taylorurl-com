@@ -9,22 +9,23 @@ import WorkDeck from './WorkDeck'
  * Who builds it, answered with what has been built.
  *
  * Everything above this band is the offer and everything below it is the
- * evidence, and between them the page makes one claim it cannot show: that a
- * small team builds the site and brings the business customers. A portrait
- * stood here for a while, and a portrait is a claim of the same kind as the
- * sentence beside it - a face is not proof that anybody answers the phone. The
- * client sites are, because each one is a business that let a stranger rebuild
- * the thing its customers arrive on, and there are eleven of them.
+ * evidence, and between them the page makes one claim it cannot show: that one
+ * person, Trenton Taylor, builds the site and brings the business customers. A
+ * portrait stood here for a while, and a portrait is a claim of the same kind
+ * as the sentence beside it - a face is not proof that anybody answers the
+ * phone. The client sites are, because each one is a business that let a
+ * stranger rebuild the thing its customers arrive on, and there are eleven of
+ * them.
  *
- * So the sentence stays and the evidence changes: the headline claims a small
- * team, and the row underneath is what that team shipped, each frame carrying
- * the live hostname and a way through to how it was built.
+ * So the sentence stays and the evidence changes: the headline says who builds
+ * it, and the row underneath is what that person shipped, each frame carrying the live
+ * hostname and a way through to how it was built.
  *
  * The sentences are the about page's, read from its own record rather than
  * transcribed. The claim exists in one place, and a band on the front door that
  * quietly disagrees with the page it links to is worse than no band.
  */
-export default function SmallTeamSection() {
+export default function WhoBuildsSection() {
   return (
     <section className="section-y-lg border-hair-paper relative isolate overflow-x-clip border-t bg-paper">
       <div className="container-rail relative">

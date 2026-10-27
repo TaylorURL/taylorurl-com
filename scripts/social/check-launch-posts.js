@@ -83,7 +83,7 @@ check('the brief asks the question once, optional, with Yes and No and nothing e
   same(field.options.map(option => option.name).join(), 'Yes,No', 'how they read')
   same(
     field.help,
-    'Can we post your new site and your business name on our social pages when it goes live?',
+    'Can I post your new site and your business name on my social pages when it goes live?',
     'the question as asked'
   )
 })
@@ -372,12 +372,12 @@ check("a yes lets that client's own name through and nobody else's", () => {
 })
 
 check('a name is excused the voice rules and nothing else', () => {
-  const name = 'I Fix It Plumbing'
-  ok(faults(`${name} is live.`).length > 0, 'the guard did not read "I" as the studio speaking')
+  const name = 'We Fix It Plumbing'
+  ok(faults(`${name} is live.`).length > 0, 'the guard did not read "We" as the studio speaking')
   same(faults(`${name} is live.`, { allow: [name] }).join(', '), '', 'the name, allowed')
   ok(
-    faults(`${name} is live. My work.`, { allow: [name] }).length > 0,
-    'first person outside the name was let through'
+    faults(`${name} is live. Our work.`, { allow: [name] }).length > 0,
+    'the voice of a team outside the name was let through'
   )
   ok(
     faults('Pool Guy \u{1F30A} is live.', { allow: ['Pool Guy \u{1F30A}'] }).length > 0,
@@ -386,7 +386,7 @@ check('a name is excused the voice rules and nothing else', () => {
   same(voiceFaults('instagram', `${name} is live.\n\n${CALL}`, { allow: [name] }).length, 0, 'IG')
   ok(
     voiceFaults('instagram', `${name} is live.\n\n${CALL}`).length > 0,
-    'the voice let "I" through with no name allowed'
+    'the voice let "We" through with no name allowed'
   )
 })
 
@@ -470,14 +470,14 @@ check('a channel already carrying its own file is settled, not posted to twice',
 })
 
 check('a named post with its name not allowed is refused before anything is placed', async () => {
-  const mine = launchTexts({
+  const ours = launchTexts({
     named: true,
-    who: 'I Fix It Plumbing',
+    who: 'We Fix It Plumbing',
     lines: LINES3,
     launchedAt: LAUNCHED,
   })
   const cause = await raised(() =>
-    plan({ image: VIDEO, alt: 'x', texts: mine, channels: CHANNELS, media: MEDIA, now: NOW })
+    plan({ image: VIDEO, alt: 'x', texts: ours, channels: CHANNELS, media: MEDIA, now: NOW })
   )
   ok(cause && /breaks the voice/.test(cause.message), `got ${cause?.message}`)
 })
@@ -539,7 +539,7 @@ check('the video runs about fifteen seconds and its cover is already standing', 
     lines: LINES3,
     frames: [{ at: 0, src: 'data:image/jpeg;base64,AAAA' }],
     counter: 'Oct 13, 2026',
-    close: 'We build sites like this for *local* businesses.',
+    close: 'I build sites like this for *local* businesses.',
     path: CALL,
   })
   ok(clip.duration >= 14 && clip.duration <= 16, `${clip.duration} seconds`)

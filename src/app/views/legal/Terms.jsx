@@ -27,7 +27,7 @@ The work is carried out from Baytown and reaches clients across Southeast Texas 
   },
   {
     title: 'What We Provide',
-    content: `Custom website design and build, online booking and customer tools, redesigns of existing sites, business email set-up, help with being found in local search, and the hosting, monitoring and maintenance that keep a site published. All of it is provided by the company and carried out by the team working on your project.
+    content: `Custom website design and build, online booking and customer tools, redesigns of existing sites, business email set-up, help with being found in local search, and the hosting, monitoring and maintenance that keep a site published. All of it is provided by the company and carried out by the person working on your project.
 
 The scope, deliverables, timeline and price for your project are set out in your own project agreement or on the checkout page you bought from. Anything outside that scope is new work and is quoted before it is started, never added to an invoice afterwards.`,
   },
@@ -225,7 +225,7 @@ export default function Terms() {
               >
                 {SUPPORT_EMAIL}
               </a>{' '}
-              or call {COMPANY_PHONE}, and the people who answer are the people who do the work.
+              or call {COMPANY_PHONE}, and the person who answers is the person who does the work.
             </>
           ),
         }}

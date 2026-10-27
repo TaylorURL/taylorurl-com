@@ -48,7 +48,7 @@ export default function ProjectChecklist({ project, onTick, acting }) {
   if (empty) return null
 
   return (
-    <aside className="console-dock" aria-label="What we are waiting on">
+    <aside className="console-dock" aria-label="What I am waiting on">
       {/* The dock stands outside the console frame, so the frame's own hover
           and focus ring do not reach it and it states both here. */}
       <button

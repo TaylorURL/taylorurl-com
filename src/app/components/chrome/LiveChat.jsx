@@ -18,13 +18,10 @@ import { faultMessage } from '@utils/faults'
  * phone.
  *
  * It answers a stranger's first question at the hour they thought of it, and
- * its one job after that is to put them in front of the team. It used to open
- * on the founder's face and a paragraph in his voice, from a time when the team
- * and the founder were the same thing - which made this the fifth surface
- * carrying that photograph and the one that carried it furthest, since a panel
- * in the corner of every page is on every page. It opens under the company's
- * own name now, and says what it is in the line underneath, because a visitor
- * who thinks a person is typing finds out otherwise on the first reply.
+ * its one job after that is to put them in front of Trenton, the one person
+ * who does the work. It opens under the company's own name and says what it is
+ * in the line underneath, because a visitor who thinks a person is typing finds
+ * out otherwise on the first reply.
  *
  * There are two shells around one thread. On a pointer-sized screen the panel
  * is not modal: a visitor reading a page with a half-typed question open is the
@@ -181,7 +178,7 @@ function openerFor(pathname) {
   if (path.startsWith('/blog') || path.startsWith('/articles')) {
     return 'Ask me anything about this, or about a site for your own business.'
   }
-  return 'Ask me anything about the work, and I will pass you to the team when you need a person.'
+  return 'Ask me anything about the work, and I will pass you to Trenton when you need a person.'
 }
 
 /**
@@ -348,8 +345,8 @@ function Conversation({
             <p
               className={`leading-relaxed text-paper-soft ${roomy ? 'text-[15px]' : 'text-[14px]'}`}
             >
-              We are a small team of designers, developers and local-search specialists in Baytown,
-              building and looking after websites for business owners across Southeast Texas.
+              TaylorURL is Trenton Taylor, a web designer and developer in Baytown, building and
+              looking after websites for business owners across Southeast Texas.
             </p>
             <p
               className={`leading-relaxed text-[color:var(--paper-ink)] ${
@@ -432,13 +429,13 @@ function Conversation({
           </button>
         </div>
 
-        {/* A phone is the thing the number is for. Reaching the team is one
+        {/* A phone is the thing the number is for. Reaching Trenton is one
             press there rather than a hairline link inside a sentence, and the
             sentence keeps the part that has to be said either way. */}
         {roomy ? (
           <div className="pt-2.5">
             <p className="px-1 pb-2 text-[12px] leading-snug text-[color:var(--paper-ink-faint)]">
-              An assistant, not the team.
+              An assistant, not Trenton.
             </p>
             <div className="grid grid-cols-2 gap-2">
               <a
@@ -446,20 +443,20 @@ function Conversation({
                 className="flex h-11 touch-manipulation items-center justify-center gap-2 rounded-[var(--r-control)] text-[14px] font-medium text-[color:var(--paper-ink)] ring-1 ring-[color:var(--paper-hairline-strong)] transition-colors duration-150 active:bg-[color:var(--surface-2)]"
               >
                 <Mail className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-                Email the Team
+                Email Trenton
               </a>
               <a
                 href={COMPANY_PHONE_HREF}
                 className="flex h-11 touch-manipulation items-center justify-center gap-2 rounded-[var(--r-control)] text-[14px] font-medium text-[color:var(--paper-ink)] ring-1 ring-[color:var(--paper-hairline-strong)] transition-colors duration-150 active:bg-[color:var(--surface-2)]"
               >
                 <Phone className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
-                Call the Team
+                Call Trenton
               </a>
             </div>
           </div>
         ) : (
           <p className="px-1 pt-2 text-[12px] leading-snug text-[color:var(--paper-ink-faint)]">
-            An assistant, not the team. Reach them at{' '}
+            An assistant, not Trenton. Reach Trenton at{' '}
             <a
               href={`mailto:${SUPPORT_EMAIL}`}
               className="underline underline-offset-2 hover:text-[color:var(--paper-ink-mute)]"

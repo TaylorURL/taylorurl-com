@@ -29,7 +29,7 @@ const COVERS = [
     body: 'Mail at yourbusiness.com, on the same domain as the website, so the two read as one business.',
   },
   {
-    title: 'Mailboxes for the Team',
+    title: 'Mailboxes for Your Team',
     body: 'One for the shop and one for each person, created and handed over working.',
   },
   {
@@ -135,7 +135,7 @@ export default function BusinessEmail() {
         ground="band"
         eyebrow="Providers"
         title="Where your email lives now."
-        lede="Whatever the answer is, we handle the move the same way."
+        lede="Whatever the answer is, I handle the move the same way."
       >
         <FactMesh items={PROVIDERS} ground="band" columns={{ base: 1, sm: 2, lg: 4 }} />
       </ServiceSection>
@@ -158,7 +158,7 @@ export default function BusinessEmail() {
         eyebrow="Let’s Talk"
         heading="Get the address"
         accentText="set up."
-        description="We set up company email alongside the site. Tell us what the business runs on now and we will handle the move."
+        description="I set up company email alongside the site. Tell me what the business runs on now and I will handle the move."
         primaryLabel="Start a Project"
         primaryTo="/start"
         secondaryLabel="Ask a Question"

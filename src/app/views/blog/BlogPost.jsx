@@ -261,7 +261,7 @@ function Article({ post }) {
       <CtaBanner
         heading="Need help with"
         accentText="your website?"
-        description="We build custom websites for local businesses from scratch and look after them once they are live. Tell us about yours, and you get a plan and a price before any work starts."
+        description="I build custom websites for local businesses from scratch and look after them once they are live. Tell me about yours, and you get a plan and a price before any work starts."
         primaryLabel="Get a Plan and a Price"
         primaryTo="/contact"
       />
