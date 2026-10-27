@@ -219,8 +219,8 @@ export default function CapabilitiesSection() {
             wide
             to="/process"
             cta="See the Process"
-            title="One person, start to finish"
-            blurb="You talk to the person building it. No account manager in between, and the same person answering after launch as before it."
+            title="A direct line"
+            blurb="You text me and I make the change. No account manager in between, and the same number after launch as before it."
           >
             <Foot className="p-8 sm:p-10">
               <p className="max-w-[52ch] text-[15px] leading-relaxed text-paper-soft">

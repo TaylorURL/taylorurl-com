@@ -3,8 +3,8 @@
 Buffer fetches these when a post falls due, so what a card says is published to
 Instagram three times a week whether or not anybody reread it lately. They had
 been shipped as PNGs with no generator behind them, so the words were only in
-the pixels and nothing in the tree could be edited to change them. TaylorURL is
-one person, and every card here says so in the first person singular.
+the pixels and nothing in the tree could be edited to change them. Every card
+here is written in the first person singular, the way the site is.
 
 This builds the ones whose copy the studio actually writes. The layouts are the
 shipped ones, measured off the cards themselves rather than reinvented, so a
@@ -108,15 +108,15 @@ def one_person(path):
     # the day of the rename.
     return say(
         path,
-        "ONE PERSON, START TO FINISH",
+        "STRAIGHT TO MY PHONE",
         [
-            [("You talk to", None)],
-            [("whoever", BLUE), (" is", None)],
-            [("building it.", None)],
+            [("You text me.", None)],
+            [("I make", None)],
+            [("the ", None), ("change.", BLUE)],
         ],
-        head_size=168,
+        head_size=148,
         base=486,
-        lead=161,
+        lead=146,
         body="No account manager in between, and the same number after launch as before it.",
         body_base=920,
     )
@@ -180,7 +180,7 @@ def included(path):
             "Google grades every site on four things and publishes the report free.",
         ),
         ("Watched after launch", "Uptime and errors reported to a page anyone can open."),
-        ("One person, start to finish", "The same number after launch as before it."),
+        ("A direct line", "The same number after launch as before it."),
     ]
 
     y = 325

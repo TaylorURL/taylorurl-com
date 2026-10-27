@@ -69,9 +69,8 @@ export default function Live() {
 
             <div className="space-y-4 pt-2 text-[17px] leading-relaxed text-paper-soft">
               <p>
-                TaylorURL is me, Trenton Taylor, a web designer and developer in Baytown. The
-                assistant knows what I build and how I work, and it is honest about the edge of what
-                it knows.
+                The assistant knows what I build and how I work, and it is honest about the edge of
+                what it knows.
               </p>
               <p>
                 Anything about your shop specifically is mine to answer: what it would take, what it

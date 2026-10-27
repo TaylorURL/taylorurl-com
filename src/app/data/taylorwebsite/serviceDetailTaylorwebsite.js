@@ -27,7 +27,7 @@ const DETAIL = {
     mark: MarkPanel,
     eyebrow: 'Custom Software',
     description:
-      'Custom applications, integrations, automations, and internal tools, built by one engineer. Priced per project and quoted in writing after a call.',
+      'Custom applications, integrations, automations, and internal tools, built to order. Priced per project and quoted in writing after a call.',
     lede: 'You have a job that runs on spreadsheets and email, two systems that never pass anything between them, or work somebody redoes by hand every week. The software that does it instead gets built here.',
     covers: [
       {
