@@ -429,23 +429,6 @@
   /* The fixed bar's height, so anything that sticks or scrolls to a target
      lands under the bar rather than behind it. */
   --nav-height: 4.25rem;
-  /* The floor under the hero's stage. The four presentations do not compose to
-     the same height on a narrow screen, and a stage that takes the height of
-     whichever one is showing moves the page under the reader every time one
-     arrives. The floor is the opener's composed height — its top padding, its
-     column of type, the gap, the plate, and the rule beneath — so the stage
-     holds still and the opener is still the thing that sets what it holds.
-
-     It takes a second value on the narrowest screens, where the opener's
-     headline and paragraph both take an extra line and its column of type
-     stands 28px taller. */
-  --hero-floor: 975px;
-}
-
-@media (min-width: 375px) {
-  :root {
-    --hero-floor: 947px;
-  }
 }
 
 @media (min-width: 1280px) {
@@ -2440,20 +2423,6 @@
     margin-bottom: 8px;
   }
 
-  /* The work deck scrolls the same way the review rail does, and clips the same
-     way every scroller must: `overflow-y: visible` is not available to a box
-     that scrolls across, so the room a turned frame needs above and below it -
-     the near edge standing proud under the perspective, and the lift falling
-     away underneath - is padding rather than overflow. */
-  .work-deck {
-    scrollbar-width: none;
-    scroll-padding-left: 0;
-  }
-
-  .work-deck::-webkit-scrollbar {
-    display: none;
-  }
-
   /* The capture under the pointer. A work card is a picture of a client's site
      over a paragraph about it, and the picture is the largest thing in the
      band. The card answers a pointer by moving that picture inside its frame
@@ -2637,15 +2606,6 @@
   :root:not([data-theme='dark']) .palette-shot[data-palette='light'],
   [data-theme='dark'] .palette-shot[data-palette='dark'] {
     display: block;
-  }
-
-  /* The nearer sheet of a layered pair. Same construction, one step closer. */
-  .plane-shot-near {
-    border-radius: var(--r-card);
-    box-shadow:
-      0 0 0 1px var(--plane-hairline),
-      var(--float-near);
-    background-color: var(--paper-field);
   }
 
   /* A panel inset into the plane, for a card whose artefact is a figure rather
@@ -3196,64 +3156,4 @@
       transition-delay: 0s;
     }
   }
-}
-
-/* The rule under the hero's control fills across the turn it is drawing. It
-   runs as an animation rather than a value pushed in from script every frame,
-   so the main thread can go idle while a presentation holds. */
-@keyframes hero-dwell {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-.hero-dwell {
-  animation-name: hero-dwell;
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .hero-dwell {
-    animation: none;
-    transform: scaleX(1);
-  }
-}
-
-/* The terrain under the homepage hero, drawn live on a canvas in the accent.
-   The scrim runs it out into --bg at the foot, so the section after the hero
-   meets a flat field, and thins it under the type so the ink stays legible. */
-.hero-terrain {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  overflow: hidden;
-  pointer-events: none;
-}
-
-.hero-terrain canvas {
-  display: block;
-  position: absolute;
-  inset: 0;
-  opacity: 0.55;
-}
-
-:root[data-theme='dark'] .hero-terrain canvas {
-  opacity: 0.8;
-}
-
-.hero-terrain::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    var(--bg) 0%,
-    transparent 30%,
-    transparent 62%,
-    var(--bg) 100%
-  );
 }

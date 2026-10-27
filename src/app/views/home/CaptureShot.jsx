@@ -28,8 +28,10 @@ const BOX = {
  * @param {'desktop' | 'phone'} props.device - Which of its captures.
  * @param {string} props.alt
  * @param {string} props.className
+ * @param {boolean} [props.eager] For a capture on the first screen, which the
+ *   browser should fetch with the page rather than when it scrolls near.
  */
-export default function CaptureShot({ project, device, alt, className }) {
+export default function CaptureShot({ project, device, alt, className, eager = false }) {
   const [lost, setLost] = useState(false)
 
   const readSettledImage = useCallback(node => {
@@ -45,7 +47,7 @@ export default function CaptureShot({ project, device, alt, className }) {
       alt={alt}
       width={BOX[device].width}
       height={BOX[device].height}
-      loading="lazy"
+      loading={eager ? 'eager' : 'lazy'}
       decoding="async"
       onError={() => setLost(true)}
       className={className}

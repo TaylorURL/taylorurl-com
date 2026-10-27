@@ -334,7 +334,7 @@ const SURFACES = [
     file: 'src/app/views/portfolio/Portfolio.jsx',
     what: 'the portfolio index row',
     reads: ['pagespeed.mobile', 'pagespeed.desktop', 'pagespeed.runs', 'pagespeed.measured'],
-    derives: ['CLIENT_PROJECTS'],
+    derives: [],
   },
   {
     file: 'src/app/views/portfolio/CaseStudy.jsx',
@@ -343,16 +343,16 @@ const SURFACES = [
     derives: [],
   },
   {
-    file: 'src/app/views/home/CapabilitiesSection.jsx',
-    what: "the front door's score card",
-    reads: ['pagespeed.mobile', 'pagespeed.desktop', 'pagespeed.measured'],
+    file: 'src/app/views/home/board/boardData.js',
+    what: "the front door's speed ring",
+    reads: [],
     derives: ['PORTFOLIO_AVERAGES'],
   },
   {
     file: 'src/app/data/pages/about.js',
     what: "the about page's figures",
     reads: [],
-    derives: ['PORTFOLIO_AVERAGES', 'CLIENT_PROJECTS'],
+    derives: ['PORTFOLIO_AVERAGES'],
   },
   {
     file: 'src/app/views/company/Faq.jsx',
@@ -391,6 +391,22 @@ for (const surface of SURFACES) {
       !RAW_DATE.test(line)
     )
   }
+}
+
+// No page tells a reader how many clients there are. The scores are the claim;
+// a count is a number a reader holds against the business, and the owner asked
+// for it to be said nowhere. A page that prints the length of a client list is
+// printing that count, whatever the sentence around it says.
+const CLIENT_COUNT = /\b(?:CLIENT_PROJECTS|LOCAL_PORTFOLIO|PORTFOLIO_PROJECTS)\.length\b/
+for (const file of [
+  'src/app/views/portfolio/Portfolio.jsx',
+  'src/app/data/pages/about.js',
+  'src/app/views/areas/Areas.jsx',
+  'src/app/views/home/Home.jsx',
+  'src/app/views/home/board/HomeBoard.jsx',
+  'src/app/views/home/board/boardData.js',
+]) {
+  check(`${file} prints no count of clients`, !CLIENT_COUNT.test(read(file)))
 }
 
 // The portfolio index's description is what a search result quotes, and it

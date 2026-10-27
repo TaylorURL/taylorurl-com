@@ -5,7 +5,7 @@ import PageHero from '@components/page-bands/PageHero'
 import CtaSection from '@components/conversion/CtaSection'
 import Seo from '@components/Seo'
 import { DesktopMockup, PhoneMockup } from '@components/mockups/DevicePreview'
-import { CLIENT_PROJECTS, PORTFOLIO_PROJECTS, formatMeasuredDate } from '@data/portfolio'
+import { PORTFOLIO_PROJECTS, formatMeasuredDate } from '@data/portfolio'
 import { breadcrumbSchema, SITE_URL } from '@constants/seo'
 import { EASE, fadeInUp } from '@constants/animations'
 import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
@@ -20,35 +20,6 @@ const MOCKUP_REVEAL = fromLeft => ({
   viewport: { once: true, margin: '0px 0px 15% 0px' },
   transition: { duration: 0.42, delay: 0.05, ease: EASE },
 })
-
-// A count small enough to read as a word in a sentence rather than as a figure
-// in a table. Anything past what is spelled here falls back to the numeral,
-// which is wrong-looking rather than wrong.
-const COUNT_WORDS = [
-  'No',
-  'One',
-  'Two',
-  'Three',
-  'Four',
-  'Five',
-  'Six',
-  'Seven',
-  'Eight',
-  'Nine',
-  'Ten',
-  'Eleven',
-  'Twelve',
-  'Thirteen',
-  'Fourteen',
-  'Fifteen',
-  'Sixteen',
-  'Seventeen',
-  'Eighteen',
-  'Nineteen',
-  'Twenty',
-]
-
-const spellCount = count => COUNT_WORDS[count] ?? String(count)
 
 /**
  * What Google scored the row's site, on the row itself.
@@ -209,7 +180,7 @@ export default function Portfolio() {
       <PageHero
         eyebrow="Portfolio"
         title="Every site on this page is live."
-        description={`${spellCount(CLIENT_PROJECTS.length)} businesses around Baytown and Houston, each site built, hosted, and looked after by the same person. Open any of them, then read how it was put together.`}
+        description="Businesses around Baytown and Houston, each site built from scratch, hosted, and looked after by me. Open any of them, then read how it was put together."
       />
 
       <section className="section-y-lg relative overflow-hidden bg-paper">
