@@ -76,7 +76,7 @@ export default function Tools() {
         ground="band"
         eyebrow="Built to Order"
         title="When the free one is not the one you need."
-        description="We build booking, ordering, quoting and the rest around how a business already runs rather than bending the business to fit a tool that came off a shelf."
+        description="I build booking, ordering, quoting and the rest around how a business already runs rather than bending the business to fit a tool that came off a shelf."
       >
         <Link to="/services/automation" className="btn btn-secondary">
           What a Custom Tool Covers
@@ -88,7 +88,7 @@ export default function Tools() {
         eyebrow="Start"
         title={
           <>
-            Tell us about <span className="text-accent">your business</span>.
+            Tell me about <span className="text-accent">your business</span>.
           </>
         }
         description="Pick the trade, check the software you already run, and get a plan and a price back. Most sites are live in two to four weeks."

@@ -40,7 +40,7 @@ const DETAIL = {
   'new-website': {
     eyebrow: 'New Builds',
     description:
-      'A custom website for a Baytown or Houston business: designed, written, built, and launched by a small team. We quote the job before work starts.',
+      'A custom website for a Baytown or Houston business: designed, written, built, and launched by one person. I quote the job before work starts.',
     lede: 'Design, writing, build, domain, and launch all happen here, whether you have never had a site or you have a page somebody set up years ago and walked away from.',
     covers: [
       {
@@ -49,7 +49,7 @@ const DETAIL = {
       },
       {
         title: 'The Writing',
-        body: 'Page copy written from what you tell us on the first call, then edited until it sounds like you talking.',
+        body: 'Page copy written from what you tell me on the first call, then edited until it sounds like you talking.',
       },
       {
         title: 'Every Screen',
@@ -106,7 +106,7 @@ const DETAIL = {
     ],
     timeline: 'Two to four weeks. A redesign takes about as long as a new site, because it is one.',
     running:
-      'One fee to rebuild it, paid once before the work begins, then a monthly to run it. We price it the way we price a new build.',
+      'One fee to rebuild it, paid once before the work begins, then a monthly to run it. I price it the way I price a new build.',
   },
   care: {
     eyebrow: 'After Launch',
@@ -124,7 +124,7 @@ const DETAIL = {
       },
       {
         title: 'Realtime Error Monitoring',
-        body: 'Every fault the site throws in a visitor’s browser reaches us as it happens.',
+        body: 'Every fault the site throws in a visitor’s browser reaches me as it happens.',
       },
       {
         title: 'Watched Around the Clock',
@@ -135,8 +135,8 @@ const DETAIL = {
         body: 'Organic search work every month the site is under care. It does not stop at launch day.',
       },
       {
-        title: 'A Direct Line to the Team',
-        body: 'You text the people who built it. No account manager, no support queue.',
+        title: 'One Person to Call',
+        body: 'You text the person who built it. No account manager, no support queue.',
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',
@@ -200,7 +200,7 @@ const DETAIL = {
         id: 'platforms',
         eyebrow: 'What It Connects To',
         title: 'The accounts it all runs through.',
-        lede: 'We open each one in the business’s name, set it up inside your own account, and leave it there.',
+        lede: 'I open each one in the business’s name, set it up inside your own account, and leave it there.',
         items: [
           {
             title: 'Meta',
@@ -233,7 +233,7 @@ const DETAIL = {
     timeline:
       'Installed while the site is built, and tested before launch by firing every event and reading it back on each platform. On a site that already exists it is a few days of work.',
     running:
-      'On a site we build, the tracking is part of the price of the site. On a site somebody else built, we quote it on its own, and you get the figure in writing first. Each ad platform bills its own charges.',
+      'On a site I build, the tracking is part of the price of the site. On a site somebody else built, I quote it on its own, and you get the figure in writing first. Each ad platform bills its own charges.',
   },
   'desktop-apps': {
     eyebrow: 'Desktop Apps',
@@ -297,7 +297,7 @@ const DETAIL = {
         id: 'fit',
         eyebrow: 'Browser or Desktop',
         title: 'When you need one, and when the site is enough.',
-        lede: 'Most of what a business does runs in a browser. We settle which you need on the first call, before we quote anything.',
+        lede: 'Most of what a business does runs in a browser. Which one you need gets settled on the first call, before I quote anything.',
         items: [
           {
             title: 'The Site Is Enough When',
@@ -345,7 +345,7 @@ const DETAIL = {
       },
       {
         title: 'Yours to Keep',
-        body: 'The code, the accounts, and the schedules in your name, so another engineer can pick it up after us.',
+        body: 'The code, the accounts, and the schedules in your name, so another engineer can pick it up after me.',
       },
     ],
     sections: [
@@ -394,18 +394,18 @@ const DETAIL = {
     timeline:
       'A single automation takes a week or two. A run of them across the business is scoped as one project, and you get the dates in writing before any work starts.',
     running:
-      'We quote it per project, and you get the figure in writing before anything starts. What moves it is how many systems are involved and how much each has to do. After that a monthly keeps it running, watched, and fixed when a tool it talks to changes.',
+      'I quote it per project, and you get the figure in writing before anything starts. What moves it is how many systems are involved and how much each has to do. After that a monthly keeps it running, watched, and fixed when a tool it talks to changes.',
   },
   'ai-integration': {
     eyebrow: 'AI Integration',
     title: 'AI built around how your business runs.',
     description:
-      'AI integration for Baytown businesses. We set up AI to manage email, help with the daily work, and take repetitive jobs off your team.',
-    lede: 'No two businesses use it the same way, so we do not sell it as a package. For one business we set up AI to sort the inbox and draft replies. For another it is an assistant that keeps the day on track, or automated systems that take repetitive work off the team. Tell us where your time goes and we will work out what AI can take off it.',
+      'AI integration for Baytown businesses. I set up AI to manage email, help with the daily work, and take repetitive jobs off your team.',
+    lede: 'No two businesses use it the same way, so I do not sell it as a package. For one business I set up AI to sort the inbox and draft replies. For another it is an assistant that keeps the day on track, or automated systems that take repetitive work off the team. Tell me where your time goes and I will work out what AI can take off it.',
     coversHeading: {
       eyebrow: 'What It Can Do',
       title: 'A few places it can start.',
-      lede: 'These are examples. We work out with you what to build, because it depends on the business.',
+      lede: 'These are examples. I work out with you what to build, because it depends on the business.',
     },
     covers: [
       {
@@ -418,7 +418,7 @@ const DETAIL = {
       },
       {
         title: 'Automated Systems',
-        body: 'We map out the repetitive work and set it up to run on its own, so your team gets those hours back.',
+        body: 'I map out the repetitive work and set it up to run on its own, so your team gets those hours back.',
       },
       {
         title: 'Customer Questions',
@@ -430,7 +430,7 @@ const DETAIL = {
       },
       {
         title: 'Something Else',
-        body: 'If a job takes time and follows a pattern, AI can probably take some of it. Tell us about it.',
+        body: 'If a job takes time and follows a pattern, AI can probably take some of it. Tell me about it.',
       },
     ],
     sections: [
@@ -441,15 +441,15 @@ const DETAIL = {
         items: [
           {
             title: 'A Call About the Work',
-            body: 'You walk us through where the hours go. You do not need to know what AI can do before we talk.',
+            body: 'You walk me through where the hours go. You do not need to know what AI can do before we talk.',
           },
           {
             title: 'A Plan in Writing',
-            body: 'We tell you what AI can take on, how we would build it, and what it costs, in writing.',
+            body: 'I tell you what AI can take on, how I would build it, and what it costs, in writing.',
           },
           {
             title: 'Built Into What You Use',
-            body: 'We build it into the inbox, the site, and the tools you already run, so there is no new app to learn.',
+            body: 'I build it into the inbox, the site, and the tools you already run, so there is no new app to learn.',
           },
         ],
         columns: { base: 1, sm: 3 },
@@ -461,7 +461,7 @@ const DETAIL = {
         items: [
           {
             title: 'Your Accounts',
-            body: 'We open the AI accounts in the business’s name, so what it reads and what it costs are yours to see.',
+            body: 'I open the AI accounts in the business’s name, so what it reads and what it costs are yours to see.',
           },
           {
             title: 'Not Used for Training',
@@ -476,14 +476,14 @@ const DETAIL = {
       },
     ],
     timeline:
-      'It depends on what we build. Something like a sorted inbox can be running in a week or two, and we scope larger systems as one project. Either way you get the dates in writing before any work starts.',
+      'It depends on what gets built. Something like a sorted inbox can be running in a week or two, and I scope larger systems as one project. Either way you get the dates in writing before any work starts.',
     running:
-      'We quote each project on its own and give you the figure in writing after we talk, before anything starts. After that you pay a monthly and we keep it running, and the AI provider bills its usage to an account in your name.',
+      'I quote each project on its own and give you the figure in writing after we talk, before anything starts. After that you pay a monthly and I keep it running, and the AI provider bills its usage to an account in your name.',
     cta: {
-      heading: 'Tell us what',
+      heading: 'Tell me what',
       accentText: 'eats your week.',
       description:
-        'Say what the business does and which work takes the most time. We read every message and answer it ourselves, usually within the hour, and set up a call to work out what AI can take on.',
+        'Say what the business does and which work takes the most time. I read every message and answer it myself, usually within the hour, and set up a call to work out what AI can take on.',
     },
   },
 }

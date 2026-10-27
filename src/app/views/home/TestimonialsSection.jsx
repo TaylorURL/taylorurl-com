@@ -25,7 +25,7 @@ export default function TestimonialsSection() {
             <p className="section-label mb-5 text-accent">Reviews</p>
             <h2 className="display-2 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
               Owners who <br />
-              <AccentGradient>hired us.</AccentGradient>
+              <AccentGradient>hired me.</AccentGradient>
             </h2>
           </Reveal>
           {/* The ratings rail inside is a scroller of fixed-width badges, and a

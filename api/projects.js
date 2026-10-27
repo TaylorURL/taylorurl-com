@@ -159,7 +159,7 @@ export default async function handler(request, response) {
   if (!wired) {
     return response.status(503).json({
       error:
-        'Your projects cannot be loaded. Get in touch and we will tell you how the build is going.',
+        'Your projects cannot be loaded. Get in touch and I will tell you how the build is going.',
     })
   }
 

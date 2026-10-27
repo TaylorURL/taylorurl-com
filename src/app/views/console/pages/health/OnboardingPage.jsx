@@ -645,7 +645,7 @@ export default function OnboardingPage() {
               <p>
                 These questions belong to a build, and a build waits under the email address it was
                 paid with. Signing in with that address will bring it up. If that is the address you
-                used, tell us and we will move it across in a minute.
+                used, tell me and I will move it across in a minute.
               </p>
               <ContactLine phone={phone} />
             </div>

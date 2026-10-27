@@ -83,7 +83,7 @@ const NUMBERS = [
     figure: '53%',
     label: 'of mobile visitors leave a page that takes more than *three seconds* to load.',
     cost: 'A site that loads in five seconds has lost half its visitors before they read a word.',
-    source: 'Google research, cited in our article on why fast websites make more money.',
+    source: 'Google research, cited in my article on why fast websites make more money.',
   },
   {
     key: 'number-2-5-seconds',
@@ -91,7 +91,7 @@ const NUMBERS = [
     figure: '2.5s',
     label: 'is how long Google gives your main content to appear on *the screen*.',
     cost: 'Google counts it when it ranks your page.',
-    source: 'Google’s published target, from our article on how fast a site should load.',
+    source: 'Google’s published target, from my article on how fast a site should load.',
   },
   {
     key: 'number-200-ms',
@@ -99,7 +99,7 @@ const NUMBERS = [
     figure: '200ms',
     label: 'is how quickly a page should answer *a tap*.',
     cost: 'Google grades every page on it, and counts it when it ranks your page.',
-    source: 'Google’s published target, from our article on how fast a site should load.',
+    source: 'Google’s published target, from my article on how fast a site should load.',
   },
   {
     key: 'number-one-tenth',
@@ -107,7 +107,7 @@ const NUMBERS = [
     figure: '1/10',
     label: 'of a laptop’s processor is what your customer’s *phone* has to work with.',
     cost: 'The page that snaps open on your desk can sit blank on her phone, and she backs out without calling.',
-    source: 'From our article on why a site is fast on a laptop and slow on a phone.',
+    source: 'From my article on why a site is fast on a laptop and slow on a phone.',
   },
   {
     key: 'number-42-percent',
@@ -115,7 +115,7 @@ const NUMBERS = [
     figure: '42%',
     label: 'more requests for directions go to businesses with *photos* on their Google profile.',
     cost: 'A profile with no photos of your shop is sending those drives somewhere else.',
-    source: 'Google’s own data, cited in our article on the Google Business Profile.',
+    source: 'Google’s own data, cited in my article on the Google Business Profile.',
   },
   {
     key: 'number-one-in-four',
@@ -123,7 +123,7 @@ const NUMBERS = [
     figure: '1 in 4',
     label: 'adults in the US has some kind of *disability*.',
     cost: 'Low contrast, missing alt text and unlabeled forms shut them out, and the same fixes help you rank.',
-    source: 'From our article on accessibility, the requirement small business sites miss.',
+    source: 'From my article on accessibility, the requirement small business sites miss.',
   },
   {
     key: 'number-60-percent',
@@ -131,7 +131,7 @@ const NUMBERS = [
     figure: '60%+',
     label: 'of searches happen on a phone, and for local businesses the share is *higher*.',
     cost: 'Google indexes the phone version of your site first, so that is the version it grades.',
-    source: 'From our article on what Google cares about in 2026.',
+    source: 'From my article on what Google cares about in 2026.',
   },
   {
     key: 'number-20-minutes',
@@ -139,7 +139,7 @@ const NUMBERS = [
     figure: '20 min',
     label: 'is about how long it takes to set up a Google Business *Profile*.',
     cost: 'A competitor who spent those twenty minutes is sitting above you in local search for that reason alone.',
-    source: 'From our articles on the Google Business Profile and on local SEO.',
+    source: 'From my articles on the Google Business Profile and on local SEO.',
   },
   {
     key: 'number-90-plus',
@@ -147,7 +147,7 @@ const NUMBERS = [
     figure: '90+',
     label: 'is the mobile PageSpeed score to aim for. Run the test on *your* site.',
     cost: 'Wix, Squarespace and plugin-heavy WordPress sites tend to land between 30 and 60, which is normal for them and still slow.',
-    source: 'From our article on how fast a site should load.',
+    source: 'From my article on how fast a site should load.',
   },
 ]
 
@@ -259,7 +259,7 @@ const DISAGREEMENTS = [
     key: 'disagree-long-forms',
     to: '/blog/why-nobodys-filling-out-your-contact-form',
     belief: 'Long forms scare people off.',
-    headline: 'The longest form we have built is the one people *finish*.',
+    headline: 'The longest form I have built is the one people *finish*.',
     why: 'It gets finished more often than most four-field contact boxes. Friction empties a form, and most of the friction is on a phone.',
   },
   {
@@ -356,7 +356,7 @@ const beforeAfter = reading => {
     ...reading,
     headline: reading.headline(reading.then, now),
     pairs,
-    source: `Google PageSpeed Insights. January figures as published in our article on load times; ${month(now.measured)} is the median of ${now.runs} runs.`,
+    source: `Google PageSpeed Insights. January figures as published in my article on load times; ${month(now.measured)} is the median of ${now.runs} runs.`,
   }
 }
 
@@ -456,13 +456,13 @@ const FAQS = [
     key: 'faq-what-we-need',
     question: 'What do you need to get *started*?',
     answer:
-      'Your logo if you have one, whatever photos of the work you already have, and half an hour on the phone. We write the copy and design the site.',
+      'Your logo if you have one, whatever photos of the work you already have, and half an hour on the phone. I write the copy and design the site.',
   },
   {
     key: 'faq-redesign',
     question: 'Can you redesign an *existing* site?',
     answer:
-      'Yes. We look at what you have, work out which pages are costing you calls, and rebuild it. The layout, the order of the pages and the words all get rethought, not just the colors.',
+      'Yes. I look at what you have, work out which pages are costing you calls, and rebuild it. The layout, the order of the pages and the words all get rethought, not just the colors.',
   },
   {
     key: 'faq-wordpress',
@@ -479,7 +479,7 @@ const FAQS = [
     key: 'faq-agency',
     question: 'How is this different from an *agency*?',
     answer:
-      'You talk to the people building the site. The team is small, so there is no account manager and no ticket queue. You text us, and we make the change.',
+      'You talk to the person building the site. There is no account manager and no ticket queue. You text me, and I make the change.',
   },
   {
     key: 'faq-ownership',
@@ -491,7 +491,7 @@ const FAQS = [
     key: 'faq-outside-houston',
     question: 'Do you only work with businesses near *Houston*?',
     answer:
-      'No. We are based in Baytown and most clients are around Houston and the bay, but the whole project runs fine by phone, text and email.',
+      'No. I am based in Baytown and most clients are around Houston and the bay, but the whole project runs fine by phone, text and email.',
   },
 ]
 
@@ -575,7 +575,7 @@ const CAROUSELS = [
     headline: 'Five website mistakes small businesses keep making',
     eyebrow: 'Owner’s Handbook',
     cover: 'Five website mistakes small businesses keep *making*.',
-    sub: 'They turn up on almost every site we look at, and none of them is hard to fix.',
+    sub: 'They turn up on almost every site I look at, and none of them is hard to fix.',
     slides: [
       {
         points: [
@@ -679,7 +679,7 @@ const CAROUSELS = [
           {
             n: `01 · ${PROCESS_TIMELINE[0].duration}`,
             title: PROCESS_TIMELINE[0].title,
-            body: 'You tell us what the business does. We tell you straight whether we are the right fit.',
+            body: 'You tell me what the business does. I tell you straight whether I am the right fit.',
           },
           {
             n: `02 · ${PROCESS_TIMELINE[1].duration}`,
@@ -693,7 +693,7 @@ const CAROUSELS = [
           {
             n: `03 · ${PROCESS_TIMELINE[2].duration}`,
             title: PROCESS_TIMELINE[2].title,
-            body: 'Real pages with your own photos in them. We keep changing it until it looks like your business.',
+            body: 'Real pages with your own photos in them. I keep changing it until it looks like your business.',
           },
           {
             n: `04 · ${PROCESS_TIMELINE[3].duration}`,
@@ -707,19 +707,19 @@ const CAROUSELS = [
           {
             n: `05 · ${PROCESS_TIMELINE[4].duration}`,
             title: PROCESS_TIMELINE[4].title,
-            body: 'You click through every page and list what is off. We fix it and go live the day you say go.',
+            body: 'You click through every page and list what is off. I fix it and go live the day you say go.',
           },
           {
             n: `06 · ${PROCESS_TIMELINE[5].duration}`,
             title: PROCESS_TIMELINE[5].title,
-            body: 'Hosting, backups and changes stay with us. You text us, and we handle it.',
+            body: 'Hosting, backups and changes stay with me. You text me, and I handle it.',
           },
         ],
       },
     ],
     close: {
       headline: 'The whole process is on *taylorurl.com*.',
-      body: 'Each step, what you do in it, and what we do.',
+      body: 'Each step, what you do in it, and what I do.',
       path: 'taylorurl.com/process',
     },
   },
@@ -812,7 +812,7 @@ const CAROUSELS = [
           {
             n: '04',
             title: 'Say what happens after Send',
-            body: 'Set an expectation you can keep, then keep it. Ours says you usually get a reply within the hour.',
+            body: 'Set an expectation you can keep, then keep it. Mine says you usually get a reply within the hour.',
           },
         ],
       },
@@ -886,7 +886,7 @@ const storageCarousel = () => {
       })),
     ],
     close: {
-      headline: 'Every trade we build for is on *taylorurl.com*.',
+      headline: 'Every trade I build for is on *taylorurl.com*.',
       body: 'What a site for each one has to do, and the software it works alongside.',
       path: 'taylorurl.com/industries',
     },
@@ -919,10 +919,10 @@ function videos(fx, trades) {
     'video-check-off-wifi':
       'Under a minute. Open your site on your phone, off wifi. Four questions: Can you read it without pinching? Can you hit every button with a thumb? Does the keyboard hide the submit button? Does it appear in under three seconds? More checks like this at taylorurl.com/blog.',
     'video-53-percent':
-      '53% of mobile visitors leave a page that takes more than three seconds to load. Google research, cited on our blog. A site that loads in five has lost half of them before the first word. Check your own speed at taylorurl.com/speed-check.',
-    'video-before-after-recreation-baytown': `A recreation site in Baytown. Same site, same test. January, then ${measured.split(' ')[0]}. Mobile score: 72 in January 2026, ${recreation.mobile} in ${measured}. Desktop score: 74 in January 2026, ${recreation.desktop} in ${measured}. Every score we quote is one you can check yourself. Google PageSpeed Insights. January figures as published on our blog; ${measured} is the median of ${recreation.runs} runs.`,
+      '53% of mobile visitors leave a page that takes more than three seconds to load. Google research, cited on my blog. A site that loads in five has lost half of them before the first word. Check your own speed at taylorurl.com/speed-check.',
+    'video-before-after-recreation-baytown': `A recreation site in Baytown. Same site, same test. January, then ${measured.split(' ')[0]}. Mobile score: 72 in January 2026, ${recreation.mobile} in ${measured}. Desktop score: 74 in January 2026, ${recreation.desktop} in ${measured}. Every score I quote is one you can check yourself. Google PageSpeed Insights. January figures as published on my blog; ${measured} is the median of ${recreation.runs} runs.`,
     'video-disagree-long-forms':
-      'Heard in the trade: "Long forms scare people off." The belief is struck through. What actually happens: the longest form we have built is the one people finish. Friction empties a form, and most of it is on a phone. Big fields, a keyboard that leaves the button visible, and no account to make first. Read the whole case at taylorurl.com/blog.',
+      'Heard in the trade: "Long forms scare people off." The belief is struck through. What actually happens: the longest form I have built is the one people finish. Friction empties a form, and most of it is on a phone. Big fields, a keyboard that leaves the button visible, and no account to make first. Read the whole case at taylorurl.com/blog.',
     'video-how-a-build-goes': `How a build goes, step by step. ${PROCESS_TIMELINE.map(
       step => `${step.step}. ${step.title}, ${step.duration}.`
     ).join(' ')} Most sites are live in two to four weeks. taylorurl.com/process.`,
@@ -933,8 +933,8 @@ function videos(fx, trades) {
     'video-phone-call-bar':
       'A call bar that follows. The number pinned to the bottom of every page on a phone. A phone shows a plumbing site scrolling past its job pages, water heaters, slab leaks, drain clearing, repipes and backflow testing, while a blue Call Now bar stays pinned to the bottom of the screen. See what each trade’s site needs at taylorurl.com/industries.',
     'video-2-5-seconds':
-      '2.5 seconds is how long Google gives your main content to appear on the screen. Google counts it when it ranks your page. From our article on how fast a site should load. Test your site at taylorurl.com/speed-check.',
-    'video-trades-we-build-for': `Whatever the sign out front says. Trades we build for: ${tradeNames.join(', ')}. ${tradeNames.length} trades, each with a page of its own, at taylorurl.com/industries.`,
+      '2.5 seconds is how long Google gives your main content to appear on the screen. Google counts it when it ranks your page. From my article on how fast a site should load. Test your site at taylorurl.com/speed-check.',
+    'video-trades-we-build-for': `Whatever the sign out front says. Trades I build for: ${tradeNames.join(', ')}. ${tradeNames.length} trades, each with a page of its own, at taylorurl.com/industries.`,
   }
   const withAlt = list =>
     list.map(video => {
@@ -987,7 +987,7 @@ function videos(fx, trades) {
         {
           from: 0,
           to: 9,
-          html: `${fx.figure(53, { at: 0.3, suffix: '%', dur: 2.2, size: 420 })}${fx.body('of mobile visitors leave a page that takes more than three seconds to load.', 2.4, 60)}${fx.note('Google research, cited on our blog.', 4)}`,
+          html: `${fx.figure(53, { at: 0.3, suffix: '%', dur: 2.2, size: 420 })}${fx.body('of mobile visitors leave a page that takes more than three seconds to load.', 2.4, 60)}${fx.note('Google research, cited on my blog.', 4)}`,
         },
         {
           from: 9,
@@ -1027,7 +1027,7 @@ function videos(fx, trades) {
           from: 16.4,
           to: 20,
           hold: true,
-          html: `${fx.head('Every score we quote is one you can *check yourself*.', 0.1, 104)}${fx.note(`Google PageSpeed Insights. January figures as published on our blog; ${month(recreation.measured)} is the median of ${recreation.runs} runs.`, 0.8)}`,
+          html: `${fx.head('Every score I quote is one you can *check yourself*.', 0.1, 104)}${fx.note(`Google PageSpeed Insights. January figures as published on my blog; ${month(recreation.measured)} is the median of ${recreation.runs} runs.`, 0.8)}`,
         },
       ],
     },
@@ -1049,7 +1049,7 @@ function videos(fx, trades) {
         {
           from: 5.4,
           to: 11.8,
-          html: `${fx.label('What Actually Happens', 0)}${fx.head('The longest form we have built is the one people *finish*.', 0.2, 112)}`,
+          html: `${fx.label('What Actually Happens', 0)}${fx.head('The longest form I have built is the one people *finish*.', 0.2, 112)}`,
         },
         {
           from: 11.8,
@@ -1202,7 +1202,7 @@ ${['Water heaters', 'Slab leaks', 'Drain clearing', 'Repipes', 'Backflow testing
         {
           from: 8.4,
           to: 14.4,
-          html: `${fx.head('Google counts it when it *ranks* your page.', 0.1, 116)}${fx.note('From our article on how fast a site should load.', 1.6)}`,
+          html: `${fx.head('Google counts it when it *ranks* your page.', 0.1, 116)}${fx.note('From my article on how fast a site should load.', 1.6)}`,
         },
         close(14.4, 18, 'Test your site at *taylorurl.com*.', 'taylorurl.com/speed-check'),
       ],
@@ -1212,7 +1212,7 @@ ${['Water heaters', 'Slab leaks', 'Drain clearing', 'Repipes', 'Backflow testing
       format: 'trade',
       to: '/industries',
       headline: 'Whatever the sign out front says',
-      eyebrow: 'Trades We Build For',
+      eyebrow: 'Trades I Build For',
       duration: 18,
       poster: 1.6,
       scenes: [
@@ -1280,7 +1280,7 @@ export async function library(fx) {
         key: `area-${area.slug}`,
         format: 'area',
         to: `/areas/${area.slug}`,
-        eyebrow: `Where We Build · ${counties.join(' and ')} ${counties.length > 1 ? 'Counties' : 'County'}`,
+        eyebrow: `Where I Build · ${counties.join(' and ')} ${counties.length > 1 ? 'Counties' : 'County'}`,
         town: `${area.name}*.*`,
         headline: area.name,
         title: area.profile.local.title,

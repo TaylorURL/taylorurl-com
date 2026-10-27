@@ -50,18 +50,23 @@ const CLIENTS = clientPatterns()
 
 /**
  * What no line may carry. `voice` marks the rules about who is speaking, which
- * a business name the client gave is not: "My Pool Guy" is a name, not the
- * studio saying "my".
+ * a business name the client gave is not: "Our Town Plumbing" is a name, not
+ * the studio saying "our". TaylorURL is one person, so the studio speaks as "I"
+ * and a card that says "we" or claims a team is refused. `us` is read in lower
+ * case or capitalised only, because `US` is the country and the highway.
  */
 const RULES = [
   { why: 'a price', re: /\$\s?\d|\b\d[\d,]*\s?dollars?\b|\bstarting at\b|\bfrom \$|\bUSD\b/i },
   {
-    why: 'first-person voice',
-    re: /(^|[^A-Za-z-])(I|I'm|I've|I'll|I'd)(?![A-Za-z'’-])/,
+    why: 'team voice',
+    re: /\b(?:[Ww]e['’](?:re|ve|ll|d)|[Ww]e|WE|[Oo]urselves|[Oo]urs|[Oo]ur|OURS?|[Uu]s)\b/,
     voice: true,
   },
-  { why: 'first-person voice', re: /\b(me|my|mine|myself)\b/i, voice: true },
-  { why: 'solo framing', re: /\bone[- ]person\b|\bsolo\b/i, voice: true },
+  {
+    why: 'a team claim',
+    re: /\bsmall team\b|\b(?:the|our) team\b|\bteam of\b|\bstaff of\b|\bdesigners,? and developers\b|\bdevelopers,? and designers\b|\b(?:our|staff|in-house) (?:engineers|developers|designers)\b|\bengineers on staff\b|\bthe people (?:building|doing the work)\b/i,
+    voice: true,
+  },
   { why: 'an emoji', re: /\p{Extended_Pictographic}/u },
   { why: 'an em dash', re: /—/ },
   { why: 'a value that never resolved', re: /\b(undefined|null|NaN)\b/ },

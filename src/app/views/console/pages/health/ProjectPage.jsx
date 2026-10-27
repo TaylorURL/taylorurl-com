@@ -118,7 +118,7 @@ export default function ProjectPage() {
               <p>
                 If you have paid, the build is waiting under the email address you paid with.
                 Signing in with that address will bring it up. If that is the address you used, tell
-                us and we will move it across in a minute.
+                me and I will move it across in a minute.
               </p>
               <ContactLine phone={phone} />
             </div>

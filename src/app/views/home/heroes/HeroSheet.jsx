@@ -60,8 +60,8 @@ export default function HeroSheet() {
             {...rise(0.38)}
             className="max-w-[46ch] text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
           >
-            A small team of designers, developers, and search specialists, working with shops and
-            trades around Baytown and Houston. Most sites go live in two to four weeks.
+            I design the site, build it, and do the search work, for shops and trades around Baytown
+            and Houston. Most sites go live in two to four weeks.
           </m.p>
           <m.div {...rise(0.46)} className="flex-shrink-0">
             <HeroActions />

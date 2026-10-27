@@ -286,7 +286,7 @@ const SEEDED = [
     stage: 'checks',
     owner: 'client',
     label: 'Your domain',
-    detail: 'Where your web address is registered. We will call to sort the access.',
+    detail: 'Where your web address is registered. I will call to sort the access.',
     kind: 'tick',
     required: true,
   },

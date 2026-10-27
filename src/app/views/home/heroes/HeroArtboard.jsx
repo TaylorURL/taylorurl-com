@@ -73,7 +73,7 @@ export default function HeroArtboard() {
                 {...rise(0.3)}
                 className="mt-8 max-w-[48ch] text-[17px] leading-relaxed text-ink-soft sm:text-[19px]"
               >
-                We design and build the page that meeting happens on, so the meeting turns into a
+                I design and build the page that meeting happens on, so the meeting turns into a
                 customer.
               </m.p>
 

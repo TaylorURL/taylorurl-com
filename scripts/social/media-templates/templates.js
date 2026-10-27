@@ -680,7 +680,7 @@ export function launchClip(item) {
             at: -1,
             inner: `<img class="fx" data-fx="frames" data-frames="site" data-at="${play - opens}" alt="">`,
           }
-        )}${fx.note('We opened the site on a mid-range phone over 4G.', 0.6)}`,
+        )}${fx.note('I opened the site on a mid-range phone over 4G.', 0.6)}`,
       },
       {
         from: 8.6,

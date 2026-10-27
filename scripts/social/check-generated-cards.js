@@ -234,9 +234,9 @@ check('emoji come off and an em dash is set as the sheet sets one', () => {
   same(cleaned('Fast \u{1F680} site — great'), 'Fast site – great', 'the cleaned text')
 })
 
-check('first-person sentences are left out, and the quote never jumps a gap', () => {
+check('sentences in the voice of a team are left out, and the quote never jumps a gap', () => {
   const options = quoteOptions(
-    'Fast, clear and on time. I loved working with them. The site looks sharp on a phone.',
+    'Fast, clear and on time. We loved working with them. The site looks sharp on a phone.',
     { passes }
   )
   same(options[0], 'Fast, clear and on time.', 'the first run of usable sentences')
@@ -256,8 +256,8 @@ check('the quote is offered longest first, each a sentence shorter', () => {
   same(options[2], 'The site went up in two weeks.', 'the shortest')
 })
 
-check('a review that starts in the first person is quoted from its first clean run', () => {
-  const options = quoteOptions('My site is great. They built it fast and kept it simple.', {
+check('a review that starts in the voice of a team is quoted from its first clean run', () => {
+  const options = quoteOptions('Our site is great. They built it fast and kept it simple.', {
     passes,
   })
   same(options[0], 'They built it fast and kept it simple.', 'the quote')
@@ -283,7 +283,7 @@ check('nothing of the reviewer, nobody else, no price and no address reaches a q
 check('every quote offered passes the sheet and fits the ceiling', () => {
   const long = Array.from(
     { length: 12 },
-    (_, i) => `The team kept every promise number ${i + 1}.`
+    (_, i) => `They kept every promise number ${i + 1}.`
   ).join(' ')
   const options = quoteOptions(long, { passes })
   ok(options.length > 0, 'a long review gave no quote')
@@ -347,7 +347,7 @@ const REVIEWS = [
   review('three', 3, 'It was fine and it works now.', 'Dana Rater', '2026-08-02T00:00:00Z'),
   review('blank', 5, '', 'Quiet Rater', '2026-08-03T00:00:00Z'),
   review('spanish', 5, 'Muy buen trabajo con el sitio.', 'Ana Rater', '2026-08-04T00:00:00Z', 'es'),
-  review('mine', 4, 'I love my site and I tell everyone.', 'Kim Rater', '2026-08-05T00:00:00Z'),
+  review('ours', 4, 'We love our site and we tell everyone.', 'Kim Rater', '2026-08-05T00:00:00Z'),
   review(
     'oldest',
     4,
@@ -371,7 +371,7 @@ check('the oldest review that can be carded is the one carded, one a run', () =>
   same(why.three, 'rating', `a review under ${MIN_STARS} stars`)
   same(why.blank, 'no-words', 'a rating with no words')
   same(why.spanish, 'language', 'a review not written in English')
-  same(why.mine, 'no-quotable-words', 'a review with nothing the sheet would print')
+  same(why.ours, 'no-quotable-words', 'a review with nothing the sheet would print')
   ok(!('newest' in why), 'a cardable review waiting its turn was recorded as skipped')
 })
 
@@ -455,18 +455,18 @@ for (const { what, texts } of written) {
 
 for (const [service, text, fault] of [
   ['facebook', 'One. Two. Three. Four.\n\nCall or text (281) 862-8687', 'sentences'],
-  ['facebook', 'We built it and I answered.\n\nCall or text (281) 862-8687', 'first person'],
-  ['facebook', 'We built it \u{1F44D}.\n\nCall or text (281) 862-8687', 'emoji'],
+  ['facebook', 'I built it and we answered.\n\nCall or text (281) 862-8687', 'team voice'],
+  ['facebook', 'I built it \u{1F44D}.\n\nCall or text (281) 862-8687', 'emoji'],
   ['facebook', 'Which do you like best?\n\nCall or text (281) 862-8687', 'question'],
   ['facebook', 'Drop a comment below.\n\nCall or text (281) 862-8687', 'comment'],
-  ['facebook', 'We built it.', 'next step'],
+  ['facebook', 'I built it.', 'next step'],
   [
     'facebook',
-    'We built it.\n\nhttps://www.taylorurl.com/contact\nCall or text (281) 862-8687',
+    'I built it.\n\nhttps://www.taylorurl.com/contact\nCall or text (281) 862-8687',
     'next steps',
   ],
-  ['instagram', 'We built it.\n\nhttps://www.taylorurl.com/contact', 'address in a caption'],
-  ['googlebusiness', 'We built it.\nCall or text (281) 862-8687', 'phone number'],
+  ['instagram', 'I built it.\n\nhttps://www.taylorurl.com/contact', 'address in a caption'],
+  ['googlebusiness', 'I built it.\nCall or text (281) 862-8687', 'phone number'],
 ]) {
   check(`a ${service} post with ${fault} is refused`, () => {
     const found = voiceFaults(service, text)
@@ -798,7 +798,7 @@ check('a post that breaks the voice stops the card before anything is placed', a
     plan({
       image: IMAGE,
       alt: ALT,
-      texts: { ...TEXTS, instagram: 'I made this.' },
+      texts: { ...TEXTS, instagram: 'We made this.' },
       channels: CHANNELS,
       now: NOW,
     })

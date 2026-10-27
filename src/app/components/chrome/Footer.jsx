@@ -235,14 +235,14 @@ export default function Footer() {
               action.
             */}
             <div className="border-hair rounded-[var(--r-card)] border bg-[var(--surface-1)] p-6">
-              <p className="section-label-sm mb-3 text-ink-faint">Hire Us</p>
+              <p className="section-label-sm mb-3 text-ink-faint">Hire Me</p>
               {/* "A plan and a price" is what a website quote is. This site
                   quotes work whose shape has to be agreed before it can be
                   priced, and says "scope" for that everywhere else it speaks. */}
               <p className="text-[15px] leading-relaxed text-ink-soft">
                 {IS_SECOND_SITE
-                  ? 'Tell us what you need and you get a scope and a price back, free.'
-                  : 'Tell us what you need and you get a plan and a price back, free.'}
+                  ? 'Tell me what you need and you get a scope and a price back, free.'
+                  : 'Tell me what you need and you get a plan and a price back, free.'}
               </p>
               <div className="mt-5">
                 <Magnet padding={50} magnetStrength={6}>
@@ -316,7 +316,7 @@ export default function Footer() {
               down here to follow it are looking in the same place.
             */}
             <div>
-              <p className="section-label-sm mb-4 text-ink-faint">Reach Us</p>
+              <p className="section-label-sm mb-4 text-ink-faint">Reach Me</p>
               {/* A flex column with a gap rather than `space-y`, which writes a
                   margin-top onto every row after the first and overrides the
                   negative one that pulls the 44px target into a 20px line. */}
