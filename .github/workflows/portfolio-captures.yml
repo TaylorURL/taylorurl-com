@@ -24,6 +24,7 @@ concurrency:
   cancel-in-progress: false
 
 permissions:
+  actions: write
   contents: write
   pull-requests: write
 
@@ -75,3 +76,8 @@ jobs:
             --title "Refresh the portfolio previews that moved" \
             --body "${moved} committed preview(s) no longer matched the live site, and were recaptured on the nightly run."
           gh pr merge "$branch" --auto --squash --delete-branch
+          # A pull request this token opens gets its CI run parked as
+          # action_required, so `check` never reports and the auto-merge above
+          # waits forever - four nights stranded that way. A dispatch is the one
+          # event this token may still fire, and it runs `check` on the head.
+          gh workflow run ci.yml --ref "$branch"
