@@ -74,6 +74,18 @@ const CONTACTED = {
   next_due_at: '2026-08-27T18:00:00.000Z',
 }
 
+/**
+ * What puts a business on the lawsuit chain, the one chain this sender opens
+ * with a first letter: a cold introduction never goes before a draft preview.
+ */
+const SUED = {
+  preview_skipped_at: null,
+  source: 'courtlistener',
+  case_name: 'Doe v. Bayside Electrical',
+  case_court: 'District Court, S.D. Texas',
+  case_filed_on: '2026-09-30',
+}
+
 /** The first letter that business was sent, as the mail server filed it. */
 const FIRST_MESSAGE = {
   id: 'm1',
@@ -617,6 +629,7 @@ check('a first letter puts the business on the chain once the columns exist', as
   TRANSPORT.clear()
   const fresh = {
     ...CONTACTED,
+    ...SUED,
     id: 'p9',
     stage: 'audited',
     variant_id: null,
@@ -689,6 +702,7 @@ check('a draft written before the letters existed is drafted again under one', a
   TRANSPORT.clear()
   const fresh = {
     ...CONTACTED,
+    ...SUED,
     id: 'p9',
     stage: 'audited',
     variant_id: null,
@@ -756,7 +770,13 @@ check('a draft written before the letters existed is drafted again under one', a
 // is the second of those.
 check('a draft written under a letter, on the day it goes, goes as it was written', async () => {
   TRANSPORT.clear()
-  const fresh = { ...CONTACTED, id: 'p9', stage: 'audited', variant_id: 'slow-site-intro' }
+  const fresh = {
+    ...CONTACTED,
+    ...SUED,
+    id: 'p9',
+    stage: 'audited',
+    variant_id: 'slow-site-lawsuit',
+  }
   const kept = {
     id: 'm8',
     prospect_id: 'p9',
@@ -766,7 +786,7 @@ check('a draft written under a letter, on the day it goes, goes as it was writte
     to_address: 'maria@example.com',
     from_address: 'studio@example.com',
     status: 'drafted',
-    variant_id: 'slow-site-intro',
+    variant_id: 'slow-site-lawsuit',
     // Midday in Texas, an hour before the run, so the draft and the delivery
     // fall in one half of one day.
     created_at: '2026-08-28T17:00:00.000Z',
@@ -805,7 +825,13 @@ check('a draft held past its own day is written again before it goes', async () 
   // edit to the letter reached every business except the ones already waiting
   // for it.
   TRANSPORT.clear()
-  const fresh = { ...CONTACTED, id: 'p9', stage: 'audited', variant_id: 'slow-site-intro' }
+  const fresh = {
+    ...CONTACTED,
+    ...SUED,
+    id: 'p9',
+    stage: 'audited',
+    variant_id: 'slow-site-lawsuit',
+  }
   const overnight = {
     id: 'm8',
     prospect_id: 'p9',
@@ -815,7 +841,7 @@ check('a draft held past its own day is written again before it goes', async () 
     to_address: 'maria@example.com',
     from_address: 'studio@example.com',
     status: 'drafted',
-    variant_id: 'slow-site-intro',
+    variant_id: 'slow-site-lawsuit',
     // Yesterday, at the hour the run fires at, so the half of the day reads
     // the same and the date is the whole of the difference.
     created_at: '2026-08-27T18:00:00.000Z',
@@ -852,7 +878,7 @@ check('a draft written under a retired family is written again before it goes', 
   // queue is written to under a letter the studio actually sends, since
   // nothing has reached it yet and the words on the row are a version behind.
   TRANSPORT.clear()
-  const fresh = { ...CONTACTED, id: 'p9', stage: 'audited', variant_id: 'slow-site-audit' }
+  const fresh = { ...CONTACTED, ...SUED, id: 'p9', stage: 'audited', variant_id: 'slow-site-audit' }
   const laid = {
     id: 'm8',
     prospect_id: 'p9',
@@ -884,7 +910,7 @@ check('a draft written under a retired family is written again before it goes', 
   same(inserted(writes).length, 0, 'message rows written afresh')
   const rewritten = writes.find(sets('update:outreach_messages', 'variant_id'))
   ok(rewritten, 'the draft was not written again')
-  same(rewritten.payload.variant_id, 'slow-site-intro', 'the letter written under')
+  same(rewritten.payload.variant_id, 'slow-site-lawsuit', 'the letter written under')
   ok(TRANSPORT.sent[0]?.text !== laid.body_text, 'the laid-out words went as they were')
 
   // Both rows say the same letter, or the results count one and the follow-up

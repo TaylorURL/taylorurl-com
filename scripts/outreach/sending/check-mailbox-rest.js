@@ -600,7 +600,11 @@ const prospect = (id, email) => ({
   site_kind: 'social',
   stage: 'enriched',
   unsub_token: `11111111-1111-1111-1111-11111111111${id.length}`,
-  preview_skipped_at: '2026-08-27T17:00:00.000Z',
+  // On the lawsuit chain, the one chain this sender opens with a first letter.
+  source: 'courtlistener',
+  case_name: 'Doe v. Baytown Plumbing',
+  case_court: 'District Court, S.D. Texas',
+  case_filed_on: '2026-09-30',
 })
 const A = prospect('p-a', ALPHA)
 const B = prospect('p-b', BRAVO)
@@ -613,7 +617,7 @@ const draftFor = (id, row) => ({
   to_address: row.email,
   from_address: 'studio@example.com',
   status: 'drafted',
-  variant_id: 'no-site-intro',
+  variant_id: 'no-site-lawsuit',
   created_at: '2026-08-28T17:30:00.000Z',
   sent_at: null,
 })
