@@ -1,5 +1,5 @@
 import { Code2, Headphones, Heart, Shield, Zap } from 'lucide-react'
-import { CLIENT_PROJECTS, PORTFOLIO_AVERAGES } from '@data/portfolio'
+import { PORTFOLIO_AVERAGES } from '@data/portfolio'
 import { ABOUT_PAGE as TAYLORWEBSITE_ABOUT } from '../taylorwebsite/aboutTaylorwebsite.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 
@@ -47,14 +47,14 @@ const STUDIO_ABOUT = {
   },
 
   // The two measured figures are read off the portfolio rather than written
-  // here. Both were literals, and both were the kind of literal nobody
-  // revisits: one re-measured client left this page averaging a set of scores
-  // the portfolio no longer held, and a twelfth client would have left it
-  // counting eleven.
+  // here. Both were literals, and a literal is the kind nobody revisits: one
+  // re-measured client left this page averaging a set of scores the portfolio
+  // no longer held. The page names no count of clients; the scores are the
+  // claim, and a count is a number a reader holds against the business.
   stats: [
     { value: '2-4', unit: 'wk', label: 'Average Build Time' },
     { to: PORTFOLIO_AVERAGES.mobile, suffix: '', unit: '', label: 'Average PageSpeed, Mobile' },
-    { to: CLIENT_PROJECTS.length, suffix: '', unit: '', label: 'Client Sites Live' },
+    { to: PORTFOLIO_AVERAGES.desktop, suffix: '', unit: '', label: 'Average PageSpeed, Desktop' },
     { value: '<1', unit: 'hr', label: 'Typical Reply Time' },
   ],
 

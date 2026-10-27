@@ -32,6 +32,11 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
 // piece rebuilt on every navigation is the opposite of the fix.
 const loadSectionIndicator = () => import('./SectionIndicator')
 
+// Whether the home page has bands for the section marks to follow. The
+// studio's home is one board with nothing to scroll between, so the marks run
+// only on the second site, whose home is still four bands.
+const HAS_SECTION_MARKS = IS_SECOND_SITE
+
 // Whether there is an assistant to mount.
 //
 // The widget asks `/api/live-chat` whether one is answering before it draws
@@ -316,7 +321,7 @@ export default function Layout() {
       {HAS_ASSISTANT && !bare && adopted && (
         <LateChrome load={loadLiveChat} startOpen={location.pathname === '/live'} />
       )}
-      {isHome && adopted && <LateChrome load={loadSectionIndicator} />}
+      {HAS_SECTION_MARKS && isHome && adopted && <LateChrome load={loadSectionIndicator} />}
     </div>
   )
 }
