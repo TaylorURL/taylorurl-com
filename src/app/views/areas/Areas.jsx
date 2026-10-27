@@ -123,7 +123,6 @@ export default function Areas() {
         eyebrow="Live Work"
         title="Sites running in these towns."
         description="Every one is live now, built for a business working the same stretch of Southeast Texas."
-        meta={`${LOCAL_PORTFOLIO.length} sites`}
       >
         <WorkMesh projects={LOCAL_PORTFOLIO} ground="band" />
       </RuledSection>

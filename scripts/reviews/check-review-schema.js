@@ -177,17 +177,24 @@ if (!/typeof review\.rating === 'number' \?/.test(card)) {
   fail('the testimonial card draws stars without first checking the review carries a rating')
 }
 
-// One card, drawn by the rail on the home page and by the case study of the
-// build the review is about. A second copy is what puts the same quote on the
+// The home page quotes one held review on its board, and a quote written into
+// the page rather than read from the record is what puts the same words on the
 // site twice with two different star counts, which is the state the check above
-// cannot see. The home page is checked through the rail rather than directly,
-// because the rail is what holds the cards.
-const home = readFileSync(
-  new URL('../../src/app/views/home/TestimonialsSection.jsx', import.meta.url),
+// cannot see. So the board takes the review from `CLIENT_REVIEW_LIST` and its
+// score from the review itself, never from a figure of its own.
+const homeData = readFileSync(
+  new URL('../../src/app/views/home/board/boardData.js', import.meta.url),
   'utf8'
 )
-if (!/<ReviewCarousel\s+reviews=\{CLIENT_REVIEW_LIST\}/.test(home)) {
-  fail('the home page shows something other than every held review')
+const homeQuote = readFileSync(
+  new URL('../../src/app/views/home/board/parts.jsx', import.meta.url),
+  'utf8'
+)
+if (!/CLIENT_REVIEW_LIST\.find\(/.test(homeData)) {
+  fail('the home page quotes a review that is not read from the held reviews')
+}
+if (!/review\.rating\s*\?\s*`\$\{review\.rating\}\/5/.test(homeQuote)) {
+  fail("the home page's quote draws a score that is not the review's own")
 }
 for (const page of ['components/reviews/ReviewCarousel.jsx', 'views/portfolio/CaseStudy.jsx']) {
   const source = readFileSync(new URL(`../../src/app/${page}`, import.meta.url), 'utf8')

@@ -1,10 +1,7 @@
 import Seo from '@components/Seo'
-import HeroSection from './HeroSection'
+import HomeBoard from './board/HomeBoard'
 import HeroLines from './heroes/HeroLines'
-import WhoBuildsSection from './WhoBuildsSection'
-import CapabilitiesSection from './CapabilitiesSection'
 import ServiceLinesSection from './ServiceLinesSection'
-import TestimonialsSection from './TestimonialsSection'
 import HowItWorksSection from './HowItWorksSection'
 import FinalCtaSection from './FinalCtaSection'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
@@ -17,52 +14,37 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  * registry already carries a title and a description per site, so `/` takes its
  * own without this view knowing which one it is.
  *
- * Three of the six bands differ, and two do not run at all.
+ * The studio's home is one board (`./board/HomeBoard`): the offer and the way
+ * in, then the proof an owner skimming for ten seconds needs, all on roughly
+ * one screen. It replaced six scrolling bands because the people it is for do
+ * not read a long page; they look for what is sold, whether it is any good,
+ * and how to ask.
  *
- * The hero and the third band change component rather than copy. The studio's
- * hero rotates four presentations of one offer and its third band is a wall of
- * artefacts - a client's site, a measured score, the board that watches them -
- * and the second site has one offer in three lines and none of those artefacts.
- * Rewording either would have left the shape of a page arguing for something
- * else.
- *
- * The second band does not run on the second site, for the reason the reviews
- * do not. Its claim is that one person builds the site, and what it offers as
- * proof is the studio's own client work, read off `@data/portfolio`. The other
- * record sells work to order under a different name and has no portfolio of its
- * own, so the band there would be a row of somebody else's clients: proof it has
- * not earned, which is the same trade the second site's about page refuses when
- * it writes its figures out rather than reading the studio's.
- *
- * The reviews do not run on the second site at all. `CLIENT_REVIEW_LIST` is the
- * studio's clients writing about the studio, and `SITE.reviews` is already
- * false on the other record for the same reason the BBB seal and the review
- * schema are cut there: a second domain publishing them claims a reputation
- * nobody left under that name. There is nothing to put in its place, because
- * anything put there would be the invention the gate exists to prevent.
- *
- * The last two bands are one component each, told what to say. Both pages run
- * three steps and close on a single call, so the layout holds and only the
- * words and the destination move.
+ * The second site keeps its four bands. It sells work to order under another
+ * name and has none of what the board is built from - no portfolio of its own
+ * and no reviews it can claim - so a board there would be the studio's proof
+ * standing on someone else's page. Its bands are one component each, told what
+ * to say.
  */
 export default function Home() {
+  if (!IS_SECOND_SITE) {
+    return (
+      <>
+        <Seo path="/" />
+        <HomeBoard />
+      </>
+    )
+  }
+
   return (
     <div>
       <Seo path="/" />
-      <div id="hero">{IS_SECOND_SITE ? <HeroLines /> : <HeroSection />}</div>
-      {IS_SECOND_SITE ? null : (
-        <div id="who">
-          <WhoBuildsSection />
-        </div>
-      )}
-      <div id="capabilities">
-        {IS_SECOND_SITE ? <ServiceLinesSection /> : <CapabilitiesSection />}
+      <div id="hero">
+        <HeroLines />
       </div>
-      {IS_SECOND_SITE ? null : (
-        <div id="testimonials">
-          <TestimonialsSection />
-        </div>
-      )}
+      <div id="capabilities">
+        <ServiceLinesSection />
+      </div>
       <div id="how">
         <HowItWorksSection />
       </div>
