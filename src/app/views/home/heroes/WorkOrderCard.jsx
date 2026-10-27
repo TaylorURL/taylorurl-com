@@ -1,7 +1,9 @@
+import { COMPANY_PHONE } from '@constants/navigation'
+
 const ORDER_ROWS = [
   { k: 'Scope', v: 'Design, build, hosting, and getting found on Google' },
   { k: 'Service Area', v: 'Baytown and Houston, TX. Remote anywhere.' },
-  { k: 'Point of Contact', v: 'Trenton Taylor, the same person who builds it' },
+  { k: 'Point of Contact', v: `Trenton Taylor, ${COMPANY_PHONE}` },
   { k: 'Quote', v: 'A plan and a price before any work starts' },
   { k: 'Turnaround', v: 'Most sites, two to four weeks' },
   {

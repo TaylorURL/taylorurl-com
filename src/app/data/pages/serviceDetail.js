@@ -40,7 +40,7 @@ const DETAIL = {
   'new-website': {
     eyebrow: 'New Builds',
     description:
-      'A custom website for a Baytown or Houston business: designed, written, built, and launched by one person. I quote the job before work starts.',
+      'A custom website for a Baytown or Houston business: designed, written, built, and launched from scratch. I quote the job before work starts.',
     lede: 'Design, writing, build, domain, and launch all happen here, whether you have never had a site or you have a page somebody set up years ago and walked away from.',
     covers: [
       {
@@ -135,8 +135,8 @@ const DETAIL = {
         body: 'Organic search work every month the site is under care. It does not stop at launch day.',
       },
       {
-        title: 'One Person to Call',
-        body: 'You text the person who built it. No account manager, no support queue.',
+        title: 'Text Me Directly',
+        body: 'Changes go straight to my phone. No account manager, no support queue.',
       },
     ],
     timeline: 'Starts the day the build is paid for and runs for as long as the site is online.',
@@ -483,7 +483,7 @@ const DETAIL = {
       heading: 'Tell me what',
       accentText: 'eats your week.',
       description:
-        'Say what the business does and which work takes the most time. I read every message and answer it myself, usually within the hour, and set up a call to work out what AI can take on.',
+        'Say what the business does and which work takes the most time. I usually answer within the hour and set up a call to work out what AI can take on.',
     },
   },
 }

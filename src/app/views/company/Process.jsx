@@ -241,7 +241,7 @@ export default function Process() {
       <PageHero
         eyebrow="Process"
         title="Most of the work is mine."
-        description="Six steps, two to four weeks, one person from the first call to launch, for shops around Baytown and Houston. Your part is a few answers and a yes when it looks right."
+        description="Six steps, two to four weeks from the first call to launch, for shops around Baytown and Houston. Your part is a few answers and a yes when it looks right."
       />
 
       <section className="section-y relative overflow-hidden bg-paper">

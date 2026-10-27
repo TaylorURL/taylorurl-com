@@ -16,14 +16,14 @@ export const ABOUT_PAGE = {
   seo: {
     title: 'About Trenton Taylor, Software Engineer',
     description:
-      'Trenton Taylor builds custom software, repairs conversion tracking, and runs outbound email for companies anywhere. You talk to the person doing the work.',
+      'Trenton Taylor builds custom software, repairs conversion tracking, and runs outbound email for companies anywhere, priced in writing before work starts.',
   },
 
   hero: {
     eyebrow: 'About Me',
-    title: 'One person scopes the work, builds it, and hands it over.',
+    title: 'I scope the work, build it, and hand it over in your name.',
     description:
-      'I am Trenton Taylor, a software engineer. I take the first call, and I am the one you message while the work runs. I build software to order, repair conversion tracking, and run outbound email.',
+      'I am Trenton Taylor, a software engineer. I build software to order, repair conversion tracking that reports the wrong numbers, and run outbound email for companies anywhere.',
   },
 
   story: {
@@ -32,13 +32,13 @@ export const ABOUT_PAGE = {
     paragraphs: [
       'An agency sells you the work, and the people who scoped it hand it to whoever is free. The person answering your email in month three has never opened the code.',
       'The other option is a contractor who takes the job, finishes it, and leaves you with something nobody can pick up: no repository you own, no account in your name, no written record of what was done.',
-      'I do the work myself, and I am still the person you message while it is running. Everything is handed over in your name with a written account of what was done, so you are not tied to me to keep using it.',
+      'I take the first call, do the work, and answer your messages while it runs. Everything is handed over in your name with a written account of what was done, so you are not tied to me to keep using it.',
     ],
   },
 
   stats: [
     { value: '3', unit: '', label: 'Services' },
-    { value: '1', unit: '', label: 'Person on the Work' },
+    { value: '0', unit: '', label: 'Account Managers' },
     { value: '<1', unit: 'hr', label: 'Typical Reply Time' },
     { value: '0', unit: '', label: 'Contracts With a Term' },
   ],
@@ -58,7 +58,7 @@ export const ABOUT_PAGE = {
     },
     {
       icon: Headphones,
-      title: 'You talk to the person doing the work',
+      title: 'Your messages land on my phone',
       description:
         'No account manager sits between you and the work. You send a message, it lands on my phone, and the answer usually comes back inside the hour.',
     },

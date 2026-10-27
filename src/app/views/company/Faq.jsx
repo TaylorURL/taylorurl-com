@@ -44,7 +44,7 @@ const FAQ_CATEGORIES = [
       },
       {
         q: 'How is this different from working with an agency?',
-        a: 'You talk to the person building the site, because there is nobody else here. No account manager and no ticket queue. You text me, I make the change, and a year later I am still the one answering.',
+        a: 'You text me, and I make the change. There is no account manager and no ticket queue, and a year after launch you are still texting the same number.',
       },
       {
         q: 'Do you use WordPress, Wix, or Squarespace?',

@@ -9,7 +9,7 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { ABOUT } from '@data/pages/about'
 import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
-import { retryable } from '@utils/retryImage'
+import Portrait from '@components/people/Portrait'
 import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 import CountUp from '@reactbits/CountUp/CountUp'
 import { AccentGradient } from '@reactbits/kit'
@@ -49,17 +49,7 @@ const VALUE_COUNT = String(ABOUT.values.length).padStart(2, '0')
 function Founder() {
   return (
     <div className="border-hair-paper mt-4 flex flex-col gap-6 border-t pt-8 sm:flex-row sm:gap-7">
-      <img
-        src="/images/trenton-taylor.webp"
-        srcSet="/images/trenton-taylor.webp 1x, /images/trenton-taylor@2x.webp 2x"
-        alt={BIO_NAME}
-        width="96"
-        height="96"
-        loading="lazy"
-        decoding="async"
-        className="border-hair-paper-strong h-24 w-24 shrink-0 rounded-md border object-cover"
-        {...retryable()}
-      />
+      <Portrait size={96} />
       <div className="max-w-[52ch]">
         <p className="text-[15px] font-semibold text-ink-paper">{BIO_NAME}</p>
         <p className="section-label-sm mt-1 text-accent">{BIO_TITLE}</p>

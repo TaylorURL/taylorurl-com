@@ -33,7 +33,7 @@ export const CONTACT_PAGE = {
 
   aside: {
     eyebrow: 'Who Answers',
-    heading: 'One person scopes it, builds it, and answers you.',
+    heading: 'Scoped, built, and handed over in your name.',
     para: 'A system to build, tracking that reports the wrong number, or outbound nobody at your company has time to run. Tell me what the work is and what it has to do when it is done.',
   },
 
@@ -93,7 +93,7 @@ export const CONTACT_PAGE = {
     'A scope and a price in writing',
     'A finish date agreed before work starts',
     'What is not included, named up front',
-    'One person on the work, start to finish',
+    'A direct line, no ticket queue',
     'Repositories and accounts in your name',
     'A written account of what was done',
     'Replies usually inside the hour',

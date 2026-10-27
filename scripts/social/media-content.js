@@ -478,8 +478,7 @@ const FAQS = [
   {
     key: 'faq-agency',
     question: 'How is this different from an *agency*?',
-    answer:
-      'You talk to the person building the site. There is no account manager and no ticket queue. You text me, and I make the change.',
+    answer: 'You text me, and I make the change. There is no account manager and no ticket queue.',
   },
   {
     key: 'faq-ownership',

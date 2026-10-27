@@ -169,7 +169,7 @@ export default function Privacy() {
                 {SUPPORT_EMAIL}
               </a>{' '}
               or call {COMPANY_PHONE}. A request to see, correct or delete what we hold costs
-              nothing and is answered by the person who does the work.
+              nothing.
             </>
           ),
         }}

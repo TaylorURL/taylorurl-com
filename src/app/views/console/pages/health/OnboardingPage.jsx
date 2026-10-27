@@ -209,9 +209,9 @@ function Welcome() {
 
       <Note title="What Happens When You Finish">
         <p>
-          The answers land with the person building your site the moment you send them. The first
-          draft is drawn from them, and you see full pages before anything is built. Nothing you
-          write here is a decision you cannot take back.
+          The answers land with me the moment you send them. The first draft is drawn from them, and
+          you see full pages before anything is built. Nothing you write here is a decision you
+          cannot take back.
         </p>
       </Note>
 
@@ -317,9 +317,8 @@ function Review({ answers, brief }) {
       ) : null}
 
       <p className="max-w-2xl text-[13px] leading-relaxed text-paper-soft">
-        Sending this hands your answers to the person building your site. It is not the last word on
-        any of them: everything here can change by phone or in writing right up until the site goes
-        live.
+        Sending this hands your answers to me. It is not the last word on any of them: everything
+        here can change by phone or in writing right up until the site goes live.
       </p>
     </div>
   )
@@ -688,8 +687,8 @@ export default function OnboardingPage() {
           <div className="console-nothing">
             <p>Your brief is in.</p>
             <p>
-              Your answers are with the person building your site. The first message about them
-              lands on the address you paid with, usually the same day.
+              Your answers are with me. The first message about them lands on the address you paid
+              with, usually the same day.
             </p>
             <p>
               Nothing is drawn until it has been read through. When the first draft is ready you get

@@ -129,7 +129,7 @@ export default function MobileApps() {
       <PageHero
         eyebrow="Mobile Apps"
         title="An iOS and Android app for the customers who keep coming back."
-        description="iOS and Android apps for your business around Baytown: booking, ordering, loyalty, or the tool your crew carries on the job. Built by the same person who builds the site, and you get the price in writing before any work starts."
+        description="iOS and Android apps for your business around Baytown: booking, ordering, loyalty, or the tool your crew carries on the job. Built alongside the site and wired to it, and you get the price in writing before any work starts."
       />
 
       <ServiceSection

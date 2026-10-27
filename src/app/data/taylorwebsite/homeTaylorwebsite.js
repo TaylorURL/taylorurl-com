@@ -54,7 +54,7 @@ export const HOME = {
     eyebrow: 'TaylorURL LLC · Companies anywhere',
     headline: ['Software built.', 'Tracking fixed.'],
     headlineAccent: 'Outbound run.',
-    lede: 'One engineer does all three. A scope and a price in writing before any work starts, and a written account of what was done at the end.',
+    lede: 'A scope and a price in writing before any work starts, and a written account of what was done at the end.',
   },
 
   lines: {
@@ -72,7 +72,7 @@ export const HOME = {
     eyebrow: 'Process',
     headingLine: 'From first message',
     accentText: 'to handover.',
-    lede: 'One engineer from the first message to the handover, and a price agreed in writing before any work starts.',
+    lede: 'You deal with me from the first message to the handover, and the price is agreed in writing before any work starts.',
   },
 
   steps: [

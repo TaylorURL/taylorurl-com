@@ -834,7 +834,7 @@
     "files": ["faq-agency.png"],
     "width": 1080,
     "height": 1350,
-    "alt": "Question: How is this different from an agency? Answer: You talk to the person building the site. There is no account manager and no ticket queue. You text me, and I make the change.",
+    "alt": "Question: How is this different from an agency? Answer: You text me, and I make the change. There is no account manager and no ticket queue.",
     "to": "/faq",
     "channels": ["facebook", "instagram", "googlebusiness"],
     "headline": "How is this different from an agency?"
