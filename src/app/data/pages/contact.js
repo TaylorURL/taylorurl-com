@@ -38,7 +38,7 @@ const STUDIO_CONTACT = {
 
   aside: {
     eyebrow: 'Who Answers',
-    heading: 'One person builds it and answers the phone.',
+    heading: 'Call, text, or write it all out.',
     para: 'A new site, an old one that needs redoing, or a site someone else built and walked away from. Tell me what the business does and what has to change.',
   },
 
@@ -104,7 +104,7 @@ const STUDIO_CONTACT = {
     'Fast pages, checked on Google’s own test',
     'Daily backups',
     'Changes any time, no charge',
-    'One person who answers',
+    'A direct line, no ticket queue',
   ],
 }
 

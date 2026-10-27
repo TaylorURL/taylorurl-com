@@ -71,7 +71,7 @@ export default function Area() {
   })
   const description =
     profile?.search ||
-    `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, from one person in Baytown.`
+    `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, built in Baytown.`
 
   const bands = profile ? ['work', 'local', 'trades'] : ['work', 'trades']
   const groundFor = band => groundAt(bands.indexOf(band))
@@ -121,7 +121,7 @@ export default function Area() {
         title={`Websites for ${area.name} businesses.`}
         description={
           profile?.lede ||
-          `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after by one person.`
+          `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after from Baytown.`
         }
       />
 
