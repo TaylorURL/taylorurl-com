@@ -327,9 +327,11 @@ const SENDABLE = {
   site_kind: 'social',
   stage: 'enriched',
   unsub_token: '11111111-1111-1111-1111-111111111111',
-  // Set aside by the preview routine, so no draft is coming and the business
-  // is on the cold intro.
-  preview_skipped_at: '2026-08-27T17:00:00.000Z',
+  // On the lawsuit chain, the one chain this sender opens with a first letter.
+  source: 'courtlistener',
+  case_name: 'Doe v. Baytown Plumbing',
+  case_court: 'District Court, S.D. Texas',
+  case_filed_on: '2026-09-30',
 }
 
 /** A message already composed, so the run delivers rather than writes one. */
@@ -342,7 +344,7 @@ const DRAFTED = {
   to_address: 'owner@example.com',
   from_address: 'studio@example.com',
   status: 'drafted',
-  variant_id: 'no-site-intro',
+  variant_id: 'no-site-lawsuit',
   created_at: '2026-08-28T17:00:00.000Z',
   sent_at: null,
 }
@@ -372,12 +374,24 @@ const sendPlan = extra => ({
   ...extra,
 })
 
-check('no first letter goes to a business still waiting on its draft', async () => {
+check('no first letter goes to a business no draft preview has gone to', async () => {
+  // Waiting on its draft or set aside by the preview routine, a business off
+  // the lawsuit chain is written nothing here: a cold introduction never goes
+  // before a draft preview.
   TRANSPORT.clear()
   const { db, asked } = stubDb(
     sendPlan({
       'select:outreach_prospects': {
-        data: [{ ...SENDABLE, preview_skipped_at: null }],
+        data: [
+          { ...SENDABLE, source: 'places', preview_skipped_at: null },
+          {
+            ...SENDABLE,
+            id: 'p8',
+            email: 'other@example.com',
+            source: 'places',
+            preview_skipped_at: '2026-08-27T17:00:00.000Z',
+          },
+        ],
         error: null,
       },
     })

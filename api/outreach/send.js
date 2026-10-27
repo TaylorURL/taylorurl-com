@@ -11,12 +11,12 @@
  * except reach the transport, leaving both halves on the row as a draft to be
  * read.
  *
- * It writes two of the four outreach chains, and `coldChainOf` in
+ * It opens one of the four outreach chains, and `coldChainOf` in
  * lib/outreach/sending/queue.js says which a business is on: the lawsuit
- * chain, for a business found in a website accessibility suit, and the cold
- * intro, for a business the preview routine has set aside because no draft
- * will be built for it. Each is two letters, two weeks apart, and then it
- * ends. The draft preview chain is api/outreach/previews.js's and the new
+ * chain, for a business found in a website accessibility suit. It still sends
+ * the second letter of a cold intro already begun, but it begins none: a cold
+ * introduction never goes before a draft preview. Each is two letters, two
+ * weeks apart, and then it ends. The draft preview chain is api/outreach/previews.js's and the new
  * business email is api/new-business/'s, so a business waiting on its draft
  * hears nothing from here.
  *
@@ -1098,7 +1098,7 @@ async function firstLetters({
     repaired += 1
   }
 
-  // Only the lawsuit and cold intro chains start here; every other business is
+  // Only the lawsuit chain starts here; every other business is
   // waiting on its draft, which is its first letter; see `coldChainOf`. The
   // repair above has already run over every row, since a stranded claim is put
   // right whichever chain its business is on.
