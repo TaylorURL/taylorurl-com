@@ -102,6 +102,19 @@ const UNMEASURED = {
  */
 const UNFITTING = { ...UNMEASURED, source: LAWSUIT_SOURCE, case_filed_on: null }
 
+/**
+ * What puts a business on the lawsuit chain, the one chain this sender opens.
+ * A business the preview routine set aside is written nothing here: a cold
+ * introduction never goes before a draft preview.
+ */
+const SUED = {
+  preview_skipped_at: null,
+  source: LAWSUIT_SOURCE,
+  case_name: 'Doe v. Bayside Electrical',
+  case_court: 'District Court, S.D. Texas',
+  case_filed_on: '2026-09-30',
+}
+
 const row = over => ({ ...SCORED, ...over })
 
 /** A registry entry with the fields the picker reads, and nothing it does not. */
@@ -433,7 +446,12 @@ const given = writes =>
 // ── The send job ─────────────────────────────────────────────────────────
 
 check('a drafted message and its business both carry the variant chosen', async () => {
-  const { db, writes } = stubDb(sendPlan([{ ...SOCIAL }, { ...SCORED }]))
+  const { db, writes } = stubDb(
+    sendPlan([
+      { ...SOCIAL, ...SUED },
+      { ...SCORED, ...SUED },
+    ])
+  )
   const counts = { examined: 0, changed: 0 }
 
   const answer = await withRoll(0, () =>
@@ -445,8 +463,8 @@ check('a drafted message and its business both carry the variant chosen', async 
   const drafts = inserted(writes)
   same(drafts.length, 2, 'message rows written')
   // The business with no site of its own goes first, ahead of every scored one.
-  const first = pickVariant(SOCIAL, VARIANTS, 0).id
-  const second = pickVariant(SCORED, VARIANTS, 0).id
+  const first = pickVariant({ ...SOCIAL, ...SUED }, VARIANTS, 0).id
+  const second = pickVariant({ ...SCORED, ...SUED }, VARIANTS, 0).id
   same(drafts[0].payload.variant_id, first, 'the first draft')
   same(drafts[1].payload.variant_id, second, 'the second draft')
 
@@ -472,19 +490,19 @@ check('a drafted message and its business both carry the variant chosen', async 
 check('a business already holding a variant is not rolled again', async () => {
   // A slow site that was first written to as a no-site business keeps that
   // conversation, and its row is not written to again.
-  const { db, writes } = stubDb(sendPlan([{ ...SCORED, variant_id: 'no-site-intro' }]))
+  const { db, writes } = stubDb(sendPlan([{ ...SCORED, ...SUED, variant_id: 'no-site-lawsuit' }]))
 
   const answer = await atMidAfternoon(() =>
     sendWork({ db, settings: DRAFTING, counts: { examined: 0, changed: 0 } })
   )
 
   same(answer.drafted, 1, 'messages drafted')
-  same(inserted(writes)[0].payload.variant_id, 'no-site-intro', 'the draft')
+  same(inserted(writes)[0].payload.variant_id, 'no-site-lawsuit', 'the draft')
   same(given(writes).length, 0, 'variant writes to a business already holding one')
 })
 
 check('a business nothing fits is left where it stands, and the run goes on', async () => {
-  const { db, writes, asked } = stubDb(sendPlan([{ ...UNFITTING }, { ...SOCIAL }]))
+  const { db, writes, asked } = stubDb(sendPlan([{ ...UNFITTING }, { ...SOCIAL, ...SUED }]))
   const counts = { examined: 0, changed: 0 }
 
   const answer = await atMidAfternoon(() => sendWork({ db, settings: DRAFTING, counts }))
@@ -503,7 +521,9 @@ check('a business nothing fits is left where it stands, and the run goes on', as
 
 check('a refused variant write stops the run', async () => {
   const { db, writes } = stubDb(
-    sendPlan([{ ...SOCIAL }], { 'update:outreach_prospects': refused('variant write refused') })
+    sendPlan([{ ...SOCIAL, ...SUED }], {
+      'update:outreach_prospects': refused('variant write refused'),
+    })
   )
   const counts = { examined: 0, changed: 0 }
 
@@ -519,7 +539,7 @@ check('a refused variant write stops the run', async () => {
 check('a draft already written is delivered as it was, and nothing is chosen for it', async () => {
   TRANSPORT.clear()
   const { db, writes, asked } = stubDb(
-    sendPlan([{ ...SCORED }], {
+    sendPlan([{ ...SCORED, ...SUED }], {
       'select:outreach_messages': [
         ...NO_WEEK,
         { count: 0, error: null },
@@ -544,7 +564,7 @@ check('a draft already written is delivered as it was, and nothing is chosen for
 check('a variant paused in the console is not chosen', async () => {
   // Every letter for the segment is paused, since one left live would be chosen.
   const { db, writes } = stubDb(
-    sendPlan([{ ...SCORED }], {
+    sendPlan([{ ...SCORED, ...SUED }], {
       'select:outreach_variants': {
         data: VARIANTS.filter(one => one.segment === 'slow-site').map(one => ({
           id: one.id,
@@ -573,9 +593,9 @@ check('pausing the one letter stops the sending rather than sending under it', a
   // the write that empties a segment; this is what happens if the row is there
   // anyway.
   const { db, writes } = stubDb(
-    sendPlan([{ ...SCORED, variant_id: 'slow-site-intro' }], {
+    sendPlan([{ ...SCORED, ...SUED, variant_id: 'slow-site-lawsuit' }], {
       'select:outreach_variants': {
-        data: [{ id: 'slow-site-intro', status: 'paused', weight: 1 }],
+        data: [{ id: 'slow-site-lawsuit', status: 'paused', weight: 1 }],
         error: null,
       },
     })
@@ -593,7 +613,7 @@ check('pausing the one letter stops the sending rather than sending under it', a
 check('a business holding a retired letter is drafted under a live one', async () => {
   // The stamp names a letter no draw can produce, and leaving it there is a
   // queue holding people for a message that is never coming.
-  const { db, writes } = stubDb(sendPlan([{ ...SCORED, variant_id: 'slow-site-audit' }]))
+  const { db, writes } = stubDb(sendPlan([{ ...SCORED, ...SUED, variant_id: 'slow-site-audit' }]))
 
   const answer = await atMidAfternoon(() =>
     sendWork({ db, settings: DRAFTING, counts: { examined: 0, changed: 0 } })
@@ -601,12 +621,12 @@ check('a business holding a retired letter is drafted under a live one', async (
 
   same(answer.drafted, 1, 'messages drafted')
   const drawn = inserted(writes)[0].payload.variant_id
-  same(drawn, 'slow-site-intro', 'the letter drafted')
+  same(drawn, 'slow-site-lawsuit', 'the letter drafted')
 })
 
 check('a database without the variant settings sends under the code’s own defaults', async () => {
   const { db, writes } = stubDb(
-    sendPlan([{ ...SCORED }], {
+    sendPlan([{ ...SCORED, ...SUED }], {
       'select:outreach_variants': {
         data: null,
         error: { code: '42P01', message: 'relation "outreach_variants" does not exist' },
@@ -619,7 +639,11 @@ check('a database without the variant settings sends under the code’s own defa
   )
 
   same(answer.drafted, 1, 'messages drafted')
-  same(inserted(writes)[0].payload.variant_id, pickVariant(SCORED, VARIANTS, 0).id, 'the draft')
+  same(
+    inserted(writes)[0].payload.variant_id,
+    pickVariant({ ...SCORED, ...SUED }, VARIANTS, 0).id,
+    'the draft'
+  )
 })
 
 /** The send path run with the roll pinned, so a check can put a business where it likes. */
@@ -635,6 +659,19 @@ async function withRoll(roll, run) {
 
 check('a business waiting on its draft is not written to here', async () => {
   const { db, writes } = stubDb(sendPlan([{ ...SCORED, preview_skipped_at: null }]))
+
+  const answer = await atMidAfternoon(() =>
+    sendWork({ db, settings: DRAFTING, counts: { examined: 0, changed: 0 } })
+  )
+
+  same(answer.drafted ?? 0, 0, 'messages drafted')
+  same(inserted(writes).length, 0, 'message rows written')
+})
+
+check('a business the preview routine set aside is written no cold intro', async () => {
+  // A cold introduction never goes before a draft preview, so a business no
+  // draft has gone to is written nothing here, set aside or not.
+  const { db, writes } = stubDb(sendPlan([{ ...SCORED }, { ...SOCIAL }]))
 
   const answer = await atMidAfternoon(() =>
     sendWork({ db, settings: DRAFTING, counts: { examined: 0, changed: 0 } })
