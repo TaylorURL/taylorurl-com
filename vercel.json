@@ -66,6 +66,11 @@
   ],
   "redirects": [
     {
+      "source": "/baton",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/baton/main/install.sh",
+      "permanent": false
+    },
+    {
       "source": "/pricing",
       "destination": "/contact",
       "permanent": true
