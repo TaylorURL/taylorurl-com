@@ -76,6 +76,16 @@
       "permanent": false
     },
     {
+      "source": "/holdback",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/holdback/main/install.sh",
+      "permanent": false
+    },
+    {
+      "source": "/holdback.ps1",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/holdback/main/install.ps1",
+      "permanent": false
+    },
+    {
       "source": "/pricing",
       "destination": "/contact",
       "permanent": true
