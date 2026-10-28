@@ -6,16 +6,19 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.44.13-2f6bff?style=for-the-badge" alt="Version 2026.44.13" />
+<img src="https://img.shields.io/badge/version-2026.44.14-2f6bff?style=for-the-badge" alt="Version 2026.44.14" />
 
 The studio's own site, plus the console clients sign in to while their site is built. The same code builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
-## What's on the site
+<details>
+<summary>What's on the site</summary>
 
 - Service pages, a portfolio with case studies, industry and town pages, and a blog with series and an RSS feed.
 - Free tools: a speed check, a Google presence check, a logo background remover and a QR code generator.
 - A project form at [/start](https://www.taylorurl.com/start) and a chat assistant.
 - A client console for the project brief, build progress and site traffic, plus a public [status page](https://www.taylorurl.com/status).
+
+</details>
 
 ## How it's built
 
