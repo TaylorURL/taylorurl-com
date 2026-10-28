@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Check } from 'lucide-react'
+import { Check, Monitor, Smartphone } from 'lucide-react'
 import ReviewStandingBadge from '@components/reviews/ReviewStandingBadge'
 import useReviewStandings from '@hooks/reviews/useReviewStandings'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF } from '@constants/navigation'
@@ -15,6 +15,7 @@ import {
   TextThread,
 } from './parts'
 import {
+  DESKTOP_SPEED,
   MOBILE_SPEED,
   MONTHLY,
   clientReview,
@@ -32,6 +33,12 @@ const STRIP = [
   'faded-barbershop.com',
 ]
 const REVIEWED = 'djrxexcellence.com'
+
+/** The speed tile's two rings, phone first because that is where most visits land. */
+const SPEEDS = [
+  { label: 'Mobile', Icon: Smartphone, score: MOBILE_SPEED },
+  { label: 'Desktop', Icon: Monitor, score: DESKTOP_SPEED },
+]
 
 /** What the primary key says on this page: the thing a reader gets, not the form. */
 const START_LABEL = 'Get a plan and a price'
@@ -150,14 +157,24 @@ export default function HomeBoard() {
             aria-labelledby="glance-speed"
             className={`${CARD} flex flex-col justify-between gap-5 p-6 sm:p-7 xl:col-start-4 xl:row-start-1`}
           >
-            <div className="flex items-start justify-between gap-4">
-              <h2 id="glance-speed" className={`${TITLE} max-w-[9ch]`}>
-                Fast on every phone
-              </h2>
-              <ScoreRing score={MOBILE_SPEED} size={84} />
-            </div>
+            <h2 id="glance-speed" className={TITLE}>
+              Fast on every screen
+            </h2>
+            <dl className="flex gap-7">
+              {SPEEDS.map(({ label, Icon, score }) => (
+                <div key={label} className="flex flex-col-reverse items-center gap-2">
+                  <dt className="flex items-center gap-1.5 text-[13px] font-medium text-paper-soft">
+                    <Icon size={14} aria-hidden="true" />
+                    {label}
+                  </dt>
+                  <dd>
+                    <ScoreRing score={score} size={84} />
+                  </dd>
+                </div>
+              ))}
+            </dl>
             <p className="text-[14px] leading-snug text-paper-soft">
-              Average Google PageSpeed score across my client sites, out of 100.
+              Average Google PageSpeed scores across my client sites, out of 100.
             </p>
           </section>
 
