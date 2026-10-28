@@ -96,8 +96,10 @@ const FOCUS =
  * tile has the width its copy was set for; two columns from `sm`; one below.
  * The tiles are in the order a phone stacks them and the wide grid places them
  * by row and column, so a narrow screen reads the offer, the proof and the way
- * in, in that order. The first two rows are fixed so the board holds its shape
- * on the first screen; the third grows with whichever tile needs the room.
+ * in, in that order. The first two rows are set at 300 so the board holds its
+ * shape on the first screen, and the second may grow past that rather than let
+ * the byline's two-line hours run out of its tile; the third grows with
+ * whichever tile needs the room.
  *
  * Each tile that holds the number carries a `data-call-place`, which is how
  * `@components/chrome/Layout` attributes a tap on a `tel:` link, so a call can
@@ -112,7 +114,7 @@ export default function HomeBoard() {
         aria-labelledby="glance-offer"
         className="container-rail pb-20 pt-24 sm:pb-28 sm:pt-28"
       >
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:grid-rows-[300px_300px_auto_minmax(300px,auto)]">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4 xl:grid-rows-[300px_minmax(300px,auto)_auto_minmax(300px,auto)]">
           <div
             data-call-place="home-offer"
             className={`${TILE} flex flex-col justify-between gap-12 bg-[color:var(--accent-fill)] p-7 text-[color:var(--on-accent)] sm:col-span-2 sm:p-10 xl:col-start-1 xl:row-span-2 xl:row-start-1`}
@@ -162,9 +164,9 @@ export default function HomeBoard() {
           <section
             aria-labelledby="glance-call"
             data-call-place="home-byline"
-            className={`${CARD} flex flex-col justify-between gap-5 p-6 xl:col-start-4 xl:row-start-2`}
+            className={`${CARD} flex flex-col justify-between gap-4 p-6 xl:col-start-4 xl:row-start-2`}
           >
-            <Person size={88} stacked eager />
+            <Person size={64} stacked eager />
             <div>
               <h2 id="glance-call" className="sr-only">
                 Call or text
@@ -176,7 +178,7 @@ export default function HomeBoard() {
                 {COMPANY_PHONE}
               </a>
               <p className="text-paper-faint mt-1 text-[14px]">Call or text.</p>
-              <Availability className="mt-4" />
+              <Availability className="mt-3" />
             </div>
           </section>
 
