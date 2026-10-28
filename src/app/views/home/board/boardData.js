@@ -19,11 +19,12 @@ import { BIO_NAME, BIO_TITLE } from '@lib/mail/bio.js'
 export const PERSON = { name: BIO_NAME, title: BIO_TITLE }
 
 /**
- * The client sites' average mobile PageSpeed score, read off the portfolio for
- * the reason `@data/pages/about` gives: a literal here would go on quoting a
- * score the portfolio no longer holds.
+ * The client sites' average mobile and desktop PageSpeed scores, read off the
+ * portfolio for the reason `@data/pages/about` gives: a literal here would go
+ * on quoting a score the portfolio no longer holds.
  */
 export const MOBILE_SPEED = PORTFOLIO_AVERAGES.mobile
+export const DESKTOP_SPEED = PORTFOLIO_AVERAGES.desktop
 
 /** What the monthly pays for, as the FAQ lists it. */
 export const MONTHLY = [
