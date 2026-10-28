@@ -66,11 +66,11 @@ export default function PaletteShot({ base, narrow, alt, width, height, sizes, c
  * belongs to the reader's own ground rather than to both.
  *
  * Held to one state apart from the ladder: whether this shot is gone. It leaves
- * the plane rather than standing there torn, which is what `CaptureShot` does
- * with a lost capture one column over, so the three steps agree about what a
- * missing picture looks like. The column still reads without it - the numeral,
- * the stage, the title and the sentence are the step, and the shot is the
- * evidence for it.
+ * the plane rather than standing there torn. These are this site's own process
+ * shots, so there is nothing to draw in their place - the client captures one
+ * column over are a named site and stand on a lettered plate once their ladder
+ * is spent - and the column still reads without it: the numeral, the stage, the
+ * title and the sentence are the step, and the shot is the evidence for it.
  */
 function Shot({ palette, src, narrow, alt, width, height, sizes, className }) {
   const [lost, setLost] = useState(false)
