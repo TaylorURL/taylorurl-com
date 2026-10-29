@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-10-28' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-29' },
     hasStudy: true,
   },
   {
@@ -91,7 +91,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'A hundred business cards or a ten-foot vinyl banner, off five different presses in one Pasadena shop. Customers upload the artwork, approve the proof, and follow the job through the pipeline the floor runs on.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-28' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-29' },
     hasStudy: true,
   },
   {
@@ -106,7 +106,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dickinson, Texas',
     description:
       'Two five-acre gated waterfront yards on the upper Texas Gulf Coast, let by the month with the shore crew already on them. Monochrome, with the rate and the phone number on every screen, because a phone on one bar out on a dock is what the site has to load on.',
-    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-10-28' },
+    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-10-29' },
     hasStudy: true,
   },
   {
@@ -165,7 +165,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-10-27' },
+    pagespeed: { mobile: 96, desktop: 99, runs: 3, measured: '2026-10-29' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-27' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-29' },
     hasStudy: true,
   },
   {
