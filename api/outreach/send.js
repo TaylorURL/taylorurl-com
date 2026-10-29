@@ -144,6 +144,7 @@ import { firstNameOf } from '../../lib/outreach/first-names.js'
 import { BIO_PHONE } from '../../lib/mail/bio.js'
 import { ensureShot } from '../../lib/outreach/audit/shot.js'
 import {
+  CHAIN_REGISTRY,
   VARIANTS,
   familyAhead,
   familyOf,
@@ -152,6 +153,7 @@ import {
   pickVariant,
   withSettings,
 } from '../../lib/outreach/variants.js'
+import { deskMessage, deskPatch } from '../../lib/outreach/sending/desk-step.js'
 import { segmentOf } from '../../lib/outreach/segments.js'
 import {
   Undeliverable,
@@ -562,6 +564,12 @@ function lettered(prospect, from, shot, variant, chain) {
     to_address: String(prospect.email).toLowerCase(),
     track_token: track,
     variant_id: variant.id,
+    // The chain this letter went out on, and how it reached somebody. Both are
+    // written rather than worked out later: the recap used to decide a chain by
+    // looking for a word in the variant id, which is wrong in both directions
+    // the moment a chain is added.
+    chain: variant.chain,
+    channel: variant.channel,
     // Which letter of the chain this is, once the column is there to say.
     ...(chain.ready ? { step: chain.step ?? 1 } : {}),
   }
@@ -1374,6 +1382,33 @@ async function firstLetters({
 
 /** The moment the next letter of a chain is owed, counted from this one. */
 const DAY_MS = 24 * 60 * 60 * 1000
+/**
+ * When the step after this one falls due, counted from the business's first
+ * letter on the chain rather than from the letter that has just gone.
+ *
+ * Each chain states its own days, so this reads them rather than sharing one
+ * figure between chains that used to. Counting from the first letter is what
+ * keeps a step held back over a weekend from pushing every step behind it
+ * later: a chain whose second letter went four days late still owes its third
+ * on its own day, and a day that has already passed is owed at once rather
+ * than skipped.
+ *
+ * @param {object} chain The manifest.
+ * @param {number} step The step that has just gone.
+ * @param {string|null} firstAt When the first letter went.
+ * @param {Date} now
+ * @returns {string|null} An ISO moment, or null where the chain has no step
+ *   after this one.
+ */
+export function nextDueFor(chain, step, firstAt, now = new Date()) {
+  const day = CHAIN_REGISTRY.dueAt(chain, step + 1)
+  if (day === null) return null
+  const base = Date.parse(firstAt ?? '')
+  const from = Number.isFinite(base) ? base : now.getTime()
+  const at = from + day * DAY_MS
+  return new Date(Math.max(at, now.getTime())).toISOString()
+}
+
 export const dueAfter = (at, days = FOLLOW_UP_DAYS) =>
   new Date(new Date(at).getTime() + days * DAY_MS).toISOString()
 
@@ -1508,6 +1543,33 @@ async function followUps({
       continue
     }
 
+    // A step that reaches somebody by telephone goes in front of the desk
+    // rather than to the mail server. Nothing is composed, nothing is handed
+    // to a transport, and none of the day's sending, the address's room or the
+    // mailbox's is spent on it - none of those is about a telephone. So it is
+    // taken before the mailbox is asked about, and a closed mailbox does not
+    // stop it.
+    if (letter.channel !== 'email') {
+      const chain = CHAIN_REGISTRY.chainOf(letter.id)
+      const opened = first.get(prospect.id) ?? null
+      const at = new Date()
+      const noted = await db
+        .from('outreach_messages')
+        .insert(deskMessage(prospect, chain, step, letter.id, at))
+      if (noted.error) throw new Error(noted.error.message)
+      const owed = await db
+        .from('outreach_prospects')
+        .update({
+          ...deskPatch(prospect, chain, step, at),
+          next_due_at: nextDueFor(chain, step, opened?.sent_at ?? null, at),
+        })
+        .eq('id', prospect.id)
+      if (owed.error) throw new Error(owed.error.message)
+      counts.changed += 1
+      tally.followed += 1
+      continue
+    }
+
     // The mailbox is asked before the follow-up is drafted, so a mailbox that
     // has filled or been rested since the top of the run stops the run here and
     // the business stays owed exactly as it was.
@@ -1596,8 +1658,12 @@ async function followUps({
 
     const now = new Date().toISOString()
     await markSent(db, message, providerId, now)
+    // The chain's own day for the step after this one, rather than one figure
+    // shared between chains. `liveAhead` still decides whether there is
+    // anything to wait for: a chain whose next step is switched off ends here.
     const next = liveAhead(variants, segment, step + 1, family, letterSourceOf(prospect))
-      ? dueAfter(now)
+      ? (nextDueFor(CHAIN_REGISTRY.chainOf(letter.id), step, prior?.sent_at ?? null, new Date()) ??
+        dueAfter(now))
       : null
     const moved = await db
       .from('outreach_prospects')

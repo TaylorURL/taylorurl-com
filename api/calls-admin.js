@@ -134,6 +134,13 @@ const COLUMNS = [
   'audit_emailed_at',
   'audit_emailed_by',
   'audit_emailed_to',
+  // A call a chain asked for. `call_due_at` is also what puts a business with
+  // a site of its own on this list at all, and the reason is the line a caller
+  // reads before they dial.
+  'call_due_at',
+  'call_due_chain',
+  'call_due_reason',
+  'called_at',
 ].join(', ')
 
 /** The row as the list draws it, cut to the columns this endpoint names. */
@@ -592,7 +599,8 @@ async function record(db, body, account) {
   const found = await db
     .from(PROSPECTS)
     .select(
-      'id, name, phone, email, trade, town, website, site_kind, stage, business_status, assigned_to'
+      'id, name, phone, email, trade, town, website, site_kind, stage, business_status, ' +
+        'assigned_to, call_due_at, called_at'
     )
     .eq('id', prospectId)
     .maybeSingle()

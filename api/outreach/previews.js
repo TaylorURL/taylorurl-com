@@ -73,6 +73,7 @@ import {
   previewUrl,
 } from '../../lib/outreach/previews.js'
 import { proofNow } from '../../lib/outreach/proof.js'
+import { preview as PREVIEW_CHAIN_MANIFEST } from '../../lib/outreach/chains/index.js'
 import { LAWSUIT_SOURCE } from '../../lib/outreach/prospects/lawsuits.js'
 import { deliver, readRoster } from './send.js'
 import {
@@ -156,6 +157,15 @@ async function sendOne(db, settings, site, prospect, nth = -1, thread = null) {
       from_address: from.address,
       to_address: prospect.email,
       track_token: track,
+      // The chain and the step this letter belongs to, written on the row the
+      // same way the cold sender writes them, so one list holds every chain
+      // and the recap counts across all of them rather than per table.
+      //
+      // `nth` is -1 for the draft itself and 0, 1, 2 for the notes after it,
+      // which is the first step and then the three behind it.
+      chain: PREVIEW_CHAIN_MANIFEST.id,
+      channel: 'email',
+      step: nth + 2,
     })
     .select('id, to_address, subject, body_text, body_html')
     .single()

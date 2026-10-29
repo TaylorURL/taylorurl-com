@@ -100,23 +100,75 @@ const FITTING = {
 }
 
 /**
+ * What a column holds on a business a letter is written for.
+ *
+ * A letter that names a column in `needs` cannot be drawn for a row without
+ * it, so the fixture has to carry one. They are listed here rather than inside
+ * `suited` so a letter that starts needing a new column fails with "no sample
+ * for X" rather than with a letter rendering the word undefined.
+ */
+const SAMPLES = {
+  case_name: 'Doe v. Baytown Plumbing, LLC',
+  case_number: '1:26-cv-00001',
+  case_court: 'District Court, S.D. New York',
+  case_filed_on: '2026-09-14',
+  case_url: 'https://www.courtlistener.com/docket/1/doe-v-baytown-plumbing/',
+  fault: 'certificate-expired',
+  fault_says: 'the security certificate expired 27 days ago',
+  fault_at: '2026-10-01T00:00:00.000Z',
+  fault_checked_at: '2026-10-28T12:00:00.000Z',
+}
+
+/**
  * A business each letter is written for. The segment's own fixture where the
  * letter takes it, and otherwise that fixture with the one figure a condition
  * turns on moved under the band, which is the only condition there is.
+ *
+ * A letter written for a source of its own is handed a row filed under that
+ * source, carrying every column the letter says it needs. The lawsuit columns
+ * go on whatever the letter asks for, because the lawsuit letters read more of
+ * them than they list - the filing date is what they cannot be written without
+ * and the court is what they name where it is there.
  */
 function suited(entry) {
   const base = entry.source
     ? {
         ...FITTING[entry.segment],
         source: entry.source,
-        case_name: 'Doe v. Baytown Plumbing, LLC',
-        case_number: '1:26-cv-00001',
-        case_court: 'District Court, S.D. New York',
-        case_filed_on: '2026-09-14',
+        ...Object.fromEntries(
+          entry.needs.map(column => {
+            const sample = SAMPLES[column]
+            if (sample === undefined) throw new Error(`no sample for ${column}`)
+            return [column, sample]
+          })
+        ),
+        ...(entry.family === 'lawsuit'
+          ? {
+              case_name: SAMPLES.case_name,
+              case_number: SAMPLES.case_number,
+              case_court: SAMPLES.case_court,
+              case_filed_on: SAMPLES.case_filed_on,
+            }
+          : {}),
       }
     : FITTING[entry.segment]
   return fits(entry, base) ? base : { ...base, seo_score: 60 }
 }
+
+/**
+ * The entries that carry words, which is every one whose step sends a letter.
+ *
+ * A chain may reach somebody by telephone instead, and such a step is an entry
+ * in the registry like any other: it has an id, a step and a chain, so the
+ * recap counts it and the sender knows the business has reached it. What it has
+ * not got is an opener, because nothing is written. Every check below about
+ * what a letter says is therefore asked of these rather than of the whole
+ * registry, and `check-call-step.js` is what asks about the rest.
+ */
+const LETTERS = VARIANTS.filter(entry => entry.channel === 'email')
+
+/** The entries that reach somebody by something other than a letter. */
+const UNWRITTEN = VARIANTS.filter(entry => entry.channel !== 'email')
 
 /** The segments the registry writes for, which is every one there is. */
 const SENDING = SEGMENTS
@@ -163,7 +215,10 @@ check('every variant carries a name, a status the console knows and a weight', (
     ok(VARIANT_STATUSES.includes(entry.status), `${entry.id} is ${entry.status}`)
     ok(Number.isFinite(entry.weight) && entry.weight >= 0, `${entry.id} weighs ${entry.weight}`)
     ok(Array.isArray(entry.needs), `${entry.id} needs is not a list`)
-    ok(typeof entry.open === 'function', `${entry.id} cannot be opened`)
+    ok(
+      entry.channel === 'email' ? typeof entry.open === 'function' : entry.open === null,
+      `${entry.id} cannot be opened`
+    )
   }
 })
 
@@ -191,9 +246,21 @@ check('nothing a variant needs is missing from what a candidate carries', () => 
   }
 })
 
+check('a step that reaches somebody without words carries none', () => {
+  // A telephone step is an entry in the registry like any other - it has an id,
+  // a step and a chain, so the recap counts it and the sender knows the
+  // business has reached it - and it has no opener, because nothing is written.
+  for (const entry of UNWRITTEN) {
+    same(entry.open, null, `${entry.id} carries words`)
+    ok(entry.channel, `${entry.id} names no channel`)
+    ok(entry.chain, `${entry.id} names no chain`)
+  }
+  same(LETTERS.length + UNWRITTEN.length, VARIANTS.length, 'the registry, split in two')
+})
+
 check('a variant that quotes a score says so', () => {
   const quotes = { audit_score: 'audit_score', seo_score: 'seo_score' }
-  for (const entry of VARIANTS) {
+  for (const entry of LETTERS) {
     const prospect = suited(entry)
     const { figure } = entry.open(prospect, WHERE, SHOT, CONTEXT)
     if (!figure) continue
@@ -358,12 +425,19 @@ check('a variant is found by its id and an unknown id finds nothing', () => {
   same(variantById(undefined), null, 'no id')
 })
 
-check('the registry holds the cold intro and the lawsuit chain and nothing else', () => {
+check('every chain in the registry runs from step one with no gap in it', () => {
+  // The chains come from the files under lib/outreach/chains, so this no longer
+  // names them. What it holds is the shape every one of them owes: steps
+  // starting at one and running without a gap, since a chain whose step two is
+  // missing is a chain that stops at one and says nothing about why.
   const families = [...new Set(VARIANTS.map(entry => entry.family))].sort()
-  same(families.join(','), 'introduction,lawsuit', 'families')
+  ok(families.includes('introduction'), 'the cold intro is not in the registry')
+  ok(families.includes('lawsuit'), 'the lawsuit chain is not in the registry')
   for (const family of families) {
-    const steps = [...new Set(VARIANTS.filter(e => e.family === family).map(stepOf))].sort()
-    same(steps.join(','), '1,2', `${family} steps`)
+    const steps = [...new Set(VARIANTS.filter(e => e.family === family).map(stepOf))].sort(
+      (a, b) => a - b
+    )
+    same(steps.join(','), steps.map((_, index) => index + 1).join(','), `${family} steps`)
   }
   for (const entry of VARIANTS) same(entry.status, 'live', `${entry.id} status`)
 })
@@ -377,7 +451,7 @@ check('an id the registry no longer knows is drawn again among what sends', () =
 
 const words = value => typeof value === 'string' && value.trim().length > 0
 
-for (const entry of VARIANTS) {
+for (const entry of LETTERS) {
   check(`${entry.id} opens on the six fields the renderers read`, () => {
     const prospect = suited(entry)
     ok(prospect, `no fitting business for ${entry.segment}`)

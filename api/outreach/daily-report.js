@@ -31,6 +31,16 @@ import { sendNotice } from '../../lib/mail/notice.js'
 import { localDay } from '../../lib/outreach/sending/schedule.js'
 import { clockIn } from '../../lib/time/zone.js'
 import { OTHER, chainOf, renderRecap, tallyOf, windowOf } from '../../lib/outreach/daily-report.js'
+import { CHAIN_REGISTRY } from '../../lib/outreach/variants.js'
+
+/**
+ * The name of the chain a letter id belongs to, looked up in the registry the
+ * chains derive, or null where the registry does not know the id - a letter
+ * retired before the chains existed, whose messages this recap still counts.
+ *
+ * `chainOf` reads this in place of guessing from a word in the id.
+ */
+const chainNameOf = id => CHAIN_REGISTRY.chainOf(id)?.name ?? null
 
 export const config = { maxDuration: 60 }
 
@@ -78,7 +88,7 @@ async function chainsOf(db, replies) {
     const lead = (id && leadOf.get(id)) || leadFrom.get(String(reply.from_address).toLowerCase())
     let chain = OTHER
     if (id && previewed.has(id)) chain = 'Draft preview'
-    else if (id && first.has(id)) chain = chainOf(first.get(id).variant_id)
+    else if (id && first.has(id)) chain = chainOf(first.get(id).variant_id, chainNameOf)
     else if (lead) chain = 'New business'
     return {
       chain,
@@ -164,7 +174,7 @@ export async function work({ db, counts, now = new Date() }, post = sendNotice) 
   }
   const today = localDay(now).date
   const rows = await rowsOf(db, today)
-  const recap = renderRecap(today, tallyOf(rows))
+  const recap = renderRecap(today, tallyOf(rows, chainNameOf))
   counts.examined = rows.outreach.length + rows.newBusiness.length + rows.replies.length
   await post(recap, RESEND_API_KEY, { urgent: false })
   counts.changed = 1
