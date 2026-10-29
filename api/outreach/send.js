@@ -562,6 +562,12 @@ function lettered(prospect, from, shot, variant, chain) {
     to_address: String(prospect.email).toLowerCase(),
     track_token: track,
     variant_id: variant.id,
+    // The chain this letter went out on, and how it reached somebody. Both are
+    // written rather than worked out later: the recap used to decide a chain by
+    // looking for a word in the variant id, which is wrong in both directions
+    // the moment a chain is added.
+    chain: variant.chain,
+    channel: variant.channel,
     // Which letter of the chain this is, once the column is there to say.
     ...(chain.ready ? { step: chain.step ?? 1 } : {}),
   }
