@@ -827,20 +827,26 @@ check(
   'the capture ladder carries data-retry on a rung with nothing after it, so a capture that has genuinely gone missing is held rather than filed'
 )
 
-// And that both frames climb it. There are two places a client capture is
-// drawn - the device frames and the flat card frames - and for a long time they
-// were two answers to one question: the device frames climbed a ladder and
+// And that every frame climbs it. There are three places a client capture is
+// drawn - the device frames, the flat card frames, and the plane shots on the
+// home page - and for a long time they were three answers to one question: the device frames climbed a ladder and
 // marked their rungs, and the card asked once, fell straight through to the
 // screenshot service and marked nothing. So the fix above reached half the
 // captures on the site, and the industry, area and case study pages went on
 // filing a report from every rung of a capture that was present and answering.
 // #842, #843 and #844 were three of those from one page view.
 //
+// The home page's own frame was the one left after that, and #984 was it: it
+// asked for the phone capture once, carried no attribute, and on the failure it
+// waited for it removed the picture and left the phone body empty. A frame two
+// fixes reach and a third does not is the shape this check exists to stop.
+//
 // A frame that imports the ladder cannot drift; one that writes its own can,
 // which is why this is checked rather than left to whoever edits next.
 for (const frame of [
   'components/mockups/DevicePreview.jsx',
   'components/mockups/PortfolioPreview.jsx',
+  'views/home/CaptureShot.jsx',
 ]) {
   const source = readFileSync(path.join(APP, frame), 'utf8')
   check(
@@ -862,6 +868,20 @@ const CARD = readFileSync(path.join(APP, 'components/mockups/PortfolioPreview.js
 check(
   /CapturePlate/.test(CARD) && /if \(!source\) return/.test(CARD),
   'the card frame draws nothing once its ladder is spent, so a capture no address can answer for is a permanent hole in the page rather than a frame that stands on its own'
+)
+
+// The home page's frame is the whole of what its shell holds - the browser
+// chrome and the phone body around it are the band's, and behind the capture
+// there is nothing - so a spent ladder there is an empty device on the page's
+// strongest band rather than a frame standing on its own ground.
+const PLANE = readFileSync(path.join(APP, 'views/home/CaptureShot.jsx'), 'utf8')
+check(
+  /CapturePlate/.test(PLANE) && /if \(!source\) return/.test(PLANE),
+  'the home page capture frame draws nothing once its ladder is spent, so a capture no address can answer for leaves an empty device beside the claim the work is live'
+)
+check(
+  /setMet\(true\)/.test(PLANE) && /loaded \|\| !met/.test(PLANE),
+  "the home page capture frame no longer holds a failed picture transparent, so the browser's broken-image mark stands on the band for as long as the frame waits to ask again"
 )
 
 // Marking the rungs is half of it. The other half is how long the frame waits

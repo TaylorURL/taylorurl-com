@@ -70,6 +70,26 @@
   ],
   "redirects": [
     {
+      "source": "/baton",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/baton/main/install.sh",
+      "permanent": false
+    },
+    {
+      "source": "/baton.ps1",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/baton/main/install.ps1",
+      "permanent": false
+    },
+    {
+      "source": "/holdback",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/holdback/main/install.sh",
+      "permanent": false
+    },
+    {
+      "source": "/holdback.ps1",
+      "destination": "https://raw.githubusercontent.com/bradley-t-t/holdback/main/install.ps1",
+      "permanent": false
+    },
+    {
       "source": "/pricing",
       "destination": "/contact",
       "permanent": true
