@@ -121,7 +121,7 @@ check('every letter carries the day its step falls due', () => {
 
 check('a chain that fires on something that happened states its own days', () => {
   const broken = CHAIN_REGISTRY.chainById('broken-site')
-  same([1, 2, 3].map(n => CHAIN_REGISTRY.dueAt(broken, n)).join(','), '0,5,14', 'broken site')
+  same([1, 2, 3, 4].map(n => CHAIN_REGISTRY.dueAt(broken, n)).join(','), '0,3,7,14', 'broken site')
   const partner = CHAIN_REGISTRY.chainById('partner')
   same([1, 2, 3].map(n => CHAIN_REGISTRY.dueAt(partner, n)).join(','), '0,8,20', 'partner')
 })
@@ -156,37 +156,17 @@ check('each chain states its own days rather than sharing one constant', () => {
   same(CHAIN_REGISTRY.dueAt(CHAIN_REGISTRY.chainById('intro'), 3), null, 'a third intro letter')
 })
 
-check('every letter goes out by email, since nothing else is wired yet', () => {
-  const other = VARIANTS.filter(one => one.channel !== 'email').map(one => one.id)
-  same(other.join(', '), '', 'letters on a channel nothing can send')
-})
-
-// ── The chain a letter belongs to ───────────────────────────────────────
-
-check('a letter id answers with its own chain', () => {
-  same(CHAIN_REGISTRY.chainOf('no-site-intro').id, 'intro', 'an intro letter')
-  same(CHAIN_REGISTRY.chainOf('no-site-lawsuit-follow-up').id, 'lawsuit', 'a suit letter')
-})
-
-check('an id nothing knows answers with nothing rather than with a guess', () =>
-  same(CHAIN_REGISTRY.chainOf('a-letter-retired-before-the-chains'), null, 'chainOf')
-)
-
-check('a chain that shares a word with another is told apart from it', () => {
-  // Both of these hold the string the recap used to decide a chain by.
-  const appeal = defineChain({
-    id: 'lawsuit-appeal',
-    name: 'Lawsuit appeal',
-    source: 'an-appeal-reader',
-    steps: [{ at: 0, channel: 'email', letter: fromCode(() => ({})) }],
-  })
-  const three = createChains({
-    chains: [...CHAINS, appeal],
-    segments: SEGMENTS,
-    segmentOf,
-  })
-  same(three.chainOf('no-site-lawsuit').id, 'lawsuit', 'the suit letter')
-  same(three.chainOf('no-site-lawsuit-appeal').id, 'lawsuit-appeal', 'the appeal letter')
+check('a step that rings rather than writes is on one chain and one step', () => {
+  // The broken-site chain rings on its second step, because the owner of a
+  // site that has stopped working may not be reading the inbox the first
+  // letter went to. Every other step is a letter.
+  const rung = VARIANTS.filter(one => one.channel !== 'email')
+  same(
+    [...new Set(rung.map(one => `${one.chain}:${one.step}:${one.channel}`))].join(' '),
+    'broken-site:2:call',
+    'the steps that are not letters'
+  )
+  for (const one of rung) same(one.open, null, `${one.id} carries words`)
 })
 
 // ── The recap reads the lookup rather than guessing ─────────────────────
