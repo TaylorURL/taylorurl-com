@@ -704,7 +704,7 @@ check('a video draft is promoted as a reel, video and poster intact', async () =
   )
 })
 
-check('several images on Instagram are promoted as a carousel, every slide in order', async () => {
+check('several images on Instagram are promoted as a post, every slide in order', async () => {
   const slides = ['one', 'two', 'three'].map(name => ({
     ...HELD_PICTURE,
     source: `https://www.taylorurl.com/social/library/${name}.png`,
@@ -721,7 +721,12 @@ check('several images on Instagram are promoted as a carousel, every slide in or
   await promote(run)
 
   const edit = stub.requests.find(request => request.operation === 'Edit')
-  same(edit.variables.input.metadata.instagram.type, 'carousel', 'the type Instagram is given')
+  // `post`, not `carousel`. A carousel is several assets on an ordinary post,
+  // and Buffer's `PostType` enum has no value for the arrangement: it refused
+  // `carousel` with `Invalid post: Instagram does not support the 'carousel'
+  // post type. Valid types are post, story, or reel.` and took every multi-image
+  // Instagram post with it.
+  same(edit.variables.input.metadata.instagram.type, 'post', 'the type Instagram is given')
   same(edit.variables.input.metadata.instagram.shouldShareToFeed, true, 'still shared to the feed')
   same(
     edit.variables.input.assets.map(asset => asset.image.url.split('/').pop()).join(', '),

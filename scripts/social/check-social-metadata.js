@@ -15,7 +15,7 @@
  *
  *   npm run check:social-metadata
  */
-import { CADENCE } from '../../lib/social/buffer.js'
+import { CADENCE, metadataFor } from '../../lib/social/buffer.js'
 import { cases, check, finish } from '../harness/checks.js'
 
 /** The call-to-action values Buffer's `GoogleBusinessPostActionType` accepts. */
@@ -37,11 +37,19 @@ const GOOGLE_TYPES = new Set(['event', 'offer', 'whats_new'])
 /**
  * The post types an Instagram channel accepts, of the whole `PostType` enum.
  *
- * A reel and a story are a video and a thing that expires, and the queue writes
- * neither. Naming the three keeps a typo landing here rather than as a post
- * Buffer accepts and Instagram refuses when it is due.
+ * A story is a thing that expires and the queue writes none. Naming the three
+ * keeps a typo landing here rather than as a post Buffer accepts and Instagram
+ * refuses when it is due.
+ *
+ * `carousel` is not one of them and never was. Several images on Instagram are
+ * an ordinary `post` carrying more than one asset, and sending the arrangement
+ * as a type of its own is refused with `Invalid post: Instagram does not
+ * support the 'carousel' post type. Valid types are post, story, or reel.`
  */
-const INSTAGRAM_TYPES = new Set(['post', 'reel', 'story', 'carousel'])
+const INSTAGRAM_TYPES = new Set(['post', 'reel', 'story'])
+
+/** The post types a Facebook Page channel accepts, of the same enum. */
+const FACEBOOK_TYPES = new Set(['post', 'reel', 'story'])
 
 /** Where the details for each Google post type are carried. */
 const GOOGLE_DETAILS = {
@@ -126,6 +134,39 @@ for (const [name, cadence] of Object.entries(CADENCE)) {
     `${name} plans every day it publishes`,
     days.every(day => cadence.plan?.[day])
   )
+}
+
+// The type a post goes out with, rather than the type the cadence declared.
+// `metadataFor` is allowed to change it for the media on the post, so a known
+// declaration is only half the shape: Instagram carousels were sent as
+// `type: 'carousel'` while every check above passed, because nothing here ever
+// called the function that writes the metadata Buffer is handed.
+const KNOWN_TYPES = {
+  instagram: INSTAGRAM_TYPES,
+  facebook: FACEBOOK_TYPES,
+  google: GOOGLE_TYPES,
+}
+
+/** The media a post can carry, named as the plan names it. */
+const slide = name => ({ image: { url: `https://www.taylorurl.com/social/library/${name}.png` } })
+const MEDIA = [
+  ['no media', []],
+  ['one image', [slide('one')]],
+  ['a carousel', ['one', 'two', 'three', 'four', 'five'].map(slide)],
+  ['a video', [{ video: { url: 'https://www.taylorurl.com/social/library/clip.mp4' } }]],
+]
+
+for (const [name, cadence] of Object.entries(CADENCE)) {
+  for (const [media, assets] of MEDIA) {
+    for (const [service, meta] of Object.entries(metadataFor(cadence, assets))) {
+      const known = KNOWN_TYPES[service]
+      check(`${name} knows which types ${service} takes`, Boolean(known))
+      check(
+        `${name} with ${media} sends ${service} type ${meta.type}, which Buffer accepts`,
+        Boolean(known?.has(meta.type))
+      )
+    }
+  }
 }
 
 await finish()
