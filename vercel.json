@@ -20,6 +20,10 @@
       "schedule": "*/10 * * * *"
     },
     {
+      "path": "/api/outreach/triggers",
+      "schedule": "25 */2 * * *"
+    },
+    {
       "path": "/api/outreach/audit",
       "schedule": "10,40 * * * *"
     },

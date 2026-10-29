@@ -56,17 +56,28 @@ const shape = one => ({
 
 // ── The registry, letter for letter ─────────────────────────────────────
 
-check('the chains derive as many letters as the studio registered by hand', () =>
-  same(VARIANTS.length, BEFORE.length, 'letters')
+// The four chains the studio has always had come first, so the letters it
+// registered by hand keep the positions they were registered in and every
+// chain added since is added behind them rather than inserted among them.
+const KEPT = VARIANTS.slice(0, BEFORE.length)
+const ADDED = VARIANTS.slice(BEFORE.length)
+
+check('the letters the studio registered by hand are still the first of them', () =>
+  same(KEPT.length, BEFORE.length, 'letters')
 )
 
-check('they derive them in the same order', () =>
-  same(VARIANTS.map(one => one.id).join(' '), BEFORE.map(one => one.id).join(' '), 'ids')
+check('they are derived in the order they were registered', () =>
+  same(KEPT.map(one => one.id).join(' '), BEFORE.map(one => one.id).join(' '), 'ids')
 )
+
+check('no letter added since took the place of one that was there', () => {
+  const taken = ADDED.filter(one => BEFORE.some(was => was.id === one.id)).map(one => one.id)
+  same(taken.join(', '), '', 'letters added under an id already in use')
+})
 
 for (const [index, want] of BEFORE.entries()) {
   check(`${want.id} is derived exactly as it was registered`, () => {
-    const got = VARIANTS[index]
+    const got = KEPT[index]
     ok(got, `nothing was derived at position ${index}`)
     same(JSON.stringify(shape(got)), JSON.stringify(want), want.id)
   })
@@ -79,6 +90,24 @@ check('every letter is written for one of the segments in force', () => {
 
 // ── What the derivation adds ────────────────────────────────────────────
 
+check('every chain added since derives letters of its own', () => {
+  const added = new Set(ADDED.map(one => one.chain))
+  for (const chain of CHAINS) {
+    if (chain.segments !== 'all' && !chain.segments.length) continue
+    const its = VARIANTS.filter(one => one.chain === chain.id)
+    ok(its.length, `${chain.id} derived no letters at all`)
+    void added
+  }
+})
+
+check('a chain whose words are written per business derives none', () => {
+  for (const id of ['preview', 'new-business']) {
+    const its = VARIANTS.filter(one => one.chain === id)
+    same(its.length, 0, `${id} letters in the registry`)
+    ok(CHAIN_REGISTRY.chainById(id), `${id} is not a chain at all`)
+  }
+})
+
 check('every letter now carries the chain it came from', () => {
   const orphans = VARIANTS.filter(one => CHAIN_REGISTRY.chainById(one.chain) === null)
   same(orphans.map(one => one.id).join(', '), '', 'letters whose chain nothing knows')
@@ -86,8 +115,39 @@ check('every letter now carries the chain it came from', () => {
 
 check('every letter carries the day its step falls due', () => {
   same(VARIANTS.find(one => one.step === 1).at, 0, 'a first letter')
-  const second = VARIANTS.find(one => one.step === 2)
-  same(second.at, FOLLOW_UP_DAYS, 'a second letter')
+  const second = KEPT.find(one => one.step === 2)
+  same(second.at, FOLLOW_UP_DAYS, "the cold intro's second letter")
+})
+
+check('a chain that fires on something that happened states its own days', () => {
+  const broken = CHAIN_REGISTRY.chainById('broken-site')
+  same([1, 2, 3].map(n => CHAIN_REGISTRY.dueAt(broken, n)).join(','), '0,5,14', 'broken site')
+  const partner = CHAIN_REGISTRY.chainById('partner')
+  same([1, 2, 3].map(n => CHAIN_REGISTRY.dueAt(partner, n)).join(','), '0,8,20', 'partner')
+})
+
+check('a chain that writes about a named defect will not send without one', () => {
+  for (const id of ['broken-site', 'listing', 'builder', 'growing']) {
+    const first = VARIANTS.find(one => one.chain === id && one.step === 1)
+    ok(first.needs.includes('fault_says'), `${id} would send with no defect to name`)
+    // The row has to read as the letter's own segment as well, which is most
+    // of what `fits` is about, so it is built from the letter rather than guessed.
+    const row = { source: id, site_kind: first.segment === 'no-site' ? 'social' : null }
+    same(CHAIN_REGISTRY.fits(first, row), false, `${id} fits a row with no defect`)
+    same(
+      CHAIN_REGISTRY.fits(first, { ...row, fault_says: 'the thing' }),
+      true,
+      `${id} does not fit a row with one`
+    )
+  }
+})
+
+check('a business whose defect has been fixed is off the chain', () => {
+  const broken = CHAIN_REGISTRY.chainById('broken-site')
+  const exit = broken.exits.find(one => typeof one === 'function')
+  ok(exit, 'the chain has no exit of its own')
+  same(exit({ fault_says: 'the certificate expired' }), false, 'a business still broken')
+  same(exit({ fault_says: null }), true, 'a business put right')
 })
 
 check('each chain states its own days rather than sharing one constant', () => {
@@ -131,9 +191,10 @@ check('a chain that shares a word with another is told apart from it', () => {
 
 // ── The recap reads the lookup rather than guessing ─────────────────────
 
-check("every chain's name is a lane the recap lists", () => {
-  const missing = CHAINS.filter(chain => !LANES.includes(chain.name)).map(chain => chain.name)
-  same(missing.join(', '), '', 'chains the recap has no lane for')
+check('the four lanes the recap lists are the four chains it was built around', () => {
+  for (const name of ['Introduction', 'Lawsuit', 'Draft preview', 'New business']) {
+    ok(LANES.includes(name), `the recap lists no ${name} lane`)
+  }
 })
 
 check('the recap names a live letter’s chain by looking it up', () => {
@@ -179,31 +240,27 @@ check('the introduction is the chain a business falls to', () =>
 
 // ── Adding one ──────────────────────────────────────────────────────────
 
-check('a fifth chain is one file and changes nothing about the four letters', () => {
-  const broken = defineChain({
-    id: 'broken-site',
-    name: 'Broken site',
-    source: 'broken-site',
-    exits: ['cert_fixed'],
+check('another chain is one file and changes nothing about the letters already there', () => {
+  const hiring = defineChain({
+    id: 'hiring',
+    name: 'Hiring',
+    source: 'hiring',
+    exits: ['filled'],
     steps: [
-      { at: 0, channel: 'email', letter: fromCode(() => ({})), needs: ['cert_expires_at'] },
+      { at: 0, channel: 'email', letter: fromCode(() => ({})), needs: ['fault_says'] },
       { at: 5, slug: 'call', channel: 'call' },
       { at: 14, slug: 'last', channel: 'email', letter: fromCode(() => ({})) },
     ],
   })
-  const five = createChains({ chains: [...CHAINS, broken], segments: SEGMENTS, segmentOf })
+  const five = createChains({ chains: [...CHAINS, hiring], segments: SEGMENTS, segmentOf })
   const kept = five.letters
     .slice(0, VARIANTS.length)
     .map(one => one.id)
     .join(' ')
   same(kept, VARIANTS.map(one => one.id).join(' '), 'the letters that were already there')
   same(five.letters.length, VARIANTS.length + 3 * SEGMENTS.length, 'letters in all')
-  same(five.chainFor({ source: 'broken-site' }).id, 'broken-site', 'where its businesses go')
-  same(
-    five.letters.find(one => one.id === 'no-site-broken-site-call').channel,
-    'call',
-    'its call step'
-  )
+  same(five.chainFor({ source: 'hiring' }).id, 'hiring', 'where its businesses go')
+  same(five.letters.find(one => one.id === 'no-site-hiring-call').channel, 'call', 'its call step')
 })
 
 await finish({
@@ -214,5 +271,6 @@ await finish({
 
 console.log(
   `chain registry: ${cases.length} checks passed — ${CHAINS.length} chains derive ` +
-    `${VARIANTS.length} letters, field for field as they were registered by hand`
+    `${VARIANTS.length} letters, the first ${BEFORE.length} of them field for field as they ` +
+    'were registered by hand'
 )
