@@ -91,7 +91,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'A hundred business cards or a ten-foot vinyl banner, off five different presses in one Pasadena shop. Customers upload the artwork, approve the proof, and follow the job through the pipeline the floor runs on.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-29' },
+    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -106,7 +106,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dickinson, Texas',
     description:
       'Two five-acre gated waterfront yards on the upper Texas Gulf Coast, let by the month with the shore crew already on them. Monochrome, with the rate and the phone number on every screen, because a phone on one bar out on a dock is what the site has to load on.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-10-29' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -121,7 +121,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dayton, Texas',
     description:
       'Listings across Dayton and the Liberty County towns around it, grouped by place rather than by a radius on a map. Buyers save what is worth a second look, put the shortlist side by side, and ask their questions on the listing itself.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-11' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -136,7 +136,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'Removal, trimming, stump grinding, and storm work, out of a Pasadena family business started in 2000. Every service and every town the trucks work has a page of its own, and on a phone the number to call stays pinned to the bottom of the screen.',
-    pagespeed: { mobile: 95, desktop: 100, runs: 5, measured: '2026-10-28' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 5, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 95, desktop: 100, runs: 3, measured: '2026-10-26' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-29' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -238,7 +238,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Daisetta, Texas',
     description:
       'Two half-days in Daisetta for kids five to twelve, with no tryouts and no bench. A parent registers, orders the shirts, and pays without being made to create a login first, then signs in later to follow it.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-28' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
   {
@@ -254,7 +254,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-10-28' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-30' },
     hasStudy: true,
   },
 ]
