@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.44.25-2f6bff?style=for-the-badge" alt="Version 2026.44.25" />
+<img src="https://img.shields.io/badge/version-2026.44.26-2f6bff?style=for-the-badge" alt="Version 2026.44.26" />
 
 The studio's own site, plus the console clients sign in to while their site is built. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -27,6 +27,10 @@ The console keys every read and write in `api/projects.js` on the caller's verif
 ## The chat assistant and outreach
 
 The assistant runs on my own machine. A serverless function can't hold a thread open, so `api/live-chat.js` meters turns and forwards them. When the machine is down the widget isn't drawn, and a thread that's already open still takes an email address and mails it on.
+
+The outreach decisions moved out into [chainwork](https://github.com/TaylorURL/chainwork), installed as a dependency, so a second site can run them. A chain is one file under `lib/outreach/chains`: the letters, the days between them, what puts a business on it and what takes it off. There are ten, the four the studio has always had and six that fire on something that just happened, like a certificate that expired or a Google listing with no photos. The old paths under `lib/outreach/` are re-exports now, so nothing that imported them had to move.
+
+The time zone, the held-domain list and the domains I own are installed into the package from here. Those are facts about the studio rather than decisions about outreach.
 
 `api/outreach/send.js` drafts every message but only hands one to a mail server when `sending_enabled` is on in the console and `OUTREACH_SEND_ARMED` is set on the deployment. Either one off and it stays a draft.
 
