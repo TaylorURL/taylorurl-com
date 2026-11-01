@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-10-29' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-01' },
     hasStudy: true,
   },
   {
@@ -91,7 +91,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'A hundred business cards or a ten-foot vinyl banner, off five different presses in one Pasadena shop. Customers upload the artwork, approve the proof, and follow the job through the pipeline the floor runs on.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-31' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-01' },
     hasStudy: true,
   },
   {
@@ -136,7 +136,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'Removal, trimming, stump grinding, and storm work, out of a Pasadena family business started in 2000. Every service and every town the trucks work has a page of its own, and on a phone the number to call stays pinned to the bottom of the screen.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 5, measured: '2026-10-30' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 5, measured: '2026-11-01' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-31' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-01' },
     hasStudy: true,
   },
   {
@@ -165,7 +165,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-10-31' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-01' },
     hasStudy: true,
   },
   {
@@ -193,7 +193,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Huffman, Texas',
     description:
       'On-site calibration against certified test weights, repair, and a parts counter for industrial weighing equipment, out of a family-owned shop in Huffman, Texas. Every part carries a page of its own, so a search for a failed load cell lands on the thing itself.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-10-31' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-01' },
     hasStudy: true,
   },
   {
@@ -254,7 +254,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-10-31' },
+    pagespeed: { mobile: 97, desktop: 100, runs: 3, measured: '2026-11-01' },
     hasStudy: true,
   },
 ]
