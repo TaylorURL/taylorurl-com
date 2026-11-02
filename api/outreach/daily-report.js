@@ -7,6 +7,10 @@
  * chain their business was written on. The figures and the layout are
  * lib/outreach/daily-report.js's.
  *
+ * A day with nothing in it - nothing sent, nobody writing back and no failed
+ * letter to note - sends nothing, since a table of noughts tells the studio
+ * nothing it needs to open a letter for.
+ *
  * The schedule asks at both 22:00 and 23:00 UTC, since five in Texas is one of
  * the two depending on the clocks, and only the run that lands on the five
  * o'clock hour sends. The other answers that it is not five yet, or not five
@@ -30,7 +34,14 @@ import { readAll } from '../../lib/db/rows.js'
 import { sendNotice } from '../../lib/mail/notice.js'
 import { localDay } from '../../lib/outreach/sending/schedule.js'
 import { clockIn } from '../../lib/time/zone.js'
-import { OTHER, chainOf, renderRecap, tallyOf, windowOf } from '../../lib/outreach/daily-report.js'
+import {
+  OTHER,
+  chainOf,
+  isEmpty,
+  renderRecap,
+  tallyOf,
+  windowOf,
+} from '../../lib/outreach/daily-report.js'
 import { CHAIN_REGISTRY } from '../../lib/outreach/variants.js'
 
 /**
@@ -174,8 +185,12 @@ export async function work({ db, counts, now = new Date() }, post = sendNotice) 
   }
   const today = localDay(now).date
   const rows = await rowsOf(db, today)
-  const recap = renderRecap(today, tallyOf(rows, chainNameOf))
+  const tally = tallyOf(rows, chainNameOf)
   counts.examined = rows.outreach.length + rows.newBusiness.length + rows.replies.length
+  if (isEmpty(tally)) {
+    return { note: `Nothing was sent or answered on ${today}, so no recap was sent.` }
+  }
+  const recap = renderRecap(today, tally)
   await post(recap, RESEND_API_KEY, { urgent: false })
   counts.changed = 1
   return { note: `The recap for ${today} went to the studio inbox: ${recap.subject}` }
