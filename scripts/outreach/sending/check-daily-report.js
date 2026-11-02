@@ -13,6 +13,7 @@ import { check, finish, ok, same } from '../../harness/checks.js'
 import {
   chainOf,
   isAutomated,
+  isEmpty,
   plainName,
   renderRecap,
   saidIn,
@@ -114,6 +115,25 @@ check('a chain that sent nothing shows a dash for its opens, and no Other row', 
   same(tally.total, 0, 'total')
 })
 
+check('a day is empty only when nothing was sent, answered or failed', () => {
+  ok(isEmpty(tallyOf({})), 'a day of noughts')
+  ok(
+    isEmpty(
+      tallyOf({
+        replies: [{ chain: 'Introduction', subject: 'Automatic reply: hi', body: 'Thanks' }],
+      })
+    ),
+    'a machine’s reply is not news'
+  )
+  ok(!isEmpty(tallyOf({ outreach: [{ variant_id: 'fair-site-intro' }] })), 'a letter sent')
+  ok(!isEmpty(tallyOf({ newBusiness: [{}] })), 'a new business letter sent')
+  ok(
+    !isEmpty(tallyOf({ replies: [{ chain: 'Other', subject: 'Re: hi', body: 'Call me' }] })),
+    'a person writing back'
+  )
+  ok(!isEmpty(tallyOf({ failed: [{ name: 'LEAD LLC', error: 'Timeout' }] })), 'a failed letter')
+})
+
 check('the recap is one table, headed by the day', () => {
   const tally = tallyOf({
     replies: [
@@ -160,6 +180,8 @@ const tables = {
       sent_at: '2026-10-20T14:00:00.000Z',
       prospect_id: 'p2',
     },
+    // The one letter of a winter day, so the five o'clock run there has news.
+    { variant_id: 'fair-site-intro', opened_at: null, sent_at: '2026-12-01T16:00:00.000Z' },
   ]
     .map(row => ({ direction: 'outbound', status: 'sent', ...row }))
     .concat([
@@ -251,6 +273,18 @@ check('in winter the later of the two runs is the one that sends', async () => {
     sent.push(recap)
   )
   same(sent.length, 1, 'one letter at five, standard time')
+})
+
+check('at five on a day with nothing in it the run sends nothing, and says so', async () => {
+  const sent = []
+  const counts = { examined: 0, changed: 0 }
+  const answer = await work(
+    { db, counts, now: new Date('2026-11-01T23:00:00.000Z') },
+    async recap => sent.push(recap)
+  )
+  same(sent.length, 0, 'no letter')
+  same(counts.changed, 0, 'nothing changed')
+  ok(answer.note.includes('Nothing was sent or answered on 2026-11-01'), answer.note)
 })
 
 finish({ hint: 'api/outreach/daily-report.js' })
