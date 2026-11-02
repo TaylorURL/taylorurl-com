@@ -76,8 +76,6 @@ const SCHEDULED = [
   'lib/outreach/runtime.js',
   'lib/new-business/runtime.js',
   'api/newsletter-due.js',
-  'api/social-queue.js',
-  'api/social-watch.js',
 ]
 
 for (const name of SCHEDULED) {
@@ -169,7 +167,6 @@ const REFUSED_THERE = [
   '/api/newsletter-due',
   '/api/outreach/send',
   '/api/outreach/source',
-  '/api/social-queue',
   '/api/console-admin',
   '/api/payments-admin',
   // The call desk's audit email, which leaves from the studio's warmed sending

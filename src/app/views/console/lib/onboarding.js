@@ -186,9 +186,8 @@ const REGISTRARS = [
  * Two answers and no third, because the question has two outcomes and a "not
  * sure" would be a third outcome nobody could act on. Nothing seeds it and
  * nothing prefills it: the only yes is one the client pressed. Left alone it
- * stays unanswered, and `lib/social/launches.js`, which reads it on launch day,
- * reads unanswered exactly as it reads No - the launch is still posted, naming
- * the trade and the town and never the business or a picture of its site.
+ * stays unanswered, and unanswered is read exactly as No - a launch posted by
+ * hand names the trade and the town and never the business or its site.
  */
 export const SHOWCASE = [
   { id: 'yes', name: 'Yes' },
