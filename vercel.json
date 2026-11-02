@@ -58,14 +58,6 @@
     {
       "path": "/api/new-business/send",
       "schedule": "3,23,43 12-23 * * 1-5"
-    },
-    {
-      "path": "/api/social-queue",
-      "schedule": "20 15 * * *"
-    },
-    {
-      "path": "/api/social-watch",
-      "schedule": "40 17 * * *"
     }
   ],
   "redirects": [

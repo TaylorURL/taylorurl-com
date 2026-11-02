@@ -656,9 +656,9 @@ export const BRAND_SHORT_NAME = SITE.shortName
 // page listing them shows what is actually there rather than a row of icons
 // leading nowhere. `brand` names the glyph the view draws for it.
 //
-// The Google Business Profile is posted to through Buffer but is not here: it
-// serves nothing public yet, so Maps answers its location id with an empty
-// panel and a row for it would be an icon leading nowhere. `MarkGoogle` and the
+// The Google Business Profile is not here: it serves nothing public yet, so
+// Maps answers its location id with an empty panel and a row for it would be
+// an icon leading nowhere. `MarkGoogle` and the
 // `google` entry in `BRAND_MARKS` are already drawn and wired, so the row is
 // one line the day the listing surfaces.
 export const SOCIAL_LINKS = [
