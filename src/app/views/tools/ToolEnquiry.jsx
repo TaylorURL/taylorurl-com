@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { Check } from 'lucide-react'
 import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
 import EnquirySend from '@components/conversion/EnquirySend'
+import { CARD, TYPE } from '@components/kit/styles'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
 import { useToast } from '@hooks/chrome/useToast'
 import { useFormFields } from '@hooks/useFormFields'
 import { faultMessage } from '@utils/faults'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { submitEnquiry } from '@data/leads/sendEnquiry'
-import { GROUND } from './lib/ground'
 import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 
 const EMPTY = { name: '', email: '', contactMethod: 'either', phone: '', message: '' }
@@ -22,7 +22,8 @@ const NOT_SENT = 'That message did not send. Try it again in a moment.'
 const ASKED = QUESTIONS.tools
 
 /**
- * The inquiry a tool finishes on.
+ * The inquiry a tool finishes on, in a card of its own the way the Start
+ * page's form is.
  *
  * What the tool worked out rides on the message rather than being asked for
  * again, so the reply is written by somebody who can already see the findings.
@@ -99,14 +100,14 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
 
   if (status === 'sent') {
     return (
-      <div className="panel-static flex items-center gap-4 p-6">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-accent/50 bg-accent/10">
-          <Check className="h-4 w-4 text-accent" strokeWidth={2} aria-hidden="true" />
-        </div>
+      <div className={`${CARD} flex items-start gap-4 p-6 sm:p-8`} role="status">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgba(74,222,128,0.14)] text-[color:var(--live)]">
+          <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
+        </span>
         <div>
-          <p className="section-label-sm text-accent">Message Sent</p>
-          <p className="text-[15px] text-ink-paper">
-            Thanks. You usually get a reply within the hour.
+          <p className={TYPE.h3}>Sent. Thank you.</p>
+          <p className={`${TYPE.body} mt-1`}>
+            I will get back to you within an hour in most cases.
           </p>
         </div>
       </div>
@@ -114,105 +115,107 @@ export default function ToolEnquiry({ summary, projectType, idPrefix, placeholde
   }
 
   return (
-    <form onSubmit={submit} className="space-y-7">
-      <div className="grid gap-6 sm:grid-cols-2">
-        <div>
-          <label htmlFor={`${idPrefix}-name`} className={FIELD_LABEL}>
-            {ASKED.name}
-          </label>
-          <input
-            type="text"
-            id={`${idPrefix}-name`}
-            name="name"
-            autoComplete="name"
-            required
-            value={fields.name}
-            onChange={change}
-            aria-invalid={errors.name ? true : undefined}
-            aria-describedby={errors.name ? `${idPrefix}-name-error` : undefined}
-            className="field py-3.5"
-            placeholder="Your name"
-          />
-          {errors.name && (
-            <p id={`${idPrefix}-name-error`} className={FIELD_FAULT} role="alert">
-              {errors.name}
-            </p>
-          )}
+    <div className={`${CARD} p-6 sm:p-8`}>
+      <form onSubmit={submit} className="space-y-5">
+        <div className="grid gap-5 sm:grid-cols-2">
+          <div>
+            <label htmlFor={`${idPrefix}-name`} className={FIELD_LABEL}>
+              {ASKED.name}
+            </label>
+            <input
+              type="text"
+              id={`${idPrefix}-name`}
+              name="name"
+              autoComplete="name"
+              required
+              value={fields.name}
+              onChange={change}
+              aria-invalid={errors.name ? true : undefined}
+              aria-describedby={errors.name ? `${idPrefix}-name-error` : undefined}
+              className="field"
+              placeholder="Your name"
+            />
+            {errors.name && (
+              <p id={`${idPrefix}-name-error`} className={FIELD_FAULT} role="alert">
+                {errors.name}
+              </p>
+            )}
+          </div>
+          <div>
+            <label htmlFor={`${idPrefix}-email`} className={FIELD_LABEL}>
+              {ASKED.email}
+            </label>
+            <input
+              type="email"
+              id={`${idPrefix}-email`}
+              name="email"
+              autoComplete="email"
+              required
+              value={fields.email}
+              onChange={change}
+              aria-invalid={errors.email ? true : undefined}
+              aria-describedby={errors.email ? `${idPrefix}-email-error` : undefined}
+              className="field"
+              placeholder="you@yourbusiness.com"
+            />
+            {errors.email && (
+              <p id={`${idPrefix}-email-error`} className={FIELD_FAULT} role="alert">
+                {errors.email}
+              </p>
+            )}
+          </div>
         </div>
-        <div>
-          <label htmlFor={`${idPrefix}-email`} className={FIELD_LABEL}>
-            {ASKED.email}
-          </label>
-          <input
-            type="email"
-            id={`${idPrefix}-email`}
-            name="email"
-            autoComplete="email"
-            required
-            value={fields.email}
-            onChange={change}
-            aria-invalid={errors.email ? true : undefined}
-            aria-describedby={errors.email ? `${idPrefix}-email-error` : undefined}
-            className="field py-3.5"
-            placeholder="you@yourbusiness.com"
-          />
-          {errors.email && (
-            <p id={`${idPrefix}-email-error`} className={FIELD_FAULT} role="alert">
-              {errors.email}
-            </p>
-          )}
-        </div>
-      </div>
 
-      <div>
-        <label htmlFor={`${idPrefix}-message`} className={FIELD_LABEL}>
-          {ASKED.message}
-        </label>
-        <textarea
-          id={`${idPrefix}-message`}
-          name="message"
-          required
-          rows={5}
-          value={fields.message}
+        <div>
+          <label htmlFor={`${idPrefix}-message`} className={FIELD_LABEL}>
+            {ASKED.message}
+          </label>
+          <textarea
+            id={`${idPrefix}-message`}
+            name="message"
+            required
+            rows={4}
+            value={fields.message}
+            onChange={change}
+            aria-invalid={errors.message ? true : undefined}
+            aria-describedby={errors.message ? `${idPrefix}-message-error` : undefined}
+            className="field resize-none py-3"
+            placeholder={placeholder}
+          />
+          {errors.message && (
+            <p id={`${idPrefix}-message-error`} className={FIELD_FAULT} role="alert">
+              {errors.message}
+            </p>
+          )}
+        </div>
+
+        <ContactMethodChoice
+          value={fields.contactMethod}
+          phone={fields.phone}
           onChange={change}
-          aria-invalid={errors.message ? true : undefined}
-          aria-describedby={errors.message ? `${idPrefix}-message-error` : undefined}
-          className="field resize-none py-3.5"
-          placeholder={placeholder}
+          idPrefix={idPrefix}
         />
-        {errors.message && (
-          <p id={`${idPrefix}-message-error`} className={FIELD_FAULT} role="alert">
-            {errors.message}
-          </p>
+
+        {summary.length > 0 && (
+          <div className="rounded-[12px] bg-[var(--card-hi)] px-4 py-4 sm:px-5">
+            <p className={TYPE.label}>What the message carries</p>
+            <dl className="mt-3 grid gap-3 sm:grid-cols-2">
+              {summary.map(row => (
+                <div key={row.label}>
+                  <dt className={TYPE.small}>{row.label}</dt>
+                  <dd className="mt-0.5 break-words text-[15px] leading-snug text-ink">
+                    {row.value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
         )}
-      </div>
 
-      <ContactMethodChoice
-        value={fields.contactMethod}
-        phone={fields.phone}
-        onChange={change}
-        idPrefix={idPrefix}
-      />
-
-      {summary.length > 0 && (
-        <div className={`border-t pt-6 ${GROUND.rule}`}>
-          <p className="section-label-sm text-accent">What the Message Carries</p>
-          <dl className="mt-4 grid gap-4 sm:grid-cols-2">
-            {summary.map(row => (
-              <div key={row.label}>
-                <dt className="section-label-sm text-paper-faint">{row.label}</dt>
-                <dd className="mt-1 break-words text-[14px] leading-snug text-ink-paper">
-                  {row.value}
-                </dd>
-              </div>
-            ))}
-          </dl>
+        <div className="pt-1">
+          <EnquirySend sending={status === 'submitting'}>Get a Plan and a Price</EnquirySend>
         </div>
-      )}
-
-      <div className={`border-t pt-6 ${GROUND.rule}`}>
-        <EnquirySend sending={status === 'submitting'}>Get a Plan and a Price</EnquirySend>
-      </div>
-    </form>
+      </form>
+    </div>
   )
 }

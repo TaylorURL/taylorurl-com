@@ -71,27 +71,16 @@ const loaders = {
     ? {
         Console: () => import('@views/console/Console'),
         ConsoleOverview: () => import('@views/console/pages/traffic/OverviewPage'),
-        ConsoleOnboarding: () => import('@views/console/pages/health/OnboardingPage'),
-        ConsoleProject: () => import('@views/console/pages/health/ProjectPage'),
-        ConsoleLive: () => import('@views/console/pages/traffic/LivePage'),
-        ConsoleSites: () => import('@views/console/pages/traffic/SitesPage'),
-        ConsolePages: () => import('@views/console/pages/traffic/PagesPage'),
-        ConsoleSources: () => import('@views/console/pages/traffic/SourcesPage'),
-        ConsoleVisitors: () => import('@views/console/pages/traffic/VisitorsPage'),
         ConsoleVitals: () => import('@views/console/pages/health/VitalsPage'),
-        ConsoleServer: () => import('@views/console/pages/health/ServerPage'),
-        ConsoleOutreach: () => import('@views/console/pages/email/OutreachPage'),
-        ConsoleSettings: () => import('@views/console/pages/studio/SettingsPage'),
-        ConsoleBuilds: () => import('@views/console/pages/studio/BuildsPage'),
-        ConsoleLeads: () => import('@views/console/pages/studio/LeadsPage'),
-        ConsoleStaff: () => import('@views/console/pages/studio/StaffPortalPage'),
+        ConsoleStatus: () => import('@views/console/pages/health/StatusPage'),
+        ConsoleInbox: () => import('@views/console/pages/inbox/InboxPage'),
+        ConsoleCalls: () => import('@views/console/pages/calls/CallListPage'),
         ConsolePayments: () => import('@views/console/pages/studio/PaymentsPage'),
         ConsoleAdmin: () => import('@views/console/pages/studio/AdminPage'),
-        ConsoleStatus: () => import('@views/console/pages/health/StatusPage'),
-        // The representatives' portal and the three surfaces behind it. Gated
-        // with the console above rather than beside it, because what both
-        // families need is an account, and a build with no accounts carries no
-        // import() for either.
+        ConsoleServer: () => import('@views/console/pages/health/ServerPage'),
+        ConsoleSettings: () => import('@views/console/pages/studio/SettingsPage'),
+        // The screens that exist only to reach the console, gated with it
+        // because what both need is an account.
         Login: () => import('@views/auth/Login'),
         Welcome: () => import('@views/auth/Welcome'),
         ForgotPassword: () => import('@views/auth/ForgotPassword'),

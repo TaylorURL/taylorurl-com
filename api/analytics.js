@@ -18,7 +18,7 @@ const UPSTREAM =
   'https://gujgtjqqurildqurpffh.supabase.co/functions/v1/analytics-summary'
 const TIMEOUT_MS = 8000
 
-const VIEWS = new Set(['live', 'live-history', 'overview', 'site'])
+const VIEWS = new Set(['live', 'overview', 'site'])
 
 export default async function handler(request, response) {
   if (!servedHereOr404(request, response)) return
@@ -28,7 +28,7 @@ export default async function handler(request, response) {
     return
   }
 
-  const { view = 'overview', days, site, sites, path, minutes } = request.query
+  const { view = 'overview', days, site, sites, path } = request.query
   if (!VIEWS.has(view)) {
     response.status(400).json({ error: 'unknown view' })
     return
@@ -43,7 +43,6 @@ export default async function handler(request, response) {
   // handed on as the one shape the collector reads.
   if (sites) url.searchParams.set('sites', Array.isArray(sites) ? sites.join(',') : sites)
   if (path) url.searchParams.set('path', path)
-  if (minutes) url.searchParams.set('minutes', minutes)
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)

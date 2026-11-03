@@ -31,72 +31,14 @@
     <!--/site:blog-->
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <!-- The browser's own chrome, standing on the ground the page paints under
-         it. A meta tag cannot read a custom property, so the two values are
-         held here by hand: #f0eee6 is --paper on the light setting and #262624
-         is --paper on the dark one, both in src/index.css, and a change to
-         either token is a change to the line beside it here. -->
-    <meta
-      name="theme-color"
-      data-setting="light"
-      media="(prefers-color-scheme: light)"
-      content="#f0eee6"
-    />
-    <meta
-      name="theme-color"
-      data-setting="dark"
-      media="(prefers-color-scheme: dark)"
-      content="#262624"
-    />
-    <!-- The reader's light or dark setting, stamped on <html> before the first
-         paint so the page never shows one palette and then the other. It reads
-         the same key useTheme writes and falls back to the system preference,
-         which is what "system" and a first visit both resolve to. Inline and
-         synchronous, because a deferred script runs after the paint it exists
-         to get ahead of.
-
-         The pair above answers the system preference, which is the wrong
-         question to put to a reader who picked a setting rather than following
-         one. On any choice but "system" the meta that disagrees is dropped and
-         the survivor loses its query, so the chrome tracks the setting the
-         document actually carries; on "system" both stay, and the browser
-         follows the preference as useTheme's own listener does. -->
+         it: --paper in src/index.css, held here by hand because a meta tag
+         cannot read a custom property. -->
+    <meta name="theme-color" content="#141413" />
+    <!-- One setting, stamped before the first paint. The site used to follow
+         the reader's light or dark preference; it now draws dark only, so
+         there is nothing to read back and nothing to guess. -->
     <script>
-      ;(function () {
-        // Arms the band arrival, which the stylesheet keeps behind this
-        // attribute. Hidden is a state only script may ask for: set here, before
-        // the first paint, a page whose bundle never arrives is served with
-        // nothing on it hidden, and there is no frame where a band is drawn and
-        // then taken away again.
-        document.documentElement.setAttribute('data-reveal', '')
-
-        var stored = null
-        try {
-          stored = window.localStorage.getItem('taylorurl_theme')
-        } catch (ignored) {}
-        var choice = stored === 'light' || stored === 'dark' ? stored : null
-        // A first visit follows the machine, the same as a reader who picked
-        // "system": the preference is a setting they already made, and a site
-        // that answered it with light would be refusing it.
-        var follows = !choice
-        if (follows) {
-          try {
-            choice = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-          } catch (ignored) {}
-        }
-        if (!choice) {
-          choice = 'light'
-        }
-        document.documentElement.setAttribute('data-theme', choice)
-        if (follows) return
-        var chrome = document.querySelectorAll('meta[name="theme-color"]')
-        for (var i = chrome.length - 1; i >= 0; i -= 1) {
-          if (chrome[i].getAttribute('data-setting') === choice) {
-            chrome[i].removeAttribute('media')
-          } else {
-            chrome[i].parentNode.removeChild(chrome[i])
-          }
-        }
-      })()
+      document.documentElement.setAttribute('data-theme', 'dark')
     </script>
     <!-- Every page opens at the top, including one that is reloaded. The
          browser's own habit is to put a reader back where they were, which is

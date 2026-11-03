@@ -1,13 +1,20 @@
-import { useParams } from 'react-router-dom'
-import PageHero from '@components/page-bands/PageHero'
-import CtaSection from '@components/conversion/CtaSection'
-import RuledSection from '@components/page-bands/RuledSection'
-import ProseRail from '@components/page-bands/ProseRail'
-import WorkProof from '@components/areas/WorkProof'
-import TradeMesh from '@components/mesh/TradeMesh'
-import WorkMesh from '@components/mesh/WorkMesh'
+import { Fragment } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import {
+  CallToAction,
+  FactList,
+  Grid,
+  LinkCard,
+  PageIntro,
+  Prose,
+  Section,
+  SectionHead,
+} from '@components/kit/Kit'
+import { TYPE } from '@components/kit/styles'
 import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
+import ClientExample from '@views/portfolio/ClientExample'
+import { LAUNCH_FACTS, asHeading, joinNames } from '@views/portfolio/work'
 import { areaBySlug, townSlug, workInTown, workNear } from '@data/towns-and-trades/areas'
 import { TRADES } from '@data/towns-and-trades/trades'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
@@ -18,28 +25,35 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 // concrete platform and the tire product whose work runs there as well.
 const ALSO_LIMIT = 3
 
-// The bands alternate grounds down the page, so a town carrying a local band
-// takes a different arrangement from a town without one and the closing panel
-// follows whichever ground the last band left.
-const groundAt = index => (index % 2 === 0 ? 'paper' : 'band')
+/**
+ * The places a town's page also answers for, as a sentence, with each one that
+ * has a page of its own linked to it.
+ */
+function Coverage({ places }) {
+  return (
+    <p>
+      This page also covers{' '}
+      {places.map((place, index) => (
+        <Fragment key={place.name}>
+          {index > 0 && (index === places.length - 1 ? ' and ' : ', ')}
+          {place.to ? <Link to={place.to}>{place.name}</Link> : place.name}
+        </Fragment>
+      ))}
+      .
+    </p>
+  )
+}
 
 /**
- * One town's page: the client work live there, what the work around it looks
- * like, and the trades it most often calls for.
- *
- * It used to close on the four ways a job starts, which was the same four cells
- * under the same heading on all thirteen pages, so the band a reader reached
- * last was the one that told them least about where they were. The service
- * lines are still a click away in the nav, and the offer catalog that described
- * that band went out with it rather than staying behind as markup for a band no
- * page draws. What they are not is the last thing a page about Dayton has to
- * say.
+ * One town's page, in the landing layout: the point and the town's facts, the
+ * client work live there (or the nearest worth showing), what the work around
+ * it looks like, and the trades it most often calls for.
  *
  * A town whose profile names a client leads with that work; a town without one
  * shows one site from the towns around it, under the heading every such town
  * shares, because a line of its own per town for the same absent fact is one
- * sentence copied five ways. A slug no town answers to renders the not-found state rather than a
- * page about nowhere.
+ * sentence copied five ways. A slug no town answers to renders the not-found
+ * state rather than a page about nowhere.
  */
 export default function Area() {
   const { slug } = useParams()
@@ -54,6 +68,12 @@ export default function Area() {
   // second client of its own runs that under the first.
   const lead = local[0] || workNear(area)
   const alsoLocal = local.slice(1, 1 + ALSO_LIMIT)
+  // The sites the facts beside the headline say are live here: the ones filed
+  // under this town, leaving out work that only reaches it, such as a studio
+  // product used in Houston, so the line names businesses that trade here.
+  const filedHere = local.filter(
+    project => project.town === area.name || project.slug === profile?.client
+  )
   // Where that site is. Most entries carry a town; one carries only the
   // "Pasadena, Texas" it prints, so the town is read off that rather than
   // guessed, and a sentence that would have to guess is not written at all.
@@ -63,8 +83,7 @@ export default function Area() {
   const trades = area.trades.map(id => TRADES.find(trade => trade.id === id)).filter(Boolean)
   const counties = profile?.local.counties || []
   // Twelve of the thirteen rails name at least one town with a page of its own,
-  // so the names resolve to links here rather than in the band, which has no
-  // business reading the town list.
+  // so the names resolve to links here.
   const nearby = (profile?.local.nearby || []).map(name => {
     const town = areaBySlug(townSlug(name))
     return town && town.name !== area.name ? { name, to: `/areas/${town.slug}` } : { name }
@@ -73,13 +92,28 @@ export default function Area() {
     profile?.search ||
     `Custom websites for small businesses in ${area.name}, Texas. Design, build, hosting, and getting found on Google, built in Baytown.`
 
-  const bands = profile ? ['work', 'local', 'trades'] : ['work', 'trades']
-  const groundFor = band => groundAt(bands.indexOf(band))
-  const localGround = groundFor('local')
-  const tradesGround = groundFor('trades')
+  const facts = [
+    counties.length > 0 && {
+      label: counties.length > 1 ? 'Counties' : 'County',
+      value: joinNames(counties),
+    },
+    filedHere.length > 0
+      ? { label: 'Live here', value: joinNames(filedHere.map(project => project.name)) }
+      : lead && { label: 'Example site', value: [lead.name, leadTown].filter(Boolean).join(', ') },
+    LAUNCH_FACTS[0],
+  ].filter(Boolean)
+
+  const workTitle =
+    profile?.work?.title ||
+    (local.length ? `Work already live in ${area.name}` : `Work already live near ${area.name}`)
+  const workBody =
+    profile?.work?.description ||
+    (leadTown
+      ? `I built the site for ${lead.name} in ${leadTown}, and I still host it and look after it.`
+      : lead?.description)
 
   return (
-    <div>
+    <>
       <Seo
         title={`Web Design in ${area.name}, TX`}
         description={description}
@@ -116,81 +150,55 @@ export default function Area() {
         ]}
       />
 
-      <PageHero
-        eyebrow={`Service Area · ${area.name}`}
+      <PageIntro
         title={`Websites for ${area.name} businesses.`}
-        description={
+        lead={
           profile?.lede ||
           `Custom sites for the shops, trades, restaurants, and independent pros working in ${area.name}, built and looked after from Baytown.`
         }
+        media={<FactList items={facts} />}
       />
 
-      <RuledSection
-        id="area-work"
-        ground={groundFor('work')}
-        eyebrow="Live Work"
-        title={
-          profile?.work?.title ||
-          (local.length
-            ? `Work already live in ${area.name}.`
-            : `Work already live near ${area.name}.`)
-        }
-        description={
-          profile?.work?.description ||
-          (leadTown
-            ? `I built this one for a business in ${leadTown}, and I still host it and look after it.`
-            : undefined)
-        }
-        meta={local.length ? `${area.name}, Texas` : `Near ${area.name}, Texas`}
-      >
-        {lead && (
-          <div className="flex flex-col gap-10">
-            <WorkProof
-              project={lead}
-              ground={groundFor('work')}
-              showIdentity={!profile?.work?.title}
-            />
-            {alsoLocal.length > 0 && <WorkMesh projects={alsoLocal} ground={groundFor('work')} />}
-          </div>
-        )}
-      </RuledSection>
-
-      {profile && (
-        <RuledSection
-          id="area-local"
-          ground={localGround}
-          eyebrow="The Work Here"
-          title={profile.local.title}
-          meta={`${counties.join(' and ')} ${counties.length > 1 ? 'Counties' : 'County'}`}
-        >
-          <ProseRail body={profile.local.body} nearby={nearby} ground={localGround} />
-        </RuledSection>
+      {lead && (
+        <ClientExample
+          label="Live work"
+          project={lead}
+          title={asHeading(workTitle)}
+          body={workBody}
+          more={alsoLocal}
+          moreTitle={`More work in ${area.name}`}
+        />
       )}
 
-      <RuledSection
-        id="area-trades"
-        ground={tradesGround}
-        eyebrow="Trades"
-        title={`Common work around ${area.name}.`}
-        description="Each trade has a page of its own covering what the site has to do and the software it runs beside."
-        meta={`${trades.length} trades`}
-      >
-        <TradeMesh trades={trades} ground={tradesGround} />
-      </RuledSection>
+      {profile && (
+        <Section label={`The work in ${area.name}`}>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14">
+            <h2 className={TYPE.h2}>{asHeading(profile.local.title)}</h2>
+            <Prose className="max-w-[640px] [&>p:first-child]:mt-0">
+              {profile.local.body.map(paragraph => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+              {nearby.length > 0 && <Coverage places={nearby} />}
+            </Prose>
+          </div>
+        </Section>
+      )}
 
-      <CtaSection
-        ground={tradesGround === 'paper' ? 'dark' : 'paper'}
-        eyebrow="Start"
-        title={
-          <>
-            Start a site for <span className="text-accent">{area.name}</span>.
-          </>
-        }
-        description={
-          profile?.close ||
-          `Tell me what your ${area.name} business needs and you get a plan and a price back. Most sites are live in two to four weeks.`
-        }
-      />
-    </div>
+      <Section label="Trades">
+        <SectionHead title={`Common work around ${area.name}`} />
+        <Grid cols={3}>
+          {trades.map(trade => (
+            <LinkCard
+              key={trade.id}
+              to={`/industries/${trade.id}`}
+              title={trade.name}
+              body={trade.needs[0]}
+            />
+          ))}
+        </Grid>
+      </Section>
+
+      <CallToAction title={`Start a site for ${area.name}.`} />
+    </>
   )
 }

@@ -7,6 +7,7 @@ import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
 import { useSession } from '@hooks/session/useSession'
 import { supabase } from '@data/supabase/supabaseClient'
 import { claimCheckout } from '@data/checkout/checkoutClaim'
+import { BUTTONS } from '@components/kit/styles'
 import AuthShell from './AuthShell'
 import { welcomeScreen } from './lib/screen'
 
@@ -124,7 +125,7 @@ export default function Welcome() {
         noIndex
       />
       <AuthShell
-        title="Set a Password"
+        title="Set a password."
         blurb={
           address
             ? `Your build is open on ${address}. Set a password on that address and your console opens.`
@@ -133,14 +134,11 @@ export default function Welcome() {
         formName="welcome"
         bought
         business={buyer?.business}
-        alternative={{ to: '/login', lead: 'Already have a password?', label: 'Log in' }}
+        alternative={{ to: '/login', lead: 'Already have a password?', label: 'Sign In' }}
       >
-        <Link to={passwordHref} className="auth-submit inline-flex items-center justify-center">
+        <Link to={passwordHref} className={`${BUTTONS.primary} w-full`}>
           Set a Password
         </Link>
-        <p className="auth-note">
-          The next screen sends the link to that address. It works once and expires in an hour.
-        </p>
       </AuthShell>
     </>
   )

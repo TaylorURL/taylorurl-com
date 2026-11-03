@@ -761,4 +761,76 @@ export const serves = target => isOffSite(target) || !IS_SECOND_SITE || SERVED.h
  */
 export const START_LINK = IS_SECOND_SITE
   ? { to: '/contact', label: 'Send an Enquiry' }
-  : { to: '/start', label: 'Start a Project' }
+  : { to: '/start', label: 'Get a Price' }
+
+/**
+ * The bar's links, which are three on the studio: what is sold, what has been
+ * built, and who builds it. Everything else is one tap further, in the footer
+ * or on the page those three lead to. The bar used to carry five dropdowns and
+ * about forty links, and a reader looking for the phone number had to get past
+ * all of them.
+ */
+export const HEADER_LINKS = IS_SECOND_SITE
+  ? served([
+      { to: '/services', label: 'Services' },
+      { to: '/about', label: 'About' },
+      { to: '/contact', label: 'Contact' },
+    ])
+  : [
+      { to: '/services', label: 'Services' },
+      { to: '/portfolio', label: 'Work' },
+      { to: '/about', label: 'About' },
+    ]
+
+const asLink = service => ({ to: service.path, label: service.name })
+
+/**
+ * The footer's directory: every page, in four short columns. This is where the
+ * pages the bar no longer names are reached from, so nothing became harder to
+ * find when the dropdowns went.
+ */
+const STUDIO_FOOTER_COLUMNS = [
+  {
+    head: 'Services',
+    items: [
+      ...SERVICE_LINES.map(asLink),
+      ...INCLUDED_SERVICES.map(asLink),
+      { to: '/services', label: 'All Services' },
+    ],
+  },
+  {
+    head: 'Work',
+    items: [
+      { to: '/portfolio', label: 'Portfolio' },
+      { to: '/industries', label: 'Industries' },
+      { to: '/areas', label: 'Service Areas' },
+      { to: '/console/status', label: 'System Status' },
+    ],
+  },
+  {
+    head: 'Company',
+    items: [
+      { to: '/about', label: 'About' },
+      { to: '/process', label: 'Process' },
+      { to: '/faq', label: 'Questions' },
+      { to: '/blog', label: 'Blog' },
+      { to: '/contact', label: 'Contact' },
+      { to: '/live', label: 'Ask the Assistant' },
+    ],
+  },
+  {
+    head: 'Free Tools',
+    items: [
+      { to: '/speed-check', label: 'Speed Check' },
+      ...TOOLS_INDEX.map(tool => ({ to: tool.path, label: tool.name })),
+      { to: '/tools', label: 'All Tools' },
+    ],
+  },
+]
+
+export const FOOTER_COLUMNS = IS_SECOND_SITE
+  ? [{ head: 'Pages', items: PRIMARY_LINKS }]
+  : STUDIO_FOOTER_COLUMNS.map(column => ({
+      ...column,
+      items: column.items.filter(item => serves(item.to)),
+    }))

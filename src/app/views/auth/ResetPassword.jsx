@@ -5,6 +5,7 @@ import { useToast } from '@hooks/chrome/useToast'
 import { supabase } from '@data/supabase/supabaseClient'
 import { faultMessage } from '@utils/faults'
 import AuthShell, { Field } from './AuthShell'
+import { AUTH_NOTE } from './lib/styles'
 
 const STATUS_ID = 'reset-status'
 // Supabase refuses anything shorter, and finding that out from the server after
@@ -116,14 +117,15 @@ export default function ResetPassword() {
       <>
         {head}
         <AuthShell
-          title="Set a New Password"
+          framed
+          title="Set a new password."
           blurb="Checking the link."
           busy
           submitLabel="Set Password"
           busyLabel="Checking"
           onSubmit={() => {}}
         >
-          <p className="auth-note" role="status">
+          <p className={AUTH_NOTE} role="status">
             Reading the link from your email.
           </p>
         </AuthShell>
@@ -136,15 +138,16 @@ export default function ResetPassword() {
       <>
         {head}
         <AuthShell
-          title="Set a New Password"
+          framed
+          title="Set a new password."
           blurb="This link has expired or has already been used."
           busy={false}
           submitLabel="Request a New Link"
           busyLabel="Opening"
           onSubmit={() => navigate('/forgot-password')}
-          alternative={{ to: '/login', lead: 'Know your password?', label: 'Log in' }}
+          alternative={{ to: '/login', lead: 'Know your password?', label: 'Sign In' }}
         >
-          <p className="auth-note" role="status">
+          <p className={AUTH_NOTE} role="status">
             A reset link works once and expires an hour after it is sent. Ask for another and use
             the newest email.
           </p>
@@ -157,7 +160,8 @@ export default function ResetPassword() {
     <>
       {head}
       <AuthShell
-        title="Set a New Password"
+        framed
+        title="Set a new password."
         blurb="Choose the password you will sign in with."
         statusId={STATUS_ID}
         error={error}
@@ -165,10 +169,10 @@ export default function ResetPassword() {
         submitLabel="Set Password"
         busyLabel={stage === 'done' ? 'Opening the Console' : 'Saving'}
         onSubmit={submit}
-        alternative={{ to: '/login', lead: 'Know your password?', label: 'Log in' }}
+        alternative={{ to: '/login', lead: 'Know your password?', label: 'Sign In' }}
       >
         {stage === 'done' && (
-          <p className="auth-note" role="status">
+          <p className={AUTH_NOTE} role="status">
             Your password is set. The console opens next.
           </p>
         )}

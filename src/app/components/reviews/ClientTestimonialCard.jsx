@@ -1,10 +1,9 @@
 import { useState } from 'react'
-import { m } from 'framer-motion'
 import { ThumbsUp } from 'lucide-react'
 import ReviewStars from '@components/reviews/ReviewStars'
 import TrustpilotLogo from '@components/marks/TrustpilotLogo'
 import { reviewSourceInk, reviewSourceMark } from '@components/marks/reviewMarks'
-import { staggerChild } from '@constants/animations'
+import { CARD } from '@components/kit/styles'
 import { retryImage, RETRY_ATTEMPTS } from '@utils/retryImage'
 import { reviewLogoSrc, reviewSource } from '@data/reputation/reviews'
 
@@ -35,7 +34,7 @@ function ReviewSourceName({ source }) {
       /* The mark is small and is the one thing in the corner a reader can
          press, so the drawing stays at its size and the reach around it is
          opened to the forty-four a thumb needs. */
-      className="relative flex shrink-0 touch-manipulation items-center gap-2 text-[14px] font-semibold text-ink-paper transition-colors duration-200 before:absolute before:-inset-3 before:content-[''] hover:text-[color:var(--review-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] active:scale-[0.97]"
+      className="relative flex shrink-0 touch-manipulation items-center gap-2 text-[14px] font-medium text-ink transition-colors duration-150 before:absolute before:-inset-3 before:content-[''] hover:text-[color:var(--review-ink)]"
     >
       {source === 'trustpilot' ? (
         <TrustpilotLogo className="h-[15px] w-auto shrink-0" />
@@ -117,7 +116,7 @@ function ClientAvatar({ name, business, displayUrl }) {
     if (!recovering) setMissing(true)
   }
   return (
-    <div className="flex h-11 w-11 shrink-0 items-center justify-center text-[12px] font-semibold uppercase tracking-[0.14em] text-ink-paper">
+    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/[0.06] text-[13px] font-medium text-ink">
       {missing ? (
         initials
       ) : (
@@ -145,9 +144,11 @@ function ClientAvatar({ name, business, displayUrl }) {
  * would drift, and a reader who met the same quote under two different marks
  * has been given a reason to doubt both.
  *
- * It is the same object as the capability card in the band above it: the
- * page's own paper, the one hairline ring and lift, the same corner and the
- * same padding. For a while it was a card in the network's colours, tinted and
+ * It is the same object as every other card on the site: one step of fill up
+ * from the ground, the same soft corner, and no outline or lift round it,
+ * which is what sets the Refined look apart from the hairlined boxes it
+ * replaced. It is drawn in place, with nothing that fades or rises in, so the
+ * quote is there in the prerendered page. For a while it was a card in the network's colours, tinted and
  * keylined in Trustpilot green or Google blue, and three of those in a row
  * under a band of plain cards read as three widgets pasted onto the page. What
  * belongs to the network is the rating, which is drawn the way the network
@@ -173,16 +174,13 @@ function ClientAvatar({ name, business, displayUrl }) {
  * @param {{displayUrl: string, name: string, business: string, quote: string,
  *   rating?: number, place?: string, source: string}} props.review An entry
  *   from `CLIENT_REVIEW_LIST`.
- * @param {number} [props.index] Position in its row, which sets how long the
- *   card waits before it arrives.
  * @param {string} [props.className] Passed to the figure, so the surface
  *   showing it decides its width.
  */
-export default function ClientTestimonialCard({ review, index = 0, className = '' }) {
+export default function ClientTestimonialCard({ review, className = '' }) {
   return (
-    <m.figure
-      {...staggerChild(index, 0.06)}
-      className={`review-card card-lift relative flex flex-1 flex-col gap-6 overflow-hidden bg-paper p-8 sm:p-10 ${className}`.trim()}
+    <figure
+      className={`review-card ${CARD} relative flex flex-1 flex-col gap-5 overflow-hidden p-6 sm:p-8 ${className}`.trim()}
       data-source={review.source}
       style={{ '--review-ink': reviewSourceInk(review.source) }}
     >
@@ -199,7 +197,7 @@ export default function ClientTestimonialCard({ review, index = 0, className = '
             displayUrl={review.displayUrl}
           />
           <div className="flex min-w-0 flex-col gap-1">
-            <div className="text-[14px] font-semibold text-ink-paper">{review.name}</div>
+            <div className="text-[15px] font-medium text-ink">{review.name}</div>
             <a
               href={`https://${review.displayUrl}`}
               target="_blank"
@@ -209,13 +207,11 @@ export default function ClientTestimonialCard({ review, index = 0, className = '
                  twelve pixels and the reach around it is opened to the forty-four
                  a thumb needs. The two lines it grows over carry no action of
                  their own, so nothing is taken from them. */
-              className="section-label-sm text-paper-faint relative touch-manipulation transition-colors duration-200 before:absolute before:-inset-y-4 before:inset-x-0 before:content-[''] hover:text-[color:var(--review-ink)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] active:scale-[0.97]"
+              className="relative touch-manipulation text-[14px] text-ink-mute transition-colors duration-150 before:absolute before:-inset-y-4 before:inset-x-0 before:content-[''] hover:text-[color:var(--review-ink)]"
             >
               {review.business}
             </a>
-            {review.place && (
-              <div className="section-label-sm text-paper-faint">{review.place}</div>
-            )}
+            {review.place && <div className="text-[14px] text-ink-mute">{review.place}</div>}
           </div>
         </div>
         <ReviewSourceName source={review.source} />
@@ -229,9 +225,9 @@ export default function ClientTestimonialCard({ review, index = 0, className = '
       ) : (
         <ReviewEndorsement source={review.source} />
       )}
-      <blockquote className="text-[17px] leading-[1.55] tracking-tight text-ink-paper">
+      <blockquote className="text-[17px] leading-[1.6] text-ink">
         &ldquo;{review.quote}&rdquo;
       </blockquote>
-    </m.figure>
+    </figure>
   )
 }

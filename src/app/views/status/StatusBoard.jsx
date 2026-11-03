@@ -1,22 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import {
-  Area,
-  Badge,
-  ConsolePage,
-  EmptyRow,
-  Panel,
-  PanelBody,
-  PanelFoot,
-  SkeletonBar,
-  SkeletonRows,
-} from '../console/ui'
-import { Figures } from '../console/Figures'
-import { CELL_TIGHT, MONO_LABEL, ROW_HEIGHT, TH_TIGHT } from '../console/lib/tokens'
+import { TYPE } from '@components/kit/styles'
+import { Area, ConsolePage } from '../console/ui'
+import { ROW_HEIGHT } from '../console/lib/tokens'
 import { recalledRows, rememberRows } from '../console/lib/rowMemory'
 import { bareDomain, displayDomain } from '@utils/domains'
 import { ago, useNow } from '@hooks/console/useNow'
 import { SiteIcon } from '../console/SiteIcon'
 import { clockIn, ZONE } from '@lib/time/zone.js'
+
+/*
+ * The public status board, in the site's "Refined" look: a panel of four
+ * figures, every site as a row in one card with a dot and a word saying whether
+ * it answers, and the open and recently fixed issues beside it.
+ *
+ * It only ever renders inside the console, which carries a light palette and a
+ * dark one, so every colour here is one of the console's own tokens rather
+ * than the public site's: a card is `bg-paper`, a wash is `--wash-paper`, and
+ * the three states are the console's good, warn and danger. Nothing is drawn
+ * with an outline; a card is told apart from the ground by its fill.
+ */
+
+/** A card: the console's own surface, soft corners, no outline. */
+const CARD = 'rounded-[16px] bg-paper'
 
 /** The host a site's mark is filed under: the first domain it answers on. */
 function apexOf(site) {
@@ -24,21 +29,33 @@ function apexOf(site) {
 }
 
 /**
- * The three states a site is in, as a word and the badge tone carrying it.
- *
- * Green is the console's settled condition - a subscriber on the list, a reply
- * in hand, a vital in Google's own top band - and the blue is what a reader is
- * being pointed at. A site that answers is settled, so it takes the green and
- * the accent is left to mean something. The dot repeats the tone at the far
- * left of the row, which is the edge a column of sixteen is scanned down.
+ * The three states a site is in, as a word, the dot beside it and the ink of
+ * the word. A site that answers is settled, so it takes the green.
  */
-// A badge names its worst state `bad` and a tile names the same one `danger`,
-// so each state carries both words rather than a tile falling back to plain ink
-// on the one reading that most needs a colour.
 const SITE_STATE = {
-  operational: { label: 'Up', tone: 'good', card: 'good', dot: 'bg-[color:var(--good-fill)]' },
-  degraded: { label: 'Issue', tone: 'warn', card: 'warn', dot: 'bg-[color:var(--warn-fill)]' },
-  outage: { label: 'Down', tone: 'bad', card: 'danger', dot: 'bg-[color:var(--danger-fill)]' },
+  operational: {
+    label: 'Up',
+    dot: 'bg-[color:var(--good-fill)]',
+    ink: 'text-[color:var(--good)]',
+  },
+  degraded: {
+    label: 'Issue',
+    dot: 'bg-[color:var(--warn-fill)]',
+    ink: 'text-[color:var(--warn)]',
+  },
+  outage: {
+    label: 'Down',
+    dot: 'bg-[color:var(--danger-fill)]',
+    ink: 'text-[color:var(--danger)]',
+  },
+}
+
+/** The ink a figure takes when it is the thing wrong on the board. */
+const FIGURE_INK = {
+  plain: '',
+  good: 'text-[color:var(--good)]',
+  warn: 'text-[color:var(--warn)]',
+  danger: 'text-[color:var(--danger)]',
 }
 
 /** Where an issue has got to. A fault under investigation and one with a fix
@@ -46,24 +63,24 @@ const SITE_STATE = {
  *  share a tone and are told apart by the word. */
 const INCIDENT_STATE = {
   investigating: { label: 'Investigating', tone: 'warn' },
-  identified: { label: 'Fix In Progress', tone: 'warn' },
+  identified: { label: 'Fix in progress', tone: 'warn' },
   resolved: { label: 'Resolved', tone: 'good' },
+}
+
+const CHIP_TONE = {
+  warn: 'bg-[color:color-mix(in_srgb,var(--warn-fill)_16%,transparent)] text-[color:var(--warn)]',
+  good: 'bg-[color:color-mix(in_srgb,var(--good-fill)_16%,transparent)] text-[color:var(--good)]',
 }
 
 const OPEN_ISSUES_SHOWN = 5
 
-// Where each of this board's tables keeps the shape of its last render. The
+// Where each of this board's lists keeps the shape of its last render. The
 // mechanism is shared with the console's own tables; only the keys are local.
 const REMEMBERED = {
   sites: 'taylorurl_status_sites',
   open: 'taylorurl_status_open',
   fixed: 'taylorurl_status_fixed',
 }
-
-// The placeholder rows carry the cells' own measure, so a table waits at the
-// width it lands at rather than at the console's wider gutter.
-const ISSUE_CELLS = [CELL_TIGHT]
-const FIXED_CELLS = Array.from({ length: 2 }, () => CELL_TIGHT)
 
 // The board is one company's account of its own sites, so the hour an outage
 // opened at is the hour it was in Texas. A visitor reading it from another zone
@@ -88,16 +105,13 @@ function formatWhen(value) {
 }
 
 function dayTone(day) {
-  // A day before this site came under watch is grey. It is the one tone in the
-  // strip that is not a reading: three colours for what the monitor saw, and a
-  // fourth for the days it was not there for.
-  if (day.measured === false) return 'bg-[color:var(--paper-hairline)]'
   const uptime = day.uptime
   if (uptime >= 99.9) return 'bg-[color:var(--good-fill)]'
   if (uptime >= 95) return 'bg-[color:var(--warn-fill)]'
   return 'bg-[color:var(--danger-fill)]'
 }
 
+/** Whether the history is as long as the window yet. */
 function measuredLabel(measuredSince, windowDays) {
   if (!measuredSince) return `${windowDays}-day history`
   const started = new Date(measuredSince)
@@ -106,18 +120,8 @@ function measuredLabel(measuredSince, windowDays) {
 }
 
 /**
- * The window the counts and the percentage are taken over, from the feed.
- *
- * This is the figure the captions quote - issues raised in the last so many
- * days, uptime across them. The strip draws a longer run and sets its own
- * span; the two were one number once, and separating them is what let the
- * strip grow without the captions claiming a month of measurement that is not
- * there.
- *
- * It carries its unit rather than leaving each caption to add one, because
- * three of the four that quote it read it straight into a sentence - "3 fixed
- * in 30", "raised in 30" - and a bare number there is a figure with nothing to
- * measure it in.
+ * The window the counts and the percentage are taken over, from the feed, with
+ * its unit, because it is read straight into a sentence - "fixed in 30 days".
  */
 function windowSpan(windowDays) {
   const days = Math.max(1, windowDays)
@@ -125,86 +129,28 @@ function windowSpan(windowDays) {
 }
 
 /**
- * A day per pill, at one height, told apart by colour alone, across the whole
- * width of the row.
- *
- * The pills used to be drawn to the day's uptime, which made the strip a bar
- * chart of a figure that is 100 on almost every day it is read: the column
- * came out flat with the occasional notch, and the notch was as likely to be
- * 99.4% as an outage. Worse, a height is a claim of precision - it invites the
- * reader to compare two days that the monitor only ever sorted into up,
- * degraded and down. So the height goes and the colour carries the whole
- * reading: three tones against a fourth for the days before the site came
- * under watch, which is not a measurement and must not be drawn in the healthy
- * colour.
- *
- * The strip takes the row rather than a column inside it. Given a column it is
- * a hundred and fifty pixels of detail sat beside a name with room to spare on
- * both sides, and a month of history has to be read at a squint; given the row
- * it is the widest thing on the board, which is right, because it is the only
- * part of a row that says anything about a day that is not today.
- *
- * The mark is a fixed measure: five wide against sixteen tall, on a two-pixel
- * gap. Those are the proportions being read. A mark standing three times
- * taller than it is wide reads as one day in a run of days; the same mark let
- * out to fill the row reads as a tile in a grid, which is a chart of something
- * else. Holding the ratio of mark to gap and letting both grow does not save
- * it - a strip of thirty across a wide card comes out sixteen by sixteen, and
- * a square is a square whatever the air beside it measures.
- *
- * The strip is as wide as its days make it rather than as wide as the row, so
- * it opens at the left edge under the name it belongs to. Sized to the row it
- * was a box with the marks packed into the far corner of it, which reads as a
- * figure aligned to the right of the line rather than as a run of days.
- *
- * What the packing is for is the case where the days do not fit: capped at the
- * row's width the strip keeps its right edge, so what survives a card too
- * narrow to hold it is the recent end. Today is the day a reader is looking
- * for; the far edge of the history is the part that can afford to go.
- */
-
-/**
- * How many days the strip draws, which is not the window the figures cover.
- *
- * The feed reports a month because a month is what the uptime percentage is
- * computed over. The strip is a different question - it is the shape of a run
- * of days, and a run needs enough of them to read as one. Thirty marks at the
- * measure they are drawn at come to a third of the row and sit there looking
- * clipped; ninety fill it, which is what a history is supposed to look like.
+ * How many days the strip draws at most, which is not the window the figures
+ * cover.
  */
 const STRIP_DAYS = 90
 
 /**
- * The strip's days: the feed's, padded at the front to `STRIP_DAYS`.
- *
- * The monitor has not been running for a quarter and the feed only carries its
- * own window, so the days before it are synthesised here rather than invented
- * upstream - the padding is a drawing decision and belongs with the drawing.
- * They are marked unmeasured, which is what they are; what that tone looks like
- * is `dayTone`'s business.
- *
- * A site watched for longer than the strip draws is cut from the front, so
- * every row on the board is the same run of dates however much history sits
- * behind it. Without that a site with a year of readings draws a strip three
- * times its neighbour's and out through the side of the card, and the rows
- * stop being comparable - which is the whole point of stacking them.
+ * The strip's days: only the ones the monitor measured, the most recent
+ * `STRIP_DAYS` of them. A site watched for a month draws a month of marks, at
+ * the same size and spacing, rather than a row of blanks before it.
  */
 function stripDays(days) {
-  if (!days?.length) return days
-  if (days.length >= STRIP_DAYS) return days.slice(-STRIP_DAYS)
-  const first = new Date(`${days[0].date}T00:00:00Z`)
-  const pad = []
-  for (let back = STRIP_DAYS - days.length; back > 0; back -= 1) {
-    const day = new Date(first)
-    day.setUTCDate(day.getUTCDate() - back)
-    pad.push({ date: day.toISOString().slice(0, 10), uptime: null, measured: false })
-  }
-  return pad.concat(days)
+  return (days || []).filter(day => day.measured !== false).slice(-STRIP_DAYS)
 }
 
+/**
+ * A day per mark, at one height, told apart by colour alone. The strip is as
+ * wide as its days make it and keeps its right edge when the row is too narrow,
+ * so what survives a phone is the recent end: today is the day a reader wants.
+ */
 function UptimeStrip({ days, className = '' }) {
-  if (!days?.length) return null
   const shown = stripDays(days)
+  if (!shown.length) return null
   return (
     <div
       className={`flex h-4 w-fit max-w-full items-stretch justify-end gap-[2px] overflow-hidden ${className}`}
@@ -221,41 +167,70 @@ function UptimeStrip({ days, className = '' }) {
   )
 }
 
+/** A still placeholder bar, where a figure or a line will land. */
+function Placeholder({ className = '' }) {
+  return (
+    <span
+      className={`block rounded-[6px] bg-[color:var(--wash-paper-strong)] ${className}`}
+      aria-hidden="true"
+    />
+  )
+}
+
 /**
- * The placeholder for one site, in the shape of the entry it stands in for: the
- * identity line, then the strip's own band under it.
- *
- * The list has no column heads to hold the block's width while it waits, so the
- * placeholder is the only thing keeping the card from opening at nothing and
- * growing as the feed lands.
+ * Placeholder rows in the shape of the entries they stand in for, at the
+ * height the last visit measured, so the card opens at the size it lands at.
  */
-function SkeletonSites({ rows, height, lastHeight }) {
+function PlaceholderRows({ rows, height, lastHeight, lines = 2 }) {
   return Array.from({ length: rows }).map((_, row) => (
     <li
       key={row}
-      className="border-hair-paper border-t px-5 py-3"
+      className="px-3 py-3"
       style={{ height: row === rows - 1 ? lastHeight : height }}
       aria-hidden="true"
     >
-      <span className="block h-5 w-full max-w-[11rem] animate-pulse rounded-[var(--r-tiny)] bg-paper-soft/15" />
-      <span className="mt-2.5 block h-4 w-full animate-pulse rounded-[var(--r-tiny)] bg-paper-soft/15" />
+      <Placeholder className="h-4 w-full max-w-[11rem]" />
+      {lines > 1 && <Placeholder className="mt-2.5 h-4 w-full" />}
     </li>
   ))
 }
 
-/**
- * An issue's state, in the console's own badge.
- *
- * The word keeps its line whatever the column does with it: "Fix In Progress"
- * broken over two rows in a right-hand column reads as two states rather than
- * one.
- */
+/** An issue's state as a small filled pill, kept on one line. */
 function StatusChip({ status }) {
   const cfg = INCIDENT_STATE[status] || INCIDENT_STATE.investigating
   return (
-    <Badge tone={cfg.tone}>
-      <span className="whitespace-nowrap">{cfg.label}</span>
-    </Badge>
+    <span
+      className={`shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-medium leading-none ${CHIP_TONE[cfg.tone]}`}
+    >
+      {cfg.label}
+    </span>
+  )
+}
+
+/** What a list says when it has nothing to show, centred in its card. */
+function Quiet({ children }) {
+  return <li className={`${TYPE.small} px-3 py-10 text-center`}>{children}</li>
+}
+
+/**
+ * One of the board's cards: a heading with a short line across from it, and a
+ * body that scrolls inside the card at the desk width, where the page is the
+ * height of the screen.
+ */
+function Card({ area, title, aside, className = '', children, foot }) {
+  return (
+    <section
+      aria-label={title}
+      className={`${CARD} flex min-h-0 flex-col ${className}`}
+      style={area ? { '--area': area } : undefined}
+    >
+      <header className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 px-5 pb-2 pt-5 sm:px-6">
+        <h2 className={TYPE.h3}>{title}</h2>
+        {aside && <p className={TYPE.small}>{aside}</p>}
+      </header>
+      <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3 sm:px-3">{children}</div>
+      {foot}
+    </section>
   )
 }
 
@@ -277,10 +252,6 @@ function humanizeDuration(ms) {
 /**
  * The window's own account of its issues: how many were reported, how many
  * were fixed, and how long a fix typically took.
- *
- * They close the fixed list rather than standing in a card of their own. Three
- * figures are a reading of the rows above them, and a card holding three
- * figures and nothing else is a head over a foot.
  */
 function windowReadings(incidents) {
   let opened = 0
@@ -297,36 +268,41 @@ function windowReadings(incidents) {
   return { opened, fixed, typicalFix: median(fixDurations) }
 }
 
-/** One figure of the window, in the block a card closes on. */
-function Reading({ label, value, loading }) {
+/** The four figures across one panel, each waiting for the feed before it says anything. */
+function FigurePanel({ figures, loading }) {
   return (
-    <span className="flex items-baseline gap-2">
-      <span className={`${MONO_LABEL} text-paper-faint`}>{label}</span>
-      {loading ? (
-        <SkeletonBar className="w-10" />
-      ) : (
-        <span className="font-mono text-[13px] tabular-nums text-ink-paper">{value}</span>
-      )}
-    </span>
+    <dl
+      className={`${CARD} grid grid-cols-2 gap-x-6 gap-y-6 px-6 py-6 sm:px-8 lg:grid-cols-4`}
+      aria-busy={loading || undefined}
+    >
+      {figures.map(({ key, label, value, tone = 'plain' }) => (
+        <div key={key} className="min-w-0">
+          <dt className="sr-only">{label}</dt>
+          <dd>
+            {loading ? (
+              <Placeholder className="h-6 w-16" />
+            ) : (
+              <span
+                className={`${tone === 'plain' ? TYPE.figure : `${TYPE.figure.replace(/\btext-ink\b/, '')} ${FIGURE_INK[tone]}`} block`}
+              >
+                {value}
+              </span>
+            )}
+            <span className={`${TYPE.small} mt-2 block`}>{label}</span>
+          </dd>
+        </div>
+      ))}
+    </dl>
   )
 }
 
 /**
- * The status board itself: the four figures, the site table, and the open and
- * fixed issue tables.
+ * The status board itself: the four figures, every site the monitor watches,
+ * and the open and recently fixed issues.
  *
  * It is the one section of the console anyone may read, signed in or not, and
  * the two audiences see the same board. The caller supplies the feed and the
  * chrome around it.
- *
- * The table is the board's reading - a column of sixteen dots and the strip
- * beside each - so it takes the left and the whole height, and the sites past
- * the bottom move inside it under their own column heads. The issues stand
- * beside it in a column a third of the width, each one an entry rather than a
- * row of cells, and the open card is sized to what it holds: it is empty
- * nearly always, and a card held at half the column for one sentence is a
- * column half spent on nothing, so the fixed list takes whatever the open one
- * leaves.
  *
  * @param {{data: object|null, error: Error|null, loading: boolean}} feed
  *   the result of useStatusFeed, read by the caller so one mount polls once
@@ -345,7 +321,7 @@ export function StatusBoard({ feed, scope }) {
   const fixedBody = useRef(null)
   // The count is what the monitor currently watches. It moves when a site is
   // taken on rather than with anything a reader does, so a first visit reserves
-  // the table it is about to be shown instead of half of it.
+  // the list it is about to be shown instead of half of it.
   const siteSkeleton = recalledRows(REMEMBERED.sites, 15, ROW_HEIGHT.statusSite)
   const openSkeleton = recalledRows(REMEMBERED.open, 1, ROW_HEIGHT.statusIssue)
   const fixedSkeleton = recalledRows(REMEMBERED.fixed, 4, ROW_HEIGHT.statusFixed)
@@ -391,11 +367,10 @@ export function StatusBoard({ feed, scope }) {
   const openIncidents = useMemo(() => incidents.filter(i => i.status !== 'resolved'), [incidents])
   // One fault reaches the collector once per browser that hit it, so a single
   // broken page arrives as several incidents carrying the same sentence and
-  // resolving seconds apart. Read one at a time they are the same line four
-  // times over. They are folded into one row against the site and the summary,
-  // keeping the earliest opening and the latest resolution so the time the
-  // fault was actually open is the span across every report of it, and the
-  // count of reports rides along.
+  // resolving seconds apart. They are folded into one row against the site and
+  // the summary, keeping the earliest opening and the latest resolution so the
+  // time the fault was actually open is the span across every report of it,
+  // and the count of reports rides along.
   const resolvedIncidents = useMemo(() => {
     const folded = new Map()
     for (const incident of incidents) {
@@ -431,164 +406,60 @@ export function StatusBoard({ feed, scope }) {
   const span = windowSpan(windowDays)
   const feedDown = error && !data
   const state = watched ? SITE_STATE[watched.status] || SITE_STATE.operational : null
+  const measured = measuredLabel(data?.measured_since, windowDays)
   // A site the console tracks and the monitor does not is not a site that is
   // down. Drawing the empty board over it would say the opposite.
   const unwatched = Boolean(scope) && !watched && !loading && Boolean(data)
 
   /**
-   * The board's figures, as records.
-   *
-   * Whatever is wrong takes the lede on its own: a site that has stopped
-   * answering, or an issue nobody has fixed. On a clean board the count of
-   * sites answering holds it, which is the one figure a reader opens this page
-   * to see. Every caption is a second fact rather than a definition of the
-   * label above it - the definitions sit on the labels.
+   * The board's four figures. The window each is taken over is named on its
+   * label, and a history shorter than the window says when it started rather
+   * than claiming a month of measurement that is not there.
    */
   const boardFigures = useMemo(() => {
     const down = Math.max(0, sites.length - upCount)
-    const troubled = sites.filter(one => one.status === 'degraded').length
-    const worst = sites.length
-      ? sites.reduce((low, one) => ((one.uptime_30d ?? 100) < (low.uptime_30d ?? 100) ? one : low))
-      : null
-    const measured = measuredLabel(data?.measured_since, windowDays)
     const outages = data?.outages_30d ?? 0
-    const oldest = openIncidents.length ? openIncidents[openIncidents.length - 1] : null
+    const since = measured.startsWith('watched since') ? measured.replace('watched ', '') : null
+    const over = since || `last ${span}`
 
     const answering = state
       ? {
           key: 'up',
-          label: 'Answering',
-          gloss: 'Whether the site answered the check made from outside, just now.',
+          label: 'Status',
           value: feedDown ? '—' : state.label,
-          caption: feedDown ? 'the monitor is not answering' : measured,
-          tone: feedDown ? 'plain' : state.card,
-          urgent: !feedDown && watched.status === 'outage',
+          tone: feedDown ? 'plain' : watched.status === 'outage' ? 'danger' : 'good',
         }
       : {
           key: 'up',
-          label: 'Sites Up',
-          gloss: 'Sites answering the check made from outside, right now.',
+          label: 'Sites up',
           value: feedDown ? '—' : `${upCount}/${sites.length}`,
-          caption: feedDown
-            ? 'the monitor is not answering'
-            : down
-              ? `${down} not answering`
-              : `all ${sites.length} answering`,
           tone: feedDown || !down ? 'plain' : 'danger',
-          urgent: !feedDown && down > 0,
-          facts: feedDown
-            ? []
-            : [
-                [String(sites.length), sites.length === 1 ? 'site watched' : 'sites watched'],
-                down ? [String(down), 'not answering'] : null,
-                troubled ? [String(troubled), 'answering with an issue'] : null,
-              ].filter(Boolean),
-          room:
-            feedDown || !sites.length
-              ? null
-              : {
-                  kind: 'parts',
-                  parts: [
-                    {
-                      key: 'up',
-                      label: 'Answering',
-                      value: upCount,
-                      text: String(upCount),
-                      tone: 'good',
-                    },
-                    down
-                      ? { label: 'Not answering', value: down, text: String(down), tone: 'warn' }
-                      : null,
-                  ].filter(Boolean),
-                },
         }
 
     return [
       answering,
       {
         key: 'issues',
-        label: 'Open Issues',
-        gloss: 'Filed by the error reporter and not yet fixed.',
+        label: 'Open issues',
         value: feedDown ? '—' : String(openIncidents.length),
-        caption: feedDown
-          ? 'the monitor is not answering'
-          : oldest
-            ? `oldest raised ${humanizeDuration(Date.now() - new Date(oldest.opened_at))} ago`
-            : `${readings.fixed} fixed in ${span}`,
         tone: !feedDown && openIncidents.length ? 'warn' : 'plain',
-        urgent: !feedDown && openIncidents.length > 0,
-        facts: feedDown
-          ? []
-          : [
-              [String(readings.opened), `raised in ${span}`],
-              [String(readings.fixed), 'fixed'],
-              readings.typicalFix === null
-                ? null
-                : [humanizeDuration(readings.typicalFix), 'typical fix'],
-            ].filter(Boolean),
-        room:
-          feedDown || !readings.opened
-            ? null
-            : {
-                kind: 'parts',
-                parts: [
-                  {
-                    key: 'issues',
-                    label: 'Still open',
-                    value: Math.max(0, readings.opened - readings.fixed),
-                    text: String(Math.max(0, readings.opened - readings.fixed)),
-                    tone: 'warn',
-                  },
-                  {
-                    label: 'Fixed',
-                    value: readings.fixed,
-                    text: String(readings.fixed),
-                    tone: 'good',
-                  },
-                ],
-              },
       },
       {
         key: 'uptime',
-        label: 'Uptime',
-        gloss: 'The share of checks made from outside that got an answer.',
+        label: `Uptime, ${over}`,
         value: averageUptime === null ? '—' : `${averageUptime.toFixed(2)}%`,
-        caption: watched ? measured : `across ${sites.length} sites · ${measured}`,
-        facts:
-          feedDown || averageUptime === null
-            ? []
-            : [
-                // Read off the feed rather than by stripping a prefix from the
-                // rendered label. `measuredLabel` only carries that prefix while
-                // the history is shorter than the window; past that it returns
-                // the window itself, and the strip printed "30-day history"
-                // under the words "measured from".
-                data?.measured_since
-                  ? [formatDay(new Date(data.measured_since)), 'measured from']
-                  : null,
-                worst && !watched
-                  ? [
-                      `${(worst.uptime_30d ?? 100).toFixed(2)}%`,
-                      `lowest, ${worst.name || worst.site}`,
-                    ]
-                  : null,
-              ].filter(Boolean),
       },
       watched
         ? {
             key: 'reported',
-            label: 'Reported',
-            gloss: 'Issues raised against this site inside the window.',
+            label: `Issues reported, last ${span}`,
             value: data ? String(incidents.length) : '—',
-            caption: `${span} · ${readings.fixed} fixed`,
             tone: incidents.length ? 'warn' : 'plain',
           }
         : {
             key: 'outages',
-            label: 'Outages',
-            gloss: 'A run of failed checks from outside, start to recovery.',
+            label: `Outages, ${over}`,
             value: data ? String(outages) : '—',
-            caption: `stopped answering · ${measured}`,
             tone: outages ? 'danger' : 'plain',
           },
     ]
@@ -597,14 +468,13 @@ export function StatusBoard({ feed, scope }) {
     data,
     feedDown,
     incidents.length,
+    measured,
     openIncidents,
-    readings,
     sites,
     span,
     state,
     upCount,
     watched,
-    windowDays,
   ])
 
   // Measured once the real rows are on screen, for the next visit's placeholder.
@@ -618,12 +488,12 @@ export function StatusBoard({ feed, scope }) {
   if (unwatched) {
     return (
       <ConsolePage rows="auto">
-        <Panel title="Not Watched">
-          <p className="px-5 py-10 text-center text-[13px] text-paper-soft">
+        <Card title="Not watched">
+          <p className={`${TYPE.body} px-3 pb-6 pt-2`}>
             The uptime monitor does not check this site, so there is nothing to report on it here.
             Its traffic is in every other section.
           </p>
-        </Panel>
+        </Card>
       </ConsolePage>
     )
   }
@@ -635,257 +505,195 @@ export function StatusBoard({ feed, scope }) {
       rows="auto minmax(0,1fr)"
     >
       <Area area="figures">
-        <Figures figures={boardFigures} pinned="up" busy={loading} />
+        <FigurePanel figures={boardFigures} loading={loading} />
       </Area>
 
-      <Panel
+      <Card
         area="sites"
         title="Sites"
-        aside={`${sites.length || '—'} monitored · ${measuredLabel(data?.measured_since, windowDays)}`}
-        loading={loading}
+        aside={loading || feedDown ? '' : `${sites.length} monitored · ${measured}`}
       >
-        {/* A list of entries rather than a table of cells.
-
-            Four column heads over a site, a strip, a figure and a badge is a
-            grid promising that the four are read against each other down the
-            column, and only one of them is: nobody scans a column of "Up". The
-            strip is the reading, and in a table it can only ever have a
-            quarter of the width, so a month of history was drawn at a squint
-            beside three-quarters of a row spent on a name with room to spare.
-
-            So the row is two lines. The first names the site and closes with
-            what it has been up for, all of it one size and one weight with the
-            hierarchy carried by ink alone; the second is the strip, edge to
-            edge. The heads go with the columns - what they named is either on
-            the line already or in the card's own aside - and so does the badge,
-            since the dot opening the line and the colour of the strip under it
-            both say the same word it did. */}
-        <PanelBody>
-          <ul ref={siteBody}>
-            {loading ? (
-              <SkeletonSites
-                rows={siteSkeleton.rows}
-                height={siteSkeleton.height}
-                lastHeight={siteSkeleton.lastHeight}
-              />
-            ) : sites.length ? (
-              sites.map(site => {
-                const cfg = SITE_STATE[site.status] || SITE_STATE.operational
-                const hosts = (site.domains?.length ? site.domains : [site.domain]).map(
-                  displayDomain
-                )
-                return (
-                  <li
-                    key={site.id}
-                    className="border-hair-paper animate-fade-in-up border-t px-5 py-3"
-                  >
-                    <div className="flex items-center gap-2.5 text-[14px] tracking-[-0.005em]">
+        <ul ref={siteBody}>
+          {loading ? (
+            <PlaceholderRows
+              rows={siteSkeleton.rows}
+              height={siteSkeleton.height}
+              lastHeight={siteSkeleton.lastHeight}
+            />
+          ) : sites.length ? (
+            sites.map(site => {
+              const cfg = SITE_STATE[site.status] || SITE_STATE.operational
+              const hosts = (site.domains?.length ? site.domains : [site.domain]).map(displayDomain)
+              return (
+                <li
+                  key={site.id}
+                  className="rounded-[12px] px-3 py-3 transition-colors duration-150 hover:bg-[color:var(--wash-paper)]"
+                >
+                  <div className="flex items-center gap-3 text-[15px]">
+                    {/* The board names a site the way its owner does, so the
+                        mark is looked up on the first domain it answers on,
+                        which is what the icon set is keyed by. */}
+                    <SiteIcon host={apexOf(site)} name={site.name} className="!shadow-none" />
+                    {/* The host tells two sites of a similar name apart. On a
+                        phone it drops under the name, so the name keeps its
+                        room. */}
+                    <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-2.5">
+                      <span className="truncate font-medium text-ink">{site.name}</span>
+                      <span className="truncate text-[13px] text-ink-mute" title={hosts.join(', ')}>
+                        {hosts.join(' · ')}
+                      </span>
+                    </span>
+                    <span className="hidden shrink-0 whitespace-nowrap text-[13px] text-ink-mute sm:inline">
+                      {site.uptime_30d?.toFixed(2)}%
+                    </span>
+                    <span
+                      className={`flex w-[4.25rem] shrink-0 items-center justify-end gap-2 text-[14px] font-medium ${cfg.ink}`}
+                    >
                       <span
                         aria-hidden="true"
-                        className={`inline-block h-2 w-2 flex-shrink-0 rounded-full ${cfg.dot}`}
+                        className={`inline-block h-2 w-2 shrink-0 rounded-full ${cfg.dot}`}
                       />
-                      {/* The board names a site the way its owner does -
-                          "Baytown Go Karts" rather than a hostname - so the
-                          mark is looked up on the first domain it answers on,
-                          which is what the icon set is keyed by. */}
-                      <SiteIcon host={apexOf(site)} name={site.name} />
-                      {/* The host earns its place beside the name rather than a
-                          second line under it: it is what tells two sites of a
-                          similar name apart, and it is read once. A site on more
-                          than one host names them all, with the list in the
-                          title where the line runs out of room.
-
-                          On a phone there is no line to earn. A name, a list of
-                          hosts and an uptime figure sharing 375 pixels leave the
-                          name twenty of them, which is the one thing on the row
-                          that has to survive - so below the width where all
-                          three fit, the host drops under the name and each gets
-                          a line of its own. */}
-                      <span className="flex min-w-0 flex-1 flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-2.5">
-                        <span className="truncate text-ink-paper">{site.name}</span>
-                        <span className="text-paper-faint truncate" title={hosts.join(', ')}>
-                          {hosts.join(' · ')}
-                        </span>
-                      </span>
-                      <span className="text-paper-faint ml-auto flex-shrink-0 whitespace-nowrap">
-                        {site.uptime_30d?.toFixed(2)}% uptime
-                      </span>
-                      {/* The dot is a colour, and a colour is not a word to
-                          anything that cannot see it. */}
-                      <span className="sr-only">{`${site.name} is ${cfg.label.toLowerCase()}`}</span>
-                    </div>
-                    <UptimeStrip days={site.days} className="mt-2.5" />
-                  </li>
-                )
-              })
-            ) : (
-              <li className="border-hair-paper border-t px-5 py-10 text-center text-[13px] text-paper-soft">
-                The status feed is not answering. This page keeps retrying on its own.
-              </li>
-            )}
-          </ul>
-        </PanelBody>
-      </Panel>
+                      {cfg.label}
+                    </span>
+                  </div>
+                  <div className="mt-2.5 pl-[34px]">
+                    <UptimeStrip days={site.days} />
+                  </div>
+                </li>
+              )
+            })
+          ) : (
+            <Quiet>The status feed is not answering. This page keeps retrying on its own.</Quiet>
+          )}
+        </ul>
+      </Card>
 
       <Area area="issues">
-        <Panel
-          title="Open Issues"
+        <Card
+          title="Open issues"
           aside={loading || feedDown ? '' : `${openIncidents.length} open`}
-          busy={loading}
-          className="min-h-0 lg:max-h-[55%]"
+          className="lg:max-h-[55%]"
+          foot={
+            hiddenOpenCount > 0 || showAllOpen ? (
+              <div className="px-5 pb-5 sm:px-6">
+                <button
+                  className="min-h-[44px] cursor-pointer touch-manipulation text-[15px] font-medium text-[color:var(--accent)] transition-colors duration-150 hover:text-ink"
+                  type="button"
+                  onClick={() => setShowAllOpen(open => !open)}
+                  aria-expanded={showAllOpen}
+                >
+                  {showAllOpen ? 'Show Fewer' : `Show ${hiddenOpenCount} More`}
+                </button>
+              </div>
+            ) : null
+          }
         >
           {/* An issue is one entry: the site and its state on the first line,
-              what happened under it, and when. In a column this narrow a site
-              column beside the account of the fault leaves each with a third
-              of the width, and a sentence wrapped six deep in a third of a
-              card is a card that shows two issues of the seven it holds. */}
-          <PanelBody>
-            <table className="console-table text-[13px]">
-              <thead>
-                <tr>
-                  <th className={TH_TIGHT}>What Happened</th>
-                </tr>
-              </thead>
-              <tbody ref={openBody}>
-                {loading ? (
-                  <SkeletonRows
-                    cols={ISSUE_CELLS}
-                    rows={openSkeleton.rows}
-                    height={openSkeleton.height}
-                    lastHeight={openSkeleton.lastHeight}
-                  />
-                ) : feedDown ? (
-                  <EmptyRow cols={1}>Waiting on the status feed to come back.</EmptyRow>
-                ) : openIncidents.length ? (
-                  visibleOpenIncidents.map(incident => (
-                    <tr key={incident.id} className="border-hair-paper animate-fade-in-up border-t">
-                      <td className={CELL_TIGHT}>
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="min-w-0 truncate font-medium">{incident.site}</p>
-                          <StatusChip status={incident.status} />
-                        </div>
-                        <p className="mt-1">{incident.title}</p>
-                        <p className="mt-1 leading-relaxed text-paper-soft">{incident.summary}</p>
-                        <p className={`${MONO_LABEL} text-paper-faint mt-1.5 font-mono`}>
-                          {formatWhen(incident.opened_at)} ·{' '}
-                          {ago(new Date(incident.opened_at), now)}
-                        </p>
-                        {incident.updates?.length > 1 && (
-                          <p className={`${MONO_LABEL} text-paper-faint mt-1 font-mono`}>
-                            {formatWhen(incident.updates[incident.updates.length - 1].at)} ·{' '}
-                            {incident.updates[incident.updates.length - 1].text}
-                          </p>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <EmptyRow cols={1}>
-                    Nothing open. New reports show up here as they come in.
-                  </EmptyRow>
-                )}
-              </tbody>
-            </table>
-          </PanelBody>
-          {(hiddenOpenCount > 0 || showAllOpen) && (
-            <button
-              className={`border-hair-paper min-h-[44px] w-full flex-shrink-0 cursor-pointer touch-manipulation border-t px-5 py-2.5 text-left text-accent transition-colors duration-150 ease-out-soft hover:bg-[color:var(--console-row-hover)] hover:text-[color:var(--accent-hi)] active:bg-[color:var(--paper-hairline)] ${MONO_LABEL}`}
-              type="button"
-              onClick={() => setShowAllOpen(open => !open)}
-              aria-expanded={showAllOpen}
-            >
-              {showAllOpen ? 'Show Fewer' : `Show ${hiddenOpenCount} More`}
-            </button>
-          )}
-        </Panel>
+              what happened under it, and when. */}
+          <ul ref={openBody}>
+            {loading ? (
+              <PlaceholderRows
+                rows={openSkeleton.rows}
+                height={openSkeleton.height}
+                lastHeight={openSkeleton.lastHeight}
+              />
+            ) : feedDown ? (
+              <Quiet>Waiting on the status feed to come back.</Quiet>
+            ) : openIncidents.length ? (
+              visibleOpenIncidents.map(incident => (
+                <li key={incident.id} className="rounded-[12px] px-3 py-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <p className="min-w-0 truncate text-[15px] font-medium text-ink">
+                      {incident.site}
+                    </p>
+                    <StatusChip status={incident.status} />
+                  </div>
+                  <p className="mt-1 text-[14px] text-ink">{incident.title}</p>
+                  <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">
+                    {incident.summary}
+                  </p>
+                  <p className={`${TYPE.small} mt-1.5`}>
+                    {formatWhen(incident.opened_at)} · {ago(new Date(incident.opened_at), now)}
+                  </p>
+                  {incident.updates?.length > 1 && (
+                    <p className={`${TYPE.small} mt-1`}>
+                      {formatWhen(incident.updates[incident.updates.length - 1].at)} ·{' '}
+                      {incident.updates[incident.updates.length - 1].text}
+                    </p>
+                  )}
+                </li>
+              ))
+            ) : (
+              <Quiet>Nothing open. New reports show up here as they come in.</Quiet>
+            )}
+          </ul>
+        </Card>
 
-        <Panel
-          title="Recently Fixed"
-          aside={loading || feedDown ? '' : `last ${span}`}
-          busy={loading}
-          className="min-h-0 lg:flex-1"
+        <Card
+          title="Recently fixed"
+          aside={loading || feedDown ? '' : `Last ${span}`}
+          className="lg:flex-1"
+          foot={
+            <dl className="mx-3 mb-3 grid grid-cols-3 gap-3 rounded-[12px] bg-[color:var(--wash-paper)] px-4 py-3 sm:mx-4 sm:mb-4">
+              {[
+                ['Reported', feedDown ? '—' : String(readings.opened)],
+                ['Fixed', feedDown ? '—' : String(readings.fixed)],
+                [
+                  'Typical fix',
+                  feedDown || readings.typicalFix === null
+                    ? '—'
+                    : humanizeDuration(readings.typicalFix),
+                ],
+              ].map(([label, value]) => (
+                <div key={label} className="min-w-0">
+                  <dt className={TYPE.small}>{label}</dt>
+                  <dd className="mt-0.5 text-[16px] font-medium tabular-nums text-ink">
+                    {loading ? <Placeholder className="h-4 w-10" /> : value}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          }
         >
           {/* The same entry, closed: the site with the hour it was fixed at
-              against it, what was fixed beneath, and the time the fault stood
-              open as the one figure of its own. The hour drops under the name
-              when the two will not share a line, rather than the name being
-              cut to make room. */}
-          <PanelBody>
-            <table className="console-table text-[13px]">
-              <thead>
-                <tr>
-                  <th className={`${TH_TIGHT} w-[76%]`}>What Was Fixed</th>
-                  <th className={`${TH_TIGHT} w-[24%] text-right`}>Open For</th>
-                </tr>
-              </thead>
-              <tbody ref={fixedBody}>
-                {loading ? (
-                  <SkeletonRows
-                    cols={FIXED_CELLS}
-                    rows={fixedSkeleton.rows}
-                    height={fixedSkeleton.height}
-                    lastHeight={fixedSkeleton.lastHeight}
-                  />
-                ) : feedDown ? (
-                  <EmptyRow cols={2}>Waiting on the status feed to come back.</EmptyRow>
-                ) : resolvedIncidents.length ? (
-                  resolvedIncidents.map(incident => (
-                    <tr
-                      key={incident.id}
-                      className="border-hair-paper animate-fade-in-up border-t align-top"
-                    >
-                      <td className={CELL_TIGHT}>
-                        <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                          <p className="font-medium">{incident.site}</p>
-                          <p
-                            className={`${MONO_LABEL} text-paper-faint ml-auto whitespace-nowrap font-mono`}
-                          >
-                            {formatWhen(incident.resolved_at || incident.opened_at)}
-                          </p>
-                        </div>
-                        <p className="mt-1 leading-relaxed text-paper-soft">
-                          {incident.summary}
-                          {incident.reports > 1 && (
-                            <span
-                              className={`${MONO_LABEL} text-paper-faint ml-2 whitespace-nowrap font-mono`}
-                            >
-                              {incident.reports} reports
-                            </span>
-                          )}
-                        </p>
-                      </td>
-                      <td
-                        className={`${CELL_TIGHT} whitespace-nowrap text-right font-mono text-paper-soft`}
-                      >
-                        {incident.resolved_at
-                          ? ago(
-                              new Date(incident.opened_at),
-                              new Date(incident.resolved_at)
-                            ).replace(' ago', '')
-                          : '—'}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <EmptyRow cols={2}>No issues were fixed in this window.</EmptyRow>
-                )}
-              </tbody>
-            </table>
-          </PanelBody>
-          <PanelFoot>
-            <Reading label="Reported" value={feedDown ? '—' : readings.opened} loading={loading} />
-            <Reading label="Fixed" value={feedDown ? '—' : readings.fixed} loading={loading} />
-            <Reading
-              label="Typical Fix"
-              value={
-                feedDown || readings.typicalFix === null
-                  ? '—'
-                  : humanizeDuration(readings.typicalFix)
-              }
-              loading={loading}
-            />
-          </PanelFoot>
-        </Panel>
+              against it, what was fixed beneath, and how long it stood open. */}
+          <ul ref={fixedBody}>
+            {loading ? (
+              <PlaceholderRows
+                rows={fixedSkeleton.rows}
+                height={fixedSkeleton.height}
+                lastHeight={fixedSkeleton.lastHeight}
+              />
+            ) : feedDown ? (
+              <Quiet>Waiting on the status feed to come back.</Quiet>
+            ) : resolvedIncidents.length ? (
+              resolvedIncidents.map(incident => (
+                <li key={incident.id} className="rounded-[12px] px-3 py-3">
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                    <p className="text-[15px] font-medium text-ink">{incident.site}</p>
+                    <p className={`${TYPE.small} ml-auto whitespace-nowrap`}>
+                      {formatWhen(incident.resolved_at || incident.opened_at)}
+                    </p>
+                  </div>
+                  <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">
+                    {incident.summary}
+                  </p>
+                  <p className={`${TYPE.small} mt-1.5`}>
+                    {incident.resolved_at
+                      ? `Open for ${ago(
+                          new Date(incident.opened_at),
+                          new Date(incident.resolved_at)
+                        ).replace(' ago', '')}`
+                      : 'Open for —'}
+                    {incident.reports > 1 && ` · ${incident.reports} reports`}
+                  </p>
+                </li>
+              ))
+            ) : (
+              <Quiet>No issues were fixed in this window.</Quiet>
+            )}
+          </ul>
+        </Card>
       </Area>
     </ConsolePage>
   )

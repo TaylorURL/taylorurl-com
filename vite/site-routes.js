@@ -387,22 +387,13 @@ const STUDIO_PRERENDER_ROUTES = [
   // them - it is the public one, and it is in the sitemap above. What gets
   // built is the shell; the figures arrive in the browser.
   '/console',
-  '/console/onboarding',
-  '/console/project',
-  '/console/live',
-  '/console/sites',
-  '/console/pages',
-  '/console/sources',
-  '/console/visitors',
   '/console/vitals',
-  '/console/server',
-  '/console/outreach',
-  '/console/settings',
-  '/console/builds',
-  '/console/leads',
-  '/console/staff',
+  '/console/inbox',
+  '/console/calls',
   '/console/payments',
   '/console/admin',
+  '/console/server',
+  '/console/settings',
   // Sign-in, the screen a paid checkout returns to, and the two halves of a
   // password reset, prerendered for the same reason and kept out of the sitemap
   // for the same one: reachable, noindex, and not pages to rank.

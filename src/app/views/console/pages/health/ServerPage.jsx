@@ -40,7 +40,7 @@ import { recalledRows, rememberRows } from '../../lib/rowMemory'
  *
  * So the page is built around the two things that answer it, and the routines
  * table is the more important of the two. A machine at four percent load with
- * a stopped social routine looks perfectly healthy from every angle but the
+ * a stopped routine looks perfectly healthy from every angle but the
  * one that matters, which is why each routine is asked directly rather than
  * inferred from the machine being up.
  *

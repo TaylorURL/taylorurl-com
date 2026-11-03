@@ -33,11 +33,9 @@
 .console-frame a,
 .console-frame button,
 .console-frame select,
-.console-modal button,
 .console-side a,
 .console-side button,
-.console-side select,
-.console-modal-card kbd {
+.console-side select {
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
@@ -45,7 +43,6 @@
 .console-frame a,
 .console-frame button,
 .console-frame select,
-.console-modal button,
 .console-side a,
 .console-side button,
 .console-side select {
@@ -63,7 +60,6 @@
    only the ones with a class of their own. */
 .console-frame a:active,
 .console-frame button:active,
-.console-modal button:active,
 .console-side a:active,
 .console-side button:active {
   transform: scale(0.98);
@@ -77,7 +73,6 @@
 .console-frame a:focus-visible,
 .console-frame button:focus-visible,
 .console-frame select:focus-visible,
-.console-modal button:focus-visible,
 .console-side a:focus-visible,
 .console-side button:focus-visible,
 .console-side select:focus-visible {
@@ -109,7 +104,6 @@
   .console-rail,
   .console-nav-item,
   .console-segmented button,
-  .console-icon-button,
   .console-scope-button,
   .console-window-mini,
   .console-foot-button,
@@ -120,7 +114,6 @@
 
   .console-nav-item:active,
   .console-segmented button:active,
-  .console-icon-button:active,
   .console-scope-button:active,
   .console-window-mini:active,
   .console-foot-button:active {
@@ -361,7 +354,6 @@
   gap: 0;
   height: 100dvh;
   flex-direction: column;
-  border-right: 1px solid var(--paper-hairline);
   background-color: var(--console-rail-bg);
 }
 
@@ -911,28 +903,6 @@
   @apply flex flex-shrink-0 items-center gap-2;
 }
 
-/* The rule that puts the keyboard sheet past everything the reader came for. */
-.console-bar-sep-tools {
-  @apply hidden lg:block;
-}
-
-.console-icon-button {
-  @apply flex h-9 w-9 cursor-pointer items-center justify-center border transition-colors duration-150 ease-out-soft lg:h-8 lg:w-8;
-  border-radius: var(--console-radius-sm);
-  border-color: var(--paper-hairline-strong);
-  background-color: var(--console-card-bg);
-  color: var(--paper-ink-soft);
-}
-
-.console-icon-button:hover {
-  border-color: var(--paper-ink-ghost);
-  color: var(--accent);
-}
-
-.console-icon-button:active {
-  transform: scale(0.96);
-}
-
 /* The pair is a wrapper only where a wrapper is needed. Everywhere else the
    two controls are the context row's own children, which is what keeps one gap
    between the heading, the scope and the window. */
@@ -1009,23 +979,19 @@
 
    Four pixels is the whole of the eight-pixel gap between two of them, split
    down the middle, so the reaches meet and neither overlaps the other: there
-   is no dead strip between the search glyph and the theme control, and a tap
-   landing in it goes to whichever half it fell on. Above and below there is
+   is no dead strip between two controls, and a tap landing in it goes to
+   whichever half it fell on. Above and below there is
    the bar's own padding to spend, and spending it costs nothing because the
    line under these controls carries no target of its own. */
 @media (pointer: coarse) {
   .console-brand,
   .console-drawer-toggle,
-  .console-search-open,
-  .console-icon-button,
   .console-signin {
     @apply relative;
   }
 
   .console-brand::before,
   .console-drawer-toggle::before,
-  .console-search-open::before,
-  .console-icon-button::before,
   .console-signin::before {
     content: '';
     @apply absolute -inset-1;
@@ -1853,59 +1819,6 @@
   background-color: var(--paper-hairline-strong);
 }
 
-/* ── The shortcut list ────────────────────────────────────────────────── */
-
-.console-modal {
-  @apply scrim fixed inset-0 flex items-center justify-center p-4;
-  z-index: var(--z-modal);
-}
-
-.console-modal-card {
-  @apply w-full max-w-[380px] overflow-hidden border;
-  border-radius: var(--console-radius);
-  border-color: var(--paper-hairline-strong);
-  background-color: var(--console-card-bg);
-  box-shadow: var(--console-float-shadow);
-}
-
-.console-modal-card header {
-  @apply flex items-center justify-between px-5 py-3;
-  border-bottom: 1px solid var(--paper-hairline);
-}
-
-.console-modal-card header h2 {
-  @apply text-[13px] font-semibold tracking-tight;
-  text-wrap: balance;
-  color: var(--paper-ink);
-}
-
-.console-modal-card header button {
-  @apply flex h-7 w-7 cursor-pointer items-center justify-center rounded-[var(--r-tiny)] transition-colors duration-150 ease-out-soft;
-  color: var(--paper-ink-faint);
-}
-
-.console-modal-card header button:hover {
-  color: var(--paper-ink);
-}
-
-.console-modal-card li {
-  @apply flex items-center justify-between gap-6 px-5 py-2 text-[13px];
-  color: var(--paper-ink-soft);
-}
-
-.console-modal-card kbd {
-  @apply min-w-[1.75rem] rounded-[var(--r-tiny)] border px-1.5 py-0.5 text-center font-mono text-[11px];
-  border-color: var(--paper-hairline-strong);
-  background-color: var(--paper-field);
-  color: var(--paper-ink);
-}
-
-.console-modal-card > p {
-  @apply px-5 py-2.5 text-[12px];
-  border-top: 1px solid var(--paper-hairline);
-  color: var(--paper-ink-faint);
-}
-
 /* ── Tables ───────────────────────────────────────────────────────────────
    The work region is what scrolls, so a table head pinned to the top of it
    keeps its labels over every row. It sits at the card's own top edge rather
@@ -2410,11 +2323,6 @@
   transform: scale(0.98);
 }
 
-.console-account-value {
-  @apply ml-auto text-[12px];
-  color: var(--paper-ink-faint);
-}
-
 .console-account-leave {
   color: var(--danger-on-paper);
 }
@@ -2566,86 +2474,6 @@
   }
 }
 
-/* THE SEARCH
-   -------------------------------------------------------------------------
-   The control in the bar is a button wearing a field's clothes. A live field
-   there would be one the reader tabs into on the way to the window picker, and
-   it would have to be narrow enough to leave room for the controls beside it,
-   which is not enough room to read a result in. So the bar carries the
-   affordance at the width a field would have taken, and the panel it opens has
-   the room. */
-
-/* On a phone it is the glyph alone. The console's one way to reach any section
-   or any site from wherever the reader is standing used to come off the bar
-   below 640px, which left a phone with the drawer and nothing else - and left
-   a signed-in reader looking at an empty right-hand group, since the theme
-   control and the way in are a signed-out reader's. A field's worth of clothes
-   does not fit there, so what survives is the part that is pressed. */
-.console-search-open {
-  @apply flex flex-shrink-0 items-center justify-center gap-2 text-[13px] transition-[background-color,box-shadow,color] duration-150 ease-out-soft;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: var(--console-radius-sm);
-  background-color: var(--console-card-bg);
-  box-shadow: inset 0 0 0 1px var(--paper-hairline-strong);
-  color: var(--paper-ink-faint);
-}
-
-/* The word and the key it answers to are what a field looks like, and they
-   appear at the width that has room for one. */
-.console-search-open span,
-.console-search-open kbd {
-  @apply hidden;
-}
-
-@media (min-width: 640px) {
-  .console-search-open {
-    @apply justify-start;
-    width: 11rem;
-    padding-inline: 0.625rem;
-  }
-
-  .console-search-open span {
-    @apply block;
-  }
-
-  .console-search-open kbd {
-    @apply block;
-  }
-}
-
-/* It steps down with the rest of the group, and takes the room a wide screen
-   has to spare - a field a reader is meant to find should look like one at the
-   width where there is space for it to. */
-@media (min-width: 768px) {
-  .console-search-open {
-    height: 2rem;
-  }
-}
-
-@media (min-width: 1280px) {
-  .console-search-open {
-    width: 15.5rem;
-  }
-}
-
-.console-search-open:hover {
-  box-shadow: inset 0 0 0 1px var(--paper-ink-ghost);
-  color: var(--paper-ink-mute);
-}
-
-.console-search-open span {
-  @apply flex-1 truncate text-left;
-}
-
-.console-search-open kbd {
-  @apply flex-shrink-0 rounded-[var(--r-tiny)] px-1 py-0.5 text-[11px] font-medium;
-  background-color: var(--console-card-bg);
-  box-shadow: 0 0 0 1px var(--paper-hairline);
-  color: var(--paper-ink-faint);
-  font-family: inherit;
-}
-
 /* The way in, for the reader who has not got one yet. It is the only filled
    control in the bar, because signing in is the only thing a signed-out reader
    is there to do that the page cannot already show them. */
@@ -2667,105 +2495,13 @@
   transform: scale(0.98);
 }
 
-/* The keyboard control is the least of the bar's business and the first thing
-   to go when the bar runs out of room. */
-.console-keyboard {
-  @apply hidden lg:flex;
-}
-
 @media (min-width: 768px) {
   .console-signin {
     height: 2rem;
   }
 }
 
-/* The panel sits high rather than centred: a list that grows downward from a
-   fixed top does not move the row under the pointer as it fills. */
-.console-search {
-  @apply scrim fixed inset-0 flex justify-center px-4 pb-8 pt-[10dvh];
-  z-index: var(--z-modal);
-}
-
-.console-search-card {
-  @apply flex max-h-full w-full max-w-[620px] flex-col overflow-hidden;
-  border-radius: var(--console-radius);
-  background-color: var(--console-card-bg);
-  border: 1px solid var(--paper-hairline-strong);
-  box-shadow: var(--console-float-shadow);
-}
-
-.console-search-field {
-  @apply flex flex-shrink-0 items-center gap-3 px-4;
-  min-height: 52px;
-  border-bottom: 1px solid var(--paper-hairline);
-  color: var(--paper-ink-faint);
-}
-
-.console-search-field input {
-  @apply w-full min-w-0 bg-transparent text-[15px] outline-none;
-  color: var(--paper-ink);
-}
-
-.console-search-field input::placeholder {
-  color: var(--paper-ink-faint);
-}
-
-.console-search-field kbd {
-  @apply flex-shrink-0 rounded-[var(--r-tiny)] px-1.5 py-0.5 text-[11px] font-medium;
-  background-color: var(--paper-field);
-  box-shadow: 0 0 0 1px var(--paper-hairline);
-  color: var(--paper-ink-faint);
-  font-family: inherit;
-}
-
-.console-search-list {
-  @apply flex min-h-0 flex-col gap-px overflow-y-auto p-2;
-  overscroll-behavior: contain;
-}
-
-/* The highlighted row is marked by its ground, and the pointer and the arrow
-   keys move the same mark, so there is never a second highlight following the
-   mouse while the keyboard drives a different one. */
-.console-search-row {
-  @apply flex w-full cursor-pointer items-center gap-3 px-3 py-2 text-left transition-colors duration-150 ease-out-soft;
-  border-radius: var(--console-radius-sm);
-  color: var(--paper-ink);
-}
-
-.console-search-row[data-active='true'] {
-  background-color: var(--wash-accent);
-}
-
-.console-search-mark {
-  @apply flex h-5 w-5 flex-shrink-0 items-center justify-center;
-  color: var(--paper-ink-faint);
-}
-
-.console-search-row[data-active='true'] .console-search-mark {
-  color: var(--accent);
-}
-
-.console-search-text {
-  @apply flex min-w-0 flex-1 flex-col;
-}
-
-.console-search-label {
-  @apply truncate text-[14px] font-medium leading-tight;
-}
-
-.console-search-detail {
-  @apply truncate text-[12px] leading-tight;
-  color: var(--paper-ink-faint);
-}
-
-.console-search-none {
-  @apply px-3 py-6 text-center text-[13px];
-  color: var(--paper-ink-faint);
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .console-search-open,
-  .console-search-row,
   .console-signin {
     transition-duration: var(--motion-off);
   }
@@ -2954,404 +2690,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .console-scope-box {
-    transition-duration: var(--motion-off);
-  }
-}
-
-/* ── The build tracker ────────────────────────────────────────────────────
-   A client watching their site being made reads two things: how far along it
-   is, and what has actually happened. The bar is the first, the updates under
-   it are the second, and the corner panel is the only part they can change. */
-
-/* The stages, left to right. Numbered by position rather than by a printed
-   figure: a bar that says "3 of 6" beside six labelled dots is saying it
-   twice, and the count already sits in the card's head. */
-.console-track {
-  @apply flex flex-wrap gap-x-2 gap-y-3 px-5 py-5;
-}
-
-.console-track-step {
-  @apply relative flex min-w-[84px] flex-1 flex-col gap-2;
-}
-
-/* The rule joining one stage to the next, drawn as the step's own top edge so
-   there is no separate element to keep in step with the dots. */
-.console-track-step::before {
-  @apply absolute left-0 right-0 top-[5px] h-[2px] content-[''];
-  background-color: var(--paper-hairline-strong);
-}
-
-.console-track-step[data-state='done']::before {
-  background-color: var(--accent-fill);
-}
-
-.console-track-step:first-child::before {
-  @apply left-1/2;
-}
-
-.console-track-step:last-child::before {
-  @apply right-1/2;
-}
-
-/* Six stages do not fit a phone in one row, and wrapped by the flex box they
-   fell three and three with the rule still drawn as though the row went on -
-   a line running off the left of the fourth stage towards nothing. Three to a
-   row on purpose instead, with the rule stopped at the dot at each end of each
-   row, so both rows read as a run of stages rather than as one run cut in
-   half. */
-@media (max-width: 639px) {
-  .console-track {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .console-track-step:nth-child(3n + 1)::before {
-    @apply left-1/2 right-0;
-  }
-
-  .console-track-step:nth-child(3n)::before {
-    @apply left-0 right-1/2;
-  }
-}
-
-.console-track-dot {
-  @apply relative mx-auto block h-3 w-3 rounded-full;
-  background-color: var(--console-card-bg);
-  box-shadow: 0 0 0 2px var(--paper-hairline-strong);
-}
-
-.console-track-step[data-state='done'] .console-track-dot {
-  background-color: var(--accent-fill);
-  box-shadow: 0 0 0 2px var(--accent-fill);
-}
-
-/* The stage being worked on carries a ring rather than a fill, so it reads as
-   open where a finished one reads as closed. */
-.console-track-step[data-state='here'] .console-track-dot {
-  background-color: var(--console-card-bg);
-  box-shadow:
-    0 0 0 2px var(--accent),
-    0 0 0 5px var(--wash-accent);
-}
-
-.console-track-label {
-  @apply text-center text-[12px] leading-tight;
-  color: var(--paper-ink-faint);
-}
-
-.console-track-step[data-state='here'] .console-track-label {
-  @apply font-semibold;
-  color: var(--paper-ink);
-}
-
-.console-track-step[data-state='done'] .console-track-label {
-  color: var(--paper-ink-mute);
-}
-
-/* What has been written to them, newest first. */
-.console-updates {
-  @apply flex flex-col;
-}
-
-.console-update {
-  @apply flex flex-col gap-2 px-5 py-4;
-  border-bottom: 1px solid var(--paper-hairline);
-}
-
-.console-update:last-child {
-  border-bottom: 0;
-}
-
-.console-update-head {
-  @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1;
-}
-
-.console-update-head h3 {
-  @apply text-[14px] font-semibold tracking-tight;
-  color: var(--paper-ink);
-}
-
-.console-update-head span {
-  @apply flex-shrink-0 text-[12px] font-medium;
-  color: var(--paper-ink-faint);
-}
-
-.console-update-body {
-  @apply text-[13px] leading-relaxed;
-  color: var(--paper-ink-mute);
-}
-
-.console-update time {
-  @apply text-[11px];
-  color: var(--paper-ink-faint);
-}
-
-/* Captures of their own site. Wide ones scroll rather than shrinking to a
-   thumbnail nobody can read - the point of the picture is that the client can
-   see what their page actually looks like. */
-.console-update-shots {
-  @apply -mx-1 flex gap-3 overflow-x-auto px-1 py-1;
-}
-
-.console-update-shots figure {
-  @apply flex max-w-[280px] flex-shrink-0 flex-col gap-1.5;
-}
-
-.console-update-shots img {
-  @apply block h-auto w-full;
-  border-radius: var(--r-tiny);
-  border: 1px solid var(--paper-hairline);
-  background-color: var(--wash-paper-strong);
-}
-
-.console-update-shots figcaption {
-  @apply text-[11px];
-  color: var(--paper-ink-faint);
-}
-
-/* An empty panel that has something to say. The centred one-liner it replaces
-   is right for "nothing yet" and wrong for "this may be a mistake and here is
-   what to do about it", which needs a paragraph and somewhere to point. */
-.console-nothing {
-  @apply flex flex-col gap-3 px-5 py-10 text-[13px] leading-relaxed;
-  color: var(--paper-ink-mute);
-  max-width: 46ch;
-  margin-inline: auto;
-}
-
-.console-nothing p:first-child {
-  @apply text-[14px] font-semibold;
-  color: var(--paper-ink);
-}
-
-/* ── What we need from you ────────────────────────────────────────────────
-   The dock keeps the count; this keeps the doing. An item that wants a
-   paragraph or a photograph needs room the corner of a screen does not have,
-   so the same items are laid out again here with the control each one
-   actually calls for. Unlike the dock, this stays after the last tick: a
-   client who sent their logo last week should be able to see that they did,
-   and open it. */
-.console-asks {
-  @apply flex flex-col;
-}
-
-.console-ask {
-  @apply flex flex-col gap-2 px-5 py-4;
-  border-bottom: 1px solid var(--paper-hairline);
-}
-
-.console-ask:last-child {
-  border-bottom: 0;
-}
-
-.console-ask-head {
-  @apply flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1;
-}
-
-.console-ask-tick {
-  @apply flex cursor-pointer items-start gap-2.5;
-}
-
-.console-ask-tick input {
-  @apply mt-[3px] h-[15px] w-[15px] flex-shrink-0 cursor-pointer;
-  accent-color: var(--accent-fill);
-}
-
-.console-ask-label {
-  @apply text-[14px] font-semibold leading-snug tracking-tight;
-  color: var(--paper-ink);
-}
-
-/* Finished work stays legible rather than being struck through and greyed to
-   the edge of readable. The reader is checking what they sent, not being told
-   off for having sent it. */
-.console-ask[data-done='true'] .console-ask-label {
-  color: var(--paper-ink-mute);
-}
-
-.console-ask-stage {
-  @apply flex-shrink-0 text-[12px] font-medium;
-  color: var(--paper-ink-faint);
-}
-
-.console-ask-detail {
-  @apply text-[13px] leading-relaxed;
-  color: var(--paper-ink-mute);
-}
-
-.console-ask-body {
-  @apply flex flex-col gap-2 pt-1;
-}
-
-.console-ask-text {
-  @apply w-full resize-y;
-  min-height: 5.5rem;
-}
-
-.console-ask-actions {
-  @apply flex flex-wrap items-center gap-3;
-}
-
-/* Shorter than a form's own button. This one sits inside a list of items
-   rather than at the end of a page, and a full-height button per row would
-   make the list read as six forms stacked up. */
-.console-ask-btn {
-  @apply min-h-[36px] px-3.5 py-1.5 text-[13px];
-}
-
-.console-ask-note {
-  @apply text-[12px];
-  color: var(--paper-ink-faint);
-}
-
-.console-ask-hint {
-  @apply text-[11px];
-  color: var(--paper-ink-faint);
-}
-
-.console-ask-file {
-  @apply max-w-full text-[12px];
-  color: var(--paper-ink-mute);
-}
-
-.console-ask-file::file-selector-button {
-  @apply mr-3 cursor-pointer rounded px-3 py-1.5 text-[12px] font-medium;
-  border: 1px solid var(--paper-hairline-strong);
-  background-color: var(--paper-field);
-  color: var(--paper-ink);
-}
-
-.console-ask-file:disabled::file-selector-button {
-  @apply cursor-not-allowed opacity-60;
-}
-
-.console-ask-files {
-  @apply flex flex-col gap-1.5;
-}
-
-.console-ask-files li {
-  @apply flex items-center gap-3 text-[13px];
-  color: var(--paper-ink);
-}
-
-/* Drawn as a word at twelve pixels, which is about fifteen tall, and it takes
-   a file back off a list. The drawing stays what it is and the reach around it
-   opens to what a thumb needs, carried on a pseudo-element so the row it sits
-   in does not change height for it. */
-.console-ask-remove {
-  @apply relative ml-auto flex-shrink-0 cursor-pointer text-[12px];
-  color: var(--paper-ink-faint);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.console-ask-remove::before {
-  content: '';
-  @apply absolute -inset-x-2 -inset-y-3;
-}
-
-.console-ask-remove:hover {
-  color: var(--danger, var(--paper-ink));
-}
-
-.console-ask-remove:disabled {
-  @apply cursor-not-allowed opacity-60;
-}
-
-/* ── What we are waiting on ───────────────────────────────────────────────
-   Docked rather than placed, because it is true wherever the reader is: a
-   build waiting on a logo is waiting on it while they read their traffic. It
-   takes itself away entirely once nothing is outstanding, since a list of
-   ticks is a standing reminder of work already done. */
-.console-dock {
-  @apply fixed bottom-4 right-4 z-[var(--z-float)] flex w-[min(320px,calc(100vw-2rem))] flex-col overflow-hidden;
-  border-radius: var(--console-radius);
-  background-color: var(--console-card-bg);
-  box-shadow: var(--console-card-shadow);
-  border: 1px solid var(--paper-hairline-strong);
-}
-
-.console-dock-tab {
-  @apply flex w-full items-center gap-2 px-4 py-3 text-left text-[13px] font-semibold;
-  color: var(--paper-ink);
-}
-
-.console-dock-tab svg {
-  @apply ml-auto flex-shrink-0 transition-transform duration-200 ease-out-soft;
-  color: var(--paper-ink-faint);
-}
-
-.console-dock-tab svg[data-open='true'] {
-  @apply rotate-180;
-}
-
-.console-dock-count {
-  @apply inline-flex h-5 min-w-[20px] flex-shrink-0 items-center justify-center rounded-full px-1.5 text-[11px] font-bold;
-  background-color: var(--accent-fill);
-  color: var(--on-accent);
-}
-
-.console-dock-list {
-  @apply flex max-h-[46dvh] flex-col overflow-y-auto;
-}
-
-.console-dock-item {
-  @apply px-4 py-2.5;
-  border-top: 1px solid var(--paper-hairline);
-}
-
-.console-dock-item label {
-  @apply flex cursor-pointer items-start gap-2.5;
-}
-
-.console-dock-item input {
-  @apply mt-[3px] h-[15px] w-[15px] flex-shrink-0 cursor-pointer;
-  accent-color: var(--accent-fill);
-}
-
-.console-dock-label {
-  @apply text-[13px] leading-snug;
-  color: var(--paper-ink);
-}
-
-.console-dock-item[data-done='true'] .console-dock-label {
-  @apply line-through;
-  color: var(--paper-ink-faint);
-}
-
-.console-dock-detail {
-  @apply mt-1 pl-[25px] text-[12px] leading-snug;
-  color: var(--paper-ink-mute);
-}
-
-/* An item answered on the tracker rather than here. It takes the space a
-   checkbox would, so the two kinds of row line up down the left edge instead
-   of one sitting proud of the other. */
-.console-dock-ask {
-  @apply flex items-start gap-2.5 pl-[25px];
-}
-
-.console-dock-go {
-  @apply relative ml-auto flex-shrink-0 text-[12px] font-medium;
-  color: var(--accent);
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-/* The same reach the other inline controls in here carry, for the same
-   reason: the word is twelve pixels tall and a thumb is not. */
-.console-dock-go::before {
-  content: '';
-  @apply absolute -inset-x-2 -inset-y-3;
-}
-
-.console-dock-item[data-done='true'] .console-dock-go {
-  color: var(--paper-ink-faint);
-  text-decoration: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .console-dock-tab svg {
     transition-duration: var(--motion-off);
   }
 }

@@ -343,7 +343,6 @@ export function RankedList({
   valueOf,
   formatValue,
   empty,
-  markOf,
   loading,
   expected = 5,
   dense,
@@ -369,7 +368,6 @@ export function RankedList({
             className="absolute inset-y-0 left-0 rounded-[var(--console-radius-sm)] bg-[color:var(--wash-accent)] transition-[width] duration-300 ease-out-soft"
             style={{ width: `${Math.max(1.5, (valueOf(row) / peak) * 100)}%` }}
           />
-          {markOf && <span className="relative flex-shrink-0">{markOf(row)}</span>}
           <span className="relative truncate">{nameOf(row)}</span>
           <span className="relative flex-shrink-0 font-mono tabular-nums text-paper-soft">
             {formatValue(valueOf(row))}

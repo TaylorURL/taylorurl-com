@@ -1,114 +1,159 @@
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
-import ToolMesh from '@components/mesh/ToolMesh'
+import { TextLink } from '@components/kit/Kit'
+import { TYPE } from '@components/kit/styles'
 import { ToolPaypal, ToolSquare, ToolStripe } from '@components/marks/toolMarks'
-import { START_LINK, serves } from '@constants/navigation'
+import { serves } from '@constants/navigation'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { otherServices, servicePage } from '@data/pages/serviceDetail'
-import ServiceSection from './ServiceSection'
-import FactMesh from './FactMesh'
-import MoreServices from './MoreServices'
-import SectionLink from './SectionLink'
+import { relatedServices, servicePage } from '@data/pages/serviceDetail'
+import ServiceLanding, { ItemAnswer, NameList } from './ServiceLanding'
 
 /**
  * Booking and ordering on its own page.
  *
- * The other website lines answer three questions - what the work covers, how
- * long it takes, what it runs - and `ServiceDetail` renders all three from the
- * content held against their slug. This one also has to name the accounts the
- * money and the bookings run through, which is a mesh of marks the shared view
- * has no shape for, so it takes a view of its own the way company email and the
- * apps do.
+ * The other website lines answer what the work covers, how long it takes and
+ * what it runs, and `ServiceDetail` renders all three from the content held
+ * against their slug. This one also has to name the accounts the money and the
+ * bookings run through, so it takes a view of its own the way company email
+ * and the apps do.
  *
- * `@data/serviceDetail` still holds the line's name, summary and mark, because
+ * `@data/serviceDetail` still holds the line's name, summary and path, because
  * a card, a menu row and the sitemap all read them there and none of them
  * should have to know which service pages are bespoke.
  */
 const SLUG = 'online-tools'
 const PAGE = servicePage(SLUG)
 
+const FACTS = [
+  { label: 'Price', value: 'Part of the price of the site' },
+  { label: 'Checkout', value: 'Stripe, Square, or PayPal' },
+  { label: 'Card fees', value: 'Billed by the processor, not through me' },
+]
+
 // What the work is, in the order a customer meets it: the booking, the order,
 // the payment, the questions before a quote, the account afterwards, and the
 // screens on your side of it.
 const COVERS = [
   {
-    title: 'Booking from a Phone',
+    title: 'Booking from a phone',
     body: 'A slot booked at ten at night, on the hours and services you actually offer, with the reminder sent the morning of.',
   },
   {
-    title: 'Ordering Ahead',
+    title: 'Ordering ahead',
     body: 'The menu or the catalog on the site, an order placed and paid for, and a note to the kitchen or the counter when it lands.',
   },
   {
-    title: 'Payment That Lands',
+    title: 'Payment that lands',
     body: 'Checkout through Stripe, Square, or PayPal, with the money going into your account and not through mine.',
   },
   {
-    title: 'Quote and Intake Forms',
+    title: 'Quote and intake forms',
     body: 'Everything you need to know before a job can be priced, asked once and sent to your inbox.',
   },
   {
-    title: 'Customer Accounts',
+    title: 'Customer accounts',
     body: 'Logins for the people who need to see their bookings, invoices, or history without calling to ask.',
   },
   {
-    title: 'Your Side of It',
+    title: 'Your side of it',
     body: 'Back-office screens showing today’s work rather than every record you own, on the phone or the machine at the counter.',
   },
 ]
+
+/**
+ * The accounts the bookings and the money run through: a mark where the
+ * vendor publishes one, the name alone everywhere else.
+ */
+const PLATFORMS = [
+  { name: 'Stripe', mark: ToolStripe },
+  { name: 'Square', mark: ToolSquare },
+  { name: 'PayPal', mark: ToolPaypal },
+  { name: 'Jobber' },
+  { name: 'Housecall Pro' },
+  { name: 'ServiceTitan' },
+  { name: 'QuickBooks' },
+  { name: 'Toast' },
+  { name: 'Anything else with an API', quiet: true },
+]
+
+// What naming this many companies on one page means, and what it does not.
+const PLATFORM_NOTE =
+  'Product names and marks belong to their owners. Naming one here is not a partnership, an endorsement, or an official integration, and what each of them charges is billed by them.'
+
+/** The platforms in one card, with the note on what naming them means. */
+function Platforms() {
+  return (
+    <>
+      <NameList items={PLATFORMS} className="lg:!grid-cols-3" />
+      <p className={`${TYPE.small} mt-6 max-w-[640px]`}>{PLATFORM_NOTE}</p>
+    </>
+  )
+}
+
+const SECTIONS = [
+  {
+    id: 'platforms',
+    title: 'The accounts the money and the bookings run through',
+    lede: 'Each one is opened in your business’s name and set up inside your own account. Nothing holds the site hostage to an account somebody else owns.',
+    content: <Platforms />,
+  },
+]
+
+const EXAMPLE = {
+  host: 'baytowngokarts.com',
+  line: 'Kart heats, bounce houses, and a party room in Baytown. Ticket bundles and party rentals go into a cart and out through Stripe Checkout, so a parent planning Saturday can book without calling.',
+}
 
 // The honest question, answered before the quote: a link to somebody else's
 // booking page does the job for plenty of businesses, and the page says so
 // rather than selling the built-in one to everybody who lands.
 const FIT = [
   {
-    title: 'A Booking Link Is Enough When',
+    title: 'A booking link is enough when',
     body: 'One person takes one kind of appointment, and a link to a calendar somebody else hosts does not cost you customers.',
   },
   {
-    title: 'Built-In Booking Earns Its Place When',
+    title: 'Built-in booking earns its place when',
     body: 'Customers leave when they are sent off the site, the services and the staff need their own rules, or the booking has to reach the software the business already runs.',
-  },
-]
-
-/**
- * The accounts the bookings and the money run through, drawn the way a trade
- * page draws the software a trade runs on: a mark where the vendor publishes
- * one, the name alone everywhere else.
- */
-const PLATFORMS = [
-  { id: 'stripe', name: 'Stripe', mark: ToolStripe },
-  { id: 'square', name: 'Square', mark: ToolSquare },
-  { id: 'paypal', name: 'PayPal', mark: ToolPaypal },
-  { id: 'jobber', name: 'Jobber' },
-  { id: 'housecall-pro', name: 'Housecall Pro' },
-  { id: 'service-titan', name: 'ServiceTitan' },
-  { id: 'quickbooks', name: 'QuickBooks' },
-  { id: 'toast', name: 'Toast' },
-  { id: 'custom-integration', name: 'Anything else with an API', generic: true },
-]
-
-// What naming this many companies on one page means, and what it does not.
-// `ToolMesh` carries the trades' own note by default, and that one is about
-// software a shop already pays for rather than about a payment account.
-const PLATFORM_NOTE =
-  'Product names and marks belong to their owners. Naming one here is not a partnership, an endorsement, or an official integration, and what each of them charges is billed by them.'
-
-const TERMS = [
-  {
-    title: 'How Long It Takes',
-    body: 'The site runs two to four weeks. Booking and ordering built into it add to that, and the date is agreed with the plan before any work starts.',
-  },
-  {
-    title: 'What It Costs to Run',
-    body: 'Booking, ordering, and payment are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so you get the number in writing and agree to it before anything starts. What a payment processor charges per transaction is billed by them, not through me.',
   },
 ]
 
 // A link written into this page by hand still has to be a page this site
 // serves, so the route table answers for it rather than whoever edits the list.
-const ASIDES = [{ to: '/process', label: 'How a Build Runs' }].filter(aside => serves(aside.to))
+const PROCESS = serves('/process') ? { to: '/process', label: 'How a Build Runs' } : null
+
+const QUESTIONS = [
+  {
+    q: 'Do I need booking built in, or will a link do?',
+    a: (
+      <ItemAnswer
+        lede="Plenty of businesses are fine with a booking link. I settle which you need on the first call, before I quote anything."
+        items={FIT}
+      />
+    ),
+  },
+  {
+    q: 'How long does it take?',
+    a: (
+      <>
+        <p>
+          The site runs two to four weeks. Booking and ordering built into it add to that, and the
+          date is agreed with the plan before any work starts.
+        </p>
+        {PROCESS && (
+          <p>
+            <TextLink to={PROCESS.to} label={PROCESS.label} />
+          </p>
+        )}
+      </>
+    ),
+  },
+  {
+    q: 'What does it cost to run?',
+    a: 'Booking, ordering, and payment are built into the price of the site rather than billed on top of it. What moves that price is how big the whole project is, so you get the number in writing and agree to it before anything starts. What a payment processor charges per transaction is billed by them, not through me.',
+  },
+]
+
+const RELATED = ['new-website', 'ad-tracking', 'mobile-apps']
 
 export default function OnlineTools() {
   return (
@@ -136,69 +181,16 @@ export default function OnlineTools() {
           },
         ]}
       />
-      <PageHero
-        eyebrow="Booking and Ordering"
+      <ServiceLanding
         title="Take the booking while you are on a job."
-        description="A slot booked from a phone at night, an order placed ahead, a quote form that asks the right questions, and the money landing in your account. Built into the site and wired to the software you already run."
-      />
-
-      <ServiceSection
-        id="covers"
-        ground="paper"
-        eyebrow="What It Covers"
-        title="What you get."
-        lede="Everything below is part of the build. Nothing here is an upgrade."
-      >
-        <FactMesh items={COVERS} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="platforms"
-        ground="band"
-        eyebrow="What It Connects To"
-        title="The accounts the money and the bookings run through."
-        lede="Each of them is opened in your business’s name, set up inside your own account, and left there. Nothing here holds a site hostage to an account somebody else owns."
-      >
-        <ToolMesh tools={PLATFORMS} ground="band" note={PLATFORM_NOTE} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="fit"
-        ground="paper"
-        eyebrow="Link or Built In"
-        title="When you need it built in, and when a link will do."
-        lede="Plenty of businesses are fine with a booking link. I settle which you need on the first call, before I quote anything."
-      >
-        <FactMesh items={FIT} ground="paper" columns={{ base: 1, sm: 2 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="terms"
-        ground="band"
-        eyebrow="Time and Cost"
-        title="How long it takes, and what it runs."
-      >
-        <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
-        {ASIDES.length > 0 && (
-          <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-            {ASIDES.map(aside => (
-              <SectionLink key={aside.to} to={aside.to} label={aside.label} ground="band" />
-            ))}
-          </div>
-        )}
-      </ServiceSection>
-
-      <MoreServices pages={otherServices(SLUG)} />
-
-      <CtaBanner
-        eyebrow="Let’s Talk"
-        heading="Take the booking"
-        accentText="on the site."
-        description="Tell me what the business runs on now and what a customer should be able to do without calling. You get the plan and the price before any work starts."
-        primaryLabel={START_LINK.label}
-        primaryTo={START_LINK.to}
-        secondaryLabel="Ask a Question"
-        secondaryTo="/contact"
+        lead="A slot booked from a phone at night, an order placed ahead, and the money landing in your account. Built into the site and wired to the software you already run."
+        facts={FACTS}
+        covers={COVERS}
+        sections={SECTIONS}
+        example={EXAMPLE}
+        questions={QUESTIONS}
+        related={relatedServices(SLUG, RELATED)}
+        cta="Take the booking on the site."
       />
     </div>
   )

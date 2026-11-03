@@ -82,8 +82,6 @@ const EXCEPT = new Map([
   // The analytics buckets arrive already truncated by the database, so a label
   // is read in the zone they were cut in rather than in this one.
   ['src/app/views/analytics/lib/format.js', 'buckets are cut by the database'],
-  ['src/app/views/console/pages/traffic/LivePage.jsx', 'buckets are cut by the database'],
-  ['src/app/views/console/pages/traffic/OverviewPage.jsx', 'buckets are cut by the database'],
   // A stored `YYYY-MM-DD` is a square on a calendar rather than a moment, and
   // moving it into a zone is how it lands on the day before.
   ['src/app/views/portfolio/CaseStudy.jsx', 'a calendar date, rendered from its parts'],

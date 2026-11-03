@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Download, ImageUp, Undo2 } from 'lucide-react'
-import StepFlow from '@components/steps/StepFlow'
+import { BUTTONS, CARD, TYPE } from '@components/kit/styles'
 import {
   REACHES,
   backgroundOf,
@@ -13,10 +13,9 @@ import {
 import { zipBlob } from '@app/tools/lib/zip'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
-import { GROUND, SHEET } from './lib/ground'
-import { FIELD_LABEL } from '@constants/grounds'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import TilePicker from './TilePicker'
-import { ToolNote, ToolStep } from './ToolStep'
+import { ToolHero, ToolNotes, ToolStep } from './parts'
 
 // What a file that would not open says. It is what `readImage` refuses with and
 // what anything else thrown on the way in falls back to, because from the
@@ -92,12 +91,30 @@ Open logo-on-black.png first. If the edges look clean there, they will look
 clean anywhere.
 `
 
+// What is worth knowing about getting a clean cut: the note that stood beside
+// the download, the two that stood under the sliders, and the one that stood
+// under the file.
+const NOTES = [
+  {
+    title: 'Check it on black.',
+    body: 'A cutout that looks clean on white can still carry a pale rim. Open the on-black version first: if the edges hold up there, they hold up anywhere.',
+  },
+  {
+    title: 'A rim of the old background left behind?',
+    body: 'Raise how much to take. For a photographed or scanned logo with a soft edge, raise the edge softness instead.',
+  },
+  {
+    title: 'Nothing leaves this page.',
+    body: 'The logo is opened and worked on in your browser. It is never uploaded, so the only copy stays where it already was.',
+  },
+]
+
 // What the cut is shown against.
 //
 // The chequer is the one everybody already reads as nothing rather than as
 // white, and its greys are fixed rather than taken from the theme: drawn in the
-// site's own hairline it comes out dark on dark, which hides exactly the
-// artwork a reader is checking and makes a working cutout look broken.
+// site's own greys it comes out dark on dark, which hides exactly the artwork a
+// reader is checking and makes a working cutout look broken.
 //
 // No single ground answers, either. White artwork disappears on the chequer and
 // black artwork disappears on black, so the ground is a choice, and the two
@@ -159,10 +176,11 @@ const hex = ([r, g, b]) => `#${[r, g, b].map(c => c.toString(16).padStart(2, '0'
 /**
  * The logo cleaner.
  *
- * Three steps: the file, the settings, and the download. The middle step is
- * where the work is, and it is arranged so that pressing next twice still gets
- * a correct result: the background is read off the border of the artwork and
- * the defaults suit a logo on a white page, which is most of what arrives.
+ * One card: the file, the settings and the download down the left, and the
+ * cut as it stands on the right. It is arranged so that dropping a file and
+ * pressing the download still gets a correct result: the background is read
+ * off the border of the artwork and the defaults suit a logo on a white page,
+ * which is most of what arrives.
  *
  * Everything runs in the browser. Artwork is the one thing a business has only
  * one copy of, and a tool that uploaded it somewhere to hand it back would be
@@ -222,6 +240,14 @@ export default function LogoCleaner({ tool }) {
 
   const set = (key, value) => setSettings(held => ({ ...held, [key]: value }))
 
+  const toggleVariant = id =>
+    setChosen(held => {
+      const next = new Set(held)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+
   // Picking the ground off the artwork itself, for a logo whose border is not
   // the colour behind it.
   const pickAt = event => {
@@ -273,7 +299,7 @@ export default function LogoCleaner({ tool }) {
     }
   }
 
-  const Preview = (
+  const result = (
     <Cutout
       preview={preview}
       image={image}
@@ -286,215 +312,168 @@ export default function LogoCleaner({ tool }) {
     />
   )
 
-  const steps = [
-    {
-      id: 'logo-file',
-      label: 'Your Logo',
-      eyebrow: 'Step One',
-      title: tool.name,
-      description: tool.lede,
-      answered: Boolean(image),
-      content: (
-        <ToolStep preview={Preview}>
-          <div>
-            <p className={FIELD_LABEL}>The file</p>
-            <label
-              className={`flex cursor-pointer flex-col items-center justify-center gap-3 rounded-[var(--r-card)] border border-dashed p-10 text-center transition duration-200 ease-out-soft focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-[color:var(--accent)] ${GROUND.ruleStrong} ${GROUND.wash}`}
-              onDragOver={event => event.preventDefault()}
-              onDrop={event => {
-                event.preventDefault()
-                take(event.dataTransfer.files[0])
-              }}
-            >
-              <ImageUp className="h-6 w-6 text-accent" aria-hidden="true" />
-              <span className="text-[15px] font-medium text-ink-paper">
-                Drop a logo here, or choose a file
-              </span>
-              <span className={`text-[13px] ${GROUND.body}`}>PNG, JPG or WebP</span>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                className="sr-only"
-                onChange={event => take(event.target.files[0])}
-              />
-            </label>
-            {fault && (
-              <p
-                className="mt-3 text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
-                role="alert"
-              >
-                {fault}
-              </p>
-            )}
-          </div>
-
-          <ToolNote title="Nothing Leaves This Page">
-            The logo is opened and worked on in your browser. It is never uploaded, so the only copy
-            stays where it already was.
-          </ToolNote>
-        </ToolStep>
-      ),
-    },
-    {
-      id: 'logo-settings',
-      label: 'The Cut',
-      eyebrow: 'Step Two',
-      title: 'Adjust until the edges look right.',
-      description:
-        'The defaults suit a logo on a white page. The two that matter most are how much of the background to take and whether to reach inside the artwork.',
-      answered: true,
-      content: (
-        <ToolStep preview={Preview}>
-          <div>
-            <p className={FIELD_LABEL}>What counts as background</p>
+  return (
+    <>
+      <ToolHero title="Lift a logo off its background." lead={tool.lede}>
+        <div className={`${CARD} p-6 sm:p-8`}>
+          <ToolStep
+            preview={result}
+            first={
+              <div>
+                <p className={FIELD_LABEL}>The file</p>
+                <label
+                  className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-[12px] bg-[var(--card-hi)] px-6 py-10 text-center transition-colors duration-150 focus-within:shadow-[0_0_0_1px_var(--blue),0_0_0_4px_rgba(59,107,255,0.16)] hover:bg-[#262624]"
+                  onDragOver={event => event.preventDefault()}
+                  onDrop={event => {
+                    event.preventDefault()
+                    take(event.dataTransfer.files[0])
+                  }}
+                >
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[rgba(59,107,255,0.16)] text-[color:var(--link)]">
+                    <ImageUp className="h-5 w-5" aria-hidden="true" />
+                  </span>
+                  <span className="mt-1 text-[16px] font-medium text-ink">
+                    {image ? 'Choose a Different Logo' : 'Drop a Logo Here or Choose a File'}
+                  </span>
+                  <span className={TYPE.small}>PNG, JPG or WebP</span>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    className="sr-only"
+                    onChange={event => take(event.target.files[0])}
+                  />
+                </label>
+                {fault && (
+                  <p className={FIELD_FAULT} role="alert">
+                    {fault}
+                  </p>
+                )}
+              </div>
+            }
+          >
             <TilePicker
+              name="logo-reach"
+              legend="What counts as background"
               options={REACHES}
               current={settings.reach}
               onPick={id => set('reach', id)}
               describe={entry => entry.hint}
-              columns={{ base: 1, sm: 2 }}
+              columns={2}
             />
-          </div>
 
-          <Slider
-            id="logo-tolerance"
-            label="How much to take"
-            value={settings.tolerance}
-            onChange={value => set('tolerance', value)}
-            hint="Raise it if a rim of the old background is left behind."
-          />
-          <Slider
-            id="logo-softness"
-            label="Edge softness"
-            value={settings.softness}
-            max={0.3}
-            onChange={value => set('softness', value)}
-            hint="Raise it for a photographed or scanned logo with a soft edge."
-          />
+            <div className="space-y-6">
+              <Slider
+                id="logo-tolerance"
+                label="How much to take"
+                value={settings.tolerance}
+                onChange={value => set('tolerance', value)}
+              />
+              <Slider
+                id="logo-softness"
+                label="Edge softness"
+                value={settings.softness}
+                max={0.3}
+                onChange={value => set('softness', value)}
+              />
+            </div>
 
-          <div className={`flex flex-wrap gap-3 border-t pt-6 ${GROUND.rule}`}>
-            <Toggle on={settings.trim} onClick={() => set('trim', !settings.trim)}>
-              Crop to the Artwork
-            </Toggle>
-            <Toggle on={settings.unmix} onClick={() => set('unmix', !settings.unmix)}>
-              Clean the Edge Color
-            </Toggle>
-            <Toggle on={picking} onClick={() => setPicking(!picking)}>
-              {picking ? 'Click the Preview' : 'Pick the Background'}
-            </Toggle>
-            {settings.background && (
-              <button
-                type="button"
-                onClick={() => set('background', null)}
-                className="btn btn-secondary"
-              >
-                <Undo2 className="h-4 w-4" aria-hidden="true" />
-                Back to Automatic
-              </button>
+            <div className="space-y-3">
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                <Toggle on={settings.trim} onChange={() => set('trim', !settings.trim)}>
+                  Crop to the Artwork
+                </Toggle>
+                <Toggle on={settings.unmix} onChange={() => set('unmix', !settings.unmix)}>
+                  Clean the Edge Color
+                </Toggle>
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => setPicking(!picking)}
+                  aria-pressed={picking}
+                  className={picking ? BUTTONS.primary : BUTTONS.secondary}
+                >
+                  {picking ? 'Click the Preview' : 'Pick the Background'}
+                </button>
+                {settings.background && (
+                  <button
+                    type="button"
+                    onClick={() => set('background', null)}
+                    className={BUTTONS.secondary}
+                  >
+                    <Undo2 className="h-4 w-4" aria-hidden="true" />
+                    Back to Automatic
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {preview && kept > 0.97 && (
+              <p className={TYPE.small}>
+                Almost nothing was removed. The background may not be a flat color, or the artwork
+                may already run to every edge.
+              </p>
             )}
-          </div>
+            {preview && kept < 0.1 && (
+              <p className={TYPE.small}>
+                Only {Math.round(kept * 100)}% of the picture is left, which usually means the
+                artwork is close in color to what it is sitting on. Lower how much to take, or pick
+                the background off the preview. A logo the same color as its background cannot be
+                separated from it by color alone.
+              </p>
+            )}
 
-          {kept > 0.97 && (
-            <p className={`text-[14px] leading-relaxed ${GROUND.meta}`}>
-              Almost nothing was removed. The background may not be a flat color, or the artwork may
-              already run to every edge.
-            </p>
-          )}
-          {kept < 0.1 && (
-            <p className={`text-[14px] leading-relaxed ${GROUND.meta}`}>
-              Only {Math.round(kept * 100)}% of the picture is left, which usually means the artwork
-              is close in color to what it is sitting on. Lower how much to take, or pick the
-              background off the preview. A logo the same color as its background cannot be
-              separated from it by color alone.
-            </p>
-          )}
-        </ToolStep>
-      ),
-    },
-    {
-      id: 'logo-download',
-      label: 'Download',
-      eyebrow: 'Step Three',
-      title: 'Take the set.',
-      description:
-        'A zip holding the transparent logo and whichever versions are marked In, at the size you supplied it, with a note saying which to use where.',
-      answered: true,
-      content: (
-        <ToolStep preview={Preview}>
-          <div>
-            <p className={FIELD_LABEL}>What goes in the folder</p>
-            <ul className={`divide-hair-paper divide-y ${GROUND.shell}`}>
-              {VARIANTS.map(variant => {
-                const on = variant.always || chosen.has(variant.id)
-                return (
-                  <li key={variant.id}>
-                    <button
-                      type="button"
+            <fieldset>
+              <legend className={FIELD_LABEL}>What goes in the folder</legend>
+              <div className="grid gap-2.5 sm:grid-cols-2">
+                {VARIANTS.map(variant => (
+                  <label
+                    key={variant.id}
+                    className={`relative block ${variant.always ? 'cursor-default' : 'cursor-pointer'}`}
+                  >
+                    <input
+                      type="checkbox"
+                      name="logo-variants"
+                      value={variant.id}
+                      checked={variant.always || chosen.has(variant.id)}
                       disabled={variant.always}
-                      aria-pressed={on}
-                      onClick={() =>
-                        setChosen(held => {
-                          const next = new Set(held)
-                          if (next.has(variant.id)) next.delete(variant.id)
-                          else next.add(variant.id)
-                          return next
-                        })
-                      }
-                      className={`flex min-h-[44px] w-full items-start justify-between gap-4 p-4 text-left transition duration-200 ease-out-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
-                        variant.always ? 'cursor-default' : GROUND.wash
-                      }`}
-                    >
-                      <span className="flex flex-col gap-1">
-                        <span className="text-[13px] font-medium leading-snug text-ink-paper">
-                          {variant.label}
-                        </span>
-                        <span className={`text-[12px] leading-snug ${GROUND.body}`}>
-                          {variant.hint}
-                        </span>
+                      onChange={() => toggleVariant(variant.id)}
+                      className="sr-only"
+                    />
+                    <span className="choice-tile h-full flex-col !items-start gap-0.5 text-left">
+                      <span>{variant.label}</span>
+                      <span className="text-[13px] font-normal leading-snug text-ink-mute">
+                        {variant.hint}
                       </span>
-                      <span
-                        className={`section-label-sm flex-shrink-0 ${on ? 'text-accent' : GROUND.meta}`}
-                      >
-                        {variant.always ? 'Always' : on ? 'In' : 'Out'}
-                      </span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          </div>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
 
-          <button
-            type="button"
-            onClick={save}
-            disabled={!image || busy}
-            className="btn btn-primary"
-          >
-            <Download className="h-4 w-4" aria-hidden="true" />
-            {busy ? 'Building…' : 'Download the Logo Files'}
-          </button>
+            <button
+              type="button"
+              onClick={save}
+              disabled={!image || busy}
+              className={`${BUTTONS.primary} w-full disabled:cursor-not-allowed disabled:opacity-60`}
+            >
+              <Download className="h-4 w-4" aria-hidden="true" />
+              {busy ? 'Building…' : 'Download the Logo Files'}
+            </button>
+          </ToolStep>
+        </div>
+      </ToolHero>
 
-          <ToolNote title="Check It on Black">
-            A cutout that looks clean on white can still carry a pale rim. Open the on-black version
-            first: if the edges hold up there, they hold up anywhere.
-          </ToolNote>
-        </ToolStep>
-      ),
-    },
-  ]
-
-  return <StepFlow steps={steps} atTop label="Logo cleaner steps" />
+      <ToolNotes title="Getting a clean edge" items={NOTES} />
+    </>
+  )
 }
 
 /**
  * The cut as it stands, on a chequerboard so transparency reads as nothing
- * rather than as white.
- *
- * It owns its canvas. Every step shows one of these, and a ref held above would
- * belong to whichever copy mounted last, which is the one already leaving as its
- * replacement arrives. The canvas then stops redrawing and every setting looks
- * like it does nothing.
+ * rather than as white, or on either of the two grounds a logo is actually
+ * placed on.
  */
 function Cutout({ preview, image, background, kept, picking, onPick, backdrop, onBackdrop }) {
   const ground = BACKDROPS.find(entry => entry.id === backdrop) || BACKDROPS[0]
@@ -511,11 +490,11 @@ function Cutout({ preview, image, background, kept, picking, onPick, backdrop, o
   }, [preview])
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-baseline justify-between gap-4">
-        <p className="section-label-sm text-paper-faint block">Preview</p>
+    <div>
+      <div className="mb-2 flex min-h-[36px] items-center justify-between gap-4">
+        <p className="text-[14px] font-medium leading-[1.4] text-ink-soft">Preview</p>
         {preview && (
-          <div className="flex gap-px overflow-hidden rounded-sm bg-[color:var(--paper-hairline)]">
+          <div className="inline-flex gap-1 rounded-full bg-white/[0.06] p-1">
             {BACKDROPS.map(entry => {
               const on = entry.id === ground.id
               return (
@@ -524,10 +503,8 @@ function Cutout({ preview, image, background, kept, picking, onPick, backdrop, o
                   type="button"
                   onClick={() => onBackdrop(entry.id)}
                   aria-pressed={on}
-                  className={`section-label-sm flex min-h-[44px] items-center px-3 transition duration-200 ease-out-soft focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-[color:var(--accent)] ${
-                    on
-                      ? 'bg-[color:var(--accent-fill)] text-[color:var(--on-accent)]'
-                      : `${GROUND.surface} ${GROUND.meta} ${GROUND.wash}`
+                  className={`min-h-[32px] rounded-full px-3 text-[13px] font-medium transition-colors duration-150 ${
+                    on ? 'bg-white/[0.14] text-ink' : 'text-ink-mute hover:text-ink'
                   }`}
                 >
                   {entry.label}
@@ -538,42 +515,40 @@ function Cutout({ preview, image, background, kept, picking, onPick, backdrop, o
         )}
       </div>
       <div
-        {...SHEET.attrs}
         onClick={onPick}
-        className={`flex items-center justify-center p-6 ${preview ? 'aspect-square' : ''} ${
-          SHEET.shell
+        className={`flex items-center justify-center overflow-hidden rounded-[12px] p-6 ${
+          preview ? 'aspect-square' : 'min-h-[240px]'
         } ${picking ? 'cursor-crosshair' : ''}`}
         style={ground.style}
       >
         {preview ? (
           <canvas ref={canvasRef} className="max-h-full max-w-full object-contain" />
         ) : (
-          <p className={`max-w-[24ch] text-center text-[14px] leading-relaxed ${SHEET.body}`}>
-            Choose a logo and it appears here. The checkerboard stands for transparent, and the two
-            solid grounds show whether the edges hold up.
+          <p className="text-center text-[14px] leading-[1.5] text-[rgba(20,20,19,0.62)]">
+            Your logo appears here.
           </p>
         )}
       </div>
       {preview && (
-        <dl className="flex flex-wrap gap-x-8 gap-y-2">
+        <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2">
           <div>
-            <dt className={`section-label-sm ${GROUND.meta}`}>Size</dt>
-            <dd className="mt-1 text-[13px] text-ink-paper">
+            <dt className={TYPE.small}>Size</dt>
+            <dd className="mt-0.5 text-[15px] font-medium text-ink">
               {image.width} by {image.height}
             </dd>
           </div>
           <div>
-            <dt className={`section-label-sm ${GROUND.meta}`}>Kept</dt>
-            <dd className="mt-1 text-[13px] text-ink-paper">
+            <dt className={TYPE.small}>Kept</dt>
+            <dd className="mt-0.5 text-[15px] font-medium text-ink">
               {Math.round(kept * 100)}% of the frame
             </dd>
           </div>
           <div>
-            <dt className={`section-label-sm ${GROUND.meta}`}>Ground</dt>
-            <dd className="mt-1 flex items-center gap-2 text-[13px] text-ink-paper">
+            <dt className={TYPE.small}>Ground</dt>
+            <dd className="mt-0.5 flex items-center gap-2 text-[15px] font-medium text-ink">
               <span
                 aria-hidden="true"
-                className="inline-block h-3 w-3 rounded-sm ring-1 ring-[color:var(--paper-hairline-strong)]"
+                className="inline-block h-3.5 w-3.5 rounded-full"
                 style={{ backgroundColor: hex(background) }}
               />
               {hex(background)}
@@ -585,14 +560,14 @@ function Cutout({ preview, image, background, kept, picking, onPick, backdrop, o
   )
 }
 
-function Slider({ id, label, value, onChange, hint, max = 0.6 }) {
+function Slider({ id, label, value, onChange, max = 0.6 }) {
   return (
     <div>
       <div className="mb-2 flex items-baseline justify-between gap-4">
-        <label htmlFor={id} className="section-label-sm text-paper-faint block">
+        <label htmlFor={id} className="text-[14px] font-medium leading-[1.4] text-ink-soft">
           {label}
         </label>
-        <span className={`font-mono text-[12px] tabular-nums ${GROUND.meta}`}>
+        <span className="text-[14px] tabular-nums text-ink-mute">
           {Math.round((value / max) * 100)}
         </span>
       </div>
@@ -604,22 +579,18 @@ function Slider({ id, label, value, onChange, hint, max = 0.6 }) {
         step={max / 100}
         value={value}
         onChange={event => onChange(Number(event.target.value))}
-        className="w-full accent-[color:var(--accent)]"
+        className="w-full accent-[color:var(--blue)]"
       />
-      <p className={`mt-2 text-[13px] leading-snug ${GROUND.body}`}>{hint}</p>
     </div>
   )
 }
 
-function Toggle({ on, onClick, children }) {
+/** A setting that is on or off, as a choice tile that wears the ring when on. */
+function Toggle({ on, onChange, children }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-pressed={on}
-      className={`btn ${on ? 'btn-primary' : 'btn-secondary'}`}
-    >
-      {children}
-    </button>
+    <label className="relative block cursor-pointer">
+      <input type="checkbox" checked={on} onChange={onChange} className="sr-only" />
+      <span className="choice-tile">{children}</span>
+    </label>
   )
 }

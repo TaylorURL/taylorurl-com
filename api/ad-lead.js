@@ -101,7 +101,10 @@ async function announce({ name, email, phone, form, campaign, lead }) {
         ['Campaign', campaign || 'Not given'],
       ],
       replyTo: email || undefined,
-      link: { label: 'Open the leads in the console', url: `${SITE_URL}/console/leads` },
+      link: {
+        label: 'Open the Inbox',
+        url: `${SITE_URL}/console/inbox?view=enquiries${lead?.id ? `&lead=${lead.id}` : ''}`,
+      },
     })
     // The body names their address; the header names the relay, so a reply
     // from any mailbox is filed and marked on its way to them.

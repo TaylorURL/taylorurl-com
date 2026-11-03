@@ -13,31 +13,25 @@ const NOT_TAKEN_OFF = 'That address could not be taken off the list just now.'
 
 const COPY = {
   working: {
-    eyebrow: 'Unsubscribing',
     heading: 'Taking this address off the list.',
   },
   done: {
-    eyebrow: 'Unsubscribed',
     heading: 'You’re off the list.',
-    body: 'Nothing more goes to this address. There is nothing else to do.',
+    body: 'Nothing more goes to this address.',
   },
   already: {
-    eyebrow: 'Unsubscribed',
     heading: 'You’re already off the list.',
-    body: 'This address came off the list earlier. There is nothing else to do.',
+    body: 'This address came off the list earlier.',
   },
   missing: {
-    eyebrow: 'Unsubscribe',
     heading: 'Take your address off the list.',
     body: 'Enter the address the email arrived at. It comes off every list I send from.',
   },
   invalid: {
-    eyebrow: 'Link Refused',
     heading: 'This link doesn’t match an address.',
     body: 'Open the unsubscribe link from the email again, or reply to that email and I will take the address off.',
   },
   failed: {
-    eyebrow: 'Link Refused',
     heading: 'This link didn’t work.',
     body: 'Reply to that email and I will take the address off.',
   },
@@ -130,7 +124,7 @@ export default function Unsubscribe() {
         path="/unsubscribe"
         noIndex
       />
-      <SubscriptionShell eyebrow={copy.eyebrow} heading={copy.heading} body={body}>
+      <SubscriptionShell heading={copy.heading} body={body}>
         {state === 'missing' && <UnsubscribeForm onDone={() => setState('done')} />}
       </SubscriptionShell>
     </>

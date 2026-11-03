@@ -1,17 +1,30 @@
 import { useParams } from 'react-router-dom'
-import PageHero from '@components/page-bands/PageHero'
-import CtaSection from '@components/conversion/CtaSection'
-import RuledSection from '@components/page-bands/RuledSection'
-import NeedMesh from '@components/mesh/NeedMesh'
-import ToolMesh from '@components/mesh/ToolMesh'
-import TradeMesh from '@components/mesh/TradeMesh'
-import WorkMesh from '@components/mesh/WorkMesh'
+import {
+  CallToAction,
+  CheckList,
+  FactList,
+  Grid,
+  LinkCard,
+  PageIntro,
+  Questions,
+  Section,
+  SectionHead,
+  WorkCard,
+} from '@components/kit/Kit'
+import { CARD, TYPE } from '@components/kit/styles'
 import Seo from '@components/Seo'
 import NotFound from '@views/NotFound'
-import FactMesh from '../services/FactMesh'
-import TownChips from './TownChips'
-import { toolsForTrade, tradeById } from '@data/towns-and-trades/trades'
-import { groupForIndustry, INDUSTRY_SLUGS } from '@data/towns-and-trades/industries'
+import ClientExample from '@views/portfolio/ClientExample'
+import {
+  LAUNCH_FACTS,
+  asHeading,
+  detailOf,
+  joinNames,
+  sentenceCase,
+  studyHref,
+} from '@views/portfolio/work'
+import { TOOL_NOTE, toolsForTrade, tradeById } from '@data/towns-and-trades/trades'
+import { INDUSTRY_SLUGS } from '@data/towns-and-trades/industries'
 import { industryCopyFor } from '@data/towns-and-trades/industryDetail'
 import { AREAS } from '@data/towns-and-trades/areas'
 import { LOCAL_PORTFOLIO, portfolioProofFor } from '@data/portfolio'
@@ -20,11 +33,6 @@ import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 // How many client sites the work block holds before it stops reading as proof
 // and starts reading as a directory.
 const WORK_LIMIT = 3
-
-// The bands alternate down the page, so a trade with siblings to show takes a
-// different arrangement from one without and the closing panel follows
-// whichever ground the last band left.
-const groundAt = index => (index % 2 === 0 ? 'paper' : 'band')
 
 /**
  * The local work a trade with no client of its own shows instead.
@@ -43,15 +51,35 @@ function localProofAt(index) {
   return Array.from({ length: WORK_LIMIT }, (_, step) => LOCAL_PORTFOLIO[(start + step) % total])
 }
 
+/** A trade's name inside a sentence: "barber shop", but "HVAC" as it is. */
+function inSentence(name) {
+  return name === name.toUpperCase() ? name : name.toLowerCase()
+}
+
+/** "a barber shop", "an HVAC", "an auto repair". */
+function withArticle(word) {
+  return `${/^(?:[aeiou]|HVAC)/i.test(word) ? 'an' : 'a'} ${word}`
+}
+
 /**
- * One trade's page: the problem its own site has to solve, the jobs a visitor
- * turns up to do, what gets built for it, the software it runs beside, the
- * client work that stands as proof, and the towns it gets built for.
+ * The towns a trade is most often called for in, as each town's own page names
+ * them. A trade no town names, roofing for one, is built for in all of them.
+ */
+function townsFor(trade) {
+  const named = AREAS.filter(area => area.trades.includes(trade.id))
+  return named.length ? named : AREAS
+}
+
+/**
+ * One trade's page, in the landing layout: what the site has to do for this
+ * trade and the software it works beside, beside the two facts every page
+ * opens on; then what it has to get right and what gets built, the client
+ * site that stands as proof, the longer copy as questions, and the towns.
  *
  * The trade, its tools, and its portfolio proof are read from the shared data,
- * and everything written for this trade alone comes from `@data/towns-and-trades/industryDetail`
- * against the same slug. A slug no group names renders the not-found state
- * rather than a half-built page.
+ * and everything written for this trade alone comes from
+ * `@data/towns-and-trades/industryDetail` against the same slug. A slug no
+ * group names renders the not-found state rather than a half-built page.
  */
 export default function Industry() {
   const { slug } = useParams()
@@ -62,21 +90,46 @@ export default function Industry() {
   if (!trade || !copy) return <NotFound />
 
   const tools = toolsForTrade(trade)
-  const group = groupForIndustry(trade.id)
-  const siblings = (group?.trades || [])
-    .filter(id => id !== trade.id)
-    .map(tradeById)
-    .filter(Boolean)
+  const ownTools = tools.filter(tool => trade.tools.includes(tool.id))
+  const named = inSentence(trade.name)
+  const leading = named.charAt(0).toUpperCase() + named.slice(1)
 
   const matches = portfolioProofFor(trade.id)
-  const work = matches.length ? matches.slice(0, WORK_LIMIT) : localProofAt(index)
-  const workScope = matches.length ? trade.name : 'Southeast Texas'
+  const towns = townsFor(trade)
 
-  const bandCount = siblings.length ? 5 : 4
-  const townGround = groundAt(bandCount)
+  const facts = [
+    {
+      label: 'Works alongside',
+      value: joinNames((ownTools.length ? ownTools : tools).map(tool => tool.name)),
+    },
+    ...LAUNCH_FACTS,
+  ]
+
+  const questions = [
+    {
+      q: `What does ${withArticle(named)} site have to get right?`,
+      a: (
+        <>
+          <p>{copy.needsDescription}</p>
+          <p>{copy.buildDescription}</p>
+        </>
+      ),
+    },
+    {
+      q: 'Does it work with the software I already use?',
+      a: (
+        <>
+          <p>{copy.toolsDescription}</p>
+          <p>{TOOL_NOTE}</p>
+        </>
+      ),
+    },
+    { q: `Why does the town matter for ${withArticle(named)} site?`, a: copy.townsDescription },
+    { q: 'What do you need from me to start?', a: copy.ctaDescription },
+  ]
 
   return (
-    <div>
+    <>
       <Seo
         title={`${trade.name} Websites in Baytown, TX`}
         description={copy.metaDescription}
@@ -115,90 +168,67 @@ export default function Industry() {
         ]}
       />
 
-      <PageHero
-        eyebrow={`Industry · ${trade.name}`}
+      <PageIntro
         title={copy.heroTitle}
-        description={copy.heroDescription}
+        lead={copy.heroDescription}
+        media={<FactList items={facts} />}
       />
 
-      <RuledSection
-        id="industry-needs"
-        ground={groundAt(0)}
-        eyebrow="What the Site Does"
-        title={copy.needsTitle}
-        description={copy.needsDescription}
-        meta={trade.name}
-      >
-        <NeedMesh needs={trade.needs} />
-      </RuledSection>
+      <Section label="What the site does" className="!pt-6">
+        <SectionHead title={asHeading(copy.needsTitle)} />
+        <div className="grid gap-5 md:grid-cols-2">
+          <div className={`${CARD} p-6 sm:p-8`}>
+            <h3 className={`${TYPE.h3} mb-6`}>What the site has to do</h3>
+            <CheckList items={trade.needs} />
+          </div>
+          <div className={`${CARD} p-6 sm:p-8`}>
+            <h3 className={`${TYPE.h3} mb-6`}>{asHeading(copy.buildTitle)}</h3>
+            <CheckList
+              items={copy.build.map(item => ({ ...item, title: sentenceCase(item.title) }))}
+            />
+          </div>
+        </div>
+      </Section>
 
-      <RuledSection
-        id="industry-build"
-        ground={groundAt(1)}
-        eyebrow="What Gets Built"
-        title={copy.buildTitle}
-        description={copy.buildDescription}
-        meta={`${copy.build.length} pieces`}
-      >
-        <FactMesh items={copy.build} ground="band" />
-      </RuledSection>
-
-      <RuledSection
-        id="industry-tools"
-        ground={groundAt(2)}
-        eyebrow="Works Alongside"
-        title={copy.toolsTitle}
-        description={copy.toolsDescription}
-        meta={`${tools.length} tools`}
-      >
-        <ToolMesh tools={tools} ground="paper" />
-      </RuledSection>
-
-      <RuledSection
-        id="industry-work"
-        ground={groundAt(3)}
-        eyebrow="Live Work"
-        title={copy.workTitle}
-        description={copy.workDescription}
-        meta={workScope}
-      >
-        <WorkMesh projects={work} ground="band" />
-      </RuledSection>
-
-      {siblings.length > 0 && (
-        <RuledSection
-          id="industry-related"
-          ground={groundAt(4)}
-          eyebrow="Nearby Trades"
-          title={`More under ${group.name.toLowerCase()}.`}
-          description="Trades whose sites are judged on much the same things, each with a page of its own."
-          meta={`${siblings.length} trades`}
-        >
-          <TradeMesh trades={siblings} ground="paper" />
-        </RuledSection>
+      {matches.length > 0 ? (
+        <ClientExample
+          label="Live work"
+          project={matches[0]}
+          title={asHeading(copy.workTitle)}
+          body={copy.workDescription}
+          more={matches.slice(1, WORK_LIMIT)}
+        />
+      ) : (
+        <Section label="Live work">
+          <SectionHead title={asHeading(copy.workTitle)} />
+          <Grid cols={3}>
+            {localProofAt(index).map(project => (
+              <WorkCard
+                key={project.slug}
+                project={project}
+                to={studyHref(project)}
+                detail={detailOf(project)}
+              />
+            ))}
+          </Grid>
+        </Section>
       )}
 
-      <RuledSection
-        id="industry-towns"
-        ground={townGround}
-        eyebrow="Where"
-        title={`${trade.name} sites, town by town.`}
-        description={copy.townsDescription}
-        meta={`${AREAS.length} towns`}
-      >
-        <TownChips />
-      </RuledSection>
+      <Section label="Questions">
+        <SectionHead title="Questions" />
+        <Questions items={questions} className="max-w-[860px]" />
+      </Section>
 
-      <CtaSection
-        ground={townGround === 'paper' ? 'dark' : 'paper'}
-        eyebrow="Start"
-        title={
-          <>
-            Start your <span className="text-accent">{trade.name}</span> site.
-          </>
-        }
-        description={copy.ctaDescription}
-      />
-    </div>
+      <Section label="Towns">
+        <SectionHead title={`${leading} sites, town by town`} />
+        <Grid cols={4} className="grid-cols-2">
+          {towns.map(area => (
+            <LinkCard key={area.slug} to={`/areas/${area.slug}`} title={area.name} />
+          ))}
+        </Grid>
+      </Section>
+
+      <CallToAction title={`Start your ${named} site.`} />
+    </>
   )
 }

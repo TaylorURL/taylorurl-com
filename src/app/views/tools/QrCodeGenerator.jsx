@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Download } from 'lucide-react'
-import StepFlow from '@components/steps/StepFlow'
+import { BUTTONS, CARD, TYPE } from '@components/kit/styles'
 import { LEVELS, encodeQr, maximumBytes } from '@app/tools/lib/qr'
 import { qrPngBlob, qrSvg, qrSvgBlob } from '@app/tools/lib/qrRender'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
-import { GROUND } from './lib/ground'
-import { FIELD_LABEL } from '@constants/grounds'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import TilePicker from './TilePicker'
-import { ToolNote, ToolStep } from './ToolStep'
+import { ToolHero, ToolNotes, ToolStep } from './parts'
 
 // What a code that could not be drawn says, for the causes that are not about
 // what was typed. The reader has one thing they can do about any of them.
@@ -26,7 +25,6 @@ const KINDS = [
   {
     id: 'link',
     label: 'A Web Address',
-    hint: 'Opens a page. Menus, booking, a review link.',
     fields: [{ name: 'url', label: 'Web address', placeholder: 'yourbusiness.com', type: 'text' }],
     compose: values => {
       const typed = values.url.trim()
@@ -37,7 +35,6 @@ const KINDS = [
   {
     id: 'phone',
     label: 'A Phone Number',
-    hint: 'Offers to dial. Cards, vehicle signs, flyers.',
     fields: [{ name: 'phone', label: 'Phone number', placeholder: '281 555 0140', type: 'tel' }],
     compose: values => {
       const digits = values.phone.replace(/[^\d+]/g, '')
@@ -47,7 +44,6 @@ const KINDS = [
   {
     id: 'email',
     label: 'An Email Address',
-    hint: 'Opens a new message already addressed.',
     fields: [
       { name: 'email', label: 'Email address', placeholder: 'you@yourbusiness.com', type: 'email' },
       { name: 'subject', label: 'Subject', placeholder: 'Quote request', type: 'text' },
@@ -64,7 +60,6 @@ const KINDS = [
   {
     id: 'wifi',
     label: 'Your Wifi',
-    hint: 'Joins the network without anybody reading out a password.',
     fields: [
       { name: 'ssid', label: 'Network name', placeholder: 'Shop Guest', type: 'text' },
       { name: 'password', label: 'Password', placeholder: 'Leave empty if open', type: 'text' },
@@ -84,7 +79,6 @@ const KINDS = [
   {
     id: 'text',
     label: 'Plain Text',
-    hint: 'Shows the words. A code, a reference, a short note.',
     fields: [
       { name: 'text', label: 'Text', placeholder: 'Anything you want to appear', type: 'text' },
     ],
@@ -116,6 +110,28 @@ const PRESETS = [
   { id: 'ink', label: 'Ink on Paper', dark: '#1c1c1a', light: '#f7f5f0' },
 ]
 
+// What is worth knowing before the file goes anywhere: the three things that
+// used to stand as notes beside the download, and the one that stood under the
+// damage setting.
+const NOTES = [
+  {
+    title: 'Scan it off your own screen before you print a thousand.',
+    body: 'A code that fails does so for a reason worth finding now: too small on the page, too little contrast against what it is printed on, or an address that was mistyped.',
+  },
+  {
+    title: 'Medium damage recovery is right for most codes.',
+    body: 'Higher recovery makes the pattern denser. Go higher only if the code is going somewhere it will be rubbed, folded or rained on.',
+  },
+  {
+    title: 'PNG for print, SVG for anything large.',
+    body: 'PNG for anything you are sending to a printer or dropping into a document. SVG scales to a vehicle wrap or a banner without going soft.',
+  },
+  {
+    title: 'Nothing leaves this page.',
+    body: 'The code is drawn in your browser. What it points at is never sent anywhere, and the file is yours to keep, with no watermark and nothing to sign up for.',
+  },
+]
+
 const download = (blob, filename) => {
   const href = URL.createObjectURL(blob)
   const link = document.createElement('a')
@@ -141,10 +157,11 @@ function filenameFor(kind, payload) {
 /**
  * The QR code generator.
  *
- * Three steps: what the code points at, how it looks, and the download. The
- * middle step is entirely optional - the defaults are a black code on white at
- * a size that prints on a flyer, which is what almost everybody wants - so
- * pressing next twice gets a correct file.
+ * One card: what the code points at and how it looks on the left, the code and
+ * its two downloads on the right. Everything past the first field is optional -
+ * the defaults are a black code on white at a size that prints on a flyer,
+ * which is what almost everybody wants - so typing an address and pressing the
+ * download gets a correct file.
  *
  * The code is drawn from the payload on every keystroke because the preview is
  * the only thing that tells somebody they have typed the address wrong, and a
@@ -219,204 +236,158 @@ export default function QrCodeGenerator({ tool }) {
     }
   }
 
-  const Preview = <QrPreview svg={preview} grid={grid} payload={payload} />
+  const result = (
+    <div className="space-y-5">
+      <QrPreview svg={preview} grid={grid} payload={payload} />
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <button
+          type="button"
+          onClick={() => save('png')}
+          disabled={!grid || saving}
+          className={`${BUTTONS.primary} flex-1 disabled:cursor-not-allowed disabled:opacity-60`}
+        >
+          <Download className="h-4 w-4" aria-hidden="true" />
+          {saving ? 'Preparing…' : 'Download PNG'}
+        </button>
+        <button
+          type="button"
+          onClick={() => save('svg')}
+          disabled={!grid}
+          className={`${BUTTONS.secondary} flex-1 disabled:cursor-not-allowed disabled:opacity-60`}
+        >
+          <Download className="h-4 w-4" aria-hidden="true" />
+          Download SVG
+        </button>
+      </div>
+    </div>
+  )
 
-  const steps = [
-    {
-      id: 'qr-points-at',
-      label: 'Points At',
-      eyebrow: 'Step One',
-      title: tool.name,
-      description: tool.lede,
-      answered: Boolean(payload),
-      content: (
-        <ToolStep preview={Preview}>
-          <div>
-            <p className={FIELD_LABEL}>What it should do</p>
-            <TilePicker
-              options={KINDS}
-              current={kindId}
-              onPick={setKindId}
-              describe={entry => entry.hint}
-              columns={{ base: 1, sm: 2 }}
-            />
-          </div>
-
-          <div className="space-y-5">
-            {kind.fields.map(field => (
-              <div key={field.name}>
-                <label htmlFor={`qr-${field.name}`} className={FIELD_LABEL}>
-                  {field.label}
-                </label>
-                <input
-                  id={`qr-${field.name}`}
-                  name={field.name}
-                  type={field.type}
-                  value={values[field.name]}
-                  onChange={change}
-                  className="field py-3.5"
-                  placeholder={field.placeholder}
+  return (
+    <>
+      <ToolHero title="Make a QR code." lead={tool.lede}>
+        <div className={`${CARD} p-6 sm:p-8`}>
+          <ToolStep
+            preview={result}
+            first={
+              <>
+                <TilePicker
+                  name="qr-kind"
+                  legend="What it should do"
+                  options={KINDS}
+                  current={kindId}
+                  onPick={setKindId}
+                  columns={3}
                 />
-              </div>
-            ))}
-            {encoded?.error && (
-              <p
-                className="text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
-                role="alert"
-              >
-                {encoded.error}
-              </p>
-            )}
-          </div>
-        </ToolStep>
-      ),
-    },
-    {
-      id: 'qr-look',
-      label: 'How It Looks',
-      eyebrow: 'Step Two',
-      title: 'The defaults print cleanly.',
-      description:
-        'Black on white at medium is what a printer expects. Change it only if the code has to sit on something that will not take it.',
-      answered: true,
-      content: (
-        <ToolStep preview={Preview}>
-          <div>
-            <p className={FIELD_LABEL}>Color</p>
+
+                <div className="space-y-5">
+                  {kind.fields.map(field => (
+                    <div key={field.name}>
+                      <label htmlFor={`qr-${field.name}`} className={FIELD_LABEL}>
+                        {field.label}
+                      </label>
+                      <input
+                        id={`qr-${field.name}`}
+                        name={field.name}
+                        type={field.type}
+                        value={values[field.name]}
+                        onChange={change}
+                        className="field"
+                        placeholder={field.placeholder}
+                      />
+                    </div>
+                  ))}
+                  {encoded?.error && (
+                    <p className={FIELD_FAULT} role="alert">
+                      {encoded.error}
+                    </p>
+                  )}
+                </div>
+              </>
+            }
+          >
             <TilePicker
+              name="qr-color"
+              legend="Color"
               options={PRESETS}
               current={presetId}
               onPick={setPresetId}
-              describe={option =>
-                option.id === 'classic' ? 'Scans anywhere' : 'Check it scans before printing'
-              }
-              columns={{ base: 1, sm: 3 }}
+              columns={3}
             />
-          </div>
-          <div>
-            <p className={FIELD_LABEL}>Size</p>
             <TilePicker
+              name="qr-size"
+              legend="Size"
               options={SIZES}
               current={sizeId}
               onPick={setSizeId}
               describe={option => `${option.note}, ${option.pixels}px`}
-              columns={{ base: 1, sm: 3 }}
+              columns={3}
             />
-          </div>
-          <div>
-            <p className={FIELD_LABEL}>Damage it survives</p>
             <TilePicker
+              name="qr-level"
+              legend="Damage it survives"
               options={LEVELS.filter(level => level.id !== 'L')}
               current={levelId}
               onPick={setLevelId}
               describe={option => `${Math.round(option.recovers * 100)}% obscured still scans`}
-              columns={{ base: 1, sm: 3 }}
+              columns={3}
             />
-            <p className={`mt-3 text-[13px] leading-relaxed ${GROUND.body}`}>
-              Higher recovery makes the pattern denser. Medium is right unless the code is going
-              somewhere it will be rubbed, folded or rained on.
-            </p>
-          </div>
-        </ToolStep>
-      ),
-    },
-    {
-      id: 'qr-download',
-      label: 'Download',
-      eyebrow: 'Step Three',
-      title: 'Take the file.',
-      description:
-        'PNG for anything you are sending to a printer or dropping into a document. SVG when it needs to scale to a vehicle wrap or a banner without going soft.',
-      answered: true,
-      content: (
-        <ToolStep preview={Preview}>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <button
-              type="button"
-              onClick={() => save('png')}
-              disabled={!grid || saving}
-              className="btn btn-primary"
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              {saving ? 'Preparing…' : `PNG, ${size.pixels}px`}
-            </button>
-            <button
-              type="button"
-              onClick={() => save('svg')}
-              disabled={!grid}
-              className="btn btn-secondary"
-            >
-              <Download className="h-4 w-4" aria-hidden="true" />
-              SVG, any size
-            </button>
-          </div>
+          </ToolStep>
+        </div>
+      </ToolHero>
 
-          <ToolNote title="Before You Print a Thousand">
-            Scan it off your own screen with your own phone. A code that fails does so for a reason
-            worth finding now: too small on the page, too little contrast against what it is printed
-            on, or an address that was mistyped.
-          </ToolNote>
-
-          <ToolNote title="Nothing Leaves This Page">
-            The code is drawn in your browser. What it points at is never sent anywhere, and the
-            file is yours to keep, with no watermark and nothing to sign up for.
-          </ToolNote>
-        </ToolStep>
-      ),
-    },
-  ]
-
-  return <StepFlow steps={steps} atTop label="QR code steps" />
+      <ToolNotes title="Before you print" items={NOTES} />
+    </>
+  )
 }
 
 /**
- * The code as it stands, beside whichever step is being answered.
+ * The code as it stands, with what it holds under it.
  *
- * It owns the node the markup is written into. Every step shows one of these,
- * and a ref held above would be released by the panel leaving after the panel
- * arriving had claimed it, leaving the code drawn on no step but the first.
+ * The SVG is written as markup rather than as an image so it stays crisp at
+ * whatever the layout gives it, and it is set through a ref because it is
+ * generated here rather than authored.
  */
 function QrPreview({ svg, grid, payload }) {
   const liveRef = useRef(null)
 
-  // The code is written as markup rather than as an image so it stays crisp at
-  // whatever the layout gives it, and it is set through a ref because the SVG is
-  // generated here rather than authored.
   useEffect(() => {
     if (liveRef.current) liveRef.current.innerHTML = svg
   }, [svg])
 
   return (
-    <div className="flex flex-col gap-4">
+    <div>
       <p className={FIELD_LABEL}>Preview</p>
       <div
-        className={`flex items-center justify-center p-6 ${grid ? 'aspect-square' : ''} ${GROUND.shell}`}
+        className={`flex items-center justify-center rounded-[12px] bg-[var(--card-hi)] p-6 ${
+          grid ? 'aspect-square' : 'min-h-[240px]'
+        }`}
       >
         {grid ? (
-          <div ref={liveRef} className="h-full w-full [&>svg]:h-full [&>svg]:w-full" />
+          <div
+            ref={liveRef}
+            className="h-full w-full overflow-hidden rounded-[6px] [&>svg]:h-full [&>svg]:w-full"
+          />
         ) : (
-          <p className={`max-w-[22ch] text-center text-[14px] leading-relaxed ${GROUND.body}`}>
-            Fill in the field on step one and the code appears here.
-          </p>
+          <p className={`${TYPE.small} text-center`}>Your code appears here.</p>
         )}
       </div>
       {grid && (
-        <dl className="flex flex-wrap gap-x-8 gap-y-2">
+        <dl className="mt-4 flex flex-wrap gap-x-8 gap-y-2">
           <div>
-            <dt className={`section-label-sm ${GROUND.meta}`}>Holds</dt>
-            <dd className="mt-1 text-[13px] text-ink-paper">
+            <dt className={TYPE.small}>Holds</dt>
+            <dd className="mt-0.5 text-[15px] font-medium text-ink">
               {grid.bytes} of {maximumBytes(grid.level)} characters
             </dd>
           </div>
           <div>
-            <dt className={`section-label-sm ${GROUND.meta}`}>Grid</dt>
-            <dd className="mt-1 text-[13px] text-ink-paper">
+            <dt className={TYPE.small}>Grid</dt>
+            <dd className="mt-0.5 text-[15px] font-medium text-ink">
               {grid.size} by {grid.size}
             </dd>
           </div>
         </dl>
       )}
-      {payload && <p className={`break-all text-[12px] leading-snug ${GROUND.meta}`}>{payload}</p>}
+      {payload && <p className={`${TYPE.small} mt-3 break-all`}>{payload}</p>}
     </div>
   )
 }

@@ -1,8 +1,7 @@
 import { ChevronsLeft, Lock } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { retryable } from '@utils/retryImage'
-import { GROUPS, sectionHref } from '../lib/sections'
-import { useModifierLabel } from '../lib/useConsoleShortcuts'
+import { GROUPS, GROUP_LABELS, sectionHref } from '../lib/sections'
 import { ConsoleAccount } from './ConsoleAccount'
 
 /**
@@ -80,10 +79,7 @@ export function ConsoleSidebar({
   canPreview,
   preview,
   onPreview,
-  theme,
-  onCycleTheme,
 }) {
-  const modifier = useModifierLabel()
   return (
     <nav
       id="console-sections"
@@ -129,7 +125,9 @@ export function ConsoleSidebar({
           if (!rows.length) return null
           return (
             <div key={group} className="console-nav-group">
-              {!collapsed && <p className="console-nav-group-head">{group}</p>}
+              {!collapsed && (
+                <p className="console-nav-group-head">{GROUP_LABELS[group] || group}</p>
+              )}
               <ul>
                 {rows.map(section => (
                   <li key={section.id}>
@@ -154,8 +152,6 @@ export function ConsoleSidebar({
           email={email}
           role={role}
           collapsed={collapsed}
-          theme={theme}
-          onCycleTheme={onCycleTheme}
           sites={sites}
           siteIds={siteIds}
           scopeLabel={scopeLabel}
@@ -175,7 +171,6 @@ export function ConsoleSidebar({
         >
           <ChevronsLeft className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
           {!collapsed && <span>Narrow</span>}
-          {!collapsed && <kbd aria-hidden="true">{modifier}B</kbd>}
         </button>
       </div>
     </nav>

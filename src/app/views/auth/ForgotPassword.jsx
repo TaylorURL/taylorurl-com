@@ -6,6 +6,7 @@ import { supabase } from '@data/supabase/supabaseClient'
 import { faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'
 import AuthShell, { Field } from './AuthShell'
+import { AUTH_NOTE } from './lib/styles'
 
 const STATUS_ID = 'forgot-status'
 
@@ -65,18 +66,19 @@ export default function ForgotPassword() {
         noIndex
       />
       <AuthShell
-        title="Forgot Password"
+        framed
+        title="Reset your password."
         blurb="A link to set a password goes to the address on your account."
         statusId={STATUS_ID}
         error={error}
         busy={busy}
-        submitLabel={sent ? 'Send Again' : 'Send Reset Link'}
+        submitLabel={sent ? 'Send Again' : 'Send a Reset Link'}
         busyLabel="Sending"
         onSubmit={submit}
-        alternative={{ to: '/login', lead: 'Remembered it?', label: 'Log in' }}
+        alternative={{ to: '/login', label: 'Back to Sign In' }}
       >
         {sent && (
-          <p className="auth-note" role="status">
+          <p className={AUTH_NOTE} role="status">
             {SENT_NOTE}
           </p>
         )}

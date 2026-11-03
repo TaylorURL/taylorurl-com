@@ -1,22 +1,13 @@
 import {
   MarkAccess,
-  MarkCanvass,
   MarkDial,
   MarkDials,
-  MarkFunnel,
   MarkGauge,
   MarkIndex,
   MarkInflow,
-  MarkLedger,
-  MarkNow,
-  MarkPage,
   MarkPulse,
-  MarkQuery,
   MarkRack,
-  MarkStack,
-  MarkSteps,
   MarkTender,
-  MarkTerritory,
 } from '@components/marks/marks'
 
 /**
@@ -26,317 +17,99 @@ import {
  * read, so a section exists in exactly one place rather than being listed once
  * per surface and drifting.
  *
- * Status leads, because it is the section every reader can open and the one a
- * signed-out visitor is already looking at.
- *
- * A section does not come and go with the scope. A menu that changes shape
- * underneath someone is a menu they have to re-read: a section that was there a
- * moment ago and is gone now reads as something taken away rather than
- * something waiting, so each answers for its own empty scope instead - Pages
- * with no site in scope says to pick one, and says it in the place the pages
- * would have been.
- *
- * Sites is the one section that cannot do that, because comparison is the whole
- * of what it is. Every site side by side is not a reading that exists when the
- * scope holds one site: the page has nothing to lay beside anything, and the
- * row leads to a heading about comparison over a single figure. So `multiSite`
- * marks it, and it appears only while more than one site is in view - every
- * site at once, or a set of them. This is the shape of the `admin` rule rather
- * than of the `locked` one: not a door to be opened by signing in, but a
- * question that has no answer from where the reader is standing.
+ * A client reads three: Overview (who is on now and what the window brought),
+ * Speed and Status, plus Settings from the account panel. The studio's side is
+ * the two things the owner works from - the Inbox of people who wrote back and
+ * the Call List - and the money, the accounts and the server.
  *
  * `mark` is the drawing the sidebar puts beside the label, and the only thing
  * left of a row once the column is collapsed - so no two may share a silhouette.
  *
- * `group` is the heading the sidebar files the section under. Sixteen flat
- * entries is a list to search; four headings of two to six is a shape to aim
- * at, and the grouping follows the question each section answers rather than
- * the feed it reads. Health is whether the site is up and what it costs to
- * open. Traffic is how many came, when, what they read and who they were, and
- * it is the whole of what a client reads. The two headings after it are the
- * studio's own: Email is everything written to a person from this domain, and
- * Studio is the work and the accounts behind the sites. A client never sees
- * either heading, since every section under them is marked `admin`.
+ * `locked` is the one thing that varies within a visit. Status is the console's
+ * public section, being the uptime monitor's feed; the rest are an account's
+ * own and are locked for a signed-out reader, who still sees them in the menu
+ * and is sent to sign in on clicking one.
  *
- * The one thing that varies within a visit is `locked`. Status is the console's
- * public section, being the uptime monitor's feed, which says nothing about any
- * one account; the rest are an account's own figures and are marked
- * locked for a signed-out reader, who still sees them in the menu and is sent
- * to sign in on clicking one. Settings is locked on the same terms: it is one
- * account's own arrangements, and there is nothing in it to read without one.
+ * `admin` marks a section only an admin account may open. That mark takes the
+ * row out of the menu and `ConsoleFrame` reads it a second time to shut the
+ * address, sending anybody else back to the Overview.
  *
- * Server, Outreach, Builds, Leads, Staff Portal, Payments and Admin are the other
- * exceptions, and they are the same kind: `admin` marks a section only an admin
- * account may open. A locked section is one this reader could open by signing
- * in, which is worth showing; a section for a role they will never hold is not
- * an invitation but a list of what somebody else can do, and the endpoints
- * behind them refuse any account that is not an admin, so listing them to a
- * client offers a door that answers only by refusing.
+ * `menu: false` keeps a section out of the column while leaving it a section:
+ * Settings is reached from the account panel.
  *
- * That mark takes the row out of the menu and shuts the address, and it has to
- * do both. Read by the menu alone it left every one of those sections a URL
- * away from anybody with a login: the endpoints refused the figures, and the
- * section drew anyway, which on Server is the studio's own machine named and
- * laid out in front of a client. So `ConsoleFrame` reads the mark a second
- * time and sends a reader who is not an admin back to the Overview.
- *
- * Neither mark is the last word on it. The collector verifies the session on
- * every request and answers by account, and the admin endpoints refuse any
- * account that is not an admin, so nothing here is what keeps a figure back -
- * this decides which sections a reader is offered and allowed to open.
- *
- * `menu: false` keeps a section out of the column while leaving it a section.
- * Settings is reached from the account panel at the head of the column, which is
- * where a reader looks for what belongs to the account rather than to the
- * figures; listing it a second time in the sections underneath puts one door in
- * two places and makes the reader decide which one they meant.
- *
- * `figures: false` takes the account's traffic strip off the top of a section.
- * That strip counts audience across the sites under care - who is on them now,
- * visitors, pageviews, sessions, session length and bounce - and a section
- * answering a different question puts its own figures there instead. Outreach
- * counts businesses being written to, and Server reads one machine that hosts
- * none of the sites, neither of which that strip measures.
- *
- * `account: true` marks the section that answers for the account rather than
- * for anything happening on a site. It carries no traffic strip, for the same
- * reason the two above carry none. It is offered no window, no re-read and no
- * feed state either, because all three act on feeds it never reads and a
- * control that changes nothing on screen is one a reader presses twice before
- * deciding the page is broken.
- *
- * `scope: false` marks a section that answers for the account rather than for
- * any one site. Every other section has two readings - the site in scope, or
- * every site at once - and the chooser under the heading is what moves between
- * them. A section with no such pair is offered no chooser, because picking a
- * site over a build or a roll of accounts narrows nothing.
+ * `figures: false` takes the account's traffic strip off the top of a section
+ * that answers a different question. `account: true` marks a section that
+ * answers for the account rather than for anything happening on a site, and
+ * `scope: false` one with no site to choose.
  *
  * `description` is the tooltip the menu shows; `meta` is the same section
- * written for a search result, which needs a fuller sentence than a tooltip
- * does. `title` overrides the head title where the section is known by a name
- * other than its menu label - Status is System Status to anyone outside the
- * console. Each section carries its own pair so no two console URLs answer to
- * one title and one description.
+ * written for a search result. `title` overrides the head title where the
+ * section is known by a name other than its menu label.
  */
 
 export const SECTIONS = [
   {
-    id: 'onboarding',
-    mark: MarkQuery,
-    group: 'Health',
-    path: 'onboarding',
-    label: 'Your Brief',
-    description: 'The questions the build starts from, one at a time.',
-    title: 'Your Brief - Console',
-    meta: 'Everything the studio needs from a client before their site is drawn: what they want it to do, the business behind it, the customers they are after, the pages they want, and the words and pictures that go on them.',
-    // A brief answers for the build rather than for a site, and there is no
-    // site yet to put a window over, so the figures strip, the date picker and
-    // the site chooser all measure something that is not there.
-    account: true,
-    scope: false,
-    // Only for an account that has bought a build, for the same reason the
-    // tracker is. Nobody else has anything to answer.
-    project: true,
-    duringBuild: true,
+    id: 'overview',
+    mark: MarkIndex,
+    group: 'Site',
+    path: '',
+    label: 'Overview',
+    description: 'Who is on the site now, and this month’s visitors, pages and sources.',
+    meta: 'The traffic of every site under care on one screen: who is reading right now, visitors and pageviews over the window you pick, the pages carrying the most of it, and where readers came from.',
   },
   {
-    id: 'project',
-    mark: MarkSteps,
-    group: 'Health',
-    path: 'project',
-    label: 'Your Site',
-    description: 'Where your build has reached, and everything written to you about it.',
-    title: 'Your Site - Console',
-    meta: 'The build of your website as it happens: the stage the work has reached, what is still needed from you, and every update written along the way.',
-    // A project is not a site with a window over it, so the figures strip, the
-    // date picker and the site chooser all belong to something else.
-    account: true,
-    scope: false,
-    // Only for an account that has bought a build. Nobody else has anything
-    // for this section to say.
-    project: true,
-    duringBuild: true,
+    id: 'vitals',
+    mark: MarkGauge,
+    group: 'Site',
+    path: 'vitals',
+    label: 'Speed',
+    description: 'What a page costs to open, on a phone and on a desktop.',
+    title: 'Speed - Console',
+    meta: 'PageSpeed readings for every site: performance, accessibility, best practices, and SEO, measured on both a throttled phone and a desktop.',
   },
   {
     id: 'status',
     mark: MarkPulse,
-    group: 'Health',
+    group: 'Site',
     path: 'status',
     label: 'Status',
     description: 'Uptime, open issues, and the last thirty days per site.',
     title: 'Live System Status',
     meta: 'Live uptime for every site TaylorURL hosts and maintains: what is answering right now, any open issue, and the outages of the last thirty days.',
     public: true,
-    duringBuild: true,
   },
   {
-    id: 'server',
-    mark: MarkRack,
-    group: 'Health',
-    path: 'server',
-    label: 'Server',
-    admin: true,
-    // The machine the studio runs, rather than one of the sites it serves.
-    // Picking a site over it narrows nothing, there is no window to put over a
-    // temperature, and the traffic strip counts an audience this section has
-    // none of.
-    account: true,
-    scope: false,
-    figures: false,
-    description: 'The machine behind the monitoring, and every routine on it.',
-    title: 'Sunday Server - Console',
-    meta: 'The Sunday Server, which runs everything visitor-facing that is not a site: how long it has been up, what it is carrying, and whether each of the routines on it is running, behind or stopped.',
-  },
-  {
-    id: 'vitals',
-    mark: MarkGauge,
-    group: 'Health',
-    path: 'vitals',
-    label: 'Vitals',
-    description: 'What a page costs to open, on a phone and on a desktop.',
-    title: 'Vitals - Console',
-    meta: 'PageSpeed readings for every site: performance, accessibility, best practices, and SEO, measured on both a throttled phone and a desktop.',
-  },
-  {
-    id: 'overview',
-    mark: MarkIndex,
-    group: 'Traffic',
-    path: '',
-    label: 'Overview',
-    description:
-      'Pageviews and sessions over the window, the hours and days they arrive in, and who is reading now.',
-    meta: 'The traffic of every site under care in one place: pageviews and sessions over the window you pick, the hours and days readers arrive in, who is on right now, and the pages carrying the most of it.',
-  },
-  {
-    id: 'live',
-    mark: MarkNow,
-    group: 'Traffic',
-    path: 'live',
-    label: 'Live',
-    description: 'Who is reading right now, which page they are on, and from where.',
-    meta: 'Who is reading right now, which page each of them is on, and the part of the world they opened it from, refreshed every few seconds as they move.',
-  },
-  {
-    id: 'sites',
-    mark: MarkStack,
-    group: 'Traffic',
-    path: 'sites',
-    label: 'Sites',
-    multiSite: true,
-    description: 'Every site side by side over the same window.',
-    meta: 'Every site under care side by side over the same window, so one week of visitors, pageviews, and session length reads against another site directly.',
-  },
-  {
-    id: 'pages',
-    mark: MarkPage,
-    group: 'Traffic',
-    path: 'pages',
-    label: 'Pages',
-    description: 'Which pages are read, how they are landed on, and for how long.',
-    meta: 'Which pages get read, how visitors land on them, how long each one holds a reader, and which page they were on when they left the site.',
-  },
-  {
-    id: 'sources',
+    id: 'inbox',
     mark: MarkInflow,
-    group: 'Traffic',
-    path: 'sources',
-    label: 'Sources',
-    description: 'Where visitors arrive from, and which campaigns brought them.',
-    meta: 'Where visitors arrive from - search, social, referrals, and direct - and which campaign carried each of them in over the window you pick.',
-  },
-  {
-    id: 'visitors',
-    mark: MarkTerritory,
-    group: 'Traffic',
-    path: 'visitors',
-    label: 'Visitors',
-    description:
-      'Where visitors are, and what they read on: countries, cities, devices, browsers, and languages.',
-    title: 'Visitors - Console',
-    meta: 'Who the visitors are: the countries and cities they open the site from, and the devices, browsers, operating systems, and languages they read it on, counted over the window you pick.',
-  },
-  {
-    id: 'outreach',
-    mark: MarkCanvass,
-    group: 'Email',
-    path: 'outreach',
-    label: 'Outreach',
+    group: 'Studio',
+    path: 'inbox',
+    label: 'Inbox',
     admin: true,
+    // A reply is a person writing back rather than anything happening on a
+    // site, so the traffic strip, the window and the site chooser all measure
+    // something else.
+    account: true,
     scope: false,
     figures: false,
-    description: 'Businesses found, what went out to them, and what came back.',
-    title: 'Outreach - Console',
-    meta: 'Every business the cold email engine has found: the address it reached, the audit behind the approach, the stage it stands at, and every message to and from it.',
+    description: 'Everybody who wrote back to an email, and every enquiry, with the conversation.',
+    title: 'Inbox - Console',
+    meta: 'Every person who answered an outreach email, and every enquiry from the site, the ads and the phone, newest first, with the conversation and the way to answer it.',
   },
   {
-    id: 'settings',
-    mark: MarkDials,
-    group: 'Account',
-    path: 'settings',
-    label: 'Settings',
-    menu: false,
-    account: true,
-    scope: false,
-    description: 'The name on the account, how it signs in, and how it looks.',
-    title: 'Account Settings - Console',
-    meta: 'Everything about the account rather than the figures in it: the name on it, the address and password it signs in with, two-factor authentication, the light or dark setting, the sessions it holds, and closing it.',
-  },
-  {
-    id: 'builds',
-    mark: MarkLedger,
-    group: 'Studio',
-    path: 'builds',
-    label: 'Builds',
-    admin: true,
-    // A build answers for itself rather than for a site: it exists before the
-    // site does, so the traffic strip, the window and the site chooser all
-    // measure something that is not there yet.
-    account: true,
-    scope: false,
-    description: 'Every build in the record, what stage it is at, and what it waits on.',
-    title: 'Builds - Console',
-    meta: 'Every website being built: the stage each one has reached, what is still owed by the client, the updates written to them, and the captures of their own pages attached to each.',
-  },
-  {
-    id: 'leads',
-    mark: MarkFunnel,
-    group: 'Studio',
-    path: 'leads',
-    label: 'Leads',
-    admin: true,
-    // A lead is a person who started a build rather than anything happening on
-    // a site, so the traffic strip, the window and the site chooser all
-    // measure something else.
-    account: true,
-    scope: false,
-    description:
-      'Everybody who raised a hand, whichever door they came through, and the desk they are answered from.',
-    title: 'Leads - Console',
-    meta: 'Every lead the studio holds, read in one place: which door they came through, what they said, how far they got, and the record of every answer written to them from the console itself.',
-  },
-  {
-    id: 'staff',
+    id: 'calls',
     mark: MarkDial,
     group: 'Studio',
-    path: 'staff',
-    label: 'Staff Portal',
+    path: 'calls',
+    label: 'Call List',
     admin: true,
-    // `roles` names who else is admitted past the `admin` mark, and this is the
-    // only section that names anybody. A representative is not an admin - they
-    // read no traffic, own no sites and set nobody's shift - but the call
-    // screen is the whole of their working day, and the endpoints behind it
-    // already admit `staff` on every request. Without this the mark above
-    // would shut the one section they have out of the one console there is.
-    roles: ['admin', 'staff'],
-    // A business to ring is not a site with a window over it, and the portal is
-    // the same portal whichever site is in scope, so the traffic strip, the date
-    // picker and the site chooser all measure something else.
+    // A business to ring is not a site with a window over it, so the traffic
+    // strip, the date picker and the site chooser all measure something else.
     account: true,
     scope: false,
     figures: false,
-    description: 'The call screen, the day’s figures and the handbook.',
-    title: 'Staff Portal - Console',
-    meta: 'Everything a caller works from: the next business to ring with the script beside it, what the day has come to against the shift it was set, and the handbook they answer questions out of.',
+    description: 'The businesses worth ringing, callbacks first, and the result of every call.',
+    title: 'Call List - Console',
+    meta: 'The businesses worth calling, with the callbacks that are due first and the reason each one is on the list, and the record of every call placed.',
   },
   {
     id: 'payments',
@@ -346,8 +119,7 @@ export const SECTIONS = [
     label: 'Payments',
     admin: true,
     // Money answers for the studio rather than for a site. A client's fee is
-    // the same figure whichever site is in scope, and it is owed for weeks
-    // before there is a site to put it against, so the traffic strip, the
+    // the same figure whichever site is in scope, so the traffic strip, the
     // window and the site chooser all measure something else.
     account: true,
     scope: false,
@@ -367,54 +139,68 @@ export const SECTIONS = [
     title: 'Admin - Console',
     meta: 'Every account and every site side by side: what each person may open, which site belongs to whom, and the roles that decide both.',
   },
+  {
+    id: 'server',
+    mark: MarkRack,
+    group: 'Studio',
+    path: 'server',
+    label: 'Server',
+    admin: true,
+    // The machine the studio runs, rather than one of the sites it serves.
+    // Picking a site over it narrows nothing, there is no window to put over a
+    // temperature, and the traffic strip counts an audience this section has
+    // none of.
+    account: true,
+    scope: false,
+    figures: false,
+    description: 'The machine behind the monitoring, and every routine on it.',
+    title: 'Sunday Server - Console',
+    meta: 'The Sunday Server, which runs everything visitor-facing that is not a site: how long it has been up, what it is carrying, and whether each of the routines on it is running, behind or stopped.',
+  },
+  {
+    id: 'settings',
+    mark: MarkDials,
+    group: 'Account',
+    path: 'settings',
+    label: 'Settings',
+    menu: false,
+    account: true,
+    scope: false,
+    description: 'The name on the account and how it signs in.',
+    title: 'Account Settings - Console',
+    meta: 'Everything about the account rather than the figures in it: the name on it, the address and password it signs in with, two-factor authentication, the sessions it holds, and closing it.',
+  },
 ]
 
 /** The headings the sidebar files sections under, in the order they appear. */
-export const GROUPS = ['Health', 'Traffic', 'Email', 'Studio']
+export const GROUPS = ['Site', 'Studio']
+
+/**
+ * What each heading reads as. A client sees the first heading only: every
+ * section under the second is marked `admin`.
+ */
+export const GROUP_LABELS = {
+  Site: 'Site',
+  Studio: 'Studio',
+}
 
 /**
  * The menu, with each section marked for whether this reader can open it.
  *
- * `inView` is how many sites the current scope covers, which is what decides a
- * `multiSite` section. It is left undefined until the account's sites have been
- * read, and an undefined count keeps the section: a row that appears a second
- * after the page does reads as the menu still loading, where one that vanishes
- * a second after the page does reads as something being taken away.
- *
- * `onboarding` is the other way round, and deliberately so. While a site is
- * being built there is nothing for the traffic sections to report, so the menu
- * closes down to the few that can answer rather than offering a dozen rows of
- * empty tables. A missing flag leaves the whole menu standing, because a
- * console that hides most of itself while it works out what is going on is
- * worse than one that briefly shows too much.
- *
- * `admin` and `roles` are read together: the mark shuts a section to everybody
- * but an admin, and the list names whoever else is let past it.
- *
- * A representative is the one reader the menu is built down to rather than up
- * from. The rest of the console answers about sites, and a representative has
- * none: every traffic section would open on an empty table, which reads as a
- * site with no visitors rather than as a section that was never theirs. So a
- * `staff` account is handed the public sections and whatever names the role,
- * which today is the staff portal and is the whole of what they came in for.
+ * `admin` shuts a section to everybody but an admin, and the endpoints behind
+ * those sections refuse any other account on every request, so this decides
+ * which sections a reader is offered rather than what they may read.
  */
-export function menuSections({ signedIn, role, inView, hasProject, onboarding }) {
-  const comparing = inView === undefined || inView > 1
+export function menuSections({ signedIn, role }) {
   return SECTIONS.filter(
-    section =>
-      section.menu !== false &&
-      (role !== 'staff' || section.public === true || Boolean(section.roles?.includes(role))) &&
-      (!section.admin || role === 'admin' || Boolean(section.roles?.includes(role))) &&
-      (!section.multiSite || comparing) &&
-      (!section.project || hasProject) &&
-      (!onboarding || section.duringBuild === true)
+    section => section.menu !== false && (!section.admin || role === 'admin')
   ).map(section => ({
     ...section,
     locked: !signedIn && !section.public,
   }))
 }
 
-/** `/console`, `/console/live`, and so on. */
+/** `/console`, `/console/inbox`, and so on. */
 export function sectionHref(section) {
   return section.path ? `/console/${section.path}` : '/console'
 }

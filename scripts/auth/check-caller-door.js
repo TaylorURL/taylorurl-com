@@ -1,17 +1,16 @@
 /**
- * Proves a representative reaches the call list and nothing else.
+ * Proves the call data is the owner's alone.
  *
- * The `staff` role existed in the profiles table and in the console's role
- * picker for weeks before anything read it, which means it was a label rather
- * than a permission: every admin endpoint refused it exactly as it refused a
- * client, so an account set to Staff could sign in and see nothing. The
- * endpoints in `CALLER_DOORS` now admit it, and they are the whole of the job
- * the role describes: reading the list, working it, and sending a business the
- * audit the owner has just agreed to see.
+ * The call list used to have a wider door than every other admin endpoint: a
+ * `staff` role a representative was given, which reached the list, the call
+ * desk, the team board and the audit email and nothing else. There is no team
+ * any more, and the endpoint that reads the list and records every call now
+ * stands behind the same admin door as the rest of the studio's side. A
+ * representative's account, a client's, and an account with no profile row are
+ * all refused there, and a forged token is refused before any of that.
  *
- * The risk in widening a door is not the door that was widened. It is the six
- * beside it that were written against the same helper and must not move, and
- * that is asserted here rather than read off the diff.
+ * The risk is a door quietly widening again, so the tree is read as well: no
+ * endpoint may admit any role but admin to the call data.
  *
  *   node scripts/auth/check-caller-door.js
  */
@@ -19,10 +18,12 @@
 import { readFileSync } from 'node:fs'
 import { dirname, join, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { authorizeAdmin, authorizeCaller } from '../../lib/db/clients.js'
+import * as clientsModule from '../../lib/db/clients.js'
 import { cases, check, finish, same } from '../harness/checks.js'
 import { filesUnder } from '../harness/files.js'
 import { token } from './token-fixture.js'
+
+const { authorizeAdmin } = clientsModule
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '../..')
 
@@ -30,17 +31,8 @@ const ADMIN = 'account-admin'
 const STAFF = 'account-staff'
 const CLIENT = 'account-client'
 
-/** The endpoints a representative is meant to reach, and nothing else. */
-const CALLER_DOORS = [
-  'api/calls-desk.js',
-  'api/calls-admin.js',
-  // Sending a business its own audit is done off the call screen by the person
-  // on the phone with them, so it is a caller's job rather than an admin's.
-  'api/calls-audit-email.js',
-  // The team board counts a representative's own day, so a representative may
-  // read it; the one write behind it is admin only and refuses them inside.
-  'api/calls-team.js',
-]
+/** The endpoints that read or write `outreach_calls`. */
+const CALL_DOORS = ['api/calls-admin.js']
 
 /** A stand-in for the two clients, holding whichever roles a case needs. */
 function door({ roles = {}, verifies = null } = {}) {
@@ -69,17 +61,16 @@ function door({ roles = {}, verifies = null } = {}) {
   }
 }
 
-check('a representative is let through the caller door', async () => {
-  const account = await authorizeCaller(
-    door({ roles: { [STAFF]: 'staff' }, verifies: STAFF }),
-    token(STAFF)
+check('the owner is let through', async () => {
+  const account = await authorizeAdmin(
+    door({ roles: { [ADMIN]: 'admin' }, verifies: ADMIN }),
+    token(ADMIN)
   )
   same(account.status, undefined, 'no refusal')
-  same(account.userId, STAFF, 'let through')
-  same(account.role, 'staff', 'the role comes back on the account')
+  same(account.userId, ADMIN, 'let through')
 })
 
-check('a representative is still refused at the admin door', async () => {
+check('a representative account is refused', async () => {
   const answer = await authorizeAdmin(
     door({ roles: { [STAFF]: 'staff' }, verifies: STAFF }),
     token(STAFF)
@@ -88,49 +79,44 @@ check('a representative is still refused at the admin door', async () => {
   same(answer.userId, undefined, 'no account handed back')
 })
 
-check('an admin is let through the caller door as well', async () => {
-  // The console's own calling screen is this same list, and the person who set
-  // the list up works it too.
-  const account = await authorizeCaller(
-    door({ roles: { [ADMIN]: 'admin' }, verifies: ADMIN }),
-    token(ADMIN)
-  )
-  same(account.status, undefined, 'no refusal')
-  same(account.role, 'admin', 'the role is what narrows the hand-over inside')
-})
-
-check('a client reaches neither door', async () => {
+check('a client is refused', async () => {
   const clients = door({ roles: { [CLIENT]: 'client' }, verifies: CLIENT })
-  same((await authorizeCaller(clients, token(CLIENT))).status, 403, 'refused by the caller door')
-  same((await authorizeAdmin(clients, token(CLIENT))).status, 403, 'refused by the admin door')
+  same((await authorizeAdmin(clients, token(CLIENT))).status, 403, 'refused')
 })
 
-check('an account with no profile row reaches neither door', async () => {
+check('an account with no profile row is refused', async () => {
   const clients = door({ roles: {}, verifies: CLIENT })
-  same((await authorizeCaller(clients, token(CLIENT))).status, 403, 'refused by the caller door')
-  same((await authorizeAdmin(clients, token(CLIENT))).status, 403, 'refused by the admin door')
+  same((await authorizeAdmin(clients, token(CLIENT))).status, 403, 'refused')
 })
 
-check('a forged token naming a representative is refused', async () => {
-  const answer = await authorizeCaller(
-    door({ roles: { [STAFF]: 'staff' }, verifies: null }),
-    token(STAFF)
+check('a forged token naming the owner is refused', async () => {
+  const answer = await authorizeAdmin(
+    door({ roles: { [ADMIN]: 'admin' }, verifies: null }),
+    token(ADMIN)
   )
   same(answer.status, 401, 'refused')
 })
 
-check('a role that would not read is never a yes at the caller door either', async () => {
-  const clients = door({ roles: { [STAFF]: new Error('policy') }, verifies: STAFF })
-  same((await authorizeCaller(clients, token(STAFF))).status, 500, 'unknown is not staff')
+check('a role that would not read is never a yes', async () => {
+  const clients = door({ roles: { [ADMIN]: new Error('policy') }, verifies: ADMIN })
+  same((await authorizeAdmin(clients, token(ADMIN))).status, 500, 'unknown is not admin')
 })
 
-check('only the call endpoints admit a representative', async () => {
-  // Read off the tree rather than off a list, so an endpoint that reaches for
-  // the wider helper next year fails here rather than shipping quietly.
-  const widened = endpoints().filter(file =>
-    /\bauthorizeCaller\b/.test(readFileSync(join(ROOT, file), 'utf8'))
+check('the wider caller door is gone', () => {
+  same('authorizeCaller' in clientsModule, false, 'lib/db/clients.js still exports it')
+})
+
+check('every endpoint that touches the calls stands behind the admin door', () => {
+  // Read off the tree rather than off a list, so an endpoint that starts
+  // reading the calls next year is held to the same door.
+  const touching = endpoints().filter(file =>
+    /\boutreach_calls\b|\bCALLS\b/.test(readFileSync(join(ROOT, file), 'utf8'))
   )
-  same(widened.sort().join(','), [...CALLER_DOORS].sort().join(','), 'the widened set')
+  for (const file of new Set([...CALL_DOORS, ...touching])) {
+    const text = readFileSync(join(ROOT, file), 'utf8')
+    same(/\bauthorizeAdmin\(/.test(text), true, `${file} asks the admin door`)
+    same(/'staff'/.test(text), false, `${file} names the staff role`)
+  }
 })
 
 /** Every endpoint in the tree, so the assertion above cannot miss a new one. */
@@ -139,4 +125,4 @@ function endpoints() {
 }
 
 const passed = await finish({ listed: true })
-console.log(`\ncaller door: ${passed}/${cases.length} passed`)
+console.log(`call data door: ${passed}/${cases.length} passed`)
