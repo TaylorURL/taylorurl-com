@@ -1944,24 +1944,28 @@ check('the page is the owner’s one list and nothing else', () => {
   ok(!read('api/calls-admin.js').includes('VIEWS'), 'the endpoint still has its views')
 })
 
-check('the page says the scores, the day, and the front desk', () => {
+check('the page shows the number and the owner, the day, and the front desk', () => {
   const page = read('src/app/views/console/pages/calls/CallListPage.jsx')
-  ok(/scoreWords\(row\.score\)/.test(page), 'the three scores are not drawn')
+  // The owner asked for a name and a number beside each business and nothing
+  // said about either: no scores, reasons or labels on the row or by the
+  // number, and no second line repeating the name.
+  ok(!/scoreWords\(/.test(page), 'the scores are drawn')
+  ok(!/row\.reasons\.join/.test(page), 'the reasons are drawn')
+  ok(!/ownerLabel\(/.test(page), 'a label rides beside the number')
+  ok(!/Ask for \{row\.owner_name\}/.test(page), 'the owner’s name is said twice')
   ok(/GoalBar/.test(page) && /dayLine\(/.test(page), 'the day is not drawn against its goal')
   ok(/Save Front Desk/.test(page), 'Front Desk has nothing to save')
   ok(/Waiting on the owner/.test(page), 'the front desks are not at the foot')
-  ok(/Ask for \{row\.owner_name\}/.test(page), 'the call screen does not say who to ask for')
   // Beside the number in the row, and beside it on the button that dials it.
   ok(
-    /numberLine\(dialled\(row\), row\.owner_name, ownerLabel\(row\)\)/.test(page),
-    'the row does not put the name, and how sure the number is, by the number'
+    /numberLine\(dialled\(row\), row\.owner_name\)/.test(page),
+    'the row does not put the owner’s name by the number'
   )
   const button = page.slice(
     page.indexOf('href={row.dial}'),
     page.indexOf('</a>', page.indexOf('href={row.dial}'))
   )
   ok(/row\.owner_name/.test(button), 'the dial button does not carry the owner’s name')
-  ok(/\{label\}/.test(button), 'the dial button does not say how sure the number is')
   // Where the number came from is in the open business's details.
   ok(/<Sources from=\{row\.owner_phone_from\} \/>/.test(page), 'the number’s source is not shown')
   // Plain text, not a badge.
