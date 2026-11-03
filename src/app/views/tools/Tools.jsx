@@ -1,27 +1,33 @@
-import { Link } from 'react-router-dom'
-import PageHero from '@components/page-bands/PageHero'
-import CtaSection from '@components/conversion/CtaSection'
-import RuledSection from '@components/page-bands/RuledSection'
 import Seo from '@components/Seo'
+import { CallToAction, Grid, LinkCard, PageIntro, Section, SectionHead } from '@components/kit/Kit'
 import { TOOLS_INDEX } from '@data/pages/tools'
 import { NAV_GROUPS } from '@constants/navigation'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import ToolCards from './ToolCards'
 
 const DESCRIPTION =
   'Free tools for running a business online: check what Google sees on your site, clear the background off a logo, and make a QR code. No account, no fee.'
 
-// The marks the navigation already keys to each tool, so a card and a menu row
-// carry the same drawing without a second list deciding it.
-const TOOL_MARKS = Object.fromEntries(
-  (NAV_GROUPS.find(group => group.key === 'tools')?.columns[0].items || []).map(item => [
-    item.to,
-    item.mark,
-  ])
+// The speed check, as the navigation already names it. It is not in the tools
+// registry because the registry decides which `/tools/` routes exist and this
+// one lives at its own address, so its name and its line are read from the
+// menu row rather than written a second time here.
+const SPEED_CHECK = NAV_GROUPS.find(group => group.key === 'tools')?.columns[0].items.find(
+  item => item.to === '/speed-check'
 )
 
-const TOOLS = TOOLS_INDEX.map(tool => ({ ...tool, mark: TOOL_MARKS[tool.path] }))
+// The four cards, the speed check first: it is the one most people arrive for,
+// and the one every other reading on the site is measured the same way as.
+const CARDS = [
+  SPEED_CHECK && { to: SPEED_CHECK.to, title: SPEED_CHECK.label, body: SPEED_CHECK.summary },
+  ...TOOLS_INDEX.map(tool => ({ to: tool.path, title: tool.name, body: tool.summary })),
+].filter(Boolean)
 
+/**
+ * The free tools.
+ *
+ * The point first - they are free, and nothing has to be signed up for - then
+ * the four as cards, the one built to order as a link under them, and the ask.
+ */
 export default function Tools() {
   return (
     <div>
@@ -54,45 +60,29 @@ export default function Tools() {
         ]}
       />
 
-      <PageHero
-        eyebrow="Free Tools"
+      <PageIntro
         title="Run one, get your answer, leave."
-        description="No account, no fee, nothing to install. Each one runs in your browser and finishes on this page."
+        lead="No account, no fee, nothing to install."
+        actions={false}
       />
 
-      <RuledSection
-        id="tools-list"
-        ground="paper"
-        eyebrow="The Tools"
-        title="Pick the one you came for."
-        description="Every option starts on a sensible default, so the only thing you have to supply is what you want the tool to work on."
-        meta={`${TOOLS_INDEX.length} tools`}
-      >
-        <ToolCards tools={TOOLS} ground="paper" columns={{ base: 1, sm: 2 }} />
-      </RuledSection>
+      <Section label="The tools" className="!pt-0">
+        <Grid cols={4}>
+          {CARDS.map(card => (
+            <LinkCard key={card.to} to={card.to} title={card.title} body={card.body} />
+          ))}
+        </Grid>
+      </Section>
 
-      <RuledSection
-        id="tools-custom"
-        ground="band"
-        eyebrow="Built to Order"
-        title="When the free one is not the one you need."
-        description="I build booking, ordering, quoting and the rest around how a business already runs rather than bending the business to fit a tool that came off a shelf."
-      >
-        <Link to="/services/automation" className="btn btn-secondary">
-          What a Custom Tool Covers
-        </Link>
-      </RuledSection>
+      <Section tight label="Built to order" className="!pt-0">
+        <SectionHead
+          title="When the free one is not the one you need."
+          link={{ to: '/services/automation', label: 'What a Custom Tool Covers' }}
+          className="!mb-0"
+        />
+      </Section>
 
-      <CtaSection
-        ground="paper"
-        eyebrow="Start"
-        title={
-          <>
-            Tell me about <span className="text-accent">your business</span>.
-          </>
-        }
-        description="Pick the trade, check the software you already run, and get a plan and a price back. Most sites are live in two to four weeks."
-      />
+      <CallToAction title="Tell me about your business." />
     </div>
   )
 }

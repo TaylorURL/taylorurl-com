@@ -1,73 +1,70 @@
-import { m } from 'framer-motion'
-import { Users, Monitor } from 'lucide-react'
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
-import CtaSection from '@components/conversion/CtaSection'
+import {
+  CallToAction,
+  CheckList,
+  PageIntro,
+  Section,
+  SectionHead,
+  StatPanel,
+  Steps,
+} from '@components/kit/Kit'
+import { CARD, TYPE } from '@components/kit/styles'
 import Seo from '@components/Seo'
-import { MAX_MS, fadeInUp, staggerChild } from '@constants/animations'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { ABOUT } from '@data/pages/about'
-import { useScrollParallax } from '@hooks/scroll/useScrollParallax'
 import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
-import Portrait from '@components/people/Portrait'
-import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
-import CountUp from '@reactbits/CountUp/CountUp'
-import { AccentGradient } from '@reactbits/kit'
-import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
+import { retryable } from '@utils/retryImage'
 
-// The card under the figures names where the work happens, and the mark over it
-// is part of that claim rather than decoration: a heart for the town the studio
-// works in, a globe for an offer that reaches anywhere.
-const PlaceIcon = ABOUT.place.icon
+/** The widths the photograph is saved at in `public/images`. */
+const PHOTO_WIDTHS = [360, 720, 1440]
 
-// The values fill their rows exactly or the panel's own ground shows through
-// the shortfall as an empty cell, and the two sites do not carry the same
-// number of them.
-const VALUE_COLUMNS = ABOUT.values.length % 2 === 0 ? 'md:grid-cols-2' : 'md:grid-cols-3'
-const VALUE_COUNT = String(ABOUT.values.length).padStart(2, '0')
+/** A heading written as a first line and the rest of it, read as one sentence. */
+const sentence = (...parts) => `${parts.join(' ').trim().replace(/\.$/, '')}.`
+
+/** The values split across two columns, the longer half first. */
+const VALUES = ABOUT.values.map(item => ({ title: item.title, body: item.description }))
+const HALF = Math.ceil(VALUES.length / 2)
 
 /**
- * The one face on the site, at the foot of the story that explains it.
+ * The one face on the site, beside the page's headline.
  *
- * TaylorURL is one person, so this face is the whole company: the person who
- * builds the site is the one who answers the phone after it launches. It is
- * drawn once, here, where the page has already said what the work is and the
- * person doing it is the last thing left to say.
- *
- * The name, the title and the paragraph are the studio's one bio, read from the
- * module the mail signs off with, so the person a reply arrives from is the
- * person this page introduces.
- *
- * Being drawn once is also why the photograph is on the retry ladder. It is the
- * only face on the site, so a dropped request leaves the page introducing a
- * founder with an empty box where the face goes, and an `<img>` that fails
- * never asks again - the reader reads the whole page that way and a reload is
- * the only thing that fixes it. It is lazy, too, so its request is made on a
- * scroll rather than with the document, which is the moment a connection is
- * most likely to be doing something else.
+ * The photograph is of two people with Trenton on the right, so the frame is
+ * cut to him rather than centred on the pair. It is above the fold, so it is
+ * fetched with the document, and it is on the retry ladder because an `<img>`
+ * that fails never asks again: an about page introducing a founder beside an
+ * empty box is worse than one with no photograph at all.
  */
-function Founder() {
+function Photo() {
   return (
-    <div className="border-hair-paper mt-4 flex flex-col gap-6 border-t pt-8 sm:flex-row sm:gap-7">
-      <Portrait size={96} />
-      <div className="max-w-[52ch]">
-        <p className="text-[15px] font-semibold text-ink-paper">{BIO_NAME}</p>
-        <p className="section-label-sm mt-1 text-accent">{BIO_TITLE}</p>
-        <p className="mt-4 text-[15px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
-      </div>
-    </div>
+    <img
+      src={`/images/trenton-taylor-photo-${PHOTO_WIDTHS[1]}.webp`}
+      srcSet={PHOTO_WIDTHS.map(
+        width => `/images/trenton-taylor-photo-${width}.webp ${width}w`
+      ).join(', ')}
+      sizes="(min-width: 1024px) 600px, 100vw"
+      alt={BIO_NAME}
+      width="1200"
+      height="960"
+      loading="eager"
+      decoding="async"
+      fetchPriority="high"
+      className="block aspect-[5/4] h-auto w-full rounded-[16px] bg-[var(--card)] object-cover object-[64%_30%]"
+      {...retryable()}
+    />
   )
 }
 
+/**
+ * The about page, for both sites.
+ *
+ * Who answers, in his own words and beside his photograph; then the story of
+ * why the studio exists, who he is and where the work happens; the build as
+ * four steps; and why owners stay, under the figures that back it up. Every
+ * sentence is read from `@data/pages/about`, which holds one body of copy per
+ * site, so the second site renders this same page with its own words.
+ */
 export default function About() {
-  // Scroll-driven parallax — the stats column rises as the story section
-  // scrolls past, creating depth against the narrative copy beside it.
-  const { ref: storyRef, transform: statsTransform } = useScrollParallax({
-    range: [50, -50],
-  })
-
   return (
-    <div>
+    <>
       <Seo
         title={ABOUT.seo.title}
         description={ABOUT.seo.description}
@@ -93,217 +90,47 @@ export default function About() {
           },
         ]}
       />
-      <PageHero
-        eyebrow={ABOUT.hero.eyebrow}
-        title={ABOUT.hero.title}
-        description={ABOUT.hero.description}
-      />
 
-      <section ref={storyRef} className="section-y relative overflow-hidden bg-paper">
-        <div className="container-rail relative">
-          <div className="grid gap-12 lg:grid-cols-[1.4fr_1fr] lg:gap-20">
-            <m.div {...fadeInUp} className="flex flex-col gap-6">
-              <p className="section-label text-accent">{ABOUT.story.eyebrow}</p>
-              <h2 className="display-3 font-semibold leading-[1.04] tracking-tightest text-ink-paper [text-wrap:balance]">
-                {ABOUT.story.heading}
-              </h2>
-              <div className="space-y-6 text-[17px] leading-relaxed text-paper-soft">
-                {ABOUT.story.paragraphs.map(paragraph => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </div>
-              <Founder />
-            </m.div>
+      <PageIntro title={ABOUT.hero.title} lead={ABOUT.hero.description} media={<Photo />} />
 
-            {/* The drift and the reveal both want a transform on this
-                element, and an explicit one wins outright over a variant's, so
-                held together the reveal's travel is dropped without saying so.
-                The drift takes the outer element, the reveal the inner one. */}
-            <m.div style={{ transform: statsTransform }} className="will-change-transform">
-              <m.div {...fadeInUp} transition={{ ...fadeInUp.transition, delay: 0.1 }}>
-                <p className="section-label-sm text-paper-faint mb-5">The Numbers</p>
-                <div className="panel-static bg-hair-paper grid grid-cols-2 gap-px overflow-hidden">
-                  {ABOUT.stats.map(stat => (
-                    <div key={stat.label} className="bg-paper p-6">
-                      <div className="display-4 font-mono font-semibold leading-none text-ink-paper">
-                        {stat.to ? (
-                          <>
-                            <CountUp to={stat.to} duration={MAX_MS} />
-                            {stat.suffix}
-                          </>
-                        ) : (
-                          stat.value
-                        )}
-                        {stat.unit && <span className="text-accent">{stat.unit}</span>}
-                      </div>
-                      <div className="section-label-sm text-paper-faint mt-3">{stat.label}</div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="panel-static mt-3 bg-paper p-6">
-                  <div className="flex items-start gap-3">
-                    <PlaceIcon
-                      className="mt-0.5 h-5 w-5 flex-shrink-0 text-accent"
-                      strokeWidth={1.5}
-                    />
-                    <div>
-                      <p className="section-label-sm text-accent">{ABOUT.place.label}</p>
-                      <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">
-                        {ABOUT.place.body}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </m.div>
-            </m.div>
-          </div>
-        </div>
-      </section>
-
-      <section
-        data-ground="band"
-        className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
-      >
-        <div className="container-rail relative">
-          <m.div
-            {...fadeInUp}
-            className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div>
-              <p className="section-label mb-6 block text-accent">{ABOUT.work.eyebrow}</p>
-              <h2 className="display-3 font-semibold leading-[1.02] tracking-tightest text-ink [text-wrap:balance]">
-                {ABOUT.work.headingLine} <br />
-                <AccentGradient>{ABOUT.work.accentText}</AccentGradient>
-              </h2>
+      <Section label="My story" className="!pt-6">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-16">
+          <div className="max-w-[640px]">
+            <h2 className={TYPE.h2}>{ABOUT.story.heading}</h2>
+            <div className={`${TYPE.body} mt-5 space-y-4 text-[17px]`}>
+              {ABOUT.story.paragraphs.map(paragraph => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
             </div>
-            <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              {ABOUT.work.lede}
-            </p>
-          </m.div>
-
-          <div
-            className={`panel-static bg-hair mt-12 grid gap-px overflow-hidden ${VALUE_COLUMNS}`}
-          >
-            {ABOUT.values.map((item, i) => {
-              const Icon = item.icon
-              return (
-                <m.div key={item.title} {...staggerChild(i, 0.06)}>
-                  <SpotlightCard
-                    className="group flex h-full flex-col gap-6 bg-bg p-8 sm:p-10"
-                    spotlightColor="var(--spotlight)"
-                  >
-                    <div className="flex items-baseline justify-between">
-                      <span className="font-mono text-[10px] tabular-nums tracking-tight text-ink-faint">
-                        {String(i + 1).padStart(2, '0')} / {VALUE_COUNT}
-                      </span>
-                      <Icon
-                        className="h-5 w-5 text-ink transition-colors duration-200 ease-out-soft group-hover:text-accent"
-                        strokeWidth={1.5}
-                      />
-                    </div>
-                    <div>
-                      <h3 className="mb-3 text-[22px] font-semibold leading-tight tracking-tight text-ink">
-                        {item.title}
-                      </h3>
-                      <p className="text-[15px] leading-relaxed text-ink-soft">
-                        {item.description}
-                      </p>
-                    </div>
-                  </SpotlightCard>
-                </m.div>
-              )
-            })}
           </div>
+
+          <aside className={`${CARD} self-start p-6 sm:p-8`}>
+            <h3 className={TYPE.h3}>{BIO_NAME}</h3>
+            <p className={`${TYPE.small} mt-0.5`}>{BIO_TITLE}</p>
+            <p className={`${TYPE.body} mt-4`}>{BIO_TEXT}</p>
+            <h3 className={`${TYPE.h3} mt-8`}>{ABOUT.place.label}</h3>
+            <p className={`${TYPE.body} mt-2`}>{ABOUT.place.body}</p>
+          </aside>
         </div>
-      </section>
+      </Section>
 
-      <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-        <div className="container-rail relative">
-          <m.div
-            {...fadeInUp}
-            className="border-hair-paper grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div>
-              <p className="section-label mb-6 block text-accent">{ABOUT.processIntro.eyebrow}</p>
-              <h2 className="display-3 font-semibold leading-[1.02] tracking-tightest text-ink-paper [text-wrap:balance]">
-                {ABOUT.processIntro.headingLine} <br />
-                <AccentGradient>{ABOUT.processIntro.accentText}</AccentGradient>
-              </h2>
-            </div>
-            <p className="max-w-md text-[16px] leading-relaxed text-paper-soft lg:text-right">
-              {ABOUT.processIntro.lede}
-            </p>
-          </m.div>
+      <Section label="How a project runs">
+        <SectionHead
+          title={sentence(ABOUT.processIntro.headingLine, ABOUT.processIntro.accentText)}
+        />
+        <Steps items={ABOUT.process.map(step => ({ title: step.title, body: step.description }))} />
+      </Section>
 
-          <div className="panel-static bg-hair-paper mt-12 grid gap-px overflow-hidden md:grid-cols-2">
-            {ABOUT.process.map((step, i) => (
-              <m.div
-                key={step.num}
-                {...staggerChild(i, 0.06)}
-                className="flex flex-col justify-between gap-7 bg-paper p-8 sm:p-10"
-              >
-                <div className="flex flex-col gap-7">
-                  <div className="flex items-baseline justify-between">
-                    <span className="text-paper-faint display-3 font-mono font-semibold leading-none">
-                      {step.num}
-                    </span>
-                    <span className="section-label-sm text-accent">Phase / 04</span>
-                  </div>
-                  <div className="flex flex-col gap-3">
-                    <h3 className="text-[22px] font-semibold leading-tight tracking-tight text-ink-paper">
-                      {step.title}
-                    </h3>
-                    <p className="text-[15px] leading-relaxed text-paper-soft">
-                      {step.description}
-                    </p>
-                  </div>
-                </div>
-                <div className="border-hair-paper grid grid-cols-1 gap-px overflow-hidden border-t pt-5 sm:grid-cols-2">
-                  <div className="pr-4">
-                    <p className="section-label-sm text-paper-faint mb-2 flex items-center gap-2">
-                      <Users className="h-3 w-3" /> You
-                    </p>
-                    <p className="text-[13px] text-paper-soft">{step.you}</p>
-                  </div>
-                  <div className="border-hair-paper border-l pl-4">
-                    <p className="section-label-sm mb-2 flex items-center gap-2 text-accent">
-                      <Monitor className="h-3 w-3" /> Me
-                    </p>
-                    <p className="text-[13px] text-paper-soft">{step.me}</p>
-                  </div>
-                </div>
-              </m.div>
-            ))}
-          </div>
+      <Section label={sentence(ABOUT.work.headingLine, ABOUT.work.accentText)}>
+        <SectionHead title={sentence(ABOUT.work.headingLine, ABOUT.work.accentText)} />
+        <StatPanel items={ABOUT.stats} />
+        <div className="mt-10 grid gap-x-12 gap-y-3.5 md:grid-cols-2">
+          <CheckList items={VALUES.slice(0, HALF)} />
+          <CheckList items={VALUES.slice(HALF)} />
         </div>
-      </section>
+      </Section>
 
-      {/* The studio's closing band has one thing to do next and sends the
-          reader to /start. The second site has no /start, and every page there
-          ends at the enquiry form, so it closes on the band whose buttons are
-          addressable rather than on a link to a route that is not built. */}
-      {IS_SECOND_SITE ? (
-        <CtaBanner
-          eyebrow={ABOUT.closing.eyebrow}
-          heading={ABOUT.closing.heading}
-          accentText={ABOUT.closing.accentText}
-          description={ABOUT.closing.description}
-          primaryTo="/contact"
-          primaryLabel="Send an Enquiry"
-        />
-      ) : (
-        <CtaSection
-          eyebrow={ABOUT.closing.eyebrow}
-          title={
-            <>
-              {`${ABOUT.closing.heading} `}
-              <span className="text-accent">{ABOUT.closing.accentText}</span>.
-            </>
-          }
-          description={ABOUT.closing.description}
-        />
-      )}
-    </div>
+      <CallToAction title={sentence(ABOUT.closing.heading, ABOUT.closing.accentText)} />
+    </>
   )
 }

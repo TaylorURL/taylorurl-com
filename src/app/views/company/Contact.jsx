@@ -1,10 +1,10 @@
-import { useState } from 'react'
-import { m } from 'framer-motion'
-import { ArrowUpRight, Check, ChevronDown, Clock, Mail, Phone } from 'lucide-react'
-import BbbSeal from '@components/reviews/BbbSeal'
-import PageHero from '@components/page-bands/PageHero'
-import Portrait from '@components/people/Portrait'
+import { useRef, useState } from 'react'
+import { Check, Plus } from 'lucide-react'
 import Seo from '@components/Seo'
+import SendButton from '@components/conversion/SendButton'
+import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
+import { Container } from '@components/kit/Kit'
+import { CARD, TYPE } from '@components/kit/styles'
 import { useToast } from '@hooks/chrome/useToast'
 import {
   COMPANY_PHONE,
@@ -12,25 +12,15 @@ import {
   DEFAULT_CONTACT_METHOD,
   SALES_EMAIL,
 } from '@constants/navigation'
-import ContactMethodChoice from '@components/conversion/ContactMethodChoice'
-import { fadeInUp, slideInLeftMount, slideInRightMount, staggerChild } from '@constants/animations'
 import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import { QUESTIONS } from '@lib/enquiry/questions.js'
-import { BIO_NAME, BIO_TEXT, BIO_TITLE } from '@lib/mail/bio.js'
+import { BIO_NAME } from '@lib/mail/bio.js'
 import { hasMinLength, isValidEmail } from '@utils/validation'
 import { faultMessage } from '@utils/faults'
+import { retryable } from '@utils/retryImage'
 import { CONTACT } from '@data/pages/contact'
 import { submitEnquiry } from '@data/leads/sendEnquiry'
-import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
-import Magnet from '@reactbits/Magnet/Magnet'
-import { AccentGradient } from '@reactbits/kit'
-import { PUBLISHES_REVIEWS } from '../../../../lib/site/current.js'
-
-// The third row of the contact card says where the work happens, and the mark
-// over it is part of that claim: a pin for a town the studio names, a globe for
-// an offer with no address behind it.
-const PlaceIcon = CONTACT.place.icon
 
 const REQUIRED_FIELDS = ['name', 'email', 'phone', 'message']
 
@@ -46,10 +36,10 @@ const BLANK = {
 
 // What a message that did not leave says.
 //
-// This is the longest form on the site and the box is often a paragraph the
-// writer has spent a minute on, so what they need told first is that it is
-// still in front of them: a send that failed clears nothing, and the fear that
-// it did is what makes somebody close the tab rather than press again.
+// The box is often a paragraph the writer has spent a minute on, so what they
+// need told first is that it is still in front of them: a send that failed
+// clears nothing, and the fear that it did is what makes somebody close the tab
+// rather than press again.
 const NOT_SENT = 'That message did not send. Nothing you typed was lost, so try it again.'
 
 // What this form asks, written once and read by both sides: the labels below
@@ -61,26 +51,57 @@ const ASKED = QUESTIONS.contact
 // ids, so the field a fault belongs to is not always named after it.
 const FIELD_IDS = { phone: 'contact-phone' }
 
-// A sent inquiry stands where the form stood. A toast is gone in four seconds
-// and takes the only acknowledgement with it, on the one form a visitor is
-// most likely to have spent a minute filling in.
-function Confirmation({ title, body }) {
+// The fields folded under "Add More Detail". A fault in one of them opens the
+// fold before the field is focused, or the focus lands on something hidden.
+const FOLDED = ['phone']
+
+/**
+ * The face beside the number and over the byline. The photo is of two people,
+ * so the circle is cut to the one answering.
+ */
+function Face({ size = 52 }) {
   return (
-    <div className="panel-static flex items-center gap-4 p-6" role="status">
-      <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-md border border-accent/50 bg-accent/10">
-        <Check className="h-4 w-4 text-accent" strokeWidth={2} aria-hidden="true" />
-      </div>
-      <div>
-        <p className="section-label-sm text-accent">{title}</p>
-        <p className="text-[15px] text-ink-paper">{body}</p>
-      </div>
-    </div>
+    <img
+      src="/images/trenton-taylor-photo-360.webp"
+      alt=""
+      width={size}
+      height={size}
+      loading="lazy"
+      decoding="async"
+      style={{ width: size, height: size }}
+      className="shrink-0 rounded-full object-cover object-[64%_30%]"
+      {...retryable()}
+    />
   )
 }
 
+/** The fault under a field, when it was refused. */
+function Fault({ id, error }) {
+  if (!error) return null
+  return (
+    <p id={`${id}-error`} className={FIELD_FAULT} role="alert">
+      {error}
+    </p>
+  )
+}
+
+/**
+ * The contact page, laid out the way the Start page is: what to expect on the
+ * left with the number under it, and the form in a card on the right.
+ *
+ * Three boxes are showing - a name, an address and a sentence - because those
+ * are all the endpoint needs to answer. The business name, what is needed and
+ * how to reply are still asked, folded under "Add More Detail", so a reader who
+ * never opens it loses nothing by sending.
+ *
+ * The second site mounts this same view as its enquiry form, and every
+ * sentence on it comes from `@data/pages/contact`, which hands each site its
+ * own copy.
+ */
 export default function Contact() {
   const toast = useToast()
   const [formData, setFormData] = useState(BLANK)
+  const folded = useRef(null)
 
   const [errors, setErrors] = useState({})
   const [status, setStatus] = useState('idle')
@@ -127,6 +148,7 @@ export default function Contact() {
       // Land on the first thing that needs fixing rather than leaving the
       // writer to find it.
       const first = REQUIRED_FIELDS.find(field => newErrors[field])
+      if (FOLDED.includes(first) && folded.current) folded.current.open = true
       document.getElementById(FIELD_IDS[first] || first)?.focus()
     }
     return Object.keys(newErrors).length === 0
@@ -177,6 +199,8 @@ export default function Contact() {
     }
   }
 
+  const described = field => (errors[field] ? `${field}-error` : undefined)
+
   return (
     <div>
       <Seo
@@ -196,168 +220,105 @@ export default function Contact() {
           },
         ]}
       />
-      <PageHero
-        eyebrow={CONTACT.hero.eyebrow}
-        title={CONTACT.hero.title}
-        description={CONTACT.hero.description}
-      />
 
-      <section className="section-y relative overflow-hidden bg-paper">
-        <div className="container-rail relative">
-          <div className="panel-static bg-hair-paper grid gap-px overflow-hidden lg:grid-cols-[1fr_1.4fr]">
-            <m.aside {...slideInLeftMount} className="flex flex-col gap-10 bg-paper p-8 sm:p-12">
-              <div>
-                <p className="section-label mb-6 block text-accent">{CONTACT.aside.eyebrow}</p>
-                <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink-paper [text-wrap:balance]">
-                  {CONTACT.aside.heading}
-                </h2>
-                <p className="mt-5 text-[15px] leading-relaxed text-paper-soft">
-                  {CONTACT.aside.para}
-                </p>
-                {/* Who reads the message, said the way a byline says it: the
-                    face, the name and the paragraph every reply is signed with. */}
-                <div className="border-hair-paper mt-8 border-t pt-7">
-                  <div className="flex items-center gap-4">
-                    <Portrait size={64} alt="" />
-                    <div>
-                      <p className="text-[15px] font-semibold text-ink-paper">{BIO_NAME}</p>
-                      <p className="section-label-sm text-paper-faint mt-1">{BIO_TITLE}</p>
-                    </div>
-                  </div>
-                  <p className="mt-5 text-[14px] leading-relaxed text-paper-soft">{BIO_TEXT}</p>
+      <section className="glow pb-16 pt-10 sm:pb-24 sm:pt-16">
+        <Container className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-10">
+          <div>
+            <h1 className={TYPE.display}>{CONTACT.hero.title}</h1>
+            <p className={`${TYPE.lead} mt-5 max-w-[30rem]`}>{CONTACT.hero.description}</p>
+          </div>
+
+          <div
+            className={`${CARD} min-w-0 p-6 sm:p-8 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:self-start`}
+          >
+            {status === 'sent' ? (
+              // A sent inquiry stands where the form stood. A toast is gone in
+              // four seconds and takes the only acknowledgement with it.
+              <div className="flex items-start gap-4 py-4" role="status">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgba(74,222,128,0.14)] text-[color:var(--live)]">
+                  <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
+                </span>
+                <div>
+                  <p className={TYPE.h3}>Message sent.</p>
+                  <p className={`${TYPE.body} mt-1`}>{CONTACT.form.confirmation}</p>
                 </div>
               </div>
-
-              <SpotlightCard
-                className="panel-static bg-hair-paper space-y-px"
-                spotlightColor="var(--spotlight-soft)"
-              >
-                <a
-                  href={COMPANY_PHONE_HREF}
-                  className="group flex items-center gap-4 bg-paper p-5 transition-colors hover:bg-ink-paper/[0.02]"
-                >
-                  <Phone className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
-                  <div className="min-w-0 flex-1">
-                    <p className="section-label-sm text-paper-faint">Phone</p>
-                    <p className="truncate text-[14px] text-ink-paper">{COMPANY_PHONE}</p>
-                  </div>
-                  <ArrowUpRight className="text-paper-faint h-4 w-4 transition-colors group-hover:text-accent" />
-                </a>
-                <a
-                  href={`mailto:${SALES_EMAIL}`}
-                  className="group flex items-center gap-4 bg-paper p-5 transition-colors hover:bg-ink-paper/[0.02]"
-                >
-                  <Mail className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
-                  <div className="min-w-0 flex-1">
-                    <p className="section-label-sm text-paper-faint">Email</p>
-                    <p className="truncate text-[14px] text-ink-paper">{SALES_EMAIL}</p>
-                  </div>
-                  <ArrowUpRight className="text-paper-faint h-4 w-4 transition-colors group-hover:text-accent" />
-                </a>
-                <div className="flex items-center gap-4 bg-paper p-5">
-                  <PlaceIcon className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+                <div className="grid gap-5 sm:grid-cols-2">
                   <div>
-                    <p className="section-label-sm text-paper-faint">{CONTACT.place.label}</p>
-                    <p className="text-[14px] text-ink-paper">{CONTACT.place.value}</p>
+                    <label htmlFor="name" className={FIELD_LABEL}>
+                      {ASKED.name}
+                    </label>
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      autoComplete="name"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className="field"
+                      placeholder="Your name"
+                      aria-invalid={errors.name ? true : undefined}
+                      aria-describedby={described('name')}
+                    />
+                    <Fault id="name" error={errors.name} />
                   </div>
-                </div>
-                <div className="flex items-center gap-4 bg-paper p-5">
-                  <Clock className="h-5 w-5 flex-shrink-0 text-accent" strokeWidth={1.5} />
                   <div>
-                    <p className="section-label-sm text-paper-faint">Reply</p>
-                    <p className="text-[14px] text-ink-paper">Usually within the hour</p>
+                    <label htmlFor="email" className={FIELD_LABEL}>
+                      {ASKED.email}
+                    </label>
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      autoComplete="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      className="field"
+                      placeholder={CONTACT.form.placeholders.email}
+                      aria-invalid={errors.email ? true : undefined}
+                      aria-describedby={described('email')}
+                    />
+                    <Fault id="email" error={errors.email} />
                   </div>
                 </div>
-              </SpotlightCard>
 
-              <div>
-                <p className="section-label-sm text-paper-faint mb-4">What Happens Next</p>
-                <ol className="space-y-5 border-l border-accent/40 pl-5">
-                  {CONTACT.steps.map((step, i) => (
-                    <li key={step.title} className="relative">
-                      <span className="absolute -left-[29px] top-0 flex h-5 w-5 items-center justify-center rounded-full border border-accent bg-paper font-mono text-[11px] font-semibold tabular-nums text-accent">
-                        {i + 1}
-                      </span>
-                      <p className="text-[14px] font-semibold text-ink-paper">{step.title}</p>
-                      <p className="mt-1 text-[13px] leading-relaxed text-paper-soft">
-                        {step.description}
-                      </p>
-                    </li>
-                  ))}
-                </ol>
-              </div>
+                <div>
+                  <label htmlFor="message" className={FIELD_LABEL}>
+                    {ASKED.message}
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    required
+                    rows={5}
+                    value={formData.message}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    className="field resize-none py-3"
+                    placeholder={CONTACT.form.placeholders.message}
+                    aria-invalid={errors.message ? true : undefined}
+                    aria-describedby={described('message')}
+                  />
+                  <Fault id="message" error={errors.message} />
+                </div>
 
-              {/* The column has said who answers, on what number, and how soon.
-                  The seal is the one line of it a reader can go and check
-                  against somebody other than me, so it closes the column. It is
-                  the studio's accreditation, under the studio's name, so only
-                  the site the reviews belong to draws it. */}
-              {PUBLISHES_REVIEWS ? <BbbSeal /> : null}
-            </m.aside>
-
-            <m.div {...slideInRightMount} className="relative bg-paper p-8 sm:p-12">
-              <div className="border-hair-paper mb-8 flex items-baseline justify-between border-b pb-5">
-                <h3 className="text-[19px] font-semibold tracking-tight text-ink-paper">
-                  {CONTACT.form.heading}
-                </h3>
-                <span className="section-label-sm text-paper-faint">Contact Form</span>
-              </div>
-              {status === 'sent' ? (
-                <Confirmation title="Message Sent" body={CONTACT.form.confirmation} />
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-7" noValidate>
-                  <div className="grid gap-6 sm:grid-cols-2">
-                    <div>
-                      <label htmlFor="name" className={FIELD_LABEL}>
-                        {ASKED.name}
-                      </label>
-                      <input
-                        type="text"
-                        id="name"
-                        name="name"
-                        autoComplete="name"
-                        required
-                        value={formData.name}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        className="field py-3.5"
-                        placeholder="Your name"
-                        aria-invalid={errors.name ? true : undefined}
-                        aria-describedby={errors.name ? 'name-error' : undefined}
-                      />
-                      {errors.name && (
-                        <p id="name-error" className={FIELD_FAULT} role="alert">
-                          {errors.name}
-                        </p>
-                      )}
-                    </div>
-                    <div>
-                      <label htmlFor="email" className={FIELD_LABEL}>
-                        {ASKED.email}
-                      </label>
-                      <input
-                        type="email"
-                        id="email"
-                        name="email"
-                        autoComplete="email"
-                        required
-                        value={formData.email}
-                        onChange={handleChange}
-                        onBlur={handleBlur}
-                        className="field py-3.5"
-                        placeholder={CONTACT.form.placeholders.email}
-                        aria-invalid={errors.email ? true : undefined}
-                        aria-describedby={errors.email ? 'email-error' : undefined}
-                      />
-                      {errors.email && (
-                        <p id="email-error" className={FIELD_FAULT} role="alert">
-                          {errors.email}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid gap-6 sm:grid-cols-2">
+                {/* The rest of what the form asks, a tap away. Nothing in here
+                    is required unless the writer asks to be called. */}
+                <details ref={folded} className="group rounded-[12px] bg-[var(--card-hi)]">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3.5 text-[15px] font-medium text-[color:var(--link)] [&::-webkit-details-marker]:hidden">
+                    <Plus
+                      className="h-4 w-4 transition-transform duration-150 group-open:rotate-45"
+                      aria-hidden="true"
+                    />
+                    Add More Detail (Optional)
+                  </summary>
+                  <div className="space-y-6 px-4 pb-5 pt-2">
                     <div>
                       <label htmlFor="company" className={FIELD_LABEL}>
                         {ASKED.company}
@@ -370,135 +331,82 @@ export default function Contact() {
                         value={formData.company}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        className="field py-3.5"
+                        className="field"
                         placeholder={CONTACT.form.placeholders.company}
                       />
                     </div>
-                    <div>
-                      <label htmlFor="projectType" className={FIELD_LABEL}>
-                        {ASKED.projectType}
-                      </label>
-                      {/* The arrow is drawn beside the select rather than painted
-                        into it, so it takes the field's own ink under either
-                        setting instead of a colour baked into an image. */}
-                      <div className="relative">
-                        <select
-                          id="projectType"
-                          name="projectType"
-                          value={formData.projectType}
-                          onChange={handleChange}
-                          onBlur={handleBlur}
-                          className="field appearance-none py-3.5 pr-10"
-                        >
-                          <option value="">Pick the closest one</option>
-                          {CONTACT.projectTypes.map(kind => (
-                            <option key={kind.value} value={kind.value}>
-                              {kind.label}
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown
-                          aria-hidden="true"
-                          strokeWidth={1.5}
-                          className="text-paper-faint pointer-events-none absolute right-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
-                        />
+
+                    <fieldset>
+                      <legend className={FIELD_LABEL}>{ASKED.projectType}</legend>
+                      <div className="grid gap-2.5 sm:grid-cols-2">
+                        {CONTACT.projectTypes.map(kind => (
+                          <label key={kind.value} className="relative block cursor-pointer">
+                            <input
+                              type="radio"
+                              name="projectType"
+                              value={kind.value}
+                              checked={formData.projectType === kind.value}
+                              onChange={handleChange}
+                              className="sr-only"
+                            />
+                            <span className="choice-tile text-center">{kind.label}</span>
+                          </label>
+                        ))}
                       </div>
-                    </div>
-                  </div>
+                    </fieldset>
 
-                  <ContactMethodChoice
-                    value={formData.contactMethod}
-                    phone={formData.phone}
-                    onChange={handleChange}
-                    onBlur={handleBlur}
-                    error={errors.phone}
-                    idPrefix="contact"
-                  />
-
-                  <div>
-                    <label htmlFor="message" className={FIELD_LABEL}>
-                      {ASKED.message}
-                    </label>
-                    <textarea
-                      id="message"
-                      name="message"
-                      required
-                      value={formData.message}
+                    <ContactMethodChoice
+                      value={formData.contactMethod}
+                      phone={formData.phone}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      rows={6}
-                      className="field resize-none py-3.5"
-                      placeholder={CONTACT.form.placeholders.message}
-                      aria-invalid={errors.message ? true : undefined}
-                      aria-describedby={errors.message ? 'message-error' : undefined}
+                      error={errors.phone}
+                      idPrefix="contact"
                     />
-                    {errors.message && (
-                      <p id="message-error" className={FIELD_FAULT} role="alert">
-                        {errors.message}
-                      </p>
-                    )}
                   </div>
+                </details>
 
-                  <div className="border-hair-paper flex flex-col gap-4 border-t pt-6 sm:flex-row sm:items-center sm:justify-between">
-                    <Magnet padding={60} magnetStrength={5}>
-                      <button
-                        type="submit"
-                        disabled={status === 'submitting'}
-                        className="btn btn-primary group"
-                      >
-                        {status === 'submitting' ? 'Sending…' : CONTACT.form.submit}
-                        {status !== 'submitting' && (
-                          <ArrowUpRight className="h-4 w-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                        )}
-                      </button>
-                    </Magnet>
-                    <p className="section-label-sm text-paper-faint">
-                      Free, and usually answered within the hour
-                    </p>
-                  </div>
-                </form>
-              )}
-            </m.div>
+                <div className="pt-1 [&>button]:w-full">
+                  <SendButton sending={status === 'submitting'}>{CONTACT.form.submit}</SendButton>
+                </div>
+              </form>
+            )}
           </div>
-        </div>
-      </section>
 
-      <section
-        data-ground="band"
-        className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
-      >
-        <div className="container-rail relative">
-          <m.div
-            {...fadeInUp}
-            className="border-hair grid items-end gap-10 border-b pb-12 lg:grid-cols-[1.4fr_1fr]"
-          >
-            <div>
-              <p className="section-label mb-6 block text-accent">{CONTACT.included.eyebrow}</p>
-              <h2 className="display-4 font-semibold leading-[1.05] tracking-tightest text-ink [text-wrap:balance]">
-                {CONTACT.included.headingLine} <br />
-                <AccentGradient>{CONTACT.included.accentText}</AccentGradient>
-              </h2>
-            </div>
-            <p className="max-w-md text-[16px] leading-relaxed text-ink-soft lg:text-right">
-              {CONTACT.included.lede}
-            </p>
-          </m.div>
-          <div className="mt-12 grid gap-x-6 gap-y-3 sm:grid-cols-2 lg:grid-cols-5">
-            {CONTACT.includedItems.map((item, i) => (
-              <m.div
-                key={item}
-                {...staggerChild(i, 0.04)}
-                className="border-hair flex items-start gap-3 border-t pt-3"
-              >
-                <span className="font-mono text-[10px] tabular-nums tracking-tight text-ink-faint">
-                  {String(i + 1).padStart(2, '0')}
+          <div className="space-y-3">
+            <a
+              href={COMPANY_PHONE_HREF}
+              className={`${CARD} flex items-center gap-4 p-5 transition-colors hover:bg-[var(--card-hi)]`}
+            >
+              <Face />
+              <span>
+                <span className="block text-[15px] font-medium text-ink">
+                  Rather talk? Call or text {BIO_NAME.split(' ')[0]}.
                 </span>
-                <span className="flex-1 text-[14px] text-ink-soft">{item}</span>
-                <Check className="h-3.5 w-3.5 flex-shrink-0 text-accent" strokeWidth={2} />
-              </m.div>
-            ))}
+                <span className="mt-0.5 block text-[20px] font-semibold tracking-[-0.01em] text-[color:var(--link)]">
+                  {COMPANY_PHONE}
+                </span>
+              </span>
+            </a>
+            <dl className={`${CARD} grid gap-4 px-5 py-4 sm:grid-cols-2`}>
+              <div className="min-w-0">
+                <dt className={TYPE.small}>Email</dt>
+                <dd className="mt-0.5 truncate text-[16px] font-medium">
+                  <a
+                    href={`mailto:${SALES_EMAIL}`}
+                    className="text-[color:var(--link)] hover:text-ink"
+                  >
+                    {SALES_EMAIL}
+                  </a>
+                </dd>
+              </div>
+              <div className="min-w-0">
+                <dt className={TYPE.small}>{CONTACT.place.label}</dt>
+                <dd className="mt-0.5 text-[16px] font-medium text-ink">{CONTACT.place.value}</dd>
+              </div>
+            </dl>
           </div>
-        </div>
+        </Container>
       </section>
     </div>
   )

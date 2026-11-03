@@ -164,7 +164,7 @@ export default function Privacy() {
               Write to{' '}
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="text-accent underline transition-colors duration-200 hover:text-[color:var(--accent-hi)]"
+                className="text-[color:var(--link)] underline underline-offset-[3px] hover:text-ink"
               >
                 {SUPPORT_EMAIL}
               </a>{' '}

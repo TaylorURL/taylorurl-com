@@ -22,8 +22,8 @@ import {
   workHref,
 } from './boardData'
 
-const FEATURED = 'southeastarbor.com'
-const STRIP = ['baytowngokarts.com', 'dickinsonbayoufleeting.com', 'faded-barbershop.com']
+const FEATURED = 'baytowngokarts.com'
+const STRIP = ['southeastarbor.com', 'dickinsonbayoufleeting.com', 'faded-barbershop.com']
 const REVIEWED = 'djrxexcellence.com'
 
 const STEPS = [
@@ -52,7 +52,7 @@ function figures() {
     { value: String(MOBILE_SPEED), label: 'Average mobile speed score' },
     { value: '2–4 weeks', label: 'From first call to live' },
     { value: 'Same day', label: 'Changes, sent by text' },
-    google?.rating && { value: `${google.rating.toFixed(1)} ★`, label: 'Rating on Google' },
+    google?.rating && { value: google.rating.toFixed(1), label: 'Rating on Google' },
   ].filter(Boolean)
 }
 
@@ -75,7 +75,6 @@ export default function HomeBoard() {
     <>
       <PageIntro
         size="hero"
-        badge="Web design in Baytown, TX"
         title="Websites that bring in work."
         lead="I design, build and host fast websites for local businesses. Most go live in two to four weeks."
         media={featured && <DeviceShowcase project={featured} eager />}

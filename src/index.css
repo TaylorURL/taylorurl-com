@@ -1030,8 +1030,8 @@
   }
 
   :root[data-theme='dark'] [data-theme='console'] {
-    --paper: #1c1b1a;
-    --paper-ink: #f0eee6;
+    --paper: #1b1b1a;
+    --paper-ink: #f4f3ee;
     --paper-ink-soft: rgba(240, 238, 230, 0.72);
     --paper-ink-mute: rgba(240, 238, 230, 0.55);
     /* The console sits one step behind the site's own dark paper. The page
@@ -1049,16 +1049,16 @@
     --wash-paper-strong: rgb(240 238 230 / 0.1);
     --rule-paper: rgba(240, 238, 230, 0.05);
     --rule-paper-fine: rgba(240, 238, 230, 0.03);
-    --bg: #161514;
-    --surface-1: #262624;
-    --surface-2: #2c2b29;
+    --bg: #141413;
+    --surface-1: #222220;
+    --surface-2: #262624;
     --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
     --accent: var(--accent-bright);
     --accent-hi: var(--accent-hi-bright);
     --accent-loud: var(--accent-hi-bright);
     --mark-invert: 1;
     --shine-sweep: rgba(240, 238, 230, 0.95);
-    --glare-ground: #1c1b1a;
+    --glare-ground: #141413;
     --glare-edge: rgba(240, 238, 230, 0.2);
     --spotlight: rgba(47, 107, 255, 0.2);
     --spotlight-soft: rgba(47, 107, 255, 0.12);
@@ -1086,17 +1086,19 @@
     --series-5: #10b981;
     --series-6: #ec4899;
     --series-7: #64748b;
-    --console-rail-bg: #1c1b1a;
+    --console-rail-bg: #181817;
     --console-bar-bg: var(--bg);
-    --console-card-bg: #232221;
+    --console-card-bg: #1b1b1a;
     --console-float-shadow: 0 12px 32px -12px rgb(0 0 0 / 62%);
-    --console-card-shadow: 0 0 0 1px rgba(240, 238, 230, 0.09);
+    --console-card-shadow: none;
     --console-row-hover: rgba(240, 238, 230, 0.06);
     --console-rail-active: var(--wash-accent);
     /* A raised chip separates itself by catching light on a pale ground and by
        its own edge on a dark one, where a shadow has nothing left to darken. */
-    --console-raise-shadow: 0 0 0 1px rgba(240, 238, 230, 0.12), 0 1px 2px rgb(0 0 0 / 40%);
+    --console-raise-shadow: 0 1px 2px rgb(0 0 0 / 40%);
     color-scheme: dark;
+    --console-radius: 14px;
+    --console-radius-sm: 10px;
   }
 
   /*
@@ -2925,7 +2927,7 @@
   .field:disabled,
   .field[aria-disabled='true'] {
     @apply cursor-not-allowed opacity-60;
-    --field-ring: var(--paper-hairline-strong);
+    --field-ring: transparent;
     --field-halo: transparent;
   }
 

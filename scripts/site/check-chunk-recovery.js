@@ -136,7 +136,6 @@ for (const [file, piece] of [
   ['src/app/components/chrome/Layout.jsx', 'the assistant and the section marks'],
   ['src/app/components/app-shell/LateChrome.jsx', 'everything that arrives after its page'],
   ['src/app/components/navigation/Navigation.jsx', 'the search panel'],
-  ['src/app/components/reactbits/LazyBg.jsx', 'the page backgrounds'],
 ]) {
   const found = swept.find(entry => entry.name === file)
   check(Boolean(found), `${file} has moved, and ${piece} is what this was watching`)
@@ -150,45 +149,11 @@ for (const [file, piece] of [
   }
 }
 
-// And that the boundary those four are held to is still the thing that decides
-// it, because for a while it was not.
-//
-// The sentence above was written when a rejection was the only way a missing
-// chunk reached anybody, and a boundary that swallowed one ended the matter.
-// #760 put the reload inside the pass - as soon as `superseded` can prove the
-// build has been replaced, which it can before the ladder is halfway down - and
-// a reload taken there is taken below every boundary above it. So the check
-// above went on passing and the thing it was checking for stopped being true:
-// `LazyBg` had its QuietBoundary the whole time and the page still went.
-//
-// Measured against the built site with the Particles chunk refused and the
-// served document naming a newer entry: document at 81ms, 404 at 854ms, build
-// probe at 864ms, and the reader's portfolio page replaced at 936ms, over an
-// `aria-hidden` wash that takes no pointer and says nothing. That is #761.
-//
-// The backgrounds are the one piece on that list that is decoration all the way
-// down - no press opens them, nothing waits on them, and a visit that never
-// sees one is a visit that went perfectly. They stand the reload down, and the
-// ladder underneath them is untouched, so a chunk that is merely late still
-// arrives and one that is gone is still reported.
-const backgrounds = swept.find(entry => entry.name === 'src/app/components/reactbits/LazyBg.jsx')
-if (backgrounds) {
-  check(
-    /renews:\s*false/.test(backgrounds.source),
-    "the page backgrounds take the ladder's reload, so a deploy that replaces a chunk throws away the page a reader was on to redraw a decoration behind it"
-  )
-  // Named one at a time, because the shape this is watching for is one of the
-  // two being given the options and the other quietly keeping the default.
-  for (const bg of ['Aurora', 'Particles']) {
-    const built = new RegExp(`${bg} = lazyWithRetry\\(.*$`, 'm').exec(backgrounds.source)
-    check(
-      Boolean(built) && /\),\s*[A-Za-z_$]/.test(built[0]),
-      `${bg} is built with no options, so it keeps the default and reloads the page it decorates`
-    )
-  }
-}
-
-// That the ladder honours it, rather than reading it and asking anyway. The
+// The animated page backgrounds were the one piece that was decoration all the
+// way down, and they stood the ladder's reload down so a deploy could not throw
+// away a page to redraw one (#760, #761). The redesign draws no animated
+// backgrounds, so what is left to hold is the ladder's own option for it.
+// That the ladder has it, and honours it rather than reading it and asking anyway. The
 // probe is the whole of the reload path, so standing the probe down is what
 // stands the reload down - and it also takes the request away, which is the
 // second reason a decoration should not be making it.
@@ -937,51 +902,26 @@ check(
 )
 
 // A ladder is spent once, and for a picture drawn for as long as the page is
-// that is the end of it. A nav cover is drawn when a pointer crosses its
-// group's trigger, and the sheet keeps the last group it showed mounted after
-// it closes, so the element outlives the open that spent its budget. That left
-// a cover standing blank with a spent `retry` address on it and nothing to ask
-// again: the reader opened that menu over and over, no request was made, and
-// the picture stayed gone for the rest of the visit long after the file went
-// back to answering. #731 gave the covers the ladder and proved one recovers
-// from a single dropped ask; #787 was the second open of a cover whose ladder
-// had already run out. So an open hands the budget back and puts the address
-// back to the one the markup draws from, and a picture already on the screen
-// is left alone - its `retry` address is the one answering, and the built one
-// may be the stored failure that started this.
+// that is the end of it. A picture shown again after it was hidden needs the
+// budget handed back, or a spent `retry` address is all it has to ask with.
+// The navigation's cover photographs were the case that needed it (#731,
+// #787); the redesign's bar has no panels and no covers, so what is left to
+// hold is the ladder's own ability to be handed back.
 check(
   /export function refreshImage/.test(LADDER) && /if \(image\.naturalWidth\) return/.test(LADDER),
-  'the ladder cannot be handed back to a picture that is shown again, so a nav cover that spent its budget once is blank for the rest of the visit'
-)
-const SHEET = readFileSync(path.join(APP, 'components/navigation/NavMenu.jsx'), 'utf8')
-check(
-  /\{\.\.\.retryable\(\)\}/.test(SHEET),
-  'a navigation cover photograph is drawn with no ladder, so one dropped request empties the cover for the rest of the visit'
-)
-check(
-  /refreshImage\(/.test(SHEET) && /nav-cover-photo/.test(SHEET),
-  'an open no longer asks again for a cover it has nothing on the screen for, so a spent ladder is a blank cover every later time that menu is opened'
+  'the ladder cannot be handed back to a picture that is shown again, so a picture that spent its budget once is blank for the rest of the visit'
 )
 
-// The photograph beside a secondary page's headline is the same arrangement one
-// component over. It is one unhashed file under `/images/`, drawn from the
-// shared hero every view but the home page uses, and it was drawn with no
-// ladder at all: one `error` event, an empty column, and the day's
-// `Cache-Control` stored against the built address, so the reader who lost it
-// once went on losing it on every page that draws it. #768 was that, on the
-// enquiry page. Both halves are checked here for the reason they are checked on
-// the process shots - the element has to carry the ladder, and a failure that
-// settled before React attached its handler has to be read at mount, because
-// these routes are rendered to markup at build time and the attribute sitting
-// on the element is the reporter holding a loss nothing is recovering from.
-const HERO = readFileSync(path.join(APP, 'components/page-bands/PageHero.jsx'), 'utf8')
+// The pictures every page draws through the kit - the client screenshots, the
+// wordmark - are unhashed files under `/public`, and one drawn with no ladder
+// is one `error` event and an empty frame with the day's `Cache-Control`
+// stored against the address. #768 was that, on the enquiry page's old hero.
+// The hero is gone; the kit is where those pictures are drawn now, so the kit
+// is what has to carry the ladder.
+const KIT = readFileSync(path.join(APP, 'components/kit/Kit.jsx'), 'utf8')
 check(
-  /\{\.\.\.retryable\(\)\}/.test(HERO),
-  "a secondary page's hero photograph is drawn with no ladder, so one dropped request takes it off every page that draws it until the reader's cache lets go"
-)
-check(
-  /naturalWidth !== 0/.test(HERO),
-  'a hero photograph that settled before React attached its handler is never read, and these routes are rendered to markup at build time, so that race is lost often rather than rarely'
+  /\{\.\.\.retryable\(\)\}/.test(KIT),
+  'the kit draws its screenshots and wordmark with no ladder, so one dropped request takes a picture off every page that draws it until the reader’s cache lets go'
 )
 
 /* ----------------------------------------------------------------------- *

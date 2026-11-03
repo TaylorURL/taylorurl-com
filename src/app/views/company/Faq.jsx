@@ -1,13 +1,7 @@
-import { useState } from 'react'
-import { m, AnimatePresence } from 'framer-motion'
-import { Plus } from 'lucide-react'
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
+import { CallToAction, PageIntro, Questions, Section, SectionHead } from '@components/kit/Kit'
 import Seo from '@components/Seo'
 import { PORTFOLIO_AVERAGES } from '@data/portfolio'
-import { EASE, fadeInUp, staggerChild } from '@constants/animations'
 import { breadcrumbSchema, faqSchema } from '@constants/seo'
-import SpotlightCard from '@reactbits/SpotlightCard/SpotlightCard'
 
 const FAQ_CATEGORIES = [
   {
@@ -83,68 +77,15 @@ const FAQ_CATEGORIES = [
   },
 ]
 
-function FaqItem({ question, answer, isOpen, onToggle, index, panelId, sectionIndex }) {
-  return (
-    <m.div {...staggerChild(index, 0.04)} className="border-hair-paper border-t">
-      <SpotlightCard className="bg-transparent px-2" spotlightColor="var(--spotlight-soft)">
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-expanded={isOpen}
-          aria-controls={panelId}
-          className="group flex w-full items-baseline justify-between gap-4 px-2 py-6 text-left transition-colors duration-200 hover:bg-ink-paper/[0.02]"
-        >
-          <div className="flex items-baseline gap-5">
-            <span className="text-paper-faint font-mono text-[11px] tabular-nums tracking-tight">
-              {String(sectionIndex + 1).padStart(2, '0')}.{String(index + 1).padStart(2, '0')}
-            </span>
-            <span className="text-[17px] font-medium tracking-tight text-ink-paper transition-colors group-hover:text-accent sm:text-[19px]">
-              {question}
-            </span>
-          </div>
-          <m.span
-            animate={{ rotate: isOpen ? 45 : 0 }}
-            transition={{ duration: 0.22, ease: EASE }}
-            className="flex-shrink-0"
-          >
-            <Plus
-              className={`h-5 w-5 transition-colors ${isOpen ? 'text-accent' : 'text-paper-faint group-hover:text-ink-paper'}`}
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-          </m.span>
-        </button>
-        <AnimatePresence initial={false}>
-          {isOpen && (
-            <m.div
-              id={panelId}
-              role="region"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.28, ease: EASE }}
-              className="overflow-hidden"
-            >
-              <p className="ml-12 max-w-3xl pb-7 pr-6 text-[15px] leading-relaxed text-paper-soft sm:text-[16px]">
-                {answer}
-              </p>
-            </m.div>
-          )}
-        </AnimatePresence>
-      </SpotlightCard>
-    </m.div>
-  )
-}
-
+/**
+ * The questions owners ask before they hire, in three groups, each answer
+ * opening on a tap. The answers are native disclosures, so every one of them
+ * is in the prerendered page and in the FAQPage schema whether or not a reader
+ * opens it.
+ */
 export default function Faq() {
-  const [openItems, setOpenItems] = useState({})
-
-  const toggleItem = key => {
-    setOpenItems(prev => ({ ...prev, [key]: !prev[key] }))
-  }
-
   return (
-    <div>
+    <>
       <Seo
         title="FAQ: Small Business Websites in Baytown, TX"
         description="What owners ask before hiring a Baytown web designer: what a website costs, how long a build takes, who owns it afterward, and what happens after launch."
@@ -157,59 +98,28 @@ export default function Faq() {
           faqSchema(FAQ_CATEGORIES.flatMap(cat => cat.questions)),
         ]}
       />
-      <PageHero
-        eyebrow="FAQ"
+
+      <PageIntro
         title="What owners ask before they hire me."
-        description="Timelines, what it costs, who owns the site, and what happens after launch. If yours is not here, ask and get a straight answer."
+        lead="Timelines, what it costs, who owns the site, and what happens after launch."
       />
 
-      <section className="section-y relative overflow-hidden bg-paper">
-        <div className="container-rail-tight relative">
-          <div className="space-y-20">
-            {FAQ_CATEGORIES.map((category, catIndex) => (
-              <m.div key={category.title} {...fadeInUp}>
-                <div className="border-hair-paper flex items-baseline gap-5 border-b pb-5">
-                  <span className="font-mono text-[11px] tabular-nums tracking-tight text-accent">
-                    {String(catIndex + 1).padStart(2, '0')}
-                  </span>
-                  <h2 className="display-4 font-semibold tracking-tightest text-ink-paper [text-wrap:balance]">
-                    {category.title}
-                  </h2>
-                  <span className="section-label-sm text-paper-faint ml-auto">
-                    {String(category.questions.length).padStart(2, '0')} entries
-                  </span>
-                </div>
-                <div>
-                  {category.questions.map((item, qIndex) => {
-                    const key = `${catIndex}-${qIndex}`
-                    return (
-                      <FaqItem
-                        key={key}
-                        question={item.q}
-                        answer={item.a}
-                        isOpen={!!openItems[key]}
-                        onToggle={() => toggleItem(key)}
-                        index={qIndex}
-                        sectionIndex={catIndex}
-                        panelId={`faq-panel-${key}`}
-                      />
-                    )
-                  })}
-                </div>
-              </m.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* Each group's name stands to the left of its questions on a wide
+          screen and over them on a phone. */}
+      {FAQ_CATEGORIES.map((category, index) => (
+        <Section
+          key={category.title}
+          label={category.title}
+          tight
+          className={index === 0 ? '!pt-6' : ''}
+          inner="grid gap-x-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]"
+        >
+          <SectionHead title={category.title} className="self-start lg:mb-0" />
+          <Questions items={category.questions} />
+        </Section>
+      ))}
 
-      <CtaBanner
-        eyebrow="Next"
-        heading="Still have"
-        accentText="questions?"
-        description="Send the question over. You usually get a reply within the hour, and asking costs nothing."
-        primaryLabel="Get Your Answer"
-        primaryTo="/contact"
-      />
-    </div>
+      <CallToAction title="Still have a question?" />
+    </>
   )
 }

@@ -120,13 +120,11 @@ export function Actions({ label, className = '', place, primary = START_LINK }) 
 }
 
 /**
- * The top of a page: a badge, a short headline, one sentence, the two pills,
- * and a note in small print. `media` stands beside it on a wide screen and
+ * The top of a page: a short headline, one sentence and the two pills. `media` stands beside it on a wide screen and
  * under it on a phone - a client site on a laptop and a phone, a short list of
  * facts, a photo. The soft blue glow sits behind it.
  */
 export function PageIntro({
-  badge,
   title,
   lead,
   actions = true,
@@ -143,7 +141,6 @@ export function PageIntro({
         className={`pb-12 pt-10 sm:pb-16 sm:pt-16 lg:pt-20 ${media ? 'grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14' : ''}`}
       >
         <div className="min-w-0 max-w-[600px]">
-          {badge && <Badge className="mb-6">{badge}</Badge>}
           <h1 className={size === 'hero' ? TYPE.hero : TYPE.display}>{title}</h1>
           {lead && <p className={`${TYPE.lead} mt-5 max-w-[30rem]`}>{lead}</p>}
           {actions && <Actions className="mt-8" label={actionLabel} place="intro" />}
@@ -240,9 +237,7 @@ export function DeviceShowcase({ project, eager = false, className = '' }) {
             <span className="block text-[15px] font-semibold leading-tight text-ink">
               {mobile} / 100
             </span>
-            <span className="block text-[12px] leading-tight text-ink-mute">
-              Google speed, on a phone
-            </span>
+            <span className="block text-[12px] leading-tight text-ink-mute">Google speed</span>
           </span>
         </div>
       )}
@@ -269,15 +264,17 @@ export function StatPanel({ items, className = '' }) {
   )
 }
 
-/** A section's heading, with an optional sentence under it and a link across from it. */
-export function SectionHead({ title, lead, link, className = '' }) {
+/**
+ * A section's heading, with a link across from it when there is one. No line
+ * under it: the heading says what the section is and the section says the rest.
+ */
+export function SectionHead({ title, link, className = '' }) {
   return (
     <div
       className={`mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between ${className}`.trim()}
     >
       <div className="max-w-[640px]">
         <h2 className={TYPE.h2}>{title}</h2>
-        {lead && <p className={`${TYPE.body} mt-3`}>{lead}</p>}
       </div>
       {link && <TextLink to={link.to} href={link.href} label={link.label} />}
     </div>
@@ -466,21 +463,15 @@ export function Questions({ items, className = '' }) {
 
 /**
  * The ask at the foot of a page: one rounded panel with the blue glow in it,
- * a line of what to do, a line of what happens, and the two pills.
+ * a line of what to do, and the two pills.
  */
-export function CallToAction({
-  title = 'Tell me about the business.',
-  lead,
-  label,
-  className = '',
-}) {
+export function CallToAction({ title = 'Tell me about the business.', label, className = '' }) {
   return (
     <section className={`py-14 sm:py-20 ${className}`.trim()} aria-label="Get a price">
       <Container>
         <div className="glow flex flex-col gap-7 overflow-hidden rounded-[20px] bg-[var(--card)] px-6 py-10 sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-[560px]">
             <h2 className={TYPE.h2}>{title}</h2>
-            {lead && <p className={`${TYPE.body} mt-3`}>{lead}</p>}
           </div>
           <Actions className="shrink-0" label={label} place="cta" />
         </div>

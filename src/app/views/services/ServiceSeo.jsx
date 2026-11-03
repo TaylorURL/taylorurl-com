@@ -1,16 +1,11 @@
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SERVICE_AREAS, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { otherServices, servicePage } from '@data/pages/serviceDetail'
-import ServiceSection from './ServiceSection'
-import FactMesh from './FactMesh'
-import MoreServices from './MoreServices'
-import SectionLink from './SectionLink'
+import { relatedServices, servicePage } from '@data/pages/serviceDetail'
+import ServiceLanding from './ServiceLanding'
 
-// The name, the path and the mark come from the same data the menu and the
-// cards read, so this page cannot be called one thing in the bar and another
-// in its own breadcrumb.
+// The name and the path come from the same data the menu and the cards read,
+// so this page cannot be called one thing in the bar and another in its own
+// breadcrumb.
 //
 // Read as optional because the subsidiary compiles this view too, and its
 // prerender evaluates the module even though its route table never mounts it.
@@ -21,19 +16,25 @@ const PAGE = servicePage(SLUG)
 const PAGE_PATH = PAGE?.path
 const PAGE_NAME = PAGE?.name
 
+const FACTS = [
+  { label: 'Price', value: 'Inside the monthly, nothing on top' },
+  { label: 'Starts', value: 'The day the site goes live' },
+  { label: 'Moves over', value: 'Months, not days' },
+]
+
 // The work itself, in the order it lands: the pages, the place, the markup,
 // the speed, the words, and the months after.
 const COVERS = [
   {
-    title: 'Pages Built to Be Found',
+    title: 'Pages built to be found',
     body: 'Titles, descriptions, headings, and clean addresses set on every page while it is being built.',
   },
   {
-    title: 'Local Search',
+    title: 'Local search',
     body: 'Where you are and what you cover, stated on the site: address, hours, phone, and the towns you actually work in.',
   },
   {
-    title: 'Structured Data',
+    title: 'Structured data',
     body: 'The markup that tells Google what the business is, what it sells, and what each page answers.',
   },
   {
@@ -41,40 +42,53 @@ const COVERS = [
     body: 'Pages that open quickly on a phone on mobile data. A slow page loses the reader before it can lose the ranking.',
   },
   {
-    title: 'Written for What People Type',
+    title: 'Written for what people type',
     body: 'Copy in the words customers search with, not the words the trade uses in-house.',
   },
   {
-    title: 'Kept Up',
+    title: 'Kept up',
     body: 'Worked on month after month, with the results deciding what changes on the site.',
   },
 ]
 
 const LOCAL = [
   {
-    title: 'Named, Not Implied',
+    title: 'Named, not implied',
     body: 'Every town you work in is written on the site, so a search from that town has something to match.',
   },
   {
-    title: 'The Same Details Everywhere',
+    title: 'The same details everywhere',
     body: 'Name, address, and phone number written the same way on the site as they read on your map listing.',
   },
   {
-    title: 'Questions People Ask',
+    title: 'Questions people ask',
     body: 'What a customer types before they call, answered on the page they land on.',
   },
 ]
 
-const TERMS = [
+const SECTIONS = [{ id: 'local', title: 'Found by the people nearest you', items: LOCAL }]
+
+const EXAMPLE = {
+  host: 'ccscaleservices.com',
+  line: 'Calibration, repair, and a parts counter for industrial weighing equipment, out of a family-owned shop in Huffman. Every part carries a page of its own, so a search for a failed load cell lands on the thing itself.',
+}
+
+const QUESTIONS = [
   {
-    title: 'How Long It Takes',
-    body: 'Search moves over months, not days. The work starts the day the site goes live and carries on every month after it.',
+    q: 'How long does it take?',
+    a: 'Search moves over months, not days. The work starts the day the site goes live and carries on every month after it.',
   },
   {
-    title: 'What It Costs',
-    body: 'Nothing on top. It sits inside the monthly, beside hosting, monitoring, backups, and changes.',
+    q: 'What does it cost?',
+    a: 'Nothing on top. It sits inside the monthly, beside hosting, monitoring, backups, and changes.',
+  },
+  {
+    q: 'Which towns does the work reach?',
+    a: `${SERVICE_AREAS.join(', ')}.`,
   },
 ]
+
+const RELATED = ['care', 'ad-tracking', 'new-website']
 
 /**
  * The search work on its own page. It is part of the monthly rather than a
@@ -107,62 +121,17 @@ export default function ServiceSeo() {
           },
         ]}
       />
-      <PageHero
-        eyebrow="SEO"
+      <ServiceLanding
         title="Found on Google, and I keep at it every month."
-        description="The search work sits inside the monthly fee that keeps the site running. There is no separate SEO bill, and no promise about where you land."
-      />
-
-      <ServiceSection
-        id="covers"
-        ground="paper"
-        eyebrow="The Work"
-        title="What actually gets done."
-        lede="Most of it happens while the site is being built. The rest happens every month after."
-      >
-        <FactMesh items={COVERS} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="local"
-        ground="band"
-        eyebrow="Local Search"
-        title="Found by the people nearest you."
-        lede="A local business is searched for by town. The site has to answer in those terms."
-      >
-        <FactMesh items={LOCAL} ground="band" columns={{ base: 1, sm: 3 }} />
-        <div className="border-hair mt-10 flex flex-wrap gap-x-3 gap-y-2 border-t pt-8">
-          {SERVICE_AREAS.map(area => (
-            <span key={area} className="chip-static">
-              {area}
-            </span>
-          ))}
-        </div>
-      </ServiceSection>
-
-      <ServiceSection
-        id="terms"
-        ground="band"
-        eyebrow="Time and Cost"
-        title="How long it takes, and what it runs."
-      >
-        <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
-        <div className="mt-8">
-          <SectionLink to="/contact" label="Ask What a Site Would Run" ground="band" />
-        </div>
-      </ServiceSection>
-
-      <MoreServices pages={otherServices(SLUG)} />
-
-      <CtaBanner
-        eyebrow="Let’s Talk"
-        heading="Get found where"
-        accentText="you work."
-        description="Tell me about the business and the towns it serves. The search work starts with the build and does not stop at launch."
-        primaryLabel="Start a Project"
-        primaryTo="/start"
-        secondaryLabel="Ask a Question"
-        secondaryTo="/contact"
+        lead="The search work sits inside the monthly fee that keeps the site running. There is no separate SEO bill, and no promise about where you land."
+        facts={FACTS}
+        covers={COVERS}
+        coversTitle="What actually gets done"
+        sections={SECTIONS}
+        example={EXAMPLE}
+        questions={QUESTIONS}
+        related={relatedServices(SLUG, RELATED)}
+        cta="Get found where you work."
       />
     </div>
   )

@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom'
 import Seo from '@components/Seo'
-import CtaSection from '@components/conversion/CtaSection'
+import { CallToAction } from '@components/kit/Kit'
 import { toolBySlug } from '@data/pages/tools'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 import NotFound from '../NotFound'
@@ -22,8 +22,8 @@ const FLOWS = {
  *
  * One view answers for every tool, the way `ServiceDetail` answers for every
  * service line. The flow is the page rather than something under a hero: it
- * carries the heading, so a visitor arrives already inside the first step
- * instead of scrolling past an introduction to reach it.
+ * carries the heading and puts the tool in a card straight under it, so a
+ * visitor arrives with the box to type in already on the screen.
  */
 export default function ToolPage() {
   const { slug } = useParams()
@@ -66,15 +66,7 @@ export default function ToolPage() {
 
       <Flow tool={tool} />
 
-      <CtaSection
-        eyebrow="Start"
-        title={
-          <>
-            Want this <span className="text-accent">handled for you</span>?
-          </>
-        }
-        description="Tell me about the business and what it needs. You usually get a reply within the hour, and a plan and a price before any work starts."
-      />
+      <CallToAction title="Want this handled for you?" />
     </div>
   )
 }

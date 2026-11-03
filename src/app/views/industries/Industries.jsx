@@ -1,28 +1,24 @@
-import PageHero from '@components/page-bands/PageHero'
-import CtaSection from '@components/conversion/CtaSection'
-import RuledSection from '@components/page-bands/RuledSection'
-import TradeMesh from '@components/mesh/TradeMesh'
+import { CallToAction, Grid, LinkCard, PageIntro, Section, SectionHead } from '@components/kit/Kit'
 import Seo from '@components/Seo'
-import TownChips from './TownChips'
 import { TRADES } from '@data/towns-and-trades/trades'
-import { groupsWith, INDUSTRY_SLUGS } from '@data/towns-and-trades/industries'
+import { groupsWith } from '@data/towns-and-trades/industries'
 import { AREAS } from '@data/towns-and-trades/areas'
 import { BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
 
 const DESCRIPTION =
   'Website work by trade around Baytown and Houston. What each kind of site has to do, the software it runs beside, and the local work already live.'
 
-// The grounds alternate band to band, so the ground the towns sit on is
-// whichever one the last group did not take.
-const groundAt = index => (index % 2 === 0 ? 'paper' : 'band')
-
+/**
+ * The trades index, in the list layout: the point, then each group of trades
+ * under its own heading as a grid of cards, each card naming the first thing
+ * that trade's site has to do; then the towns; then the ask.
+ */
 export default function Industries() {
   const groups = groupsWith(TRADES)
   const listed = groups.flatMap(group => group.trades)
-  const townGround = groundAt(groups.length)
 
   return (
-    <div>
+    <>
       <Seo
         title="Websites by Industry in Baytown, TX"
         description={DESCRIPTION}
@@ -52,47 +48,43 @@ export default function Industries() {
         ]}
       />
 
-      <PageHero
-        eyebrow="Industries"
+      <PageIntro
         title="Websites built around your trade."
-        description={`${INDUSTRY_SLUGS.length} trades, each with a page of its own: what the site has to do, the software it runs beside, and the work already live nearby.`}
+        lead="Each trade has a page: what the site has to do, the software it runs beside, and the work already live nearby."
       />
 
       {groups.map((group, index) => (
-        <RuledSection
+        <Section
           key={group.id}
           id={group.id}
-          ground={groundAt(index)}
-          eyebrow={group.name}
-          title={`${group.name}.`}
-          description={group.summary}
-          meta={`${group.trades.length} trades`}
+          label={group.name}
+          tight
+          className={index === 0 ? '!pt-4' : ''}
         >
-          <TradeMesh trades={group.trades} ground={groundAt(index)} withSummary />
-        </RuledSection>
+          <SectionHead title={group.name} />
+          <Grid cols={3}>
+            {group.trades.map(trade => (
+              <LinkCard
+                key={trade.id}
+                to={`/industries/${trade.id}`}
+                title={trade.name}
+                body={trade.needs[0]}
+              />
+            ))}
+          </Grid>
+        </Section>
       ))}
 
-      <RuledSection
-        id="industries-towns"
-        ground={townGround}
-        eyebrow="Where"
-        title="Towns these sites get built for."
-        description="Every town has a page of its own carrying the work already live there and the trades it most often calls for."
-        meta={`${AREAS.length} towns`}
-      >
-        <TownChips />
-      </RuledSection>
+      <Section id="industries-towns" label="Towns" tight>
+        <SectionHead title="Towns these sites get built for" />
+        <Grid cols={4} className="grid-cols-2">
+          {AREAS.map(area => (
+            <LinkCard key={area.slug} to={`/areas/${area.slug}`} title={area.name} />
+          ))}
+        </Grid>
+      </Section>
 
-      <CtaSection
-        ground={townGround === 'paper' ? 'dark' : 'paper'}
-        eyebrow="Start"
-        title={
-          <>
-            Tell me about <span className="text-accent">your shop</span>.
-          </>
-        }
-        description="Pick the trade, check the software you already run, and get a plan and a price back. Most sites are live in two to four weeks."
-      />
-    </div>
+      <CallToAction title="Tell me about your shop." />
+    </>
   )
 }

@@ -53,13 +53,13 @@ It is not about your business, your content, or your customers. The short versio
   {
     title: 'Restrictions',
     content: (
-      <div className="space-y-3">
+      <div>
         {RESTRICTIONS.map((item, index) => (
-          <div key={item.title} className="panel-static bg-paper p-5">
-            <h3 className="section-label text-accent">
+          <div key={item.title}>
+            <h3>
               <span className="tabular-nums">{index + 1}.</span> {item.title}
             </h3>
-            <p className="mt-2 text-[14px] leading-relaxed text-paper-soft">{item.description}</p>
+            <p className="!mt-2">{item.description}</p>
           </div>
         ))}
       </div>
@@ -110,7 +110,6 @@ export default function License() {
       <LegalPage
         title="License"
         description="What you may do with the software behind your site, and what stays with us."
-        eyebrow="License"
         effectiveDate="September 4, 2026"
         appliesTo="Clients with a current agreement"
         summary={[
@@ -128,7 +127,7 @@ export default function License() {
               For licensing questions or permissions, contact us at{' '}
               <a
                 href={`mailto:${SUPPORT_EMAIL}`}
-                className="text-accent underline transition-colors duration-200 hover:text-[color:var(--accent-hi)]"
+                className="text-[color:var(--link)] underline underline-offset-[3px] hover:text-ink"
               >
                 {SUPPORT_EMAIL}
               </a>
@@ -136,7 +135,7 @@ export default function License() {
           ),
         }}
       >
-        <p className="border-hair-paper text-paper-faint mt-10 border-t pt-6 text-[13px] leading-relaxed">
+        <p className="mt-8 text-[14px] leading-[1.5] text-ink-mute">
           Copyright (c) 2026 TaylorURL LLC, a Texas limited liability company. All rights reserved.
         </p>
       </LegalPage>

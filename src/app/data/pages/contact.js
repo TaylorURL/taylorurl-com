@@ -81,11 +81,11 @@ const STUDIO_CONTACT = {
   },
 
   projectTypes: [
-    { value: 'new-website', label: 'A brand-new website' },
-    { value: 'redesign', label: 'Redo my current site' },
-    { value: 'web-app', label: 'Online booking or a custom tool' },
-    { value: 'optimization', label: 'Make my site faster' },
-    { value: 'maintenance', label: 'Take over hosting and care' },
+    { value: 'new-website', label: 'A Brand-New Website' },
+    { value: 'redesign', label: 'Redo My Current Site' },
+    { value: 'web-app', label: 'Online Booking or a Custom Tool' },
+    { value: 'optimization', label: 'Make My Site Faster' },
+    { value: 'maintenance', label: 'Take Over Hosting and Care' },
   ],
 
   included: {

@@ -325,12 +325,7 @@ export default function SettingsPage() {
            than a third of the room at the narrowest desk, so the name and the
            palette stand one over the other and the facts take the half beside
            them. */
-        <Board
-          area="board"
-          areas={['profile account']}
-          cols={HALVES}
-          rows={ROW}
-        >
+        <Board area="board" areas={['profile account']} cols={HALVES} rows={ROW}>
           <Panel title="Profile" aside="The name shown on this account" area="profile">
             <PanelBody className={BODY}>
               <TextField

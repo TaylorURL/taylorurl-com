@@ -6,8 +6,7 @@ import { useToast } from '@hooks/chrome/useToast'
 import { SITE_URL } from '@constants/seo'
 
 /**
- * The share row for an article, as a row under the text or as a compact block
- * of marks in the rail beside it.
+ * The share row under an article.
  *
  * Every target is a plain link to a published share endpoint, so nothing here
  * loads a script from Facebook, X or LinkedIn and nothing tracks a reader who
@@ -42,17 +41,17 @@ const TARGETS = [
   },
 ]
 
-// A share target is a chip. The rail drops the words beside the marks, so the
-// box is held square there rather than collapsing to the width of a glyph.
-const BUTTON = 'chip min-w-[44px] justify-center'
+// A share target is a small pale pill, filled rather than outlined. On a phone
+// the words beside the marks are dropped, so the pill is held square there
+// rather than collapsing to the width of a glyph.
+const BUTTON =
+  'inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-2 rounded-full bg-white/[0.06] px-3.5 text-[14px] font-medium text-ink-soft transition-colors duration-150 hover:bg-white/[0.11] hover:text-ink'
 
 /**
- * @param {{ title: string, path: string, compact?: boolean }} props - The
- *   article's title and its site-relative path, which together make the address
- *   that gets shared, and whether the row is standing in a rail, where there is
- *   room for the marks but not for the words beside them.
+ * @param {{ title: string, path: string }} props - The article's title and its
+ *   site-relative path, which together make the address that gets shared.
  */
-export default function ShareBar({ title, path, compact = false }) {
+export default function ShareBar({ title, path }) {
   const toast = useToast()
   const [copied, setCopied] = useState(false)
   // The phone's own share sheet reaches the apps a person actually uses, so it
@@ -87,17 +86,11 @@ export default function ShareBar({ title, path, compact = false }) {
     }
   }
 
-  const label = compact ? 'hidden' : 'hidden sm:inline'
+  const label = 'hidden sm:inline'
 
   return (
-    <div
-      className={
-        compact
-          ? 'flex flex-wrap gap-1.5'
-          : 'border-hair-paper flex flex-wrap items-center gap-2 border-y py-5'
-      }
-    >
-      {!compact && <span className="text-paper-faint section-label-sm mr-2">Share</span>}
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="mr-2 text-[14px] text-ink-mute">Share</span>
 
       {TARGETS.map(target => (
         <a

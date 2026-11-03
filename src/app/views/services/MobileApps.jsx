@@ -1,16 +1,11 @@
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { otherServices, servicePage } from '@data/pages/serviceDetail'
-import ServiceSection from './ServiceSection'
-import FactMesh from './FactMesh'
-import MoreServices from './MoreServices'
-import SectionLink from './SectionLink'
+import { relatedServices, servicePage } from '@data/pages/serviceDetail'
+import ServiceLanding, { ItemAnswer } from './ServiceLanding'
 
-// The name, the path and the mark come from the same data the menu and the
-// cards read, so this page cannot be called one thing in the bar and another
-// in its own breadcrumb.
+// The name and the path come from the same data the menu and the cards read,
+// so this page cannot be called one thing in the bar and another in its own
+// breadcrumb.
 //
 // Read as optional because the subsidiary compiles this view too, and its
 // prerender evaluates the module even though its route table never mounts it.
@@ -21,31 +16,37 @@ const PAGE = servicePage(SLUG)
 const PAGE_PATH = PAGE?.path
 const PAGE_NAME = PAGE?.name
 
+const FACTS = [
+  { label: 'Published on', value: 'The App Store and Google Play' },
+  { label: 'Price', value: 'One build fee, then a monthly' },
+  { label: 'Store fees', value: 'Paid by you, straight to the stores' },
+]
+
 // What the work is, in the order it lands: the stores, the screens, the site
 // underneath, the sign-in, the notifications, and the listing.
 const COVERS = [
   {
-    title: 'Both Stores',
+    title: 'Both stores',
     body: 'Built once and shipped to the App Store and Google Play, so an iPhone customer and an Android customer open the same app.',
   },
   {
-    title: 'Drawn for a Thumb',
+    title: 'Drawn for a thumb',
     body: 'Screens laid out for one hand on a phone, not a website squeezed into a frame.',
   },
   {
-    title: 'Wired to the Site',
+    title: 'Wired to the site',
     body: 'The app and the website read the same bookings, orders, and customer records, so nothing is entered twice.',
   },
   {
-    title: 'Sign-In and Accounts',
+    title: 'Sign-in and accounts',
     body: 'Customers sign in with Apple, Google, or a phone number. Staff get their own access, set per person.',
   },
   {
-    title: 'Push Notifications',
+    title: 'Push notifications',
     body: 'A reminder the morning of an appointment, or a note when an order is ready, sent to the phone in their pocket.',
   },
   {
-    title: 'Listed and Approved',
+    title: 'Listed and approved',
     body: 'The developer accounts opened in your name, the store listings written, and the review handled until both stores say yes.',
   },
 ]
@@ -53,46 +54,59 @@ const COVERS = [
 // What a local business puts an app in front of, and who opens it.
 const USES = [
   {
-    title: 'Booking and Ordering',
+    title: 'Booking and ordering',
     body: 'Customers book a chair, a table, or a visit, or order ahead, from an icon on their home screen.',
   },
   {
-    title: 'Repeat Business',
+    title: 'Repeat business',
     body: 'Points, punch cards, and offers that live in the app instead of in a wallet.',
   },
   {
-    title: 'A Tool for the Crew',
+    title: 'A tool for the crew',
     body: 'Job sheets, photos, checklists, and time on site, filled in on the phone the technician already carries.',
   },
   {
-    title: 'A Customer Portal',
+    title: 'A customer portal',
     body: 'Invoices, appointment history, and documents in one place a customer can open without calling.',
   },
 ]
+
+const SECTIONS = [{ id: 'uses', title: 'What a local business puts in an app', items: USES }]
 
 // The honest question, answered before the quote: most businesses do not need
 // one, and the page says so rather than selling one to everybody who lands.
 const FIT = [
   {
-    title: 'The Site Is Enough When',
+    title: 'The site is enough when',
     body: 'A customer visits once or twice a year. A website that works well on a phone does that job, and nobody installs an app for it.',
   },
   {
-    title: 'An App Earns Its Place When',
+    title: 'An app earns its place when',
     body: 'The same people come back every week, staff work from the field, or a reminder on the lock screen is worth more than an email.',
   },
 ]
 
-const TERMS = [
+const QUESTIONS = [
   {
-    title: 'How Long It Takes',
-    body: 'Longer than a website, because there are two stores to satisfy and a back end to build. You get the finish date in writing with the price, and at the end, store review adds a few days nobody controls.',
+    q: 'Do I need an app, or is the site enough?',
+    a: (
+      <ItemAnswer
+        lede="Most businesses do not need an app. The first call settles which you need before I quote anything."
+        items={FIT}
+      />
+    ),
   },
   {
-    title: 'What It Costs',
-    body: 'One fee to build it, paid once before the work begins, then a monthly to host the back end, publish updates, and keep it on both stores. The App Store and Google Play charge their own yearly developer fees, which you pay them directly.',
+    q: 'How long does it take?',
+    a: 'Longer than a website, because there are two stores to satisfy and a back end to build. You get the finish date in writing with the price, and at the end, store review adds a few days nobody controls.',
+  },
+  {
+    q: 'What does it cost?',
+    a: 'One fee to build it, paid once before the work begins, then a monthly to host the back end, publish updates, and keep it on both stores. The App Store and Google Play charge their own yearly developer fees, which you pay them directly.',
   },
 ]
+
+const RELATED = ['desktop-apps', 'online-tools', 'automation']
 
 /**
  * The apps on their own page. An app is a project with its own decisions and
@@ -126,65 +140,15 @@ export default function MobileApps() {
           },
         ]}
       />
-      <PageHero
-        eyebrow="Mobile Apps"
+      <ServiceLanding
         title="An iOS and Android app for the customers who keep coming back."
-        description="iOS and Android apps for your business around Baytown: booking, ordering, loyalty, or the tool your crew carries on the job. Built alongside the site and wired to it, and you get the price in writing before any work starts."
-      />
-
-      <ServiceSection
-        id="covers"
-        ground="paper"
-        eyebrow="What It Covers"
-        title="What you get."
-        lede="Built, published on both stores, and left in your name."
-      >
-        <FactMesh items={COVERS} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="uses"
-        ground="band"
-        eyebrow="What It Is For"
-        title="What a local business puts in an app."
-        lede="Four jobs an app does better than a website, because the phone is already in hand."
-      >
-        <FactMesh items={USES} ground="band" columns={{ base: 1, sm: 2, lg: 4 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="fit"
-        ground="paper"
-        eyebrow="Site or App"
-        title="When you need one, and when the site is enough."
-        lede="Most businesses do not need an app. The first call settles which you need before I quote anything."
-      >
-        <FactMesh items={FIT} ground="paper" columns={{ base: 1, sm: 2 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="terms"
-        ground="band"
-        eyebrow="Time and Cost"
-        title="How long it takes, and what it runs."
-      >
-        <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
-        <div className="mt-8">
-          <SectionLink to="/contact" label="Ask What Yours Would Run" ground="band" />
-        </div>
-      </ServiceSection>
-
-      <MoreServices pages={otherServices(SLUG)} />
-
-      <CtaBanner
-        eyebrow="Let’s Talk"
-        heading="Get your app"
-        accentText="on both stores."
-        description="Tell me what it has to do and who will open it. You get a plan and a price before any work starts, and a straight answer if the site would do the job."
-        primaryLabel="Start a Project"
-        primaryTo="/start"
-        secondaryLabel="Ask a Question"
-        secondaryTo="/contact"
+        lead="Booking, ordering, loyalty, or the tool your crew carries on the job. Built alongside the site, wired to it, and priced in writing before any work starts."
+        facts={FACTS}
+        covers={COVERS}
+        sections={SECTIONS}
+        questions={QUESTIONS}
+        related={relatedServices(SLUG, RELATED)}
+        cta="Get your app on both stores."
       />
     </div>
   )

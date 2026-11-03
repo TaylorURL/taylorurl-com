@@ -361,7 +361,6 @@
   gap: 0;
   height: 100dvh;
   flex-direction: column;
-  border-right: 1px solid var(--paper-hairline);
   background-color: var(--console-rail-bg);
 }
 

@@ -1,19 +1,19 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
 import { AlertTriangle, Check, Minus, Search } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
 import CheckScope from '@components/conversion/CheckScope'
-import CheckStage from '@components/conversion/CheckStage'
-import StepFlow from '@components/steps/StepFlow'
+import { Section, TextLink } from '@components/kit/Kit'
+import { BUTTONS, CARD, TYPE } from '@components/kit/styles'
 import ToolEnquiry from './ToolEnquiry'
 import { enquiryLines, reportFor } from '@app/tools/lib/findings'
 import { NAV_GROUPS } from '@constants/navigation'
 import { STAGES, stageAt } from '@app/tools/lib/progress'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultFromResponse, faultMessage } from '@utils/faults'
-import { GROUND, RUN_FAULT } from './lib/ground'
 import { FIELD_LABEL } from '@constants/grounds'
+import { RUN_FAULT, toneOf } from './lib/bands'
 import { useElapsed } from './lib/useElapsed'
+import { ScoreRing, ToolHero } from './parts'
 
 // What a reading that did not land says when nothing better came back with it.
 // It names the address rather than whatever failed behind it, because the
@@ -28,22 +28,27 @@ const STAGE_LABELS = STAGES.map(stage => stage.label)
 const STATES = {
   fail: {
     mark: AlertTriangle,
-    label: 'Costing You',
-    tone: 'text-[color:var(--danger-on-paper)]',
-    edge: 'border-[color:var(--danger-on-paper)]/40',
+    label: 'Costing you',
+    tone: 'text-[color:var(--danger)]',
+    wash: 'bg-[rgba(248,113,113,0.14)]',
   },
   warn: {
     mark: AlertTriangle,
-    label: 'Worth Fixing',
-    tone: 'text-accent',
-    edge: 'border-accent/40',
+    label: 'Worth fixing',
+    tone: 'text-[color:var(--warn)]',
+    wash: 'bg-[rgba(251,191,36,0.14)]',
   },
-  pass: { mark: Check, label: 'Passing', tone: 'text-accent', edge: 'border-accent/30' },
+  pass: {
+    mark: Check,
+    label: 'Passing',
+    tone: 'text-[color:var(--live)]',
+    wash: 'bg-[rgba(74,222,128,0.14)]',
+  },
   unknown: {
     mark: Minus,
-    label: 'Not Read',
-    tone: 'text-paper-faint',
-    edge: 'border-[color:var(--paper-hairline-strong)]',
+    label: 'Not read',
+    tone: 'text-ink-mute',
+    wash: 'bg-white/[0.06]',
   },
 }
 
@@ -61,7 +66,8 @@ const serviceName = path => SERVICE_NAMES[path] || 'What This Covers'
 /**
  * The Google Presence Check.
  *
- * Three steps: the address, the wait, and the report. The reading itself is
+ * The address in a card at the top, the wait and then the report under it,
+ * and the way to have it put right under that. The reading itself is
  * `api/site-audit`, which returns measurements and no wording at all; every
  * sentence on the report is composed here from those figures.
  *
@@ -117,115 +123,96 @@ export default function GooglePresenceCheck({ tool }) {
     }
   }
 
-  const steps = [
-    {
-      id: 'check-address',
-      label: 'Your Address',
-      eyebrow: 'Step One',
-      title: tool.name,
-      description: tool.lede,
-      answered: status === 'done',
-      content: (
-        <CheckStage
-          running={running}
-          panel={
-            running ? (
-              <CheckProgress
-                address={address.trim()}
-                elapsed={elapsed}
-                stages={STAGE_LABELS}
-                at={stageAt(elapsed)}
-                note="Google loads the page on its own hardware, which takes most of a minute. Leave this open."
-                ground={GROUND}
+  return (
+    <>
+      <ToolHero title="See what Google sees." lead={tool.lede} narrow>
+        <div className={`${CARD} p-6 sm:p-8`}>
+          <form onSubmit={run}>
+            <label htmlFor="check-site" className={FIELD_LABEL}>
+              Web address
+            </label>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <input
+                id="check-site"
+                name="site"
+                type="text"
+                inputMode="url"
+                autoComplete="url"
+                value={address}
+                onChange={event => setAddress(event.target.value)}
+                disabled={running}
+                className="field flex-1 disabled:[--field-ring:transparent]"
+                placeholder="yourbusiness.com"
               />
-            ) : (
-              <CheckScope
-                title="What Gets Checked"
-                items={[
-                  'How long the page takes to become usable on a phone.',
-                  'Whether your business details are in a form Google reads.',
-                  'What your link looks like when somebody shares it.',
-                  'Whether the address answers one way rather than two.',
-                ]}
-                note="Rankings, review counts and what competitors are doing cannot be measured for free, so they are not in this report."
-                ground={GROUND}
-              />
-            )
-          }
-        >
-          <form onSubmit={run} className="space-y-6">
-            <div>
-              <label htmlFor="check-site" className={FIELD_LABEL}>
-                Web address
-              </label>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <input
-                  id="check-site"
-                  name="site"
-                  type="text"
-                  inputMode="url"
-                  autoComplete="url"
-                  value={address}
-                  onChange={event => setAddress(event.target.value)}
-                  disabled={running}
-                  className="field flex-1 py-3.5"
-                  placeholder="yourbusiness.com"
-                />
-                <button
-                  type="submit"
-                  disabled={running || !address.trim()}
-                  className="btn btn-primary"
-                >
-                  <Search className="h-4 w-4" aria-hidden="true" />
-                  {running ? 'Checking…' : 'Run the Check'}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={running || !address.trim()}
+                className={`${BUTTONS.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+              >
+                <Search className="h-4 w-4" aria-hidden="true" />
+                {running ? 'Checking…' : 'Run the Check'}
+              </button>
             </div>
             {/* The address itself is not marked wrong by any of this. What
                 stands here is a run that did not finish, which is as often the
                 measurement as the address, and telling a screen reader the
                 field is invalid would name the wrong one. */}
-            {fault && <p className={RUN_FAULT}>{fault}</p>}
+            {fault && <p className={`${RUN_FAULT} mt-3`}>{fault}</p>}
           </form>
-        </CheckStage>
-      ),
-    },
-    {
-      id: 'check-report',
-      label: 'The Report',
-      eyebrow: 'Step Two',
-      title: report ? headlineFor(report) : 'Nothing read yet.',
-      description: reading
-        ? `Read from ${reading.site.host} just now, worst first.`
-        : 'Run the check on step one and every finding lands here, worst first.',
-      answered: true,
-      content: report ? (
-        <div className="space-y-10">
-          <Scores reading={reading} />
-          <Findings report={report} />
         </div>
-      ) : null,
-    },
-    {
-      id: 'check-fix',
-      label: 'Get It Fixed',
-      eyebrow: 'Step Three',
-      title: 'Have it put right.',
-      description:
-        'The findings above travel with the message, so I have already read them when I reply. You get a plan and a price before any work starts, and both cost nothing.',
-      answered: true,
-      content: report ? (
-        <ToolEnquiry
-          summary={enquiryLines(report)}
-          projectType="Google Presence Check"
-          idPrefix="check"
-          placeholder="What does your business do, and which of these matters most to you?"
-        />
-      ) : null,
-    },
-  ]
 
-  return <StepFlow steps={steps} atTop label="Presence check steps" />
+        {running ? (
+          <CheckProgress
+            address={address.trim()}
+            elapsed={elapsed}
+            stages={STAGE_LABELS}
+            at={stageAt(elapsed)}
+            note="Google loads the page on its own hardware, which takes most of a minute. Leave this open."
+          />
+        ) : (
+          !report && (
+            <CheckScope
+              title="What gets checked"
+              items={[
+                'How long the page takes to become usable on a phone.',
+                'Whether your business details are in a form Google reads.',
+                'What your link looks like when somebody shares it.',
+                'Whether the address answers one way rather than two.',
+              ]}
+              note="Rankings, review counts and what competitors are doing cannot be measured for free, so they are not in this report."
+            />
+          )
+        )}
+      </ToolHero>
+
+      {report && (
+        <Section label="The report" className="!pt-0">
+          <h2 className={TYPE.h2}>{headlineFor(report)}</h2>
+          <p className={`${TYPE.body} mt-3`}>
+            Read from {reading.site.host} just now, worst first.
+          </p>
+          <div className="mt-8 space-y-5">
+            <Scores reading={reading} />
+            <Findings report={report} />
+          </div>
+        </Section>
+      )}
+
+      {report && (
+        <Section label="Get it fixed">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)] lg:gap-16">
+            <h2 className={TYPE.h2}>Have it put right.</h2>
+            <ToolEnquiry
+              summary={enquiryLines(report)}
+              projectType="Google Presence Check"
+              idPrefix="check"
+              placeholder="What does your business do, and which of these matters most to you?"
+            />
+          </div>
+        </Section>
+      )}
+    </>
+  )
 }
 
 /** What the report says about itself, before any single finding. */
@@ -238,68 +225,64 @@ function headlineFor(report) {
 
 const SCORE_ROWS = [
   { key: 'performance', label: 'Speed' },
-  { key: 'accessibility', label: 'Usable by Anyone' },
-  { key: 'bestPractices', label: 'Built Right' },
+  { key: 'accessibility', label: 'Usable by anyone' },
+  { key: 'bestPractices', label: 'Built right' },
   { key: 'seo', label: 'Findable' },
 ]
 
 /**
- * Google's own four scores, on both the phone and the desktop reading.
+ * Google's own four scores, on both the phone and the desktop reading, each as
+ * a ring in the band Google files it under.
  *
  * They sit above the findings rather than among them because a score out of a
  * hundred is a summary, not something an owner can act on: the findings below
- * are what actually names the work. The desktop column is dropped rather than
+ * are what actually names the work. The desktop row is dropped rather than
  * drawn empty when Google did not answer for it in time.
  */
 function Scores({ reading }) {
-  const columns = [
-    { id: 'mobile', label: 'On a Phone', scores: reading.mobile?.scores },
-    { id: 'desktop', label: 'On a Desktop', scores: reading.desktop?.scores },
-  ].filter(column => column.scores)
+  const rows = [
+    { id: 'mobile', label: 'On a phone', scores: reading.mobile?.scores },
+    { id: 'desktop', label: 'On a desktop', scores: reading.desktop?.scores },
+  ].filter(row => row.scores)
 
   return (
-    <div className={`overflow-x-auto ${GROUND.shell}`}>
-      <table className="w-full min-w-[420px] border-collapse">
-        <caption className="sr-only">Google&rsquo;s scores out of a hundred</caption>
-        <thead>
-          <tr className={`border-b ${GROUND.rule}`}>
-            <th scope="col" className={`section-label-sm p-5 text-left ${GROUND.meta}`}>
-              Google&rsquo;s Scores
-            </th>
-            {columns.map(column => (
-              <th
-                key={column.id}
-                scope="col"
-                className="section-label-sm p-5 text-right text-accent"
-              >
-                {column.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {SCORE_ROWS.map(row => (
-            <tr key={row.key} className={`border-b last:border-b-0 ${GROUND.rule}`}>
-              <th scope="row" className="p-5 text-left text-[14px] font-medium text-ink-paper">
-                {row.label}
-              </th>
-              {columns.map(column => {
-                const value = column.scores[row.key]
+    <div className={`${CARD} px-6 py-6 sm:px-8`}>
+      <h3 className="sr-only">Google&rsquo;s scores out of a hundred</h3>
+      <div className="space-y-7">
+        {rows.map(row => (
+          <div key={row.id}>
+            <p className={TYPE.label}>{row.label}</p>
+            <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-5 lg:grid-cols-4">
+              {SCORE_ROWS.map(score => {
+                const value = row.scores[score.key]
+                const scored = typeof value === 'number'
                 return (
-                  <td
-                    key={column.id}
-                    className="p-5 text-right font-mono text-[15px] tabular-nums text-ink-paper"
-                  >
-                    {typeof value === 'number' ? value : '—'}
-                  </td>
+                  <div key={score.key}>
+                    <dt className="sr-only">{score.label}</dt>
+                    <dd className="flex items-center gap-3">
+                      <ScoreRing
+                        score={scored ? value : null}
+                        stroke={toneOf(value).stroke}
+                        size={44}
+                      />
+                      <span>
+                        <span className={`${TYPE.figure} block tabular-nums`}>
+                          {scored ? value : '—'}
+                        </span>
+                        <span className={`${TYPE.small} mt-1 block`} aria-hidden="true">
+                          {score.label}
+                        </span>
+                      </span>
+                    </dd>
+                  </div>
                 )
               })}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+            </dl>
+          </div>
+        ))}
+      </div>
       {!reading.desktop && (
-        <p className={`border-t p-5 text-[13px] leading-relaxed ${GROUND.rule} ${GROUND.meta}`}>
+        <p className={`${TYPE.small} mt-6`}>
           Google did not return a desktop reading in time. Everything below is measured from the
           phone reading, which is the one it ranks on.
         </p>
@@ -310,38 +293,33 @@ function Scores({ reading }) {
 
 function Findings({ report }) {
   return (
-    <ul className={`divide-hair-paper divide-y ${GROUND.shell}`}>
+    <ul className="space-y-2.5">
       {report.findings.map(finding => {
         const state = STATES[finding.state]
         const Mark = state.mark
         return (
-          <li key={finding.id} className="p-6 sm:p-7">
+          <li key={finding.id} className={`${CARD} p-6 sm:p-7`}>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex gap-4">
                 <span
-                  className={`mt-0.5 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-md border ${state.edge}`}
+                  className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${state.wash}`}
                 >
                   <Mark className={`h-4 w-4 ${state.tone}`} strokeWidth={2} aria-hidden="true" />
                 </span>
                 <div>
-                  <p className={`section-label-sm ${state.tone}`}>
+                  <p className={`text-[13px] font-medium leading-[1.4] ${state.tone}`}>
                     {state.label} · {finding.label}
                   </p>
-                  <h3 className="mt-2 text-[16px] font-semibold tracking-tight text-ink-paper">
-                    {finding.headline}
-                  </h3>
-                  <p className={`mt-2 max-w-2xl text-[15px] leading-relaxed ${GROUND.body}`}>
-                    {finding.detail}
-                  </p>
+                  <h3 className={`${TYPE.h3} mt-1.5`}>{finding.headline}</h3>
+                  <p className={`${TYPE.body} mt-2 max-w-2xl`}>{finding.detail}</p>
                 </div>
               </div>
               {(finding.state === 'fail' || finding.state === 'warn') && (
-                <Link
+                <TextLink
                   to={finding.fixes}
-                  className="section-label-sm inline-flex min-h-[44px] flex-shrink-0 items-center rounded-[var(--r-tiny)] text-accent underline-offset-4 transition-colors duration-200 ease-out-soft hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[color:var(--accent)] active:scale-[0.97]"
-                >
-                  {serviceName(finding.fixes)}
-                </Link>
+                  label={serviceName(finding.fixes)}
+                  className="min-h-[44px] sm:ml-4"
+                />
               )}
             </div>
           </li>

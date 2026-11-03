@@ -76,10 +76,10 @@ export const CONTACT_PAGE = {
   },
 
   projectTypes: [
-    { value: 'software', label: 'Custom software or an integration' },
-    { value: 'tracking', label: 'Conversion tracking that is wrong' },
-    { value: 'outbound', label: 'Outbound email' },
-    { value: 'other', label: 'Something else' },
+    { value: 'software', label: 'Custom Software or an Integration' },
+    { value: 'tracking', label: 'Conversion Tracking That Is Wrong' },
+    { value: 'outbound', label: 'Outbound Email' },
+    { value: 'other', label: 'Something Else' },
   ],
 
   included: {

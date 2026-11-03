@@ -1,4 +1,3 @@
-import { Code2, Headphones, Heart, Shield, Zap } from 'lucide-react'
 import { PORTFOLIO_AVERAGES } from '@data/portfolio'
 import { ABOUT_PAGE as TAYLORWEBSITE_ABOUT } from '../taylorwebsite/aboutTaylorwebsite.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
@@ -15,12 +14,12 @@ import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
  * must not move a page that has been indexed for a year.
  *
  * - `story.paragraphs` are the three under the story heading, in order.
- * - `stats` is either a written `value` or a `to` the page counts up to.
- * - `place` is the card under the figures: an icon, the label over it, and the
- *   paragraph that says where the work happens.
- * - `work` and `processIntro` are the two banded headings, each a first line
- *   and an accented second one.
- * - `closing` is the last band's ask.
+ * - `stats` are the figures in the panel, each a written `value` and its label.
+ * - `place` is the card beside the story: the label over it and the paragraph
+ *   that says where the work happens.
+ * - `work` and `processIntro` are the two section headings, each written as a
+ *   first line and the rest of the sentence.
+ * - `closing` is the ask at the foot of the page.
  */
 const STUDIO_ABOUT = {
   seo: {
@@ -33,7 +32,7 @@ const STUDIO_ABOUT = {
     eyebrow: 'About Me',
     title: 'I build websites that bring you customers.',
     description:
-      'I am Trenton Taylor, a web designer and developer. I answer the phone, I build the site, and when your hours change you text me. Most of my clients are shops and trades around Baytown and the Houston area.',
+      'I am Trenton Taylor, a web designer and developer. I answer the phone, I build the site, and when your hours change you text me.',
   },
 
   story: {
@@ -52,39 +51,34 @@ const STUDIO_ABOUT = {
   // no longer held. The page names no count of clients; the scores are the
   // claim, and a count is a number a reader holds against the business.
   stats: [
-    { value: '2-4', unit: 'wk', label: 'Average Build Time' },
-    { to: PORTFOLIO_AVERAGES.mobile, suffix: '', unit: '', label: 'Average PageSpeed, Mobile' },
-    { to: PORTFOLIO_AVERAGES.desktop, suffix: '', unit: '', label: 'Average PageSpeed, Desktop' },
-    { value: '<1', unit: 'hr', label: 'Typical Reply Time' },
+    { value: '2–4 weeks', label: 'Average build time' },
+    { value: String(PORTFOLIO_AVERAGES.mobile), label: 'Average mobile speed score' },
+    { value: String(PORTFOLIO_AVERAGES.desktop), label: 'Average desktop speed score' },
+    { value: 'Under an hour', label: 'Typical reply time' },
   ],
 
   place: {
-    icon: Heart,
     label: 'Baytown, TX',
     body: 'Working with local businesses around Baytown, Mont Belvieu, Channelview, Crosby, La Porte, Deer Park, Pasadena, and the rest of the Houston area. The whole project happens by phone, text, and email. No in-person meeting is required.',
   },
 
   values: [
     {
-      icon: Code2,
       title: 'Nobody else has this site',
       description:
         'Your site starts as an empty file, not a theme with your logo dropped into it. Nothing on it loads that you did not ask for, and it looks like your shop instead of the one across town.',
     },
     {
-      icon: Headphones,
       title: 'Your messages land on my phone',
       description:
         'No account manager sits between you and the build. You text or email, I read it, and the answer usually comes back inside the hour.',
     },
     {
-      icon: Zap,
       title: 'Live in two to four weeks',
       description:
         'Most sites go live inside a month. The time goes into building the thing rather than into meetings about building it. You tell me about the business, I get to work.',
     },
     {
-      icon: Shield,
       title: 'Built for local businesses',
       description:
         'Plumbers, barbers, printers, restaurants, contractors. Businesses that get looked up on a phone before anyone walks in, and that need somebody who picks up when the hours change.',
@@ -140,9 +134,8 @@ const STUDIO_ABOUT = {
     },
   ],
 
-  // The studio's closing band draws the accent inline and carries the full
-  // stop outside it; the second site's draws the same words through
-  // `@components/CtaBanner`, which takes the accented tail whole.
+  // The page joins the heading and its tail into one sentence and supplies the
+  // full stop where the tail has none, so the two sites can write it either way.
   closing: {
     eyebrow: 'Get in Touch',
     heading: 'Tell me about',

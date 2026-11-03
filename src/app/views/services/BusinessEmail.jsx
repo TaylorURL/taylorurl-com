@@ -1,16 +1,11 @@
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { otherServices, servicePage } from '@data/pages/serviceDetail'
-import ServiceSection from './ServiceSection'
-import FactMesh from './FactMesh'
-import MoreServices from './MoreServices'
-import SectionLink from './SectionLink'
+import { relatedServices, servicePage } from '@data/pages/serviceDetail'
+import ServiceLanding from './ServiceLanding'
 
-// The name, the path and the mark come from the same data the menu and the
-// cards read, so this page cannot be called one thing in the bar and another
-// in its own breadcrumb.
+// The name and the path come from the same data the menu and the cards read,
+// so this page cannot be called one thing in the bar and another in its own
+// breadcrumb.
 //
 // Read as optional because the subsidiary compiles this view too, and its
 // prerender evaluates the module even though its route table never mounts it.
@@ -21,31 +16,37 @@ const PAGE = servicePage(SLUG)
 const PAGE_PATH = PAGE?.path
 const PAGE_NAME = PAGE?.name
 
+const FACTS = [
+  { label: 'Setup and the move', value: 'Part of the build' },
+  { label: 'Mailboxes', value: 'Billed to you by the provider' },
+  { label: 'The switch', value: 'On a date you pick' },
+]
+
 // What the work is, in the order it happens: the address, the mailboxes behind
 // it, the routing on top of it, and the move onto it.
 const COVERS = [
   {
-    title: 'Your Own Address',
+    title: 'Your own address',
     body: 'Mail at yourbusiness.com, on the same domain as the website, so the two read as one business.',
   },
   {
-    title: 'Mailboxes for Your Team',
+    title: 'Mailboxes for your team',
     body: 'One for the shop and one for each person, created and handed over working.',
   },
   {
-    title: 'Forwarding and Aliases',
+    title: 'Forwarding and aliases',
     body: 'Sales, service, and billing addresses all landing wherever they should land.',
   },
   {
-    title: 'Records Set Right',
+    title: 'Records set right',
     body: 'SPF, DKIM, and DMARC in place, which is what keeps your mail out of a customer’s junk folder.',
   },
   {
-    title: 'Signed In Everywhere',
+    title: 'Signed in everywhere',
     body: 'Phones, tablets, and desktop mail programs, each one sending and receiving before it is handed back.',
   },
   {
-    title: 'Moved Across',
+    title: 'Moved across',
     body: 'Old mail, contacts, and calendars carried over from whatever runs it today.',
   },
 ]
@@ -63,25 +64,29 @@ const PROVIDERS = [
     body: 'Set up, licensed, and migrated directly, with Outlook, OneDrive, and Teams on your own domain.',
   },
   {
-    title: 'Any Other Provider',
+    title: 'Any other provider',
     body: 'GoDaddy, Yahoo, an old host’s mail server, or whatever the last person set up. It moves the same way.',
   },
   {
-    title: 'Nothing Set Up Yet',
+    title: 'Nothing set up yet',
     body: 'A clean set of mailboxes on the domain, with the free account left running until you are ready.',
   },
 ]
 
-const TERMS = [
+const SECTIONS = [{ id: 'providers', title: 'Where your email lives now', items: PROVIDERS }]
+
+const QUESTIONS = [
   {
-    title: 'How Long It Takes',
-    body: 'Set up before the site goes live, with the move run on a date you pick so nothing lands in a mailbox nobody is watching.',
+    q: 'How long does it take?',
+    a: 'Set up before the site goes live, with the move run on a date you pick so nothing lands in a mailbox nobody is watching.',
   },
   {
-    title: 'What It Costs to Run',
-    body: 'Setup and the move are part of the build. After that the only cost beyond the monthly is what the provider charges per mailbox, and the provider bills you for it.',
+    q: 'What does it cost to run?',
+    a: 'Setup and the move are part of the build. After that the only cost beyond the monthly is what the provider charges per mailbox, and the provider bills you for it.',
   },
 ]
+
+const RELATED = ['new-website', 'care', 'online-tools']
 
 /**
  * Business email on its own page. It is real work with its own decisions, and
@@ -114,55 +119,15 @@ export default function BusinessEmail() {
           },
         ]}
       />
-      <PageHero
-        eyebrow="Company Email"
+      <ServiceLanding
         title="Mail that reads as the business."
-        description="An address at your own domain instead of yourbusiness@gmail.com. Mailboxes, forwarding, aliases, and the move off whatever runs it today."
-      />
-
-      <ServiceSection
-        id="covers"
-        ground="paper"
-        eyebrow="What It Covers"
-        title="What you get."
-        lede="Set up, handed over working, and left in your name."
-      >
-        <FactMesh items={COVERS} ground="paper" columns={{ base: 1, sm: 2, lg: 3 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="providers"
-        ground="band"
-        eyebrow="Providers"
-        title="Where your email lives now."
-        lede="Whatever the answer is, I handle the move the same way."
-      >
-        <FactMesh items={PROVIDERS} ground="band" columns={{ base: 1, sm: 2, lg: 4 }} />
-      </ServiceSection>
-
-      <ServiceSection
-        id="terms"
-        ground="band"
-        eyebrow="Time and Cost"
-        title="How long it takes, and what it runs."
-      >
-        <FactMesh items={TERMS} ground="band" columns={{ base: 1, sm: 2 }} />
-        <div className="mt-8">
-          <SectionLink to="/contact" label="Ask What Yours Would Run" ground="band" />
-        </div>
-      </ServiceSection>
-
-      <MoreServices pages={otherServices(SLUG)} />
-
-      <CtaBanner
-        eyebrow="Let’s Talk"
-        heading="Get the address"
-        accentText="set up."
-        description="I set up company email alongside the site. Tell me what the business runs on now and I will handle the move."
-        primaryLabel="Start a Project"
-        primaryTo="/start"
-        secondaryLabel="Ask a Question"
-        secondaryTo="/contact"
+        lead="An address at your own domain instead of yourbusiness@gmail.com, with mailboxes, forwarding, aliases, and the move off whatever runs it today."
+        facts={FACTS}
+        covers={COVERS}
+        sections={SECTIONS}
+        questions={QUESTIONS}
+        related={relatedServices(SLUG, RELATED)}
+        cta="Get the address set up."
       />
     </div>
   )
