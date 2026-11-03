@@ -117,28 +117,23 @@
       "permanent": true
     },
     {
-      "source": "/console/calls",
-      "destination": "/console/staff",
-      "permanent": true
-    },
-    {
       "source": "/staff",
-      "destination": "/console/staff",
+      "destination": "/console/calls",
       "permanent": true
     },
     {
       "source": "/staff/calls",
-      "destination": "/console/staff",
+      "destination": "/console/calls",
       "permanent": true
     },
     {
       "source": "/staff/management",
-      "destination": "/console/staff?view=management",
+      "destination": "/console/calls",
       "permanent": true
     },
     {
       "source": "/staff/resources",
-      "destination": "/console/staff?view=resources",
+      "destination": "/console/calls",
       "permanent": true
     },
     {
@@ -148,12 +143,67 @@
     },
     {
       "source": "/console/places",
-      "destination": "/console/visitors",
+      "destination": "/console",
       "permanent": true
     },
     {
       "source": "/console/tech",
-      "destination": "/console/visitors",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/staff",
+      "destination": "/console/calls",
+      "permanent": true
+    },
+    {
+      "source": "/console/outreach",
+      "destination": "/console/inbox",
+      "permanent": true
+    },
+    {
+      "source": "/console/leads",
+      "destination": "/console/inbox",
+      "permanent": true
+    },
+    {
+      "source": "/console/builds",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/onboarding",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/project",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/live",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/sites",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/pages",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/sources",
+      "destination": "/console",
+      "permanent": true
+    },
+    {
+      "source": "/console/visitors",
+      "destination": "/console",
       "permanent": true
     },
     {
@@ -243,27 +293,27 @@
     },
     {
       "source": "/onboarding",
-      "destination": "/console/project",
+      "destination": "/console",
       "permanent": true
     },
     {
       "source": "/onboarding/intake-questionnaire",
-      "destination": "/console/project",
+      "destination": "/console",
       "permanent": true
     },
     {
       "source": "/onboarding/process-and-timeline",
-      "destination": "/console/project",
+      "destination": "/console",
       "permanent": true
     },
     {
       "source": "/onboarding/client-portal",
-      "destination": "/console/project",
+      "destination": "/console",
       "permanent": true
     },
     {
       "source": "/onboarding/communication-and-support",
-      "destination": "/console/project",
+      "destination": "/console",
       "permanent": true
     },
     {

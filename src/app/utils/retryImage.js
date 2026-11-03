@@ -51,7 +51,7 @@
 // `lazyWithRetry` arrived at by measuring, and there is no reason a picture
 // meets a different network than a script does.
 //
-// Exported, because the capture frames in `DevicePreview` climb a ladder of
+// Exported, because the capture frames climb a ladder of
 // their own - they have a screenshot service past the end of theirs and a count
 // shared across the page - and a second set of numbers is a second answer to a
 // question that has already been measured. Theirs were 350ms then 700ms, chosen

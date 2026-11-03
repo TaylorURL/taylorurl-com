@@ -29,10 +29,10 @@ const HERE = dirname(fileURLToPath(import.meta.url))
 const SCANNED = [
   'src/app/views/console',
   'src/app/views/console/shell',
-  'src/app/views/console/intake',
   'src/app/views/console/pages/health',
   'src/app/views/console/pages/traffic',
-  'src/app/views/console/pages/email',
+  'src/app/views/console/pages/inbox',
+  'src/app/views/console/pages/calls',
   'src/app/views/console/pages/studio',
   'src/app/views/status',
 ]

@@ -866,13 +866,11 @@ check(
 // rejection lands on the way back, once everything on screen says the reader
 // never went anywhere.
 //
-// The call desk is where this concentrates, because it is the one feed on the
-// site that deliberately keeps working while the tab is hidden -- a caller who
-// tabs away to look up an address is still on the phone, so the console goes on
-// saying it holds the number. Every other feed stops when the tab does. That is
-// why one endpoint out of all of them kept being filed as unreachable while it
-// answered every request actually put to it: #455, #457 and #553 are all this.
-const DESK = '/api/calls-desk'
+// The old call desk is where this concentrated, because it kept polling while
+// the tab was hidden, and #455, #457 and #553 were all this. Any request that
+// can be in flight when the page goes away is the same case, so the endpoint
+// named here is just one the console asks.
+const DESK = '/api/calls-admin'
 
 // First the direction that matters most, and the reason none of the rest may
 // be written as a mute. A request asked for on screen, answered on screen and
@@ -885,7 +883,7 @@ check(
     'reporter has gone quiet on the failures somebody is actually sitting in front of'
 )
 check(
-  /Load failed fetching \/api\/calls-desk/.test((watched.posted[0] || {}).message || ''),
+  /Load failed fetching \/api\/calls-admin/.test((watched.posted[0] || {}).message || ''),
   'a failed request was filed without saying what failed or where, which is the whole content ' +
     'of a network report'
 )

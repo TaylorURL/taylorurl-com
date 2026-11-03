@@ -25,8 +25,8 @@
  * the wrong secret should find out on its first call rather than on the day
  * somebody notices the wrong logo.
  *
- * The ledger row is written before anything reaches the transport, the way
- * `api/newsletter-send.js` claims a recipient. That is what makes a retry of a
+ * The ledger row is written before anything reaches the transport. That is
+ * what makes a retry of a
  * post whose answer was lost send nothing a second time, which matters because
  * the callers are crons: a sweep that cannot tell whether its notification
  * landed will post it again, and it should.

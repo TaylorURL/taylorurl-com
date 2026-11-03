@@ -20,6 +20,7 @@ import {
   ViewNav,
 } from '../../ui'
 import { useView } from '../../lib/views'
+import { useConsole } from '../../lib/context'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL, QUIET } from '../../lib/tokens'
 import { ZONE } from '@lib/time/zone.js'
 
@@ -28,8 +29,8 @@ import { ZONE } from '@lib/time/zone.js'
  *
  * Every other section answers a question about a site. This one answers
  * questions about the person reading them: what they are called, what they sign
- * in with, what stands between a stolen password and their figures, which
- * palette the site draws in, and how to leave.
+ * in with, what stands between a stolen password and their figures, and how to
+ * leave.
  *
  * Each view lays its cards out across the room rather than down it, and the
  * account's own facts stand level with the forms that change them rather than
@@ -181,6 +182,98 @@ const SETTINGS_VIEWS = [
   { key: 'close', label: 'Close Account' },
 ]
 
+// The studio's own view, ahead of closing the account.
+const ADMIN_VIEWS = [
+  ...SETTINGS_VIEWS.slice(0, 3),
+  { key: 'sending', label: 'Email Sending' },
+  SETTINGS_VIEWS[3],
+]
+
+/** The two cold email pipelines, each with its own switch. */
+const SENDING = [
+  { key: 'cold', label: 'Cold Emails' },
+  { key: 'newBusiness', label: 'New Business Emails' },
+]
+
+/**
+ * Whether cold email goes out at all. Each switch is read by its send job
+ * before every run, so turning one off stops the next run.
+ */
+function SendingPanel({ token }) {
+  const toast = useToast()
+  const [state, setState] = useState(null)
+  const [saving, setSaving] = useState(null)
+
+  useEffect(() => {
+    if (!token) return undefined
+    let live = true
+    fetch('/api/outreach-admin', { headers: { Authorization: `Bearer ${token}` } })
+      .then(async response => {
+        const payload = await response.json().catch(() => ({}))
+        if (!live) return
+        if (response.ok) setState(payload)
+        else
+          toast(
+            faultFromResponse(response, payload, 'The sending switches could not be read.'),
+            'error'
+          )
+      })
+      .catch(
+        () => live && toast('The outreach service did not answer. Try again shortly.', 'error')
+      )
+    return () => {
+      live = false
+    }
+  }, [token, toast])
+
+  const flip = useCallback(
+    async key => {
+      if (!token || !state) return
+      setSaving(key)
+      try {
+        const response = await fetch('/api/outreach-admin', {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [key]: !state[key] }),
+        })
+        const payload = await response.json().catch(() => ({}))
+        if (response.ok) setState(payload)
+        else toast(faultFromResponse(response, payload, 'That switch was not saved.'), 'error')
+      } catch {
+        toast('The outreach service did not answer. Try again shortly.', 'error')
+      } finally {
+        setSaving(null)
+      }
+    },
+    [state, toast, token]
+  )
+
+  return (
+    <Panel title="Email Sending" area="sending">
+      <PanelBody className="flex flex-col gap-1 py-2">
+        {SENDING.map(({ key, label }) => (
+          <div key={key} className="flex items-center justify-between gap-4 px-5 py-2.5">
+            <span className="text-[13px] text-ink-paper">{label}</span>
+            {state ? (
+              <button
+                type="button"
+                role="switch"
+                aria-checked={state[key] === true}
+                aria-label={label}
+                className="console-toggle"
+                disabled={saving !== null}
+                onClick={() => flip(key)}
+              />
+            ) : (
+              <SkeletonBar className="w-8" />
+            )}
+          </div>
+        ))}
+      </PanelBody>
+    </Panel>
+  )
+}
+
 export default function SettingsPage() {
   const { session, email, userId, signOut, signOutEverywhere } = useSession()
   const mfa = useMfa({ userId })
@@ -312,19 +405,19 @@ export default function SettingsPage() {
   }, [navigate, session, signOut, toast])
 
   const armed = typedAddress.trim().toLowerCase() === (email ?? '').toLowerCase() && Boolean(email)
-  const [view, go] = useView(SETTINGS_VIEWS)
+  const { role } = useConsole()
+  const views = role === 'admin' ? ADMIN_VIEWS : SETTINGS_VIEWS
+  const [view, go] = useView(views)
 
   return (
     <ConsolePage areas={['nav', 'board']} rows="auto minmax(0,1fr)">
       <Area area="nav">
-        <ViewNav views={SETTINGS_VIEWS} current={view} onPick={go} label="Account views" />
+        <ViewNav views={views} current={view} onPick={go} label="Account views" />
       </Area>
 
       {view === 'profile' ? (
-        /* The palette control is three named states in a row, which is wider
-           than a third of the room at the narrowest desk, so the name and the
-           palette stand one over the other and the facts take the half beside
-           them. */
+        /* The name and the account's facts, side by side, so a fact is still
+           on screen while the field beside it is being filled in. */
         <Board area="board" areas={['profile account']} cols={HALVES} rows={ROW}>
           <Panel title="Profile" aside="The name shown on this account" area="profile">
             <PanelBody className={BODY}>
@@ -656,6 +749,12 @@ export default function SettingsPage() {
               </PanelFoot>
             )}
           </Panel>
+        </Board>
+      ) : null}
+
+      {view === 'sending' ? (
+        <Board area="board" areas={['sending']} cols={HALVES} rows={ROW}>
+          <SendingPanel token={session?.access_token ?? null} />
         </Board>
       ) : null}
 

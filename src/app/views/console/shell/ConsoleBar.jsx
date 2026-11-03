@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, ChevronDown, Keyboard, LogIn, Menu, Search, X } from 'lucide-react'
+import { Check, ChevronDown, LogIn, Menu, X } from 'lucide-react'
 import { useDismiss } from '@hooks/chrome/useDismiss'
 import { ConsoleScope } from './ConsoleScope'
-import { useModifierLabel } from '../lib/useConsoleShortcuts'
 import { GROUP_LABELS } from '../lib/sections'
 
 /**
@@ -139,15 +138,12 @@ export function ConsoleBar({
   traffic,
   publicOnly,
   reading,
-  onSearch,
-  onShortcuts,
   signInTo,
 }) {
   // A section whose group repeats its own name gets no crumb. "Traffic / Traffic"
   // is a breadcrumb that has told the reader nothing twice.
   const named = GROUP_LABELS[group] || group
   const crumb = named && named !== title ? named : null
-  const modifier = useModifierLabel()
 
   return (
     <header className="console-topbar" data-reading={reading ? 'true' : 'false'}>
@@ -207,50 +203,15 @@ export function ConsoleBar({
           </div>
         </div>
 
-        {/* The way out of here. */}
-        <div className="console-tools">
-          {/* The field belongs to the bar rather than to an account, so a
-              signed-out reader gets it too: the sections they cannot open yet
-              are still worth finding, and finding one is how they learn the
-              console has it. It states its own key, which is the only way a
-              modified shortcut is ever discovered. */}
-          <button
-            type="button"
-            className="console-search-open"
-            onClick={onSearch}
-            aria-haspopup="dialog"
-            aria-label={`Search sections and sites. ${modifier}K`}
-          >
-            <Search className="h-4 w-4 flex-shrink-0" strokeWidth={2} aria-hidden="true" />
-            <span>Search</span>
-            <kbd aria-hidden="true">{modifier}K</kbd>
-          </button>
-
-          {publicOnly && (
-            <>
-              <Link to="/login" state={{ from: signInTo }} className="console-signin">
-                <LogIn className="h-4 w-4 flex-shrink-0" strokeWidth={2} aria-hidden="true" />
-                <span>Sign In</span>
-              </Link>
-            </>
-          )}
-
-          <span className="console-bar-sep console-bar-sep-tools" aria-hidden="true" />
-
-          {/* The keyboard is three keys, two of them modified, so a control
-              that says so is the only thing that makes them findable. It is
-              also the least of the bar's business, which is why it sits past
-              the rule, after everything the reader came for. */}
-          <button
-            type="button"
-            className="console-icon-button console-keyboard"
-            onClick={onShortcuts}
-            aria-label="Keyboard Shortcuts"
-            title="Keyboard shortcuts (?)"
-          >
-            <Keyboard className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-          </button>
-        </div>
+        {/* The way in, for a reader who is not signed in yet. */}
+        {publicOnly && (
+          <div className="console-tools">
+            <Link to="/login" state={{ from: signInTo }} className="console-signin">
+              <LogIn className="h-4 w-4 flex-shrink-0" strokeWidth={2} aria-hidden="true" />
+              <span>Sign In</span>
+            </Link>
+          </div>
+        )}
       </div>
     </header>
   )

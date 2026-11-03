@@ -368,7 +368,7 @@ export function purchaseNotice(purchase) {
     label: 'Purchase',
     subject: `Website bought by ${purchase.business || purchase.email}`,
     rows,
-    link: { label: 'Open Builds', url: `${SITE_URL}/console/builds` },
+    link: { label: 'Open Payments', url: `${SITE_URL}/console/payments` },
     replyTo: purchase.email,
   })
 }

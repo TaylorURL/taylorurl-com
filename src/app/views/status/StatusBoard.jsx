@@ -105,10 +105,6 @@ function formatWhen(value) {
 }
 
 function dayTone(day) {
-  // A day before this site came under watch is grey. It is the one tone in the
-  // strip that is not a reading: three colours for what the monitor saw, and a
-  // fourth for the days it was not there for.
-  if (day.measured === false) return 'bg-[color:var(--wash-paper-strong)]'
   const uptime = day.uptime
   if (uptime >= 99.9) return 'bg-[color:var(--good-fill)]'
   if (uptime >= 95) return 'bg-[color:var(--warn-fill)]'
@@ -133,27 +129,18 @@ function windowSpan(windowDays) {
 }
 
 /**
- * How many days the strip draws, which is not the window the figures cover.
- * Ninety marks fill a row, which is what a history is supposed to look like.
+ * How many days the strip draws at most, which is not the window the figures
+ * cover.
  */
 const STRIP_DAYS = 90
 
 /**
- * The strip's days: the feed's, padded at the front to `STRIP_DAYS` with days
- * marked unmeasured, which is what they are, and cut from the front when there
- * are more, so every row on the board is the same run of dates.
+ * The strip's days: only the ones the monitor measured, the most recent
+ * `STRIP_DAYS` of them. A site watched for a month draws a month of marks, at
+ * the same size and spacing, rather than a row of blanks before it.
  */
 function stripDays(days) {
-  if (!days?.length) return days
-  if (days.length >= STRIP_DAYS) return days.slice(-STRIP_DAYS)
-  const first = new Date(`${days[0].date}T00:00:00Z`)
-  const pad = []
-  for (let back = STRIP_DAYS - days.length; back > 0; back -= 1) {
-    const day = new Date(first)
-    day.setUTCDate(day.getUTCDate() - back)
-    pad.push({ date: day.toISOString().slice(0, 10), uptime: null, measured: false })
-  }
-  return pad.concat(days)
+  return (days || []).filter(day => day.measured !== false).slice(-STRIP_DAYS)
 }
 
 /**
@@ -162,8 +149,8 @@ function stripDays(days) {
  * so what survives a phone is the recent end: today is the day a reader wants.
  */
 function UptimeStrip({ days, className = '' }) {
-  if (!days?.length) return null
   const shown = stripDays(days)
+  if (!shown.length) return null
   return (
     <div
       className={`flex h-4 w-fit max-w-full items-stretch justify-end gap-[2px] overflow-hidden ${className}`}

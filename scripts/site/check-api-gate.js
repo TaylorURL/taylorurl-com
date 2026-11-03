@@ -18,9 +18,9 @@
  *
  * The allowlist is asserted rather than merely present, because the expensive
  * mistakes are additions to it. `notify` is the relay every client deployment
- * posts through with that URL compiled in; the outreach endpoints and the
- * newsletter are a warmed sending domain that must have exactly one sender; the
- * payment link and the webhook take money.
+ * posts through with that URL compiled in; the outreach endpoints are a warmed
+ * sending domain that must have exactly one sender; the payment link and the
+ * webhook take money.
  *
  *   npm run check:api-gate
  */
@@ -72,11 +72,7 @@ for (const path of files) {
 // endpoint is ever added to an allowlist without anyone thinking about the cron
 // attached to it. Two outreach pipelines sending from one warmed domain is not a
 // failure that announces itself; it is a reputation dropping over weeks.
-const SCHEDULED = [
-  'lib/outreach/runtime.js',
-  'lib/new-business/runtime.js',
-  'api/newsletter-due.js',
-]
+const SCHEDULED = ['lib/outreach/runtime.js', 'lib/new-business/runtime.js']
 
 for (const name of SCHEDULED) {
   const source = readFileSync(join(ROOT, name), 'utf8')
@@ -101,7 +97,7 @@ for (const key of SITE_KEYS) {
 
   // Each of these is a decision with a cost behind it, so changing one should
   // mean changing this line too rather than sliding through.
-  for (const endpoint of ['notify', 'stripe-webhook', 'checkout-link', 'newsletter-send']) {
+  for (const endpoint of ['notify', 'stripe-webhook', 'checkout-link']) {
     check(
       !allowed.includes(endpoint),
       `${key} claims "${endpoint}". That endpoint takes money, sends mail as the studio, or is the ` +
@@ -163,15 +159,12 @@ const REFUSED_THERE = [
   '/api/notify',
   '/api/checkout-link',
   '/api/stripe-webhook',
-  '/api/newsletter-send',
-  '/api/newsletter-due',
   '/api/outreach/send',
   '/api/outreach/source',
   '/api/console-admin',
   '/api/payments-admin',
-  // The call desk's audit email, which leaves from the studio's warmed sending
-  // domain and writes the studio's own prospect rows.
-  '/api/calls-audit-email',
+  // The Call List, which writes the studio's own prospect rows and calls.
+  '/api/calls-admin',
   '/api/speed-check',
   '/api/site-audit',
   // The console's summary proxy. It reads as the collector and is not: the

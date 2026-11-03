@@ -2,7 +2,6 @@ import { ChevronsLeft, Lock } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { retryable } from '@utils/retryImage'
 import { GROUPS, GROUP_LABELS, sectionHref } from '../lib/sections'
-import { useModifierLabel } from '../lib/useConsoleShortcuts'
 import { ConsoleAccount } from './ConsoleAccount'
 
 /**
@@ -81,7 +80,6 @@ export function ConsoleSidebar({
   preview,
   onPreview,
 }) {
-  const modifier = useModifierLabel()
   return (
     <nav
       id="console-sections"
@@ -173,7 +171,6 @@ export function ConsoleSidebar({
         >
           <ChevronsLeft className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
           {!collapsed && <span>Narrow</span>}
-          {!collapsed && <kbd aria-hidden="true">{modifier}B</kbd>}
         </button>
       </div>
     </nav>

@@ -47,18 +47,12 @@ export const CELL_TIGHT = 'px-3 py-3 text-[14px]'
 export const TH_END = `${MONO_LABEL} text-paper-faint whitespace-nowrap pl-1 pr-3 py-2.5 text-right`
 export const CELL_END = 'pl-1 pr-3 py-3 text-[14px] text-right'
 
-// Every chart reserves its box before recharts measures the container, so a
-// panel does not grow under the reader when the series arrives. The heights sit
-// beside the other measures so a chart and the placeholder standing in for it
+// The chart reserves its box before recharts measures the container, so a
+// panel does not grow under the reader when the series arrives. The height sits
+// beside the other measures so the chart and the placeholder standing in for it
 // read the same number.
 export const CHART_HEIGHT = {
   traffic: 220,
-  hour: 140,
-  donut: 124,
-  spark: 26,
-  // A sparkline given a whole card rather than a fifth of a table row. At the
-  // row's own height a full-width series flattens into a rule.
-  trend: 108,
 }
 
 // Row heights, measured from the rows these placeholders stand in for. The
@@ -71,8 +65,6 @@ export const CHART_HEIGHT = {
 // first paint short and everything under it moves down as the feed lands - the
 // one thing the placeholder exists to prevent.
 export const ROW_HEIGHT = {
-  sites: '46px',
-  pages: '55px',
   plain: '40.5px',
   // First-visit fallbacks for the status board, measured at 1280px: after that
   // its placeholder is the size of the rows the reader last saw. The open-issue

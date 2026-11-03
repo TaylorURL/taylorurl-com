@@ -808,11 +808,7 @@ check(
 //
 // A frame that imports the ladder cannot drift; one that writes its own can,
 // which is why this is checked rather than left to whoever edits next.
-for (const frame of [
-  'components/mockups/DevicePreview.jsx',
-  'components/mockups/PortfolioPreview.jsx',
-  'views/home/CaptureShot.jsx',
-]) {
+for (const frame of ['views/home/CaptureShot.jsx']) {
   const source = readFileSync(path.join(APP, frame), 'utf8')
   check(
     /useCaptureLadder/.test(source),
@@ -823,17 +819,6 @@ for (const frame of [
     `${frame} reaches for the screenshot service itself, which is the end of a ladder it is no longer climbing`
   )
 }
-
-// The end of the ladder is something drawn. The card frame had nothing past the
-// screenshot service: a frame that spent every rung and then met a service that
-// did not answer left the reader the browser's broken-image mark over a hole in
-// the middle of the proof, for the life of the page. A third party being slow
-// is not a reason to leave one.
-const CARD = readFileSync(path.join(APP, 'components/mockups/PortfolioPreview.jsx'), 'utf8')
-check(
-  /CapturePlate/.test(CARD) && /if \(!source\) return/.test(CARD),
-  'the card frame draws nothing once its ladder is spent, so a capture no address can answer for is a permanent hole in the page rather than a frame that stands on its own'
-)
 
 // The home page's frame is the whole of what its shell holds - the browser
 // chrome and the phone body around it are the band's, and behind the capture
@@ -1347,7 +1332,7 @@ function sheetAttempts({ superseded = false, reloadedAt = null } = {}) {
       },
     },
     location: {
-      pathname: '/console/staff',
+      pathname: '/console/calls',
       reload: () => {
         reloads += 1
       },
@@ -1492,7 +1477,7 @@ check(
   'a sheet a deploy deleted files a fault against an address no build still has, on top of the reload that recovers the reader'
 )
 check(
-  moved.probed.length === 1 && /^\/console\/staff\?build=/.test(moved.probed[0]),
+  moved.probed.length === 1 && /^\/console\/calls\?build=/.test(moved.probed[0]),
   'the build probe asks at the address that just failed rather than the document, or asks at one the browser already has an answer for'
 )
 check(

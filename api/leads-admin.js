@@ -1,65 +1,74 @@
 /**
- * Everybody who has raised a hand at this business, whichever door they came
- * through, what is owed to each of them, and the way to answer them.
+ * Everybody who has written to the studio, whichever door they came through,
+ * what was said each way, and the way to answer them. The console's Inbox is
+ * drawn from this and nothing else.
  *
- * This used to read one table and show one door's worth. The configurator
- * wrote `start_leads` and the section drew it, and the other seven doors -
- * the contact form, the tools enquiry, the speed check, the paid ads, the
- * calls, the outreach replies, the payment page - each kept their own record
- * or none, so the console could account for the smallest part of the pipeline
- * and the rest was worked out of an inbox. What that cost is not theoretical:
- * a consultant with a payment link, an owner asking for terms and four people
- * who answered an ad all sat for days while the section built to show them
- * showed nothing.
+ * It reads the spine, where every door writes: a reply to a cold letter, a
+ * new-business letter or a preview letter (the inbox watcher files all three
+ * as 'outreach-reply', matched through the prospect each letter went to), and
+ * an enquiry from the site or the ads. Automated replies - out-of-office
+ * notes, "we received your email" receipts, help-desk tickets - are read again
+ * here with today's reader and left out, so the list is the people and what
+ * they wrote, and nothing else. Calls are the Call List's, not the Inbox's.
  *
- * So it reads the spine, where every door writes. `start_leads` still holds
- * what the configurator knows about its own leads and is still the record the
- * follow-up job works from; this is the person and the state of them.
+ * Three reads. The list is the rows, newest first, with the first line of the
+ * latest reply beside each one a cold letter produced, and the saved replies
+ * the reply box starts from. One lead's conversation is everything they wrote
+ * and everything sent to them: the letters and replies the outreach mailbox
+ * holds under their prospect, the new-business letter where they had one, and
+ * every message sent to them from here.
  *
- * The writes are three. The mark records what the studio has done about a
- * lead - who is carrying it, when it is next owed something, whether somebody
- * has answered it or ruled it out. The send answers one lead by mail, from a
- * draft the console keeps, and records the message under them. The drafts
- * themselves are the third: the section's own Settings view edits them here.
+ * Two writes. The mark records what the studio has done about a lead -
+ * answered it, or ruled it out - and the send answers one lead by mail and
+ * records the message under them.
  *
  * A send is one lead at a time, always. There is no verb here that takes a
  * list, because a hundred addresses beside one button is a mistake waiting
  * for a slow afternoon; the console reaches this with a single id, from
  * inside that lead's own record, with the whole message on screen.
- *
- * The figures are counted rather than measured off the rows. A console
- * answering in a couple of seconds cannot carry every lead once there are
- * thousands, so the list is capped and says so, while each total is an exact
- * count that never travels through the cap.
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { readBody } from '../lib/http/body.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
-import { countOf, tableMissing } from '../lib/db/rows.js'
+import { tableMissing } from '../lib/db/rows.js'
 import { uuid } from '../lib/db/fields.js'
-import { SPINE } from '../lib/leads/spine.js'
+import { SOURCES, SPINE } from '../lib/leads/spine.js'
 import { deliverable, suppressed, usableEmail } from '../lib/leads/record.js'
 import { TEMPLATE_LIMITS, unfilled } from '../lib/leads/templates.js'
 import { leadLetter } from '../lib/leads/letter.js'
+import { newText } from '../lib/outreach/sending/replies.js'
+import { isAutomated } from '../lib/outreach/daily-report.js'
 import { INBOX, sendNotice } from '../lib/mail/notice.js'
 import { BIO_NAME } from '../lib/mail/bio.js'
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
 
-// What one answer carries. Newest first, so the cap takes the oldest leads
-// rather than the ones somebody opened the section to read.
+// What one answer carries. Newest first, so the cap takes the leads nobody
+// has heard from in longest rather than the ones somebody opened the Inbox to
+// read.
 const LIST_ROWS = 500
 
-/** The messages one lead's record carries, newest first. */
-const MESSAGE_ROWS = 50
+/** The messages one conversation carries, each way. */
+const THREAD_ROWS = 100
 
-/** Where the drafts and the record of sends live. */
+/** Prospects asked about in one request, so the address stays a sane length. */
+const PROSPECT_BATCH = 100
+
+/** How much of a reply the list carries beside its row. */
+const SAID_LIMIT = 1200
+
+/** The line a phone's mail app adds under whatever was typed. */
+const SIGN_OFF =
+  /^(?:get outlook for (?:ios|android)|sent from my (?:iphone|ipad|android|phone|galaxy))\b.*$/i
+
+/** Where the saved replies and the record of sends live. */
 const TEMPLATES = 'lead_templates'
 const MESSAGES = 'lead_messages'
 
-// The columns the console draws. Named rather than starred so a column added
-// to the table later is a decision to show it rather than a thing that appears.
+// The columns the Inbox draws. Named rather than starred so a column added to
+// the table later is a decision to show it rather than a thing that appears.
+// `trade` is here for the saved replies, which can carry it as a blank.
 const COLUMNS = [
   'id',
   'source',
@@ -72,73 +81,116 @@ const COLUMNS = [
   'website',
   'town',
   'note',
-  'brief',
-  'campaign',
-  'referrer',
-  'path',
-  'step',
   'first_seen',
   'last_seen',
   'contacted_at',
   'replied_at',
-  'enquired_at',
-  'checkout_at',
-  'bought_at',
   'unsubscribed_at',
   'dismissed_at',
-  'dismissed_reason',
-  'owner',
-  'due_at',
 ].join(', ')
 
 /** The marks a reader can put on a lead, and the column each is written in. */
 const MARKS = {
   contacted: 'contacted_at',
-  replied: 'replied_at',
   dismissed: 'dismissed_at',
 }
 
-/**
- * The counts the strip across the top reads.
- *
- * Each is its own head request, which costs one round trip and carries no
- * rows. They run together because they answer for the same instant, and asking
- * them in turn would make the strip six readings of six moments.
- *
- * `waiting` is the figure the section exists for: a lead nobody has answered
- * and nobody has ruled out. It is asked as two counts rather than one because
- * a lead is waiting either because nothing has been sent to it or because the
- * date somebody set on it has passed, and PostgREST cannot say that in a
- * single filter without an `or` that reads worse than the two counts do.
- */
-async function totals(db) {
-  const of = filter => countOf(filter(db.from(SPINE).select('id', { count: 'exact', head: true })))
-  const open = query =>
-    query.is('dismissed_at', null).is('bought_at', null).is('unsubscribed_at', null)
+/** The prospect a lead's reply was filed under, where it came from one. */
+function prospectOf(lead) {
+  return lead?.source === SOURCES.outreachReply ? uuid(lead.source_ref) : null
+}
 
-  const [all, untouched, overdue, enquired, bought, dismissed] = await Promise.all([
-    of(query => query),
-    of(query => open(query).is('contacted_at', null)),
-    of(query => open(query).not('due_at', 'is', null).lte('due_at', new Date().toISOString())),
-    of(query => query.not('enquired_at', 'is', null)),
-    of(query => query.not('bought_at', 'is', null)),
-    of(query => query.not('dismissed_at', 'is', null)),
-  ])
-
-  return { all, untouched, overdue, waiting: untouched + overdue, enquired, bought, dismissed }
+/** What somebody typed, out of a reply with its quoted copy and sign-off cut. */
+export function ownWords(body) {
+  const text = newText(body)
+    .split('\n')
+    .map(line => line.trimEnd())
+    .filter(line => !SIGN_OFF.test(line.trim()))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+  return text ? text.slice(0, SAID_LIMIT) : null
 }
 
 /**
- * The drafts the composer offers, oldest first so the list holds its order
- * as drafts are edited.
+ * Whether a message is somebody writing rather than a machine answering. The
+ * watcher's own verdict is read first, then the message is read again with
+ * today's reader, since a reply filed before the reader learned a pattern
+ * still carries the verdict it was filed under. An opt-out is a person and
+ * stays in, because it is what they said.
+ */
+function written(row) {
+  if (row.direction !== 'inbound') return true
+  return !isAutomated({ intent: row.intent, subject: row.subject, body: row.body_text })
+}
+
+/**
+ * The latest thing each prospect wrote, by prospect, for the list's rows, and
+ * which prospects the mailbox holds any reply from at all.
+ *
+ * The spine keeps a short excerpt of the first reply with its whitespace
+ * folded, which is the quoted letter as often as it is the answer. The row
+ * wants the answer: the newest reply a person wrote, cut where the quoted copy
+ * begins. A prospect heard from with no entry in `said` only ever had a
+ * machine answer for it.
+ */
+async function lastWords(db, leads) {
+  const prospects = [...new Set(leads.map(prospectOf).filter(Boolean))]
+  const said = new Map()
+  const heard = new Set()
+  for (let at = 0; at < prospects.length; at += PROSPECT_BATCH) {
+    const { data, error } = await db
+      .from('outreach_messages')
+      .select('prospect_id, direction, intent, subject, body_text, sent_at, created_at')
+      .eq('direction', 'inbound')
+      .eq('status', 'received')
+      .in('prospect_id', prospects.slice(at, at + PROSPECT_BATCH))
+      .order('created_at', { ascending: false })
+    if (error) {
+      if (tableMissing(error)) return { said, heard }
+      throw error
+    }
+    for (const row of data || []) {
+      heard.add(row.prospect_id)
+      if (said.has(row.prospect_id) || !written(row)) continue
+      said.set(row.prospect_id, {
+        at: row.sent_at || row.created_at,
+        text: ownWords(row.body_text),
+      })
+    }
+  }
+  return { said, heard }
+}
+
+/**
+ * Whether a lead belongs in the Inbox: somebody who wrote to the studio, in
+ * their own words.
+ *
+ * A reply whose mail the record holds is in when a person wrote any of it, and
+ * out when every message was a machine's. A reply filed before the mailbox kept
+ * its copy is judged on the excerpt on the row, which is all there is. Calls
+ * are logged by whoever made them and live on the Call List.
+ */
+export function inInbox(lead, { said, heard }) {
+  if (lead.source === SOURCES.call) return false
+  if (lead.source !== SOURCES.outreachReply) return true
+  const prospect = prospectOf(lead)
+  if (said.has(prospect)) return true
+  if (heard.has(prospect)) return false
+  return Boolean(lead.note) && !isAutomated({ intent: null, subject: null, body: lead.note })
+}
+
+/**
+ * The saved replies the reply box offers, oldest first so the list holds its
+ * order.
  *
  * A deployment reading ahead of the table's own migration answers with none
- * rather than failing the whole section: the leads are still the point.
+ * rather than failing the whole Inbox: the people are still the point.
  */
 async function readTemplates(db) {
   const { data, error } = await db
     .from(TEMPLATES)
-    .select('id, name, subject, body, updated_at')
+    .select('id, name, subject, body')
     .order('created_at', { ascending: true })
   if (error) {
     if (tableMissing(error)) return []
@@ -147,143 +199,217 @@ async function readTemplates(db) {
   return data || []
 }
 
-/**
- * Who a lead can be handed to: every account holding the admin role, by name.
- *
- * The owner column keeps the account id, so the console needs the names once
- * per read rather than a join on every row.
- */
-async function readTeam(db) {
-  const { data, error } = await db
-    .from('profiles')
-    .select('id, full_name')
-    .eq('role', 'admin')
-    .order('full_name', { ascending: true })
-  if (error) throw error
-  return (data || []).map(row => ({ id: row.id, name: row.full_name || 'Unnamed' }))
-}
-
 /** An empty record, for a deployment reading ahead of its own migration. */
-const NOTHING = {
-  leads: [],
-  totals: { all: 0, untouched: 0, overdue: 0, waiting: 0, enquired: 0, bought: 0, dismissed: 0 },
-  complete: true,
-  templates: [],
-  team: [],
-}
+const NOTHING = { leads: [], complete: true, templates: [] }
 
-/** Reads the whole section: the rows, the figures, the drafts, the team. */
+/** Reads the Inbox: the rows, each with what they last said, and the saved replies. */
 async function read(db, response) {
   const { data, error } = await db
     .from(SPINE)
     .select(COLUMNS)
-    .order('first_seen', { ascending: false })
+    .order('last_seen', { ascending: false, nullsFirst: false })
     .limit(LIST_ROWS)
 
   if (error) {
-    // A section reaching a table its migration has not created yet answers as
-    // an empty record rather than as a failure, so the console draws the
-    // section rather than a refusal nobody can act on.
+    // A table its migration has not created yet answers as an empty record
+    // rather than as a failure, so the console draws the Inbox rather than a
+    // refusal nobody can act on.
     if (tableMissing(error)) return response.status(200).json(NOTHING)
     throw error
   }
 
-  const [counted, templates, team] = await Promise.all([
-    totals(db),
-    readTemplates(db),
-    readTeam(db),
-  ])
+  const rows = data || []
+  const [words, templates] = await Promise.all([lastWords(db, rows), readTemplates(db)])
+  const leads = rows.filter(lead => inInbox(lead, words))
 
   response.setHeader('Cache-Control', 'private, no-store')
   return response.status(200).json({
-    leads: data || [],
-    totals: counted,
-    complete: (data || []).length < LIST_ROWS,
-    cap: LIST_ROWS,
+    leads: leads.map(lead => ({ ...lead, said: words.said.get(prospectOf(lead)) ?? null })),
+    complete: rows.length < LIST_ROWS,
     templates,
-    team,
+  })
+}
+
+/** One message sent from here, as a line in the conversation. */
+function sentEntry(row) {
+  return {
+    id: `sent-${row.id}`,
+    from: 'us',
+    kind: 'sent',
+    at: row.sent_at,
+    subject: row.subject,
+    body: row.body,
+    by: row.sent_by || null,
+  }
+}
+
+/**
+ * What the outreach mailbox holds under one prospect: every letter that went
+ * to them and every reply a person wrote back, the reply cut to what they
+ * typed. A letter that never left - drafted, refused - is not a letter they
+ * read, and a bounce is a mail server talking.
+ */
+async function outreachThread(db, prospectId) {
+  const { data, error } = await db
+    .from('outreach_messages')
+    .select('id, direction, intent, subject, body_text, sent_at, created_at')
+    .eq('prospect_id', prospectId)
+    .in('status', ['sent', 'received'])
+    .order('created_at', { ascending: true })
+    .limit(THREAD_ROWS)
+  if (error) {
+    if (tableMissing(error)) return []
+    throw error
+  }
+  return (data || []).filter(written).map(row => {
+    const theirs = row.direction === 'inbound'
+    return {
+      id: `mail-${row.id}`,
+      from: theirs ? 'them' : 'us',
+      kind: 'mail',
+      at: row.sent_at || row.created_at,
+      subject: row.subject,
+      body: theirs ? ownWords(row.body_text) || '' : row.body_text || '',
+    }
   })
 }
 
 /**
- * What has been written to one lead from here, newest first.
- *
- * Read on its own rather than joined onto the list, because the list carries
- * five hundred rows and the messages belong to the one being read.
+ * The new-business letter, where the prospect is a new company's mirror row.
+ * That pipeline records its own letters in its own table and only the replies
+ * land in the outreach mailbox's, so without this the conversation would open
+ * on an answer to a letter it never showed.
  */
-async function readMessages(db, leadId, response) {
-  const { data, error } = await db
-    .from(MESSAGES)
-    .select('id, template_id, sent_to, subject, body, sent_by, sent_at')
-    .eq('lead_id', leadId)
-    .order('sent_at', { ascending: false })
-    .limit(MESSAGE_ROWS)
+async function newBusinessLetters(db, prospectId) {
+  const { data: companies, error } = await db
+    .from('new_business_leads')
+    .select('id')
+    .eq('prospect_id', prospectId)
+    .limit(5)
   if (error) {
-    if (tableMissing(error)) {
-      return response.status(200).json({ messages: [] })
-    }
+    if (tableMissing(error)) return []
     throw error
   }
-  response.setHeader('Cache-Control', 'private, no-store')
-  return response.status(200).json({ messages: data || [] })
+  if (!companies?.length) return []
+
+  const { data, error: letterFault } = await db
+    .from('new_business_messages')
+    .select('id, subject, body_text, sent_at')
+    .in(
+      'lead_id',
+      companies.map(row => row.id)
+    )
+    .eq('status', 'sent')
+    .order('sent_at', { ascending: true })
+    .limit(THREAD_ROWS)
+  if (letterFault) {
+    if (tableMissing(letterFault)) return []
+    throw letterFault
+  }
+  return (data || []).map(row => ({
+    id: `new-business-${row.id}`,
+    from: 'us',
+    kind: 'mail',
+    at: row.sent_at,
+    subject: row.subject,
+    body: row.body_text || '',
+  }))
+}
+
+/** Every message written to one lead from here or through the reply relay. */
+async function sentFromHere(db, leadId) {
+  const { data, error } = await db
+    .from(MESSAGES)
+    .select('id, subject, body, sent_by, sent_at')
+    .eq('lead_id', leadId)
+    .order('sent_at', { ascending: true })
+    .limit(THREAD_ROWS)
+  if (error) {
+    if (tableMissing(error)) return []
+    throw error
+  }
+  return (data || []).map(sentEntry)
 }
 
 /**
- * A date somebody typed, or null where they cleared it.
- *
- * `undefined` and `null` are deliberately different answers here: a body that
- * does not mention the date leaves it alone, and one that sends null clears
- * it. A single 'falsy means clear' reading would have every save that only
- * changed the owner quietly wipe the date beside it.
+ * What an enquiry said, as the door wrote it on the row: the note, or the
+ * configurator's answers where it left a brief instead.
  */
-function dateFrom(value) {
-  if (value === undefined) return undefined
-  if (value === null || value === '') return null
-  const when = new Date(value)
-  return Number.isNaN(when.getTime()) ? undefined : when.toISOString()
+function enquiryEntry(lead) {
+  const brief = Array.isArray(lead.brief)
+    ? lead.brief
+        .filter(row => row?.label && row?.value)
+        .map(row => `${row.label}: ${row.value}`)
+        .join('\n')
+    : ''
+  const body = lead.note || brief
+  if (!body) return []
+  return [
+    {
+      id: `note-${lead.id}`,
+      from: 'them',
+      kind: 'note',
+      at: lead.last_seen || lead.first_seen,
+      subject: null,
+      body,
+    },
+  ]
+}
+
+const at = entry => (entry.at ? new Date(entry.at).getTime() : 0)
+
+/**
+ * One lead's conversation, oldest first: what they wrote and what was sent
+ * back, from every record that holds a part of it.
+ */
+async function readConversation(db, leadId, response) {
+  const { data: lead, error } = await db
+    .from(SPINE)
+    .select('id, source, source_ref, note, brief, first_seen, last_seen')
+    .eq('id', leadId)
+    .maybeSingle()
+  if (error) {
+    if (tableMissing(error)) return response.status(200).json({ conversation: [] })
+    throw error
+  }
+  if (!lead) return response.status(404).json({ error: 'That lead is not in the record.' })
+
+  const prospectId = prospectOf(lead)
+  const [mail, letters, sent] = await Promise.all([
+    prospectId ? outreachThread(db, prospectId) : [],
+    prospectId ? newBusinessLetters(db, prospectId) : [],
+    sentFromHere(db, leadId),
+  ])
+
+  // A reply whose mail the record holds is read from the mail. Where it holds
+  // none - a row written before the mailbox kept its copy - the excerpt on the
+  // row is all there is, and it is better read than missing.
+  const theirs = mail.some(entry => entry.from === 'them') ? [] : enquiryEntry(lead)
+
+  response.setHeader('Cache-Control', 'private, no-store')
+  return response.status(200).json({
+    conversation: [...theirs, ...mail, ...letters, ...sent].sort((a, b) => at(a) - at(b)),
+  })
 }
 
 /**
- * Marks a lead: who is carrying it, when it is next owed something, and
- * whether somebody has answered it or ruled it out.
+ * Marks a lead answered or ruled out, or takes either back.
  *
- * It records what the studio has done about them, which is the half that was
- * missing when every door kept its own record and none of them kept a state.
+ * A mark is sent as the thing that happened and a flag saying whether it did,
+ * so the same field both stamps and clears. Reading it as 'present means true'
+ * would leave a reader no way to undo a misclick.
  */
 async function mark(db, request, response) {
   const body = readBody(request)
   const id = uuid(body.id)
   if (!id) return response.status(400).json({ error: 'Which lead?' })
 
-  const patch = { updated_at: new Date().toISOString() }
+  const column = typeof body.mark === 'string' ? MARKS[body.mark] : null
+  if (!column) return response.status(400).json({ error: 'That is not a mark.' })
 
-  // The owner is an account id or nobody. A value that is not a uuid clears
-  // rather than reaching the column, which would refuse it as a log line.
-  if ('owner' in body) {
-    patch.owner = uuid(body.owner)
-  }
-
-  const due = dateFrom(body.due_at)
-  if (due !== undefined) patch.due_at = due
-
-  // A mark is sent as the thing that happened and a flag saying whether it did,
-  // so the same field both stamps and clears. Reading it as 'present means
-  // true' would leave a reader no way to undo a misclick.
-  if (typeof body.mark === 'string') {
-    const column = MARKS[body.mark]
-    if (!column) return response.status(400).json({ error: 'That is not a mark.' })
-    patch[column] = body.on === false ? null : new Date().toISOString()
-    if (column === 'dismissed_at') {
-      patch.dismissed_reason =
-        body.on === false || typeof body.reason !== 'string'
-          ? null
-          : body.reason.trim().slice(0, 200)
-    }
-  }
-
-  if (Object.keys(patch).length === 1) {
-    return response.status(400).json({ error: 'Nothing to change.' })
-  }
+  const now = new Date().toISOString()
+  const patch = { [column]: body.on === false ? null : now, updated_at: now }
+  if (column === 'dismissed_at' && body.on === false) patch.dismissed_reason = null
 
   const { data, error } = await db.from(SPINE).update(patch).eq('id', id).select(COLUMNS).single()
   if (error) {
@@ -296,61 +422,12 @@ async function mark(db, request, response) {
   return response.status(200).json({ lead: data })
 }
 
-/** A trimmed field for a draft, or null where it is empty or over its room. */
+/** A trimmed field for a message, or null where it is empty or over its room. */
 function draftField(value, limit) {
   if (typeof value !== 'string') return null
   const trimmed = value.replace(/\r\n/g, '\n').trim()
   if (!trimmed || trimmed.length > limit) return null
   return trimmed
-}
-
-/**
- * Keeps one draft: a new one, or the edit of one already held.
- *
- * The limits are answered here in a sentence rather than left to the check
- * constraints, because a constraint refusing is a log line and this is a
- * person typing.
- */
-async function saveTemplate(db, body, response) {
-  const held = body.template || {}
-  const name = draftField(held.name, TEMPLATE_LIMITS.name)
-  const subject = draftField(held.subject, TEMPLATE_LIMITS.subject)
-  const draft = draftField(held.body, TEMPLATE_LIMITS.body)
-  if (!name || !subject || !draft) {
-    return response.status(400).json({
-      error: 'A draft needs a name, a subject and a body, each within its room.',
-    })
-  }
-
-  const id = uuid(held.id)
-  const row = { name, subject, body: draft, updated_at: new Date().toISOString() }
-
-  const query = id ? db.from(TEMPLATES).update(row).eq('id', id) : db.from(TEMPLATES).insert(row)
-  const { data, error } = await query.select('id, name, subject, body, updated_at').single()
-  if (error) {
-    if (tableMissing(error))
-      return response.status(503).json({ error: 'The drafts are not here yet.' })
-    throw error
-  }
-
-  response.setHeader('Cache-Control', 'private, no-store')
-  return response.status(200).json({ template: data })
-}
-
-/** Takes one draft out. The messages it produced keep their words. */
-async function deleteTemplate(db, body, response) {
-  const id = uuid(body.id)
-  if (!id) return response.status(400).json({ error: 'Which draft?' })
-
-  const { error } = await db.from(TEMPLATES).delete().eq('id', id)
-  if (error) {
-    if (tableMissing(error))
-      return response.status(503).json({ error: 'The drafts are not here yet.' })
-    throw error
-  }
-
-  response.setHeader('Cache-Control', 'private, no-store')
-  return response.status(200).json({ gone: id })
 }
 
 /**
@@ -364,7 +441,7 @@ async function deleteTemplate(db, body, response) {
  * or an unsubscribe means less than it says.
  *
  * The send happens before the record is written. A message that went and was
- * not recorded costs a line in the timeline; a message recorded and never
+ * not recorded costs a line in the conversation; a message recorded and never
  * sent would cost a lead an answer they appear to have been given.
  */
 async function send(db, account, body, response) {
@@ -418,7 +495,7 @@ async function send(db, account, body, response) {
     urgent: false,
   })
 
-  // The record, after the send. Losing it is a gap in the timeline rather
+  // The record, after the send. Losing it is a gap in the conversation rather
   // than a refusal, because the mail is already on its way.
   const templateId = uuid(body.template_id)
   const { data: message, error: recordFault } = await db
@@ -432,15 +509,17 @@ async function send(db, account, body, response) {
       sent_by: account.email || null,
       provider_id: providerId,
     })
-    .select('id, template_id, sent_to, subject, body, sent_by, sent_at')
+    .select('id, subject, body, sent_by, sent_at')
     .single()
   if (recordFault && !tableMissing(recordFault)) {
     console.error('leads-admin: the send was not recorded: %s', recordFault.message)
   }
 
-  // A lead written to is a lead answered, unless somebody already said so.
-  const stamp = { updated_at: new Date().toISOString() }
-  if (!lead.contacted_at) stamp.contacted_at = stamp.updated_at
+  // A lead written to is a lead answered, as of now. The time moves with every
+  // answer rather than keeping the first, because the Inbox reads a lead as
+  // handled when the last answer is newer than the last thing they wrote.
+  const answered = new Date().toISOString()
+  const stamp = { contacted_at: answered, updated_at: answered }
   const { data: after, error: stampFault } = await db
     .from(SPINE)
     .update(stamp)
@@ -452,16 +531,16 @@ async function send(db, account, body, response) {
   }
 
   response.setHeader('Cache-Control', 'private, no-store')
-  return response.status(200).json({ lead: after || lead, message: message || null })
+  return response.status(200).json({
+    lead: after || lead,
+    message: message ? sentEntry(message) : null,
+  })
 }
 
-/** The one door the three writes with a body come through. */
+/** The one door a write with a body comes through. */
 async function act(db, account, request, response) {
   const body = readBody(request)
-  const action = typeof body.action === 'string' ? body.action : ''
-  if (action === 'send') return send(db, account, body, response)
-  if (action === 'template-save') return saveTemplate(db, body, response)
-  if (action === 'template-delete') return deleteTemplate(db, body, response)
+  if (body.action === 'send') return send(db, account, body, response)
   return response.status(400).json({ error: 'That is not a thing this can do.' })
 }
 
@@ -482,7 +561,7 @@ export default async function handler(request, response) {
     if (request.method === 'PATCH') return await mark(wired.db, request, response)
     if (request.method === 'POST') return await act(wired.db, account, request, response)
     const leadId = uuid(request.query?.lead)
-    if (leadId) return await readMessages(wired.db, leadId, response)
+    if (leadId) return await readConversation(wired.db, leadId, response)
     return await read(wired.db, response)
   } catch (cause) {
     console.error('leads-admin: %s', cause.message)

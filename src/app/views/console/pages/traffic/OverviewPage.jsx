@@ -1,248 +1,185 @@
-import { useEffect } from 'react'
 import { useConsole } from '../../lib/context'
-import { HourChart, TrafficChart } from '../../../analytics/charts'
-import {
-  bucketTitle,
-  compactCount,
-  fullCount,
-  hourLabel,
-  percent,
-} from '../../../analytics/lib/format'
+import { TrafficChart } from '../../../analytics/charts'
+import { fullCount } from '../../../analytics/lib/format'
+import { sourceLabel } from '../../../analytics/lib/sources'
 import {
   ConsolePage,
   EmptyFill,
-  Metric,
+  EmptyRow,
   Panel,
   PanelBody,
   PanelFill,
-  PanelFoot,
   RankedList,
   SectionNotice,
-  SkeletonBar,
   SkeletonBox,
+  SkeletonRows,
 } from '../../ui'
-import { recalledCount, rememberCount } from '../../lib/rowMemory'
-import { CHART_HEIGHT, MONO_LABEL, ROW_HEIGHT } from '../../lib/tokens'
-import ReadingNow from './ReadingNow'
-import { WeekdayChart } from './OverviewCharts'
+import { CELL_END, CELL_TIGHT, CHART_HEIGHT, TH_END, TH_TIGHT } from '../../lib/tokens'
 import { SiteIcon } from '../../SiteIcon'
 
 /**
- * The landing section, and the whole of the traffic reading: the shape of the
- * window, who is on right now, the clock and the calendar the traffic arrives
- * on, what is carrying it, and the few readings of the window no other section
- * takes. The headline figures are the shell's tile strip above it, so this does
- * not repeat them.
+ * The one traffic screen a client has, answering "is my site getting
+ * visitors": who is on it right now and which pages they have open, the shape
+ * of the window, the pages carrying it, and where the visitors came from. With
+ * more than one site in scope, a short list puts the sites side by side.
  *
- * The hour and day charts used to be a section of their own, opening on the
- * same series this one opens on. Two sections that begin with one drawing are
- * one question with two doors, and a reader asking when the traffic comes had
- * to guess which door. The series is drawn once, here, and everything folded
- * out of it sits underneath it.
+ * The totals - online now, visitors, pageviews and the rest - are the strip the
+ * frame draws above every traffic section, so this page draws the shape and
+ * the rankings under them rather than the same figures twice.
  *
- * Nothing here re-states a section that has its own tab. The breakdown is
- * ranked rather than tabulated, which is the digest of Sites and Pages rather
- * than a copy of either, and the readings beside it are derived from the
- * series already in hand - a busiest day and a pages-per-session are questions
- * the console answers nowhere else.
- *
- * Two rows. The chart takes three quarters of the first beside the live
- * count, because a shape is read from a chart and a figure is not: given the
- * whole row it is the only thing on a screen, and the first question the
- * section is opened on is whether this minute agrees with the window. The
- * four cards under it are level with each other, since the clock, the
- * calendar, the ranking and the readings are four answers of one size to the
- * same series, and reading one against another is the point of the row.
- *
- * The hour chart is a site's clock. Summing every site's together says when
- * TaylorURL's whole estate is busy rather than when any one audience is.
+ * Everything is read from the feeds the frame already holds. The live feed is
+ * its own read and answers long before the windowed one, so the "now" card
+ * fills first and keeps answering when the windowed figures do not.
  */
 
-const WEEK = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
-const WEEKEND = new Set(['Saturday', 'Sunday'])
+// A ranking holds the head of the list. The tail is a run of single visits that
+// says nothing the first eight have not.
+const LISTED = 8
+
+// The columns of the per-site list, so the placeholder rows hold the cells the
+// head above them holds.
+const SITE_CELLS = [CELL_TIGHT, CELL_END, CELL_END]
 
 /**
- * Pageviews gathered onto the weekday they landed on, Monday to Sunday.
+ * The pages open right now on the sites in scope, busiest first.
  *
- * The series above runs in order, which says what happened and never what
- * happens: a Saturday is only readable against the other Saturdays, and on a
- * month of chart those are five columns apart. Calendar order rather than
- * busiest first, because the drawing is the week's shape and the ranking is
- * read off the bar heights; keeping the weekend at one end keeps the two days
- * the foot counts together.
+ * The scope is read from the set of ids rather than from the window's rows,
+ * which empty for the length of every window change and would take the live
+ * list with them for no reason the live feed knows about. An empty set is every
+ * site the account holds.
  */
-function byWeekday(series) {
-  const totals = new Map(WEEK.map(name => [name, 0]))
-  for (const point of series) {
-    const name = new Date(point.bucket).toLocaleDateString('en-US', { weekday: 'long' })
-    totals.set(name, (totals.get(name) || 0) + point.pageviews)
-  }
-  return WEEK.map(name => ({ name, short: name.slice(0, 3), pageviews: totals.get(name) }))
-}
-
-/** The extremes of a set of buckets, which is what a shape is read for. */
-function edges(rows, valueOf) {
-  if (!rows.length) return { top: null, bottom: null }
-  return {
-    top: rows.reduce((a, b) => (valueOf(b) > valueOf(a) ? b : a)),
-    bottom: rows.reduce((a, b) => (valueOf(b) < valueOf(a) ? b : a)),
-  }
-}
-
-/**
- * The one-line readings of a window, from the series and totals already read.
- *
- * Over one day the buckets are hours, and the busiest and quietest of those
- * already close the hour chart; the same two figures under a second label are
- * not a second reading. Over a week or more the buckets are days, which the
- * hour chart cannot name, so the two lead here.
- */
-function digest({ series, totals, grain }) {
-  if (!series.length) return []
-  const { top, bottom } = edges(series, point => point.pageviews)
-  const mean = series.reduce((sum, point) => sum + point.pageviews, 0) / series.length
-  const perSession = totals?.sessions ? totals.pageviews / totals.sessions : 0
-  const returning =
-    totals?.visitors && totals.visitors >= totals.new_visitors
-      ? ((totals.visitors - totals.new_visitors) / totals.visitors) * 100
-      : 0
-
-  const readings = []
-  if (grain !== 'hour') {
-    readings.push(
-      {
-        label: 'Busiest Day',
-        value: bucketTitle(top.bucket, grain),
-        note: `${fullCount(top.pageviews)} views`,
-      },
-      {
-        label: 'Quietest Day',
-        value: bucketTitle(bottom.bucket, grain),
-        note: `${fullCount(bottom.pageviews)} views`,
-      }
+function openPages(liveSites, siteIds) {
+  const held = siteIds.length ? new Set(siteIds) : null
+  return liveSites
+    .filter(entry => !held || held.has(entry.site_id))
+    .flatMap(entry =>
+      (entry.pages || []).map(page => ({ site: entry.name, path: page.path, n: page.n || 0 }))
     )
+    .filter(row => row.n > 0)
+    .sort((a, b) => b.n - a.n || a.path.localeCompare(b.path))
+}
+
+/**
+ * Arrivals by where they came from, named the way a reader says them.
+ *
+ * Two spellings of one host - `www.google.com` and `google.com` - are one
+ * source to the person reading the list, so they are added together under the
+ * name it shows rather than listed twice.
+ */
+function bySource(referrers) {
+  const merged = new Map()
+  for (const row of referrers) {
+    const name = sourceLabel(row.source)
+    merged.set(name, (merged.get(name) || 0) + (row.sessions || 0))
   }
-  readings.push(
-    {
-      label: 'Typical',
-      value: compactCount(Math.round(mean)),
-      note: `views per ${grain === 'hour' ? 'hour' : 'day'}`,
-    },
-    {
-      label: 'Pages per Session',
-      value: perSession ? perSession.toFixed(1) : '0',
-      note: 'in one visit',
-    },
-    { label: 'Returning', value: percent(returning), note: 'seen here before' }
-  )
-  return readings
+  return [...merged]
+    .map(([name, sessions]) => ({ name, sessions }))
+    .sort((a, b) => b.sessions - a.sessions || a.name.localeCompare(b.name))
+    .slice(0, LISTED)
 }
 
-/**
- * A chart's box in the three states the window's read puts it in: waiting,
- * drawn, and a window with no traffic in it.
- *
- * The plot is inset from the card rather than the card being padded, so the
- * head's rule still meets both edges above it.
- */
-function ChartBox({ minHeight, loading, drawn, children }) {
+/** Who is on right now, and the page each of them has open. */
+function OnNow({ area }) {
+  const { bulk, live, liveLoading, liveNow, liveSites, siteIds } = useConsole()
+  const rows = openPages(liveSites, siteIds)
+  // A read that failed has not said nobody is here, so it says that it failed
+  // and puts no count in the head.
+  const failed = Boolean(live.error) && !live.data
+  const empty = failed
+    ? 'The live count is not answering. Trying again every few seconds.'
+    : `Nobody is on ${bulk ? 'any of these sites' : 'the site'} right now.`
+
   return (
-    <PanelFill minHeight={minHeight}>
-      {loading ? (
-        <SkeletonBox height="100%" className="px-2 py-3" />
-      ) : drawn ? (
-        <div className="px-2 py-3">{children}</div>
-      ) : (
-        <EmptyFill>No traffic in this window.</EmptyFill>
-      )}
-    </PanelFill>
+    <Panel
+      area={area}
+      title={bulk ? 'On your sites now' : 'On the site now'}
+      aside={failed ? null : `${fullCount(liveNow)} ${liveNow === 1 ? 'visitor' : 'visitors'}`}
+      loading={liveLoading}
+    >
+      <PanelBody>
+        <RankedList
+          rows={rows}
+          // Two sites' front pages are two rows carrying one path, so across
+          // more than one site the row names the site and the path together.
+          nameOf={row => (bulk ? `${row.site}${row.path}` : row.path)}
+          valueOf={row => row.n}
+          formatValue={fullCount}
+          empty={empty}
+          loading={liveLoading}
+        />
+      </PanelBody>
+    </Panel>
   )
 }
 
-/**
- * One reading of the figure above it, in the block its card closes on.
- *
- * A chart says where the peak sits and never what it was worth, so the figure
- * answering that belongs against the chart rather than in a card of its own.
- */
-function Reading({ label, value, note, loading }) {
+/** The sites in scope side by side: who came over the window, and who is on now. */
+function YourSites({ area }) {
+  const { inScope, loading, windowLabel } = useConsole()
+  const rows = [...inScope].sort(
+    (a, b) => (b.visitors || 0) - (a.visitors || 0) || String(a.name).localeCompare(b.name)
+  )
+
   return (
-    <span className="flex items-baseline gap-2">
-      <span className={`${MONO_LABEL} text-paper-faint`}>{label}</span>
-      {loading ? (
-        <SkeletonBar className="w-16" />
-      ) : (
-        <span className="font-mono text-[13px] tabular-nums text-ink-paper">{value}</span>
-      )}
-      {!loading && note && <span className={`${MONO_LABEL} text-paper-faint`}>{note}</span>}
-    </span>
+    <Panel area={area} title="Your sites" aside={windowLabel}>
+      <PanelBody>
+        <table className="console-table" aria-busy={loading}>
+          <thead>
+            <tr>
+              <th scope="col" className={`${TH_TIGHT} w-[56%]`}>
+                Site
+              </th>
+              <th scope="col" className={`${TH_END} w-[26%]`}>
+                Visitors
+              </th>
+              <th scope="col" className={`${TH_END} w-[18%]`}>
+                Now
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <SkeletonRows cols={SITE_CELLS} rows={4} />
+            ) : rows.length ? (
+              rows.map(row => (
+                <tr key={row.site_id} className="border-hair-paper border-t">
+                  <td className={CELL_TIGHT}>
+                    <span className="flex min-w-0 items-center gap-2">
+                      <SiteIcon host={row.name} name={row.name} />
+                      <span className="truncate" title={row.name}>
+                        {row.name}
+                      </span>
+                    </span>
+                  </td>
+                  <td className={`${CELL_END} font-mono tabular-nums`}>
+                    {fullCount(row.visitors)}
+                  </td>
+                  <td
+                    className={`${CELL_END} font-mono tabular-nums ${row.live ? 'text-accent' : 'text-paper-soft'}`}
+                  >
+                    {fullCount(row.live)}
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <EmptyRow cols={SITE_CELLS}>No sites are reporting yet.</EmptyRow>
+            )}
+          </tbody>
+        </table>
+      </PanelBody>
+    </Panel>
   )
 }
-
-const REMEMBERED = 'taylorurl_console_ranked'
-
-// The ranking is a digest rather than the table, so it holds the head of the
-// list and no more: the rest is one click away on its own section. Five rows
-// of sites, each carrying its mark, is what the card holds at the desk width
-// with nothing moving inside it.
-const RANKED = 5
 
 export default function OverviewPage() {
-  const { days, detail, inScope, liveSites, overview, loading, scopeLabel, unreachable, siteId } =
-    useConsole()
-  const series = detail?.series || overview.data?.series || []
-  const grain = detail?.grain || overview.data?.grain || 'day'
-  const totals = detail?.totals || overview.data?.totals
+  const { bulk, detail, knownSites, loading, overview, role, unreachable } = useConsole()
 
-  const readings = digest({ series, totals, grain })
+  // A client with no site linked yet is told so by the frame, in the place the
+  // figures would stand. A page of empty cards under it would say it four more
+  // times.
+  if (role === 'client' && overview.data && !knownSites.length) return null
 
-  const hours = detail?.hours || []
-  const hourEdges = edges(hours, hour => hour.pageviews)
-
-  // A window of one day folds onto one weekday, which compares nothing with
-  // nothing. The calendar waits for a window with more than one day in it.
-  const comparingDays = days > 1
-  const weekdays = comparingDays && series.length ? byWeekday(series) : []
-  const dayEdges = edges(weekdays, day => day.pageviews)
-  const dayTotal = weekdays.reduce((sum, day) => sum + day.pageviews, 0)
-  const weekend = weekdays
-    .filter(day => WEEKEND.has(day.name))
-    .reduce((sum, day) => sum + day.pageviews, 0)
-
-  // With a site in scope the breakdown is its pages; across the account it is
-  // the sites themselves, which is the same question asked one level up.
-  const ranked = siteId
-    ? {
-        title: 'Top Pages',
-        rows: (detail?.pages || []).slice(0, RANKED),
-        nameOf: row => row.path,
-        valueOf: row => row.pageviews,
-        empty: 'No pages were opened in this window.',
-        expected: recalledCount(`${REMEMBERED}_pages`, 5),
-      }
-    : {
-        title: 'Busiest Sites',
-        rows: inScope.slice(0, RANKED),
-        nameOf: row => row.name,
-        valueOf: row => row.pageviews,
-        empty: 'No sites are reporting yet.',
-        // Only the site ranking has a mark to show. A path has none, so the
-        // pages branch leaves it out rather than reserving a box for nothing.
-        markOf: row => <SiteIcon host={row.name} name={row.name} />,
-        expected: recalledCount(
-          `${REMEMBERED}_sites`,
-          Math.min(RANKED, Math.max(1, liveSites.length || 5))
-        ),
-      }
-
-  useEffect(() => {
-    if (!loading) rememberCount(`${REMEMBERED}_${siteId ? 'pages' : 'sites'}`, ranked.rows.length)
-  }, [loading, siteId, ranked.rows.length])
-
-  // The live feed is its own read and keeps answering while the windowed one
-  // does not, so who is on right now stays on screen beside the notice. The
-  // notice is one sentence and takes one sentence's height; the live list
-  // takes the rest.
+  // The live feed keeps answering while the windowed one does not, so who is on
+  // right now stays on screen beside the notice.
   if (unreachable) {
     return (
       <ConsolePage
@@ -253,135 +190,75 @@ export default function OverviewPage() {
         <SectionNotice area="notice">
           The traffic figures are not answering. Trying again every few seconds.
         </SectionNotice>
-        <ReadingNow area="now" />
+        <OnNow area="now" />
       </ConsolePage>
     )
   }
 
+  const series = detail?.series || overview.data?.series || []
+  const grain = detail?.grain || overview.data?.grain || 'day'
+
+  const pages = [...(detail?.pages || [])]
+    .sort((a, b) => (b.pageviews || 0) - (a.pageviews || 0))
+    .slice(0, LISTED)
+  const sources = bySource(detail?.referrers || [])
+
   return (
     <ConsolePage
-      areas={['chart chart chart now', 'hour day top window']}
-      cols="minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
-      rows="minmax(0,1.05fr) minmax(0,1fr)"
+      areas={
+        bulk
+          ? ['chart chart now', 'sites pages sources']
+          : ['chart chart now', 'pages pages sources']
+      }
+      cols="minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)"
+      rows="minmax(0,1.1fr) minmax(0,1fr)"
     >
-      {/* The chart against the live count: one is the window and the other is
-          this minute, and the first question a section is opened on is which
-          of the two disagrees with the other. */}
       <Panel
         area="chart"
-        title={scopeLabel}
-        aside={`pageviews and sessions · ${grain === 'hour' ? 'hourly' : 'daily'}`}
-        loading={loading}
+        title="Visits"
+        aside={`Pageviews, with sessions dashed, ${grain === 'hour' ? 'by the hour' : 'by the day'}`}
+        busy={loading}
       >
-        <ChartBox minHeight={CHART_HEIGHT.traffic} loading={loading} drawn={series.length > 0}>
-          <TrafficChart series={series} grain={grain} fill />
-        </ChartBox>
+        <PanelFill minHeight={CHART_HEIGHT.traffic}>
+          {loading ? (
+            <SkeletonBox height="100%" className="px-2 py-3" />
+          ) : series.length ? (
+            <div className="px-2 py-3">
+              <TrafficChart series={series} grain={grain} fill />
+            </div>
+          ) : (
+            <EmptyFill>No visits in this window.</EmptyFill>
+          )}
+        </PanelFill>
       </Panel>
 
-      <ReadingNow area="now" />
+      <OnNow area="now" />
 
-      {/* The same traffic folded a different way round: the hour chart folds
-          the window onto one day and the day chart folds it onto one week. */}
-      <Panel area="hour" title="By Hour" aside="your timezone" busy={loading}>
-        <ChartBox minHeight={CHART_HEIGHT.hour} loading={loading} drawn={hours.length > 0}>
-          <HourChart hours={hours} fill />
-        </ChartBox>
-        <PanelFoot>
-          <Reading
-            label="Busiest"
-            value={hourEdges.top ? hourLabel(hourEdges.top.hour) : '—'}
-            note={hourEdges.top ? `${fullCount(hourEdges.top.pageviews)} views` : null}
-            loading={loading}
-          />
-          <Reading
-            label="Quietest"
-            value={hourEdges.bottom ? hourLabel(hourEdges.bottom.hour) : '—'}
-            note={hourEdges.bottom ? `${fullCount(hourEdges.bottom.pageviews)} views` : null}
-            loading={loading}
-          />
-        </PanelFoot>
-      </Panel>
+      {bulk && <YourSites area="sites" />}
 
-      <Panel area="day" title="By Day" aside="gathered over the window" busy={loading}>
-        {comparingDays ? (
-          <>
-            <ChartBox minHeight={CHART_HEIGHT.hour} loading={loading} drawn={weekdays.length > 0}>
-              <WeekdayChart days={weekdays} fill />
-            </ChartBox>
-            <PanelFoot>
-              <Reading
-                label="Busiest"
-                value={dayEdges.top ? dayEdges.top.name : '—'}
-                note={dayEdges.top ? `${fullCount(dayEdges.top.pageviews)} views` : null}
-                loading={loading}
-              />
-              <Reading
-                label="Weekend"
-                value={dayTotal ? percent((weekend / dayTotal) * 100, 0) : '—'}
-                loading={loading}
-              />
-            </PanelFoot>
-          </>
-        ) : (
-          <PanelFill minHeight={CHART_HEIGHT.hour}>
-            <EmptyFill>
-              One day is one day. Pick a window of a week or more to compare the days.
-            </EmptyFill>
-          </PanelFill>
-        )}
-      </Panel>
-
-      <Panel area="top" title={ranked.title} aside="by pageviews" busy={loading}>
-        {/* The count the placeholder is drawn at comes from the live feed,
-            which answers first, so the list does not resize when the windowed
-            figures land on top of it. */}
+      <Panel area="pages" title="Top pages" aside="by pageviews" busy={loading}>
         <PanelBody>
           <RankedList
-            rows={ranked.rows}
-            nameOf={ranked.nameOf}
-            valueOf={ranked.valueOf}
+            rows={pages}
+            nameOf={page => (bulk ? `${page.site}${page.path}` : page.path)}
+            valueOf={page => page.pageviews || 0}
             formatValue={fullCount}
-            empty={ranked.empty}
-            markOf={ranked.markOf}
+            empty="No pages were opened in this window."
             loading={loading}
-            expected={ranked.expected}
           />
         </PanelBody>
       </Panel>
 
-      <Panel
-        area="window"
-        title="This Window"
-        aside={grain === 'hour' ? 'by the hour' : 'by the day'}
-        loading={loading}
-      >
+      <Panel area="sources" title="Where visitors came from" aside="by sessions" busy={loading}>
         <PanelBody>
-          {loading ? (
-            /* The placeholder is the metric row's own box, so the five
-               readings land in the space already held for them. */
-            <ul className="divide-y divide-[color:var(--paper-hairline)]" aria-hidden="true">
-              {Array.from({ length: 5 }).map((_, row) => (
-                <li key={row} className="px-5 py-2.5" style={{ height: ROW_HEIGHT.plain }}>
-                  <span className="block h-[19.5px] w-1/2 animate-pulse rounded bg-paper-soft/15" />
-                </li>
-              ))}
-            </ul>
-          ) : readings.length ? (
-            <dl>
-              {readings.map(reading => (
-                <Metric
-                  key={reading.label}
-                  label={reading.label}
-                  value={reading.value}
-                  caption={reading.note}
-                />
-              ))}
-            </dl>
-          ) : (
-            <p className="px-5 py-10 text-center text-[13px] text-paper-soft">
-              No traffic in this window.
-            </p>
-          )}
+          <RankedList
+            rows={sources}
+            nameOf={row => row.name}
+            valueOf={row => row.sessions}
+            formatValue={fullCount}
+            empty="No arrivals were recorded in this window."
+            loading={loading}
+          />
         </PanelBody>
       </Panel>
     </ConsolePage>

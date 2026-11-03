@@ -27,9 +27,17 @@ import { MOMENTS, SOURCES, SPINE, ownAddress, phoneDigits } from '../../lib/lead
 import { callMakesLead } from '../../lib/outreach/prospects/calls.js'
 import { cases, check, finish, same } from '../harness/checks.js'
 import { read } from '../harness/files.js'
+import { bounceReport, inbound } from '../outreach/inbound-fixture.js'
 
 const ADMIN = 'api/leads-admin.js'
-const CONSOLE = 'src/app/views/console/pages/studio/LeadsPage.jsx'
+const CONSOLE = 'src/app/views/console/pages/inbox/InboxPage.jsx'
+
+// The watcher reads its mailbox credentials as it loads. A run here reads a
+// list rather than a mailbox and hands no notice over, so the key is empty.
+process.env.OUTREACH_SMTP_USER = 'studio@example.com'
+process.env.OUTREACH_SMTP_PASSWORD = 'not-a-password'
+process.env.RESEND_API_KEY = ''
+const { work: watch } = await import('../../api/outreach/watch.js')
 
 /**
  * Which file writes each door, and the name it passes doing it.
@@ -89,9 +97,115 @@ check('the console reads the table every door writes to', () => {
 
 check('the console names every door it can be shown', () => {
   const page = read(CONSOLE)
-  for (const source of Object.values(SOURCES)) {
+  // Calls are logged by whoever made them and are the Call List's; the
+  // endpoint keeps them out of the Inbox, so the Inbox has nothing to name.
+  const shown = Object.values(SOURCES).filter(source => source !== SOURCES.call)
+  for (const source of shown) {
     same(page.includes(`'${source}'`), true, `the console has no name for the "${source}" door`)
   }
+})
+
+/**
+ * One pass of the inbox watcher over `messages`, against a database that
+ * answers every read with the one prospect written to and records what was
+ * asked of it. Whether `lead_record` was called is whether the message became
+ * a row in the Inbox.
+ */
+async function watched(messages) {
+  const prospect = {
+    id: '6b7b58ea-441a-4d2d-874a-8783944f26b1',
+    email: 'owner@example.com',
+    name: 'Baytown Plumbing',
+    website: 'https://baytownplumbing.com',
+    stage: 'contacted',
+    replied_at: null,
+  }
+  const asked = []
+  const from = table => {
+    const state = { op: 'select' }
+    const chain = new Proxy(
+      {},
+      {
+        get(_, prop) {
+          if (prop === 'then') {
+            asked.push(`${state.op}:${table}`)
+            const answer =
+              state.op === 'select' && table === 'outreach_prospects'
+                ? { data: [prospect], error: null }
+                : { data: [], error: null, count: 0 }
+            return (resolve, reject) => Promise.resolve(answer).then(resolve, reject)
+          }
+          return () => {
+            if (state.op === 'select' && ['insert', 'update', 'upsert', 'delete'].includes(prop)) {
+              state.op = prop
+            }
+            return chain
+          }
+        },
+      }
+    )
+    return chain
+  }
+  const rpc = name => {
+    asked.push(`rpc:${name}`)
+    return Promise.resolve({ data: { ok: true, lead_id: 'l1', fresh: true }, error: null })
+  }
+  await watch({
+    db: { from, rpc },
+    counts: { examined: 0, changed: 0 },
+    read: async () => messages,
+  })
+  return asked.includes('rpc:lead_record')
+}
+
+/** A message under a subject of its own, from the prospect written to. */
+const under = (subject, body) =>
+  inbound(body, {
+    envelope: {
+      messageId: '<reply-1@example.com>',
+      subject,
+      from: [{ address: 'owner@example.com' }],
+      to: [{ address: 'studio@example.com' }],
+      date: '2026-08-29T15:00:00.000Z',
+    },
+  })
+
+check('a person writing back to a letter is a row in the Inbox', async () => {
+  // Cold letters, new-business letters and preview letters all reach this the
+  // same way: the watcher matches the reply to the prospect the letter went to
+  // and files it through the outreach-reply door.
+  same(await watched([inbound('Hello. I am in Fort Worth.')]), true, 'a person did not reach it')
+})
+
+check('a machine, an opt-out and a bounce never reach the Inbox', async () => {
+  // The Inbox draws the spine and nothing else, so what the watcher keeps out
+  // of the spine is what keeps them off the Inbox.
+  same(
+    await watched([under('Automatic reply: your website', 'I am out of the office until Monday.')]),
+    false,
+    'an out of office reached it'
+  )
+  same(
+    await watched([
+      under(
+        'Your site scores 31 out of 100 on mobile',
+        'Thank you for choosing Kindred Pest Control!'
+      ),
+    ]),
+    false,
+    'an auto-responder reached it'
+  )
+  same(await watched([inbound('Please remove me from your list.')]), false, 'an opt-out reached it')
+  same(await watched([bounceReport()]), false, 'a bounce reached it')
+})
+
+check('the Inbox reads only the doors the spine names, and its replies from one', () => {
+  const page = read(CONSOLE)
+  same(
+    page.includes(`const REPLY_DOOR = '${SOURCES.outreachReply}'`),
+    true,
+    'the Inbox does not split its replies from its enquiries on the outreach-reply door'
+  )
 })
 
 check('a moment is stamped by whoever watches it happen', () => {
@@ -154,6 +268,79 @@ check('one person written two ways is one lead', () => {
   same(phoneDigits('832-775-5485'), '8327755485', 'the same number with dashes')
   same(phoneDigits('5485'), null, 'too few digits to be a number')
   same(phoneDigits(null), null, 'nothing is not a number')
+})
+
+// -- The Inbox holds people, and what they wrote ------------------------------
+
+const { inInbox, ownWords } = await import('../../api/leads-admin.js')
+const { isAutomated } = await import('../../lib/outreach/daily-report.js')
+
+// Each shaped on a reply the live mailbox has actually held, with the names
+// changed. The watcher let every one of the machines through as a person.
+const MACHINES = [
+  {
+    subject: 'Re: Trenton Taylor - TaylorURL',
+    body:
+      "You have reached Example Pest Control after hours!\r\n\r\nWe've received your email and " +
+      "we'll be back in the office during our normal\r\nbusiness hours from Monday through Friday.",
+  },
+  {
+    subject: 'Re: Trenton Taylor, TaylorURL',
+    body:
+      'Thanks so much for reaching out. We have received your email and will get back to you as ' +
+      'soon as possible. During business hours, that is usually within a couple of hours.',
+  },
+  {
+    subject: 'Re:',
+    body:
+      '##- Please type your reply above this line -##\r\n\r\nThanks for reaching out to us for ' +
+      'some help. Someone will be in touch with you soon.\r\n\r\nHere is a summary of your request #3201820:',
+  },
+  {
+    subject: 'Example Pest Control scores 39 out of 100 on mobile',
+    body: 'Example Pest Control\r\n\r\nThank you for choosing Example Pest Control!\r\n\r\n(555) 010-0000',
+  },
+]
+const PERSON = {
+  subject: 'Re: Trenton Taylor, TaylorURL',
+  body:
+    'Absolutely no interest. Please stop.\r\n\r\nGet Outlook for iOS<https://aka.ms/o0ukef>\r\n' +
+    '________________________________\r\nFrom: TaylorURL LLC <studio@example.com>\r\n' +
+    'Sent: Friday, 09 October 2026 06:22:12\r\nSubject: Re: Trenton Taylor, TaylorURL\r\n\r\nGood morning,',
+}
+
+check('an automated reply is never read as somebody writing', () => {
+  for (const reply of MACHINES) {
+    same(isAutomated({ intent: null, ...reply }), true, `"${reply.body.slice(0, 40)}" is a machine`)
+  }
+  same(isAutomated({ intent: null, ...PERSON }), false, 'a person telling us to stop is a person')
+})
+
+check('the Inbox shows what a person typed, without the letter they quoted', () => {
+  same(ownWords(PERSON.body), 'Absolutely no interest. Please stop.', 'their own words')
+  same(ownWords(''), null, 'nothing typed is nothing to show')
+})
+
+check('only people who wrote are in the Inbox', () => {
+  const reply = id => ({ source: SOURCES.outreachReply, source_ref: id, note: 'excerpt' })
+  const A = '00000000-0000-4000-8000-00000000000a'
+  const B = '00000000-0000-4000-8000-00000000000b'
+  const C = '00000000-0000-4000-8000-00000000000c'
+  const words = { said: new Map([[A, { text: 'Hello' }]]), heard: new Set([A, B]) }
+  same(inInbox(reply(A), words), true, 'a reply a person wrote')
+  same(inInbox(reply(B), words), false, 'a business only a machine answered for')
+  same(
+    inInbox({ ...reply(C), note: MACHINES[1].body }, words),
+    false,
+    'an old reply with no mail on file, whose excerpt is a receipt'
+  )
+  same(
+    inInbox({ ...reply(C), note: 'Call me Tuesday' }, words),
+    true,
+    'an old reply a person wrote'
+  )
+  same(inInbox({ source: SOURCES.contact, note: 'Need a site' }, words), true, 'a contact form')
+  same(inInbox({ source: SOURCES.call, note: 'Left a voicemail' }, words), false, 'a call log')
 })
 
 await finish()
