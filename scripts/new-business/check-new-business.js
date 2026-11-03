@@ -29,7 +29,15 @@ import {
   unsubscribeUrlFor,
   whenFormed,
 } from '../../lib/new-business/email.js'
-import { contactedRow, phoneOnlyRow, PHONE_ONLY_REASON } from '../../lib/new-business/mirror.js'
+import { readFileSync } from 'node:fs'
+import {
+  CALL_FIRST_REASON,
+  contactedRow,
+  phoneOnlyRow,
+  phoneRow,
+  PHONE_ONLY_REASON,
+} from '../../lib/new-business/mirror.js'
+import { work as checkWork } from '../../api/new-business/check.js'
 import { uncallableReason } from '../../lib/outreach/prospects/calls.js'
 import { installFixtureHeldDomains } from '../outreach/held-domains-fixture.js'
 import { cases, check, finish, ok, same } from '../harness/checks.js'
@@ -267,6 +275,130 @@ check(
     same(row.town, 'Baytown', 'town as written')
   }
 )
+
+check('a company with an address and a number is on the call list before its letter', () => {
+  const lead = { ...LEAD, taxpayer_number: '1', phone: '(281) 344-7144' }
+  const row = phoneRow({ ...lead, email: 'jane@stinkyscookies.example' })
+  same(uncallableReason(row), null, 'callable')
+  same(row.stage, 'unreachable', 'stage')
+  same(row.email, null, 'no address, so the outreach sender never writes to it')
+  same(row.skip_reason, CALL_FIRST_REASON, 'a reason the retry does not read')
+  same(phoneRow(lead).skip_reason, PHONE_ONLY_REASON, 'with no address it is phone-only')
+})
+
+/**
+ * Enough of the client for the check job: what it reads is handed back, and
+ * every write is kept in order.
+ */
+function checkDb(waiting, held = []) {
+  const writes = []
+  const from = table => {
+    let op = 'select'
+    let payload = null
+    const filters = []
+    const builder = {
+      select: () => builder,
+      eq: (column, value) => {
+        filters.push([column, value])
+        return builder
+      },
+      not: () => builder,
+      lte: () => builder,
+      order: () => builder,
+      limit: () => builder,
+      in: () => builder,
+      upsert: (values, options) => {
+        op = 'upsert'
+        payload = { values, options }
+        return builder
+      },
+      update: values => {
+        op = 'update'
+        payload = values
+        return builder
+      },
+      single: () => builder,
+      then: (resolve, reject) => {
+        let answer = { data: [], error: null }
+        if (op === 'upsert') {
+          writes.push({ table, op, ...payload })
+          answer = { data: { id: 'mirror-1' }, error: null }
+        } else if (op === 'update') {
+          writes.push({ table, op, values: payload, where: filters })
+        } else if (table === 'new_business_leads' && filters.some(([, v]) => v === 'waiting')) {
+          answer = { data: waiting, error: null }
+        } else if (table === 'suppression') {
+          answer = { data: held.map(email => ({ email })), error: null }
+        }
+        return Promise.resolve(answer).then(resolve, reject)
+      },
+    }
+    return builder
+  }
+  return { from, writes }
+}
+
+/** The company's own site, answering with its address and its number. */
+async function cookieSite(url) {
+  const home = `<html><h1>Stinkys Cookies</h1><a href="mailto:jane@stinkyscookies.example">Email</a><a href="tel:2813447144">Call</a>${filler}</html>`
+  if (String(url).startsWith('https://stinkyscookies.example')) {
+    return {
+      ok: true,
+      url: 'https://stinkyscookies.example/',
+      text: async () => home,
+      headers: new Headers({ 'content-type': 'text/html' }),
+    }
+  }
+  throw new Error('no such host')
+}
+
+/** A lead due its check, with the site above among its matched domains. */
+const DUE = {
+  ...LEAD,
+  id: 'lead-1',
+  taxpayer_number: '32100000001',
+  stage: 'waiting',
+  checks: 0,
+  candidates: ['stinkyscookies.example'],
+}
+
+check('the check job mirrors a number the moment it is found, address or not', async () => {
+  const db = checkDb([DUE])
+  const counts = { examined: 0, changed: 0 }
+  const result = await checkWork({
+    db,
+    counts,
+    get: cookieSite,
+    now: new Date('2026-09-30T15:00:00Z'),
+  })
+  same(result.emailable, 1, 'it has an address, so it is written to')
+  const mirrored = db.writes.find(one => one.op === 'upsert')
+  ok(mirrored, 'no mirror row was written')
+  same(mirrored.options.onConflict, 'source,source_ref', 'the key the letter upserts over')
+  same(mirrored.values.skip_reason, CALL_FIRST_REASON, 'mirrored ahead of its letter')
+  same(mirrored.values.email, null, 'without the address')
+  same(mirrored.values.phone, '(281) 344-7144', 'with the number')
+  const updated = db.writes.find(one => one.op === 'update' && one.table === 'new_business_leads')
+  same(updated.values.stage, 'emailable', 'the lead waits for its letter')
+  same(updated.values.prospect_id, 'mirror-1', 'tied to its row, so a stop reaches it')
+})
+
+check('an address on the suppression list keeps its company off the call list', async () => {
+  const db = checkDb([DUE], ['jane@stinkyscookies.example'])
+  const counts = { examined: 0, changed: 0 }
+  await checkWork({ db, counts, get: cookieSite, now: new Date('2026-09-30T15:00:00Z') })
+  same(db.writes.filter(one => one.op === 'upsert').length, 0, 'a mirror row was written')
+  const updated = db.writes.find(one => one.op === 'update' && one.table === 'new_business_leads')
+  same(updated.values.stage, 'emailable', 'the send job is the one that marks it')
+  same('prospect_id' in updated.values, false, 'tied to a row')
+})
+
+check('a company held back by the suppression list comes off the call list too', () => {
+  const job = readFileSync(new URL('../../api/new-business/send.js', import.meta.url), 'utf8')
+  const held = job.slice(job.indexOf('if (held.has(address))'), job.indexOf('if (byOutreach'))
+  ok(/setStage\(db, lead\.id, 'unsubscribed'\)/.test(held), 'the lead is not stopped')
+  ok(/stopMirror\(db, lead\.prospect_id\)/.test(held), 'the mirror row is not stopped')
+})
 
 check('a company written to is mirrored with nothing due', () => {
   const row = contactedRow(

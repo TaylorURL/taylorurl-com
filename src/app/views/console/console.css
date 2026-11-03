@@ -805,6 +805,37 @@
   }
 }
 
+/* ── A count against its goal ─────────────────────────────────────────── */
+
+/* A line saying how far along something is - "12 of 50 calls today" - and a
+   plain bar under it on the page's own ground. Not a card: it is a reading of
+   the section rather than a part of it, the way the views row is.
+
+   The fill has no transition. It is drawn where the count is, and a bar that
+   slides to a new length every time a call is saved is motion on a page that
+   is worked a press at a time. */
+.console-goal {
+  @apply flex min-w-0 flex-col gap-2;
+}
+
+.console-goal-label {
+  @apply text-[14px] font-medium tabular-nums;
+  color: var(--paper-ink);
+}
+
+.console-goal-bar {
+  @apply relative h-2 overflow-hidden;
+  border-radius: 4px;
+  background-color: color-mix(in srgb, var(--paper-ink-soft) 12%, transparent);
+}
+
+.console-goal-fill {
+  @apply absolute bottom-0 left-0 top-0;
+  width: var(--to);
+  border-radius: 4px;
+  background-color: var(--accent);
+}
+
 /* ── The views inside a section ───────────────────────────────────────── */
 
 /* A row of tabs on the page's own ground, ruled underneath, with the open one
