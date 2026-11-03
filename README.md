@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.8-2f6bff?style=for-the-badge" alt="Version 2026.45.8" />
+<img src="https://img.shields.io/badge/version-2026.45.9-2f6bff?style=for-the-badge" alt="Version 2026.45.9" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -37,6 +37,8 @@ The outreach decisions moved out into [chainwork](https://github.com/TaylorURL/c
 The time zone, the held-domain list and the domains I own are installed into the package from here. Those are facts about the studio rather than decisions about outreach.
 
 `api/outreach/send.js` drafts every message but only hands one to a mail server when `sending_enabled` is on in the console and `OUTREACH_SEND_ARMED` is set on the deployment. Either one off and it stays a draft.
+
+The Call List is the phone side. `callScore.js` reads three things off a business before anybody rings it: whether the owner picks up, whether it needs a site, whether it can pay. They get multiplied, so one bad reading sinks a business however well it reads on the other two. Owner and budget start from Census figures for the trade, loaded into a table by `scripts/db/census-trade-metrics.py`. Once a trade has twenty calls somebody picked up, its own pick-up rate replaces the Census figure. `callList.js` drops rows before anybody sees them: a chain, a number shared by three listings, a Google listing with no reviews, anything Google says is closed. Each of those is a call that was already wasted. The page counts the day against a goal of fifty.
 
 ## Tests
 
