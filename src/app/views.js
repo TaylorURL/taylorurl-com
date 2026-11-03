@@ -85,6 +85,9 @@ const loaders = {
         Welcome: () => import('@views/auth/Welcome'),
         ForgotPassword: () => import('@views/auth/ForgotPassword'),
         ResetPassword: () => import('@views/auth/ResetPassword'),
+        // The page a proposal's QR code opens. Gated with the screens above
+        // because what it ends on is the account a payment opens.
+        Pay: () => import('@views/pay/Pay'),
         SessionScope: () => import('@components/account/SessionScope'),
       }
     : {}),

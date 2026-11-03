@@ -404,6 +404,10 @@ const STUDIO_PRERENDER_ROUTES = [
   // an inbox, so the URL has to answer on a direct load, and it is not a page
   // to rank.
   '/unsubscribe',
+  // Where a proposal's QR code and link land. The key rides in the query
+  // string, so one built shell answers every proposal; noindex and out of the
+  // sitemap, since each one is a single client's prices.
+  '/pay',
   '/forgot-password',
   '/reset-password',
   '/404',
