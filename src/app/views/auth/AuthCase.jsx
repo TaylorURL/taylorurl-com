@@ -1,9 +1,10 @@
 import { useStatusFeed } from '@hooks/console/useStatusFeed'
-import { MarkCurve, MarkGauge, MarkInflow, MarkNow, MarkPulse } from '@components/marks/marks'
+import { CheckList } from '@components/kit/Kit'
+import { TYPE } from '@components/kit/styles'
 
 /**
- * The panel beside the sign-in form: what the console holds, and the two
- * figures that say the watching is real.
+ * What stands under the sign-in headline on a wide screen: what the console
+ * holds, and the two figures that say the watching is real.
  *
  * The figures come from the public status feed, which is the same source the
  * status board reads and is readable without an account. Nothing here is a
@@ -12,29 +13,24 @@ import { MarkCurve, MarkGauge, MarkInflow, MarkNow, MarkPulse } from '@component
  */
 const HOLDS = [
   {
-    mark: MarkNow,
-    label: 'Live Readers',
-    line: 'Who is on the site this minute, and the page they are on.',
+    title: 'Live readers',
+    body: 'Who is on the site this minute, and the page they are on.',
   },
   {
-    mark: MarkCurve,
-    label: 'Traffic',
-    line: 'Pageviews, sessions and visitors over a day, a week, a month or a quarter.',
+    title: 'Traffic',
+    body: 'Pageviews, sessions and visitors over a day, a week, a month or a quarter.',
   },
   {
-    mark: MarkInflow,
-    label: 'Sources',
-    line: 'Where readers arrive from, and which pages they land on.',
+    title: 'Sources',
+    body: 'Where readers arrive from, and which pages they land on.',
   },
   {
-    mark: MarkGauge,
-    label: 'Page Speed',
-    line: 'What the site scores on phones and on computers, measured on demand.',
+    title: 'Page speed',
+    body: 'What the site scores on phones and on computers, measured on demand.',
   },
   {
-    mark: MarkPulse,
-    label: 'Uptime',
-    line: 'Every check against the site, and every outage with how long it ran.',
+    title: 'Uptime',
+    body: 'Every check against the site, and every outage with how long it ran.',
   },
 ]
 
@@ -51,42 +47,24 @@ export default function AuthCase() {
   const uptime = average(sites)
 
   return (
-    <div className="auth-case">
-      <div className="auth-case-body">
-        <p className="auth-case-eyebrow">The Console</p>
-        <h2 className="auth-case-head">
-          Every figure for the site built for your business, in one place.
-        </h2>
+    <div className="max-w-[30rem]">
+      <h2 className={TYPE.h3}>Every figure for the site built for your business, in one place.</h2>
+      <CheckList items={HOLDS} className="mt-6" />
 
-        <ul className="auth-case-list">
-          {HOLDS.map(hold => (
-            <li key={hold.label} className="auth-case-item">
-              <hold.mark className="auth-case-mark" aria-hidden="true" />
-              <div>
-                <p className="auth-case-label">{hold.label}</p>
-                <p className="auth-case-line">{hold.line}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {/* The strip holds its height before the feed answers, so the panel
-            does not grow under a reader who is already typing. */}
-        <dl className="auth-case-figures">
-          <div className="auth-case-figure">
-            <dt className="auth-case-figure-label">Sites Watched</dt>
-            <dd className="auth-case-figure-value">
-              {sites.length ? `${up}/${sites.length}` : '—'}
-            </dd>
-          </div>
-          <div className="auth-case-figure">
-            <dt className="auth-case-figure-label">Uptime</dt>
-            <dd className="auth-case-figure-value">
-              {uptime === null ? '—' : `${uptime.toFixed(2)}%`}
-            </dd>
-          </div>
-        </dl>
-      </div>
+      {/* The pair holds its height before the feed answers, so the column
+          does not grow under a reader who is already typing. */}
+      <dl className="mt-8 grid grid-cols-2 gap-6">
+        <div>
+          <dt className={TYPE.small}>Sites up</dt>
+          <dd className={`${TYPE.figure} mt-2`}>{sites.length ? `${up}/${sites.length}` : '—'}</dd>
+        </div>
+        <div>
+          <dt className={TYPE.small}>Uptime, last 30 days</dt>
+          <dd className={`${TYPE.figure} mt-2`}>
+            {uptime === null ? '—' : `${uptime.toFixed(2)}%`}
+          </dd>
+        </div>
+      </dl>
     </div>
   )
 }

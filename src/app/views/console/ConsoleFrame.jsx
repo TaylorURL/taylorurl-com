@@ -1,38 +1,24 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, Outlet, useLocation } from 'react-router-dom'
-import { m } from 'framer-motion'
 import Seo from '@components/Seo'
 import { breadcrumbSchema } from '@constants/seo'
-import { settleIn } from '@constants/animations'
 import ConsoleShell from '@components/account/ConsoleShell'
-import PageTransition from '@components/chrome/PageTransition'
 import Waiting from '@components/app-shell/Waiting'
 import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
 import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { useAnalyticsFeed } from '@hooks/console/useAnalytics'
-import { useProjectFeed } from '@hooks/console/useProjectFeed'
-import {
-  SAMPLE_BUSINESS,
-  useSampleProjectFeed,
-  usePreviewClient,
-} from '@hooks/console/usePreviewClient'
+import { SAMPLE_BUSINESS, usePreviewClient } from '@hooks/console/usePreviewClient'
 import { useSession } from '@hooks/session/useSession'
-import { THEMES, useTheme } from '@hooks/theme/useTheme'
 import { supabase } from '@data/supabase/supabaseClient'
 import { ConsoleBar } from './shell/ConsoleBar'
 import { ConsoleSidebar } from './shell/ConsoleSidebar'
 import { ConsoleStrip } from './shell/ConsoleStrip'
-import { ConsoleSearch } from './shell/ConsoleSearch'
 import { menuSections, SECTIONS, sectionHref } from './lib/sections'
-import ProjectChecklist from './intake/ProjectChecklist'
 import PreviewStrip from './shell/PreviewStrip'
-import { currentProject, inOnboarding } from './lib/stages'
 import { Panel } from './ui'
 import { Figures } from './Figures'
-import { ShortcutSheet } from './shell/shortcuts'
-import { useConsoleShortcuts } from './lib/useConsoleShortcuts'
 import {
   bucketLabel,
   bucketTitle,
@@ -117,27 +103,16 @@ export default function ConsoleFrame() {
   // worth drawing at all, and keeps it on screen long enough to be read once it
   // has been.
   const sessionWait = useDeferredWait(checking)
-  // Whether the reader was actually shown the wait. The console resolves in
-  // over the line it replaces only for someone who watched that line; a session
-  // read back before the placeholder was ever drawn has nothing to resolve from
-  // and the screen is simply there. It also keeps the opening state out of the
-  // prerendered status board, which is the one console page a crawler reads and
-  // must not arrive at transparent.
-  const waited = useRef(false)
-  if (sessionWait.visible) waited.current = true
   const location = useLocation()
   const token = session?.access_token ?? null
   const [days, setDays] = useState(7)
   const [siteIds, setSiteIds] = useState([])
-  const [path, setPath] = useState(null)
   const [narrow, setNarrow] = useState(false)
   // Whether the remembered settings have been read back yet. The two effects
   // that persist them are the same two that would overwrite them with the
   // defaults on the commit that adopts the page, so they wait for this.
   const [adopted, setAdopted] = useState(false)
   const [drawer, setDrawer] = useState(false)
-  const [searching, setSearching] = useState(false)
-  const { choice, setChoice } = useTheme()
 
   // What the scope comes to for the rest of the console. One site is still one
   // site, so every section that reads `siteId` reads what it always did; a set
@@ -150,8 +125,8 @@ export default function ConsoleFrame() {
 
   const overviewParams = useMemo(() => ({ days }), [days])
   const siteParams = useMemo(
-    () => ({ sites: scopeKey ? scopeKey.split(',') : [], days, path }),
-    [scopeKey, days, path]
+    () => ({ sites: scopeKey ? scopeKey.split(',') : [], days }),
+    [scopeKey, days]
   )
 
   const live = useAnalyticsFeed({ token, view: 'live', intervalMs: LIVE_POLL_MS })
@@ -185,33 +160,12 @@ export default function ConsoleFrame() {
   const signedInRole = overview.data?.role
   const { preview, enterPreview, leavePreview } = usePreviewClient(signedInRole)
 
-  // The builds this account has paid for. Read for everybody rather than only
-  // for a client, because whether there is one is the question being asked and
-  // an account cannot be sorted into having a project before it is answered.
-  const liveProjects = useProjectFeed({ token, enabled: Boolean(token) })
-  const sampleProjects = useSampleProjectFeed(preview)
-
-  // One seam, and it is the object rather than the request. Everything the
-  // console can do to a build - the dock's ticks, the tracker's boxes, the file
-  // picker, the whole of the brief - reaches an endpoint through this one
-  // value, so replacing it is what makes a preview unable to write rather than
-  // merely unlikely to. The number is borrowed off the live read because it is
-  // served rather than shipped and no fixture can hold it, and a footer
-  // offering an address where a client is offered a phone call is a preview of
-  // the wrong screen.
-  //
-  // The live read is left running rather than switched off. Making the swap
-  // depend on two things - a disabled request as well as a replaced object -
-  // would be two places to get it wrong, where the object alone is one line
-  // that either holds or does not.
-  const projectFeed = preview ? { ...sampleProjects, phone: liveProjects.phone } : liveProjects
-
   // The studio's own people looking at a prospect's preview site are not the
   // prospect looking at it. The previews on *.taylorurl.com read this cookie
   // and leave the visit uncounted, so signing in here once is enough for that
   // browser.
   useEffect(() => {
-    if (signedInRole !== 'admin' && signedInRole !== 'staff') return
+    if (signedInRole !== 'admin') return
     if (!window.location.hostname.endsWith('taylorurl.com')) return
     document.cookie =
       'tu_staff=1; domain=.taylorurl.com; path=/; max-age=315360000; samesite=lax; secure'
@@ -240,7 +194,6 @@ export default function ConsoleFrame() {
   // do, so arriving somewhere closes it.
   useEffect(() => {
     setDrawer(false)
-    setSearching(false)
   }, [location.pathname])
 
   // The work region scrolls, not the document, so the window scroll a page
@@ -252,10 +205,15 @@ export default function ConsoleFrame() {
   // site - without it a reader on the keyboard is left in the column they
   // navigated from and has to tab back across to the work.
   const workRef = useRef(null)
-  const arriveInSection = useCallback(() => {
+  const arrived = useRef(false)
+  useEffect(() => {
+    if (!arrived.current) {
+      arrived.current = true
+      return
+    }
     workRef.current?.scrollTo({ top: 0 })
     workRef.current?.focus({ preventScroll: true })
-  }, [])
+  }, [location.pathname])
 
   const role = preview ? 'client' : signedInRole
   const liveSites = useMemo(() => live.data?.sites || [], [live.data])
@@ -326,28 +284,20 @@ export default function ConsoleFrame() {
     }
   }, [adopted, scopeKey])
 
-  // Every chooser goes through here, so a site picked in the column, in the
-  // palette, or under the heading lands the console in the same state. The path
-  // filter belongs to the site it was set on and means nothing on the next one,
-  // unless the thing picked was a page - a row on the account-wide Pages table
-  // names a site and a path together, and arriving on the site without the page
-  // is arriving somewhere the reader did not click.
-  const pickSite = useCallback((next, nextPath = null) => {
+  // Every chooser goes through here, so a site picked in the column or under
+  // the heading lands the console in the same state.
+  const pickSite = useCallback(next => {
     setSiteIds(next === null ? [] : [next])
-    setPath(nextPath)
   }, [])
 
   /**
    * Adds a site to the scope or takes it out, leaving the rest of it alone.
    *
    * Taking the last one out is the whole account rather than nothing, since a
-   * console showing no site at all is a console with nothing to read. The path
-   * filter goes whenever the set changes: it was set on one site's pages and
-   * means nothing across a different set of them.
+   * console showing no site at all is a console with nothing to read.
    */
   const toggleSite = useCallback(id => {
     setSiteIds(held => (held.includes(id) ? held.filter(one => one !== id) : [...held, id]))
-    setPath(null)
   }, [])
 
   // The name a scope goes by outlives the window's figures, so a section asking
@@ -369,10 +319,6 @@ export default function ConsoleFrame() {
   // so the scoped read hands the name in.
   const detail = useMemo(() => withCountedPages(site.data, scopeName), [site.data, scopeName])
   const totals = detail?.totals || overview.data?.totals
-  const liveForSite = useMemo(
-    () => (siteId ? liveSites.find(entry => entry.site_id === siteId) : null),
-    [liveSites, siteId]
-  )
   // Across the scope rather than for one site or for the account, so a set of
   // two reads the two added together rather than the whole estate.
   // How far back "now" reaches on the live figures. It is read from the payload
@@ -393,38 +339,12 @@ export default function ConsoleFrame() {
   const liveLoading = live.loading
   const feedError = site.error || overview.error
   const unreachable = Boolean(feedError) && !loading && !detail && !overview.data
-  const unassignedSites = role === 'client' && !overview.loading && !sites.length
-
-  // A build in progress, and the one the tracker is about.
-  //
-  // Onboarding is held false while the read is still out. A console that
-  // narrows itself to one section and then opens back up a second later has
-  // taken the rest away in front of the reader, where one that opens whole and
-  // narrows once is simply arriving.
-  const project = currentProject(projectFeed.projects)
-  const hasProject = Boolean(projectFeed.projects?.length)
-  const onboarding = !projectFeed.loading && inOnboarding(projectFeed.projects)
-
-  // Whether the client has handed their brief over. It rides on the project
-  // rather than being read again here, because the feed already carries it and
-  // a second read would be a second answer to a question the redirect below
-  // turns on.
-  const briefSent = Boolean(project?.onboarding?.submitted_at)
-
-  // An account whose site is still being made has not lost its sites, it has
-  // not got one yet, and the tracker is already saying so in better words.
-  const unassigned = unassignedSites && !hasProject
-
-  // How many sites the console is showing: the set when one is chosen, every
-  // site the account holds when none is, and unknown until the sites have been
-  // read. It is what decides the sections that only answer across more than one.
-  // Taken against the list that outlives the window's figures, so the sections
-  // answering only across more than one site do not come and go on a re-read.
-  const inView = overview.data ? siteIds.length || knownSites.length : undefined
+  // A client whose account has no site linked to it yet.
+  const unassigned = role === 'client' && !overview.loading && !sites.length
 
   const sections = useMemo(
-    () => menuSections({ signedIn: Boolean(session), role, inView, hasProject, onboarding }),
-    [session, role, inView, hasProject, onboarding]
+    () => menuSections({ signedIn: Boolean(session), role }),
+    [session, role]
   )
 
   // Every feed on screen, read again in one call rather than the feed that
@@ -480,15 +400,6 @@ export default function ConsoleFrame() {
       })
   }, [refused, session, signOut, refresh, toast])
 
-  // One control cycles the three rather than opening a second menu inside the
-  // account panel, which is a panel a reader has to close twice.
-  const cycleTheme = () => setChoice(THEMES[(THEMES.indexOf(choice) + 1) % THEMES.length])
-
-  const shortcuts = useConsoleShortcuts({
-    openSearch: () => setSearching(true),
-    toggleRail: () => setNarrow(open => !open),
-  })
-
   // A path with a trailing slash is the same path. Some hosts add one on a
   // directory-style URL, and a section matched by string equality against the
   // unslashed form reads as no section at all - which sends a signed-out
@@ -525,12 +436,6 @@ export default function ConsoleFrame() {
   // own figures.
   const onStatus = here === '/console/status'
 
-  // The addresses a build leaves reachable, taken from the catalogue that
-  // decides the menu so the two cannot come to disagree.
-  const duringBuild = useMemo(
-    () => new Set(SECTIONS.filter(entry => entry.duringBuild).map(sectionHref)),
-    []
-  )
   // A session that owes a second factor is a session that has not finished
   // arriving, so it opens what a signed-out visitor opens and is sent to the
   // code step on anything else.
@@ -710,73 +615,15 @@ export default function ConsoleFrame() {
     if (!onStatus) return <Navigate to="/login" state={{ from: here }} replace />
   }
 
-  // While a site is being built, the console is the brief and the tracker.
-  //
-  // Not a lock so much as the only thing there is to say: every other section
-  // reports traffic to a site that does not exist yet, and a reader who opens
-  // Sources during week one is asking a question nothing can answer. Status
-  // stays reachable because it needs no account and answers for the sites
-  // already running.
-  //
-  // Which addresses those are is read off the catalogue rather than written
-  // out here. The menu and this branch have to be the same list, and written
-  // twice they drift: a section marked to survive a build that this branch has
-  // not heard of is a row a client can see in the menu and cannot open, and
-  // nothing about that fails except in front of the client.
-  //
-  // Where they land depends on whether the brief has been sent. Until it has,
-  // it is the only thing the build is waiting on and the tracker would open on
-  // a bar that cannot move; afterwards the tracker is the whole of what there
-  // is to look at.
-  if (!publicOnly && onboarding && !duringBuild.has(here)) {
-    return <Navigate to={briefSent ? '/console/project' : '/console/onboarding'} replace />
-  }
-
   // A section marked for an admin is shut to everybody else, not merely absent
-  // from their menu.
-  //
-  // `admin` was read by `menuSections` and nowhere else, which took the row out
-  // of the column and left the address open. Anybody with a login could type
-  // /console/server, or follow a link somebody had pasted, and get the studio's
-  // own machine drawn around them - the units on it named, its card and its
-  // temperature laid out - while the feed underneath refused every read. What
-  // was kept back was the figures; what was handed over was the section, which
-  // is most of what those pages say. The same address answers the same way for
-  // Outreach, Builds, Leads, Call List, Payments and Admin, because they carry
-  // the same mark for the same reason.
-  //
-  // Who else is let past the mark is the section's own answer, read from the
-  // same catalogue the menu reads. Written out here instead, this branch and
-  // the menu would be two lists of roles that drift, and a section a
-  // representative can see in the column and cannot open fails in front of the
-  // representative rather than in a check.
-  //
-  // The role rides in on the overview read, so this waits for that read to land
-  // rather than acting on an unknown role. Redirecting while it is unknown
-  // would throw an admin off their own section on every refresh, and an
-  // unreachable collector would do it on sections that were working. Until it
-  // lands the menu is already drawing as a client's, so the two agree.
+  // from their menu: typing its address sends anybody else back to the
+  // Overview. The role rides in on the overview read, so this waits for that
+  // read to land rather than throwing an admin off their own section on every
+  // refresh.
   const roleKnown = preview || Boolean(overview.data)
-  const named = Boolean(section?.roles?.includes(role))
-
-  // The front of the console is a reading of the sites on the account, and a
-  // representative has none: every figure on it is nought for them, and nought
-  // visitors is a finding rather than an absence. The portal is the whole of
-  // what they came in for, so the front door opens on it.
-  if (!publicOnly && roleKnown && role === 'staff' && here === '/console') {
-    return <Navigate to="/console/staff" replace />
-  }
-
-  if (!publicOnly && roleKnown && role !== 'admin' && !named && section?.admin) {
+  if (!publicOnly && roleKnown && role !== 'admin' && section?.admin) {
     return <Navigate to="/console" replace />
   }
-
-  // The site in scope, and the name it goes by. Every section reads these to
-  // decide which of its two readings to draw, so the whole console turns on one
-  // value rather than each section working it out from the id again. A scope of
-  // two names neither of them: what the sections draw then is the reading they
-  // use for more than one site, over the two the feeds were narrowed to.
-  const scoped = siteId ? sites.find(row => row.site_id === siteId) : null
 
   // What the chrome is handed, which is not always what the console is
   // holding. The scope belongs to this admin and is remembered across visits,
@@ -805,35 +652,20 @@ export default function ConsoleFrame() {
     // More than one site on screen, which is when a row has to say which site
     // it belongs to. Two chosen sites need that as much as the whole account.
     bulk: !siteId,
-    projectFeed,
-    // What a section reads to know it is drawing a rehearsal rather than a
-    // build, so nothing has to work it out from the shape of its own data.
-    preview,
-    days,
     detail,
     knownSites,
     live,
-    liveForSite,
     liveLoading,
     liveNow,
     liveSites,
     loading,
     overview,
-    path,
-    pickSite,
     inScope,
     role,
-    scoped,
     scopeLabel,
     scopeName,
-    sections,
-    setPath,
-    site,
     siteId,
     siteIds,
-    sites,
-    toggleSite,
-    totals,
     unreachable,
     windowLabel,
   }
@@ -881,14 +713,7 @@ export default function ConsoleFrame() {
       <div className="console-previewing" data-on={preview}>
         {preview ? <PreviewStrip business={SAMPLE_BUSINESS} onLeave={leavePreview} /> : null}
 
-        <m.div
-          className="console-frame"
-          data-narrow={narrow}
-          data-drawer={drawer}
-          initial={waited.current ? settleIn.initial : false}
-          animate={settleIn.animate}
-          transition={settleIn.transition}
-        >
+        <div className="console-frame" data-narrow={narrow} data-drawer={drawer}>
           {/* The column is one element at every width: a rail on a desktop, and
             the same rail slid in from the edge on a phone, so a section reached
             on one is in the same place on the other. */}
@@ -908,8 +733,6 @@ export default function ConsoleFrame() {
               canPreview={signedInRole === 'admin'}
               preview={preview}
               onPreview={enterPreview}
-              theme={choice}
-              onCycleTheme={cycleTheme}
             />
           </div>
           <button
@@ -937,10 +760,6 @@ export default function ConsoleFrame() {
               traffic={traffic}
               publicOnly={publicOnly}
               reading={loading || liveLoading}
-              onSearch={() => setSearching(true)}
-              onShortcuts={shortcuts.openSheet}
-              onTheme={cycleTheme}
-              theme={choice}
               signInTo={here}
             />
 
@@ -970,38 +789,13 @@ export default function ConsoleFrame() {
                   busy={loading || live.loading}
                 />
               )}
-
-              {/* The column, the bar and the figures above stay put; only the
-                section's own work crosses over, so moving between sections
-                reads as one screen changing rather than the console being
-                rebuilt. */}
-              <PageTransition
-                routeKey={location.pathname}
-                onArrive={arriveInSection}
-                className="console-section"
-              >
+              <div key={location.pathname} className="console-section">
                 <Outlet context={context} />
-              </PageTransition>
+              </div>
             </div>
           </div>
-        </m.div>
+        </div>
       </div>
-
-      {publicOnly ? null : (
-        <ProjectChecklist project={project} acting={projectFeed.acting} onTick={projectFeed.tick} />
-      )}
-
-      <ConsoleSearch
-        open={searching}
-        onClose={() => setSearching(false)}
-        sections={sections}
-        sites={shownSites}
-        siteIds={shownScope}
-        onPickSite={pickSite}
-        onToggleSite={toggleSite}
-      />
-
-      <ShortcutSheet open={shortcuts.sheetOpen} onClose={shortcuts.closeSheet} />
     </ConsoleShell>
   )
 }

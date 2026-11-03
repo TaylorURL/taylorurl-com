@@ -196,7 +196,7 @@ if (!/CLIENT_REVIEW_LIST\.find\(/.test(homeData)) {
 if (!/review\.rating\s*\?\s*`\$\{review\.rating\}\/5/.test(homeQuote)) {
   fail("the home page's quote draws a score that is not the review's own")
 }
-for (const page of ['components/reviews/ReviewCarousel.jsx', 'views/portfolio/CaseStudy.jsx']) {
+for (const page of ['views/portfolio/CaseStudy.jsx']) {
   const source = readFileSync(new URL(`../../src/app/${page}`, import.meta.url), 'utf8')
   if (
     !/import ClientTestimonialCard from '@components\/reviews\/ClientTestimonialCard'/.test(source)

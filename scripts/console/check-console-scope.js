@@ -7,10 +7,9 @@
  * narrow the per-site lists or a reader comparing two sites is shown fifteen,
  * and an empty set has to mean every site rather than none.
  *
- * The menu is checked here for the same reason. Sites is the one section that
- * cannot answer for a scope of one, and the rule hiding it runs before the
- * account's sites have been read - where the wrong answer is a row that
- * disappears a second after the reader arrives.
+ * The menu is checked here too, because it is the other half of what a reader
+ * is offered: a client reads Overview, Speed and Status, and every section
+ * marked for an admin stays out of anybody else's column.
  */
 
 import { mkdtempSync, rmSync } from 'node:fs'
@@ -49,7 +48,6 @@ const has = (rows, id) => rows.some(section => section.id === id)
 const readingOf = (siteIds, sites) => ({
   siteId: siteIds.length === 1 ? siteIds[0] : null,
   inScope: siteIds.length ? sites.filter(row => siteIds.includes(row.site_id)) : sites,
-  inView: siteIds.length || sites.length,
   scopeKey: siteIds.join(','),
 })
 
@@ -63,7 +61,6 @@ check('an empty scope is every site, and names none of them', () => {
   const read = readingOf([], THREE)
   same(read.siteId, null, 'siteId')
   same(read.inScope.length, 3, 'sites in scope')
-  same(read.inView, 3, 'sites in view')
   same(read.scopeKey, '', 'nothing stored')
 })
 
@@ -72,7 +69,6 @@ check('a scope of one names that site and narrows to it', () => {
   same(read.siteId, 'b', 'siteId')
   same(read.inScope.length, 1, 'sites in scope')
   same(read.inScope[0].name, 'two.com', 'which site')
-  same(read.inView, 1, 'sites in view')
 })
 
 check('a scope of two names no single site and narrows the lists', () => {
@@ -80,7 +76,6 @@ check('a scope of two names no single site and narrows the lists', () => {
   same(read.siteId, null, 'siteId')
   same(read.inScope.length, 2, 'sites in scope')
   same(read.inScope.map(row => row.name).join(','), 'one.com,three.com', 'which sites')
-  same(read.inView, 2, 'sites in view')
   same(read.scopeKey, 'a,c', 'what is stored')
 })
 
@@ -90,44 +85,31 @@ check('a store holding one bare id is read as a scope of one', () => {
   same('a,c'.split(',').filter(Boolean).length, 2, 'a stored set')
 })
 
-check('Sites is in the menu across every site', () => {
-  same(has(menuSections({ signedIn: true, role: 'admin', inView: 3 }), 'sites'), true, 'shown')
+const ids = rows => rows.map(section => section.id).join(',')
+
+// What a client reads, and what only the studio's own account reads.
+const CLIENT = ['overview', 'vitals', 'status']
+const STUDIO = ['inbox', 'calls', 'payments', 'admin', 'server']
+
+check('a client is offered Overview, Speed and Status', () => {
+  same(ids(menuSections({ signedIn: true, role: 'client' })), CLIENT.join(','), 'menu')
 })
 
-check('Sites is in the menu across a chosen pair', () => {
-  same(has(menuSections({ signedIn: true, role: 'client', inView: 2 }), 'sites'), true, 'shown')
+check('Settings is a section and not a row in the menu', () => {
+  same(has(SECTIONS, 'settings'), true, 'a section')
+  same(has(menuSections({ signedIn: true, role: 'admin' }), 'settings'), false, 'in the menu')
 })
 
-check('Sites is gone when the scope holds one site', () => {
-  same(has(menuSections({ signedIn: true, role: 'admin', inView: 1 }), 'sites'), false, 'hidden')
-})
-
-check('Sites is gone for an account that holds one site', () => {
-  same(has(menuSections({ signedIn: true, role: 'client', inView: 1 }), 'sites'), false, 'hidden')
-})
-
-check('Sites stands while the account is still being read', () => {
-  same(has(menuSections({ signedIn: true, role: 'admin' }), 'sites'), true, 'shown')
-})
-
-check('hiding Sites takes nothing else with it', () => {
-  const rows = menuSections({ signedIn: true, role: 'admin', inView: 1 })
-  for (const id of ['overview', 'live', 'pages', 'sources', 'visitors']) {
-    same(has(rows, id), true, id)
-  }
+check('a signed-out reader may open Status and nothing else', () => {
+  const open = menuSections({ signedIn: false }).filter(section => !section.locked)
+  same(ids(open), 'status', 'unlocked')
 })
 
 check('the admin rule holds on its own', () => {
-  const client = menuSections({ signedIn: true, role: 'client', inView: 3 })
-  same(has(client, 'admin'), false, 'admin section')
-  same(has(client, 'outreach'), false, 'outreach section')
-  const staff = menuSections({ signedIn: true, role: 'admin', inView: 3 })
-  same(has(staff, 'admin'), true, 'for an admin')
-})
-
-check('exactly one section answers only across more than one site', () => {
-  const marked = SECTIONS.filter(section => section.multiSite).map(section => section.id)
-  same(marked.join(','), 'sites', 'which sections')
+  const client = menuSections({ signedIn: true, role: 'client' })
+  for (const id of STUDIO) same(has(client, id), false, `${id} for a client`)
+  const admin = menuSections({ signedIn: true, role: 'admin' })
+  for (const id of [...CLIENT, ...STUDIO]) same(has(admin, id), true, `${id} for an admin`)
 })
 
 await finish()

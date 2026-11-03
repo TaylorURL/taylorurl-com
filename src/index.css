@@ -73,12 +73,35 @@
 
 :root {
   /*
-   * THE FIELD — the ground a page stands on, at its light values. This is the
-   * TaylorURL theme: ivory paper by day, warm charcoal by night, one blue on
-   * both. The dark setting below restates the same roles on the charcoal, and a
-   * document that carries no setting yet reads on the light ones.
+   * THE FIELD — the ground a page stands on. White, with one warm grey for a
+   * band that needs to stand apart and one blue for the thing to press. The
+   * site has one setting; the dark block further down is kept only for a
+   * document something else stamps dark, which nothing on the site now does.
    */
-  --paper: #f0eee6;
+  --paper: #f3f2ed;
+  /* Older names for the card ground and the hairline, kept pointing at the
+     refined set below so nothing that still says them goes light. */
+  --band: #1b1b1a;
+  --line: rgba(244, 243, 238, 0.09);
+  /*
+   * THE REFINED SET - the redesign's own palette, for a site that is dark and
+   * only dark. A warm near-black ground, cards one step up from it with a
+   * hairline round them, warm white type at three strengths, one blue for the
+   * thing to press, a lighter blue for a link, and green for a site that is
+   * up. The blue glow is the one piece of atmosphere, behind a page's first
+   * screen and its last.
+   */
+  --card: #1b1b1a;
+  --card-hi: #222220;
+  --edge: rgba(244, 243, 238, 0.09);
+  --edge-strong: rgba(244, 243, 238, 0.15);
+  --text: #f4f3ee;
+  --text-soft: rgba(244, 243, 238, 0.66);
+  --text-mute: rgba(244, 243, 238, 0.48);
+  --blue: #3b6bff;
+  --blue-hi: #5580ff;
+  --link: #8aa6ff;
+  --live: #4ade80;
   --paper-ink: #141413;
   --paper-ink-soft: rgba(20, 20, 19, 0.72);
   --paper-ink-mute: rgba(20, 20, 19, 0.62);
@@ -91,7 +114,7 @@
   --paper-hairline-strong: rgba(20, 20, 19, 0.14);
   /* Input ground. A field on a paper panel needs to sit on its own surface, or
      the border is the only thing saying it can be typed in. */
-  --paper-field: #faf9f5;
+  --paper-field: #ffffff;
   --wash-paper: rgb(20 20 19 / 0.05);
   --wash-paper-strong: rgb(20 20 19 / 0.1);
   /* The blueprint rule, at the two weights the field takes. */
@@ -116,8 +139,8 @@
   --hairline: var(--paper-hairline);
   --hairline-strong: var(--paper-hairline-strong);
   /* A raised card and a sunk well, one step either side of the field. */
-  --surface-1: #faf9f5;
-  --surface-2: #e8e6dc;
+  --surface-1: #ffffff;
+  --surface-2: #e9e7df;
   --wash-ink: var(--wash-paper);
   --wash-ink-strong: var(--wash-paper-strong);
   --rule-ink: var(--rule-paper);
@@ -163,13 +186,13 @@
      hundred pixels down it is a surface someone reads forty-six names off, and
      display type behind it survives an 18px blur at 15% and shows through the
      words. */
-  --nav-surface: rgba(240, 238, 230, 0.85);
-  --nav-surface-solid: #f0eee6;
+  --nav-surface: rgba(11, 11, 12, 0.94);
+  --nav-surface-solid: #0b0b0c;
   /* The moving highlight a shiny label sweeps, and the ground and edge a glare
      sits on. All three follow the ground rather than the brand. */
   --shine-base: var(--ink-mute);
   --shine-sweep: rgba(20, 20, 19, 0.92);
-  --glare-ground: #f0eee6;
+  --glare-ground: #f3f2ed;
   --glare-edge: rgba(20, 20, 19, 0.2);
   /* The light a card carries under the pointer. */
   --spotlight: rgba(47, 107, 255, 0.16);
@@ -426,14 +449,15 @@
      both state it, so the pair lines up without depending on a stretch that an
      inline-block wrapper between them would swallow. */
   --field-h: 3.25rem;
-  /* The fixed bar's height, so anything that sticks or scrolls to a target
-     lands under the bar rather than behind it. */
-  --nav-height: 4.25rem;
+  /* The bar's height, so anything that sticks or scrolls to a target lands
+     under the bar rather than behind it. It matches the h-16 / sm:h-[72px] the
+     bar draws itself at. */
+  --nav-height: 4rem;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 640px) {
   :root {
-    --nav-height: 4.75rem;
+    --nav-height: 4.5rem;
   }
 }
 
@@ -454,7 +478,7 @@
 :root[data-theme='dark'] {
   /* The plane mixes into the ground the setting stands on, so the same
      recipe reads as a pale field on paper and a deep one here. */
-  --plane-ground: #30302e;
+  --plane-ground: #1b1b1a;
   /* The dark green that carries type on paper disappears into the charcoal, so
      on this setting the bright star green takes the type and the dark one stays
      behind white ink on a filled button. */
@@ -465,21 +489,21 @@
      unmistakably the colour the network uses and neither of them louder than the
      review it belongs to. */
   --brand-shape-hold: 70%;
-  --paper: #262624;
-  --paper-ink: #f0eee6;
+  --paper: #141413;
+  --paper-ink: #f4f3ee;
   --paper-ink-soft: rgba(240, 238, 230, 0.72);
   --paper-ink-mute: rgba(240, 238, 230, 0.55);
   --paper-ink-faint: rgba(240, 238, 230, 0.47);
   --paper-ink-ghost: rgba(240, 238, 230, 0.35);
   --paper-hairline: rgba(240, 238, 230, 0.1);
   --paper-hairline-strong: rgba(240, 238, 230, 0.14);
-  --paper-field: #30302e;
+  --paper-field: #1b1b1a;
   --wash-paper: rgb(240 238 230 / 0.05);
   --wash-paper-strong: rgb(240 238 230 / 0.1);
   --rule-paper: rgba(240, 238, 230, 0.05);
   --rule-paper-fine: rgba(240, 238, 230, 0.03);
-  --surface-1: #30302e;
-  --surface-2: #3b3a37;
+  --surface-1: #1b1b1a;
+  --surface-2: #222220;
   --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
   /* The same recipe over the charcoal. A drop shadow works by darkening the
      ground it falls on, so the alphas that read on paper do nothing here and the
@@ -491,10 +515,10 @@
     0 14px 32px -14px rgb(0 0 0 / 70%);
   --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
-  --nav-surface: rgba(38, 38, 36, 0.85);
-  --nav-surface-solid: #262624;
+  --nav-surface: rgba(20, 20, 19, 0.82);
+  --nav-surface-solid: #141413;
   --shine-sweep: rgba(240, 238, 230, 0.95);
-  --glare-ground: #262624;
+  --glare-ground: #141413;
   --glare-edge: rgba(240, 238, 230, 0.2);
   --spotlight: rgba(47, 107, 255, 0.2);
   --spotlight-soft: rgba(47, 107, 255, 0.12);
@@ -677,13 +701,12 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
     /* An in-page target would otherwise come to rest behind the fixed bar. */
     scroll-padding-top: var(--nav-height);
     /* clip, not hidden: hidden makes the root a scroll container, which severs
        every sticky and fixed descendant on the page. */
     overflow-x: clip;
-    background-color: var(--bg);
+    background-color: var(--paper);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -1007,8 +1030,8 @@
   }
 
   :root[data-theme='dark'] [data-theme='console'] {
-    --paper: #1c1b1a;
-    --paper-ink: #f0eee6;
+    --paper: #1b1b1a;
+    --paper-ink: #f4f3ee;
     --paper-ink-soft: rgba(240, 238, 230, 0.72);
     --paper-ink-mute: rgba(240, 238, 230, 0.55);
     /* The console sits one step behind the site's own dark paper. The page
@@ -1026,16 +1049,16 @@
     --wash-paper-strong: rgb(240 238 230 / 0.1);
     --rule-paper: rgba(240, 238, 230, 0.05);
     --rule-paper-fine: rgba(240, 238, 230, 0.03);
-    --bg: #161514;
-    --surface-1: #262624;
-    --surface-2: #2c2b29;
+    --bg: #141413;
+    --surface-1: #222220;
+    --surface-2: #262624;
     --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
     --accent: var(--accent-bright);
     --accent-hi: var(--accent-hi-bright);
     --accent-loud: var(--accent-hi-bright);
     --mark-invert: 1;
     --shine-sweep: rgba(240, 238, 230, 0.95);
-    --glare-ground: #1c1b1a;
+    --glare-ground: #141413;
     --glare-edge: rgba(240, 238, 230, 0.2);
     --spotlight: rgba(47, 107, 255, 0.2);
     --spotlight-soft: rgba(47, 107, 255, 0.12);
@@ -1063,17 +1086,19 @@
     --series-5: #10b981;
     --series-6: #ec4899;
     --series-7: #64748b;
-    --console-rail-bg: #1c1b1a;
+    --console-rail-bg: #181817;
     --console-bar-bg: var(--bg);
-    --console-card-bg: #232221;
+    --console-card-bg: #1b1b1a;
     --console-float-shadow: 0 12px 32px -12px rgb(0 0 0 / 62%);
-    --console-card-shadow: 0 0 0 1px rgba(240, 238, 230, 0.09);
+    --console-card-shadow: none;
     --console-row-hover: rgba(240, 238, 230, 0.06);
     --console-rail-active: var(--wash-accent);
     /* A raised chip separates itself by catching light on a pale ground and by
        its own edge on a dark one, where a shadow has nothing left to darken. */
-    --console-raise-shadow: 0 0 0 1px rgba(240, 238, 230, 0.12), 0 1px 2px rgb(0 0 0 / 40%);
+    --console-raise-shadow: 0 1px 2px rgb(0 0 0 / 40%);
     color-scheme: dark;
+    --console-radius: 14px;
+    --console-radius-sm: 10px;
   }
 
   /*
@@ -2634,8 +2659,8 @@
    * button cannot be built here without it.
    */
   .btn {
-    @apply inline-flex min-h-[44px] cursor-pointer touch-manipulation items-center justify-center gap-2 whitespace-nowrap px-6 text-[15px] font-semibold leading-none;
-    border-radius: var(--r-control);
+    @apply inline-flex min-h-[48px] cursor-pointer touch-manipulation items-center justify-center gap-2 whitespace-nowrap px-[22px] text-[15px] font-medium leading-none;
+    border-radius: 999px;
     transition:
       background-color 180ms var(--ease-out-soft),
       box-shadow 180ms var(--ease-out-soft),
@@ -2656,13 +2681,12 @@
      than a card's, so it reads as a key sitting on the page rather than a
      panel floating above it. */
   .btn-primary {
-    background-color: var(--accent-fill);
-    color: var(--on-accent);
-    box-shadow: var(--key-lift);
+    background-color: var(--blue);
+    color: #ffffff;
   }
 
   .btn-primary:hover {
-    background-color: var(--accent-fill-hi);
+    background-color: var(--blue-hi);
   }
 
   .btn-primary:focus-visible {
@@ -2673,11 +2697,9 @@
      ring, so it is a pale key on a page and a dark one on a slab without
      either being restated at the call site. */
   .btn-secondary {
-    background-color: var(--surface-1);
+    background-color: rgba(244, 243, 238, 0.08);
     color: var(--ink);
-    box-shadow:
-      0 0 0 1px var(--hairline-strong),
-      var(--key-lift-soft);
+    box-shadow: none;
   }
 
   .btn-secondary:hover {
@@ -2831,66 +2853,6 @@
     @apply py-16 sm:py-36;
   }
 
-  /*
-   * THE ARRIVAL — what an element does the first time it is scrolled to, and
-   * the only motion on this page that scroll is allowed to cue.
-   *
-   * It is armed rather than assumed. `data-reveal` is set on the document by
-   * the inline block in `index.html`, which runs before the first paint, so a
-   * visitor whose bundle never arrives is served a page with nothing hidden on
-   * it. Written the other way - hidden by default, cleared by script - the page
-   * that fails to boot is a blank column, and the failure it is most likely to
-   * hit is the script not arriving.
-   *
-   * A fade and the page arrival's own fourteen pixels of rise, over the page
-   * arrival's own duration, so an element coming up under a scroll and a
-   * section coming up under a page change are one movement. The rise is
-   * written to `translate` rather than `transform`, so it composes with any
-   * transform the element already carries instead of overwriting it, which is
-   * the collision the spare div per card once existed to hold apart.
-   *
-   * It is a keyframe and not a transition. A transition is one property on the
-   * element, and set here it would take a card's own hover transition with it.
-   * The keyframe fills backwards and nothing else: held hidden through its
-   * delay, and once it has run the element is simply itself, with no animation
-   * left standing on it to argue with a later hover.
-   *
-   * The delay is the stagger, written onto the element by `Reveal.jsx` from
-   * what arrived in the same frame. Nothing here counts children.
-   */
-  [data-reveal] .reveal {
-    opacity: 0;
-  }
-
-  [data-reveal] .reveal[data-shown] {
-    opacity: 1;
-  }
-
-  [data-reveal] .reveal[data-shown='arriving'] {
-    animation: reveal-in 420ms var(--ease-out-soft) backwards;
-    animation-delay: var(--reveal-delay, 0ms);
-  }
-
-  @keyframes reveal-in {
-    from {
-      opacity: 0;
-      translate: 0 14px;
-    }
-  }
-
-  /* Movement is what reduced motion asks to be spared, and an element held
-     back from a page is worse than one that simply is there, so it is simply
-     there. */
-  @media (prefers-reduced-motion: reduce) {
-    [data-reveal] .reveal {
-      opacity: 1;
-    }
-
-    [data-reveal] .reveal[data-shown='arriving'] {
-      animation: none;
-    }
-  }
-
   /* A short standing fact set on the accent's own wash - a tag, a state, a
      count. It rides on the filter chip's geometry and changes only its
      colouring, so the two never disagree about what a chip is. */
@@ -2923,11 +2885,12 @@
    * be typed in has nothing to say about the pointer or the value.
    */
   .field {
-    @apply w-full px-3.5 text-[15px];
-    --field-ring: var(--paper-hairline-strong);
+    @apply min-h-[48px] w-full px-4 text-[16px];
+    --field-ring: transparent;
     --field-halo: transparent;
-    border-radius: var(--r-control);
-    background-color: var(--paper-field);
+    border-radius: 12px;
+    /* Filled rather than outlined: a step lighter than the card it sits in. */
+    background-color: #262624;
     box-shadow:
       0 0 0 1px var(--field-ring),
       0 0 0 4px var(--field-halo);
@@ -2942,12 +2905,12 @@
   /* The same step the choice tile darkens its edge to, so a field and a tile in
      one form answer the pointer with one gesture. */
   .field:hover {
-    --field-ring: var(--paper-ink-ghost);
+    background-color: #2b2b29;
   }
 
   .field:focus {
     outline: none;
-    --field-ring: var(--accent);
+    --field-ring: var(--blue);
     --field-halo: color-mix(in srgb, var(--accent) 16%, transparent);
   }
 
@@ -2964,7 +2927,7 @@
   .field:disabled,
   .field[aria-disabled='true'] {
     @apply cursor-not-allowed opacity-60;
-    --field-ring: var(--paper-hairline-strong);
+    --field-ring: transparent;
     --field-halo: transparent;
   }
 
@@ -2979,10 +2942,10 @@
    * same thing: this is the one the accent is pointing at.
    */
   .choice-tile {
-    @apply flex min-h-[44px] touch-manipulation items-center justify-center px-4 py-3 text-[14px] font-semibold;
-    border-radius: var(--r-control);
-    background-color: var(--paper-field);
-    box-shadow: 0 0 0 1px var(--paper-hairline-strong);
+    @apply flex min-h-[46px] touch-manipulation items-center justify-center px-4 py-3 text-[15px] font-medium;
+    border-radius: 12px;
+    background-color: #262624;
+    box-shadow: none;
     color: var(--paper-ink-soft);
     transition:
       box-shadow 160ms var(--ease-out-soft),
@@ -2991,14 +2954,13 @@
   }
 
   .choice-tile:hover {
-    box-shadow: 0 0 0 1px var(--paper-ink-ghost);
+    background-color: #2b2b29;
   }
 
   input:checked + .choice-tile {
-    color: var(--accent);
-    box-shadow:
-      0 0 0 1px var(--accent),
-      0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+    background-color: color-mix(in srgb, var(--blue) 18%, transparent);
+    color: var(--text);
+    box-shadow: 0 0 0 1px var(--blue);
   }
 
   input:focus-visible + .choice-tile {
@@ -3155,5 +3117,18 @@
     .check-stage[data-running='true'] > .check-stage-form {
       transition-delay: 0s;
     }
+  }
+}
+
+@layer components {
+  /* The light behind a page's first screen: one soft blue bloom in the upper
+     right, fading to nothing. It is a background, so it costs nothing and
+     moves nothing, and it sits behind the content rather than over it. */
+  .glow {
+    background-image: radial-gradient(
+      ellipse 60% 70% at 85% 0%,
+      rgba(59, 107, 255, 0.22),
+      rgba(59, 107, 255, 0) 70%
+    );
   }
 }

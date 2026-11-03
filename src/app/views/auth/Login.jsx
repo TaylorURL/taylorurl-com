@@ -7,6 +7,7 @@ import { useDeferredWait } from '@hooks/chrome/useDeferredWait'
 import { useToast } from '@hooks/chrome/useToast'
 import { useSession } from '@hooks/session/useSession'
 import AuthShell, { Field } from './AuthShell'
+import { AUTH_ASIDE, AUTH_LINK, AUTH_QUIET } from './lib/styles'
 import { nextScreen } from './lib/screen'
 
 export default function Login() {
@@ -88,7 +89,12 @@ export default function Login() {
     return (
       <>
         {exit}
-        <Seo title="Log In" description="Sign in to the TaylorURL console." path="/login" noIndex />
+        <Seo
+          title="Sign In"
+          description="Sign in to the TaylorURL console."
+          path="/login"
+          noIndex
+        />
         <ConsoleShell>
           <Waiting visible={wait.visible} label="Checking session" />
         </ConsoleShell>
@@ -107,7 +113,7 @@ export default function Login() {
           noIndex
         />
         <AuthShell
-          title="Two-Factor Authentication"
+          title="Two-factor authentication."
           blurb={
             recovery
               ? 'Enter one of the recovery codes saved when two-factor authentication was switched on.'
@@ -136,10 +142,10 @@ export default function Login() {
             autoComplete="one-time-code"
             autoFocus
           />
-          <p className="auth-aside">
+          <p className={AUTH_ASIDE}>
             <button
               type="button"
-              className="auth-alt-link"
+              className={AUTH_LINK}
               onClick={() => {
                 setRecovery(open => !open)
                 setCode('')
@@ -148,7 +154,7 @@ export default function Login() {
             >
               {recovery ? 'Use Authenticator Code' : 'Use Recovery Code'}
             </button>
-            <button type="button" className="auth-aside-quiet" onClick={signOut}>
+            <button type="button" className={AUTH_QUIET} onClick={signOut}>
               Cancel
             </button>
           </p>
@@ -161,17 +167,17 @@ export default function Login() {
     <>
       {exit}
       <Seo
-        title="Log In"
+        title="Sign In"
         description="Sign in to the TaylorURL console for your site."
         path="/login"
         noIndex
       />
       <AuthShell
-        title="Log In"
-        blurb="Sign in to see the traffic figures for your site."
+        title="Sign in."
+        blurb="See the traffic figures for your site."
         formName="sign-in"
         busy={working}
-        submitLabel="Log In"
+        submitLabel="Sign In"
         busyLabel="Signing In"
         onSubmit={() => signIn(email.trim(), password)}
       >
@@ -193,8 +199,8 @@ export default function Login() {
             onChange={setPassword}
             autoComplete="current-password"
           />
-          <p className="auth-aside">
-            <Link to="/forgot-password" className="auth-alt-link">
+          <p className={AUTH_ASIDE}>
+            <Link to="/forgot-password" className={AUTH_LINK}>
               Forgot Password
             </Link>
           </p>

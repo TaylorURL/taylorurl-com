@@ -1,5 +1,4 @@
-import { Phone } from 'lucide-react'
-import { FIELD_FAULT } from '@constants/grounds'
+import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
 import { CONTACT_METHODS } from '@constants/navigation'
 import { REPLY_QUESTIONS } from '@lib/enquiry/questions.js'
 
@@ -39,10 +38,8 @@ export default function ContactMethodChoice({
   return (
     <div className="flex flex-col gap-5">
       <fieldset>
-        <legend className="section-label-sm text-paper-faint mb-2 block">
-          {REPLY_QUESTIONS.contactMethod}
-        </legend>
-        <div className="grid gap-3 sm:grid-cols-3">
+        <legend className={FIELD_LABEL}>{REPLY_QUESTIONS.contactMethod}</legend>
+        <div className="grid gap-2.5 sm:grid-cols-3">
           {CONTACT_METHODS.map(method => (
             <label key={method.value} className="relative block cursor-pointer">
               <input
@@ -61,28 +58,21 @@ export default function ContactMethodChoice({
 
       {wantsCall && (
         <div>
-          <label htmlFor={phoneId} className="section-label-sm text-paper-faint mb-2 block">
+          <label htmlFor={phoneId} className={FIELD_LABEL}>
             {REPLY_QUESTIONS.phone}
           </label>
-          <div className="relative">
-            <Phone
-              aria-hidden="true"
-              strokeWidth={1.5}
-              className="text-paper-faint pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2"
-            />
-            <input
-              type="tel"
-              id={phoneId}
-              name="phone"
-              autoComplete="tel"
-              value={phone}
-              onChange={onChange}
-              onBlur={onBlur}
-              className="field py-3.5 pl-10"
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? `${phoneId}-error` : undefined}
-            />
-          </div>
+          <input
+            type="tel"
+            id={phoneId}
+            name="phone"
+            autoComplete="tel"
+            value={phone}
+            onChange={onChange}
+            onBlur={onBlur}
+            className="field"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? `${phoneId}-error` : undefined}
+          />
           {error && (
             <p id={`${phoneId}-error`} role="alert" className={FIELD_FAULT}>
               {error}

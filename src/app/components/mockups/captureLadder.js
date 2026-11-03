@@ -5,9 +5,8 @@ import { RETRY_WAITS_MS } from '@utils/retryImage'
 /**
  * The ladder every client capture on this site is asked for down.
  *
- * There are two places a capture is drawn - the device frames in
- * `DevicePreview` and the flat card frames `PortfolioPreview` fills - and for a
- * long time they were two different answers to the same question. The frames
+ * For a long time the places a capture was drawn were different answers to the
+ * same question. The frames
  * climbed a ladder, marked the rungs they were still on, and treated the
  * screenshot service past the end of it as somebody else's; the card asked
  * once, fell straight through to the service, and marked nothing. So the fix

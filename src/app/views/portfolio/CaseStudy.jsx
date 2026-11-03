@@ -1,94 +1,59 @@
-import { Link, useParams } from 'react-router-dom'
-import { m } from 'framer-motion'
-import { ArrowLeft, ArrowUpRight, Gauge, MapPin, Layers } from 'lucide-react'
+import { useParams } from 'react-router-dom'
+import {
+  CallToAction,
+  DeviceShowcase,
+  FactRow,
+  PageIntro,
+  Prose,
+  Section,
+} from '@components/kit/Kit'
 import Seo from '@components/Seo'
 import ClientTestimonialCard from '@components/reviews/ClientTestimonialCard'
-import CtaSection from '@components/conversion/CtaSection'
-import { DesktopMockup, PhoneMockup } from '@components/mockups/DevicePreview'
 import NotFound from '@views/NotFound'
 import { formatMeasuredDate, portfolioPreviewSrc } from '@data/portfolio'
 import { portfolioStudyBySlug } from '@data/portfolioStudies'
 import { reviewFor } from '@data/reputation/reviews'
 import { breadcrumbSchema, SITE_URL } from '@constants/seo'
-import { fadeInUp, fadeInUpMount, staggerChild } from '@constants/animations'
-import { AccentGradient } from '@reactbits/kit'
+import { placeOf } from './work'
 
-function kindLabel(kind) {
-  return kind === 'product' ? 'Studio Product' : 'Client'
-}
+// The review's heading, at the size the prose headings above it are set at.
+const STUDY_HEADING = 'text-[24px] font-medium leading-[1.3] tracking-[-0.02em] text-ink'
 
-/** One paper band of the study, opened by its label and its heading. */
-function StudySection({ eyebrow, title, children }) {
-  return (
-    <section className="border-hair-paper section-y relative overflow-hidden border-t bg-paper">
-      <div className="container-rail-tight relative">
-        <m.div {...fadeInUp} className="mb-10">
-          <p className="section-label mb-5 text-accent">{eyebrow}</p>
-          <h2 className="display-4 max-w-2xl font-semibold leading-[1.08] tracking-tightest text-ink-paper [text-wrap:balance]">
-            {title}
-          </h2>
-        </m.div>
-        {children}
-      </div>
-    </section>
-  )
-}
-
-/** Numbered cards, two to a row, one per thing said about the site or the build. */
-function DetailCards({ items }) {
-  return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      {items.map((item, index) => (
-        <m.article
-          key={item.title}
-          {...staggerChild(index, 0.05)}
-          className="panel-static bg-paper p-7"
-        >
-          <p className="text-paper-faint mb-4 font-mono text-[12px] tabular-nums">
-            {String(index + 1).padStart(2, '0')}
-          </p>
-          <h3 className="text-[18px] font-semibold leading-snug tracking-tight text-ink-paper">
-            {item.title}
-          </h3>
-          <p className="mt-4 text-[15px] leading-relaxed text-paper-soft">{item.body}</p>
-        </m.article>
-      ))}
+/** The study's `{ title, body }` entries as headed paragraphs. */
+function Entries({ items }) {
+  return items.map(item => (
+    <div key={item.title}>
+      <h3>{item.title}</h3>
+      <p className="!mt-2">{item.body}</p>
     </div>
-  )
+  ))
 }
 
-// The icon arrives as a node rather than as a component, so the mark and the
-// label it stands for are written next to each other at the call site.
-function MetaRow({ label, value, children }) {
-  return (
-    <div className="flex items-center gap-2">
-      {children}
-      <span className="sr-only">{label}</span>
-      <span>{value}</span>
-    </div>
-  )
-}
-
-function ScoreFigure({ label, score }) {
-  return (
-    <div className="panel-static bg-bg px-7 py-8">
-      <p className="section-label-sm text-ink-faint">{label}</p>
-      <p className="display-2 mt-3 font-mono font-semibold leading-none tracking-tightest text-ink">
-        <AccentGradient>{score}</AccentGradient>
-      </p>
-    </div>
-  )
-}
-
+/**
+ * One case study, in the reading layout: the site on a laptop and a phone
+ * beside what it is, the facts in one row, then the study itself as short
+ * sections of prose, the client's own words where there are any, and the ask.
+ *
+ * A studio product is labelled one in the facts, so it is never presented as
+ * a client engagement.
+ */
 function Study({ project }) {
   const { study, pagespeed, slug } = project
 
   const studyUrl = `${SITE_URL}/portfolio/${slug}`
   const measured = formatMeasuredDate(pagespeed.measured)
   const review = reviewFor(project.displayUrl)
+  const place = project.kind === 'product' ? null : placeOf(project)
+
+  const facts = [
+    { label: project.kind === 'product' ? 'Studio product' : 'Business', value: study.sector },
+    place && { label: 'Town', value: place },
+    { label: 'Google speed', value: `${pagespeed.mobile} mobile · ${pagespeed.desktop} desktop` },
+    { label: 'Live site', value: project.displayUrl, href: project.url },
+  ].filter(Boolean)
 
   return (
-    <div>
+    <>
       <Seo
         title={study.title}
         description={study.description}
@@ -125,152 +90,52 @@ function Study({ project }) {
         ]}
       />
 
-      <section
-        data-ground="dark"
-        className="relative overflow-hidden bg-bg pb-20 pt-32 text-ink sm:pb-28 sm:pt-44"
-      >
-        <div className="container-rail relative">
-          <m.div {...fadeInUpMount}>
-            <div>
-              <Link
-                to="/portfolio"
-                className="section-label-sm group inline-flex items-center gap-2 text-ink-soft transition-colors hover:text-accent"
-              >
-                <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
-                Back to the Portfolio
-              </Link>
-            </div>
+      <PageIntro
+        title={project.name}
+        lead={study.summary}
+        media={<DeviceShowcase project={project} eager />}
+      />
 
-            <p className="section-label mt-8 text-accent">Case Study · {kindLabel(project.kind)}</p>
+      <Section tight label="The facts" className="!pt-0">
+        <FactRow
+          items={facts}
+          className={`max-sm:!grid-cols-1 sm:max-lg:!grid-cols-2 ${facts.length < 4 ? 'lg:!grid-cols-3' : ''}`.trim()}
+        />
+      </Section>
 
-            <h1 className="display-2 mt-6 max-w-3xl font-semibold leading-[0.98] tracking-tightest text-ink [text-wrap:balance]">
-              {project.name}
-            </h1>
-
-            <p className="mt-8 max-w-xl text-[17px] leading-relaxed text-ink-soft sm:text-[19px]">
-              {study.summary}
-            </p>
-
-            <div className="border-hair section-label-sm mt-10 flex flex-wrap items-center gap-x-6 gap-y-3 border-t pt-6 text-ink-faint">
-              <MetaRow label="Sector" value={study.sector}>
-                <Layers className="h-3 w-3 text-accent" strokeWidth={1.75} />
-              </MetaRow>
-              {project.location && (
-                <MetaRow label="Location" value={project.location}>
-                  <MapPin className="h-3 w-3 text-accent" strokeWidth={1.75} />
-                </MetaRow>
-              )}
-              <MetaRow
-                label="PageSpeed score"
-                value={`PageSpeed ${pagespeed.mobile} mobile · ${pagespeed.desktop} desktop`}
-              >
-                <Gauge className="h-3 w-3 text-accent" strokeWidth={1.75} />
-              </MetaRow>
-            </div>
-
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn btn-primary group mt-10"
-            >
-              Visit Live Site
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-            </a>
-          </m.div>
-        </div>
-      </section>
-
-      <section className="section-y relative overflow-hidden bg-paper">
-        <div className="container-rail-tight relative">
-          <m.div {...fadeInUp} className="relative">
-            <DesktopMockup project={project} priority />
-            <div className="mt-6 flex justify-center lg:absolute lg:bottom-[-48px] lg:right-[-28px] lg:mt-0 lg:justify-end">
-              <PhoneMockup project={project} priority />
-            </div>
-          </m.div>
-        </div>
-      </section>
-
-      <StudySection eyebrow="The Business" title="What the business does.">
-        <div className="max-w-[68ch] space-y-6">
+      <Section narrow label="The study" className="!pt-6">
+        <Prose className="[&>h2:first-child]:mt-0">
+          <h2>What the business does</h2>
           {study.business.map(paragraph => (
-            <m.p
-              key={paragraph}
-              {...fadeInUp}
-              className="text-[17px] leading-[1.65] text-paper-soft"
-            >
-              {paragraph}
-            </m.p>
+            <p key={paragraph}>{paragraph}</p>
           ))}
-        </div>
-      </StudySection>
 
-      <StudySection eyebrow="The Site" title="What a visitor can do here.">
-        <DetailCards items={study.site} />
-      </StudySection>
+          <h2>What a visitor can do here</h2>
+          <Entries items={study.site} />
 
-      <StudySection eyebrow="The Build" title="How it is put together.">
-        <DetailCards items={study.build} />
+          <h2>How it is put together</h2>
+          <Entries items={study.build} />
+          <p>Built with {study.stack.join(', ')}.</p>
 
-        <m.div {...fadeInUp} className="border-hair-paper mt-12 border-t pt-8">
-          <p className="text-paper-faint section-label-sm mb-5">Built With</p>
-          <ul className="flex flex-wrap gap-2">
-            {study.stack.map(item => (
-              <li key={item} className="chip-static text-paper-soft">
-                {item}
-              </li>
-            ))}
-          </ul>
-        </m.div>
-      </StudySection>
+          <h2>How fast it loads</h2>
+          <p>
+            {project.displayUrl} scores {pagespeed.mobile} on mobile and {pagespeed.desktop} on
+            desktop in Google PageSpeed Insights, out of 100, measured on {measured}. A single
+            Lighthouse run moves by several points between calls, so each figure is the median of{' '}
+            {pagespeed.runs} runs.
+          </p>
+        </Prose>
 
-      {review && (
-        <StudySection eyebrow="The Client" title="What the client said.">
-          <div className="max-w-[680px]">
+        {review && (
+          <div className="mt-14">
+            <h2 className={`${STUDY_HEADING} mb-6`}>What the client said</h2>
             <ClientTestimonialCard review={review} />
           </div>
-        </StudySection>
-      )}
+        )}
+      </Section>
 
-      <section
-        data-ground="band"
-        className="border-hair section-y relative overflow-hidden border-t bg-bg text-ink"
-      >
-        <div className="container-rail-tight relative">
-          <m.div {...fadeInUp} className="mb-10">
-            <p className="section-label mb-5 text-accent">The Score</p>
-            <h2 className="display-4 max-w-2xl font-semibold leading-[1.08] tracking-tightest text-ink [text-wrap:balance]">
-              How fast it loads.
-            </h2>
-          </m.div>
-
-          <m.div {...fadeInUp} className="grid gap-6 sm:grid-cols-2">
-            <ScoreFigure label="Mobile" score={pagespeed.mobile} />
-            <ScoreFigure label="Desktop" score={pagespeed.desktop} />
-          </m.div>
-
-          <m.p
-            {...fadeInUp}
-            className="mt-8 max-w-[62ch] text-[15px] leading-relaxed text-ink-soft"
-          >
-            Google PageSpeed Insights performance score for {project.displayUrl}, out of 100,
-            measured on {measured}. A single Lighthouse run moves by several points between calls,
-            so each figure is the median of {pagespeed.runs} runs.
-          </m.p>
-        </div>
-      </section>
-
-      <CtaSection
-        eyebrow="Next: Your Site"
-        title={
-          <>
-            Want your business <span className="text-accent">built like this</span>?
-          </>
-        }
-        description="Tell me what your business needs. You get a plan and a price back before any work starts."
-      />
-    </div>
+      <CallToAction title="Want your business built like this?" />
+    </>
   )
 }
 

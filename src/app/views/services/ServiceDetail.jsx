@@ -1,67 +1,67 @@
 import { useParams } from 'react-router-dom'
-import PageHero from '@components/page-bands/PageHero'
-import CtaBanner from '@components/conversion/CtaBanner'
 import Seo from '@components/Seo'
+import { TextLink } from '@components/kit/Kit'
 import NotFound from '@views/NotFound'
 import { AREA_SERVED, BUSINESS_ID, SITE_URL, breadcrumbSchema } from '@constants/seo'
-import { START_LINK, serves } from '@constants/navigation'
-import { otherServices, servicePage } from '@data/pages/serviceDetail'
-import ServiceSection from './ServiceSection'
-import FactMesh from './FactMesh'
-import MoreServices from './MoreServices'
-import SectionLink from './SectionLink'
+import { serves } from '@constants/navigation'
+import { relatedServices, servicePage } from '@data/pages/serviceDetail'
+import ServiceLanding, { ItemAnswer } from './ServiceLanding'
 import { IS_SECOND_SITE, SITE } from '../../../../lib/site/current.js'
 
 /**
  * The page around one service's content, for whichever site is building.
  *
  * The studio's build is a one-off fee and a monthly that keeps the site
- * published, both quoted for the project, so its time-and-cost section asks
- * what the thing runs and sends a reader on to the six steps a build takes.
- * The subsidiary quotes each service on its own page, has no process page to
- * send anyone to, and ends at the enquiry form.
+ * published, both quoted for the project, so its cost question asks what the
+ * thing runs and its timeline sends a reader on to the six steps a build
+ * takes. The subsidiary quotes each service on its own page, has no process
+ * page to send anyone to, and ends at the enquiry form.
  */
 const STUDIO = {
-  termsTitle: 'How long it takes, and what it runs.',
-  costTitle: 'What It Costs to Run',
-  asides: [{ to: '/process', label: 'How a Build Runs' }],
-  cta: {
-    heading: 'Tell me what',
-    accentText: 'you need.',
-    description:
-      'Say what the business does and what the site has to do. I usually answer within the hour, and you get the plan and the price before any work starts.',
-    secondary: { label: 'Ask a Question', to: '/contact' },
-  },
+  ask: { timeline: 'How long does it take?', running: 'What does it cost to run?' },
+  process: { to: '/process', label: 'How a Build Runs' },
+  cta: 'Tell me what you need.',
 }
 
 const SECOND_SITE = {
-  termsTitle: 'How long it takes, and what it costs.',
-  costTitle: 'What It Costs',
-  asides: [],
-  cta: {
-    heading: 'Start with',
-    accentText: 'a call.',
-    description:
-      'Tell me what the work is and what it has to do when it is done. I usually answer within the hour, and you get the scope and the price in writing before anything is charged.',
-    secondary: null,
-  },
+  ask: { timeline: 'How long does it take?', running: 'What does it cost?' },
+  process: null,
+  cta: 'Start with a call.',
 }
 
 const DOC = IS_SECOND_SITE ? SECOND_SITE : STUDIO
 
-const CTA_SECONDARY = DOC.cta.secondary && serves(DOC.cta.secondary.to) ? DOC.cta.secondary : null
+// A link written by hand still has to be a page this site serves, so `serves`
+// reads the route table rather than leaving the answer to whoever edits it.
+const PROCESS = DOC.process && serves(DOC.process.to) ? DOC.process : null
 
-const COVERS_HEADING = {
-  eyebrow: 'What It Covers',
-  title: 'What you get.',
-  lede: 'Everything below is part of the work. Nothing here is an upgrade.',
+/**
+ * The page's questions: how long, what it costs, and any section the content
+ * asks as a question rather than shows as cards.
+ */
+function questionsFor(page) {
+  const ask = { ...DOC.ask, ...page.ask }
+  const timeline = PROCESS ? (
+    <>
+      <p>{page.timeline}</p>
+      <p>
+        <TextLink to={PROCESS.to} label={PROCESS.label} />
+      </p>
+    </>
+  ) : (
+    page.timeline
+  )
+  return [
+    { q: ask.timeline, a: timeline },
+    { q: ask.running, a: page.running },
+    ...(page.sections ?? [])
+      .filter(section => section.as === 'question')
+      .map(section => ({
+        q: section.question,
+        a: <ItemAnswer lede={section.lede} items={section.items} />,
+      })),
+  ]
 }
-
-// The page alternates its grounds down its length, so a section is never the
-// same colour as the one above it whatever the page holds between what the
-// work covers and what it costs.
-const GROUND = ['paper', 'band']
-const groundAt = index => GROUND[index % GROUND.length]
 
 /**
  * One service's own page. The services share a shape - what the work covers,
@@ -78,23 +78,6 @@ export default function ServiceDetail() {
   const page = servicePage(service)
 
   if (!page?.covers) return <NotFound />
-
-  const terms = [
-    { title: 'How Long It Takes', body: page.timeline },
-    { title: DOC.costTitle, body: page.running },
-  ]
-
-  const coversHeading = page.coversHeading ?? COVERS_HEADING
-  const cta = { ...DOC.cta, ...page.cta }
-  const sections = page.sections ?? []
-  const termsGround = groundAt(sections.length + 1)
-
-  // The pages this one sends a reader on to, beside its own price. A link
-  // written by hand still has to be a page this site serves, so `serves` reads
-  // the route table rather than leaving the answer to whoever edits the list.
-  const asides = [...DOC.asides, ...(page.beside ? [page.beside] : [])].filter(aside =>
-    serves(aside.to)
-  )
 
   return (
     <div>
@@ -121,61 +104,17 @@ export default function ServiceDetail() {
           },
         ]}
       />
-      <PageHero eyebrow={page.eyebrow} title={page.title ?? page.name} description={page.lede} />
-
-      <ServiceSection
-        id="covers"
-        ground={groundAt(0)}
-        eyebrow={coversHeading.eyebrow}
-        title={coversHeading.title}
-        lede={coversHeading.lede}
-      >
-        <FactMesh items={page.covers} ground={groundAt(0)} columns={{ base: 1, sm: 2, lg: 3 }} />
-      </ServiceSection>
-
-      {sections.map((section, index) => {
-        const ground = groundAt(index + 1)
-        return (
-          <ServiceSection
-            key={section.id}
-            id={section.id}
-            ground={ground}
-            eyebrow={section.eyebrow}
-            title={section.title}
-            lede={section.lede}
-          >
-            <FactMesh items={section.items} ground={ground} columns={section.columns} />
-          </ServiceSection>
-        )
-      })}
-
-      <ServiceSection
-        id="terms"
-        ground={termsGround}
-        eyebrow="Time and Cost"
-        title={DOC.termsTitle}
-      >
-        <FactMesh items={terms} ground={termsGround} columns={{ base: 1, sm: 2 }} />
-        {asides.length > 0 && (
-          <div className="mt-8 flex flex-wrap gap-x-10 gap-y-4">
-            {asides.map(aside => (
-              <SectionLink key={aside.to} to={aside.to} label={aside.label} ground={termsGround} />
-            ))}
-          </div>
-        )}
-      </ServiceSection>
-
-      <MoreServices pages={otherServices(page.slug)} />
-
-      <CtaBanner
-        eyebrow="Let’s Talk"
-        heading={cta.heading}
-        accentText={cta.accentText}
-        description={cta.description}
-        primaryLabel={START_LINK.label}
-        primaryTo={START_LINK.to}
-        secondaryLabel={CTA_SECONDARY?.label}
-        secondaryTo={CTA_SECONDARY?.to}
+      <ServiceLanding
+        title={page.title ?? page.name}
+        lead={page.lede}
+        facts={page.facts}
+        covers={page.covers}
+        coversTitle={page.coversHeading?.title}
+        sections={(page.sections ?? []).filter(section => section.as !== 'question')}
+        example={page.example}
+        questions={questionsFor(page)}
+        related={relatedServices(page.slug, page.related)}
+        cta={page.cta ?? DOC.cta}
       />
     </div>
   )

@@ -10,8 +10,25 @@ import prerenderPlugin from './vite/prerender-plugin.js'
 import reviewSchemaPlugin from './vite/review-schema-plugin.js'
 import siteHeadPlugin from './vite/site-head-plugin.js'
 import siteStaticPlugin from './vite/site-static-plugin.js'
+import { SITE } from './lib/site/current.js'
+
+// Where a local server sends `/api`. The functions only run on Vercel, so on
+// localhost every console screen, the status board and the free tools asked a
+// server that had nothing behind it and drew empty. Passing the calls through
+// to the live deployment of the site being built gives a local preview the
+// real data, read with the same sign-in the browser holds. `API_ORIGIN` points
+// it somewhere else, such as a `vercel dev` running beside it.
+const API_PROXY = {
+  '/api': {
+    target: process.env.API_ORIGIN || SITE.origin,
+    changeOrigin: true,
+    secure: true,
+  },
+}
 
 export default defineConfig({
+  server: { proxy: API_PROXY },
+  preview: { proxy: API_PROXY },
   // Which site this build is. One tree builds two deployments, and this is the
   // line that makes the key legal in a browser chunk: esbuild substitutes the
   // literal, so the comparison in lib/site/current.js constant-folds and Rollup

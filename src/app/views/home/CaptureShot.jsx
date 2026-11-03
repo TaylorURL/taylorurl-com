@@ -43,9 +43,7 @@ function CapturePlate({ project, device, className }) {
 /**
  * A client's committed capture, standing on a lit plane.
  *
- * The capture is asked for down `captureLadder`, the same ladder the device
- * frames in `DevicePreview` and the flat card frames in `PortfolioPreview`
- * climb: this site's own WebP, twice more at an address no cache holds an
+ * The capture is asked for down `captureLadder`: this site's own WebP, twice more at an address no cache holds an
  * answer for, then a live render from the screenshot service, then the plate
  * above. For a long time this frame was the third answer to the question those
  * two had already settled between them - it asked once, marked nothing, and on

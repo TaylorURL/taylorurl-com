@@ -10,8 +10,6 @@
  * `@data/portfolio`; these are written out, since a second site quoting the
  * studio's client scores would be borrowing proof it has not earned.
  */
-import { Code2, Globe, Headphones, Zap } from 'lucide-react'
-
 export const ABOUT_PAGE = {
   seo: {
     title: 'About Trenton Taylor, Software Engineer',
@@ -37,33 +35,29 @@ export const ABOUT_PAGE = {
   },
 
   stats: [
-    { value: '3', unit: '', label: 'Services' },
-    { value: '0', unit: '', label: 'Account Managers' },
-    { value: '<1', unit: 'hr', label: 'Typical Reply Time' },
-    { value: '0', unit: '', label: 'Contracts With a Term' },
+    { value: '3', label: 'Services' },
+    { value: '0', label: 'Account managers' },
+    { value: 'Under an hour', label: 'Typical reply time' },
+    { value: '0', label: 'Contracts with a term' },
   ],
 
   place: {
-    icon: Globe,
     label: 'Anywhere',
     body: 'Every part of this happens over calls, screen shares, and email, so where your company sits makes no difference to the work or the price. Nothing needs to be signed in person.',
   },
 
   values: [
     {
-      icon: Code2,
       title: 'You own what gets built',
       description:
         'The repository, the domains, and the accounts are registered in your name. Another engineer can pick the work up after me without asking me for anything.',
     },
     {
-      icon: Headphones,
       title: 'Your messages land on my phone',
       description:
         'No account manager sits between you and the work. You send a message, it lands on my phone, and the answer usually comes back inside the hour.',
     },
     {
-      icon: Zap,
       title: 'A price and a date before anything starts',
       description:
         'Both come back in writing after the first call, and neither moves once you have agreed to them unless you ask for something that was not in the scope.',

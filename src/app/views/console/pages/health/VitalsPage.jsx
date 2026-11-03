@@ -410,7 +410,7 @@ export default function VitalsPage() {
     token,
     enabled: Boolean(token),
   })
-  // The console's own site picker is the scope here too, so Vitals answers to
+  // The console's own site picker is the scope here too, so Speed answers to
   // the same control as every other section rather than carrying a second one.
   const { siteIds, siteId, scopeLabel, scopeName } = useConsole()
   // The readings come from their own feed over every site the account holds,

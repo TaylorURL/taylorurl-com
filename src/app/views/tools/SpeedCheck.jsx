@@ -2,18 +2,17 @@ import { useState } from 'react'
 import { Gauge } from 'lucide-react'
 import CheckProgress from '@components/conversion/CheckProgress'
 import CheckScope from '@components/conversion/CheckScope'
-import CheckStage from '@components/conversion/CheckStage'
-import CtaSection from '@components/conversion/CtaSection'
-import Mesh from '@components/mesh/Mesh'
-import PageHero from '@components/page-bands/PageHero'
+import { CallToAction, Section, StatPanel } from '@components/kit/Kit'
+import { BUTTONS, CARD, TYPE } from '@components/kit/styles'
 import Seo from '@components/Seo'
 import { breadcrumbSchema } from '@constants/seo'
 import { useToast } from '@hooks/chrome/useToast'
 import { STAGES, runSpeedCheck, speedCheckErrorMessage, stageIndex } from '@data/leads/speedCheck'
 import { isValidEmail } from '@utils/validation'
-import { GROUND, RUN_FAULT } from './lib/ground'
 import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
+import { BANDS, RUN_FAULT } from './lib/bands'
 import { useElapsed } from './lib/useElapsed'
+import { ScoreRing, ToolHero } from './parts'
 
 /**
  * The reading a site gets asked for by the person who owns it.
@@ -21,31 +20,20 @@ import { useElapsed } from './lib/useElapsed'
  * It is the same report the studio measures a site by anywhere else: Google's
  * mobile PageSpeed run, the band the score lands in, the categories the same
  * report marked short, the frames the run recorded while the page loaded, and
- * a capture of the page as it loaded. The endpoint
- * composes none of that - it reads it out of the modules the rest of the site
- * reads it out of - so a figure here and a figure quoted anywhere else are the
- * same figure.
+ * a capture of the page as it loaded. The endpoint composes none of that - it
+ * reads it out of the modules the rest of the site reads it out of - so a
+ * figure here and a figure quoted anywhere else are the same figure.
  *
- * The wait is most of a minute and the endpoint says which stage it is on as
- * each finishes, so the panel that holds the wait is the same box, in the same
- * place, as the panel that stood there before the run started. Nothing on the
- * page moves when the reading lands except that box's contents.
+ * The address and the email sit in a card at the top. The wait is most of a
+ * minute and the endpoint says which stage it is on as each finishes, so the
+ * card counting the wait out stands under the form, where the reading will
+ * land, and nothing else on the page moves.
  */
 
 const STAGE_LABELS = STAGES.map(stage => stage.label)
 
 const WAIT_NOTE =
   'Google loads the page on its own hardware, which takes most of a minute. Leave this open.'
-
-// The three bands, in the tones the sheet can carry. The ink is a token in
-// every case: a band drawn in a literal is a band that reads correctly under
-// one theme and disappears under another.
-const BANDS = {
-  poor: { label: 'Poor', ink: 'text-[color:var(--danger-on-paper)]' },
-  fair: { label: 'Needs Improvement', ink: 'text-[color:var(--warn-on-paper)]' },
-  good: { label: 'Good', ink: 'text-[color:var(--good-on-paper)]' },
-  plain: { label: 'Not Scored', ink: 'text-ink-paper' },
-}
 
 const FIELDS = { site: 'speed-check-site', email: 'speed-check-email' }
 
@@ -122,9 +110,9 @@ function frameAlt(frame, mark) {
  * The frames are Google's own, recorded while it loaded the page, so they show
  * the reader their own site the way a visitor meets it: white for as long as it
  * is white, half drawn for as long as it is half drawn. The marked frame is the
- * first one usable, and it is marked by the selected cell's own fill rather
- * than by a second colour, so the strip carries no verdict of its own beside
- * the one the score already gives.
+ * first one usable, and it is marked by a blue fill behind it rather than a
+ * second colour on the picture, so the strip carries no verdict of its own
+ * beside the one the score already gives.
  *
  * Every frame is described by what it shows at its time, and the times read
  * under each frame are left to the descriptions for a screen reader, which
@@ -143,65 +131,71 @@ function Filmstrip({ strip, host }) {
   }
 
   return (
-    <div>
-      <p className="section-label text-accent">What Google's Test Showed, Frame by Frame</p>
-      <div className={`mt-5 ${GROUND.shell}`}>
-        <ol
-          className={`${GROUND.mesh} ${STRIP_COLUMNS[count] ?? STRIP_COLUMNS[12]}`}
-          aria-label={`The test load of ${host}, frame by frame`}
-          aria-describedby={helper}
-        >
-          {strip.frames.map((frame, index) => (
-            <li
-              key={frame.at}
-              className={`p-2 ${GROUND.cell} ${
-                frame.marked ? 'bg-[color:var(--accent-fill)]' : GROUND.surface
-              } ${short && index === count - 1 ? 'col-span-2 sm:col-span-1' : ''}`}
+    <div className={`${CARD} p-5 sm:p-7`}>
+      <h3 className={TYPE.h3}>What Google&rsquo;s test showed, frame by frame</h3>
+      <ol
+        className={`mt-5 grid gap-2 ${STRIP_COLUMNS[count] ?? STRIP_COLUMNS[12]}`}
+        aria-label={`The test load of ${host}, frame by frame`}
+        aria-describedby={helper}
+      >
+        {strip.frames.map((frame, index) => (
+          <li
+            key={frame.at}
+            className={`rounded-[10px] p-1.5 ${
+              frame.marked ? 'bg-[rgba(59,107,255,0.22)]' : 'bg-[var(--card-hi)]'
+            } ${short && index === count - 1 ? 'col-span-2 sm:col-span-1' : ''}`}
+          >
+            <img
+              src={frame.src}
+              alt={frameAlt(frame, strip.mark)}
+              width={strip.width ?? undefined}
+              height={strip.height ?? undefined}
+              loading="lazy"
+              decoding="async"
+              className={`mx-auto block h-auto rounded-[6px] ${
+                short && index === count - 1 ? 'w-1/2 sm:w-full' : 'w-full'
+              }`}
+              style={
+                strip.width && strip.height
+                  ? { aspectRatio: `${strip.width} / ${strip.height}` }
+                  : undefined
+              }
+            />
+            <p
+              aria-hidden="true"
+              className={`mt-1.5 text-center text-[12px] tabular-nums ${
+                frame.marked ? 'font-semibold text-[color:var(--link)]' : 'text-ink-mute'
+              }`}
             >
-              <img
-                src={frame.src}
-                alt={frameAlt(frame, strip.mark)}
-                width={strip.width ?? undefined}
-                height={strip.height ?? undefined}
-                loading="lazy"
-                decoding="async"
-                className={`mx-auto block h-auto border ${GROUND.rule} ${
-                  short && index === count - 1 ? 'w-1/2 sm:w-full' : 'w-full'
-                }`}
-                style={
-                  strip.width && strip.height
-                    ? { aspectRatio: `${strip.width} / ${strip.height}` }
-                    : undefined
-                }
-              />
-              <p
-                aria-hidden="true"
-                className={`mt-2 text-center font-mono text-[12px] tabular-nums tracking-tight ${
-                  frame.marked ? 'font-semibold text-[color:var(--on-accent)]' : GROUND.meta
-                }`}
-              >
-                {frame.time}
-              </p>
-            </li>
-          ))}
-        </ol>
-      </div>
-      <p id={helper} className={`mt-4 text-[14px] leading-relaxed ${GROUND.meta}`}>
+              {frame.time}
+            </p>
+          </li>
+        ))}
+      </ol>
+      <p id={helper} className={`${TYPE.small} mt-4`}>
         {note.join(' ')}
       </p>
     </div>
   )
 }
 
-/** One score in its band, as a cell of the mesh the categories are laid on. */
-function Figure({ label, value, band, cell }) {
-  const tone = BANDS[band] ?? BANDS.plain
+/** Label and figure rows in a card: no rule between them, just the space. */
+function Rows({ title, rows }) {
   return (
-    <div className={`p-5 ${cell}`}>
-      <p className={`section-label-sm ${GROUND.meta}`}>{label}</p>
-      <p className={`mt-2 text-[28px] font-semibold tabular-nums tracking-tight ${tone.ink}`}>
-        {value === null ? '—' : value}
-      </p>
+    <div className={`${CARD} p-6 sm:p-7`}>
+      <h3 className={TYPE.h3}>{title}</h3>
+      <dl className="mt-4 space-y-1">
+        {rows.map(row => (
+          <div key={row.label} className="flex items-baseline justify-between gap-6 py-2">
+            <dt className="text-[15px] leading-snug text-ink-soft">{row.label}</dt>
+            <dd
+              className={`shrink-0 text-[15px] font-medium tabular-nums ${row.ink || 'text-ink'}`}
+            >
+              {row.value}
+            </dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }
@@ -210,7 +204,7 @@ function Figure({ label, value, band, cell }) {
  * The reading, once it has landed.
  *
  * The headline figure carries the only colour in the block. The categories
- * beside it are corroboration that the page was read rather than pinged, and a
+ * under it are corroboration that the page was read rather than pinged, and a
  * second use of the band colour would open a second verdict next to the one the
  * reading is about.
  */
@@ -218,123 +212,104 @@ function Reading({ reading }) {
   const tone = BANDS[reading.band] ?? BANDS.plain
 
   return (
-    <div className="grid gap-10 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-      <div className="space-y-10">
-        <div className={`p-8 ${GROUND.shell}`}>
-          <p className="section-label-sm text-accent">Mobile Performance</p>
-          <p className="mt-2 break-all text-[16px] font-semibold tracking-tight text-ink-paper">
-            {reading.host}
-          </p>
+    <div className="space-y-5">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div className={`${CARD} p-6 sm:p-8`}>
+          <p className={TYPE.label}>Mobile performance</p>
+          <p className="mt-1.5 break-all text-[17px] font-medium text-ink">{reading.host}</p>
 
-          <div className="mt-7 flex items-end gap-5">
-            <span
-              className={`display-2 font-semibold tabular-nums leading-none tracking-tightest ${tone.ink}`}
-            >
-              {reading.score === null ? '—' : reading.score}
-            </span>
-            <span className={`section-label-sm pb-2 ${tone.ink}`}>{tone.label}</span>
+          <div className="mt-7 flex items-center gap-5">
+            <ScoreRing score={reading.score} stroke={tone.stroke} size={84} width={6} />
+            <div>
+              <span
+                className={`block text-[52px] font-semibold tabular-nums leading-none tracking-[-0.03em] ${tone.ink}`}
+              >
+                {reading.score === null ? '—' : reading.score}
+              </span>
+              <span className={`mt-2 block text-[15px] font-medium ${tone.ink}`}>{tone.label}</span>
+            </div>
           </div>
 
-          <p className={`mt-6 text-[16px] leading-relaxed ${GROUND.body}`}>{reading.verdict}</p>
+          <p className={`${TYPE.body} mt-6`}>{reading.verdict}</p>
 
-          <p
-            className={`mt-7 border-t pt-6 text-[14px] leading-relaxed ${GROUND.rule} ${GROUND.meta}`}
-          >
+          <p className={`${TYPE.small} mt-5`}>
             {reading.verify.lead}{' '}
-            <a className="accent-underline text-accent" href={reading.verify.href}>
+            <a
+              className="text-[color:var(--link)] underline underline-offset-[3px] hover:text-ink"
+              href={reading.verify.href}
+            >
               {reading.verify.link}
             </a>
             . {reading.verify.tail}
           </p>
         </div>
 
-        {reading.filmstrip && <Filmstrip strip={reading.filmstrip} host={reading.host} />}
-
-        <div>
-          <p className="section-label text-accent">The Same Report, in Full</p>
-          <Mesh items={reading.categories} className="mt-5" columns={{ base: 2, sm: 4 }}>
-            {(category, index, cell) => (
-              <Figure
-                key={category.label}
-                label={category.label}
-                value={category.value}
-                band={category.band}
-                cell={cell}
-              />
-            )}
-          </Mesh>
-          <p className={`mt-4 text-[14px] leading-relaxed ${GROUND.meta}`}>
-            Anything under {reading.goodFloor} sits below the band Google calls good.
-          </p>
-        </div>
-
-        {reading.metrics.length > 0 && (
-          <div>
-            <p className="section-label text-accent">What the Score Is Built From</p>
-            <dl className={`divide-hair-paper mt-5 divide-y border-y ${GROUND.rule}`}>
-              {reading.metrics.map(metric => (
-                <div key={metric.label} className="flex items-baseline justify-between gap-6 py-4">
-                  <dt className={`text-[15px] leading-snug ${GROUND.body}`}>{metric.label}</dt>
-                  <dd className="font-mono text-[15px] tabular-nums tracking-tight text-ink-paper">
-                    {metric.display}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-10">
         {reading.shot && (
-          <div>
-            <p className="section-label text-accent">The Page as It Loaded</p>
-            <div className={`mt-5 ${GROUND.shell}`}>
-              <img
-                src={reading.shot}
-                alt={`The home page at ${reading.host}`}
-                width="800"
-                height="750"
-                loading="lazy"
-                className="block h-auto w-full"
-                style={{ aspectRatio: '800 / 750' }}
-              />
-            </div>
-          </div>
-        )}
-
-        {reading.opportunities.length > 0 && (
-          <div>
-            <p className="section-label text-accent">The Largest Savings Named</p>
-            <ul className={`divide-hair-paper mt-5 divide-y border-y ${GROUND.rule}`}>
-              {reading.opportunities.map(entry => (
-                <li key={entry.title} className="flex items-baseline justify-between gap-6 py-4">
-                  <span className={`text-[15px] leading-snug ${GROUND.body}`}>{entry.title}</span>
-                  <span className="font-mono text-[15px] tabular-nums tracking-tight text-accent">
-                    {entry.savings}s
-                  </span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {reading.short.length > 0 && (
-          <div className={`p-8 ${GROUND.shell}`}>
-            <p className="section-label-sm text-accent">Also Short of Good</p>
-            <dl className="mt-5 space-y-3">
-              {reading.short.map(entry => (
-                <div key={entry.label} className="flex items-baseline justify-between gap-6">
-                  <dt className={`text-[15px] leading-snug ${GROUND.body}`}>{entry.label}</dt>
-                  <dd className="font-mono text-[15px] tabular-nums tracking-tight text-ink-paper">
-                    {entry.value}
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          </div>
+          <figure className={`${CARD} p-5 sm:p-6`}>
+            <figcaption className={TYPE.h3}>The page as it loaded</figcaption>
+            <img
+              src={reading.shot}
+              alt={`The home page at ${reading.host}`}
+              width="800"
+              height="750"
+              loading="lazy"
+              className="mt-4 block h-auto w-full rounded-[10px] bg-[var(--card-hi)]"
+              style={{ aspectRatio: '800 / 750' }}
+            />
+          </figure>
         )}
       </div>
+
+      <div>
+        <h3 className={`${TYPE.h3} mb-4 mt-10`}>The same report, in full</h3>
+        <StatPanel
+          items={reading.categories.map(category => ({
+            label: category.label,
+            value: category.value === null ? '—' : String(category.value),
+          }))}
+        />
+        <p className={`${TYPE.small} mt-3`}>
+          Anything under {reading.goodFloor} sits below the band Google calls good.
+        </p>
+      </div>
+
+      {reading.filmstrip && <Filmstrip strip={reading.filmstrip} host={reading.host} />}
+
+      {(reading.metrics.length > 0 ||
+        reading.opportunities.length > 0 ||
+        reading.short.length > 0) && (
+        <div className="grid gap-5 lg:grid-cols-2">
+          {reading.metrics.length > 0 && (
+            <Rows
+              title="What the score is built from"
+              rows={reading.metrics.map(metric => ({
+                label: metric.label,
+                value: metric.display,
+              }))}
+            />
+          )}
+          {(reading.opportunities.length > 0 || reading.short.length > 0) && (
+            <div className="space-y-5">
+              {reading.opportunities.length > 0 && (
+                <Rows
+                  title="The largest savings named"
+                  rows={reading.opportunities.map(entry => ({
+                    label: entry.title,
+                    value: `${entry.savings}s`,
+                    ink: 'text-[color:var(--link)]',
+                  }))}
+                />
+              )}
+              {reading.short.length > 0 && (
+                <Rows
+                  title="Also short of good"
+                  rows={reading.short.map(entry => ({ label: entry.label, value: entry.value }))}
+                />
+              )}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -422,43 +397,14 @@ export default function SpeedCheck() {
         ]}
       />
 
-      <PageHero
-        eyebrow="Speed Check"
+      <ToolHero
         title="How your site loads on a phone."
-        description="Google measures the page on its own hardware and scores it out of a hundred. This runs that measurement against your address and shows what came back."
-      />
-
-      <section {...GROUND.attrs} className={`section-y relative overflow-hidden ${GROUND.section}`}>
-        <div className="container-rail relative">
-          <CheckStage
-            running={running}
-            panel={
-              running ? (
-                <CheckProgress
-                  address={values.site.trim()}
-                  elapsed={elapsed}
-                  stages={STAGE_LABELS}
-                  at={stageIndex(stage)}
-                  note={WAIT_NOTE}
-                  ground={GROUND}
-                />
-              ) : (
-                <CheckScope
-                  title="What Gets Measured"
-                  items={[
-                    'How the page performs on a throttled phone, scored out of a hundred.',
-                    'Accessibility, build quality, and search readiness from the same report.',
-                    'The five timings the performance score is built from.',
-                    'What the screen showed at each step of the load.',
-                    'What the page looked like when it finished loading.',
-                  ]}
-                  note="This measures speed. Rankings and competitor data are not part of it."
-                  ground={GROUND}
-                />
-              )
-            }
-          >
-            <form onSubmit={run} className="space-y-6" noValidate>
+        lead="Google measures the page on its own hardware and scores it out of a hundred."
+        narrow
+      >
+        <div className={`${CARD} p-6 sm:p-8`}>
+          <form onSubmit={run} className="space-y-5" noValidate>
+            <div className="grid gap-5 sm:grid-cols-2">
               <div>
                 <label htmlFor={FIELDS.site} className={FIELD_LABEL}>
                   Web address
@@ -475,7 +421,7 @@ export default function SpeedCheck() {
                   disabled={running}
                   aria-invalid={errors.site ? true : undefined}
                   aria-describedby={errors.site ? `${FIELDS.site}-error` : undefined}
-                  className="field w-full py-3.5"
+                  className="field disabled:[--field-ring:transparent]"
                   placeholder="yourbusiness.com"
                 />
                 {errors.site && (
@@ -501,46 +447,70 @@ export default function SpeedCheck() {
                   disabled={running}
                   aria-invalid={errors.email ? true : undefined}
                   aria-describedby={errors.email ? `${FIELDS.email}-error` : `${FIELDS.email}-note`}
-                  className="field w-full py-3.5"
+                  className="field disabled:[--field-ring:transparent]"
                   placeholder="you@yourbusiness.com"
                 />
+                {/* What the address is kept for, said where it is asked for.
+                    It is the one note on the form, because it is a promise
+                    about somebody's data rather than help with the box. */}
                 {errors.email ? (
                   <p id={`${FIELDS.email}-error`} className={FIELD_FAULT} role="alert">
                     {errors.email}
                   </p>
                 ) : (
-                  <p
-                    id={`${FIELDS.email}-note`}
-                    className={`mt-2 text-[14px] leading-relaxed ${GROUND.meta}`}
-                  >
+                  <p id={`${FIELDS.email}-note`} className="mt-2 text-[14px] text-ink-mute">
                     The reading appears on this page. I keep the address with it so a reply can
                     reach you, and it joins no mailing list.
                   </p>
                 )}
               </div>
-
-              <button type="submit" disabled={running} className="btn btn-primary">
-                <Gauge className="h-4 w-4" aria-hidden="true" />
-                {running ? 'Checking…' : 'Run the Check'}
-              </button>
-
-              {fault && <p className={RUN_FAULT}>{fault}</p>}
-            </form>
-          </CheckStage>
-
-          {reading && (
-            <div className="mt-20 animate-fade-in-up sm:mt-28">
-              <Reading reading={reading} />
             </div>
-          )}
-        </div>
-      </section>
 
-      <CtaSection
-        eyebrow="Next"
-        title="The number tells you where to start."
-        description="If the reading found something worth fixing, the fix is a build. Tell me what the site is for and get a plan and a price back before any work starts."
-      />
+            <button
+              type="submit"
+              disabled={running}
+              className={`${BUTTONS.primary} w-full disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto`}
+            >
+              <Gauge className="h-4 w-4" aria-hidden="true" />
+              {running ? 'Checking…' : 'Run the Check'}
+            </button>
+
+            {fault && <p className={RUN_FAULT}>{fault}</p>}
+          </form>
+        </div>
+
+        {running ? (
+          <CheckProgress
+            address={values.site.trim()}
+            elapsed={elapsed}
+            stages={STAGE_LABELS}
+            at={stageIndex(stage)}
+            note={WAIT_NOTE}
+          />
+        ) : (
+          !reading && (
+            <CheckScope
+              title="What gets measured"
+              items={[
+                'How the page performs on a throttled phone, scored out of a hundred.',
+                'Accessibility, build quality, and search readiness from the same report.',
+                'The five timings the performance score is built from.',
+                'What the screen showed at each step of the load.',
+                'What the page looked like when it finished loading.',
+              ]}
+              note="This measures speed. Rankings and competitor data are not part of it."
+            />
+          )
+        )}
+      </ToolHero>
+
+      {reading && (
+        <Section label="The reading" className="!pt-0">
+          <Reading reading={reading} />
+        </Section>
+      )}
+
+      <CallToAction title="The number tells you where to start." />
     </div>
   )
 }

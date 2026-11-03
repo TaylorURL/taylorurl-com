@@ -2,6 +2,8 @@ import { useId, useState } from 'react'
 import { AlertCircle } from 'lucide-react'
 import { unsubscribeAddress } from '@data/leads/subscription'
 import { useToast } from '@hooks/chrome/useToast'
+import { BUTTONS } from '@components/kit/styles'
+import { FIELD_LABEL } from '@constants/grounds'
 import { faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'
 
@@ -64,14 +66,10 @@ export default function UnsubscribeForm({ onDone }) {
   }
 
   return (
-    // The card stands on the page's own paper rather than a pinned white sheet,
-    // which is reserved for a surface that has to stay white whatever the
-    // setting. Every role inside it is named against paper for the same reason:
-    // the section behind is a dark slab, and a role read off the section would
-    // put white ink on the card.
-    <div className="panel-static mt-9 max-w-xl bg-paper p-6 sm:p-8">
+    // It stands inside the page's own card, so it carries no card of its own.
+    <div className="mt-7 max-w-xl">
       <form onSubmit={handleSubmit} noValidate>
-        <label htmlFor={fieldId} className="section-label-sm text-paper-faint mb-2 block">
+        <label htmlFor={fieldId} className={FIELD_LABEL}>
           Email address
         </label>
         <div className="flex flex-col gap-3 sm:flex-row">
@@ -86,10 +84,14 @@ export default function UnsubscribeForm({ onDone }) {
             onChange={event => setEmail(event.target.value)}
             aria-invalid={fault ? 'true' : undefined}
             aria-describedby={fault ? faultId : undefined}
-            className="field flex-1 py-3.5"
+            className="field flex-1 disabled:[--field-ring:transparent]"
             placeholder="you@yourbusiness.com"
           />
-          <button type="submit" disabled={status === 'submitting'} className="btn btn-primary">
+          <button
+            type="submit"
+            disabled={status === 'submitting'}
+            className={`${BUTTONS.primary} disabled:cursor-not-allowed disabled:opacity-60`}
+          >
             {status === 'submitting' ? 'Unsubscribing' : 'Unsubscribe'}
           </button>
         </div>
@@ -100,7 +102,7 @@ export default function UnsubscribeForm({ onDone }) {
           <p
             id={faultId}
             role="alert"
-            className="mt-2 flex items-start gap-2 text-[13px] leading-snug text-[color:var(--danger-on-paper)]"
+            className="mt-2 flex items-start gap-2 text-[14px] leading-snug text-[color:var(--danger-on-paper)]"
           >
             <AlertCircle
               className="mt-0.5 h-3.5 w-3.5 flex-shrink-0"

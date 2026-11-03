@@ -979,13 +979,6 @@ check('the enquiry door hands the lead the page the visit came in from', () => {
   same(call.slice(0, call.indexOf('})')).includes('referrer: enquiry.referrer'), true, 'referrer')
 })
 
-check('the console names an untagged lead by the site it came in from', () => {
-  const admin = readFileSync(join(ROOT, 'api/leads-admin.js'), 'utf8')
-  same(admin.includes("'referrer',"), true, 'the console reads the column')
-  const page = readFileSync(join(ROOT, 'src/app/views/console/pages/studio/LeadsPage.jsx'), 'utf8')
-  same(page.includes('return lead.referrer || null'), true, 'and draws it where there are no tags')
-})
-
 await finish()
 
 console.log(

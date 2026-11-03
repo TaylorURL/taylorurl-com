@@ -70,30 +70,3 @@ export function rememberRows(key, body) {
     // Nothing to do - the placeholder falls back to its default next time.
   }
 }
-
-/**
- * The same trick for a list, which has no `rows` to count.
- *
- * A ranked list draws its placeholder before it knows how many rows are
- * coming, so the first guess is the caller's and every guess after it is what
- * this reader actually saw.
- */
-export function recalledCount(key, fallback) {
-  try {
-    const stored = Number(window.sessionStorage.getItem(key))
-    if (stored > 0) return stored
-  } catch {
-    // Private browsing refuses the read; the caller's guess covers it.
-  }
-  return fallback
-}
-
-/** Records how many rows a list turned out to have, for the next load. */
-export function rememberCount(key, count) {
-  if (!count) return
-  try {
-    window.sessionStorage.setItem(key, String(count))
-  } catch {
-    // Nothing to do; the next placeholder falls back to the caller's guess.
-  }
-}
