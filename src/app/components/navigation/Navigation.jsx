@@ -30,7 +30,8 @@ const loadSiteSearch = () => import('./SiteSearch')
 // reload it names is the recovery.
 const SEARCH_RENEWALS = 1
 
-const LINK = `${TYPE.mono} px-3 py-2 text-[color:var(--light-soft)] transition-colors duration-150 hover:text-[color:var(--light)] aria-[current=page]:text-[color:var(--light)]`
+const LINK =
+  'rounded-full px-3.5 py-2 text-[15px] font-medium text-ink-soft transition-colors duration-150 hover:text-ink aria-[current=page]:text-ink'
 
 /**
  * The bar: the wordmark, three links, the phone number and the one button.
@@ -112,69 +113,73 @@ export default function Navigation() {
   }, [menuOpen])
 
   const isActive = to => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
-  const account = HAS_ACCOUNTS ? (signedIn ? { to: '/console', label: 'Your console' } : null) : null
+  const account = HAS_ACCOUNTS
+    ? signedIn
+      ? { to: '/console', label: 'Your console' }
+      : null
+    : null
 
   return (
     <>
-      <header className="sticky top-0 z-[var(--z-nav)] border-b border-[var(--night-line)] bg-[var(--nav-surface)] text-[color:var(--light)] backdrop-blur-md">
+      <header className="sticky top-0 z-[var(--z-nav)] border-b border-[var(--edge)] bg-[var(--nav-surface)] backdrop-blur-xl">
         <nav
           aria-label="Primary"
-          className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between gap-6 px-5 sm:h-[72px] sm:px-8"
+          className="mx-auto flex h-16 w-full max-w-[1160px] items-center justify-between gap-6 px-5 sm:h-[72px] sm:px-8"
         >
-          <Link to="/" aria-label="Home" className="shrink-0 py-1">
+          <Link to="/" aria-label="Home" className="shrink-0 rounded-md py-1">
             <Logo />
           </Link>
 
-          <div className="hidden items-center lg:flex">
-            <ul className="flex items-center gap-2">
-              {HEADER_LINKS.map(link => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className={LINK}
-                    aria-current={isActive(link.to) ? 'page' : undefined}
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-              {account && (
-                <li>
-                  <Link to={account.to} className={LINK}>
-                    {account.label}
-                  </Link>
-                </li>
-              )}
-            </ul>
+          <ul className="hidden items-center gap-1 lg:flex">
+            {HEADER_LINKS.map(link => (
+              <li key={link.to}>
+                <Link
+                  to={link.to}
+                  className={LINK}
+                  aria-current={isActive(link.to) ? 'page' : undefined}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            ))}
+            {account && (
+              <li>
+                <Link to={account.to} className={LINK}>
+                  {account.label}
+                </Link>
+              </li>
+            )}
+          </ul>
+
+          <div className="hidden items-center gap-2 lg:flex">
             <NavSearchButton
-              className="ml-2 flex h-10 w-10 items-center justify-center text-[color:var(--light-soft)] transition-colors hover:text-[color:var(--light)]"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink-soft transition-colors hover:bg-white/[0.06] hover:text-ink"
               labelClass="sr-only"
               markClass="h-[18px] w-[18px]"
               onOpen={openSearch}
             />
             <a
               href={COMPANY_PHONE_HREF}
-              className="ml-5 font-mono text-[14px] font-medium tracking-[0.02em] text-[color:var(--light)] hover:text-[color:var(--signal)]"
+              className="px-3 text-[15px] font-medium text-ink-soft transition-colors hover:text-ink"
             >
               {COMPANY_PHONE}
             </a>
-            <Link to={START_LINK.to} className={`${BUTTONS.blue} ml-6 min-h-[44px] px-5`}>
+            <Link to={START_LINK.to} className={`${BUTTONS.primary} min-h-[42px] px-5`}>
               {START_LINK.label}
-              <ArrowRight className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
             </Link>
           </div>
 
           <div className="flex items-center gap-1 lg:hidden">
             <a
               href={COMPANY_PHONE_HREF}
-              className={`${BUTTONS.blue} min-h-[40px] gap-2 px-4`}
+              className={`${BUTTONS.primary} min-h-[38px] gap-1.5 px-4 text-[14px]`}
               aria-label={`Call ${COMPANY_PHONE}`}
             >
-              <Phone className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
+              <Phone className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
               Call
             </a>
             <NavSearchButton
-              className="flex h-10 w-10 items-center justify-center text-[color:var(--light)]"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink"
               labelClass="sr-only"
               markClass="h-5 w-5"
               onOpen={openSearch}
@@ -182,7 +187,7 @@ export default function Navigation() {
             <button
               ref={toggleRef}
               type="button"
-              className="flex h-10 w-10 items-center justify-center text-[color:var(--light)]"
+              className="flex h-10 w-10 items-center justify-center rounded-full text-ink"
               onClick={() => setMenuOpen(open => !open)}
               aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
               aria-expanded={menuOpen}
@@ -196,31 +201,31 @@ export default function Navigation() {
         {menuOpen && (
           <div
             id="site-menu"
-            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-[var(--night-line)] bg-[var(--night)] lg:hidden"
+            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-[var(--edge)] bg-[var(--paper)] lg:hidden"
           >
-            <div className="px-5 pb-10 pt-2">
-              <ul>
+            <div className="px-5 pb-10 pt-3">
+              <ul className="divide-y divide-[var(--edge)]">
                 {HEADER_LINKS.map(link => (
-                  <li key={link.to} className="border-b border-[var(--night-line)]">
+                  <li key={link.to}>
                     <Link
                       to={link.to}
-                      className="flex items-center justify-between py-5 text-[30px] font-semibold tracking-[-0.03em] text-[color:var(--light)]"
+                      className="flex items-center justify-between py-4 text-[22px] font-medium tracking-[-0.02em] text-ink"
                       aria-current={isActive(link.to) ? 'page' : undefined}
                     >
                       {link.label}
-                      <ArrowRight className="h-5 w-5 text-[color:var(--signal)]" strokeWidth={1.75} />
+                      <ArrowRight className="h-5 w-5 text-ink-mute" strokeWidth={1.8} />
                     </Link>
                   </li>
                 ))}
               </ul>
-              <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8">
+              <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-7">
                 {FOOTER_COLUMNS.map(column => (
                   <div key={column.head}>
-                    <p className={`${TYPE.mono} text-[color:var(--light-soft)]`}>{column.head}</p>
-                    <ul className="mt-3 space-y-1.5">
+                    <p className={TYPE.label}>{column.head}</p>
+                    <ul className="mt-2.5 space-y-1">
                       {column.items.map(item => (
                         <li key={item.to}>
-                          <Link to={item.to} className="block py-1 text-[16px] text-[color:var(--light)]">
+                          <Link to={item.to} className="block py-1 text-[15px] text-ink-soft">
                             {item.label}
                           </Link>
                         </li>
@@ -229,19 +234,18 @@ export default function Navigation() {
                   </div>
                 ))}
               </div>
-              <div className="mt-10 flex flex-col gap-3">
-                <Link to={START_LINK.to} className={`${BUTTONS.blue} w-full`}>
+              <div className="mt-8 flex flex-col gap-3">
+                <Link to={START_LINK.to} className={`${BUTTONS.primary} w-full`}>
                   {START_LINK.label}
-                  <ArrowRight className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </Link>
-                <a href={COMPANY_PHONE_HREF} className={`${BUTTONS.night} w-full`}>
-                  <Phone className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-                  {COMPANY_PHONE}
+                <a href={COMPANY_PHONE_HREF} className={`${BUTTONS.secondary} w-full`}>
+                  <Phone className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
+                  Call {COMPANY_PHONE}
                 </a>
                 {HAS_ACCOUNTS && (
                   <Link
                     to={account ? account.to : '/login'}
-                    className={`${TYPE.mono} mt-3 text-center text-[color:var(--light-soft)]`}
+                    className="mt-2 text-center text-[14px] text-ink-mute"
                   >
                     {account ? account.label : 'Client sign in'}
                   </Link>

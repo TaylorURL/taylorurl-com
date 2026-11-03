@@ -19,7 +19,6 @@ import {
   usePreviewClient,
 } from '@hooks/console/usePreviewClient'
 import { useSession } from '@hooks/session/useSession'
-import { THEMES, useTheme } from '@hooks/theme/useTheme'
 import { supabase } from '@data/supabase/supabaseClient'
 import { ConsoleBar } from './shell/ConsoleBar'
 import { ConsoleSidebar } from './shell/ConsoleSidebar'
@@ -137,7 +136,6 @@ export default function ConsoleFrame() {
   const [adopted, setAdopted] = useState(false)
   const [drawer, setDrawer] = useState(false)
   const [searching, setSearching] = useState(false)
-  const { choice, setChoice } = useTheme()
 
   // What the scope comes to for the rest of the console. One site is still one
   // site, so every section that reads `siteId` reads what it always did; a set
@@ -482,7 +480,6 @@ export default function ConsoleFrame() {
 
   // One control cycles the three rather than opening a second menu inside the
   // account panel, which is a panel a reader has to close twice.
-  const cycleTheme = () => setChoice(THEMES[(THEMES.indexOf(choice) + 1) % THEMES.length])
 
   const shortcuts = useConsoleShortcuts({
     openSearch: () => setSearching(true),
@@ -908,8 +905,6 @@ export default function ConsoleFrame() {
               canPreview={signedInRole === 'admin'}
               preview={preview}
               onPreview={enterPreview}
-              theme={choice}
-              onCycleTheme={cycleTheme}
             />
           </div>
           <button
@@ -939,8 +934,6 @@ export default function ConsoleFrame() {
               reading={loading || liveLoading}
               onSearch={() => setSearching(true)}
               onShortcuts={shortcuts.openSheet}
-              onTheme={cycleTheme}
-              theme={choice}
               signInTo={here}
             />
 

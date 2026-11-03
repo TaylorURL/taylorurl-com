@@ -2,8 +2,8 @@ import { useState } from 'react'
 import { Check, Plus } from 'lucide-react'
 import Seo from '@components/Seo'
 import SendButton from '@components/conversion/SendButton'
-import { Container, Kicker, Square } from '@components/kit/Kit'
-import { TYPE } from '@components/kit/styles'
+import { Badge, Container } from '@components/kit/Kit'
+import { CARD, TYPE } from '@components/kit/styles'
 import { useToast } from '@hooks/chrome/useToast'
 import { useFormFields } from '@hooks/useFormFields'
 import { FIELD_FAULT, FIELD_LABEL } from '@constants/grounds'
@@ -181,25 +181,20 @@ export default function Start() {
         ]}
       />
 
-      <section className="signal-grid pb-16 pt-12 text-[color:var(--light)] sm:pb-24 sm:pt-20">
-        <Container className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,35rem)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-10">
+      <section className="glow pb-16 pt-10 sm:pb-24 sm:pt-16">
+        <Container className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-10">
           <div>
-            <Kicker tone="night" className="mb-6 sm:mb-8">
-              Get a price
-            </Kicker>
-            <h1 className={TYPE.display}>
-              Tell me what you need
-              <Square />
-            </h1>
-            <p className={`${TYPE.lead} mt-7 max-w-[28rem] text-[color:var(--light-soft)]`}>
+            <Badge className="mb-6">Get a price</Badge>
+            <h1 className={TYPE.display}>Tell me what you need.</h1>
+            <p className={`${TYPE.lead} mt-5 max-w-[28rem]`}>
               I reply with a written plan and price, usually within the hour. Asking is free.
             </p>
           </div>
 
-          <div className="min-w-0 bg-[var(--paper)] p-6 text-ink sm:p-10 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div className={`${CARD} min-w-0 p-6 sm:p-8 lg:col-start-2 lg:row-span-2 lg:row-start-1`}>
             {status === 'sent' ? (
               <div className="flex items-start gap-4 py-4" role="status">
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center bg-[var(--signal)] text-white">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[rgba(74,222,128,0.14)] text-[color:var(--live)]">
                   <Check className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
                 </span>
                 <div>
@@ -314,15 +309,15 @@ export default function Start() {
                 {/* The rest of what the old form asked, a tap away. Nothing in
                     here is required, so a reader who never opens it loses
                     nothing by sending. */}
-                <details className="group border border-[var(--line)] bg-white">
-                  <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-4 font-mono text-[13px] font-medium uppercase tracking-[0.07em] text-[color:var(--signal)] [&::-webkit-details-marker]:hidden">
+                <details className="group rounded-[12px] border border-[var(--edge)]">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3.5 text-[15px] font-medium text-[color:var(--link)] [&::-webkit-details-marker]:hidden">
                     <Plus
                       className="h-4 w-4 transition-transform duration-150 group-open:rotate-45"
                       aria-hidden="true"
                     />
                     Add more detail (optional)
                   </summary>
-                  <div className="space-y-6 border-t border-[var(--line)] px-4 pb-5 pt-5">
+                  <div className="space-y-6 border-t border-[var(--edge)] px-4 pb-5 pt-5">
                     <fieldset>
                       <legend className={FIELD_LABEL}>{ASKED.projectType}</legend>
                       <div className="grid gap-2.5 sm:grid-cols-2">
@@ -411,40 +406,41 @@ export default function Start() {
             )}
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6">
             <a
               href={SITE.phoneHref}
               data-call-place="start"
-              className="group flex items-center gap-5 border-t border-[var(--night-line)] pt-7"
+              className={`${CARD} flex items-center gap-4 p-5 transition-colors hover:border-[color:var(--edge-strong)]`}
             >
-              {/* The photo is of two people, so the frame is cut to the one
+              {/* The photo is of two people, so the circle is cut to the one
                   answering the phone. */}
               <img
                 src="/images/trenton-taylor-photo-360.webp"
                 alt=""
-                width="64"
-                height="64"
+                width="52"
+                height="52"
                 loading="lazy"
                 decoding="async"
-                className="h-16 w-16 shrink-0 object-cover object-[64%_30%]"
+                className="h-[52px] w-[52px] shrink-0 rounded-full object-cover object-[64%_30%]"
                 {...retryable()}
               />
               <span>
-                <Kicker tone="night" as="span" className="block">
-                  Rather talk? Call or text {BIO_NAME.split(' ')[0]}
-                </Kicker>
-                <span className="mt-2 block font-mono text-[30px] font-medium tracking-[-0.03em] text-[color:var(--light)] group-hover:text-[color:var(--signal)] sm:text-[36px]">
+                <span className="block text-[15px] font-medium text-ink">
+                  Rather talk? Call or text {BIO_NAME.split(' ')[0]}.
+                </span>
+                <span className="mt-0.5 block text-[20px] font-semibold tracking-[-0.01em] text-[color:var(--link)]">
                   {SITE.phone}
                 </span>
               </span>
             </a>
 
-            <ol className="space-y-2.5">
+            <ol className="space-y-3 pl-1">
               {NEXT.map((step, index) => (
-                <li key={step}>
-                  <Kicker tone="night" as="span">
-                    {String(index + 1).padStart(2, '0')}&nbsp;&nbsp;{step}
-                  </Kicker>
+                <li key={step} className="flex gap-3 text-[15px] leading-[1.5] text-ink-soft">
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(59,107,255,0.16)] text-[12px] font-semibold text-[color:var(--link)]">
+                    {index + 1}
+                  </span>
+                  {step}
                 </li>
               ))}
             </ol>

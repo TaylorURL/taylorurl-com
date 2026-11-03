@@ -80,8 +80,6 @@ export function ConsoleSidebar({
   canPreview,
   preview,
   onPreview,
-  theme,
-  onCycleTheme,
 }) {
   const modifier = useModifierLabel()
   return (
@@ -129,7 +127,9 @@ export function ConsoleSidebar({
           if (!rows.length) return null
           return (
             <div key={group} className="console-nav-group">
-              {!collapsed && <p className="console-nav-group-head">{GROUP_LABELS[group] || group}</p>}
+              {!collapsed && (
+                <p className="console-nav-group-head">{GROUP_LABELS[group] || group}</p>
+              )}
               <ul>
                 {rows.map(section => (
                   <li key={section.id}>
@@ -154,8 +154,6 @@ export function ConsoleSidebar({
           email={email}
           role={role}
           collapsed={collapsed}
-          theme={theme}
-          onCycleTheme={onCycleTheme}
           sites={sites}
           siteIds={siteIds}
           scopeLabel={scopeLabel}

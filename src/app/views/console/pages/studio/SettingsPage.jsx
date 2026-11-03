@@ -5,7 +5,6 @@ import { supabase } from '@data/supabase/supabaseClient'
 import { useSession } from '@hooks/session/useSession'
 import { useMfa } from '@hooks/session/useMfa'
 import { useToast } from '@hooks/chrome/useToast'
-import ThemePicker from '@components/navigation/ThemePicker'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { isValidEmail } from '@utils/validation'
 import {
@@ -67,7 +66,6 @@ const BODY = 'flex flex-col gap-4 px-5 py-4'
 // when the screen has less than the form wants: its body scrolls inside it
 // rather than the page cutting it off.
 const ROW = 'minmax(0,max-content)'
-const TWO_ROWS = `${ROW} ${ROW}`
 const HALVES = 'minmax(0,1fr) minmax(0,1fr)'
 // The two-factor card stands a code to scan beside the secret it carries,
 // which is wider than a field, so it takes the larger share of its row: at a
@@ -329,9 +327,9 @@ export default function SettingsPage() {
            them. */
         <Board
           area="board"
-          areas={['profile account', 'appearance account']}
+          areas={['profile account']}
           cols={HALVES}
-          rows={TWO_ROWS}
+          rows={ROW}
         >
           <Panel title="Profile" aside="The name shown on this account" area="profile">
             <PanelBody className={BODY}>
@@ -364,16 +362,6 @@ export default function SettingsPage() {
                 <Metric label="Member Since" value={day(session?.user?.created_at)} />
                 <Metric label="Last Signed In" value={moment(session?.user?.last_sign_in_at)} />
               </dl>
-            </PanelBody>
-          </Panel>
-
-          <Panel title="Appearance" area="appearance">
-            <PanelBody className={BODY}>
-              <ThemePicker variant="panel" />
-              <p className={HINT}>
-                System follows the setting on this device and changes with it. The choice is kept in
-                this browser and applies across the site, the console included.
-              </p>
             </PanelBody>
           </Panel>
         </Board>

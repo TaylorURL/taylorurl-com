@@ -1,56 +1,78 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, ArrowUpRight, Phone, Plus } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Check, Phone, Plus } from 'lucide-react'
 import { COMPANY_PHONE, COMPANY_PHONE_HREF, START_LINK } from '@constants/navigation'
 import { portfolioPreviewSrc } from '@data/portfolio'
 import { retryable } from '@utils/retryImage'
 import { SITE } from '../../../../lib/site/current.js'
-import { BUTTONS, PROSE, TYPE } from './styles'
+import { BUTTONS, CARD, PROSE, TYPE } from './styles'
 
 /*
- * THE KIT - every piece a public page is built from, in the "Signal" look.
+ * THE KIT - every piece a public page is built from, in the "Refined" look.
  *
- * A page is a night masthead over a blueprint grid that says what the page is
- * and how to ask, then paper chapters numbered 01, 02, 03 that each say one
- * thing, then the signal-blue band that asks again. Headlines are set very
- * large and end on a blue square instead of a full stop. Every label, figure
- * and address is Geist Mono in capitals. Corners are square. Nothing moves.
+ * The site's own dark ground, made calmer: a page opens with a short headline,
+ * one sentence and the two buttons, usually beside a live client site on a
+ * laptop and a phone; then a few quiet sections of cards; then the ask again.
+ * Soft corners, hairlines, pill buttons, one blue, and nothing that moves.
  *
- * The frames this is built from are on the "Redesign — Signal" page of the
- * Figma file "TaylorURL — Simpler Redesign".
+ * The frames this is built from are on the "Directions — pick one" page of
+ * the Figma file "TaylorURL — Simpler Redesign", frame A.
  */
 
-/** The column every section sits in: 1120 wide, with the page's side gutters. */
+/** The column every section sits in, with the page's side gutters. */
 export function Container({ as: Tag = 'div', className = '', children, narrow = false }) {
-  const width = narrow ? 'max-w-[760px]' : 'max-w-[1120px]'
+  const width = narrow ? 'max-w-[760px]' : 'max-w-[1160px]'
   return (
     <Tag className={`mx-auto w-full ${width} px-5 sm:px-8 ${className}`.trim()}>{children}</Tag>
   )
 }
 
-const KICKER_TONE = {
-  night: 'text-[color:var(--light-soft)]',
-  paper: 'text-ink-mute',
-  blue: 'text-[color:var(--signal)]',
-  white: 'text-white',
+/** One band of a page. */
+export function Section({
+  className = '',
+  inner = '',
+  narrow = false,
+  id,
+  label,
+  tight = false,
+  children,
+}) {
+  const space = tight ? 'py-10 sm:py-14' : 'py-14 sm:py-20'
+  return (
+    <section id={id} aria-label={label} className={`${space} ${className}`.trim()}>
+      <Container narrow={narrow} className={inner}>
+        {children}
+      </Container>
+    </section>
+  )
 }
 
-/** A mono label in capitals: what a page or a section is, or a readout's name. */
-export function Kicker({ children, tone = 'paper', as: Tag = 'p', className = '' }) {
-  return <Tag className={`${TYPE.mono} ${KICKER_TONE[tone]} ${className}`.trim()}>{children}</Tag>
+/** A small pill with a green dot: where the studio is, or what a page is. */
+export function Badge({ children, dot = true, className = '' }) {
+  return (
+    <p
+      className={`inline-flex items-center gap-2 rounded-full border border-[var(--edge)] bg-white/[0.04] py-1.5 pl-3 pr-3.5 text-[13px] font-medium text-ink-soft ${className}`.trim()}
+    >
+      {dot && <span className="h-[7px] w-[7px] rounded-full bg-[var(--live)]" aria-hidden="true" />}
+      {children}
+    </p>
+  )
 }
 
-/** The square a headline ends on, in place of its full stop. */
-export function Square() {
-  return <span className="signal-square" aria-hidden="true" />
-}
-
-/** A route on this site or an outside address, drawn as one of the buttons. */
-export function Button({ to, href, look = 'blue', arrow = true, className = '', children, ...rest }) {
-  const style = `${BUTTONS[look]} ${className}`.trim()
+/** A route on this site or an outside address, drawn as one of the two pills. */
+export function Button({
+  to,
+  href,
+  variant = 'primary',
+  arrow = false,
+  className = '',
+  children,
+  ...rest
+}) {
+  const style = `${BUTTONS[variant]} ${className}`.trim()
   const inner = (
     <>
       <span>{children}</span>
-      {arrow && <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />}
+      {arrow && <ArrowRight className="h-4 w-4 shrink-0" strokeWidth={2} aria-hidden="true" />}
     </>
   )
   if (to) {
@@ -67,49 +89,179 @@ export function Button({ to, href, look = 'blue', arrow = true, className = '', 
   )
 }
 
-/** The phone number as a button. */
-export function PhoneButton({ look = 'night', className = '', place, label }) {
+/** The phone number as the quieter pill. */
+export function PhoneButton({ className = '', place, label }) {
   return (
     <a
       href={COMPANY_PHONE_HREF}
-      className={`${BUTTONS[look]} ${className}`.trim()}
+      className={`${BUTTONS.secondary} ${className}`.trim()}
       data-call-place={place}
     >
-      <Phone className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden="true" />
-      <span>{label || COMPANY_PHONE}</span>
+      <Phone className="h-4 w-4 shrink-0" strokeWidth={1.8} aria-hidden="true" />
+      <span>{label || `Call ${COMPANY_PHONE}`}</span>
     </a>
   )
 }
-
-const QUIET = { night: 'night', paper: 'paper', blue: 'ghost' }
 
 /**
  * The pair every first screen and every last one ends on: ask for a price, or
  * call. Full width and stacked on a phone, where a thumb wants a target the
  * width of the screen.
  */
-export function Actions({ tone = 'night', label, className = '', place, primary = START_LINK }) {
+export function Actions({ label, className = '', place, primary = START_LINK }) {
   return (
     <div className={`flex flex-col gap-3 sm:flex-row sm:flex-wrap ${className}`.trim()}>
-      <Button to={primary.to} look={tone === 'blue' ? 'white' : 'blue'} className="w-full sm:w-auto">
+      <Button to={primary.to} className="w-full sm:w-auto">
         {label || primary.label}
       </Button>
-      <PhoneButton look={QUIET[tone]} className="w-full sm:w-auto" place={place} />
+      <PhoneButton className="w-full sm:w-auto" place={place} />
     </div>
   )
 }
 
-/** A label over a value, stacked under hairlines: the masthead's side readout. */
-export function Readout({ items, tone = 'night', className = '' }) {
-  const rule = tone === 'night' ? 'border-[var(--night-line)]' : 'border-[var(--line)]'
-  const value = tone === 'night' ? 'text-[color:var(--light)]' : 'text-ink'
+/**
+ * The top of a page: a badge, a short headline, one sentence, the two pills,
+ * and a note in small print. `media` stands beside it on a wide screen and
+ * under it on a phone - a client site on a laptop and a phone, a short list of
+ * facts, a photo. The soft blue glow sits behind it.
+ */
+export function PageIntro({
+  badge,
+  title,
+  lead,
+  actions = true,
+  actionLabel,
+  note,
+  media,
+  size = 'page',
+  children,
+  className = '',
+}) {
   return (
-    <dl className={`border-b ${rule} ${className}`.trim()}>
-      {items.map(({ label, value: said }) => (
-        <div key={label} className={`border-t ${rule} py-4 sm:py-5`}>
-          <dt className={`${TYPE.mono} ${KICKER_TONE[tone]}`}>{label}</dt>
-          <dd className={`mt-1.5 text-[19px] font-medium leading-[1.35] sm:text-[20px] ${value}`}>
-            {said}
+    <section className={`glow ${className}`.trim()}>
+      <Container
+        className={`pb-12 pt-10 sm:pb-16 sm:pt-16 lg:pt-20 ${media ? 'grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14' : ''}`}
+      >
+        <div className="min-w-0 max-w-[600px]">
+          {badge && <Badge className="mb-6">{badge}</Badge>}
+          <h1 className={size === 'hero' ? TYPE.hero : TYPE.display}>{title}</h1>
+          {lead && <p className={`${TYPE.lead} mt-5 max-w-[30rem]`}>{lead}</p>}
+          {actions && <Actions className="mt-8" label={actionLabel} place="intro" />}
+          {note && <p className={`${TYPE.small} mt-5`}>{note}</p>}
+          {children}
+        </div>
+        {media && <div className="min-w-0">{media}</div>}
+      </Container>
+    </section>
+  )
+}
+
+/** A screenshot of a client's live site. */
+export function SiteShot({ project, device = 'desktop', eager = false, className = '' }) {
+  const box =
+    device === 'phone' ? { width: '390', height: '844' } : { width: '1200', height: '750' }
+  return (
+    <img
+      src={portfolioPreviewSrc(project, device)}
+      alt={`The ${project.name} website${device === 'phone' ? ' on a phone' : ''}`}
+      width={box.width}
+      height={box.height}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+      fetchPriority={eager ? 'high' : undefined}
+      className={`block h-auto w-full bg-[var(--card)] object-cover object-top ${device === 'phone' ? 'aspect-[390/844]' : 'aspect-[16/10]'} ${className}`.trim()}
+      {...retryable()}
+    />
+  )
+}
+
+/** A small ring drawn to a score out of a hundred. */
+function ScoreRing({ score, size = 34 }) {
+  const radius = (size - 4) / 2
+  const length = 2 * Math.PI * radius
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox={`0 0 ${size} ${size}`}
+      aria-hidden="true"
+      className="shrink-0 -rotate-90"
+    >
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="rgba(244,243,238,0.12)"
+        strokeWidth="3"
+      />
+      <circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        fill="none"
+        stroke="var(--live)"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeDasharray={length}
+        strokeDashoffset={length * (1 - score / 100)}
+      />
+    </svg>
+  )
+}
+
+/**
+ * A client's live site on a laptop window and a phone, with the speed score
+ * it was measured at. The way the studio's work is shown first: running, on
+ * the screen most customers will see it on, and measured.
+ */
+export function DeviceShowcase({ project, eager = false, className = '' }) {
+  const mobile = project.pagespeed?.mobile
+  return (
+    <div className={`relative pb-10 pr-6 sm:pb-14 sm:pr-14 ${className}`.trim()}>
+      <figure className="overflow-hidden rounded-[14px] border border-[var(--edge-strong)] bg-[var(--card)] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
+        <div className="flex items-center gap-1.5 border-b border-[var(--edge)] px-4 py-2.5">
+          <span className="h-[9px] w-[9px] rounded-full bg-white/[0.16]" aria-hidden="true" />
+          <span className="h-[9px] w-[9px] rounded-full bg-white/[0.16]" aria-hidden="true" />
+          <span className="h-[9px] w-[9px] rounded-full bg-white/[0.16]" aria-hidden="true" />
+          <span className="ml-2 truncate rounded-md bg-white/[0.06] px-3 py-1 text-[12px] text-ink-mute">
+            {project.displayUrl}
+          </span>
+        </div>
+        <SiteShot project={project} eager={eager} />
+      </figure>
+      <div className="absolute bottom-0 right-0 w-[26%] min-w-[96px] max-w-[170px] rounded-[26px] border border-[var(--edge-strong)] bg-[#0b0b0b] p-[5px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.65)]">
+        <SiteShot project={project} device="phone" className="rounded-[21px]" />
+      </div>
+      {mobile && (
+        <div className="absolute -bottom-1 left-4 flex items-center gap-2.5 rounded-[12px] border border-[var(--edge-strong)] bg-[var(--card-hi)] px-3.5 py-2.5 shadow-[0_14px_30px_-10px_rgba(0,0,0,0.6)] sm:left-[-1.25rem]">
+          <ScoreRing score={mobile} />
+          <span>
+            <span className="block text-[15px] font-semibold leading-tight text-ink">
+              {mobile} / 100
+            </span>
+            <span className="block text-[12px] leading-tight text-ink-mute">
+              Google speed, on a phone
+            </span>
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** A row of short figures in one rounded panel: the speed, the weeks, the rating. */
+export function StatPanel({ items, className = '' }) {
+  return (
+    <dl
+      className={`grid grid-cols-2 gap-x-6 gap-y-6 rounded-[16px] border border-[var(--edge)] bg-white/[0.025] px-6 py-6 sm:px-8 lg:grid-cols-4 ${className}`.trim()}
+    >
+      {items.map(({ value, label }) => (
+        <div key={label}>
+          <dt className="sr-only">{label}</dt>
+          <dd>
+            <span className={`${TYPE.figure} block`}>{value}</span>
+            <span className={`${TYPE.small} mt-2 block`}>{label}</span>
           </dd>
         </div>
       ))}
@@ -117,244 +269,31 @@ export function Readout({ items, tone = 'night', className = '' }) {
   )
 }
 
-/**
- * The top of every page: night, over the blueprint grid. A mono kicker saying
- * where the reader is, the headline, one sentence, the two buttons. `readout`
- * stands beside it on a wide screen - how long, what it costs, what comes
- * after - and `below` runs the full width under it, which is where the home
- * page puts its live client sites.
- */
-export function Masthead({
-  kicker,
-  title,
-  lead,
-  actions = true,
-  actionLabel,
-  note,
-  readout,
-  aside,
-  below,
-  size = 'display',
-  children,
-  className = '',
-}) {
-  const side = readout ? <Readout items={readout} /> : aside
-  const hero = size === 'hero'
-  return (
-    <section
-      className={`signal-grid border-b border-[var(--night-line)] text-[color:var(--light)] ${className}`.trim()}
-    >
-      <Container className="pb-14 pt-12 sm:pb-20 sm:pt-20">
-        <div
-          className={
-            side
-              ? 'grid gap-12 lg:grid-cols-[minmax(0,1fr)_minmax(0,20rem)] lg:items-end lg:gap-16'
-              : ''
-          }
-        >
-          <div className="min-w-0">
-            {kicker && (
-              <Kicker tone="night" className="mb-6 sm:mb-8">
-                {kicker}
-              </Kicker>
-            )}
-            <h1 className={hero ? TYPE.hero : TYPE.display}>
-              {title}
-              <Square />
-            </h1>
-            {(lead || actions) && (
-              <div
-                className={
-                  hero
-                    ? 'mt-8 grid gap-8 sm:mt-10 lg:grid-cols-[minmax(0,34rem)_auto] lg:items-end lg:justify-between'
-                    : 'mt-7 sm:mt-8'
-                }
-              >
-                {lead && (
-                  <p className={`${TYPE.lead} max-w-[36rem] text-[color:var(--light-soft)]`}>
-                    {lead}
-                  </p>
-                )}
-                {actions && (
-                  <Actions
-                    tone="night"
-                    label={actionLabel}
-                    place="masthead"
-                    className={hero ? '' : 'mt-8'}
-                  />
-                )}
-              </div>
-            )}
-            {note && (
-              <Kicker tone="night" className="mt-6">
-                {note}
-              </Kicker>
-            )}
-            {children}
-          </div>
-          {side && <div className="min-w-0">{side}</div>}
-        </div>
-        {below && <div className="mt-14 sm:mt-20">{below}</div>}
-      </Container>
-    </section>
-  )
-}
-
-/**
- * A row of big figures on night, split by hairlines: the speed score, the
- * weeks to launch, the rating. A figure whose record is empty is left out by
- * the caller rather than drawn as a zero.
- */
-export function Readouts({ items, className = '' }) {
-  return (
-    <section
-      aria-label="In figures"
-      className={`border-b border-[var(--night-line)] bg-[var(--night)] text-[color:var(--light)] ${className}`.trim()}
-    >
-      <Container>
-        <dl className="grid grid-cols-2 lg:grid-cols-4">
-          {items.map(({ value, label }, index) => (
-            <div
-              key={label}
-              className={[
-                'border-[var(--night-line)] py-7 sm:py-9',
-                index % 2 ? 'border-l pl-5 sm:pl-7' : '',
-                index > 1 ? 'border-t lg:border-t-0' : '',
-                index === 2 ? 'lg:border-l lg:pl-7' : '',
-              ].join(' ')}
-            >
-              <dt className="sr-only">{label}</dt>
-              <dd>
-                <span className={`${TYPE.figure} block`}>{value}</span>
-                <span className={`${TYPE.mono} mt-3 block text-[color:var(--light-soft)]`}>
-                  {label}
-                </span>
-              </dd>
-            </div>
-          ))}
-        </dl>
-      </Container>
-    </section>
-  )
-}
-
-const GROUND = {
-  paper: 'bg-[var(--paper)] text-ink',
-  night: 'bg-[var(--night)] text-[color:var(--light)]',
-  band: 'bg-[var(--band)] text-ink',
-}
-
-/** One full-width band of a page, on paper unless it says otherwise. */
-export function Section({
-  tone = 'paper',
-  className = '',
-  inner = '',
-  narrow = false,
-  id,
-  label,
-  tight = false,
-  rule = true,
-  children,
-}) {
-  const space = tight ? 'py-12 sm:py-16' : 'py-16 sm:py-24'
-  const line = rule
-    ? tone === 'night'
-      ? 'border-b border-[var(--night-line)]'
-      : 'border-b border-[var(--line)]'
-    : ''
-  return (
-    <section
-      id={id}
-      aria-label={label}
-      className={`${GROUND[tone]} ${line} ${space} ${className}`.trim()}
-    >
-      <Container narrow={narrow} className={inner}>
-        {children}
-      </Container>
-    </section>
-  )
-}
-
-/**
- * A numbered chapter: the number and a short heading in a column on the left,
- * the one thing the chapter says on the right. Pages count their chapters 01,
- * 02, 03 in order.
- */
-export function Chapter({
-  number,
-  kicker,
-  title,
-  lead,
-  tone = 'paper',
-  id,
-  children,
-  className = '',
-}) {
-  const isNight = tone === 'night'
-  return (
-    <Section
-      tone={tone}
-      id={id}
-      label={typeof title === 'string' ? title : kicker}
-      className={className}
-    >
-      <div className="grid gap-8 lg:grid-cols-[minmax(0,21rem)_minmax(0,1fr)] lg:gap-16">
-        <div>
-          <Kicker tone="blue">{[number, kicker].filter(Boolean).join(' / ')}</Kicker>
-          {title && (
-            <h2 className={`${TYPE.h2} mt-4 ${isNight ? '!text-[color:var(--light)]' : ''}`}>
-              {title}
-            </h2>
-          )}
-          {lead && (
-            <p
-              className={`mt-4 text-[17px] leading-[1.6] ${isNight ? 'text-[color:var(--light-soft)]' : 'text-ink-soft'}`}
-            >
-              {lead}
-            </p>
-          )}
-        </div>
-        <div className="min-w-0">{children}</div>
-      </div>
-    </Section>
-  )
-}
-
-/** A heading over a full-width block, with a link across from it. */
-export function SectionHead({ number, kicker, title, lead, link, tone = 'paper', className = '' }) {
-  const isNight = tone === 'night'
+/** A section's heading, with an optional sentence under it and a link across from it. */
+export function SectionHead({ title, lead, link, className = '' }) {
   return (
     <div
-      className={`mb-10 flex flex-col gap-5 sm:mb-12 sm:flex-row sm:items-end sm:justify-between ${className}`.trim()}
+      className={`mb-8 flex flex-col gap-3 sm:mb-10 sm:flex-row sm:items-end sm:justify-between ${className}`.trim()}
     >
-      <div className="max-w-[44rem]">
-        {(number || kicker) && (
-          <Kicker tone="blue">{[number, kicker].filter(Boolean).join(' / ')}</Kicker>
-        )}
-        <h2 className={`${TYPE.h2} mt-4 ${isNight ? '!text-[color:var(--light)]' : ''}`}>{title}</h2>
-        {lead && (
-          <p
-            className={`mt-4 text-[17px] leading-[1.6] ${isNight ? 'text-[color:var(--light-soft)]' : 'text-ink-soft'}`}
-          >
-            {lead}
-          </p>
-        )}
+      <div className="max-w-[640px]">
+        <h2 className={TYPE.h2}>{title}</h2>
+        {lead && <p className={`${TYPE.body} mt-3`}>{lead}</p>}
       </div>
       {link && <TextLink to={link.to} href={link.href} label={link.label} />}
     </div>
   )
 }
 
-/** A mono link in capitals with an arrow: "See all work". */
+/** A blue text link with an arrow: "See all work". */
 export function TextLink({ to, href, label, className = '' }) {
   const style =
-    `group inline-flex shrink-0 items-center gap-2 ${TYPE.mono} text-[color:var(--signal)] hover:text-[color:var(--signal-hi)] ${className}`.trim()
+    `group inline-flex shrink-0 items-center gap-1.5 text-[15px] font-medium text-[color:var(--link)] hover:text-ink ${className}`.trim()
   const inner = (
     <>
       {label}
       <ArrowRight
         className="h-4 w-4 transition-transform duration-150 group-hover:translate-x-0.5"
-        strokeWidth={1.75}
+        strokeWidth={2}
         aria-hidden="true"
       />
     </>
@@ -373,171 +312,6 @@ export function TextLink({ to, href, label, className = '' }) {
   )
 }
 
-/**
- * Lines counted 01, 02, 03 under hairlines. The shape for "what you get": each
- * line one thing, read down in one pass.
- */
-export function NumberedList({ items, tone = 'paper', className = '' }) {
-  const rule = tone === 'night' ? 'border-[var(--night-line)]' : 'border-[var(--line)]'
-  const text = tone === 'night' ? 'text-[color:var(--light)]' : 'text-ink'
-  const soft = tone === 'night' ? 'text-[color:var(--light-soft)]' : 'text-ink-mute'
-  return (
-    <ol className={`border-b ${rule} ${className}`.trim()}>
-      {items.map((item, index) => {
-        const title = typeof item === 'string' ? item : item.title
-        return (
-          <li key={title} className={`flex gap-5 border-t ${rule} py-5 sm:gap-8 sm:py-6`}>
-            <span className={`${TYPE.mono} ${soft} w-7 shrink-0 pt-[5px]`}>
-              {String(index + 1).padStart(2, '0')}
-            </span>
-            <span className="min-w-0">
-              <span className={`block text-[18px] leading-[1.45] sm:text-[20px] ${text}`}>
-                {title}
-              </span>
-              {item.body && (
-                <span className={`mt-1.5 block text-[16px] leading-[1.55] ${soft}`}>
-                  {item.body}
-                </span>
-              )}
-            </span>
-          </li>
-        )
-      })}
-    </ol>
-  )
-}
-
-/** A short list with a blue square on each line. */
-export function SquareList({ items, tone = 'paper', className = '' }) {
-  const text = tone === 'night' ? 'text-[color:var(--light)]' : 'text-ink'
-  return (
-    <ul className={`space-y-3 ${className}`.trim()}>
-      {items.map(item => (
-        <li key={item} className={`flex items-baseline gap-4 text-[17px] leading-[1.5] ${text}`}>
-          <span className="h-2 w-2 shrink-0 -translate-y-0.5 bg-[var(--signal)]" aria-hidden="true" />
-          {item}
-        </li>
-      ))}
-    </ul>
-  )
-}
-
-/**
- * Questions that open on a tap. Native disclosure, so it works before any
- * script has run and a search engine reads every answer.
- */
-export function Questions({ items, tone = 'paper', className = '' }) {
-  const rule = tone === 'night' ? 'border-[var(--night-line)]' : 'border-[var(--line)]'
-  const text = tone === 'night' ? 'text-[color:var(--light)]' : 'text-ink'
-  const soft = tone === 'night' ? 'text-[color:var(--light-soft)]' : 'text-ink-soft'
-  return (
-    <div className={`border-t ${rule} ${className}`.trim()}>
-      {items.map(({ q, a }) => (
-        <details key={q} className={`group border-b ${rule}`}>
-          <summary
-            className={`flex cursor-pointer list-none items-start justify-between gap-6 py-5 text-[18px] font-medium leading-[1.4] sm:py-6 sm:text-[20px] ${text} [&::-webkit-details-marker]:hidden`}
-          >
-            <span>{q}</span>
-            <Plus
-              className="mt-1 h-5 w-5 shrink-0 text-[color:var(--signal)] transition-transform duration-150 group-open:rotate-45"
-              strokeWidth={1.75}
-              aria-hidden="true"
-            />
-          </summary>
-          <div
-            className={`-mt-1 max-w-[42rem] pb-7 text-[17px] leading-[1.65] ${soft} [&_p+p]:mt-3`}
-          >
-            {typeof a === 'string' ? <p>{a}</p> : a}
-          </div>
-        </details>
-      ))}
-    </div>
-  )
-}
-
-/** A screenshot of a client's live site, unframed. */
-export function SiteShot({ project, eager = false, className = '' }) {
-  return (
-    <img
-      src={portfolioPreviewSrc(project, 'desktop')}
-      alt={`The ${project.name} website`}
-      width="1200"
-      height="750"
-      loading={eager ? 'eager' : 'lazy'}
-      decoding="async"
-      fetchPriority={eager ? 'high' : undefined}
-      className={`block aspect-[16/10] h-auto w-full bg-[var(--night-2)] object-cover object-top ${className}`.trim()}
-      {...retryable()}
-    />
-  )
-}
-
-/**
- * A client's site in a night frame: its address and a green LIVE across the
- * top, the screenshot, and the two speed scores it was measured at along the
- * bottom. The way the studio's work is always shown - running, and measured.
- */
-export function LiveFrame({ project, eager = false, className = '' }) {
-  const speed = project.pagespeed
-  return (
-    <figure
-      className={`border border-[var(--night-line)] bg-[var(--night-2)] text-[color:var(--light)] ${className}`.trim()}
-    >
-      <div className="flex items-center justify-between gap-3 border-b border-[var(--night-line)] px-3.5 py-2.5">
-        <span className="truncate font-mono text-[12px] text-[color:var(--light-soft)]">
-          {project.displayUrl}
-        </span>
-        <span className="flex shrink-0 items-center gap-1.5 font-mono text-[11px] font-medium tracking-[0.08em] text-[color:var(--live)]">
-          <span className="h-1.5 w-1.5 bg-[var(--live)]" aria-hidden="true" />
-          LIVE
-        </span>
-      </div>
-      <SiteShot project={project} eager={eager} />
-      {speed && (
-        <figcaption className="flex gap-5 border-t border-[var(--night-line)] px-3.5 py-2.5 font-mono text-[11px] tracking-[0.08em]">
-          <span>
-            <span className="text-[color:var(--light-soft)]">MOBILE </span>
-            {speed.mobile}
-          </span>
-          <span>
-            <span className="text-[color:var(--light-soft)]">DESKTOP </span>
-            {speed.desktop}
-          </span>
-        </figcaption>
-      )}
-    </figure>
-  )
-}
-
-/** One client site as a card: the live frame, the name, and what and where. */
-export function WorkCard({ project, to, detail, tone = 'paper', eager = false }) {
-  const name = tone === 'night' ? 'text-[color:var(--light)]' : 'text-ink'
-  const body = (
-    <>
-      <LiveFrame project={project} eager={eager} />
-      <span
-        className={`mt-4 block text-[20px] font-semibold leading-[1.3] tracking-[-0.015em] ${name} group-hover:text-[color:var(--signal)]`}
-      >
-        {project.name}
-      </span>
-      {detail && (
-        <span
-          className={`${TYPE.mono} mt-1.5 block ${tone === 'night' ? 'text-[color:var(--light-soft)]' : 'text-ink-mute'}`}
-        >
-          {detail}
-        </span>
-      )}
-    </>
-  )
-  return to ? (
-    <Link to={to} className="group block">
-      {body}
-    </Link>
-  ) : (
-    <div>{body}</div>
-  )
-}
-
 /** A grid of cards, as many columns as the screen has room for. */
 export function Grid({ cols = 3, className = '', children }) {
   const tracks = {
@@ -545,53 +319,52 @@ export function Grid({ cols = 3, className = '', children }) {
     3: 'sm:grid-cols-2 lg:grid-cols-3',
     4: 'sm:grid-cols-2 lg:grid-cols-4',
   }[cols]
-  return <div className={`grid gap-x-6 gap-y-12 ${tracks} ${className}`.trim()}>{children}</div>
+  return <div className={`grid gap-5 ${tracks} ${className}`.trim()}>{children}</div>
+}
+
+/** One client site as a card: the screenshot, the name, and what and where. */
+export function WorkCard({ project, to, detail, eager = false }) {
+  const body = (
+    <>
+      <SiteShot project={project} eager={eager} />
+      <span className="block px-5 pb-5 pt-4">
+        <span className="block text-[16px] font-medium leading-snug text-ink">{project.name}</span>
+        {detail && <span className={`${TYPE.small} mt-0.5 block`}>{detail}</span>}
+      </span>
+    </>
+  )
+  const style = `${CARD} block overflow-hidden transition-colors duration-150 hover:border-[color:var(--edge-strong)]`
+  return to ? (
+    <Link to={to} className={style}>
+      {body}
+    </Link>
+  ) : (
+    <div className={style}>{body}</div>
+  )
 }
 
 /**
- * A card that is a link: a mono line on top (a number, a series, a date), a
- * title, a sentence, and an arrow in the corner. Services, tools, trades,
- * towns and articles are all drawn with it. Square corners, one hairline.
+ * A card that is a link: an optional small line on top, a title, a sentence,
+ * and an arrow in the corner. Services, tools, trades, towns and articles are
+ * all drawn with it.
  */
-export function LinkCard({ to, href, title, body, meta, tone = 'paper', className = '' }) {
-  const isNight = tone === 'night'
-  const look = isNight
-    ? 'border-[var(--night-line)] bg-[var(--night-2)] hover:border-[color:var(--light-soft)]'
-    : 'border-[var(--line)] bg-white hover:border-ink'
+export function LinkCard({ to, href, title, body, meta, className = '' }) {
   const inner = (
     <>
       <span className="flex items-start justify-between gap-4">
-        {meta ? (
-          <span
-            className={`${TYPE.mono} ${isNight ? 'text-[color:var(--light-soft)]' : 'text-ink-mute'}`}
-          >
-            {meta}
-          </span>
-        ) : (
-          <span />
-        )}
+        <span className={TYPE.label}>{meta}</span>
         <ArrowUpRight
-          className="h-5 w-5 shrink-0 text-[color:var(--signal)] transition-transform duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-          strokeWidth={1.75}
+          className="h-[18px] w-[18px] shrink-0 text-ink-mute transition-[transform,color] duration-150 group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-ink"
+          strokeWidth={1.8}
           aria-hidden="true"
         />
       </span>
-      <span
-        className={`mt-6 block text-[21px] font-semibold leading-[1.25] tracking-[-0.02em] ${isNight ? 'text-[color:var(--light)]' : 'text-ink'}`}
-      >
-        {title}
-      </span>
-      {body && (
-        <span
-          className={`mt-2.5 block text-[16px] leading-[1.55] ${isNight ? 'text-[color:var(--light-soft)]' : 'text-ink-soft'}`}
-        >
-          {body}
-        </span>
-      )}
+      <span className={`${TYPE.h3} ${meta ? 'mt-3' : '-mt-1'} block pr-6`}>{title}</span>
+      {body && <span className={`${TYPE.small} mt-2 block`}>{body}</span>}
     </>
   )
   const style =
-    `group flex h-full flex-col border p-6 transition-colors duration-150 sm:p-7 ${look} ${className}`.trim()
+    `${CARD} group flex h-full flex-col p-6 transition-colors duration-150 hover:border-[color:var(--edge-strong)] hover:bg-[var(--card-hi)] ${className}`.trim()
   return to ? (
     <Link to={to} className={style}>
       {inner}
@@ -603,68 +376,144 @@ export function LinkCard({ to, href, title, body, meta, tone = 'paper', classNam
   )
 }
 
+const STEP_COLUMNS = {
+  1: '',
+  2: 'md:grid-cols-2',
+  3: 'md:grid-cols-3',
+  4: 'md:grid-cols-2 lg:grid-cols-4',
+}
+
+/** Numbered steps as a row of cards: what happens, in order. */
+export function Steps({ items, className = '' }) {
+  const columns = STEP_COLUMNS[Math.min(items.length, 4)] ?? 'md:grid-cols-3'
+  return (
+    <ol className={`grid gap-5 ${columns} ${className}`.trim()}>
+      {items.map((item, index) => (
+        <li key={item.title} className={`${CARD} p-6 sm:p-7`}>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-[rgba(59,107,255,0.16)] text-[13px] font-semibold text-[color:var(--link)]">
+            {index + 1}
+          </span>
+          <h3 className={`${TYPE.h3} mt-4`}>{item.title}</h3>
+          {item.body && <p className={`${TYPE.body} mt-2`}>{item.body}</p>}
+        </li>
+      ))}
+    </ol>
+  )
+}
+
+/** A short list with a blue tick on each line. */
+export function CheckList({ items, className = '' }) {
+  return (
+    <ul className={`space-y-3.5 ${className}`.trim()}>
+      {items.map(item => {
+        const title = typeof item === 'string' ? item : item.title
+        return (
+          <li key={title} className="flex gap-3">
+            <span className="mt-[3px] flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(59,107,255,0.18)] text-[color:var(--link)]">
+              <Check className="h-3 w-3" strokeWidth={3} aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-[16px] leading-[1.55] text-ink">{title}</span>
+              {item.body && <span className={`${TYPE.small} mt-0.5 block`}>{item.body}</span>}
+            </span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/** A label over a value, a few to a card: how long, what it costs, what comes after. */
+export function FactList({ items, className = '' }) {
+  return (
+    <dl className={`${CARD} divide-y divide-[var(--edge)] px-6 ${className}`.trim()}>
+      {items.map(({ label, value }) => (
+        <div key={label} className="py-4">
+          <dt className={TYPE.small}>{label}</dt>
+          <dd className="mt-0.5 text-[16px] font-medium leading-[1.4] text-ink">{value}</dd>
+        </div>
+      ))}
+    </dl>
+  )
+}
+
 /**
- * The ask at the foot of every page: the full width in signal blue, the
- * headline as large as the home page's, and the two buttons. It is the loudest
- * thing on the site on purpose; it is the one thing every page wants done.
+ * Questions that open on a tap, in one card. Native disclosure, so it works
+ * before any script has run and a search engine reads every answer.
+ */
+export function Questions({ items, className = '' }) {
+  return (
+    <div className={`${CARD} divide-y divide-[var(--edge)] ${className}`.trim()}>
+      {items.map(({ q, a }) => (
+        <details key={q} className="group px-6">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[16px] font-medium leading-[1.45] text-ink [&::-webkit-details-marker]:hidden">
+            <span>{q}</span>
+            <Plus
+              className="h-[18px] w-[18px] shrink-0 text-ink-mute transition-transform duration-150 group-open:rotate-45"
+              strokeWidth={1.8}
+              aria-hidden="true"
+            />
+          </summary>
+          <div className={`${TYPE.body} -mt-1 max-w-[680px] pb-6 [&_p+p]:mt-3`}>
+            {typeof a === 'string' ? <p>{a}</p> : a}
+          </div>
+        </details>
+      ))}
+    </div>
+  )
+}
+
+/**
+ * The ask at the foot of a page: one rounded panel with the blue glow in it,
+ * a line of what to do, a line of what happens, and the two pills.
  */
 export function CallToAction({
-  kicker = 'Get a price',
-  title = 'Tell me about the business',
-  note = 'Free to ask / A written price before any work / Usually a reply within the hour',
+  title = 'Tell me about the business.',
+  lead = 'You get a plan and a price in writing before any work starts. Asking is free.',
   label,
   className = '',
 }) {
   return (
-    <section
-      aria-label="Get a price"
-      className={`bg-[var(--signal)] text-white [&_.signal-square]:bg-white ${className}`.trim()}
-    >
-      <Container className="py-20 sm:py-28">
-        <Kicker tone="white">{kicker}</Kicker>
-        <h2 className={`${TYPE.hero} mt-6 max-w-[14ch] sm:mt-8`}>
-          {title}
-          <Square />
-        </h2>
-        <Actions tone="blue" label={label} place="cta" className="mt-10 sm:mt-12" />
-        {note && (
-          <Kicker tone="white" className="mt-8 opacity-80">
-            {note}
-          </Kicker>
-        )}
+    <section className={`py-14 sm:py-20 ${className}`.trim()} aria-label="Get a price">
+      <Container>
+        <div className="glow flex flex-col gap-7 overflow-hidden rounded-[20px] border border-[var(--edge)] bg-[var(--card)] px-6 py-10 sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
+          <div className="max-w-[560px]">
+            <h2 className={TYPE.h2}>{title}</h2>
+            <p className={`${TYPE.body} mt-3`}>{lead}</p>
+          </div>
+          <Actions className="shrink-0" label={label} place="cta" />
+        </div>
       </Container>
     </section>
   )
 }
 
-/** Body copy for reading, on paper. */
+/** Body copy for reading. */
 export function Prose({ className = '', children }) {
   return <div className={`${PROSE} ${className}`.trim()}>{children}</div>
 }
 
-/** Label/value pairs across a row under two hairlines: the facts under a case study. */
-export function FactRow({ items, tone = 'paper', className = '' }) {
-  const rule = tone === 'night' ? 'border-[var(--night-line)]' : 'border-[var(--line)]'
-  const value = tone === 'night' ? 'text-[color:var(--light)]' : 'text-ink'
+/** Label/value pairs across one panel: the facts under a case study. */
+export function FactRow({ items, className = '' }) {
   return (
     <dl
-      className={`grid grid-cols-2 gap-6 border-y ${rule} py-6 sm:grid-cols-4 ${className}`.trim()}
+      className={`grid grid-cols-2 gap-6 rounded-[16px] border border-[var(--edge)] bg-white/[0.025] px-6 py-5 sm:grid-cols-4 ${className}`.trim()}
     >
-      {items.map(({ label, value: said, href }) => (
+      {items.map(({ label, value, href }) => (
         <div key={label} className="min-w-0">
-          <dt className={`${TYPE.mono} ${KICKER_TONE[tone]}`}>{label}</dt>
-          <dd className={`mt-1.5 truncate text-[17px] font-medium ${value}`}>
+          <dt className={TYPE.small}>{label}</dt>
+          <dd className="mt-0.5 truncate text-[16px] font-medium text-ink">
             {href ? (
               <a
                 href={href}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[color:var(--signal)] hover:underline"
+                className="text-[color:var(--link)] hover:text-ink"
               >
-                {said}
+                {value}
               </a>
             ) : (
-              said
+              value
             )}
           </dd>
         </div>

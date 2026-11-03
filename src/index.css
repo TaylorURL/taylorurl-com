@@ -79,28 +79,29 @@
    * document something else stamps dark, which nothing on the site now does.
    */
   --paper: #f3f2ed;
-  /* The band ground and the line on paper, named for what they are so the
-     page components can say `bg-[var(--band)]` rather than reaching for a
-     surface step that also means something to the console. */
-  --band: #e9e7df;
-  --line: #d9d7cf;
+  /* Older names for the card ground and the hairline, kept pointing at the
+     refined set below so nothing that still says them goes light. */
+  --band: #1b1b1a;
+  --line: rgba(244, 243, 238, 0.09);
   /*
-   * THE SIGNAL SET - the redesign's own palette. Night is the ground of the
-   * bar, every page's masthead and the footer; paper is the ground pages are
-   * read on; signal blue is the one thing to press and the square that ends
-   * a headline; live green says a client site is up. The grid line is the
-   * blueprint drawn behind a masthead, one step off night so it reads as a
-   * texture and never as a rule.
+   * THE REFINED SET - the redesign's own palette, for a site that is dark and
+   * only dark. A warm near-black ground, cards one step up from it with a
+   * hairline round them, warm white type at three strengths, one blue for the
+   * thing to press, a lighter blue for a link, and green for a site that is
+   * up. The blue glow is the one piece of atmosphere, behind a page's first
+   * screen and its last.
    */
-  --night: #0b0b0c;
-  --night-2: #151517;
-  --night-line: #2a2a2e;
-  --grid-line: #18181b;
-  --light: #f3f2ed;
-  --light-soft: #a9a8a2;
-  --signal: #2f5bff;
-  --signal-hi: #1f45e0;
-  --live: #38d68a;
+  --card: #1b1b1a;
+  --card-hi: #222220;
+  --edge: rgba(244, 243, 238, 0.09);
+  --edge-strong: rgba(244, 243, 238, 0.15);
+  --text: #f4f3ee;
+  --text-soft: rgba(244, 243, 238, 0.66);
+  --text-mute: rgba(244, 243, 238, 0.48);
+  --blue: #3b6bff;
+  --blue-hi: #5580ff;
+  --link: #8aa6ff;
+  --live: #4ade80;
   --paper-ink: #141413;
   --paper-ink-soft: rgba(20, 20, 19, 0.72);
   --paper-ink-mute: rgba(20, 20, 19, 0.62);
@@ -477,7 +478,7 @@
 :root[data-theme='dark'] {
   /* The plane mixes into the ground the setting stands on, so the same
      recipe reads as a pale field on paper and a deep one here. */
-  --plane-ground: #30302e;
+  --plane-ground: #1b1b1a;
   /* The dark green that carries type on paper disappears into the charcoal, so
      on this setting the bright star green takes the type and the dark one stays
      behind white ink on a filled button. */
@@ -488,21 +489,21 @@
      unmistakably the colour the network uses and neither of them louder than the
      review it belongs to. */
   --brand-shape-hold: 70%;
-  --paper: #262624;
-  --paper-ink: #f0eee6;
+  --paper: #141413;
+  --paper-ink: #f4f3ee;
   --paper-ink-soft: rgba(240, 238, 230, 0.72);
   --paper-ink-mute: rgba(240, 238, 230, 0.55);
   --paper-ink-faint: rgba(240, 238, 230, 0.47);
   --paper-ink-ghost: rgba(240, 238, 230, 0.35);
   --paper-hairline: rgba(240, 238, 230, 0.1);
   --paper-hairline-strong: rgba(240, 238, 230, 0.14);
-  --paper-field: #30302e;
+  --paper-field: #1b1b1a;
   --wash-paper: rgb(240 238 230 / 0.05);
   --wash-paper-strong: rgb(240 238 230 / 0.1);
   --rule-paper: rgba(240, 238, 230, 0.05);
   --rule-paper-fine: rgba(240, 238, 230, 0.03);
-  --surface-1: #30302e;
-  --surface-2: #3b3a37;
+  --surface-1: #1b1b1a;
+  --surface-2: #222220;
   --lift: 0 30px 80px -30px rgba(0, 0, 0, 0.75);
   /* The same recipe over the charcoal. A drop shadow works by darkening the
      ground it falls on, so the alphas that read on paper do nothing here and the
@@ -514,10 +515,10 @@
     0 14px 32px -14px rgb(0 0 0 / 70%);
   --key-lift: 0 1px 1px rgb(0 0 0 / 40%), 0 2px 5px -1px rgb(0 0 0 / 55%);
   --key-lift-soft: 0 1px 2px rgb(0 0 0 / 40%);
-  --nav-surface: rgba(38, 38, 36, 0.85);
-  --nav-surface-solid: #262624;
+  --nav-surface: rgba(20, 20, 19, 0.82);
+  --nav-surface-solid: #141413;
   --shine-sweep: rgba(240, 238, 230, 0.95);
-  --glare-ground: #262624;
+  --glare-ground: #141413;
   --glare-edge: rgba(240, 238, 230, 0.2);
   --spotlight: rgba(47, 107, 255, 0.2);
   --spotlight-soft: rgba(47, 107, 255, 0.12);
@@ -705,9 +706,7 @@
     /* clip, not hidden: hidden makes the root a scroll container, which severs
        every sticky and fixed descendant on the page. */
     overflow-x: clip;
-    /* Night, so a page pulled past either end shows the bar's ground above it
-       and the footer's below it rather than a strip of paper. */
-    background-color: var(--night);
+    background-color: var(--paper);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -2658,8 +2657,8 @@
    * button cannot be built here without it.
    */
   .btn {
-    @apply inline-flex min-h-[52px] cursor-pointer touch-manipulation items-center justify-center gap-3 whitespace-nowrap px-6 font-mono text-[13px] font-medium uppercase leading-none tracking-[0.07em] sm:text-[14px];
-    border-radius: 0;
+    @apply inline-flex min-h-[48px] cursor-pointer touch-manipulation items-center justify-center gap-2 whitespace-nowrap px-[22px] text-[15px] font-medium leading-none;
+    border-radius: 999px;
     transition:
       background-color 180ms var(--ease-out-soft),
       box-shadow 180ms var(--ease-out-soft),
@@ -2680,12 +2679,12 @@
      than a card's, so it reads as a key sitting on the page rather than a
      panel floating above it. */
   .btn-primary {
-    background-color: var(--signal);
+    background-color: var(--blue);
     color: #ffffff;
   }
 
   .btn-primary:hover {
-    background-color: var(--signal-hi);
+    background-color: var(--blue-hi);
   }
 
   .btn-primary:focus-visible {
@@ -2696,9 +2695,9 @@
      ring, so it is a pale key on a page and a dark one on a slab without
      either being restated at the call site. */
   .btn-secondary {
-    background-color: var(--surface-1);
+    background-color: rgba(244, 243, 238, 0.06);
     color: var(--ink);
-    box-shadow: 0 0 0 1px var(--line);
+    box-shadow: 0 0 0 1px var(--edge-strong);
   }
 
   .btn-secondary:hover {
@@ -2884,10 +2883,10 @@
    * be typed in has nothing to say about the pointer or the value.
    */
   .field {
-    @apply min-h-[52px] w-full px-4 text-[17px];
-    --field-ring: var(--line);
+    @apply min-h-[48px] w-full px-4 text-[16px];
+    --field-ring: var(--edge-strong);
     --field-halo: transparent;
-    border-radius: 0;
+    border-radius: 12px;
     background-color: var(--paper-field);
     box-shadow:
       0 0 0 1px var(--field-ring),
@@ -2908,7 +2907,7 @@
 
   .field:focus {
     outline: none;
-    --field-ring: var(--signal);
+    --field-ring: var(--blue);
     --field-halo: color-mix(in srgb, var(--accent) 16%, transparent);
   }
 
@@ -2940,10 +2939,10 @@
    * same thing: this is the one the accent is pointing at.
    */
   .choice-tile {
-    @apply flex min-h-[48px] touch-manipulation items-center justify-center px-4 py-3 text-[15px] font-medium;
-    border-radius: 0;
+    @apply flex min-h-[46px] touch-manipulation items-center justify-center px-4 py-3 text-[15px] font-medium;
+    border-radius: 12px;
     background-color: var(--paper-field);
-    box-shadow: 0 0 0 1px var(--line);
+    box-shadow: 0 0 0 1px var(--edge-strong);
     color: var(--paper-ink-soft);
     transition:
       box-shadow 160ms var(--ease-out-soft),
@@ -2956,9 +2955,9 @@
   }
 
   input:checked + .choice-tile {
-    background-color: var(--signal);
-    color: #ffffff;
-    box-shadow: 0 0 0 1px var(--signal);
+    background-color: color-mix(in srgb, var(--blue) 18%, transparent);
+    color: var(--text);
+    box-shadow: 0 0 0 1px var(--blue);
   }
 
   input:focus-visible + .choice-tile {
@@ -3119,26 +3118,14 @@
 }
 
 @layer components {
-  /* The blueprint behind a masthead: one line every 80px both ways, anchored
-     to the middle of the page so the lines fall on the same columns at every
-     width. It is a background, so it costs nothing and moves nothing. */
-  .signal-grid {
-    background-color: var(--night);
-    background-image:
-      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
-    background-size: 80px 80px;
-    background-position: calc(50% - 40px) -1px;
-  }
-
-  /* The small square a headline ends on instead of a full stop: the pixel the
-     wordmark is drawn from, in the colour of the thing to press. */
-  .signal-square {
-    display: inline-block;
-    width: 0.19em;
-    height: 0.19em;
-    margin-left: 0.07em;
-    background-color: var(--signal);
-    vertical-align: baseline;
+  /* The light behind a page's first screen: one soft blue bloom in the upper
+     right, fading to nothing. It is a background, so it costs nothing and
+     moves nothing, and it sits behind the content rather than over it. */
+  .glow {
+    background-image: radial-gradient(
+      ellipse 60% 70% at 85% 0%,
+      rgba(59, 107, 255, 0.22),
+      rgba(59, 107, 255, 0) 70%
+    );
   }
 }

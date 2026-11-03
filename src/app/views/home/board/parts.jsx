@@ -1,26 +1,6 @@
-import { Kicker, SquareList } from '@components/kit/Kit'
-import { TYPE } from '@components/kit/styles'
+import { CheckList } from '@components/kit/Kit'
+import { CARD, TYPE } from '@components/kit/styles'
 import { leadOf } from './boardData'
-
-/**
- * The three steps from first call to launch, each under a heavy rule with its
- * number in blue. Read across on a wide screen, down on a phone.
- */
-export function Steps({ steps }) {
-  return (
-    <ol className="grid gap-10 md:grid-cols-3 md:gap-8">
-      {steps.map((step, index) => (
-        <li key={step.title} className="border-t-2 border-ink pt-6">
-          <span className={`${TYPE.mono} text-[color:var(--signal)]`}>
-            {String(index + 1).padStart(2, '0')}
-          </span>
-          <h3 className={`${TYPE.h3} mt-4`}>{step.title}</h3>
-          <p className={`${TYPE.body} mt-3`}>{step.body}</p>
-        </li>
-      ))}
-    </ol>
-  )
-}
 
 /**
  * A change asked for by text and done the same morning, drawn as the thread
@@ -29,32 +9,27 @@ export function Steps({ steps }) {
  */
 export function TextThread() {
   return (
-    <figure className="flex h-full flex-col gap-4 bg-[var(--night)] p-7 text-[color:var(--light)] sm:p-9">
-      <Kicker tone="night" as="figcaption">
-        Changes, same day
-      </Kicker>
-      <p className="mr-10 border border-[var(--night-line)] bg-[var(--night-2)] px-5 py-4 text-[17px] leading-[1.5]">
+    <figure className={`${CARD} flex h-full flex-col gap-3 p-6 sm:p-8`}>
+      <figcaption className={TYPE.h3}>Changes, the same day</figcaption>
+      <p className={`${TYPE.small} -mt-1 mb-2`}>Text me what needs to change.</p>
+      <p className="mr-10 rounded-[16px] rounded-bl-[6px] bg-white/[0.07] px-4 py-3 text-[15px] leading-[1.5] text-ink">
         Closing at 3 on Friday for the holiday. Can you put that on the site?
       </p>
-      <p className="ml-10 bg-[var(--signal)] px-5 py-4 text-[17px] leading-[1.5] text-white">
+      <p className="ml-10 rounded-[16px] rounded-br-[6px] bg-[var(--blue)] px-4 py-3 text-[15px] leading-[1.5] text-white">
         Done. It’s on the home page, and your Google hours match.
       </p>
-      <Kicker tone="night" className="mt-auto pt-2">
-        Tue 9:12 AM → Read 9:26 AM
-      </Kicker>
+      <p className={`${TYPE.small} mt-auto pt-2 text-right`}>Tue 9:12 AM · Read 9:26 AM</p>
     </figure>
   )
 }
 
-/** What one monthly price covers, as a short list on paper. */
+/** What one monthly price covers, as a short list in a card. */
 export function Monthly({ items }) {
   return (
-    <div className="flex h-full flex-col gap-6 border border-[var(--line)] bg-white p-7 sm:p-9">
-      <Kicker>One monthly price</Kicker>
-      <p className="text-[30px] font-semibold leading-[1.12] tracking-[-0.03em] text-ink sm:text-[34px]">
-        Hosting, care and changes. All of it.
-      </p>
-      <SquareList items={items} />
+    <div className={`${CARD} h-full p-6 sm:p-8`}>
+      <h3 className={TYPE.h3}>One monthly price covers it</h3>
+      <p className={`${TYPE.small} mb-6 mt-1`}>No surprise bills after launch.</p>
+      <CheckList items={items} />
     </div>
   )
 }
@@ -68,11 +43,11 @@ export function Quote({ review, sentences = 1, className = '' }) {
   const lead = leadOf(review.quote, sentences)
   return (
     <figure className={className}>
-      <blockquote className="max-w-[24ch] text-[32px] font-medium leading-[1.15] tracking-[-0.03em] text-ink sm:text-[44px] [text-wrap:pretty]">
+      <blockquote className="max-w-[30ch] text-[26px] font-medium leading-[1.3] tracking-[-0.02em] text-ink [text-wrap:pretty] sm:text-[32px]">
         “{lead}”
       </blockquote>
-      <figcaption className={`${TYPE.mono} mt-8 text-ink-mute`}>
-        {review.name} / {review.business} /{' '}
+      <figcaption className={`${TYPE.small} mt-5`}>
+        {review.name}, {review.business} ·{' '}
         {review.rating
           ? `${review.rating}/5 on ${review.network}`
           : `Recommends on ${review.network}`}

@@ -16,13 +16,12 @@ import { TYPE } from '@components/kit/styles'
 import { dayIn } from '@lib/time/zone.js'
 import { PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
 
-const ITEM =
-  'text-[15px] leading-[1.5] text-[color:var(--light)] transition-colors hover:text-[color:var(--signal)]'
-const BASE = `${TYPE.mono} text-[color:var(--light-soft)] transition-colors hover:text-[color:var(--light)]`
+const ITEM = 'text-[14px] leading-[1.5] text-ink-soft transition-colors hover:text-ink'
+const BASE = 'text-[13px] text-ink-mute transition-colors hover:text-ink'
 
 /**
- * The foot of every page, on night: the number to call set large, then every
- * page on the site in four short columns, then the legal line in mono.
+ * The foot of every page: who this is and how to reach him on the left, every
+ * page on the site in four short columns, and the legal line under a hairline.
  *
  * It is the directory the bar no longer is. The bar names three pages; this
  * names all of them, so a reader who scrolls to the bottom looking for the FAQ
@@ -37,36 +36,37 @@ export default function Footer() {
   ].filter(Boolean)
 
   return (
-    <footer className="bg-[var(--night)] text-[color:var(--light)]">
-      <div className="mx-auto w-full max-w-[1120px] px-5 pb-10 pt-16 sm:px-8 sm:pt-20">
+    <footer className="border-t border-[var(--edge)]">
+      <div className="mx-auto w-full max-w-[1160px] px-5 pb-10 pt-14 sm:px-8 sm:pt-16">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,3fr)] lg:gap-16">
-          <div>
-            <Link to="/" aria-label="Home" className="inline-block">
+          <div className="max-w-[320px]">
+            <Link to="/" aria-label="Home" className="inline-block rounded-md">
               <Logo />
             </Link>
-            <a
-              href={COMPANY_PHONE_HREF}
-              className="mt-7 block font-mono text-[26px] font-medium tracking-[-0.02em] text-[color:var(--light)] hover:text-[color:var(--signal)] sm:text-[28px]"
-            >
-              {COMPANY_PHONE}
-            </a>
-            <p className="mt-3 text-[15px] leading-[1.6] text-[color:var(--light-soft)]">
-              <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-[color:var(--light)]">
-                {SUPPORT_EMAIL}
-              </a>
-              <br />
-              {COMPANY_LOCATION}
-            </p>
-            <p className="mt-6 max-w-[22rem] text-[15px] leading-[1.6] text-[color:var(--light-soft)]">
-              {SITE.footerBlurb}
-            </p>
+            <p className={`${TYPE.small} mt-5`}>{SITE.footerBlurb}</p>
+            <ul className="mt-5 space-y-1.5 text-[14px]">
+              <li>
+                <a
+                  href={COMPANY_PHONE_HREF}
+                  className="font-medium text-ink hover:text-[color:var(--link)]"
+                >
+                  {COMPANY_PHONE}
+                </a>
+              </li>
+              <li>
+                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-ink-soft hover:text-ink">
+                  {SUPPORT_EMAIL}
+                </a>
+              </li>
+              <li className="text-ink-mute">{COMPANY_LOCATION}</li>
+            </ul>
           </div>
 
           <nav aria-label="Every page" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
             {FOOTER_COLUMNS.map(column => (
               <div key={column.head}>
-                <p className={`${TYPE.mono} text-[color:var(--light-soft)]`}>{column.head}</p>
-                <ul className="mt-4 space-y-2.5">
+                <p className="text-[13px] font-medium text-ink">{column.head}</p>
+                <ul className="mt-3.5 space-y-2.5">
                   {column.items.map(item => (
                     <li key={item.to}>
                       <Link to={item.to} className={ITEM}>
@@ -80,8 +80,8 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-16 flex flex-col gap-4 border-t border-[var(--night-line)] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className={`${TYPE.mono} text-[color:var(--light-soft)]`}>
+        <div className="mt-14 flex flex-col gap-4 border-t border-[var(--edge)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+          <p className="text-[13px] text-ink-mute">
             © {year} {SITE.brandName}
           </p>
           <ul className="flex flex-wrap gap-x-5 gap-y-2">

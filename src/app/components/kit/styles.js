@@ -4,49 +4,47 @@
  * place on an edit). Pages that need a size without a whole piece - a heading
  * inside a card, a line of small print - take it from here.
  *
- * The look is "Signal", from the Figma file "TaylorURL — Simpler Redesign",
- * page "Redesign — Signal": night mastheads over a blueprint grid, paper pages
- * to read on, one signal blue, Geist set very large and tight for what a page
- * is, and Geist Mono in capitals for every label, number and address.
+ * The look is "Refined", from the Figma file "TaylorURL — Simpler Redesign",
+ * page "Directions — pick one", frame A: the site's own dark ground, made
+ * calmer. Geist at a medium weight and modest sizes, warm white type, cards
+ * with soft corners and a hairline, pill buttons, one blue.
  */
 
 export const TYPE = {
-  /* The home page's headline, and the foot-of-page ask. */
-  hero: 'text-[clamp(52px,9.2vw,132px)] font-semibold leading-[0.94] tracking-[-0.055em]',
+  /* The home page's headline. */
+  hero: 'text-[42px] font-medium leading-[1.06] tracking-[-0.035em] text-ink sm:text-[56px] lg:text-[68px]',
   /* Every other page's headline. */
-  display: 'text-[clamp(44px,6.4vw,88px)] font-semibold leading-[0.98] tracking-[-0.045em]',
-  /* A section's heading on paper. */
-  h2: 'text-[clamp(30px,3.3vw,40px)] font-semibold leading-[1.08] tracking-[-0.03em] text-ink',
+  display:
+    'text-[38px] font-medium leading-[1.08] tracking-[-0.032em] text-ink sm:text-[48px] lg:text-[54px]',
+  /* A section's heading. */
+  h2: 'text-[28px] font-medium leading-[1.15] tracking-[-0.028em] text-ink sm:text-[32px]',
   /* A card's or a step's heading. */
-  h3: 'text-[22px] font-semibold leading-[1.25] tracking-[-0.02em] text-ink sm:text-[24px]',
-  lead: 'text-[18px] leading-[1.55] sm:text-[21px] sm:leading-[1.5]',
-  body: 'text-[17px] leading-[1.6] text-ink-soft',
-  small: 'text-[15px] leading-[1.5] text-ink-mute',
-  /* The mono label: kickers, section numbers, readout names, button words. */
-  mono: 'font-mono text-[12px] font-medium uppercase leading-[1.4] tracking-[0.08em] sm:text-[13px]',
-  /* A figure in a readout. */
-  figure: 'font-mono text-[40px] font-medium leading-none tracking-[-0.04em] sm:text-[48px]',
+  h3: 'text-[18px] font-medium leading-[1.35] tracking-[-0.012em] text-ink sm:text-[19px]',
+  lead: 'text-[17px] leading-[1.6] text-ink-soft sm:text-[19px]',
+  body: 'text-[16px] leading-[1.65] text-ink-soft',
+  small: 'text-[14px] leading-[1.5] text-ink-mute',
+  /* A short label over a group or a figure. */
+  label: 'text-[13px] font-medium leading-[1.4] text-ink-mute',
+  /* A figure in a stat panel. */
+  figure: 'text-[24px] font-semibold leading-none tracking-[-0.02em] text-ink',
 }
 
 const BUTTON =
-  'inline-flex min-h-[52px] items-center justify-center gap-3 px-6 font-mono text-[13px] font-medium uppercase leading-none tracking-[0.07em] transition-colors duration-150 sm:text-[14px]'
+  'inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full px-[22px] text-[15px] font-medium leading-none transition-colors duration-150'
 
 export const BUTTONS = {
-  /* The one thing to press, on any ground. */
-  blue: `${BUTTON} bg-[var(--signal)] text-white hover:bg-[var(--signal-hi)]`,
-  /* The pair's quieter half on night. */
-  night: `${BUTTON} border border-[var(--night-line)] text-[color:var(--light)] hover:border-[color:var(--light-soft)]`,
-  /* The pair's quieter half on paper. */
-  paper: `${BUTTON} border border-[var(--line)] text-ink hover:border-ink`,
-  /* On the signal blue band: white key, then an outline. */
-  white: `${BUTTON} bg-white text-[color:var(--night)] hover:bg-[var(--light)]`,
-  ghost: `${BUTTON} border border-white/45 text-white hover:border-white`,
+  /* The one thing to press. */
+  primary: `${BUTTON} bg-[var(--blue)] text-white hover:bg-[var(--blue-hi)]`,
+  /* The pair's quieter half: a pale pill with a hairline. */
+  secondary: `${BUTTON} bg-white/[0.06] text-ink ring-1 ring-inset ring-[color:var(--edge-strong)] hover:bg-white/[0.1]`,
 }
+
+/** A card: one step up from the ground, a hairline round it, soft corners. */
+export const CARD = 'rounded-[16px] border border-[var(--edge)] bg-[var(--card)]'
 
 /**
  * Body copy for reading: articles, case studies, the legal pages. A narrow
- * column on paper, generous line height, headings that step down from the
- * page title, mono for code and figures.
+ * column, generous line height, headings that step down from the page title.
  */
 export const PROSE =
-  'text-[18px] leading-[1.7] text-ink-soft [&_a]:text-[color:var(--signal)] [&_a]:underline [&_a]:underline-offset-[3px] [&_h2]:mt-14 [&_h2]:text-[28px] [&_h2]:font-semibold [&_h2]:leading-[1.2] [&_h2]:tracking-[-0.025em] [&_h2]:text-ink [&_h3]:mt-9 [&_h3]:text-[21px] [&_h3]:font-semibold [&_h3]:leading-[1.35] [&_h3]:tracking-[-0.015em] [&_h3]:text-ink [&_li]:mt-2 [&_ol]:mt-5 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mt-5 [&_strong]:font-semibold [&_strong]:text-ink [&_ul]:mt-5 [&_ul]:list-[square] [&_ul]:pl-6 [&_li::marker]:text-[color:var(--signal)]'
+  'text-[17px] leading-[1.75] text-ink-soft [&_a]:text-[color:var(--link)] [&_a]:underline [&_a]:underline-offset-[3px] [&_h2]:mt-12 [&_h2]:text-[24px] [&_h2]:font-medium [&_h2]:leading-[1.3] [&_h2]:tracking-[-0.02em] [&_h2]:text-ink [&_h3]:mt-8 [&_h3]:text-[19px] [&_h3]:font-medium [&_h3]:leading-[1.4] [&_h3]:text-ink [&_li]:mt-2 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mt-4 [&_strong]:font-semibold [&_strong]:text-ink [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_li::marker]:text-ink-mute'

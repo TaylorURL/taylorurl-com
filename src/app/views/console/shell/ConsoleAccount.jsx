@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Check, ChevronsUpDown, Eye, LogOut, Search, Settings, SunMoon } from 'lucide-react'
+import { Check, ChevronsUpDown, Eye, LogOut, Search, Settings } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useDismiss } from '@hooks/chrome/useDismiss'
 import { SiteIcon } from '../SiteIcon'
@@ -51,8 +51,6 @@ export function ConsoleAccount({
   email,
   role,
   collapsed,
-  theme,
-  onCycleTheme,
   canPreview,
   preview,
   onPreview,
@@ -141,16 +139,6 @@ export function ConsoleAccount({
               <Settings className="console-account-glyph" strokeWidth={1.75} aria-hidden="true" />
               <span>Settings</span>
             </Link>
-            <button
-              type="button"
-              role="menuitem"
-              className="console-account-row"
-              onClick={onCycleTheme}
-            >
-              <SunMoon className="console-account-glyph" strokeWidth={1.75} aria-hidden="true" />
-              <span>Theme</span>
-              <span className="console-account-value">{theme}</span>
-            </button>
             {/* Offered on the real role and taken away by the drawn one, which
                 is what makes the panel an admin opens while previewing the same
                 panel a client opens. A row reading "Leave Preview" here would

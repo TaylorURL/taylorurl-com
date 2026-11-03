@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Check, ChevronDown, Keyboard, LogIn, Menu, Search, SunMoon, X } from 'lucide-react'
+import { Check, ChevronDown, Keyboard, LogIn, Menu, Search, X } from 'lucide-react'
 import { useDismiss } from '@hooks/chrome/useDismiss'
 import { ConsoleScope } from './ConsoleScope'
 import { useModifierLabel } from '../lib/useConsoleShortcuts'
+import { GROUP_LABELS } from '../lib/sections'
 
 /**
  * The console's top rail.
@@ -140,13 +141,12 @@ export function ConsoleBar({
   reading,
   onSearch,
   onShortcuts,
-  onTheme,
-  theme,
   signInTo,
 }) {
   // A section whose group repeats its own name gets no crumb. "Traffic / Traffic"
   // is a breadcrumb that has told the reader nothing twice.
-  const crumb = group && group !== title ? group : null
+  const named = GROUP_LABELS[group] || group
+  const crumb = named && named !== title ? named : null
   const modifier = useModifierLabel()
 
   return (
@@ -228,20 +228,6 @@ export function ConsoleBar({
 
           {publicOnly && (
             <>
-              {/* A signed-out reader has no account panel, and the theme is set
-                  inside it. Without this the one setting the console offers a
-                  visitor is unreachable for the one visitor who is not signed
-                  in. */}
-              <button
-                type="button"
-                className="console-icon-button"
-                onClick={onTheme}
-                aria-label={`Theme: ${theme}. Change it.`}
-                title={`Theme: ${theme}`}
-              >
-                <SunMoon className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
-              </button>
-
               <Link to="/login" state={{ from: signInTo }} className="console-signin">
                 <LogIn className="h-4 w-4 flex-shrink-0" strokeWidth={2} aria-hidden="true" />
                 <span>Sign In</span>

@@ -113,7 +113,6 @@ export const CELL_FOCUS =
  * from the next. A fault is a sentence rather than a standing label, so it is
  * set as small prose and left free to wrap.
  */
-export const FIELD_LABEL =
-  'mb-2 block font-mono text-[12px] font-medium uppercase leading-[1.4] tracking-[0.08em] text-ink-soft'
+export const FIELD_LABEL = 'mb-2 block text-[14px] font-medium leading-[1.4] text-ink-soft'
 
 export const FIELD_FAULT = 'mt-2 text-[14px] leading-snug text-[color:var(--danger-on-paper)]'

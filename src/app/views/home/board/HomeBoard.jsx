@@ -1,17 +1,17 @@
 import {
   CallToAction,
+  DeviceShowcase,
   Grid,
-  Masthead,
-  Readouts,
+  PageIntro,
   Section,
   SectionHead,
-  TextLink,
+  StatPanel,
+  Steps,
   WorkCard,
 } from '@components/kit/Kit'
 import { committedStanding } from '@data/reputation/review-standings'
-import { COMPANY_PHONE } from '@constants/navigation'
 import { PUBLISHES_REVIEWS } from '../../../../../lib/site/current.js'
-import { Monthly, Quote, Steps, TextThread } from './parts'
+import { Monthly, Quote, TextThread } from './parts'
 import {
   MOBILE_SPEED,
   MONTHLY,
@@ -22,9 +22,8 @@ import {
   workHref,
 } from './boardData'
 
-// The three sites standing under the headline, live and measured. Chosen to be
-// three different kinds of business, so a reader sees their own somewhere.
-const WALL = ['southeastarbor.com', 'baytowngokarts.com', 'faded-barbershop.com']
+const FEATURED = 'southeastarbor.com'
+const STRIP = ['baytowngokarts.com', 'dickinsonbayoufleeting.com', 'faded-barbershop.com']
 const REVIEWED = 'djrxexcellence.com'
 
 const STEPS = [
@@ -34,85 +33,87 @@ const STEPS = [
   },
   {
     title: 'Get a plan and a price',
-    body: 'In writing, before any work starts. You pay nothing to ask.',
+    body: 'In writing, before any work starts. Asking is free.',
   },
   {
     title: 'Go live in two to four weeks',
-    body: 'You see it come together, and nothing launches until you say so.',
+    body: 'I host it, keep it fast, and make changes when you text.',
   },
 ]
 
 /**
- * The figures under the masthead. Each is read from the record that holds it -
- * the speed average from the portfolio, the rating from the standings - and a
- * figure whose record is empty is left out rather than shown as a zero.
+ * The figures under the first screen. Each is read from the record that holds
+ * it - the speed average from the portfolio, the rating from the standings -
+ * and a figure whose record is empty is left out rather than shown as a zero.
  */
 function figures() {
   const google = PUBLISHES_REVIEWS ? committedStanding('google') : null
   return [
     { value: String(MOBILE_SPEED), label: 'Average mobile speed score' },
-    { value: '2–4', label: 'Weeks to go live' },
-    { value: 'Same day', label: 'Changes, by text' },
-    google?.rating && { value: google.rating.toFixed(1), label: 'Rating on Google' },
+    { value: '2–4 weeks', label: 'From first call to live' },
+    { value: 'Same day', label: 'Changes, sent by text' },
+    google?.rating && { value: `${google.rating.toFixed(1)} ★`, label: 'Rating on Google' },
   ].filter(Boolean)
 }
 
 /**
  * The studio's home page.
  *
- * A night masthead with the point in very large type and three client sites
- * running under it, measured. Then the figures, the three steps, what working
- * together is like (a text answered the same morning, and one monthly price),
- * one client in their own words, and the ask again in signal blue.
+ * The point and the way to ask on the first screen, beside one client's live
+ * site on a laptop and a phone with the speed it was measured at. Then four
+ * figures, three more sites, the three steps, what working together is like,
+ * one client in their own words, and the ask again.
  *
  * It replaced a board of about ten boxes on one screen, which said all of this
  * at once and so said none of it first.
  */
 export default function HomeBoard() {
+  const featured = clientSite(FEATURED)
   const review = clientReview(REVIEWED)
-  const wall = WALL.map(clientSite).filter(Boolean)
 
   return (
     <>
-      <Masthead
+      <PageIntro
         size="hero"
-        kicker={`Web studio / Baytown, TX / Call or text ${COMPANY_PHONE}`}
-        title="Websites that bring in work"
-        lead="I design, build and host fast websites for local businesses around Houston. Most go live in two to four weeks."
-        below={
-          <>
-            <Grid cols={3} className="gap-y-10">
-              {wall.map((project, index) => (
-                <WorkCard
-                  key={project.displayUrl}
-                  project={project}
-                  to={workHref(project)}
-                  detail={`${tradeOf(project)} / ${townOf(project)}`}
-                  tone="night"
-                  eager={index === 0}
-                />
-              ))}
-            </Grid>
-            <TextLink to="/portfolio" label="See all the work" className="mt-10" />
-          </>
-        }
+        badge="Web design in Baytown, TX"
+        title="Websites that bring in work."
+        lead="I design, build and host fast websites for local businesses. Most go live in two to four weeks."
+        note="Free to ask · Usually a reply within the hour"
+        media={featured && <DeviceShowcase project={featured} eager />}
       />
 
-      <Readouts items={figures()} />
+      <Section tight className="!pt-0">
+        <StatPanel items={figures()} />
+      </Section>
+
+      <Section label="Recent work" className="!pt-6">
+        <SectionHead title="Recent work" link={{ to: '/portfolio', label: 'See all work' }} />
+        <Grid cols={3}>
+          {STRIP.map(host => {
+            const project = clientSite(host)
+            if (!project) return null
+            return (
+              <WorkCard
+                key={host}
+                project={project}
+                to={workHref(project)}
+                detail={`${tradeOf(project)} · ${townOf(project)}`}
+              />
+            )
+          })}
+        </Grid>
+      </Section>
 
       <Section label="How it works">
         <SectionHead
-          number="01"
-          kicker="How it works"
-          title="Three steps. No surprises."
-          lead="You talk to the person who builds it, from the first call to launch day and every change after."
+          title="How it works"
+          lead="You deal with me from the first call to launch day, and every change after."
         />
-        <Steps steps={STEPS} />
+        <Steps items={STEPS} />
       </Section>
 
-      <Section label="Working together">
-        <SectionHead number="02" kicker="After launch" title="One person, on call." />
-        <div className="grid gap-6 md:grid-cols-2">
+      <Section label="After launch">
+        <div className="grid gap-5 md:grid-cols-2">
           <TextThread />
           <Monthly items={MONTHLY} />
         </div>
