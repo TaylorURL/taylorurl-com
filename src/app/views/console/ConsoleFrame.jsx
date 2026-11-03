@@ -11,6 +11,7 @@ import { SUPPORT_EMAIL } from '@constants/navigation'
 import { useAnalyticsFeed } from '@hooks/console/useAnalytics'
 import { SAMPLE_BUSINESS, usePreviewClient } from '@hooks/console/usePreviewClient'
 import { useSession } from '@hooks/session/useSession'
+import { askWithLadder } from '@hooks/session/readSession'
 import { supabase } from '@data/supabase/supabaseClient'
 import { ConsoleBar } from './shell/ConsoleBar'
 import { ConsoleSidebar } from './shell/ConsoleSidebar'
@@ -45,6 +46,12 @@ const OVERVIEW_POLL_MS = 60_000
 // where they land either way; without a word beside it, the console reads as
 // having thrown them out for nothing.
 const SESSION_GONE = 'Your session ended. Sign in to pick up where you were.'
+
+// And what somebody is told when the console could not find out whether they
+// are signed in. The distinction is the whole fix: that sentence says the
+// session is over, this one says nothing is known about it yet, and the console
+// used to say the first for both.
+const SESSION_UNREAD = 'Your session could not be checked. Your connection dropped, so try again.'
 
 // The head description a console URL falls back to when it matches no listed
 // section, which is only reachable while a route is being added.
@@ -96,7 +103,15 @@ function storedScope() {
 }
 
 export default function ConsoleFrame() {
-  const { session, checking, mfaPending, signOut, email } = useSession()
+  const {
+    session,
+    checking,
+    mfaPending,
+    unreachable: sessionUnread,
+    retryRead,
+    signOut,
+    email,
+  } = useSession()
   const toast = useToast()
   // A session already in storage comes back in a few milliseconds, which is
   // shorter than the line saying so takes to read. This decides whether it is
@@ -388,10 +403,19 @@ export default function ConsoleFrame() {
       }
       return signOut()
     }
-    supabase.auth
-      .refreshSession()
-      .then(({ data, error }) => {
-        if (error || !data?.session) return ended(error)
+    // And the refresh is given the ladder rather than one attempt. This is the
+    // same fault as the session read had, one step further in: a single dropped
+    // request here answered "the session is gone", and the console acted on it
+    // by signing the reader out of a session that was fine. Only a refresh that
+    // was answered, and answered with a refusal, proves anything - so a request
+    // that never landed is asked again before any of that is believed.
+    askWithLadder(() => supabase.auth.refreshSession())
+      .then(({ answer, cause, unreachable: lost }) => {
+        // Every rung spent without an answer. The session is unknown, not over,
+        // and the reader keeps it: the next read, or the next tick of the
+        // poller, asks again from a page they are still on.
+        if (lost) return undefined
+        if (cause || !answer?.data?.session) return ended(cause)
         return refresh()
       })
       .catch(ended)
@@ -604,6 +628,38 @@ export default function ConsoleFrame() {
       <ConsoleShell>
         <Seo title={head.title} description={head.description} path={location.pathname} noIndex />
         <Waiting visible={sessionWait.visible} label="Checking your session" />
+      </ConsoleShell>
+    )
+  }
+
+  // The session could not be read at all - every rung of the ladder spent on a
+  // request that never landed. That is not a signed-out visitor, and sending
+  // one to the sign-in form is what this fault did: the session was still in
+  // storage, the nav bar still said they were signed in, and the console asked
+  // them to sign in again for a connection that dropped one request. So the
+  // reader is told what happened in the site's own sentence for it and given
+  // the ask back, on the page they were already on.
+  if (sessionUnread && !session && !onStatus) {
+    return (
+      <ConsoleShell>
+        <Seo title={head.title} description={head.description} path={location.pathname} noIndex />
+        <div
+          role="alert"
+          className="flex min-h-dvh flex-col items-center justify-center gap-6 px-6 text-center"
+        >
+          <p className="section-label text-accent">Connection Lost</p>
+          <h1 className="display-5 max-w-md font-semibold leading-[1.1] tracking-tightest [text-wrap:balance]">
+            {faultMessage(null, SESSION_UNREAD)}
+          </h1>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <button className="btn btn-primary" type="button" onClick={retryRead}>
+              Try Again
+            </button>
+            <a className="btn btn-secondary" href="/console/status">
+              Go to Status
+            </a>
+          </div>
+        </div>
       </ConsoleShell>
     )
   }
