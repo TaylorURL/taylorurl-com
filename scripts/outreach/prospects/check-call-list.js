@@ -1966,8 +1966,10 @@ check('the page shows the number and the owner, the day, and the front desk', ()
     page.indexOf('</a>', page.indexOf('href={row.dial}'))
   )
   ok(/row\.owner_name/.test(button), 'the dial button does not carry the owner’s name')
-  // Where the number came from is in the open business's details.
-  ok(/<Sources from=\{row\.owner_phone_from\} \/>/.test(page), 'the number’s source is not shown')
+  // The details say who the owner is and their number, and nothing about how
+  // sure either is or where it came from.
+  ok(!/<Sources /.test(page), 'the details say where the owner came from')
+  ok(!/unconfirmed|'confirmed'/.test(page), 'the details say how sure the owner is')
   // Plain text, not a badge.
   ok(!/<Badge/.test(page), 'a badge on the page')
   // Nothing on this page is about the Do Not Call registry.
