@@ -47,8 +47,9 @@
  * it came from: `source` is 'places' and `source_ref` is the place id again,
  * so a row's identity is the pair whatever found it, and a source with no
  * place id at all files under the same two columns. The name, address, phone,
- * website, town and trade of a business already on file are refreshed from
- * the search; its stage and its email are not, because a prospect that has
+ * website, town, trade and Google category (`place_type`) of a business
+ * already on file are refreshed from the search; its stage and its email are
+ * not, because a prospect that has
  * been enriched, audited or written to is further along than a map result
  * knows and a search result must not walk it back.
  *
@@ -105,10 +106,16 @@ const PLACES_ENDPOINT = 'https://places.googleapis.com/v1/places:searchText'
 // whole answer rather than the places in it, so a token left out of it is a
 // token Google does not send, and a token asked for is not a place field and
 // moves the tier nowhere.
+//
+// primaryType is Google's own category for the place - "building_materials_store",
+// "wholesaler" - which is how the Call List tells a concrete supplier from the
+// concrete contractors it was searched among. It is a Pro field, two tiers
+// below the phone and the website, so on a request already billed at
+// Enterprise it costs nothing more.
 const FIELD_MASK =
   'nextPageToken,places.id,places.displayName,places.formattedAddress,' +
   'places.nationalPhoneNumber,places.websiteUri,places.rating,places.userRatingCount,' +
-  'places.businessStatus'
+  'places.businessStatus,places.primaryType'
 
 const API_KEY = process.env.GOOGLE_PLACES_API_KEY || ''
 
@@ -368,10 +375,10 @@ function townOf(address, searched) {
 /**
  * One place as a prospect row, or null when it has no name to file it under.
  *
- * The rating, its count and the trading status are read here rather than off
- * the business's own site, which is the point of them: they say how big a
- * business is and whether it is still open before anything has been fetched,
- * enriched or audited on its behalf. Google omits the review fields entirely
+ * The rating, its count, the trading status and the category are read here
+ * rather than off the business's own site, which is the point of them: they
+ * say how big a business is, what kind it is and whether it is still open
+ * before anything has been fetched, enriched or audited on its behalf. Google omits the review fields entirely
  * for a listing nobody has reviewed, so a null count on a row built here is a
  * listing with no reviews rather than a count of zero. The table also holds
  * rows filed before the mask carried these fields, where the same null means
@@ -398,6 +405,7 @@ export function prospect(place, town, trade) {
     rating: place.rating ?? null,
     rating_count: place.userRatingCount ?? null,
     business_status: place.businessStatus ?? null,
+    place_type: place.primaryType ?? null,
     town: townOf(place.formattedAddress, town),
     trade,
   }

@@ -15,7 +15,9 @@
  *   company with a phone number are on it together, scored the same way
  *   (`callScore.js`), with the rules in `callList.js` taking out the closed,
  *   the chains, the shared numbers, the Google listings nobody has reviewed
- *   and the ones far busier than their trade.
+ *   and the ones far busier than their trade. A business is scored as the
+ *   company its listings make together (`companies.js`): a supplier with three
+ *   yards under two spellings is a staffed supplier, not three contractors.
  * - `waiting`: the businesses whose last call reached a front desk. They sit
  *   below everything fresh until the time the front desk gave comes round,
  *   when the call back it booked moves them up into `due`.
@@ -26,8 +28,8 @@
  * module the endpoint and the check both run, so the order on the page is the
  * order the check worked through by hand. What it reads is held for a few
  * minutes per instance - the callable set, the trade table, the registration
- * dates and every listing's trade and site - since none of it moves by the
- * minute; the calls are read fresh, and so is every business on the page
+ * dates, and every listing on the table with the companies they make - since
+ * none of it moves by the minute; the calls are read fresh, and so is every business on the page
  * before it is drawn, so a business that asked to stop is never offered off a
  * stale read.
  *
@@ -72,6 +74,7 @@ import {
   tradeMedians,
 } from '../lib/outreach/prospects/callList.js'
 import { factsOf, ownerDigits, scoreOf } from '../lib/outreach/prospects/callScore.js'
+import { companiesOf } from '../lib/outreach/prospects/companies.js'
 import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePhotos.js'
 
 const PROSPECTS = 'outreach_prospects'
@@ -112,6 +115,29 @@ const DETAIL = [
   'owner_name',
   'owner_phone',
   'owner_source',
+  'place_type',
+  'registered_on',
+  'officer_count',
+].join(', ')
+
+/**
+ * The columns every listing on the table is read with: what a chain and a
+ * shared number are read off, what a trade's share of sites is read off, and
+ * what joins listings into one company and says how big it is.
+ */
+const LISTING = [
+  'id',
+  'name',
+  'phone',
+  'town',
+  'trade',
+  'site_kind',
+  'website',
+  'address',
+  'source',
+  'place_type',
+  'registered_on',
+  'officer_count',
 ].join(', ')
 
 /** The columns of a call the history draws. */
@@ -245,16 +271,18 @@ function heldFor(keptMs, read) {
 }
 
 /**
- * Every listing's name, number, town, trade and kind of site: a chain and a
- * shared number are read off the first three, and the part of a trade with a
- * site of its own off the last two. It is the whole table rather than the
- * callable set, because a franchise's other offices and a trade's other
- * businesses mostly have sites of their own.
+ * Every listing on the table, and the companies they make: a chain and a
+ * shared number are read off the names, numbers and towns, the part of a trade
+ * with a site of its own off the trades and sites, and which listings are one
+ * company - and how many locations, what industry and what state record it
+ * has - off all of them (`companiesOf`). It is the whole table rather than the
+ * callable set, because a franchise's other offices, a trade's other
+ * businesses and a supplier's other yards mostly have sites of their own.
  */
 const listingIndex = heldFor(INDEX_KEPT_MS, db =>
-  readAll(() =>
-    db.from(PROSPECTS).select('name, phone, town, trade, site_kind', { count: 'exact' }).order('id')
-  ).then(answer => answer.rows)
+  readAll(() => db.from(PROSPECTS).select(LISTING, { count: 'exact' }).order('id')).then(
+    answer => ({ rows: answer.rows, companies: companiesOf(answer.rows) })
+  )
 )
 
 /**
@@ -349,9 +377,10 @@ function ownerSource(source) {
  * call or the owner finder - and the listing's otherwise; both are drawn. An
  * owner's number that is the listing's own main line is not the owner's.
  */
-function shaped(row, calls, { facts, formed, now, due = null } = {}) {
+function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) {
   const formedDay = formedOn(row, formed)
-  const score = scoreOf({ ...row, formed_on: formedDay }, facts, now)
+  const company = companies?.get(row.id) ?? null
+  const score = scoreOf({ ...row, formed_on: formedDay, company }, facts, now)
   const last = calls[0] ?? null
   const owner = ownerDigits(row)
   const drawn = {
@@ -460,7 +489,7 @@ async function dueList(db, now) {
  * The rules run over the whole order at once, so a number listed twice is
  * offered once, under its better-placed listing, on whichever page that is.
  */
-function ranking(pool, calls, index, taken, dueIds, facts, now) {
+function ranking(pool, calls, index, taken, dueIds, { facts, companies, now }) {
   const history = new Map()
   for (const call of calls) {
     if (!history.has(call.prospect_id)) history.set(call.prospect_id, [])
@@ -480,6 +509,7 @@ function ranking(pool, calls, index, taken, dueIds, facts, now) {
       formed_on: formedOn(row, pool.formed),
       calls: history.get(row.id) ?? [],
       trade_median: medians.get(row.trade) ?? null,
+      company: companies.get(row.id) ?? null,
     }
     if (!held.calls.length) {
       held.score = scoreOf(held, facts, now)
@@ -501,22 +531,22 @@ function ranking(pool, calls, index, taken, dueIds, facts, now) {
 /** The list, as the page draws it. */
 export async function list(db, query, now = new Date()) {
   const asked = pageOf(query.page)
-  const [owed, pool, listings, calls, today] = await Promise.all([
+  const [owed, pool, listed, calls, today] = await Promise.all([
     dueList(db, now),
     callablePool(db),
     listingIndex(db),
     allCalls(db),
     callsToday(db, now),
   ])
-  const facts = factsOf({ metrics: pool.metrics, listings, calls })
-  const context = { facts, formed: pool.formed, now }
+  const facts = factsOf({ metrics: pool.metrics, listings: listed.rows, calls })
+  const context = { facts, formed: pool.formed, companies: listed.companies, now }
 
   const due = owed.map(one => shaped(one.row, one.calls, { ...context, due: one.owed }))
   // A number on the list once is on it once: a call back holds its number, and
   // a second listing of it further down is the same phone ringing.
   const taken = new Set(due.map(row => phoneKey(row.phone)).filter(Boolean))
-  const index = indexOf(listings, calls)
-  const ranked = ranking(pool, calls, index, taken, new Set(due.map(row => row.id)), facts, now)
+  const index = indexOf(listed.rows, calls)
+  const ranked = ranking(pool, calls, index, taken, new Set(due.map(row => row.id)), context)
 
   const pages = Math.max(1, Math.ceil(ranked.fresh.length / PAGE_TAKE))
   const page = Math.min(asked, pages)
