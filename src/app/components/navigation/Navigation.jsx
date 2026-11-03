@@ -113,7 +113,13 @@ export default function Navigation() {
   }, [menuOpen])
 
   const isActive = to => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
-  const account = HAS_ACCOUNTS ? (signedIn ? { to: '/console', label: 'Console' } : null) : null
+  // The way into the console, on every site that has accounts: Sign In for a
+  // visitor, Console for someone already signed in.
+  const account = HAS_ACCOUNTS
+    ? signedIn
+      ? { to: '/console', label: 'Console' }
+      : { to: '/login', label: 'Sign In' }
+    : null
 
   return (
     <>
@@ -138,13 +144,6 @@ export default function Navigation() {
                 </Link>
               </li>
             ))}
-            {account && (
-              <li>
-                <Link to={account.to} className={LINK}>
-                  {account.label}
-                </Link>
-              </li>
-            )}
           </ul>
 
           <div className="hidden items-center gap-2 lg:flex">
@@ -160,6 +159,11 @@ export default function Navigation() {
             >
               {COMPANY_PHONE}
             </a>
+            {account && (
+              <Link to={account.to} className={`${BUTTONS.secondary} min-h-[42px] px-5`}>
+                {account.label}
+              </Link>
+            )}
             <Link to={START_LINK.to} className={`${BUTTONS.primary} min-h-[42px] px-5`}>
               {START_LINK.label}
             </Link>
@@ -238,12 +242,9 @@ export default function Navigation() {
                   <Phone className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
                   Call {COMPANY_PHONE}
                 </a>
-                {HAS_ACCOUNTS && (
-                  <Link
-                    to={account ? account.to : '/login'}
-                    className="mt-2 text-center text-[14px] text-ink-mute"
-                  >
-                    {account ? account.label : 'Client Sign In'}
+                {account && (
+                  <Link to={account.to} className={`${BUTTONS.secondary} w-full`}>
+                    {account.label}
                   </Link>
                 )}
               </div>
