@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.5-2f6bff?style=for-the-badge" alt="Version 2026.45.5" />
+<img src="https://img.shields.io/badge/version-2026.45.6-2f6bff?style=for-the-badge" alt="Version 2026.45.6" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -19,6 +19,10 @@ Besides the service pages, portfolio and blog, it has a few free tools (a speed 
 ## Money and client sites
 
 A buyer pays before they have an account, so the browser can't be trusted to record the purchase. `api/stripe-webhook.js` is the only thing that creates a project, and the signature is the security. Stripe retries deliveries, and a uniqueness rule on the checkout session turns two of them into one project. For quoted jobs, `api/checkout-link.js` makes a checkout at the agreed price, never under the floor in `pricing.js`.
+
+A proposal is priced in a meeting, not online. The `/proposal` skill prints the sheet and saves what it printed, and the QR code on it opens `/pay` with that profile's key. The page is public and takes no sign-in, so the one thing it never sends is a price. It sends the key and the names of the add-ons ticked, and `api/proposal.js` reads every figure off the profile and refuses a name the profile doesn't offer. The worst a forged request gets is a checkout for what the sheet already offered. The key is 18 random bytes printed on paper, the whole of the access the way an unsubscribe token is. A profile that's been paid, or whose prices have run out, still reads and says which, but won't open a checkout. The checkout carries the same one-use claim key a hand-made link does, so the webhook opens the account and project the same way.
+
+Every sheet sells the monthly fee, and some sell an add-on billed by the quarter. Stripe's checkout opens one subscription and refuses a second interval, so the longer lines are charged their first period at the checkout and `lib/stripe/proposal.js` opens them as their own subscription from the webhook, each starting one period on. Nothing is billed twice and nothing is left unbilled. Stripe retries the webhook, so each subscription is opened under a key named after the checkout and a later delivery finds it done.
 
 Every client site's middleware asks `api/site-status.js` whether to serve. The answer is no only when the client has an invoice unpaid a week past due. It reads Stripe live rather than keeping a copy, and the edge caches it for five minutes. No row, no customer or an exemption all mean serve. I'd rather a site stay up by mistake than go down by mistake.
 
