@@ -211,41 +211,6 @@ function Fact({ label, children }) {
   )
 }
 
-/**
- * Where the owner's name or number came from - a front desk on a call, a page
- * the owner finder read, a licensing board, a contact service - as "From
- * tdi.texas.gov and a call", each page a link.
- */
-function Sources({ from }) {
-  return (
-    <>
-      {'From '}
-      {from.map((source, at) => (
-        <span key={source.label}>
-          {at > 0 ? (at === from.length - 1 ? ' and ' : ', ') : ''}
-          {source.href ? (
-            <a
-              className="console-link"
-              href={source.href}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              {source.label}
-            </a>
-          ) : (
-            source.label
-          )}
-        </span>
-      ))}
-    </>
-  )
-}
-
-/** Whether two sources agree on a value, said after it. */
-function agreed(confirmed) {
-  return confirmed ? 'confirmed' : 'unconfirmed'
-}
-
 /** What is known about the business. */
 function Facts({ row }) {
   const query = mapQuery(row)
@@ -298,26 +263,8 @@ function Facts({ row }) {
             {row.formed_on ? onDay(`${row.formed_on}T12:00:00Z`) : 'Not on file'}
           </Fact>
         )}
-        {row.owner_name && (
-          <Fact label="Owner">
-            {row.owner_name} · {agreed(row.owner_name_confirmed)}
-            {row.owner_from && (
-              <span className="block text-[13px] text-paper-soft">
-                <Sources from={row.owner_from} />
-              </span>
-            )}
-          </Fact>
-        )}
-        {row.owner_phone && (
-          <Fact label="Owner’s Cell">
-            {row.owner_phone} · {agreed(row.owner_phone_confirmed)}
-            {row.owner_phone_from && (
-              <span className="block text-[13px] text-paper-soft">
-                <Sources from={row.owner_phone_from} />
-              </span>
-            )}
-          </Fact>
-        )}
+        {row.owner_name && <Fact label="Owner">{row.owner_name}</Fact>}
+        {row.owner_phone && <Fact label="Owner’s Cell">{row.owner_phone}</Fact>}
         {row.owner_phone && <Fact label="Listing Number">{row.phone}</Fact>}
         {row.audit_score !== null && <Fact label="Site Speed">{row.audit_score} of 100</Fact>}
         {row.email && <Fact label="Email">{row.email}</Fact>}
