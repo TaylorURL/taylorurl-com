@@ -14,6 +14,7 @@ import {
   dayLine,
   dayShare,
   numberLine,
+  ownerLabel,
   outcomeOf,
   reviewsOf,
   scoreWords,
@@ -130,11 +131,11 @@ function ListRow({ row, open, onOpen }) {
         onClick={onOpen}
         className="grid w-full cursor-pointer gap-0.5 rounded-[var(--console-radius-sm)] px-3 py-2.5 text-left hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)]"
       >
-        <span className="flex items-baseline justify-between gap-3">
-          <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>
-          <span className="min-w-0 max-w-[60%] flex-shrink truncate text-right font-mono text-[12px] tabular-nums text-paper-soft">
-            {numberLine(dialled(row), row.owner_name)}
-          </span>
+        <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>
+        {/* The number on a line of its own, so the owner's name and how sure
+            the number is never get cut off the end of the row. */}
+        <span className="font-mono text-[12px] tabular-nums text-paper-soft">
+          {numberLine(dialled(row), row.owner_name, ownerLabel(row))}
         </span>
         <span className="text-paper-faint truncate text-[12px]">
           {[tradeLabel(row.trade), row.town].filter(Boolean).join(' · ') || 'Trade not on file'}
@@ -218,24 +219,38 @@ function Fact({ label, children }) {
 }
 
 /**
- * Where the owner's name and number came from: a front desk on a call, or
- * the pages the owner finder read them off, each a link.
+ * Where the owner's name or number came from - a front desk on a call, a page
+ * the owner finder read, a licensing board, a contact service - as "From
+ * tdi.texas.gov and a call", each page a link.
  */
-function OwnerFound({ from }) {
-  if (from.call) return 'From a call'
+function Sources({ from }) {
   return (
     <>
-      {'On '}
-      {from.pages.map((page, at) => (
-        <span key={page}>
-          {at > 0 ? ' and ' : ''}
-          <a className="console-link" href={page} target="_blank" rel="noreferrer noopener">
-            {hostOf(page) || page}
-          </a>
+      {'From '}
+      {from.map((source, at) => (
+        <span key={source.label}>
+          {at > 0 ? (at === from.length - 1 ? ' and ' : ', ') : ''}
+          {source.href ? (
+            <a
+              className="console-link"
+              href={source.href}
+              target="_blank"
+              rel="noreferrer noopener"
+            >
+              {source.label}
+            </a>
+          ) : (
+            source.label
+          )}
         </span>
       ))}
     </>
   )
+}
+
+/** Whether two sources agree on a value, said after it. */
+function agreed(confirmed) {
+  return confirmed ? 'confirmed' : 'unconfirmed'
 }
 
 /** What is known about the business. */
@@ -290,13 +305,27 @@ function Facts({ row }) {
             {row.formed_on ? onDay(`${row.formed_on}T12:00:00Z`) : 'Not on file'}
           </Fact>
         )}
-        {row.owner_name && <Fact label="Owner">{row.owner_name}</Fact>}
-        {row.owner_phone && <Fact label="Listing Number">{row.phone}</Fact>}
-        {row.owner_from && (
-          <Fact label="Owner Found">
-            <OwnerFound from={row.owner_from} />
+        {row.owner_name && (
+          <Fact label="Owner">
+            {row.owner_name} · {agreed(row.owner_name_confirmed)}
+            {row.owner_from && (
+              <span className="block text-[13px] text-paper-soft">
+                <Sources from={row.owner_from} />
+              </span>
+            )}
           </Fact>
         )}
+        {row.owner_phone && (
+          <Fact label="Owner’s Cell">
+            {row.owner_phone} · {agreed(row.owner_phone_confirmed)}
+            {row.owner_phone_from && (
+              <span className="block text-[13px] text-paper-soft">
+                <Sources from={row.owner_phone_from} />
+              </span>
+            )}
+          </Fact>
+        )}
+        {row.owner_phone && <Fact label="Listing Number">{row.phone}</Fact>}
         {row.audit_score !== null && <Fact label="Site Speed">{row.audit_score} of 100</Fact>}
         {row.email && <Fact label="Email">{row.email}</Fact>}
       </dl>
@@ -573,6 +602,7 @@ function Business({ row, token, saving, onLog }) {
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
   const scores = scoreWords(row.score)
+  const label = ownerLabel(row)
 
   return (
     <Panel
@@ -586,7 +616,7 @@ function Business({ row, token, saving, onLog }) {
             {row.dial ? (
               <a
                 href={row.dial}
-                aria-label={`Call ${numberLine(dialled(row), row.owner_name)}`}
+                aria-label={`Call ${numberLine(dialled(row), row.owner_name, label)}`}
                 className="justify-self-start text-[30px] font-semibold tabular-nums leading-tight text-accent sm:text-[36px]"
               >
                 {dialled(row)}
@@ -596,10 +626,16 @@ function Business({ row, token, saving, onLog }) {
                     {row.owner_name}
                   </span>
                 )}
+                {label && (
+                  <span className="text-[14px] font-normal text-paper-soft">
+                    {' · '}
+                    {label}
+                  </span>
+                )}
               </a>
             ) : (
               <p className="text-[30px] font-semibold leading-tight">
-                {numberLine(dialled(row), row.owner_name)}
+                {numberLine(dialled(row), row.owner_name, label)}
               </p>
             )}
             {row.owner_phone && (
