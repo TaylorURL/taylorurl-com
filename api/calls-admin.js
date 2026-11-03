@@ -75,6 +75,7 @@ import {
 } from '../lib/outreach/prospects/callList.js'
 import { factsOf, ownerDigits, scoreOf } from '../lib/outreach/prospects/callScore.js'
 import { companiesOf } from '../lib/outreach/prospects/companies.js'
+import { bareHost, hostOf } from '../lib/outreach/prospects/platforms.js'
 import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePhotos.js'
 
 const PROSPECTS = 'outreach_prospects'
@@ -115,6 +116,9 @@ const DETAIL = [
   'owner_name',
   'owner_phone',
   'owner_source',
+  'owner_name_confirmed',
+  'owner_phone_confirmed',
+  'owner_phone_source',
   'place_type',
   'registered_on',
   'officer_count',
@@ -357,17 +361,57 @@ function formedOn(row, formed) {
 }
 
 /**
- * Where the owner's name and number came from, as the page names it: a call,
- * or the pages the owner finder read them off. The finder writes one address,
- * or two separated by a space where the name and the number were on different
- * pages; only web addresses are passed on, since they become links.
+ * Where an owner's name or number came from, as the page names it: a list of
+ * sources, each with the words for it and a link where it was a page.
+ *
+ * The owner finder writes the pages it read - one address, or several
+ * separated by spaces - and may name a source that is not a page, such as a
+ * contact service; a Front Desk call writes `call`. A host written on its own
+ * is named as written.
+ *
+ * @returns {Array<{label: string, href: string|null}>|null}
  */
-function ownerSource(source) {
-  const said = String(source ?? '').trim()
-  if (!said) return null
-  if (said === 'call') return { call: true, pages: [] }
-  const pages = said.split(/\s+/).filter(page => /^https?:\/\//i.test(page))
-  return pages.length ? { call: false, pages } : null
+function sourcesOf(text) {
+  const seen = new Map()
+  for (const token of String(text ?? '')
+    .split(/[\s,]+/)
+    .filter(Boolean)) {
+    if (token.toLowerCase() === 'call') seen.set('a call', { label: 'a call', href: null })
+    else if (/^https?:\/\//i.test(token)) {
+      const host = hostOf(token)
+      if (host && !seen.has(host)) seen.set(host, { label: host, href: token })
+    } else {
+      const label = /^[a-z0-9-]+(\.[a-z0-9-]+)+$/i.test(token) ? bareHost(token) : token
+      if (!seen.has(label)) seen.set(label, { label, href: null })
+    }
+  }
+  return seen.size ? [...seen.values()] : null
+}
+
+/**
+ * Where the owner's number came from: its own column, or for a number a Front
+ * Desk call wrote before that column existed, the call that wrote it.
+ */
+function phoneSourceOf(row) {
+  return row?.owner_phone_source ?? (row?.owner_source === 'call' ? 'call' : null)
+}
+
+/**
+ * What the page draws about the owner: the name, the owner's own number where
+ * it is not the listing's, whether two sources agree on each, and where each
+ * came from.
+ */
+function ownerFields(row) {
+  const digits = ownerDigits(row)
+  const name = String(row?.owner_name ?? '').trim() || null
+  return {
+    owner_name: name,
+    owner_name_confirmed: Boolean(name && row?.owner_name_confirmed === true),
+    owner_phone: digits ? spokenNumber(digits) : null,
+    owner_phone_confirmed: Boolean(digits && row?.owner_phone_confirmed === true),
+    owner_from: name ? sourcesOf(row?.owner_source) : null,
+    owner_phone_from: digits ? sourcesOf(phoneSourceOf(row)) : null,
+  }
 }
 
 /**
@@ -390,9 +434,7 @@ function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) 
     town: row.town ?? null,
     address: row.address ?? null,
     phone: row.phone,
-    owner_name: row.owner_name ?? null,
-    owner_phone: owner ? spokenNumber(owner) : null,
-    owner_from: row.owner_name || owner ? ownerSource(row.owner_source) : null,
+    ...ownerFields(row),
     dial: dialHref(owner ?? row.phone),
     website: row.website ?? null,
     site_kind: row.site_kind ?? null,
@@ -619,9 +661,16 @@ function callbackAt(value) {
  * does not unlearn what the first one did. Nor is the listing's own main line
  * kept as the owner's: it is the number that reached the front desk.
  *
- * `listed` is the business's own number, read before this is asked.
+ * A value is confirmed when two independent sources agree on it, and a front
+ * desk is one. A name or a number the front desk gives that matches the one
+ * the owner finder already has is now confirmed, and is otherwise left as it
+ * was; one that differs replaces it, from a call, unconfirmed. A second call
+ * agreeing with a first is not a second source.
+ *
+ * `found` is the business as it stands, read before this is asked; the first
+ * pass, with nothing read yet, only finds what the form got wrong.
  */
-function ownerAnswer(body, outcome, at, listed) {
+function ownerAnswer(body, outcome, at, found = null) {
   const name = field(body.owner_name, OWNER_NAME_MAX)
   const typed = String(body.owner_phone ?? '').trim()
   if (!outcomeAsksOwner(outcome)) {
@@ -630,20 +679,43 @@ function ownerAnswer(body, outcome, at, listed) {
     }
     return { patch: null }
   }
-  let phone = null
+  let ten = null
   if (typed) {
-    const ten = phoneKey(typed)
+    ten = phoneKey(typed)
     if (!ten) return { error: 'That direct number is not a full phone number.' }
-    if (ten !== phoneKey(listed)) phone = spokenNumber(ten)
+    if (ten === phoneKey(found?.phone)) ten = null
   }
-  return {
-    patch: {
-      ...(name ? { owner_name: name } : {}),
-      ...(phone ? { owner_phone: phone } : {}),
-      ...(name || phone ? { owner_source: 'call' } : {}),
-      owner_checked_at: at,
-    },
+  const patch = { owner_checked_at: at }
+  if (name) {
+    const held = String(found?.owner_name ?? '')
+    if (!sameName(name, held)) {
+      Object.assign(patch, { owner_name: name, owner_source: 'call', owner_name_confirmed: false })
+    } else if (found?.owner_source !== 'call') {
+      patch.owner_name_confirmed = true
+    }
   }
+  if (ten) {
+    if (ten !== phoneKey(found?.owner_phone)) {
+      Object.assign(patch, {
+        owner_phone: spokenNumber(ten),
+        owner_phone_source: 'call',
+        owner_phone_confirmed: false,
+      })
+    } else if (phoneSourceOf(found) !== 'call') {
+      patch.owner_phone_confirmed = true
+    }
+  }
+  return { patch }
+}
+
+/** Two spellings of one name: case, spacing and punctuation aside. */
+function sameName(one, two) {
+  const plain = value =>
+    String(value ?? '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, ' ')
+      .trim()
+  return Boolean(plain(one)) && plain(one) === plain(two)
 }
 
 /** One call recorded against one business. */
@@ -666,7 +738,7 @@ export async function record(db, body, account) {
   }
   // Asked here for what the form got wrong, and again below against the
   // business's own number once it has been read.
-  const asked = ownerAnswer(body, outcome, null, null)
+  const asked = ownerAnswer(body, outcome, null)
   if (asked.error) return { status: 400, body: { error: asked.error } }
   // A call back nobody put a clock on is filed a day out rather than refused.
   const ringBack =
@@ -680,7 +752,7 @@ export async function record(db, body, account) {
   const found = await db
     .from(PROSPECTS)
     .select(
-      'id, name, phone, email, trade, town, website, site_kind, stage, source, business_status, call_due_at, owner_name, owner_phone, owner_source'
+      'id, name, phone, email, trade, town, website, site_kind, stage, source, business_status, call_due_at, owner_name, owner_phone, owner_source, owner_name_confirmed, owner_phone_confirmed, owner_phone_source'
     )
     .eq('id', prospectId)
     .maybeSingle()
@@ -693,7 +765,7 @@ export async function record(db, body, account) {
   // The owner first and the call second. A call that saved without the number
   // the front desk gave would ring the front desk again; written this way
   // round, a refusal saves neither and the same press saves both.
-  const owner = ownerAnswer(body, outcome, new Date().toISOString(), found.data.phone)
+  const owner = ownerAnswer(body, outcome, new Date().toISOString(), found.data)
   if (owner.patch) {
     const { error } = await db.from(PROSPECTS).update(owner.patch).eq('id', prospectId)
     if (error) return refusal(error, NOT_RECORDED)
@@ -740,16 +812,14 @@ export async function record(db, body, account) {
 
 /** The owner as the business now has it, in the shape the page draws. */
 function ownerAfter(business, patch) {
-  const held = {
-    phone: business.phone,
-    owner_phone: patch.owner_phone ?? business.owner_phone,
-  }
-  const digits = ownerDigits(held)
-  const name = patch.owner_name ?? business.owner_name ?? null
+  const now = ownerFields({ ...business, ...patch })
   return {
-    name,
-    phone: digits ? spokenNumber(digits) : null,
-    from: name || digits ? ownerSource(patch.owner_source ?? business.owner_source) : null,
+    name: now.owner_name,
+    name_confirmed: now.owner_name_confirmed,
+    phone: now.owner_phone,
+    phone_confirmed: now.owner_phone_confirmed,
+    from: now.owner_from,
+    phone_from: now.owner_phone_from,
   }
 }
 

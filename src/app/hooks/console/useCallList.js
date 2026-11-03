@@ -146,8 +146,11 @@ export function useCallList({ token }) {
             ...(owner
               ? {
                   owner_name: owner.name ?? null,
+                  owner_name_confirmed: Boolean(owner.name_confirmed),
                   owner_phone: owner.phone ?? null,
+                  owner_phone_confirmed: Boolean(owner.phone_confirmed),
                   owner_from: owner.from ?? null,
+                  owner_phone_from: owner.phone_from ?? null,
                   dial: dialHref(owner.phone || business.phone),
                 }
               : {}),

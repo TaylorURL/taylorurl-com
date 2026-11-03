@@ -59,6 +59,7 @@ import {
   outcomeTakesCallback,
   pullBand,
   numberLine,
+  ownerLabel,
   pullOf,
   reviewsOf,
   scoreWords,
@@ -76,11 +77,15 @@ import {
 } from '../../../lib/outreach/prospects/callList.js'
 import {
   BUDGET_FLOOR,
+  CONFIRMED_CELL_OWNER,
+  CONFIRMED_NAME_BOOST,
   FRESH_BOOST,
   MEASURED_AFTER,
   NAME_BOOST,
   SITE_POINTS,
+  UNCONFIRMED_CELL_OWNER,
   budgetScore,
+  cellOf,
   daysSince,
   factsOf,
   needScore,
@@ -424,15 +429,32 @@ check('more of a trade with sites is more need, and the kind of site sets the re
   ok(SITE_POINTS.booking > SITE_POINTS.own, 'a booking page outranks a site of its own')
 })
 
-check('a direct number for the owner is a certain answer, the main line is not', () => {
-  same(ownerScore(row({ owner_phone: '(281) 555-0199' }), FACTS, READ_ON), 100, 'own number')
-  same(ownerScore(row({ owner_phone: '2815550199' }), FACTS, READ_ON), 100, 'as digits')
+check('a confirmed number for the owner is a certain answer, the main line is not', () => {
+  const sure = { owner_phone_confirmed: true }
+  same(ownerScore(row({ owner_phone: '(281) 555-0199', ...sure }), FACTS, READ_ON), 100, 'own')
+  same(ownerScore(row({ owner_phone: '2815550199', ...sure }), FACTS, READ_ON), 100, 'as digits')
   near(
-    ownerScore(row({ owner_phone: '(281) 862-9968' }), FACTS, READ_ON),
+    ownerScore(row({ owner_phone: '(281) 862-9968', ...sure }), FACTS, READ_ON),
     97.66,
     'the listing’s own line written into the owner’s'
   )
   near(ownerScore(row({ owner_phone: '555-0199' }), FACTS, READ_ON), 97.66, 'not a whole number')
+})
+
+check('a number only one source gave is worth 90, and never less than none', () => {
+  // A restaurant: 28 of 100 run by one person, so its owner rarely answers
+  // the listing's line, and a number for the owner from one source lifts it.
+  const restaurant = row({ trade: 'restaurant', owner_phone: '(281) 555-0199' })
+  same(cellOf(restaurant), 'unconfirmed', 'one source')
+  same(ownerScore(restaurant, FACTS, READ_ON), UNCONFIRMED_CELL_OWNER, 'lifted to 90')
+  same(
+    ownerScore({ ...restaurant, owner_phone_confirmed: true }, FACTS, READ_ON),
+    CONFIRMED_CELL_OWNER,
+    'confirmed, 100'
+  )
+  // A barber already answers 98 times in 100; one source does not lower that.
+  near(ownerScore(row({ owner_phone: '(281) 555-0199' }), FACTS, READ_ON), 97.66, 'a barber')
+  same(cellOf(row({ owner_phone: '(281) 862-9968' })), null, 'the listing’s line is no cell')
 })
 
 check('a trade not on the table takes the middle on Owner and Budget', () => {
@@ -619,10 +641,13 @@ check('a staffed contractor reads from the Census’s staffed side', () => {
     11,
     'owner, 100 × (1 − 0.89)'
   )
+  // A number for the owner goes past whoever answers the yard's line.
+  const cell = { ...roofs[0], company, owner_phone: '(409) 555-0199' }
+  same(ownerScore(row(cell), SIZE_FACTS, READ_ON), 90, 'a number one source gave')
   same(
-    ownerScore(row({ ...roofs[0], company, owner_phone: '(409) 555-0199' }), SIZE_FACTS, READ_ON),
+    ownerScore(row({ ...cell, owner_phone_confirmed: true }), SIZE_FACTS, READ_ON),
     100,
-    'unless the owner’s own number is on file'
+    'a number two sources agree on'
   )
 })
 
@@ -809,10 +834,64 @@ check('a known owner’s name is worth a quarter again, on top of a new company�
   )
 })
 
-check('the number is written with the person it should reach', () => {
+check('a name two sources agree on is worth 1.3 rather than 1.25', () => {
+  same(CONFIRMED_NAME_BOOST, 1.3, 'the multiplier')
+  const plain = scoreOf(row({ address: null }), SIZE_FACTS, READ_ON)
+  const sure = row({ address: null, owner_name: 'Mike Kestrel', owner_name_confirmed: true })
+  const confirmed = scoreOf(sure, SIZE_FACTS, READ_ON)
+  near(confirmed.total / plain.total, 1.3, 'a confirmed name', 1)
+  same(confirmed.nameConfirmed, true, 'read as confirmed')
+  same(
+    scoreOf(row({ owner_name_confirmed: true }), SIZE_FACTS, READ_ON).nameConfirmed,
+    false,
+    'a flag with no name is no name'
+  )
+  same(
+    reasonsFor({ ...sure, score: confirmed }).join(' · '),
+    'No website · Owner’s name confirmed',
+    'said, in place of known'
+  )
+  const cell = row({
+    trade: 'restaurant',
+    address: null,
+    owner_name: 'Mike Kestrel',
+    owner_phone: '(281) 555-0199',
+    owner_phone_confirmed: true,
+  })
+  same(
+    reasonsFor({ ...cell, score: scoreOf(cell, SIZE_FACTS, READ_ON) }).join(' · '),
+    'No website · Owner’s cell confirmed · Owner’s name known · 73% of its trade have a website',
+    'a confirmed cell, said'
+  )
+})
+
+check('the number is written with the person it should reach, and how sure that is', () => {
   same(numberLine('(281) 555-0264', 'Mike Kestrel'), '(281) 555-0264 · Mike Kestrel', 'a name')
   same(numberLine('(281) 555-0264', '  '), '(281) 555-0264', 'no name')
   same(numberLine('(281) 555-0264', null), '(281) 555-0264', 'nothing')
+  // As the endpoint draws a row: `owner_phone` only where it is the owner's.
+  const drawn = { owner_name: 'Mike Kestrel', owner_phone: '(281) 555-0199' }
+  same(ownerLabel(drawn), 'Owner’s cell · unconfirmed', 'a number one source gave')
+  same(
+    ownerLabel({ ...drawn, owner_phone_confirmed: true }),
+    'Owner’s cell · confirmed',
+    'one two sources agree on'
+  )
+  same(
+    ownerLabel({ owner_name: 'Mike Kestrel', owner_name_confirmed: true }),
+    'Owner’s name · confirmed',
+    'only a name, confirmed'
+  )
+  same(ownerLabel({ owner_name: 'Mike Kestrel' }), null, 'only a name, unconfirmed')
+  same(
+    numberLine(
+      '(281) 555-0199',
+      'Mike Kestrel',
+      ownerLabel({ ...drawn, owner_phone_confirmed: true })
+    ),
+    '(281) 555-0199 · Mike Kestrel · Owner’s cell · confirmed',
+    'all of it, beside the number'
+  )
 })
 
 // ── What the list offers ────────────────────────────────────────────────
@@ -1510,11 +1589,12 @@ check('one list: the sweep’s businesses and the new companies, best score firs
   same(ahead.reasons[1], 'Not emailed yet', 'a company mirrored before its letter')
   same(ahead.owner_name, 'Sam Rivera', 'the name the owner finder found')
   same(
-    ahead.owner_from.pages.join(' '),
-    'https://nb-first.example/about https://nb-first.example/contact',
-    'and the two pages it was read off'
+    JSON.stringify(ahead.owner_from),
+    JSON.stringify([{ label: 'nb-first.example', href: 'https://nb-first.example/about' }]),
+    'and the site it was read off, once however many of its pages'
   )
   same(ahead.owner_phone, null, 'no number found, so the listing’s is dialled')
+  same(ahead.owner_phone_from, null, 'and no source for one')
   same(contacted.reasons[1], 'Emailed, no reply yet', 'a company already written to')
   // The ninety days are worth half as much again: nb-first is five days old
   // and nb-contacted four months. And a PO box is no storefront, which lifts
@@ -1545,7 +1625,15 @@ check('a business whose last call was Front Desk waits at the foot until it is d
   same(desk.owner_name, 'Maria Lopez', 'the owner')
   same(desk.dial, 'tel:2815550199', 'the button rings the owner’s own number')
   same(desk.phone, '(281) 400-0008', 'and the listing’s is still drawn')
-  same(desk.score.owner, 100, 'a direct line is a certain answer')
+  // One front desk is one source: the number is unconfirmed, and a barber's
+  // owner already answers 98 times in 100, which one source does not lower.
+  same(desk.owner_phone_confirmed, false, 'one source')
+  same(desk.score.owner, 98, 'the barber’s own reading, not lowered to 90')
+  same(
+    JSON.stringify(desk.owner_phone_from),
+    JSON.stringify([{ label: 'a call', href: null }]),
+    'w'
+  )
   ok(!answer.body.rows.some(one => one.id === 'r-desk'), 'it is not among the fresh ones')
   // On the day the owner is in, it moves up into what is due.
   const thursday = await list(table(), {}, new Date('2026-11-05T15:00:00Z'))
@@ -1673,7 +1761,10 @@ check('Front Desk books the call back and writes the owner on the business', asy
   same(owner.ids.join(','), UUID, 'written on the business called')
   same(owner.row.owner_name, 'Maria Lopez', 'the name, trimmed')
   same(owner.row.owner_phone, '(281) 555-0199', 'the number, written as the listing’s is')
-  same(owner.row.owner_source, 'call', 'from a call')
+  same(owner.row.owner_source, 'call', 'the name from a call')
+  same(owner.row.owner_phone_source, 'call', 'the number from a call')
+  same(owner.row.owner_name_confirmed, false, 'one source for the name')
+  same(owner.row.owner_phone_confirmed, false, 'one source for the number')
   ok(Date.parse(owner.row.owner_checked_at) > Date.now() - 60_000, 'when it was asked')
   const call = db.writes.find(one => one.table === 'outreach_calls').row
   same(call.outcome, 'gatekeeper', 'stored as gatekeeper')
@@ -1686,11 +1777,90 @@ check('Front Desk books the call back and writes the owner on the business', asy
   )
   same(answer.body.owner.name, 'Maria Lopez', 'the page is told the name')
   same(answer.body.owner.phone, '(281) 555-0199', 'and the number it now dials')
-  same(answer.body.owner.from.call, true, 'and where it came from')
+  same(answer.body.owner.phone_confirmed, false, 'unconfirmed')
+  same(answer.body.owner.phone_from[0].label, 'a call', 'and where it came from')
   same(
     db.rpcs.some(one => one.name === 'lead_record'),
     false,
     'a front desk is not a lead'
+  )
+})
+
+check('a front desk agreeing with the owner finder confirms what it found', async () => {
+  // The finder read the owner's name off the state record and a number off a
+  // licensing board; the front desk gives the same two, a second source each.
+  const found = {
+    owner_name: 'Maria Lopez',
+    owner_source: 'https://comptroller.example/record/1',
+    owner_phone: '2815550199',
+    owner_phone_source: 'https://www.licensing.example/agent/7',
+  }
+  const agrees = await callOn(found, {
+    outcome: 'gatekeeper',
+    owner_name: 'maria  lopez',
+    owner_phone: '(281) 555-0199',
+  })
+  const patch = agrees.db.writes.find(one => one.table === 'outreach_prospects').row
+  same(patch.owner_name_confirmed, true, 'the name, confirmed')
+  same(patch.owner_phone_confirmed, true, 'the number, confirmed')
+  same(
+    'owner_name' in patch || 'owner_phone' in patch,
+    false,
+    'and both left as the finder had them'
+  )
+  same('owner_source' in patch || 'owner_phone_source' in patch, false, 'with their sources')
+  same(agrees.answer.body.owner.phone_confirmed, true, 'the page is told')
+  same(agrees.answer.body.owner.phone_from[0].label, 'licensing.example', 'and from where')
+  // A different number replaces the finder's, from the call, unconfirmed.
+  const differs = await callOn(found, { outcome: 'gatekeeper', owner_phone: '(281) 555-0142' })
+  const replaced = differs.db.writes.find(one => one.table === 'outreach_prospects').row
+  same(replaced.owner_phone, '(281) 555-0142', 'the front desk’s number')
+  same(replaced.owner_phone_source, 'call', 'from the call')
+  same(replaced.owner_phone_confirmed, false, 'one source')
+  // A second call agreeing with a first is the same source twice.
+  const again = await callOn(
+    { owner_phone: '(281) 555-0142', owner_phone_source: 'call' },
+    { outcome: 'gatekeeper', owner_phone: '281-555-0142' }
+  )
+  const twice = again.db.writes.find(one => one.table === 'outreach_prospects').row
+  same('owner_phone_confirmed' in twice, false, 'not confirmed by a second call')
+})
+
+check('the owner’s cell, how sure it is and where it came from reach the page', async () => {
+  const db = database({
+    outreach_prospects: [
+      business('cell', {
+        trade: 'restaurant',
+        owner_name: 'Mike Kestrel',
+        owner_name_confirmed: true,
+        owner_source: 'https://comptroller.example/record/1 https://county.example/dba/2',
+        owner_phone: '2815550199',
+        owner_phone_confirmed: true,
+        owner_phone_source: 'https://www.tdi.example/agent/7 apollo',
+      }),
+    ],
+    outreach_calls: [],
+    new_business_leads: [],
+    call_trade_metrics: INDUSTRY_TABLE,
+  })
+  const [cell] = (await list(db, {}, NOW)).body.rows
+  same(cell.owner_phone, '(281) 555-0199', 'the cell, written as a number is')
+  same(cell.dial, 'tel:2815550199', 'the button rings it')
+  same(cell.owner_phone_confirmed, true, 'confirmed')
+  same(cell.owner_name_confirmed, true, 'and the name')
+  same(
+    cell.owner_phone_from.map(one => one.label).join(', '),
+    'tdi.example, apollo',
+    'from a licensing board’s page and a contact service'
+  )
+  same(cell.owner_from.length, 2, 'the name from two records')
+  same(cell.score.owner, 100, 'a confirmed cell is a certain answer')
+  ok(cell.reasons.includes('Owner’s cell confirmed'), 'said')
+  ok(cell.reasons.includes('Owner’s name confirmed'), 'and the name')
+  same(
+    numberLine(cell.owner_phone, cell.owner_name, ownerLabel(cell)),
+    '(281) 555-0199 · Mike Kestrel · Owner’s cell · confirmed',
+    'beside the number'
   )
 })
 
@@ -1783,14 +1953,21 @@ check('the page says the scores, the day, and the front desk', () => {
   ok(/Ask for \{row\.owner_name\}/.test(page), 'the call screen does not say who to ask for')
   // Beside the number in the row, and beside it on the button that dials it.
   ok(
-    /numberLine\(dialled\(row\), row\.owner_name\)/.test(page),
-    'the row does not put the name by the number'
+    /numberLine\(dialled\(row\), row\.owner_name, ownerLabel\(row\)\)/.test(page),
+    'the row does not put the name, and how sure the number is, by the number'
   )
   const button = page.slice(
     page.indexOf('href={row.dial}'),
     page.indexOf('</a>', page.indexOf('href={row.dial}'))
   )
   ok(/row\.owner_name/.test(button), 'the dial button does not carry the owner’s name')
+  ok(/\{label\}/.test(button), 'the dial button does not say how sure the number is')
+  // Where the number came from is in the open business's details.
+  ok(/<Sources from=\{row\.owner_phone_from\} \/>/.test(page), 'the number’s source is not shown')
+  // Plain text, not a badge.
+  ok(!/<Badge/.test(page), 'a badge on the page')
+  // Nothing on this page is about the Do Not Call registry.
+  ok(!/do not call|dnc/i.test(page), 'the page carries Do Not Call logic')
   const css = read('src/app/views/console/console.css')
   const bar = css.slice(css.indexOf('.console-goal {'), css.indexOf('/* ── The views inside'))
   ok(bar.length > 0 && !/transition|animation/.test(bar), 'the day’s bar moves')
