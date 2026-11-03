@@ -146,7 +146,7 @@ function InboxRow({ lead, open, door, onOpen }) {
         type="button"
         aria-current={open ? 'true' : undefined}
         onClick={onOpen}
-        className="grid w-full cursor-pointer gap-1 px-5 py-3 text-left hover:bg-[color:var(--console-row-hover)] aria-[current=true]:bg-[color:var(--console-row-hover)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
+        className="grid w-full cursor-pointer gap-1 px-5 py-3 text-left hover:bg-[color:var(--console-row-hover)] aria-[current=true]:bg-[color:var(--console-row-hover)]"
       >
         <span className="flex min-w-0 items-baseline justify-between gap-3">
           <span

@@ -98,7 +98,7 @@ function Step({ item, index, launched }) {
       {/* The bar beside the title is the step's mark on the column, and it
             stops at the title: a rule down a paragraph reads as a pull quote,
             which is a different thing being said. */}
-      <h3 className="display-6 mt-7 border-l-2 border-[color:var(--accent)] pl-4 font-semibold leading-[1.2] tracking-tight text-ink-paper [text-wrap:balance]">
+      <h3 className="display-6 mt-7 font-semibold leading-[1.2] tracking-tight text-ink-paper [text-wrap:balance]">
         {item.title}
       </h3>
       <p className="mt-4 max-w-[42ch] text-[15px] leading-relaxed text-paper-soft">
