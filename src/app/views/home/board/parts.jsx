@@ -10,15 +10,13 @@ import { leadOf } from './boardData'
 export function TextThread() {
   return (
     <figure className={`${CARD} flex h-full flex-col gap-3 p-6 sm:p-8`}>
-      <figcaption className={TYPE.h3}>Changes, the same day</figcaption>
-      <p className={`${TYPE.small} -mt-1 mb-2`}>Text me what needs to change.</p>
+      <figcaption className={`${TYPE.h3} mb-2`}>Changes, the same day</figcaption>
       <p className="mr-10 rounded-[16px] rounded-bl-[6px] bg-white/[0.07] px-4 py-3 text-[15px] leading-[1.5] text-ink">
         Closing at 3 on Friday for the holiday. Can you put that on the site?
       </p>
       <p className="ml-10 rounded-[16px] rounded-br-[6px] bg-[var(--blue)] px-4 py-3 text-[15px] leading-[1.5] text-white">
         Done. It’s on the home page, and your Google hours match.
       </p>
-      <p className={`${TYPE.small} mt-auto pt-2 text-right`}>Tue 9:12 AM · Read 9:26 AM</p>
     </figure>
   )
 }
@@ -27,8 +25,7 @@ export function TextThread() {
 export function Monthly({ items }) {
   return (
     <div className={`${CARD} h-full p-6 sm:p-8`}>
-      <h3 className={TYPE.h3}>One monthly price covers it</h3>
-      <p className={`${TYPE.small} mb-6 mt-1`}>No surprise bills after launch.</p>
+      <h3 className={`${TYPE.h3} mb-6`}>One monthly price covers it</h3>
       <CheckList items={items} />
     </div>
   )

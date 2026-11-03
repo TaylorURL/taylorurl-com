@@ -374,12 +374,12 @@ export const GROUPS = ['Health', 'Traffic', 'Email', 'Studio']
 
 /**
  * What each heading reads as. The keys stay the words the sections are filed
- * under; the labels are what a client reads, in plain words: their site, who
- * is visiting it, and (for the owner) outreach and the studio's own tools.
+ * under; the labels are what a reader sees, in Title Case like every other
+ * label in the console.
  */
 export const GROUP_LABELS = {
-  Health: 'Your site',
-  Traffic: 'Visitors',
+  Health: 'Site Health',
+  Traffic: 'Traffic',
   Email: 'Outreach',
   Studio: 'Studio',
 }

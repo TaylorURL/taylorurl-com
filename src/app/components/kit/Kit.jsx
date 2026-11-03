@@ -470,7 +470,7 @@ export function Questions({ items, className = '' }) {
  */
 export function CallToAction({
   title = 'Tell me about the business.',
-  lead = 'You get a plan and a price in writing before any work starts. Asking is free.',
+  lead,
   label,
   className = '',
 }) {
@@ -480,7 +480,7 @@ export function CallToAction({
         <div className="glow flex flex-col gap-7 overflow-hidden rounded-[20px] bg-[var(--card)] px-6 py-10 sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-[560px]">
             <h2 className={TYPE.h2}>{title}</h2>
-            <p className={`${TYPE.body} mt-3`}>{lead}</p>
+            {lead && <p className={`${TYPE.body} mt-3`}>{lead}</p>}
           </div>
           <Actions className="shrink-0" label={label} place="cta" />
         </div>

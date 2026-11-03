@@ -113,11 +113,7 @@ export default function Navigation() {
   }, [menuOpen])
 
   const isActive = to => (to === '/' ? location.pathname === '/' : location.pathname.startsWith(to))
-  const account = HAS_ACCOUNTS
-    ? signedIn
-      ? { to: '/console', label: 'Your console' }
-      : null
-    : null
+  const account = HAS_ACCOUNTS ? (signedIn ? { to: '/console', label: 'Console' } : null) : null
 
   return (
     <>
@@ -189,7 +185,7 @@ export default function Navigation() {
               type="button"
               className="flex h-10 w-10 items-center justify-center rounded-full text-ink"
               onClick={() => setMenuOpen(open => !open)}
-              aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
+              aria-label={menuOpen ? 'Close the Menu' : 'Open the Menu'}
               aria-expanded={menuOpen}
               aria-controls={menuOpen ? 'site-menu' : undefined}
             >
@@ -247,7 +243,7 @@ export default function Navigation() {
                     to={account ? account.to : '/login'}
                     className="mt-2 text-center text-[14px] text-ink-mute"
                   >
-                    {account ? account.label : 'Client sign in'}
+                    {account ? account.label : 'Client Sign In'}
                   </Link>
                 )}
               </div>

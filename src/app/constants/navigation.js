@@ -761,7 +761,7 @@ export const serves = target => isOffSite(target) || !IS_SECOND_SITE || SERVED.h
  */
 export const START_LINK = IS_SECOND_SITE
   ? { to: '/contact', label: 'Send an Enquiry' }
-  : { to: '/start', label: 'Get a price' }
+  : { to: '/start', label: 'Get a Price' }
 
 /**
  * The bar's links, which are three on the studio: what is sold, what has been
@@ -795,7 +795,7 @@ const STUDIO_FOOTER_COLUMNS = [
     items: [
       ...SERVICE_LINES.map(asLink),
       ...INCLUDED_SERVICES.map(asLink),
-      { to: '/services', label: 'All services' },
+      { to: '/services', label: 'All Services' },
     ],
   },
   {
@@ -803,8 +803,8 @@ const STUDIO_FOOTER_COLUMNS = [
     items: [
       { to: '/portfolio', label: 'Portfolio' },
       { to: '/industries', label: 'Industries' },
-      { to: '/areas', label: 'Service areas' },
-      { to: '/console/status', label: 'System status' },
+      { to: '/areas', label: 'Service Areas' },
+      { to: '/console/status', label: 'System Status' },
     ],
   },
   {
@@ -815,15 +815,15 @@ const STUDIO_FOOTER_COLUMNS = [
       { to: '/faq', label: 'Questions' },
       { to: '/blog', label: 'Blog' },
       { to: '/contact', label: 'Contact' },
-      { to: '/live', label: 'Ask the assistant' },
+      { to: '/live', label: 'Ask the Assistant' },
     ],
   },
   {
-    head: 'Free tools',
+    head: 'Free Tools',
     items: [
-      { to: '/speed-check', label: 'Speed check' },
+      { to: '/speed-check', label: 'Speed Check' },
       ...TOOLS_INDEX.map(tool => ({ to: tool.path, label: tool.name })),
-      { to: '/tools', label: 'All tools' },
+      { to: '/tools', label: 'All Tools' },
     ],
   },
 ]

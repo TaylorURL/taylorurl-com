@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Check, Plus } from 'lucide-react'
 import Seo from '@components/Seo'
 import SendButton from '@components/conversion/SendButton'
-import { Badge, Container } from '@components/kit/Kit'
+import { Container } from '@components/kit/Kit'
 import { CARD, TYPE } from '@components/kit/styles'
 import { useToast } from '@hooks/chrome/useToast'
 import { useFormFields } from '@hooks/useFormFields'
@@ -38,15 +38,6 @@ const ASKED = QUESTIONS.start
 const SITE_ASKED = 'Current website, if there is one'
 
 const NOT_SENT = 'Your message did not send. Everything you typed is still here, so try again.'
-
-const FINE_PRINT =
-  'No account needed. You pay nothing until you have a written price, and I only call if you ask me to.'
-
-const NEXT = [
-  'I read it and reply with any questions.',
-  'You get a written plan and price.',
-  'Most sites go live in two to four weeks.',
-]
 
 /**
  * Everything the message carries, which is what the writer typed plus the
@@ -184,10 +175,9 @@ export default function Start() {
       <section className="glow pb-16 pt-10 sm:pb-24 sm:pt-16">
         <Container className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-10">
           <div>
-            <Badge className="mb-6">Get a price</Badge>
             <h1 className={TYPE.display}>Tell me what you need.</h1>
             <p className={`${TYPE.lead} mt-5 max-w-[28rem]`}>
-              I reply with a written plan and price, usually within the hour. Asking is free.
+              I reply with a written plan and price, usually within the hour.
             </p>
           </div>
 
@@ -261,11 +251,11 @@ export default function Start() {
                       value={fields.email}
                       onChange={change}
                       aria-invalid={errors.email ? true : undefined}
-                      aria-describedby={described('email', true)}
+                      aria-describedby={described('email')}
                       className="field"
                       placeholder="you@yourbusiness.com"
                     />
-                    <Hint id="email" note="I send the plan and price here." error={errors.email} />
+                    <Hint id="email" error={errors.email} />
                   </div>
                   <div>
                     <label htmlFor="phone" className={FIELD_LABEL}>
@@ -315,7 +305,7 @@ export default function Start() {
                       className="h-4 w-4 transition-transform duration-150 group-open:rotate-45"
                       aria-hidden="true"
                     />
-                    Add more detail (optional)
+                    Add More Detail (Optional)
                   </summary>
                   <div className="space-y-6 px-4 pb-5 pt-2">
                     <fieldset>
@@ -370,11 +360,11 @@ export default function Start() {
                         autoComplete="url"
                         value={fields.website}
                         onChange={change}
-                        aria-describedby="website-note"
+
                         className="field"
                         placeholder="yourbusiness.com"
                       />
-                      <Hint id="website" note="I look at it before I reply." />
+                      <Hint id="website" />
                     </div>
 
                     <fieldset>
@@ -399,9 +389,8 @@ export default function Start() {
                 </details>
 
                 <div className="pt-1 [&>button]:w-full">
-                  <SendButton sending={status === 'submitting'}>Get my plan and price</SendButton>
+                  <SendButton sending={status === 'submitting'}>Get My Plan and Price</SendButton>
                 </div>
-                <p className="text-[14px] leading-relaxed text-ink-mute">{FINE_PRINT}</p>
               </form>
             )}
           </div>
@@ -433,17 +422,6 @@ export default function Start() {
                 </span>
               </span>
             </a>
-
-            <ol className="space-y-3 pl-1">
-              {NEXT.map((step, index) => (
-                <li key={step} className="flex gap-3 text-[15px] leading-[1.5] text-ink-soft">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(59,107,255,0.16)] text-[12px] font-semibold text-[color:var(--link)]">
-                    {index + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ol>
           </div>
         </Container>
       </section>

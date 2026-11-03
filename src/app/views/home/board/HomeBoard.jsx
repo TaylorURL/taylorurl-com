@@ -78,7 +78,6 @@ export default function HomeBoard() {
         badge="Web design in Baytown, TX"
         title="Websites that bring in work."
         lead="I design, build and host fast websites for local businesses. Most go live in two to four weeks."
-        note="Free to ask · Usually a reply within the hour"
         media={featured && <DeviceShowcase project={featured} eager />}
       />
 
@@ -87,7 +86,7 @@ export default function HomeBoard() {
       </Section>
 
       <Section label="Recent work" className="!pt-6">
-        <SectionHead title="Recent work" link={{ to: '/portfolio', label: 'See all work' }} />
+        <SectionHead title="Recent work" link={{ to: '/portfolio', label: 'See All Work' }} />
         <Grid cols={3}>
           {STRIP.map(host => {
             const project = clientSite(host)
@@ -105,10 +104,7 @@ export default function HomeBoard() {
       </Section>
 
       <Section label="How it works">
-        <SectionHead
-          title="How it works"
-          lead="You deal with me from the first call to launch day, and every change after."
-        />
+        <SectionHead title="How it works" />
         <Steps items={STEPS} />
       </Section>
 

@@ -102,7 +102,7 @@ export default function Footer() {
             {HAS_ACCOUNTS && (
               <li>
                 <Link to="/login" className={BASE}>
-                  Client sign in
+                  Client Sign In
                 </Link>
               </li>
             )}
