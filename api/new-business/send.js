@@ -42,7 +42,7 @@ import {
 import { dayStartsAt } from '../../lib/outreach/sending/schedule.js'
 import { sendWindow, suppressed, writtenTo } from '../../lib/outreach/sending/queue.js'
 import { composeFor } from '../../lib/new-business/email.js'
-import { contactedRow, mirror } from '../../lib/new-business/mirror.js'
+import { contactedRow, mirror, stopMirror } from '../../lib/new-business/mirror.js'
 import { runNewBusinessJob } from '../../lib/new-business/runtime.js'
 
 export const config = { maxDuration: 300 }
@@ -222,6 +222,9 @@ export async function work({
 
     if (held.has(address)) {
       await setStage(db, lead.id, 'unsubscribed')
+      // A company with a number is already on the call list by its mirror row,
+      // and an address on the suppression list is a stop for the phone too.
+      await stopMirror(db, lead.prospect_id)
       tally.held += 1
       continue
     }

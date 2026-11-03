@@ -9,31 +9,36 @@ import { hostOf } from '@lib/outreach/prospects/platforms.js'
 import {
   CALLBACK_LENGTHS,
   CALL_OUTCOMES,
+  DAILY_CALL_GOAL,
   callBody,
+  dayLine,
+  dayShare,
   outcomeOf,
   reviewsOf,
+  scoreWords,
 } from '@lib/outreach/prospects/calls.js'
-import { Area, ConsolePage, Panel, PanelBody, SectionNotice, SkeletonList, ViewNav } from '../../ui'
-import { useView } from '../../lib/views'
+import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
 
 /**
  * The Call List: one list for the owner.
  *
- * Call backs due today or overdue lead it, then the businesses worth ringing in
- * the order the ranking puts them, with the closed, the chains, the shared
+ * Call backs due today or overdue lead it. Then every business worth ringing
+ * that nobody has rung, best first by three scores - will the owner pick up,
+ * do they need a site, can they pay - with the closed, the chains, the shared
  * numbers and the listings nobody has reviewed already taken out by the
- * endpoint. Every row says why it is there. Opening one puts the number up as
- * one big link to dial, what is known about the business, every call to it so
- * far, and the six results a call can come to; logging one opens the next
- * business. There is no script on it: the owner asked for the list and the
- * call, nothing to read out.
+ * endpoint; the new companies registered with the state are in it with the
+ * rest. At the foot are the businesses where a front desk answered, waiting
+ * for the time the owner is in. Every row says its scores and why it is
+ * there.
+ *
+ * Opening one puts the number up as one big link to dial - the owner's own
+ * where a front desk gave it - what is known about the business, every call
+ * to it so far, and the seven results a call can come to; logging one opens
+ * the next business. Above it all is the day: how many calls so far against
+ * fifty. There is no script on it: the owner asked for the list and the call,
+ * nothing to read out.
  */
-
-const VIEWS = [
-  { key: 'best', label: 'Best Leads' },
-  { key: 'new', label: 'New Businesses' },
-]
 
 /** The results a call can be logged with, in the order they are drawn. */
 const RESULTS = CALL_OUTCOMES.filter(outcome => outcome.offered)
@@ -66,6 +71,11 @@ function onDay(value) {
   return formatInstant(value, { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+/** A day of the week and a date in the studio's zone, for a time this week or next. */
+function weekday(value) {
+  return formatInstant(value, { weekday: 'short', month: 'short', day: 'numeric' })
+}
+
 /**
  * What is owed on a business, said in a line, and whether it is late.
  *
@@ -86,6 +96,13 @@ function owedLine(due) {
   return { text: `Call back overdue since ${onDay(at)}`, late: true }
 }
 
+/** When a front desk said the owner is in, said in a line. */
+function deskLine(desk) {
+  if (!desk) return null
+  if (!desk.at) return 'Front desk answered, no time given for the owner'
+  return `Front desk said the owner is in ${weekday(desk.at)} at ${clock(desk.at)}`
+}
+
 /** The input's own format for a moment, in the browser's clock. */
 function localInput(date) {
   const pad = number => String(number).padStart(2, '0')
@@ -95,8 +112,15 @@ function localInput(date) {
   )
 }
 
+/** The number the row dials, as it is written: the owner's where there is one. */
+function dialled(row) {
+  return row.owner_phone || row.phone
+}
+
 function ListRow({ row, open, onOpen }) {
   const owed = owedLine(row.due)
+  const desk = deskLine(row.front_desk)
+  const scores = scoreWords(row.score)
   return (
     <li>
       <button
@@ -108,7 +132,7 @@ function ListRow({ row, open, onOpen }) {
         <span className="flex items-baseline justify-between gap-3">
           <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>
           <span className="flex-shrink-0 font-mono text-[12px] tabular-nums text-paper-soft">
-            {row.phone}
+            {dialled(row)}
           </span>
         </span>
         <span className="text-paper-faint truncate text-[12px]">
@@ -119,6 +143,11 @@ function ListRow({ row, open, onOpen }) {
             {owed.text}
           </span>
         )}
+        {desk && <span className="text-[12px] text-paper-soft">{desk}</span>}
+        {scores && <span className="text-[12px] tabular-nums text-ink-paper">{scores}</span>}
+        {row.owner_name && (
+          <span className="text-[12px] text-paper-soft">Ask for {row.owner_name}</span>
+        )}
         {row.reasons.length > 0 && (
           <span className="text-[12px] text-paper-soft">{row.reasons.join(' · ')}</span>
         )}
@@ -127,15 +156,12 @@ function ListRow({ row, open, onOpen }) {
   )
 }
 
-/** The list: what is due first, then what is worth ringing. */
-function CallList({ list, view, openId, onOpen }) {
+/** The list: what is due first, then what is worth ringing, then what waits on its owner. */
+function CallList({ list, openId, onOpen }) {
   const groups = [
     { key: 'due', head: 'Callbacks due today', rows: list.due },
-    {
-      key: 'rows',
-      head: view === 'new' ? 'Newest registered first' : 'Best to call next',
-      rows: list.rows,
-    },
+    { key: 'rows', head: 'Best to call next', rows: list.rows, more: list.more },
+    { key: 'waiting', head: 'Waiting on the owner', rows: list.waiting },
   ].filter(group => group.rows.length)
 
   return (
@@ -158,26 +184,24 @@ function CallList({ list, view, openId, onOpen }) {
                     />
                   ))}
                 </ul>
+                {group.more && (
+                  <div className="px-3 pb-2 pt-1">
+                    <button
+                      type="button"
+                      className={FILL}
+                      disabled={list.adding}
+                      onClick={list.loadMore}
+                    >
+                      {list.adding ? 'Loading' : 'Show More'}
+                    </button>
+                  </div>
+                )}
               </section>
             ))}
-            {list.more && (
-              <div className="px-3 pb-2">
-                <button
-                  type="button"
-                  className={FILL}
-                  disabled={list.adding}
-                  onClick={list.loadMore}
-                >
-                  {list.adding ? 'Loading' : 'Show More'}
-                </button>
-              </div>
-            )}
           </div>
         ) : (
           <p className="px-5 py-10 text-center text-[13px] text-paper-soft">
-            {view === 'new'
-              ? 'No new business is waiting for a call.'
-              : 'Nothing left to call. Every business here has been rung or ruled out.'}
+            Nothing left to call. Every business here has been rung or ruled out.
           </p>
         )}
       </PanelBody>
@@ -192,6 +216,27 @@ function Fact({ label, children }) {
       <dt className={HEAD}>{label}</dt>
       <dd className="min-w-0 break-words text-[14px] text-ink-paper">{children}</dd>
     </div>
+  )
+}
+
+/**
+ * Where the owner's name and number came from: a front desk on a call, or
+ * the pages the owner finder read them off, each a link.
+ */
+function OwnerFound({ from }) {
+  if (from.call) return 'From a call'
+  return (
+    <>
+      {'On '}
+      {from.pages.map((page, at) => (
+        <span key={page}>
+          {at > 0 ? ' and ' : ''}
+          <a className="console-link" href={page} target="_blank" rel="noreferrer noopener">
+            {hostOf(page) || page}
+          </a>
+        </span>
+      ))}
+    </>
   )
 }
 
@@ -247,7 +292,14 @@ function Facts({ row }) {
             {row.formed_on ? onDay(`${row.formed_on}T12:00:00Z`) : 'Not on file'}
           </Fact>
         )}
-        {row.audit_score !== null && <Fact label="Site speed">{row.audit_score} of 100</Fact>}
+        {row.owner_name && <Fact label="Owner">{row.owner_name}</Fact>}
+        {row.owner_phone && <Fact label="Listing Number">{row.phone}</Fact>}
+        {row.owner_from && (
+          <Fact label="Owner Found">
+            <OwnerFound from={row.owner_from} />
+          </Fact>
+        )}
+        {row.audit_score !== null && <Fact label="Site Speed">{row.audit_score} of 100</Fact>}
         {row.email && <Fact label="Email">{row.email}</Fact>}
       </dl>
     </section>
@@ -343,10 +395,118 @@ function History({ calls }) {
   )
 }
 
-/** The six results, the note, and the time a call back is set for. */
+/**
+ * A time to ring back: one press for a length, or a date and time typed in.
+ * Where `toggles` is set a length is picked rather than saved, and stays
+ * pressed until another is.
+ */
+function When({ prompt, hours, at, saving, toggles = false, onHours, onAt }) {
+  return (
+    <>
+      <p className="text-[13px] text-paper-soft">{prompt}</p>
+      <div className="flex flex-wrap gap-2">
+        {CALLBACK_LENGTHS.map(length => (
+          <button
+            key={length.hours}
+            type="button"
+            className={toggles && hours === length.hours ? BUTTON : FILL_ON_FIELD}
+            aria-pressed={toggles ? hours === length.hours : undefined}
+            disabled={saving}
+            onClick={() => onHours(length.hours)}
+          >
+            {length.label}
+          </button>
+        ))}
+      </div>
+      <input
+        type="datetime-local"
+        className={`${FIELD} w-auto justify-self-start`}
+        value={at}
+        min={localInput(new Date())}
+        onChange={event => onAt(event.target.value)}
+        aria-label={prompt}
+      />
+    </>
+  )
+}
+
+/**
+ * What a front desk said: who the owner is, when they are in, and a number
+ * that reaches them. Saving books the call back for that time and puts the
+ * name and the number on the business.
+ */
+function FrontDesk({ saving, onSave }) {
+  const [name, setName] = useState('')
+  const [phone, setPhone] = useState('')
+  const [hours, setHours] = useState(null)
+  const [at, setAt] = useState('')
+  const pick = length => {
+    setHours(was => (was === length ? null : length))
+    setAt('')
+  }
+
+  return (
+    <div className="grid gap-3 rounded-[var(--console-radius-sm)] bg-[color:var(--paper-field)] p-3">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="grid gap-1">
+          <span className={HEAD}>Owner’s Name</span>
+          <input
+            type="text"
+            className={FIELD}
+            value={name}
+            maxLength={120}
+            autoComplete="off"
+            onChange={event => setName(event.target.value)}
+            placeholder="Who to ask for"
+          />
+        </label>
+        <label className="grid gap-1">
+          <span className={HEAD}>Direct Number</span>
+          <input
+            type="tel"
+            className={FIELD}
+            value={phone}
+            autoComplete="off"
+            onChange={event => setPhone(event.target.value)}
+            placeholder="If they gave one"
+          />
+        </label>
+      </div>
+      <When
+        prompt="When is the owner in?"
+        hours={hours}
+        at={at}
+        saving={saving}
+        toggles
+        onHours={pick}
+        onAt={value => {
+          setAt(value)
+          setHours(null)
+        }}
+      />
+      <button
+        type="button"
+        className={`${BUTTON} justify-self-start`}
+        disabled={saving}
+        onClick={() =>
+          onSave({
+            hours,
+            at: at ? new Date(at).toISOString() : null,
+            ownerName: name,
+            ownerPhone: phone,
+          })
+        }
+      >
+        Save Front Desk
+      </button>
+    </div>
+  )
+}
+
+/** The seven results, the note, and what Call Back and Front Desk ask for. */
 function LogCall({ saving, onLog }) {
   const [note, setNote] = useState('')
-  const [timing, setTiming] = useState(false)
+  const [asking, setAsking] = useState(null)
   const [at, setAt] = useState('')
 
   return (
@@ -368,59 +528,53 @@ function LogCall({ saving, onLog }) {
             type="button"
             className={result.keeps ? BUTTON : FILL}
             disabled={saving}
-            aria-expanded={result.keeps ? timing : undefined}
+            aria-expanded={result.keeps ? asking === result.id : undefined}
             onClick={() =>
-              result.keeps ? setTiming(was => !was) : onLog({ outcome: result.id, note })
+              result.keeps
+                ? setAsking(was => (was === result.id ? null : result.id))
+                : onLog({ outcome: result.id, note })
             }
           >
             {result.label}
           </button>
         ))}
       </div>
-      {timing && (
+      {asking === 'callback' && (
         <div className="grid gap-3 rounded-[var(--console-radius-sm)] bg-[color:var(--paper-field)] p-3">
-          <p className="text-[13px] text-paper-soft">When should you call back?</p>
-          <div className="flex flex-wrap gap-2">
-            {CALLBACK_LENGTHS.map(length => (
-              <button
-                key={length.hours}
-                type="button"
-                className={FILL_ON_FIELD}
-                disabled={saving}
-                onClick={() => onLog({ outcome: 'callback', hours: length.hours, note })}
-              >
-                {length.label}
-              </button>
-            ))}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <input
-              type="datetime-local"
-              className={`${FIELD} w-auto`}
-              value={at}
-              min={localInput(new Date())}
-              onChange={event => setAt(event.target.value)}
-              aria-label="Call back at"
-            />
-            <button
-              type="button"
-              className={BUTTON}
-              disabled={saving || !at}
-              onClick={() => onLog({ outcome: 'callback', at: new Date(at).toISOString(), note })}
-            >
-              Save Call Back
-            </button>
-          </div>
+          <When
+            prompt="When should you call back?"
+            hours={null}
+            at={at}
+            saving={saving}
+            onHours={hours => onLog({ outcome: 'callback', hours, note })}
+            onAt={setAt}
+          />
+          <button
+            type="button"
+            className={`${BUTTON} justify-self-start`}
+            disabled={saving || !at}
+            onClick={() => onLog({ outcome: 'callback', at: new Date(at).toISOString(), note })}
+          >
+            Save Call Back
+          </button>
         </div>
+      )}
+      {asking === 'gatekeeper' && (
+        <FrontDesk
+          saving={saving}
+          onSave={answered => onLog({ outcome: 'gatekeeper', note, ...answered })}
+        />
       )}
     </section>
   )
 }
 
-/** The business that is open: the number, why it is here, and the call. */
+/** The business that is open: the number, its scores, why it is here, and the call. */
 function Business({ row, token, saving, onLog }) {
   const [photos, setPhotos] = useState(false)
   const owed = owedLine(row.due)
+  const desk = deskLine(row.front_desk)
+  const scores = scoreWords(row.score)
 
   return (
     <Panel
@@ -436,10 +590,15 @@ function Business({ row, token, saving, onLog }) {
                 href={row.dial}
                 className="justify-self-start text-[30px] font-semibold tabular-nums leading-tight text-accent sm:text-[36px]"
               >
-                {row.phone}
+                {dialled(row)}
               </a>
             ) : (
-              <p className="text-[30px] font-semibold leading-tight">{row.phone}</p>
+              <p className="text-[30px] font-semibold leading-tight">{dialled(row)}</p>
+            )}
+            {row.owner_phone && (
+              <p className="text-[13px] text-paper-soft">
+                The owner’s own number. The listing’s is {row.phone}.
+              </p>
             )}
             {owed && (
               <p
@@ -447,6 +606,11 @@ function Business({ row, token, saving, onLog }) {
               >
                 {owed.text}
               </p>
+            )}
+            {desk && <p className="text-[13px] text-paper-soft">{desk}</p>}
+            {scores && <p className="text-[14px] tabular-nums text-ink-paper">{scores}</p>}
+            {row.owner_name && (
+              <p className="text-[14px] text-ink-paper">Ask for {row.owner_name}</p>
             )}
             {row.reasons.length > 0 && (
               <p className="text-[14px] text-paper-soft">{row.reasons.join(' · ')}</p>
@@ -481,16 +645,29 @@ function Business({ row, token, saving, onLog }) {
   )
 }
 
+/** The day so far: calls made since midnight against the goal. */
+function Today({ today, loading }) {
+  const made = today?.calls ?? 0
+  const goal = today?.goal ?? DAILY_CALL_GOAL
+  return (
+    <div className="max-w-[28rem]">
+      <GoalBar label={dayLine(made, goal)} share={dayShare(made, goal)} loading={loading} />
+    </div>
+  )
+}
+
 export default function CallListPage() {
   const { session } = useSession()
   const token = session?.access_token ?? null
-  const [view, go] = useView(VIEWS)
-  const list = useCallList({ token, view })
+  const list = useCallList({ token })
   const toast = useToast()
   const [openId, setOpenId] = useState(null)
   const card = useRef(null)
 
-  const entries = useMemo(() => [...list.due, ...list.rows], [list.due, list.rows])
+  const entries = useMemo(
+    () => [...list.due, ...list.rows, ...list.waiting],
+    [list.due, list.rows, list.waiting]
+  )
   const open = entries.find(row => row.id === openId) ?? entries[0] ?? null
 
   // On a phone the card sits under the list, so opening a business brings it
@@ -502,10 +679,13 @@ export default function CallListPage() {
     }
   }
 
-  const log = async ({ outcome, hours = null, at = null, note }) => {
+  const log = async ({ outcome, hours = null, at = null, note, ownerName, ownerPhone }) => {
     if (!open) return
     const index = entries.findIndex(row => row.id === open.id)
-    const saved = await list.record(callBody({ id: open.id, outcome, hours, at, note }), open)
+    const saved = await list.record(
+      callBody({ id: open.id, outcome, hours, at, note, ownerName, ownerPhone }),
+      open
+    )
     if (!saved) return
     toast(`${outcomeOf(outcome)?.label ?? 'Call'} saved for ${open.name}.`, 'success')
     const next = entries.slice(index + 1).find(row => row.id !== open.id) ?? null
@@ -519,24 +699,16 @@ export default function CallListPage() {
 
   return (
     <ConsolePage
-      areas={['views views', 'list card']}
+      areas={['today today', 'list card']}
       cols="minmax(20rem, 28rem) minmax(0, 1fr)"
       rows="auto minmax(0, 1fr)"
     >
-      <Area area="views">
-        <ViewNav
-          views={VIEWS}
-          current={view}
-          onPick={next => {
-            setOpenId(null)
-            go(next)
-          }}
-          label="Call list views"
-        />
+      <Area area="today">
+        <Today today={list.today} loading={list.loading} />
       </Area>
 
       <Area area="list">
-        <CallList list={list} view={view} openId={open?.id ?? null} onOpen={pick} />
+        <CallList list={list} openId={open?.id ?? null} onOpen={pick} />
       </Area>
 
       <div ref={card} className="flex min-h-0 min-w-0 flex-col" style={{ '--area': 'card' }}>

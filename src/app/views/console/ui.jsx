@@ -414,6 +414,32 @@ export function Metric({ label, value, caption, loading }) {
 }
 
 /**
+ * A count against what it is meant to reach: the line that says it, and a
+ * plain bar under it filled to `share` of its length (0 to 100).
+ *
+ * The line waits for the read like every other figure, so a day is never
+ * drawn at nought before the count lands; the bar is empty until it does.
+ */
+export function GoalBar({ label, share, loading }) {
+  const filled = loading ? 0 : Math.min(100, Math.max(0, Number(share) || 0))
+  return (
+    <div className="console-goal">
+      <p className="console-goal-label">{loading ? <SkeletonBar className="w-36" /> : label}</p>
+      <div
+        className="console-goal-bar"
+        role="progressbar"
+        aria-label={loading ? undefined : label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(filled)}
+      >
+        <span className="console-goal-fill" style={{ '--to': `${filled}%` }} />
+      </div>
+    </div>
+  )
+}
+
+/**
  * The part of a card that moves when there is more than fits.
  *
  * At the desk width a card is exactly the cell it was given and no taller, so

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { dayIn, instantOf } from '@lib/time/zone.js'
+import { DAILY_CALL_GOAL, dialHref, outcomeAsksOwner } from '@lib/outreach/prospects/calls.js'
 import { readEndpoint, writeEndpoint } from './endpoint'
 import { useAlive } from './useAlive'
 
@@ -27,21 +28,30 @@ function tomorrow() {
   return instantOf(new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10))
 }
 
+/** The ones waiting on their owner, the soonest the front desk said first. */
+function byOwnerDue(one, two) {
+  const at = row => Date.parse(row.front_desk?.at ?? '') || Infinity
+  return at(one) - at(two)
+}
+
 /**
- * The Call List: the call backs due today, then the businesses to ring.
+ * The Call List: the call backs due today, then the businesses to ring, then
+ * the ones waiting on their owner, and the day's calls against its goal.
  *
- * One view at a time, and the best-leads view a page at a time: `loadMore`
- * adds the next page of the ranking under what is already there.
+ * The never-called part is read a page at a time: `loadMore` adds the next
+ * page of the ranking under what is already there.
  *
  * Recording a call settles the list where it stands rather than reading it
- * again. A call takes its business off the list - the only thing that brings
- * one back is a call back, which is due today or not - and nothing else on the
- * list moves, so the answer is known without a round trip, and the next
- * business is already on screen when the save lands.
+ * again. A call takes its business off the list; a call back due today puts
+ * it in the due part, and a Front Desk call whose time is later puts it at the
+ * foot with the owner's name and number on it. Nothing else on the list moves,
+ * so the answer is known without a round trip, and the next business is
+ * already on screen when the save lands. The day's count comes back with the
+ * save.
  *
- * @param {{token: string|null, view: string}} options
+ * @param {{token: string|null}} options
  */
-export function useCallList({ token, view }) {
+export function useCallList({ token }) {
   const [held, setHeld] = useState(null)
   const [error, setError] = useState(null)
   const [adding, setAdding] = useState(false)
@@ -53,12 +63,12 @@ export function useCallList({ token, view }) {
     async page => {
       const { response, payload } = await readEndpoint(
         token,
-        `${CALLS_PATH}?view=${encodeURIComponent(view)}&page=${page}&t=${Date.now()}`
+        `${CALLS_PATH}?page=${page}&t=${Date.now()}`
       )
       if (!response.ok) throw new Error(faultFromResponse(response, payload, NO_READ))
       return payload
     },
-    [token, view]
+    [token]
   )
 
   useEffect(() => {
@@ -70,11 +80,12 @@ export function useCallList({ token, view }) {
       .then(payload => {
         if (stop || !alive.current) return
         setHeld({
-          view,
           due: (payload.due ?? []).map(whole),
           rows: (payload.rows ?? []).map(whole),
+          waiting: (payload.waiting ?? []).map(whole),
           page: payload.page ?? 1,
           pages: payload.pages ?? 1,
+          today: payload.today ?? { calls: 0, goal: DAILY_CALL_GOAL },
         })
       })
       .catch(cause => {
@@ -83,7 +94,7 @@ export function useCallList({ token, view }) {
     return () => {
       stop = true
     }
-  }, [token, view, read, alive])
+  }, [token, read, alive])
 
   const loadMore = useCallback(async () => {
     if (!held || held.page >= held.pages) return
@@ -93,7 +104,7 @@ export function useCallList({ token, view }) {
       if (!alive.current) return
       setHeld(was => {
         if (!was) return was
-        const seen = new Set([...was.due, ...was.rows].map(row => row.id))
+        const seen = new Set([...was.due, ...was.rows, ...was.waiting].map(row => row.id))
         return {
           ...was,
           rows: [...was.rows, ...(payload.rows ?? []).filter(row => !seen.has(row.id)).map(whole)],
@@ -128,19 +139,41 @@ export function useCallList({ token, view }) {
           }
           const back = logged.callback_at ? new Date(logged.callback_at) : null
           const dueToday = back && back < tomorrow()
+          const frontDesk = outcomeAsksOwner(call.outcome)
+          const owner = payload.owner ?? null
+          const after = {
+            ...business,
+            ...(owner
+              ? {
+                  owner_name: owner.name ?? null,
+                  owner_phone: owner.phone ?? null,
+                  owner_from: owner.from ?? null,
+                  dial: dialHref(owner.phone || business.phone),
+                }
+              : {}),
+            calls: [logged, ...(business.calls ?? [])],
+          }
           setHeld(was => {
             if (!was) return was
             const rows = was.rows.filter(row => row.id !== call.id)
             const due = was.due.filter(row => row.id !== call.id)
+            const waiting = was.waiting.filter(row => row.id !== call.id)
             if (dueToday) {
               due.push({
-                ...business,
+                ...after,
                 due: { kind: 'callback', at: logged.callback_at },
-                calls: [logged, ...(business.calls ?? [])],
+                front_desk: null,
               })
               due.sort((one, two) => Date.parse(one.due.at) - Date.parse(two.due.at))
+            } else if (frontDesk) {
+              waiting.push({ ...after, due: null, front_desk: { at: logged.callback_at } })
+              waiting.sort(byOwnerDue)
             }
-            return { ...was, rows, due }
+            const today = payload.today ?? {
+              ...was.today,
+              calls: (was.today?.calls ?? 0) + 1,
+            }
+            return { ...was, rows, due, waiting, today }
           })
         }
         return payload
@@ -154,13 +187,14 @@ export function useCallList({ token, view }) {
     [token, toast, alive]
   )
 
-  const current = held?.view === view ? held : null
   return {
-    due: current?.due ?? [],
-    rows: current?.rows ?? [],
-    loading: !current && !error,
+    due: held?.due ?? [],
+    rows: held?.rows ?? [],
+    waiting: held?.waiting ?? [],
+    today: held?.today ?? null,
+    loading: !held && !error,
     error,
-    more: Boolean(current && current.page < current.pages),
+    more: Boolean(held && held.page < held.pages),
     adding,
     loadMore,
     record,
