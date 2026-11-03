@@ -14,10 +14,8 @@ import {
   dayLine,
   dayShare,
   numberLine,
-  ownerLabel,
   outcomeOf,
   reviewsOf,
-  scoreWords,
 } from '@lib/outreach/prospects/calls.js'
 import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
@@ -122,7 +120,6 @@ function dialled(row) {
 function ListRow({ row, open, onOpen }) {
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
-  const scores = scoreWords(row.score)
   return (
     <li>
       <button
@@ -132,10 +129,10 @@ function ListRow({ row, open, onOpen }) {
         className="grid w-full cursor-pointer gap-0.5 rounded-[var(--console-radius-sm)] px-3 py-2.5 text-left hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)]"
       >
         <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>
-        {/* The number on a line of its own, so the owner's name and how sure
-            the number is never get cut off the end of the row. */}
+        {/* The number on a line of its own, so the owner's name never gets cut
+            off the end of the row. */}
         <span className="font-mono text-[12px] tabular-nums text-paper-soft">
-          {numberLine(dialled(row), row.owner_name, ownerLabel(row))}
+          {numberLine(dialled(row), row.owner_name)}
         </span>
         <span className="text-paper-faint truncate text-[12px]">
           {[tradeLabel(row.trade), row.town].filter(Boolean).join(' · ') || 'Trade not on file'}
@@ -146,10 +143,6 @@ function ListRow({ row, open, onOpen }) {
           </span>
         )}
         {desk && <span className="text-[12px] text-paper-soft">{desk}</span>}
-        {scores && <span className="text-[12px] tabular-nums text-ink-paper">{scores}</span>}
-        {row.reasons.length > 0 && (
-          <span className="text-[12px] text-paper-soft">{row.reasons.join(' · ')}</span>
-        )}
       </button>
     </li>
   )
@@ -596,13 +589,11 @@ function LogCall({ saving, onLog }) {
   )
 }
 
-/** The business that is open: the number, its scores, why it is here, and the call. */
+/** The business that is open: the number, who to ask for, and the call. */
 function Business({ row, token, saving, onLog }) {
   const [photos, setPhotos] = useState(false)
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
-  const scores = scoreWords(row.score)
-  const label = ownerLabel(row)
 
   return (
     <Panel
@@ -616,7 +607,7 @@ function Business({ row, token, saving, onLog }) {
             {row.dial ? (
               <a
                 href={row.dial}
-                aria-label={`Call ${numberLine(dialled(row), row.owner_name, label)}`}
+                aria-label={`Call ${numberLine(dialled(row), row.owner_name)}`}
                 className="justify-self-start text-[30px] font-semibold tabular-nums leading-tight text-accent sm:text-[36px]"
               >
                 {dialled(row)}
@@ -626,21 +617,10 @@ function Business({ row, token, saving, onLog }) {
                     {row.owner_name}
                   </span>
                 )}
-                {label && (
-                  <span className="text-[14px] font-normal text-paper-soft">
-                    {' · '}
-                    {label}
-                  </span>
-                )}
               </a>
             ) : (
               <p className="text-[30px] font-semibold leading-tight">
-                {numberLine(dialled(row), row.owner_name, label)}
-              </p>
-            )}
-            {row.owner_phone && (
-              <p className="text-[13px] text-paper-soft">
-                The owner’s own number. The listing’s is {row.phone}.
+                {numberLine(dialled(row), row.owner_name)}
               </p>
             )}
             {owed && (
@@ -651,13 +631,6 @@ function Business({ row, token, saving, onLog }) {
               </p>
             )}
             {desk && <p className="text-[13px] text-paper-soft">{desk}</p>}
-            {scores && <p className="text-[14px] tabular-nums text-ink-paper">{scores}</p>}
-            {row.owner_name && (
-              <p className="text-[14px] text-ink-paper">Ask for {row.owner_name}</p>
-            )}
-            {row.reasons.length > 0 && (
-              <p className="text-[14px] text-paper-soft">{row.reasons.join(' · ')}</p>
-            )}
           </div>
 
           {row.calls.length > 0 && <History calls={row.calls} />}
