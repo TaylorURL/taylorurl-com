@@ -60,6 +60,7 @@ import {
   pullBand,
   numberLine,
   ownerLabel,
+  phoneLines,
   pullOf,
   reviewsOf,
   scoreWords,
@@ -83,12 +84,14 @@ import {
   MEASURED_AFTER,
   NAME_BOOST,
   SITE_POINTS,
+  TWO_NUMBERS_BOOST,
   UNCONFIRMED_CELL_OWNER,
   budgetScore,
   cellOf,
   daysSince,
   factsOf,
   needScore,
+  numbersOf,
   ownerScore,
   scoreOf,
   siteOf,
@@ -894,6 +897,94 @@ check('the number is written with the person it should reach, and how sure that 
   )
 })
 
+check('the owner’s number is drawn apart from the main line', () => {
+  // A number for the owner: it comes first with the name beside it, and the
+  // listing's own line under it is called the main line.
+  same(
+    phoneLines({
+      phone: '(281) 862-9968',
+      owner_phone: '(281) 555-0199',
+      owner_name: 'Mike Kestrel',
+    })
+      .map(line => line.said)
+      .join(' / '),
+    '(281) 555-0199 · Mike Kestrel / (281) 862-9968 · Main line',
+    'the owner’s number, then the main line'
+  )
+  same(
+    phoneLines({ phone: '(281) 862-9968', owner_phone: '(281) 555-0199' })[0].said,
+    '(281) 555-0199 · Owner',
+    'the owner’s number with no name for the owner'
+  )
+  // Only the main line: the name rides beside it, as it always has.
+  same(
+    phoneLines({ phone: '(281) 862-9968', owner_name: 'Mike Kestrel' })
+      .map(line => line.said)
+      .join(' / '),
+    '(281) 862-9968 · Mike Kestrel',
+    'one number'
+  )
+  // Another listing of the company on a number of its own is another line.
+  const lines = phoneLines({
+    phone: '(281) 862-9968',
+    owner_name: 'Mike Kestrel',
+    other_numbers: ['(832) 555-0110'],
+  })
+  same(
+    lines.map(line => line.said).join(' / '),
+    '(281) 862-9968 · Mike Kestrel / (832) 555-0110 · Other line',
+    'the main line, then the other'
+  )
+  same(lines[1].dial, 'tel:8325550110', 'the other line dials')
+})
+
+check('a company on two numbers ranks a quarter higher, a chain’s branches do not count', () => {
+  same(TWO_NUMBERS_BOOST, 1.25, 'the multiplier')
+  // The owner's own number beside the main line is two.
+  same(
+    numbersOf(row({ owner_phone: '(281) 555-0199' })).join(','),
+    '2815550199,2818629968',
+    'the owner’s first, then the main line'
+  )
+  same(numbersOf(row({ owner_phone: '(281) 862-9968' })).length, 1, 'the main line twice is one')
+  // Another listing of a one-location company on its own number is two.
+  const one = {
+    listings: 2,
+    locations: 1,
+    industry: null,
+    registeredOn: null,
+    officers: null,
+    numbers: ['2818629968', '8325550110'],
+  }
+  same(numbersOf(row({ company: one })).length, 2, 'two listings, one place, two numbers')
+  // A company at three yards is held to its own: the rest are other branches.
+  same(
+    numbersOf(row({ company: { ...one, locations: 3, numbers: ['2818629968', '8325550110'] } }))
+      .length,
+    1,
+    'a branch’s number'
+  )
+  // A barber reads 97.66 on Owner with or without a number for the owner, so
+  // the whole of the difference is the multiplier.
+  const plain = scoreOf(row({ address: null }), SIZE_FACTS, READ_ON)
+  const two = scoreOf(row({ address: null, company: one }), SIZE_FACTS, READ_ON)
+  same(two.numbers, 2, 'two numbers, read')
+  near(two.total / plain.total, TWO_NUMBERS_BOOST, 'a quarter again', 2)
+  // And the companies read off the table carry every number their listings do.
+  const companies = companiesOf([
+    row({ id: 'a', name: 'Kestrel Roofing', website: 'https://kestrelroof.com', site_kind: 'own' }),
+    row({
+      id: 'b',
+      name: 'Kestrel Roofing LLC',
+      phone: '(832) 555-0110',
+      website: 'https://kestrelroof.com',
+      site_kind: 'own',
+    }),
+  ])
+  same(companies.get('a'), companies.get('b'), 'one company, by its site')
+  same(companies.get('a').numbers.join(','), '2818629968,8325550110', 'both numbers')
+})
+
 // ── What the list offers ────────────────────────────────────────────────
 
 check('a number is its ten digits', () => {
@@ -1594,6 +1685,8 @@ check('one list: the sweep’s businesses and the new companies, best score firs
     'and the site it was read off, once however many of its pages'
   )
   same(ahead.owner_phone, null, 'no number found, so the listing’s is dialled')
+  same(JSON.stringify(roof.other_numbers), '[]', 'one listing, one number')
+  same(JSON.stringify(yard.other_numbers), '[]', 'a branch’s number is not another line')
   same(ahead.owner_phone_from, null, 'and no source for one')
   same(contacted.reasons[1], 'Emailed, no reply yet', 'a company already written to')
   // The ninety days are worth half as much again: nb-first is five days old
@@ -1933,7 +2026,8 @@ check('the page is the owner’s one list and nothing else', () => {
   const hook = read('src/app/hooks/console/useCallList.js')
   ok(/useCallList/.test(page), 'the page does not read the list')
   ok(/CALL_OUTCOMES\.filter\(outcome => outcome\.offered\)/.test(page), 'the results drawn')
-  ok(/href=\{row\.dial\}/.test(page), 'the number is not a link to dial')
+  ok(/href=\{first\.dial\}/.test(page), 'the number is not a link to dial')
+  ok(/href=\{line\.dial\}/.test(page), 'the other numbers are not links to dial')
   for (const gone of ['staff', 'shift', 'presence', 'scriptFor', 'handbook', 'assigned']) {
     ok(!new RegExp(gone, 'i').test(page), `the page still mentions ${gone}`)
   }
@@ -1956,16 +2050,16 @@ check('the page shows the number and the owner, the day, and the front desk', ()
   ok(/GoalBar/.test(page) && /dayLine\(/.test(page), 'the day is not drawn against its goal')
   ok(/Save Front Desk/.test(page), 'Front Desk has nothing to save')
   ok(/Waiting on the owner/.test(page), 'the front desks are not at the foot')
-  // Beside the number in the row, and beside it on the button that dials it.
-  ok(
-    /numberLine\(dialled\(row\), row\.owner_name\)/.test(page),
-    'the row does not put the owner’s name by the number'
-  )
+  // Every number on a line of its own in the row - the owner's apart from the
+  // main line - and the name beside the number on the button that dials it.
+  ok(/phoneLines\(row\)\.map/.test(page), 'the row does not draw each number')
   const button = page.slice(
-    page.indexOf('href={row.dial}'),
-    page.indexOf('</a>', page.indexOf('href={row.dial}'))
+    page.indexOf('href={first.dial}'),
+    page.indexOf('</a>', page.indexOf('href={first.dial}'))
   )
-  ok(/row\.owner_name/.test(button), 'the dial button does not carry the owner’s name')
+  ok(/first\.label/.test(button), 'the dial button does not carry the owner’s name')
+  // The numbers are at the top, so the details do not say them again.
+  ok(!/Owner’s Cell|Listing Number/.test(page), 'the details repeat the numbers')
   // The details say who the owner is and their number, and nothing about how
   // sure either is or where it came from.
   ok(!/<Sources /.test(page), 'the details say where the owner came from')
