@@ -2078,7 +2078,6 @@
    rather than the status line's, which is cut for a refusal. */
 .auth-note {
   @apply text-[13px] leading-relaxed;
-  border-left: 1px solid var(--accent);
   background-color: var(--wash-accent);
   padding: 0.625rem 0.875rem;
   border-radius: var(--console-radius-sm);

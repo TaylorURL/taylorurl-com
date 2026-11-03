@@ -103,7 +103,7 @@ function ListRow({ row, open, onOpen }) {
         type="button"
         aria-current={open ? 'true' : undefined}
         onClick={onOpen}
-        className="grid w-full cursor-pointer gap-0.5 rounded-[var(--console-radius-sm)] px-3 py-2.5 text-left hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
+        className="grid w-full cursor-pointer gap-0.5 rounded-[var(--console-radius-sm)] px-3 py-2.5 text-left hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)]"
       >
         <span className="flex items-baseline justify-between gap-3">
           <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>

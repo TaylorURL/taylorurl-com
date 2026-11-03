@@ -671,7 +671,7 @@ export function SplitRow({ name, badge, open, onOpen, children }) {
         type="button"
         aria-current={open ? 'true' : undefined}
         onClick={onOpen}
-        className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition-colors duration-150 ease-out-soft hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)] aria-[current=true]:shadow-[inset_2px_0_0_var(--accent)]"
+        className="grid w-full cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 text-left transition-colors duration-150 ease-out-soft hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)]"
       >
         <span className="grid min-w-0 gap-0.5">
           <span className="truncate text-[13px] font-medium text-ink-paper">{name}</span>
