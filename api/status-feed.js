@@ -28,6 +28,35 @@ const UPSTREAM = process.env.STATUS_FEED_URL || ''
 const TIMEOUT_MS = 12000
 const ATTEMPTS = 2
 
+// The last reading that actually came off the monitor, and when it did.
+//
+// Moving this endpoint onto `reach` fixed the lookup and did not fix the 502,
+// which is what said the rest of the failure is the route itself rather than
+// the name: the monitor publishes over a home upload link behind a relay, and
+// a request for the feed is a request for ~86KB across it. Measured from
+// outside on 2026-11-03 the same minute answered both ways - three 200s
+// carrying the whole 85,893-byte body in half a second, and eight 502s whose
+// two attempts together spent 2.2s to 5.5s, far short of the 24s the pair of
+// timeouts above would cost. So the connection is being made and lost rather
+// than refused, and the retry beside it is no use against a link that is
+// dropping: both attempts cross the same one, back to back.
+//
+// `server-feed.js` beside this reads the same machine and already answers that
+// by holding its last reading through a failure, and this is the same move for
+// the same reason. It is not a stale answer dressed as a fresh one: every
+// reading this endpoint returns carries the monitor's own `updated_at`, the
+// board reads the age of what it is drawing off that rather than off the
+// success of the request, and a reading the monitor has not rebuilt is the
+// case the page was already built for. What it replaces is a board that tells
+// a visitor nothing about any site because one 86KB transfer did not finish.
+//
+// Fifteen minutes is the ceiling, the same figure the fleet uses to decide a
+// machine is not alive. Past it there is nothing honest left to draw and the
+// failure goes through.
+const HOLD_MS = 15 * 60 * 1000
+let held = null
+let heldAt = 0
+
 /** Which stage failed, in the words the response and the log both use. */
 function describe(error) {
   if (error && error.status) return error.message
@@ -129,6 +158,8 @@ export default async function handler(request, response) {
   for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
     try {
       const body = await readFeed()
+      held = body
+      heldAt = Date.now()
       response.setHeader(
         'Cache-Control',
         'public, max-age=0, s-maxage=15, stale-while-revalidate=30'
@@ -150,6 +181,18 @@ export default async function handler(request, response) {
   // reaches them is that the board is not current and that it will keep
   // trying, which is the whole of what they can do about it.
   const reason = describe(last)
+
+  if (held && Date.now() - heldAt < HOLD_MS) {
+    console.error('status-feed: %s reading %s, holding the last reading', reason, UPSTREAM, last)
+    // Held readings are not put in the shared cache. The cache in front of a
+    // fresh answer is what spares the upstream a crowd; in front of a held one
+    // it would pin the board to the stale copy for the whole window and stop
+    // the next visitor being the one who gets a current reading.
+    response.setHeader('Cache-Control', 'public, max-age=0, s-maxage=0, must-revalidate')
+    response.status(200).json(present(held))
+    return
+  }
+
   console.error('status-feed: %s reading %s', reason, UPSTREAM, last)
   response
     .status(502)
