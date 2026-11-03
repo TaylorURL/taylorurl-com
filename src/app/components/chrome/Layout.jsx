@@ -1,15 +1,11 @@
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Navigation from '../navigation/Navigation'
-import PageTransition from './PageTransition'
 import { DeferredWaiting } from '../app-shell/Waiting'
 import LateChrome from '../app-shell/LateChrome'
 import Footer from './Footer'
-import ScrollProgress from './ScrollProgress'
-import BackToTop from './BackToTop'
 import { matchViewKeys } from '@constants/routes'
 import { announceGroundChange } from '@hooks/theme/useOnDarkBackground'
-import { useSmoothScroll } from '@hooks/scroll/useSmoothScroll'
 import { recordCall, recordPageView } from '@data/leads/conversion'
 import { counted } from '../../views/analytics/lib/counted.js'
 import { IS_SECOND_SITE } from '../../../../lib/site/current.js'
@@ -173,10 +169,6 @@ export default function Layout() {
   const bare = isConsole || isAuth
   const mainRef = useRef(null)
 
-  // The console and the sign-in screens hold scrollers of their own rather than
-  // scrolling as one page, so the glide is for the marketing pages alone.
-  useSmoothScroll(!bare)
-
   // Whether the served page has been adopted. The two deferred pieces at the
   // foot of this file wait on it.
   //
@@ -290,23 +282,21 @@ export default function Layout() {
       >
         Skip to Main Content
       </a>
-      {!bare && <ScrollProgress />}
       {!bare && <Navigation />}
       <main id="main-content" ref={mainRef} tabIndex={-1}>
-        <PageTransition routeKey={routeKey} className="page-arrive">
-          {/* Each page waits inside its own transition rather than under one
-              boundary above the chrome. A page whose code is still coming down
-              then costs the page, not the bar and the footer with it, and the
-              outgoing page still gets to leave first. */}
+        {/* Each page waits inside its own boundary rather than under one above
+            the chrome, so a page whose code is still coming down costs the
+            page, not the bar and the footer with it. Keyed on the page so a
+            new page is a new tree, with no motion between the two. */}
+        <div key={routeKey}>
           <Suspense fallback={<DeferredWaiting />}>
             <GroundSignal />
             <Arrival onArrive={arrive} />
             <Outlet />
           </Suspense>
-        </PageTransition>
+        </div>
       </main>
       {!bare && <Footer />}
-      {!bare && <BackToTop />}
       {/* Each under a boundary of its own, because the one above the routes
           answers for the page by reloading it, and neither of these is the page.
           Left on that path, a chunk the corner could not fetch reloaded the

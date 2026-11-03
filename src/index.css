@@ -73,12 +73,17 @@
 
 :root {
   /*
-   * THE FIELD — the ground a page stands on, at its light values. This is the
-   * TaylorURL theme: ivory paper by day, warm charcoal by night, one blue on
-   * both. The dark setting below restates the same roles on the charcoal, and a
-   * document that carries no setting yet reads on the light ones.
+   * THE FIELD — the ground a page stands on. White, with one warm grey for a
+   * band that needs to stand apart and one blue for the thing to press. The
+   * site has one setting; the dark block further down is kept only for a
+   * document something else stamps dark, which nothing on the site now does.
    */
-  --paper: #f0eee6;
+  --paper: #ffffff;
+  /* The band ground and the line, named for what they are so the page
+     components can say `bg-[var(--band)]` rather than reaching for a surface
+     step that also means something to the console. */
+  --band: #f6f5f1;
+  --line: #e5e3dc;
   --paper-ink: #141413;
   --paper-ink-soft: rgba(20, 20, 19, 0.72);
   --paper-ink-mute: rgba(20, 20, 19, 0.62);
@@ -91,7 +96,7 @@
   --paper-hairline-strong: rgba(20, 20, 19, 0.14);
   /* Input ground. A field on a paper panel needs to sit on its own surface, or
      the border is the only thing saying it can be typed in. */
-  --paper-field: #faf9f5;
+  --paper-field: #ffffff;
   --wash-paper: rgb(20 20 19 / 0.05);
   --wash-paper-strong: rgb(20 20 19 / 0.1);
   /* The blueprint rule, at the two weights the field takes. */
@@ -116,8 +121,8 @@
   --hairline: var(--paper-hairline);
   --hairline-strong: var(--paper-hairline-strong);
   /* A raised card and a sunk well, one step either side of the field. */
-  --surface-1: #faf9f5;
-  --surface-2: #e8e6dc;
+  --surface-1: #ffffff;
+  --surface-2: #f6f5f1;
   --wash-ink: var(--wash-paper);
   --wash-ink-strong: var(--wash-paper-strong);
   --rule-ink: var(--rule-paper);
@@ -163,13 +168,13 @@
      hundred pixels down it is a surface someone reads forty-six names off, and
      display type behind it survives an 18px blur at 15% and shows through the
      words. */
-  --nav-surface: rgba(240, 238, 230, 0.85);
-  --nav-surface-solid: #f0eee6;
+  --nav-surface: rgba(255, 255, 255, 0.92);
+  --nav-surface-solid: #ffffff;
   /* The moving highlight a shiny label sweeps, and the ground and edge a glare
      sits on. All three follow the ground rather than the brand. */
   --shine-base: var(--ink-mute);
   --shine-sweep: rgba(20, 20, 19, 0.92);
-  --glare-ground: #f0eee6;
+  --glare-ground: #ffffff;
   --glare-edge: rgba(20, 20, 19, 0.2);
   /* The light a card carries under the pointer. */
   --spotlight: rgba(47, 107, 255, 0.16);
@@ -426,14 +431,15 @@
      both state it, so the pair lines up without depending on a stretch that an
      inline-block wrapper between them would swallow. */
   --field-h: 3.25rem;
-  /* The fixed bar's height, so anything that sticks or scrolls to a target
-     lands under the bar rather than behind it. */
-  --nav-height: 4.25rem;
+  /* The bar's height, so anything that sticks or scrolls to a target lands
+     under the bar rather than behind it. It matches the h-16 / sm:h-[72px] the
+     bar draws itself at. */
+  --nav-height: 4rem;
 }
 
-@media (min-width: 1280px) {
+@media (min-width: 640px) {
   :root {
-    --nav-height: 4.75rem;
+    --nav-height: 4.5rem;
   }
 }
 
@@ -677,7 +683,6 @@
 
 @layer base {
   html {
-    scroll-behavior: smooth;
     /* An in-page target would otherwise come to rest behind the fixed bar. */
     scroll-padding-top: var(--nav-height);
     /* clip, not hidden: hidden makes the root a scroll container, which severs
@@ -2829,66 +2834,6 @@
 
   .section-y-lg {
     @apply py-16 sm:py-36;
-  }
-
-  /*
-   * THE ARRIVAL — what an element does the first time it is scrolled to, and
-   * the only motion on this page that scroll is allowed to cue.
-   *
-   * It is armed rather than assumed. `data-reveal` is set on the document by
-   * the inline block in `index.html`, which runs before the first paint, so a
-   * visitor whose bundle never arrives is served a page with nothing hidden on
-   * it. Written the other way - hidden by default, cleared by script - the page
-   * that fails to boot is a blank column, and the failure it is most likely to
-   * hit is the script not arriving.
-   *
-   * A fade and the page arrival's own fourteen pixels of rise, over the page
-   * arrival's own duration, so an element coming up under a scroll and a
-   * section coming up under a page change are one movement. The rise is
-   * written to `translate` rather than `transform`, so it composes with any
-   * transform the element already carries instead of overwriting it, which is
-   * the collision the spare div per card once existed to hold apart.
-   *
-   * It is a keyframe and not a transition. A transition is one property on the
-   * element, and set here it would take a card's own hover transition with it.
-   * The keyframe fills backwards and nothing else: held hidden through its
-   * delay, and once it has run the element is simply itself, with no animation
-   * left standing on it to argue with a later hover.
-   *
-   * The delay is the stagger, written onto the element by `Reveal.jsx` from
-   * what arrived in the same frame. Nothing here counts children.
-   */
-  [data-reveal] .reveal {
-    opacity: 0;
-  }
-
-  [data-reveal] .reveal[data-shown] {
-    opacity: 1;
-  }
-
-  [data-reveal] .reveal[data-shown='arriving'] {
-    animation: reveal-in 420ms var(--ease-out-soft) backwards;
-    animation-delay: var(--reveal-delay, 0ms);
-  }
-
-  @keyframes reveal-in {
-    from {
-      opacity: 0;
-      translate: 0 14px;
-    }
-  }
-
-  /* Movement is what reduced motion asks to be spared, and an element held
-     back from a page is worse than one that simply is there, so it is simply
-     there. */
-  @media (prefers-reduced-motion: reduce) {
-    [data-reveal] .reveal {
-      opacity: 1;
-    }
-
-    [data-reveal] .reveal[data-shown='arriving'] {
-      animation: none;
-    }
   }
 
   /* A short standing fact set on the accent's own wash - a tag, a state, a
