@@ -13,8 +13,8 @@ import {
   callBody,
   dayLine,
   dayShare,
-  numberLine,
   outcomeOf,
+  phoneLines,
   reviewsOf,
 } from '@lib/outreach/prospects/calls.js'
 import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
@@ -29,11 +29,12 @@ import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
  * numbers and the listings nobody has reviewed already taken out by the
  * endpoint; the new companies registered with the state are in it with the
  * rest. At the foot are the businesses where a front desk answered, waiting
- * for the time the owner is in. Every row says its scores and why it is
- * there.
+ * for the time the owner is in. Every row says the business, each number it
+ * can be rung on - the owner's own apart from the main line - and its town.
  *
- * Opening one puts the number up as one big link to dial - the owner's own
- * where a front desk gave it - what is known about the business, every call
+ * Opening one puts the first number up as one big link to dial - the owner's
+ * own where there is one - and the others under it, what is known about the
+ * business, every call
  * to it so far, and the seven results a call can come to; logging one opens
  * the next business. Above it all is the day: how many calls so far against
  * fifty. There is no script on it: the owner asked for the list and the call,
@@ -112,11 +113,6 @@ function localInput(date) {
   )
 }
 
-/** The number the row dials, as it is written: the owner's where there is one. */
-function dialled(row) {
-  return row.owner_phone || row.phone
-}
-
 function ListRow({ row, open, onOpen }) {
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
@@ -129,11 +125,13 @@ function ListRow({ row, open, onOpen }) {
         className="grid w-full cursor-pointer gap-0.5 rounded-[var(--console-radius-sm)] px-3 py-2.5 text-left hover:bg-[color:var(--paper-field)] aria-[current=true]:bg-[color:var(--paper-field)]"
       >
         <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>
-        {/* The number on a line of its own, so the owner's name never gets cut
-            off the end of the row. */}
-        <span className="font-mono text-[12px] tabular-nums text-paper-soft">
-          {numberLine(dialled(row), row.owner_name)}
-        </span>
+        {/* Each number on a line of its own, so the owner's name never gets
+            cut off the end of the row. */}
+        {phoneLines(row).map(line => (
+          <span key={line.phone} className="font-mono text-[12px] tabular-nums text-paper-soft">
+            {line.said}
+          </span>
+        ))}
         <span className="text-paper-faint truncate text-[12px]">
           {[tradeLabel(row.trade), row.town].filter(Boolean).join(' · ') || 'Trade not on file'}
         </span>
@@ -264,8 +262,6 @@ function Facts({ row }) {
           </Fact>
         )}
         {row.owner_name && <Fact label="Owner">{row.owner_name}</Fact>}
-        {row.owner_phone && <Fact label="Owner’s Cell">{row.owner_phone}</Fact>}
-        {row.owner_phone && <Fact label="Listing Number">{row.phone}</Fact>}
         {row.audit_score !== null && <Fact label="Site Speed">{row.audit_score} of 100</Fact>}
         {row.email && <Fact label="Email">{row.email}</Fact>}
       </dl>
@@ -541,6 +537,7 @@ function Business({ row, token, saving, onLog }) {
   const [photos, setPhotos] = useState(false)
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
+  const [first, ...rest] = phoneLines(row)
 
   return (
     <Panel
@@ -551,25 +548,39 @@ function Business({ row, token, saving, onLog }) {
       <PanelBody>
         <div className="grid gap-6 px-5 py-5">
           <div className="grid gap-2">
-            {row.dial ? (
+            {first?.dial ? (
               <a
-                href={row.dial}
-                aria-label={`Call ${numberLine(dialled(row), row.owner_name)}`}
+                href={first.dial}
+                aria-label={`Call ${first.said}`}
                 className="justify-self-start text-[30px] font-semibold tabular-nums leading-tight text-accent sm:text-[36px]"
               >
-                {dialled(row)}
-                {row.owner_name && (
+                {first.phone}
+                {first.label && (
                   <span className="text-[20px] font-medium text-ink-paper sm:text-[22px]">
                     {' · '}
-                    {row.owner_name}
+                    {first.label}
                   </span>
                 )}
               </a>
             ) : (
               <p className="text-[30px] font-semibold leading-tight">
-                {numberLine(dialled(row), row.owner_name)}
+                {first?.said ?? 'No number on file'}
               </p>
             )}
+            {rest.map(line => (
+              <a
+                key={line.phone}
+                href={line.dial}
+                aria-label={`Call ${line.said}`}
+                className="justify-self-start text-[20px] font-semibold tabular-nums leading-tight text-accent"
+              >
+                {line.phone}
+                <span className="text-[15px] font-medium text-ink-paper">
+                  {' · '}
+                  {line.label}
+                </span>
+              </a>
+            ))}
             {owed && (
               <p
                 className={`text-[13px] ${owed.late ? 'text-[color:var(--warn)]' : 'text-accent'}`}
