@@ -2695,9 +2695,9 @@
      ring, so it is a pale key on a page and a dark one on a slab without
      either being restated at the call site. */
   .btn-secondary {
-    background-color: rgba(244, 243, 238, 0.06);
+    background-color: rgba(244, 243, 238, 0.08);
     color: var(--ink);
-    box-shadow: 0 0 0 1px var(--edge-strong);
+    box-shadow: none;
   }
 
   .btn-secondary:hover {
@@ -2884,10 +2884,11 @@
    */
   .field {
     @apply min-h-[48px] w-full px-4 text-[16px];
-    --field-ring: var(--edge-strong);
+    --field-ring: transparent;
     --field-halo: transparent;
     border-radius: 12px;
-    background-color: var(--paper-field);
+    /* Filled rather than outlined: a step lighter than the card it sits in. */
+    background-color: #262624;
     box-shadow:
       0 0 0 1px var(--field-ring),
       0 0 0 4px var(--field-halo);
@@ -2902,7 +2903,7 @@
   /* The same step the choice tile darkens its edge to, so a field and a tile in
      one form answer the pointer with one gesture. */
   .field:hover {
-    --field-ring: var(--paper-ink-ghost);
+    background-color: #2b2b29;
   }
 
   .field:focus {
@@ -2941,8 +2942,8 @@
   .choice-tile {
     @apply flex min-h-[46px] touch-manipulation items-center justify-center px-4 py-3 text-[15px] font-medium;
     border-radius: 12px;
-    background-color: var(--paper-field);
-    box-shadow: 0 0 0 1px var(--edge-strong);
+    background-color: #262624;
+    box-shadow: none;
     color: var(--paper-ink-soft);
     transition:
       box-shadow 160ms var(--ease-out-soft),
@@ -2951,7 +2952,7 @@
   }
 
   .choice-tile:hover {
-    box-shadow: 0 0 0 1px var(--paper-ink-ghost);
+    background-color: #2b2b29;
   }
 
   input:checked + .choice-tile {

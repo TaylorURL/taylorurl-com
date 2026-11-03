@@ -309,7 +309,7 @@ export default function Start() {
                 {/* The rest of what the old form asked, a tap away. Nothing in
                     here is required, so a reader who never opens it loses
                     nothing by sending. */}
-                <details className="group rounded-[12px] border border-[var(--edge)]">
+                <details className="group rounded-[12px] bg-[var(--card-hi)]">
                   <summary className="flex cursor-pointer list-none items-center gap-2 px-4 py-3.5 text-[15px] font-medium text-[color:var(--link)] [&::-webkit-details-marker]:hidden">
                     <Plus
                       className="h-4 w-4 transition-transform duration-150 group-open:rotate-45"
@@ -317,7 +317,7 @@ export default function Start() {
                     />
                     Add more detail (optional)
                   </summary>
-                  <div className="space-y-6 border-t border-[var(--edge)] px-4 pb-5 pt-5">
+                  <div className="space-y-6 px-4 pb-5 pt-2">
                     <fieldset>
                       <legend className={FIELD_LABEL}>{ASKED.projectType}</legend>
                       <div className="grid gap-2.5 sm:grid-cols-2">
@@ -410,7 +410,7 @@ export default function Start() {
             <a
               href={SITE.phoneHref}
               data-call-place="start"
-              className={`${CARD} flex items-center gap-4 p-5 transition-colors hover:border-[color:var(--edge-strong)]`}
+              className={`${CARD} flex items-center gap-4 p-5 transition-colors hover:bg-[var(--card-hi)]`}
             >
               {/* The photo is of two people, so the circle is cut to the one
                   answering the phone. */}

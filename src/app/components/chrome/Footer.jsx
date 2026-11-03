@@ -36,7 +36,7 @@ export default function Footer() {
   ].filter(Boolean)
 
   return (
-    <footer className="border-t border-[var(--edge)]">
+    <footer className="bg-[var(--card)]">
       <div className="mx-auto w-full max-w-[1160px] px-5 pb-10 pt-14 sm:px-8 sm:pt-16">
         <div className="grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,3fr)] lg:gap-16">
           <div className="max-w-[320px]">
@@ -80,7 +80,7 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 border-t border-[var(--edge)] pt-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-[13px] text-ink-mute">
             © {year} {SITE.brandName}
           </p>

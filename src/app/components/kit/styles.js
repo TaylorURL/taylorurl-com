@@ -7,7 +7,7 @@
  * The look is "Refined", from the Figma file "TaylorURL — Simpler Redesign",
  * page "Directions — pick one", frame A: the site's own dark ground, made
  * calmer. Geist at a medium weight and modest sizes, warm white type, cards
- * with soft corners and a hairline, pill buttons, one blue.
+ * set apart by a lighter fill rather than an outline, pill buttons, one blue.
  */
 
 export const TYPE = {
@@ -35,12 +35,16 @@ const BUTTON =
 export const BUTTONS = {
   /* The one thing to press. */
   primary: `${BUTTON} bg-[var(--blue)] text-white hover:bg-[var(--blue-hi)]`,
-  /* The pair's quieter half: a pale pill with a hairline. */
-  secondary: `${BUTTON} bg-white/[0.06] text-ink ring-1 ring-inset ring-[color:var(--edge-strong)] hover:bg-white/[0.1]`,
+  /* The pair's quieter half: a pale filled pill. */
+  secondary: `${BUTTON} bg-white/[0.08] text-ink hover:bg-white/[0.13]`,
 }
 
-/** A card: one step up from the ground, a hairline round it, soft corners. */
-export const CARD = 'rounded-[16px] border border-[var(--edge)] bg-[var(--card)]'
+/**
+ * A card: one step up from the ground, soft corners, and no outline. The
+ * lighter fill is what sets it apart; a white line round every box was the
+ * thing that made the page look busy.
+ */
+export const CARD = 'rounded-[16px] bg-[var(--card)]'
 
 /**
  * Body copy for reading: articles, case studies, the legal pages. A narrow

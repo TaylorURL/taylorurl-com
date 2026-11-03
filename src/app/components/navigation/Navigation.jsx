@@ -121,7 +121,7 @@ export default function Navigation() {
 
   return (
     <>
-      <header className="sticky top-0 z-[var(--z-nav)] border-b border-[var(--edge)] bg-[var(--nav-surface)] backdrop-blur-xl">
+      <header className="sticky top-0 z-[var(--z-nav)] bg-[var(--nav-surface)] backdrop-blur-xl">
         <nav
           aria-label="Primary"
           className="mx-auto flex h-16 w-full max-w-[1160px] items-center justify-between gap-6 px-5 sm:h-[72px] sm:px-8"
@@ -201,10 +201,10 @@ export default function Navigation() {
         {menuOpen && (
           <div
             id="site-menu"
-            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-[var(--edge)] bg-[var(--paper)] lg:hidden"
+            className="max-h-[calc(100dvh-4rem)] overflow-y-auto bg-[var(--paper)] lg:hidden"
           >
             <div className="px-5 pb-10 pt-3">
-              <ul className="divide-y divide-[var(--edge)]">
+              <ul>
                 {HEADER_LINKS.map(link => (
                   <li key={link.to}>
                     <Link

@@ -50,7 +50,7 @@ export function Section({
 export function Badge({ children, dot = true, className = '' }) {
   return (
     <p
-      className={`inline-flex items-center gap-2 rounded-full border border-[var(--edge)] bg-white/[0.04] py-1.5 pl-3 pr-3.5 text-[13px] font-medium text-ink-soft ${className}`.trim()}
+      className={`inline-flex items-center gap-2 rounded-full bg-white/[0.06] py-1.5 pl-3 pr-3.5 text-[13px] font-medium text-ink-soft ${className}`.trim()}
     >
       {dot && <span className="h-[7px] w-[7px] rounded-full bg-[var(--live)]" aria-hidden="true" />}
       {children}
@@ -219,8 +219,8 @@ export function DeviceShowcase({ project, eager = false, className = '' }) {
   const mobile = project.pagespeed?.mobile
   return (
     <div className={`relative pb-10 pr-6 sm:pb-14 sm:pr-14 ${className}`.trim()}>
-      <figure className="overflow-hidden rounded-[14px] border border-[var(--edge-strong)] bg-[var(--card)] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
-        <div className="flex items-center gap-1.5 border-b border-[var(--edge)] px-4 py-2.5">
+      <figure className="overflow-hidden rounded-[14px] bg-[var(--card)] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.6)]">
+        <div className="flex items-center gap-1.5 bg-[var(--card-hi)] px-4 py-2.5">
           <span className="h-[9px] w-[9px] rounded-full bg-white/[0.16]" aria-hidden="true" />
           <span className="h-[9px] w-[9px] rounded-full bg-white/[0.16]" aria-hidden="true" />
           <span className="h-[9px] w-[9px] rounded-full bg-white/[0.16]" aria-hidden="true" />
@@ -230,11 +230,11 @@ export function DeviceShowcase({ project, eager = false, className = '' }) {
         </div>
         <SiteShot project={project} eager={eager} />
       </figure>
-      <div className="absolute bottom-0 right-0 w-[26%] min-w-[96px] max-w-[170px] rounded-[26px] border border-[var(--edge-strong)] bg-[#0b0b0b] p-[5px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.65)]">
+      <div className="absolute bottom-0 right-0 w-[26%] min-w-[96px] max-w-[170px] rounded-[26px] bg-[#0b0b0b] p-[5px] shadow-[0_24px_50px_-12px_rgba(0,0,0,0.65)]">
         <SiteShot project={project} device="phone" className="rounded-[21px]" />
       </div>
       {mobile && (
-        <div className="absolute -bottom-1 left-4 flex items-center gap-2.5 rounded-[12px] border border-[var(--edge-strong)] bg-[var(--card-hi)] px-3.5 py-2.5 shadow-[0_14px_30px_-10px_rgba(0,0,0,0.6)] sm:left-[-1.25rem]">
+        <div className="absolute -bottom-1 left-4 flex items-center gap-2.5 rounded-[12px] bg-[var(--card-hi)] px-3.5 py-2.5 shadow-[0_14px_30px_-10px_rgba(0,0,0,0.6)] sm:left-[-1.25rem]">
           <ScoreRing score={mobile} />
           <span>
             <span className="block text-[15px] font-semibold leading-tight text-ink">
@@ -254,7 +254,7 @@ export function DeviceShowcase({ project, eager = false, className = '' }) {
 export function StatPanel({ items, className = '' }) {
   return (
     <dl
-      className={`grid grid-cols-2 gap-x-6 gap-y-6 rounded-[16px] border border-[var(--edge)] bg-white/[0.025] px-6 py-6 sm:px-8 lg:grid-cols-4 ${className}`.trim()}
+      className={`grid grid-cols-2 gap-x-6 gap-y-6 rounded-[16px] bg-[var(--card)] px-6 py-6 sm:px-8 lg:grid-cols-4 ${className}`.trim()}
     >
       {items.map(({ value, label }) => (
         <div key={label}>
@@ -333,7 +333,7 @@ export function WorkCard({ project, to, detail, eager = false }) {
       </span>
     </>
   )
-  const style = `${CARD} block overflow-hidden transition-colors duration-150 hover:border-[color:var(--edge-strong)]`
+  const style = `${CARD} block overflow-hidden transition-colors duration-150 hover:bg-[var(--card-hi)]`
   return to ? (
     <Link to={to} className={style}>
       {body}
@@ -364,7 +364,7 @@ export function LinkCard({ to, href, title, body, meta, className = '' }) {
     </>
   )
   const style =
-    `${CARD} group flex h-full flex-col p-6 transition-colors duration-150 hover:border-[color:var(--edge-strong)] hover:bg-[var(--card-hi)] ${className}`.trim()
+    `${CARD} group flex h-full flex-col p-6 transition-colors duration-150 hover:bg-[var(--card-hi)] ${className}`.trim()
   return to ? (
     <Link to={to} className={style}>
       {inner}
@@ -426,9 +426,9 @@ export function CheckList({ items, className = '' }) {
 /** A label over a value, a few to a card: how long, what it costs, what comes after. */
 export function FactList({ items, className = '' }) {
   return (
-    <dl className={`${CARD} divide-y divide-[var(--edge)] px-6 ${className}`.trim()}>
+    <dl className={`${CARD} space-y-4 px-6 py-5 ${className}`.trim()}>
       {items.map(({ label, value }) => (
-        <div key={label} className="py-4">
+        <div key={label}>
           <dt className={TYPE.small}>{label}</dt>
           <dd className="mt-0.5 text-[16px] font-medium leading-[1.4] text-ink">{value}</dd>
         </div>
@@ -438,14 +438,15 @@ export function FactList({ items, className = '' }) {
 }
 
 /**
- * Questions that open on a tap, in one card. Native disclosure, so it works
- * before any script has run and a search engine reads every answer.
+ * Questions that open on a tap, each in its own card with space between them
+ * rather than a rule. Native disclosure, so it works before any script has run
+ * and a search engine reads every answer.
  */
 export function Questions({ items, className = '' }) {
   return (
-    <div className={`${CARD} divide-y divide-[var(--edge)] ${className}`.trim()}>
+    <div className={`space-y-2.5 ${className}`.trim()}>
       {items.map(({ q, a }) => (
-        <details key={q} className="group px-6">
+        <details key={q} className={`${CARD} group px-6`}>
           <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-5 text-[16px] font-medium leading-[1.45] text-ink [&::-webkit-details-marker]:hidden">
             <span>{q}</span>
             <Plus
@@ -476,7 +477,7 @@ export function CallToAction({
   return (
     <section className={`py-14 sm:py-20 ${className}`.trim()} aria-label="Get a price">
       <Container>
-        <div className="glow flex flex-col gap-7 overflow-hidden rounded-[20px] border border-[var(--edge)] bg-[var(--card)] px-6 py-10 sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
+        <div className="glow flex flex-col gap-7 overflow-hidden rounded-[20px] bg-[var(--card)] px-6 py-10 sm:px-12 sm:py-14 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-[560px]">
             <h2 className={TYPE.h2}>{title}</h2>
             <p className={`${TYPE.body} mt-3`}>{lead}</p>
@@ -497,7 +498,7 @@ export function Prose({ className = '', children }) {
 export function FactRow({ items, className = '' }) {
   return (
     <dl
-      className={`grid grid-cols-2 gap-6 rounded-[16px] border border-[var(--edge)] bg-white/[0.025] px-6 py-5 sm:grid-cols-4 ${className}`.trim()}
+      className={`grid grid-cols-2 gap-6 rounded-[16px] bg-[var(--card)] px-6 py-5 sm:grid-cols-4 ${className}`.trim()}
     >
       {items.map(({ label, value, href }) => (
         <div key={label} className="min-w-0">
