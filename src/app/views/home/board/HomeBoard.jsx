@@ -1,18 +1,17 @@
 import {
   CallToAction,
-  Container,
   Grid,
-  PageIntro,
+  Masthead,
+  Readouts,
   Section,
   SectionHead,
-  SiteShot,
+  TextLink,
   WorkCard,
 } from '@components/kit/Kit'
-import { TYPE } from '@components/kit/styles'
 import { committedStanding } from '@data/reputation/review-standings'
-import { bbbAccredited } from '@data/reputation/bbb'
+import { COMPANY_PHONE } from '@constants/navigation'
 import { PUBLISHES_REVIEWS } from '../../../../../lib/site/current.js'
-import { ProofRow, Quote, Reason } from './parts'
+import { Monthly, Quote, Steps, TextThread } from './parts'
 import {
   MOBILE_SPEED,
   MONTHLY,
@@ -23,105 +22,107 @@ import {
   workHref,
 } from './boardData'
 
-const FEATURED = 'southeastarbor.com'
-const STRIP = [
-  'baytowngokarts.com',
-  'dickinsonbayoufleeting.com',
-  'impressivaprinting.com',
-  'faded-barbershop.com',
-]
+// The three sites standing under the headline, live and measured. Chosen to be
+// three different kinds of business, so a reader sees their own somewhere.
+const WALL = ['southeastarbor.com', 'baytowngokarts.com', 'faded-barbershop.com']
 const REVIEWED = 'djrxexcellence.com'
 
+const STEPS = [
+  {
+    title: 'Tell me about the business',
+    body: 'Call, text or send the form. Two minutes is enough.',
+  },
+  {
+    title: 'Get a plan and a price',
+    body: 'In writing, before any work starts. You pay nothing to ask.',
+  },
+  {
+    title: 'Go live in two to four weeks',
+    body: 'You see it come together, and nothing launches until you say so.',
+  },
+]
+
 /**
- * The four facts under the opening screen. Each is read from the record that
- * holds it - the speed average from the portfolio, the rating and the
- * accreditation from the standings - and a fact whose record is empty is left
- * out rather than shown as a zero.
+ * The figures under the masthead. Each is read from the record that holds it -
+ * the speed average from the portfolio, the rating from the standings - and a
+ * figure whose record is empty is left out rather than shown as a zero.
  */
-function proof() {
+function figures() {
   const google = PUBLISHES_REVIEWS ? committedStanding('google') : null
   return [
-    { value: `${MOBILE_SPEED} / 100`, label: 'Average Google speed score on a phone' },
-    PUBLISHES_REVIEWS && bbbAccredited() && { value: 'BBB', label: 'Accredited business' },
+    { value: String(MOBILE_SPEED), label: 'Average mobile speed score' },
+    { value: '2–4', label: 'Weeks to go live' },
+    { value: 'Same day', label: 'Changes, by text' },
     google?.rating && { value: google.rating.toFixed(1), label: 'Rating on Google' },
-    { value: 'Same day', label: 'Changes, sent by text' },
   ].filter(Boolean)
 }
 
 /**
- * What the monthly plan covers, as the sentence the third reason says. The
- * list is the board's own, so the home page and the plan cannot drift apart.
- */
-const lowerFirst = line => line.charAt(0).toLowerCase() + line.slice(1)
-const monthlyLine = `Covers ${MONTHLY.slice(0, -1).map(lowerFirst).join(', ')} and ${lowerFirst(MONTHLY.at(-1))}.`
-
-/**
  * The studio's home page.
  *
- * Four things, in the order an owner skimming for ten seconds wants them: what
- * this is and how to ask (with a live client site beside it), four facts that
- * say it is any good, four sites already running, and three reasons with one
- * client in their own words. Then the ask again.
+ * A night masthead with the point in very large type and three client sites
+ * running under it, measured. Then the figures, the three steps, what working
+ * together is like (a text answered the same morning, and one monthly price),
+ * one client in their own words, and the ask again in signal blue.
  *
- * It replaced a board of about ten boxes on one screen - speed rings, a text
- * thread, a phone mockup, a row of badges - which said all of this at once and
- * so said none of it first.
+ * It replaced a board of about ten boxes on one screen, which said all of this
+ * at once and so said none of it first.
  */
 export default function HomeBoard() {
-  const featured = clientSite(FEATURED)
   const review = clientReview(REVIEWED)
+  const wall = WALL.map(clientSite).filter(Boolean)
 
   return (
     <>
-      <PageIntro
-        display
-        eyebrow="Web design · Baytown, TX"
-        title="Websites that bring in work."
-        lead="I design, build and host websites for local businesses. Most are live in two to four weeks."
-        note="Free to ask. You will usually hear back within the hour."
-        aside={featured && <SiteShot project={featured} eager />}
-        className="pb-8 sm:pb-10"
+      <Masthead
+        size="hero"
+        kicker={`Web studio / Baytown, TX / Call or text ${COMPANY_PHONE}`}
+        title="Websites that bring in work"
+        lead="I design, build and host fast websites for local businesses around Houston. Most go live in two to four weeks."
+        below={
+          <>
+            <Grid cols={3} className="gap-y-10">
+              {wall.map((project, index) => (
+                <WorkCard
+                  key={project.displayUrl}
+                  project={project}
+                  to={workHref(project)}
+                  detail={`${tradeOf(project)} / ${townOf(project)}`}
+                  tone="night"
+                  eager={index === 0}
+                />
+              ))}
+            </Grid>
+            <TextLink to="/portfolio" label="See all the work" className="mt-10" />
+          </>
+        }
       />
 
-      <Container>
-        <ProofRow items={proof()} />
-      </Container>
+      <Readouts items={figures()} />
 
-      <Section label="Recent work">
-        <SectionHead title="Recent work" link={{ to: '/portfolio', label: 'See all work' }} />
-        <Grid cols={4}>
-          {STRIP.map(host => {
-            const project = clientSite(host)
-            if (!project) return null
-            return (
-              <WorkCard
-                key={host}
-                project={project}
-                to={workHref(project)}
-                detail={`${tradeOf(project)} · ${townOf(project)}`}
-              />
-            )
-          })}
-        </Grid>
+      <Section label="How it works">
+        <SectionHead
+          number="01"
+          kicker="How it works"
+          title="Three steps. No surprises."
+          lead="You talk to the person who builds it, from the first call to launch day and every change after."
+        />
+        <Steps steps={STEPS} />
       </Section>
 
-      <Section tone="band" label="Why owners pick me">
-        <h2 className={TYPE.h2}>Why owners pick me</h2>
-        <div className="mt-8 grid gap-8 sm:mt-10 md:grid-cols-3 md:gap-12">
-          <Reason title="Fast on every phone">
-            Pages open in about a second. My client sites average {MOBILE_SPEED} out of 100 on
-            Google’s speed test.
-          </Reason>
-          <Reason title="Changes the same day">
-            Text me what needs to change. It is usually live that day, and your Google listing
-            matches.
-          </Reason>
-          <Reason title="One monthly price">{monthlyLine}</Reason>
+      <Section label="Working together">
+        <SectionHead number="02" kicker="After launch" title="One person, on call." />
+        <div className="grid gap-6 md:grid-cols-2">
+          <TextThread />
+          <Monthly items={MONTHLY} />
         </div>
-        {review && (
-          <Quote review={review} className="mt-10 border-t border-[var(--line)] pt-8 sm:mt-12" />
-        )}
       </Section>
+
+      {review && (
+        <Section label="What a client says">
+          <Quote review={review} />
+        </Section>
+      )}
 
       <CallToAction />
     </>

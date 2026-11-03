@@ -78,12 +78,29 @@
    * site has one setting; the dark block further down is kept only for a
    * document something else stamps dark, which nothing on the site now does.
    */
-  --paper: #ffffff;
-  /* The band ground and the line, named for what they are so the page
-     components can say `bg-[var(--band)]` rather than reaching for a surface
-     step that also means something to the console. */
-  --band: #f6f5f1;
-  --line: #e5e3dc;
+  --paper: #f3f2ed;
+  /* The band ground and the line on paper, named for what they are so the
+     page components can say `bg-[var(--band)]` rather than reaching for a
+     surface step that also means something to the console. */
+  --band: #e9e7df;
+  --line: #d9d7cf;
+  /*
+   * THE SIGNAL SET - the redesign's own palette. Night is the ground of the
+   * bar, every page's masthead and the footer; paper is the ground pages are
+   * read on; signal blue is the one thing to press and the square that ends
+   * a headline; live green says a client site is up. The grid line is the
+   * blueprint drawn behind a masthead, one step off night so it reads as a
+   * texture and never as a rule.
+   */
+  --night: #0b0b0c;
+  --night-2: #151517;
+  --night-line: #2a2a2e;
+  --grid-line: #18181b;
+  --light: #f3f2ed;
+  --light-soft: #a9a8a2;
+  --signal: #2f5bff;
+  --signal-hi: #1f45e0;
+  --live: #38d68a;
   --paper-ink: #141413;
   --paper-ink-soft: rgba(20, 20, 19, 0.72);
   --paper-ink-mute: rgba(20, 20, 19, 0.62);
@@ -122,7 +139,7 @@
   --hairline-strong: var(--paper-hairline-strong);
   /* A raised card and a sunk well, one step either side of the field. */
   --surface-1: #ffffff;
-  --surface-2: #f6f5f1;
+  --surface-2: #e9e7df;
   --wash-ink: var(--wash-paper);
   --wash-ink-strong: var(--wash-paper-strong);
   --rule-ink: var(--rule-paper);
@@ -168,13 +185,13 @@
      hundred pixels down it is a surface someone reads forty-six names off, and
      display type behind it survives an 18px blur at 15% and shows through the
      words. */
-  --nav-surface: rgba(255, 255, 255, 0.92);
-  --nav-surface-solid: #ffffff;
+  --nav-surface: rgba(11, 11, 12, 0.94);
+  --nav-surface-solid: #0b0b0c;
   /* The moving highlight a shiny label sweeps, and the ground and edge a glare
      sits on. All three follow the ground rather than the brand. */
   --shine-base: var(--ink-mute);
   --shine-sweep: rgba(20, 20, 19, 0.92);
-  --glare-ground: #ffffff;
+  --glare-ground: #f3f2ed;
   --glare-edge: rgba(20, 20, 19, 0.2);
   /* The light a card carries under the pointer. */
   --spotlight: rgba(47, 107, 255, 0.16);
@@ -688,7 +705,9 @@
     /* clip, not hidden: hidden makes the root a scroll container, which severs
        every sticky and fixed descendant on the page. */
     overflow-x: clip;
-    background-color: var(--bg);
+    /* Night, so a page pulled past either end shows the bar's ground above it
+       and the footer's below it rather than a strip of paper. */
+    background-color: var(--night);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -2639,8 +2658,8 @@
    * button cannot be built here without it.
    */
   .btn {
-    @apply inline-flex min-h-[44px] cursor-pointer touch-manipulation items-center justify-center gap-2 whitespace-nowrap px-6 text-[15px] font-semibold leading-none;
-    border-radius: var(--r-control);
+    @apply inline-flex min-h-[52px] cursor-pointer touch-manipulation items-center justify-center gap-3 whitespace-nowrap px-6 font-mono text-[13px] font-medium uppercase leading-none tracking-[0.07em] sm:text-[14px];
+    border-radius: 0;
     transition:
       background-color 180ms var(--ease-out-soft),
       box-shadow 180ms var(--ease-out-soft),
@@ -2661,13 +2680,12 @@
      than a card's, so it reads as a key sitting on the page rather than a
      panel floating above it. */
   .btn-primary {
-    background-color: var(--accent-fill);
-    color: var(--on-accent);
-    box-shadow: var(--key-lift);
+    background-color: var(--signal);
+    color: #ffffff;
   }
 
   .btn-primary:hover {
-    background-color: var(--accent-fill-hi);
+    background-color: var(--signal-hi);
   }
 
   .btn-primary:focus-visible {
@@ -2680,9 +2698,7 @@
   .btn-secondary {
     background-color: var(--surface-1);
     color: var(--ink);
-    box-shadow:
-      0 0 0 1px var(--hairline-strong),
-      var(--key-lift-soft);
+    box-shadow: 0 0 0 1px var(--line);
   }
 
   .btn-secondary:hover {
@@ -2868,10 +2884,10 @@
    * be typed in has nothing to say about the pointer or the value.
    */
   .field {
-    @apply w-full px-3.5 text-[15px];
-    --field-ring: var(--paper-hairline-strong);
+    @apply min-h-[52px] w-full px-4 text-[17px];
+    --field-ring: var(--line);
     --field-halo: transparent;
-    border-radius: var(--r-control);
+    border-radius: 0;
     background-color: var(--paper-field);
     box-shadow:
       0 0 0 1px var(--field-ring),
@@ -2892,7 +2908,7 @@
 
   .field:focus {
     outline: none;
-    --field-ring: var(--accent);
+    --field-ring: var(--signal);
     --field-halo: color-mix(in srgb, var(--accent) 16%, transparent);
   }
 
@@ -2924,10 +2940,10 @@
    * same thing: this is the one the accent is pointing at.
    */
   .choice-tile {
-    @apply flex min-h-[44px] touch-manipulation items-center justify-center px-4 py-3 text-[14px] font-semibold;
-    border-radius: var(--r-control);
+    @apply flex min-h-[48px] touch-manipulation items-center justify-center px-4 py-3 text-[15px] font-medium;
+    border-radius: 0;
     background-color: var(--paper-field);
-    box-shadow: 0 0 0 1px var(--paper-hairline-strong);
+    box-shadow: 0 0 0 1px var(--line);
     color: var(--paper-ink-soft);
     transition:
       box-shadow 160ms var(--ease-out-soft),
@@ -2940,10 +2956,9 @@
   }
 
   input:checked + .choice-tile {
-    color: var(--accent);
-    box-shadow:
-      0 0 0 1px var(--accent),
-      0 0 0 4px color-mix(in srgb, var(--accent) 16%, transparent);
+    background-color: var(--signal);
+    color: #ffffff;
+    box-shadow: 0 0 0 1px var(--signal);
   }
 
   input:focus-visible + .choice-tile {
@@ -3100,5 +3115,30 @@
     .check-stage[data-running='true'] > .check-stage-form {
       transition-delay: 0s;
     }
+  }
+}
+
+@layer components {
+  /* The blueprint behind a masthead: one line every 80px both ways, anchored
+     to the middle of the page so the lines fall on the same columns at every
+     width. It is a background, so it costs nothing and moves nothing. */
+  .signal-grid {
+    background-color: var(--night);
+    background-image:
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
+    background-size: 80px 80px;
+    background-position: calc(50% - 40px) -1px;
+  }
+
+  /* The small square a headline ends on instead of a full stop: the pixel the
+     wordmark is drawn from, in the colour of the thing to press. */
+  .signal-square {
+    display: inline-block;
+    width: 0.19em;
+    height: 0.19em;
+    margin-left: 0.07em;
+    background-color: var(--signal);
+    vertical-align: baseline;
   }
 }

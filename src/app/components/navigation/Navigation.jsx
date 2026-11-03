@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { Suspense, useCallback, useEffect, useRef, useState } from 'react'
-import { Menu, Phone, X } from 'lucide-react'
+import { ArrowRight, Menu, Phone, X } from 'lucide-react'
 import {
   COMPANY_PHONE,
   COMPANY_PHONE_HREF,
@@ -10,7 +10,7 @@ import {
 } from '@constants/navigation'
 import { HAS_ACCOUNTS } from '@constants/routes'
 import { Logo } from '@components/kit/Kit'
-import { BUTTONS } from '@components/kit/styles'
+import { BUTTONS, TYPE } from '@components/kit/styles'
 import { NavSearchButton } from './NavUtility'
 import { useSearchShortcut } from '@hooks/chrome/useSearchShortcut'
 import { useToast } from '@hooks/chrome/useToast'
@@ -30,8 +30,7 @@ const loadSiteSearch = () => import('./SiteSearch')
 // reload it names is the recovery.
 const SEARCH_RENEWALS = 1
 
-const LINK =
-  'rounded-[8px] px-3 py-2 text-[16px] font-medium text-ink-soft transition-colors duration-150 hover:text-ink aria-[current=page]:text-ink'
+const LINK = `${TYPE.mono} px-3 py-2 text-[color:var(--light-soft)] transition-colors duration-150 hover:text-[color:var(--light)] aria-[current=page]:text-[color:var(--light)]`
 
 /**
  * The bar: the wordmark, three links, the phone number and the one button.
@@ -117,17 +116,17 @@ export default function Navigation() {
 
   return (
     <>
-      <header className="sticky top-0 z-[var(--z-nav)] border-b border-[var(--line)] bg-[var(--nav-surface)] backdrop-blur-md">
+      <header className="sticky top-0 z-[var(--z-nav)] border-b border-[var(--night-line)] bg-[var(--nav-surface)] text-[color:var(--light)] backdrop-blur-md">
         <nav
           aria-label="Primary"
           className="mx-auto flex h-16 w-full max-w-[1120px] items-center justify-between gap-6 px-5 sm:h-[72px] sm:px-8"
         >
-          <Link to="/" aria-label="Home" className="shrink-0 rounded-[6px] py-1">
+          <Link to="/" aria-label="Home" className="shrink-0 py-1">
             <Logo />
           </Link>
 
-          <div className="hidden items-center gap-1 lg:flex">
-            <ul className="flex items-center gap-1">
+          <div className="hidden items-center lg:flex">
+            <ul className="flex items-center gap-2">
               {HEADER_LINKS.map(link => (
                 <li key={link.to}>
                   <Link
@@ -148,34 +147,34 @@ export default function Navigation() {
               )}
             </ul>
             <NavSearchButton
-              className="ml-1 flex h-10 w-10 items-center justify-center rounded-[8px] text-ink-soft transition-colors hover:bg-[var(--band)] hover:text-ink"
+              className="ml-2 flex h-10 w-10 items-center justify-center text-[color:var(--light-soft)] transition-colors hover:text-[color:var(--light)]"
               labelClass="sr-only"
               markClass="h-[18px] w-[18px]"
               onOpen={openSearch}
             />
             <a
               href={COMPANY_PHONE_HREF}
-              className="ml-3 inline-flex items-center gap-2 rounded-[8px] px-2 py-2 text-[16px] font-medium text-ink hover:text-accent"
+              className="ml-5 font-mono text-[14px] font-medium tracking-[0.02em] text-[color:var(--light)] hover:text-[color:var(--signal)]"
             >
-              <Phone className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden="true" />
               {COMPANY_PHONE}
             </a>
-            <Link to={START_LINK.to} className={`${BUTTONS.primary} ml-4 min-h-[44px] px-5`}>
+            <Link to={START_LINK.to} className={`${BUTTONS.blue} ml-6 min-h-[44px] px-5`}>
               {START_LINK.label}
+              <ArrowRight className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
             </Link>
           </div>
 
           <div className="flex items-center gap-1 lg:hidden">
             <a
               href={COMPANY_PHONE_HREF}
-              className="inline-flex h-10 items-center gap-1.5 rounded-full bg-[var(--accent-fill)] px-4 text-[15px] font-medium text-[color:var(--on-accent)]"
+              className={`${BUTTONS.blue} min-h-[40px] gap-2 px-4`}
               aria-label={`Call ${COMPANY_PHONE}`}
             >
-              <Phone className="h-4 w-4" strokeWidth={2} aria-hidden="true" />
+              <Phone className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
               Call
             </a>
             <NavSearchButton
-              className="flex h-10 w-10 items-center justify-center rounded-[8px] text-ink"
+              className="flex h-10 w-10 items-center justify-center text-[color:var(--light)]"
               labelClass="sr-only"
               markClass="h-5 w-5"
               onOpen={openSearch}
@@ -183,7 +182,7 @@ export default function Navigation() {
             <button
               ref={toggleRef}
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-[8px] text-ink"
+              className="flex h-10 w-10 items-center justify-center text-[color:var(--light)]"
               onClick={() => setMenuOpen(open => !open)}
               aria-label={menuOpen ? 'Close the menu' : 'Open the menu'}
               aria-expanded={menuOpen}
@@ -197,30 +196,31 @@ export default function Navigation() {
         {menuOpen && (
           <div
             id="site-menu"
-            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-[var(--line)] bg-[var(--paper)] lg:hidden"
+            className="max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-[var(--night-line)] bg-[var(--night)] lg:hidden"
           >
-            <div className="px-5 pb-8 pt-4">
-              <ul className="divide-y divide-[var(--line)]">
+            <div className="px-5 pb-10 pt-2">
+              <ul>
                 {HEADER_LINKS.map(link => (
-                  <li key={link.to}>
+                  <li key={link.to} className="border-b border-[var(--night-line)]">
                     <Link
                       to={link.to}
-                      className="block py-4 text-[20px] font-semibold tracking-[-0.01em] text-ink"
+                      className="flex items-center justify-between py-5 text-[30px] font-semibold tracking-[-0.03em] text-[color:var(--light)]"
                       aria-current={isActive(link.to) ? 'page' : undefined}
                     >
                       {link.label}
+                      <ArrowRight className="h-5 w-5 text-[color:var(--signal)]" strokeWidth={1.75} />
                     </Link>
                   </li>
                 ))}
               </ul>
-              <div className="mt-6 grid grid-cols-2 gap-x-6 gap-y-6">
+              <div className="mt-8 grid grid-cols-2 gap-x-6 gap-y-8">
                 {FOOTER_COLUMNS.map(column => (
                   <div key={column.head}>
-                    <p className="text-[14px] font-medium text-ink">{column.head}</p>
-                    <ul className="mt-2 space-y-1">
+                    <p className={`${TYPE.mono} text-[color:var(--light-soft)]`}>{column.head}</p>
+                    <ul className="mt-3 space-y-1.5">
                       {column.items.map(item => (
                         <li key={item.to}>
-                          <Link to={item.to} className="block py-1 text-[15px] text-ink-soft">
+                          <Link to={item.to} className="block py-1 text-[16px] text-[color:var(--light)]">
                             {item.label}
                           </Link>
                         </li>
@@ -229,18 +229,19 @@ export default function Navigation() {
                   </div>
                 ))}
               </div>
-              <div className="mt-8 flex flex-col gap-3">
-                <Link to={START_LINK.to} className={`${BUTTONS.primary} w-full`}>
+              <div className="mt-10 flex flex-col gap-3">
+                <Link to={START_LINK.to} className={`${BUTTONS.blue} w-full`}>
                   {START_LINK.label}
+                  <ArrowRight className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                 </Link>
-                <a href={COMPANY_PHONE_HREF} className={`${BUTTONS.secondary} w-full`}>
-                  <Phone className="h-[18px] w-[18px]" strokeWidth={1.8} aria-hidden="true" />
+                <a href={COMPANY_PHONE_HREF} className={`${BUTTONS.night} w-full`}>
+                  <Phone className="h-4 w-4" strokeWidth={1.75} aria-hidden="true" />
                   {COMPANY_PHONE}
                 </a>
                 {HAS_ACCOUNTS && (
                   <Link
                     to={account ? account.to : '/login'}
-                    className="mt-2 text-center text-[15px] text-ink-mute"
+                    className={`${TYPE.mono} mt-3 text-center text-[color:var(--light-soft)]`}
                   >
                     {account ? account.label : 'Client sign in'}
                   </Link>

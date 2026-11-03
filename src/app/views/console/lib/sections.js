@@ -373,6 +373,18 @@ export const SECTIONS = [
 export const GROUPS = ['Health', 'Traffic', 'Email', 'Studio']
 
 /**
+ * What each heading reads as. The keys stay the words the sections are filed
+ * under; the labels are what a client reads, in plain words: their site, who
+ * is visiting it, and (for the owner) outreach and the studio's own tools.
+ */
+export const GROUP_LABELS = {
+  Health: 'Your site',
+  Traffic: 'Visitors',
+  Email: 'Outreach',
+  Studio: 'Studio',
+}
+
+/**
  * The menu, with each section marked for whether this reader can open it.
  *
  * `inView` is how many sites the current scope covers, which is what decides a

@@ -1,7 +1,7 @@
 import { ChevronsLeft, Lock } from 'lucide-react'
 import { Link, NavLink } from 'react-router-dom'
 import { retryable } from '@utils/retryImage'
-import { GROUPS, sectionHref } from '../lib/sections'
+import { GROUPS, GROUP_LABELS, sectionHref } from '../lib/sections'
 import { useModifierLabel } from '../lib/useConsoleShortcuts'
 import { ConsoleAccount } from './ConsoleAccount'
 
@@ -129,7 +129,7 @@ export function ConsoleSidebar({
           if (!rows.length) return null
           return (
             <div key={group} className="console-nav-group">
-              {!collapsed && <p className="console-nav-group-head">{group}</p>}
+              {!collapsed && <p className="console-nav-group-head">{GROUP_LABELS[group] || group}</p>}
               <ul>
                 {rows.map(section => (
                   <li key={section.id}>
