@@ -67,6 +67,12 @@ TRADES = {
     'chiropractor': '621310',
     'veterinarian': '541940',
     'go kart track': '713990',
+    # What a listing filed under a trade can turn out to be: a supplier or a
+    # plant rather than a contractor, scored against its own industry.
+    'concrete plant': '3273',
+    'building supply': '4441',
+    'wholesale supplier': '423',
+    'manufacturer': '31-33',
 }
 
 NAMES = {
@@ -97,7 +103,15 @@ NAMES = {
     '62121': 'Offices of dentists',
     '62131': 'Offices of chiropractors',
     '54194': 'Veterinary services',
+    '3273': 'Cement and concrete product manufacturing',
+    '4441': 'Building material and supplies dealers',
+    '423': 'Merchant wholesalers, durable goods',
+    '31-33': 'Manufacturing',
 }
+
+# A sector spans several codes in County Business Patterns and one in
+# Nonemployer Statistics, so its employers are the sum of its parts.
+SECTORS = {'31-33': ('31', '32', '33')}
 
 
 def number(value):
@@ -130,6 +144,8 @@ def read(folder):
 
 def level(code, employers, solo):
     """The most detailed code both files carry."""
+    if code in SECTORS:
+        return code
     while len(code) > 3 and not (solo.get(code) and employers.get(code) is not None):
         code = code[:-1]
     return code
@@ -144,7 +160,12 @@ def main(folder):
     rows = []
     for trade, wanted in TRADES.items():
         code = level(wanted, employers, solo)
-        no_staff, with_staff = solo.get(code), employers.get(code)
+        no_staff = solo.get(code)
+        with_staff = (
+            sum(employers.get(part, 0) for part in SECTORS[code])
+            if code in SECTORS
+            else employers.get(code)
+        )
         if not no_staff or with_staff is None:
             print(f'-- no figures for {trade} ({wanted})', file=sys.stderr)
             continue

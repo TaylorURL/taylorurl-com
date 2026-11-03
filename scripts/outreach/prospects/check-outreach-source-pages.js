@@ -299,6 +299,22 @@ check('the field mask asks for the token, without which there are no pages', asy
   }
 })
 
+check('Google’s category for a place is asked for and filed with it', async () => {
+  // The Call List tells a supplier from the contractors it was searched among
+  // by this, and it rides on a request already billed for the phone number.
+  const supplier = { ...place('s1'), primaryType: 'building_materials_store' }
+  const { sent, upserts } = await sweep(everywhere([{ places: [supplier, place('p1')] }]))
+  for (const request of sent) {
+    ok(
+      request.mask.includes('places.primaryType'),
+      `the category was not asked for: ${request.mask}`
+    )
+  }
+  const rows = filed(upserts)
+  same(rows.find(row => row.place_id === 's1')?.place_type, 'building_materials_store', 'filed')
+  same(rows.find(row => row.place_id === 'p1')?.place_type, null, 'a place with no category')
+})
+
 check('a search is read to the end of what the endpoint serves', async () => {
   const { sent, counts, upserts } = await sweep(
     everywhere([page('a1', 'a2'), page('b1', 'b2'), page('c1', 'c2')])

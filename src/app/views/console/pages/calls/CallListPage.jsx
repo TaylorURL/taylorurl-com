@@ -13,6 +13,7 @@ import {
   callBody,
   dayLine,
   dayShare,
+  numberLine,
   outcomeOf,
   reviewsOf,
   scoreWords,
@@ -131,8 +132,8 @@ function ListRow({ row, open, onOpen }) {
       >
         <span className="flex items-baseline justify-between gap-3">
           <span className="truncate text-[14px] font-medium text-ink-paper">{row.name}</span>
-          <span className="flex-shrink-0 font-mono text-[12px] tabular-nums text-paper-soft">
-            {dialled(row)}
+          <span className="min-w-0 max-w-[60%] flex-shrink truncate text-right font-mono text-[12px] tabular-nums text-paper-soft">
+            {numberLine(dialled(row), row.owner_name)}
           </span>
         </span>
         <span className="text-paper-faint truncate text-[12px]">
@@ -145,9 +146,6 @@ function ListRow({ row, open, onOpen }) {
         )}
         {desk && <span className="text-[12px] text-paper-soft">{desk}</span>}
         {scores && <span className="text-[12px] tabular-nums text-ink-paper">{scores}</span>}
-        {row.owner_name && (
-          <span className="text-[12px] text-paper-soft">Ask for {row.owner_name}</span>
-        )}
         {row.reasons.length > 0 && (
           <span className="text-[12px] text-paper-soft">{row.reasons.join(' · ')}</span>
         )}
@@ -588,12 +586,21 @@ function Business({ row, token, saving, onLog }) {
             {row.dial ? (
               <a
                 href={row.dial}
+                aria-label={`Call ${numberLine(dialled(row), row.owner_name)}`}
                 className="justify-self-start text-[30px] font-semibold tabular-nums leading-tight text-accent sm:text-[36px]"
               >
                 {dialled(row)}
+                {row.owner_name && (
+                  <span className="text-[20px] font-medium text-ink-paper sm:text-[22px]">
+                    {' · '}
+                    {row.owner_name}
+                  </span>
+                )}
               </a>
             ) : (
-              <p className="text-[30px] font-semibold leading-tight">{dialled(row)}</p>
+              <p className="text-[30px] font-semibold leading-tight">
+                {numberLine(dialled(row), row.owner_name)}
+              </p>
             )}
             {row.owner_phone && (
               <p className="text-[13px] text-paper-soft">

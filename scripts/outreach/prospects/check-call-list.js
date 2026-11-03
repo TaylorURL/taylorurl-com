@@ -58,12 +58,14 @@ import {
   outcomeEnds,
   outcomeTakesCallback,
   pullBand,
+  numberLine,
   pullOf,
   reviewsOf,
   scoreWords,
   uncallableReason,
 } from '../../../lib/outreach/prospects/calls.js'
 import {
+  REASONS_MAX,
   brandOf,
   droppedFor,
   indexOf,
@@ -76,6 +78,7 @@ import {
   BUDGET_FLOOR,
   FRESH_BOOST,
   MEASURED_AFTER,
+  NAME_BOOST,
   SITE_POINTS,
   budgetScore,
   daysSince,
@@ -84,9 +87,17 @@ import {
   ownerScore,
   scoreOf,
   siteOf,
+  sizeOf,
   storefrontOf,
   tradeCalls,
 } from '../../../lib/outreach/prospects/callScore.js'
+import {
+  RARE_WORD_LISTINGS,
+  companiesOf,
+  industryOf,
+  locationOf,
+  nameWords,
+} from '../../../lib/outreach/prospects/companies.js'
 import {
   CALL_FIRST_REASON,
   MIRROR_SOURCE,
@@ -189,6 +200,26 @@ const LISTINGS = [
 ]
 
 const FACTS = factsOf({ metrics: TRADE_TABLE, listings: LISTINGS, calls: [] })
+
+/**
+ * The same table with the four industries a listing can really be, as loaded
+ * later on 2026-11-03: wholesale's sales are the new top of the Budget scale.
+ */
+const INDUSTRY_TABLE = [
+  ...TRADE_TABLE,
+  ...[
+    ['concrete plant', 0.3849, 104682],
+    ['building supply', 0.5082, 120806],
+    ['wholesale supplier', 0.4784, 179247],
+    ['manufacturer', 0.6758, 58408],
+  ].map(([trade, solo, sales]) => ({ trade, solo_share: solo, avg_sales: sales })),
+]
+
+const SIZE_FACTS = factsOf({ metrics: INDUSTRY_TABLE, listings: LISTINGS, calls: [] })
+
+/** Budget on the scale with the industries in it. */
+const sizedBudget = sales =>
+  BUDGET_FLOOR + (80 * (Math.log(sales) - Math.log(18576))) / (Math.log(179247) - Math.log(18576))
 
 // ── Who is on the list ──────────────────────────────────────────────────
 
@@ -470,6 +501,320 @@ check('a measured trade moves Need by half at most, and never past 100', () => {
   near(needScore(row(), facts), 100 * (0.5 + 178 / 543 / 2) * 0.5, 'held at half')
 })
 
+// ── How big the business really is ──────────────────────────────────────
+
+/**
+ * The shape of the supplier the owner found ranked near the top, with its
+ * names and numbers made up: a concrete supplier with three yards, listed as
+ * "... Concrete Supply" in two towns with one number and as "... Concrete" in a
+ * third under another trade with the same number, and one more yard with no
+ * number at all. The chain rule wants three listings of one name and the
+ * shared-number rule three of one number, and it has two of each.
+ */
+const YARDS = [
+  {
+    id: 'yard-laporte',
+    name: 'Kestrel Brothers Concrete Supply',
+    phone: '(281) 555-0264',
+    address: '1903 W D St, La Porte, TX 77571, USA',
+    town: 'La Porte',
+    trade: 'concrete contractor',
+    site_kind: 'none',
+    source: 'places',
+  },
+  {
+    id: 'yard-pearland',
+    name: 'Kestrel Brothers Concrete',
+    phone: '(281) 555-0264',
+    address: '8201 Industrial Dr, Pearland, TX 77584, USA',
+    town: 'Pearland',
+    trade: 'industrial contractor',
+    site_kind: 'none',
+    source: 'places',
+  },
+  {
+    id: 'yard-sanleon',
+    name: 'Kestrel Brothers Concrete Supply',
+    phone: null,
+    address: '5200 27th St, San Leon, TX 77539, USA',
+    town: 'San Leon',
+    trade: 'concrete contractor',
+    site_kind: 'none',
+    source: 'places',
+  },
+]
+
+check('a name is read for the words that say which company it is', () => {
+  same(nameWords('Kestrel Brothers Concrete Supply').slice(0, 2).join(' '), 'kestrel brothers', 'a')
+  same(
+    nameWords('The Kestrel Bros., LLC #2').join(' '),
+    'kestrel bros',
+    'small words, suffix, store'
+  )
+  same(nameWords("Mike's Towing - Joe Smith").join(' '), 'mikes towing', 'an agent after a dash')
+})
+
+check('listings joined by a number and by a name are one company with three locations', () => {
+  const companies = companiesOf(YARDS)
+  const yard = companies.get('yard-laporte')
+  same(companies.get('yard-pearland'), yard, 'the same number')
+  same(companies.get('yard-sanleon'), yard, 'the same first two words in the same trade')
+  same(yard.listings, 3, 'three listings')
+  same(yard.locations, 3, 'three street addresses')
+  same(yard.industry, 'concrete plant', 'a concrete supplier, from the name')
+  // The rules that existed before still do not catch it, which is the point.
+  const index = indexOf(YARDS)
+  for (const one of YARDS.slice(0, 2)) {
+    same(droppedFor(row({ ...one, calls: [] }), index), null, `${one.id} is still offered`)
+  }
+})
+
+check('worked: the supplier drops from a contractor’s reading to a staffed supplier’s', () => {
+  const companies = companiesOf(YARDS)
+  const laPorte = row({ ...YARDS[0], rating_count: 5, company: companies.get('yard-laporte') })
+  const pearland = row({ ...YARDS[1], rating_count: 2, company: companies.get('yard-pearland') })
+  // Before: a concrete contractor, 89 of 100 of them with nobody on staff.
+  const alone = row({ ...YARDS[0], rating_count: 5 })
+  near(ownerScore({ ...alone, name: 'Kestrel Brothers Concrete' }, SIZE_FACTS, READ_ON), 89, 'was')
+  // After: the industry's reading - 38 of 100 concrete plants run by one person
+  // - and three yards, so at most the 62 of 100 with staff. The lower holds.
+  near(ownerScore(laPorte, SIZE_FACTS, READ_ON), 38.49, 'owner, a concrete plant')
+  near(ownerScore(pearland, SIZE_FACTS, READ_ON), 38.49, 'the other yard, read as one company')
+  near(budgetScore(laPorte, SIZE_FACTS), sizedBudget(104682), 'budget, a concrete plant’s sales')
+  const score = scoreOf(laPorte, SIZE_FACTS, READ_ON)
+  same(score.size.locations, 3, 'three locations')
+  same(score.size.staffed, true, 'staffed')
+  same(
+    reasonsFor({ ...laPorte, score }).join(' · '),
+    '3 locations · Supplier, not a contractor · No website · 58% of its trade have a website',
+    'why it has moved'
+  )
+})
+
+check('a staffed contractor reads from the Census’s staffed side', () => {
+  // A roofer with two yards: 89 of 100 roofing firms have nobody on staff, so
+  // one with staff answers about as often as 11 in 100.
+  const roofs = [
+    {
+      id: 'r1',
+      name: 'Osprey Roofing',
+      phone: '(409) 555-0101',
+      address: '10 Main St, Alvin, TX 77511',
+      town: 'Alvin',
+      trade: 'roofing contractor',
+    },
+    {
+      id: 'r2',
+      name: 'Osprey Roofing Co',
+      phone: '(409) 555-0101',
+      address: '400 Bay Rd, Kemah, TX 77565',
+      town: 'Kemah',
+      trade: 'roofing contractor',
+    },
+  ]
+  const company = companiesOf(roofs).get('r1')
+  same(company.locations, 2, 'two locations')
+  near(
+    ownerScore(row({ ...roofs[0], company }), SIZE_FACTS, READ_ON),
+    11,
+    'owner, 100 × (1 − 0.89)'
+  )
+  same(
+    ownerScore(row({ ...roofs[0], company, owner_phone: '(409) 555-0199' }), SIZE_FACTS, READ_ON),
+    100,
+    'unless the owner’s own number is on file'
+  )
+})
+
+check('a common first word, a platform, or one address does not make a company', () => {
+  // More than ten listings on the table open on "Gulf", so two of them in one
+  // trade are two businesses, not one.
+  const common = Array.from({ length: RARE_WORD_LISTINGS + 1 }, (_, at) => ({
+    id: `g${at}`,
+    name: `Gulf Coast ${['Roofing', 'Roof Pros', 'Gutters'][at % 3]} ${at}`,
+    phone: `(281) 555-${String(1000 + at)}`,
+    address: `${at + 1} Bay Rd, Kemah, TX 77565`,
+    trade: 'roofing contractor',
+  }))
+  same(companiesOf(common).get('g0').listings, 1, 'a common first word')
+  // Two pages on one platform are two businesses.
+  const pages = [
+    {
+      id: 'f1',
+      name: 'Kats Cookies',
+      website: 'https://www.facebook.com/kats',
+      site_kind: 'social',
+    },
+    {
+      id: 'f2',
+      name: 'Kats Cupcakes',
+      website: 'https://www.facebook.com/katscakes',
+      site_kind: 'social',
+    },
+  ]
+  same(companiesOf(pages).get('f1').listings, 1, 'a platform host')
+  // Two agents on one franchise's host are two businesses; one company's two
+  // offices on its own site are one.
+  const hosts = [
+    {
+      id: 'h1',
+      name: 'Heron Plumbing',
+      website: 'https://heronplumbing.example/a',
+      site_kind: 'own',
+    },
+    {
+      id: 'h2',
+      name: 'Heron Drain Masters',
+      website: 'https://heronplumbing.example/b',
+      site_kind: 'own',
+    },
+    {
+      id: 'h3',
+      name: 'Ibis Insurance',
+      website: 'https://agents.franchise.example/ibis',
+      site_kind: 'own',
+    },
+    {
+      id: 'h4',
+      name: 'Jay Insurance',
+      website: 'https://agents.franchise.example/jay',
+      site_kind: 'own',
+    },
+  ]
+  const byHost = companiesOf(hosts)
+  same(byHost.get('h1'), byHost.get('h2'), 'one company’s own site')
+  ok(byHost.get('h3') !== byHost.get('h4'), 'two agents on one host')
+  // One place listed twice, and a service area with no street, are one location.
+  const twice = [
+    {
+      id: 't1',
+      name: 'Wren Welding',
+      phone: '(281) 555-0300',
+      address: '7 Oak St, Alvin, TX 77511',
+      town: 'Alvin',
+      trade: 'welding',
+    },
+    {
+      id: 't2',
+      name: 'Wren Welding',
+      phone: '(281) 555-0300',
+      address: '7 Oak St, Alvin, TX 77511',
+      town: 'Alvin',
+      trade: 'welding',
+    },
+    {
+      id: 't3',
+      name: 'Wren Welding',
+      phone: '(281) 555-0300',
+      address: 'Pearland, TX 77584, USA',
+      town: 'Pearland',
+      trade: 'welding',
+    },
+  ]
+  same(companiesOf(twice).get('t1').locations, 1, 'one address twice and a service area')
+  same(locationOf({ address: 'Pearland, TX 77584, USA' }), null, 'no street is no location')
+  same(
+    locationOf({ source: 'new-business', address: '5900 Balcones Dr Ste 100, Austin, TX' }),
+    null,
+    'a filing address'
+  )
+})
+
+check('a supplier, a wholesaler and a manufacturer are read by their names', () => {
+  same(industryOf({ name: 'Bayou Ready Mix' }), 'concrete plant', 'ready mix')
+  same(industryOf({ name: 'Coastal Redi-Mix Concrete' }), 'concrete plant', 'redi-mix')
+  same(industryOf({ name: 'Heron Cement Supply' }), 'concrete plant', 'supply and cement')
+  same(industryOf({ name: 'Coastal Building Materials' }), 'building supply', 'materials')
+  same(industryOf({ name: 'Gulf Aggregates' }), 'building supply', 'aggregate')
+  same(industryOf({ name: 'Lone Pine Wholesale Distributors' }), 'wholesale supplier', 'wholesale')
+  same(industryOf({ name: 'Texan Mfg' }), 'manufacturer', 'mfg')
+  same(industryOf({ name: 'Bayou Fabrication Plant' }), 'manufacturer', 'a fabrication plant')
+  same(industryOf({ name: 'Bayou Fabrication' }), null, 'a fab shop is a welder')
+  same(industryOf({ name: 'Bayou Concrete' }), null, 'a concrete contractor')
+  const supplier = row({ name: 'Coastal Building Materials', trade: 'flooring contractor' })
+  const score = scoreOf(supplier, SIZE_FACTS, READ_ON)
+  near(ownerScore(supplier, SIZE_FACTS, READ_ON), 50.82, 'owner, a building supply dealer')
+  near(budgetScore(supplier, SIZE_FACTS), sizedBudget(120806), 'budget, its sales')
+  same(reasonsFor({ ...supplier, score })[0], 'Supplier, not a contractor', 'said')
+})
+
+check('Google’s category for the place is read before the name', () => {
+  const store = { name: 'Smith & Sons', place_type: 'building_materials_store' }
+  same(industryOf(store), 'building supply', 'a building materials store')
+  same(
+    industryOf({ ...store, name: 'Smith Concrete' }),
+    'concrete plant',
+    'one that sells concrete'
+  )
+  same(industryOf({ name: 'Smith & Sons', place_type: 'wholesaler' }), 'wholesale supplier', 'w')
+  same(industryOf({ name: 'Smith & Sons', place_type: 'hardware_store' }), 'building supply', 'h')
+  same(
+    industryOf({ name: 'Smith Supply', place_type: 'roofing_contractor' }),
+    'building supply',
+    'a category that says nothing leaves the name'
+  )
+  same(industryOf({ name: 'Smith & Sons', place_type: 'roofing_contractor' }), null, 'nothing')
+  const row1 = row({ name: 'Smith & Sons', trade: 'roofing contractor', place_type: 'wholesaler' })
+  near(ownerScore(row1, SIZE_FACTS, READ_ON), 47.84, 'owner, a wholesaler')
+  same(
+    reasonsFor({ ...row1, score: scoreOf(row1, SIZE_FACTS, READ_ON) })[0],
+    'Wholesaler, not a contractor',
+    'said'
+  )
+})
+
+check('an old registration or a crowd of officers reads as staffed', () => {
+  // A barber: 98 of 100 barber shops run by one person.
+  near(ownerScore(row(), SIZE_FACTS, READ_ON), 97.66, 'a barber on its own')
+  const old = row({ registered_on: '1987-04-02' })
+  near(ownerScore(old, SIZE_FACTS, READ_ON), 100 * (1 - 0.9766), 'registered 1987')
+  const officers = row({ officer_count: 4 })
+  near(ownerScore(officers, SIZE_FACTS, READ_ON), 100 * (1 - 0.9766), 'four officers')
+  same(sizeOf(row({ registered_on: '2006-11-03' }), READ_ON).old, true, 'twenty years to the day')
+  same(sizeOf(row({ registered_on: '2006-11-04' }), READ_ON).old, false, 'a day short')
+  same(sizeOf(row({ officer_count: 2 }), READ_ON).staffed, false, 'two officers')
+  same(sizeOf(row({ registered_on: null, officer_count: null }), READ_ON).staffed, false, 'unread')
+  same(
+    reasonsFor({ ...old, score: scoreOf(old, SIZE_FACTS, READ_ON) })[0],
+    'Registered 1987',
+    'said, for an old one'
+  )
+  same(
+    reasonsFor({ ...officers, score: scoreOf(officers, SIZE_FACTS, READ_ON) })[0],
+    '4 officers on file',
+    'said, for a crowded one'
+  )
+})
+
+check('a known owner’s name is worth a quarter again, on top of a new company’s half', () => {
+  same(NAME_BOOST, 1.25, 'the multiplier')
+  const plain = scoreOf(row({ address: null }), SIZE_FACTS, READ_ON)
+  const named = scoreOf(row({ address: null, owner_name: 'Mike Kestrel' }), SIZE_FACTS, READ_ON)
+  near(named.total / plain.total, 1.25, 'a name', 1)
+  same(named.named, true, 'read as named')
+  same(scoreOf(row({ owner_name: '   ' }), SIZE_FACTS, READ_ON).named, false, 'a blank is no name')
+  const company = {
+    source: 'new-business',
+    formed_on: '2026-10-15',
+    website: 'https://co.example/',
+    address: null,
+  }
+  const fresh = scoreOf(row(company), SIZE_FACTS, READ_ON)
+  const both = scoreOf(row({ ...company, owner_name: 'Sam Rivera' }), SIZE_FACTS, READ_ON)
+  near(both.total / fresh.total, 1.25, 'and on a new company, after its 1.5', 1)
+  same(
+    reasonsFor({ ...row({ address: null, owner_name: 'Mike Kestrel' }), score: named }).join(' · '),
+    'No website · Owner’s name known',
+    'said'
+  )
+})
+
+check('the number is written with the person it should reach', () => {
+  same(numberLine('(281) 555-0264', 'Mike Kestrel'), '(281) 555-0264 · Mike Kestrel', 'a name')
+  same(numberLine('(281) 555-0264', '  '), '(281) 555-0264', 'no name')
+  same(numberLine('(281) 555-0264', null), '(281) 555-0264', 'nothing')
+})
+
 // ── What the list offers ────────────────────────────────────────────────
 
 check('a number is its ten digits', () => {
@@ -622,11 +967,16 @@ check('every row says why it is there, in plain words', () => {
     'Not emailed yet',
     'ahead'
   )
-  ok(
-    said({ call_due_reason: 'Broken site', trade: 'restaurant', address: 'Highlands' }).split(' · ')
-      .length <= 3,
-    'three'
-  )
+  same(REASONS_MAX, 4, 'four at most')
+  const crowded = said({
+    call_due_reason: 'Broken site',
+    trade: 'restaurant',
+    address: 'Highlands',
+    owner_name: 'Ray',
+    officer_count: 5,
+  }).split(' · ')
+  same(crowded.length, REASONS_MAX, 'a row with more to say than fits')
+  same(crowded[0], 'Broken site', 'the chain’s line first')
 })
 
 // ── What a call records ─────────────────────────────────────────────────
@@ -1004,6 +1354,8 @@ function table() {
       owner_source: 'call',
     }),
     business('r-desk-late', { phone: '(281) 400-0009' }),
+    // The supplier's three yards, two of them with its one number.
+    ...YARDS.map(yard => business(yard.id, { ...yard, rating_count: 5 })),
     // The new companies.
     company('nb-phone', {
       phone: '(512) 300-0001',
@@ -1078,7 +1430,7 @@ function table() {
     outreach_prospects: prospects,
     outreach_calls: calls,
     new_business_leads: leads,
-    call_trade_metrics: TRADE_TABLE,
+    call_trade_metrics: INDUSTRY_TABLE,
     leads: [],
   })
 }
@@ -1121,7 +1473,7 @@ check('one list: the sweep’s businesses and the new companies, best score firs
   const rows = answer.body.rows
   same(
     rows.map(one => one.id).join(','),
-    'r-roof,nb-phone,nb-first,nb-contacted,r-barber',
+    'nb-first,r-roof,nb-phone,nb-contacted,yard-laporte,r-barber',
     'what is left to call, in order'
   )
   const totals = rows.map(one => one.score.total)
@@ -1129,10 +1481,23 @@ check('one list: the sweep’s businesses and the new companies, best score firs
     totals.every((total, at) => at === 0 || totals[at - 1] >= total),
     `the list is not in score order: ${totals.join(', ')}`
   )
-  const [roof, phoneOnly, ahead, contacted, barber] = rows
+  const [ahead, roof, phoneOnly, contacted, yard, barber] = rows
   // No trade on this small table has the twenty listings its own share of
-  // sites is read from, so every row reads the table's 7 in 24.
-  same(scoreWords(roof.score), 'Owner 95 · Need 65 · Budget 72', 'the roofer’s scores')
+  // sites is read from, so every row reads the table's 7 in 27.
+  same(scoreWords(roof.score), 'Owner 95 · Need 63 · Budget 71', 'the roofer’s scores')
+  // The supplier: one company of three yards, read as a concrete plant, below
+  // the roofer and the new companies rather than at the top; its other yard
+  // with the same number is the same phone and is not offered twice.
+  same(yard.score.owner, 38, 'the supplier’s Owner, a concrete plant’s')
+  same(
+    yard.reasons.join(' · '),
+    '3 locations · Supplier, not a contractor · No website',
+    'why the supplier is where it is'
+  )
+  ok(!rows.some(one => one.id === 'yard-pearland'), 'the second yard was offered as well')
+  // The name the owner finder found is worth a quarter again, which is what
+  // puts the newest company with one at the top.
+  same(ahead.reasons.includes('Owner’s name known'), true, 'the name is said')
   same(roof.reasons.join(' · '), 'No website · No storefront address', 'why the roofer is there')
   same(barber.reasons[0], 'Only a Facebook page', 'why the barber is there')
   same(phoneOnly.new_business, true, 'a new company, marked as one')
@@ -1205,7 +1570,10 @@ check('the day’s calls are counted from midnight in Central, every one of them
 check('a business that asked to stop since the set was read is not drawn', async () => {
   const db = table()
   const first = await list(db, {}, NOW)
-  same(first.body.rows[0].id, 'r-roof', 'the roofer leads the first read')
+  ok(
+    first.body.rows.some(one => one.id === 'r-roof'),
+    'the roofer is on the first read'
+  )
   // A new row rather than an edit, so the set this instance holds still has
   // the roofer at 'unreachable' and only the read before drawing sees the stop.
   const rows = db.tables.outreach_prospects
@@ -1218,7 +1586,7 @@ check('a business that asked to stop since the set was read is not drawn', async
 check('the list reads no view and no ranking function', async () => {
   const db = table()
   const answer = await list(db, { view: 'new' }, NOW)
-  same(answer.body.rows.length, 5, 'a view parameter changes nothing')
+  same(answer.body.rows.length, 6, 'a view parameter changes nothing')
   same(db.rpcs.length, 0, 'a database function was asked for the list')
 })
 
@@ -1412,7 +1780,17 @@ check('the page says the scores, the day, and the front desk', () => {
   ok(/GoalBar/.test(page) && /dayLine\(/.test(page), 'the day is not drawn against its goal')
   ok(/Save Front Desk/.test(page), 'Front Desk has nothing to save')
   ok(/Waiting on the owner/.test(page), 'the front desks are not at the foot')
-  ok(/Ask for \{row\.owner_name\}/.test(page), 'the owner’s name is not drawn')
+  ok(/Ask for \{row\.owner_name\}/.test(page), 'the call screen does not say who to ask for')
+  // Beside the number in the row, and beside it on the button that dials it.
+  ok(
+    /numberLine\(dialled\(row\), row\.owner_name\)/.test(page),
+    'the row does not put the name by the number'
+  )
+  const button = page.slice(
+    page.indexOf('href={row.dial}'),
+    page.indexOf('</a>', page.indexOf('href={row.dial}'))
+  )
+  ok(/row\.owner_name/.test(button), 'the dial button does not carry the owner’s name')
   const css = read('src/app/views/console/console.css')
   const bar = css.slice(css.indexOf('.console-goal {'), css.indexOf('/* ── The views inside'))
   ok(bar.length > 0 && !/transition|animation/.test(bar), 'the day’s bar moves')
