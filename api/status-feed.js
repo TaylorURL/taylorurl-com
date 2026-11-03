@@ -1,10 +1,21 @@
 import { servedHereOr404 } from '../lib/http/guard.js'
+import { reach } from '../lib/http/reach.js'
 /**
  * Reverse proxy for the uptime-monitor feed.
  *
  * The raw feed lives on an internal host that browsers cannot reach directly.
  * This function fetches the JSON server-side and returns it with a short edge
  * cache so concurrent visitors share a single upstream roundtrip.
+ *
+ * The monitor publishes from the same machine `server-feed.js` beside this one
+ * reads, reached at the name Tailscale publishes for its Funnel. The resolver
+ * inside a deployed function does not answer that name -- it says ENOTFOUND for
+ * it while resolving the rest of the internet -- so a plain `fetch` here fails
+ * before a packet leaves, both attempts alike, and the board reads as every
+ * site being unmeasurable while the monitor is up and publishing. That is why
+ * the request goes through `lib/http/reach.js`, which asks the system resolver
+ * first and a public one only when the system says the name is not there. The
+ * endpoints beside this that cross to the same machine already do.
  */
 
 // Where the monitor publishes its feed. The host is named by `STATUS_FEED_URL`
@@ -22,6 +33,10 @@ function describe(error) {
   if (error && error.status) return error.message
   if (error && error.name === 'AbortError') return 'upstream timed out'
   if (error && error.name === 'SyntaxError') return 'upstream sent malformed JSON'
+  // A socket fault arrives bare from `reach` and wrapped from `fetch`, and the
+  // code it carries is the whole diagnosis. Read both, or the one line this
+  // failure ever writes says only that something did not work.
+  if (error && error.code) return `upstream unreachable (${error.code})`
   const cause = error && error.cause
   if (cause && cause.code) return `upstream unreachable (${cause.code})`
   return 'upstream unreachable'
@@ -85,7 +100,7 @@ async function readFeed() {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS)
   try {
-    const upstream = await fetch(`${UPSTREAM}?t=${Date.now()}`, {
+    const upstream = await reach(`${UPSTREAM}?t=${Date.now()}`, {
       signal: controller.signal,
       headers: { Accept: 'application/json' },
     })
