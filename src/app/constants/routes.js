@@ -91,6 +91,11 @@ const ALL_ROUTES = [
   // is opened by the payment, and this is the screen that spends the key the
   // return address carries and puts the buyer in their console.
   { key: 'Welcome', path: 'welcome', session: true, account: true },
+  // Where a proposal's QR code lands. It reads the private key in its query
+  // string, shows the sheet with its add-ons to tick, and opens a checkout that
+  // ends on the welcome screen above, which is why it goes wherever accounts
+  // go. Noindex and out of the sitemap: it is one client's prices.
+  { key: 'Pay', path: 'pay', account: true },
   // The page a mailed unsubscribe link lands on. It reads the token in its
   // query string, acts on it and reports; noindex and out of the sitemap.
   //

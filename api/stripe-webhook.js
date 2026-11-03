@@ -57,6 +57,7 @@ import { markLead } from '../lib/leads/record.js'
 import { markLead as markSpineLead } from '../lib/leads/spine.js'
 import { openBuyerAccount } from '../lib/auth/buyer.js'
 import { buyerEmail } from '../lib/stripe/session.js'
+import { laterLines, settleProposal } from '../lib/stripe/proposal.js'
 import { BUILD_PRICE_CENTS, MONTHLY_PRICE_CENTS } from '../src/app/data/checkout/pricing.js'
 import { SITE } from '../lib/site/current.js'
 import { timedFetch } from '../lib/http/timed.js'
@@ -66,6 +67,7 @@ import { timedFetch } from '../lib/http/timed.js'
 export const config = { api: { bodyParser: false } }
 
 const SIGNING_SECRET = process.env.STRIPE_WEBHOOK_SECRET || ''
+const STRIPE_SECRET = process.env.STRIPE_SECRET_KEY || ''
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://gujgtjqqurildqurpffh.supabase.co'
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const RESEND_API_KEY = process.env.RESEND_API_KEY || ''
@@ -316,6 +318,11 @@ export function purchaseOf(session, args, { project = null, brief = null } = {})
         : null,
     brief,
     project,
+    // What a proposal's checkout added to the sheet, and what it left to be
+    // billed on a longer interval than the monthly. Both empty for a
+    // hand-opened link, which sells the build and the monthly alone.
+    addons: stamped(session, 'addons'),
+    later: laterLines(session) || [],
   }
 }
 
@@ -354,6 +361,11 @@ export function purchaseNotice(purchase) {
       ? 'Not on the monthly'
       : `${dollars(purchase.monthlyCents)} a month`,
   ])
+  if (purchase.addons) rows.push(['Add-ons', purchase.addons.split(' | ').join(', ')])
+  for (const line of purchase.later || []) {
+    const period = line.per === 'year' ? 'year' : 'quarter'
+    rows.push([line.name, `${dollars(line.cents)} a ${period}, the first one paid today`])
+  }
   rows.push([
     'Brief',
     purchase.brief === 'attached'
@@ -815,6 +827,19 @@ export default async function handler(request, response) {
   if (!data?.repeat) {
     await announce(purchaseOf(session, args, { project: data?.project_id || null, brief: carried }))
     await report(session, email, paidAt(event))
+  }
+
+  // A checkout opened from a proposal's pay page is finished here: the profile
+  // is marked paid, and any add-on billed on a longer interval than the monthly
+  // is opened as its own subscription on the same card. Last, and on every
+  // delivery rather than the first, because it is the one step after the
+  // project that a refusal has to retry - a 500 brings Stripe back, the project
+  // answers as a repeat and sends nothing twice, and this picks up where it
+  // stopped. A session that came from no proposal passes straight through.
+  const settled = await settleProposal(db, session, STRIPE_SECRET)
+  if (settled.error) {
+    console.error('stripe-webhook: the proposal was not settled: %s', settled.error)
+    return response.status(500).json({ error: 'The proposal was not settled.' })
   }
 
   return response.status(200).json({ ok: true, repeat: Boolean(data?.repeat) })

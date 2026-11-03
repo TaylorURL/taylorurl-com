@@ -5,6 +5,7 @@ Allow: /console/status
 Disallow: /console
 Disallow: /login
 Disallow: /welcome
+Disallow: /pay
 Disallow: /forgot-password
 Disallow: /reset-password
 # /site:console
@@ -24,6 +25,7 @@ Allow: /console/status
 Disallow: /console
 Disallow: /login
 Disallow: /welcome
+Disallow: /pay
 Disallow: /forgot-password
 Disallow: /reset-password
 # /site:console
