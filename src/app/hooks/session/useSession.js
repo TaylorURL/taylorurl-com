@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
 import { supabase } from '@data/supabase/supabaseClient'
 import { faultMessage } from '@utils/faults'
+import { readSession } from '@hooks/session/readSession'
 import { NO_ANSWER, sessionGate } from '@hooks/session/sessionGate'
 import { AUTH_EVENT } from '@hooks/session/useSessionGlimpse'
 import {
@@ -39,15 +40,26 @@ export function useSessionState() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState(null)
   const [mfa, setMfa] = useState(NO_ANSWER)
+  // A session read that failed rather than answered, and the count that lets
+  // the reader ask again. Not the same as having no session: see `readSession`.
+  const [unreachable, setUnreachable] = useState(false)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     let cancelled = false
 
-    supabase.auth.getSession().then(({ data }) => {
-      if (cancelled) return
-      setSession(data.session ?? null)
-      setReading(false)
-    })
+    setReading(true)
+    // The error half used to be dropped here, so a request that never landed
+    // arrived at the guard as `session: null` and signed the reader out. The
+    // ladder asks again, and what it cannot answer it reports as unanswered.
+    readSession({ ask: () => supabase.auth.getSession() }).then(
+      ({ session: found, unreachable: lost }) => {
+        if (cancelled) return
+        setSession(found)
+        setUnreachable(lost)
+        setReading(false)
+      }
+    )
 
     // Covers the refresh that happens on its own an hour in, and a sign-in or
     // sign-out in another tab, both of which have to reach this page without a
@@ -55,6 +67,9 @@ export function useSessionState() {
     const { data: listener } = supabase.auth.onAuthStateChange((_event, next) => {
       if (cancelled) return
       setSession(next)
+      // A session arriving by any route answers the question the failed read
+      // could not, so the unanswered state does not outlive it.
+      if (next) setUnreachable(false)
       // The navigation reads the stored session without loading this client, and
       // a storage event does not fire in the tab that wrote it.
       window.dispatchEvent(new Event(AUTH_EVENT))
@@ -64,7 +79,7 @@ export function useSessionState() {
       cancelled = true
       listener?.subscription?.unsubscribe()
     }
-  }, [])
+  }, [attempt])
 
   const token = session?.access_token ?? null
   const userId = session?.user?.id ?? null
@@ -84,7 +99,7 @@ export function useSessionState() {
     }
   }, [token, userId])
 
-  const gate = sessionGate({ reading, userId, mfa })
+  const gate = sessionGate({ reading, userId, unreachable, mfa })
 
   const signIn = useCallback(async (email, password) => {
     setBusy(true)
@@ -168,11 +183,24 @@ export function useSessionState() {
 
   const clearError = useCallback(() => setError(null), [])
 
+  /**
+   * Read the session again, for a reader looking at the screen that says it
+   * could not be read. The ladder is already spent by the time that screen is
+   * drawn, so the asking has to come from somewhere, and an outage lasting
+   * longer than five seconds leaves this as the only way back in that does not
+   * go through the sign-in form for a session that never ended.
+   */
+  const retryRead = useCallback(() => {
+    setUnreachable(false)
+    setAttempt(count => count + 1)
+  }, [])
+
   return {
     session,
     email: session?.user?.email ?? null,
     userId,
     checking: gate.checking,
+    unreachable: gate.unreachable,
     busy,
     error,
     mfaPending: gate.mfaPending,
@@ -183,6 +211,7 @@ export function useSessionState() {
     verifyMfa,
     redeemRecovery,
     clearError,
+    retryRead,
   }
 }
 
@@ -190,14 +219,14 @@ export function useSessionState() {
  * The signed-in account. Must be called within a <SessionProvider>.
  *
  * @returns {{session: object|null, email: string|null, userId: string|null,
- *   checking: boolean, busy: boolean, error: string|null,
+ *   checking: boolean, unreachable: boolean, busy: boolean, error: string|null,
  *   mfaPending: boolean, mfaFactorId: string|null,
  *   signIn: (email: string, password: string) => Promise<boolean>,
  *   signOut: () => Promise<void>,
  *   signOutEverywhere: () => Promise<string|null>,
  *   verifyMfa: (code: string) => Promise<boolean>,
  *   redeemRecovery: (code: string) => Promise<boolean>,
- *   clearError: () => void}}
+ *   clearError: () => void, retryRead: () => void}}
  */
 export function useSession() {
   const context = useContext(SessionContext)
