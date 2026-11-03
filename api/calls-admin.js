@@ -73,7 +73,7 @@ import {
   spokenNumber,
   tradeMedians,
 } from '../lib/outreach/prospects/callList.js'
-import { factsOf, ownerDigits, scoreOf } from '../lib/outreach/prospects/callScore.js'
+import { factsOf, numbersOf, ownerDigits, scoreOf } from '../lib/outreach/prospects/callScore.js'
 import { companiesOf } from '../lib/outreach/prospects/companies.js'
 import { bareHost, hostOf } from '../lib/outreach/prospects/platforms.js'
 import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePhotos.js'
@@ -419,7 +419,9 @@ function ownerFields(row) {
  *
  * The number to dial is the owner's where one is on file - from a Front Desk
  * call or the owner finder - and the listing's otherwise; both are drawn. An
- * owner's number that is the listing's own main line is not the owner's.
+ * owner's number that is the listing's own main line is not the owner's. Any
+ * other number the same one-location company is listed under is drawn after
+ * them, as another line to try.
  */
 function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) {
   const formedDay = formedOn(row, formed)
@@ -427,6 +429,8 @@ function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) 
   const score = scoreOf({ ...row, formed_on: formedDay, company }, facts, now)
   const last = calls[0] ?? null
   const owner = ownerDigits(row)
+  const main = phoneKey(row.phone)
+  const others = numbersOf({ ...row, company }).filter(ten => ten !== owner && ten !== main)
   const drawn = {
     id: row.id,
     name: row.name,
@@ -436,6 +440,7 @@ function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) 
     phone: row.phone,
     ...ownerFields(row),
     dial: dialHref(owner ?? row.phone),
+    other_numbers: others.map(spokenNumber),
     website: row.website ?? null,
     site_kind: row.site_kind ?? null,
     email: row.email ?? null,
