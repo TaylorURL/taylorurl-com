@@ -272,7 +272,7 @@ check('one person written two ways is one lead', () => {
 
 // -- The Inbox holds people, and what they wrote ------------------------------
 
-const { inInbox, ownWords } = await import('../../api/leads-admin.js')
+const { enquiryText, inInbox, ownWords } = await import('../../api/leads-admin.js')
 const { isAutomated } = await import('../../lib/outreach/daily-report.js')
 
 // Each shaped on a reply the live mailbox has actually held, with the names
@@ -319,6 +319,18 @@ check('an automated reply is never read as somebody writing', () => {
 check('the Inbox shows what a person typed, without the letter they quoted', () => {
   same(ownWords(PERSON.body), 'Absolutely no interest. Please stop.', 'their own words')
   same(ownWords(''), null, 'nothing typed is nothing to show')
+})
+
+check('an enquiry with no note shows the answers it gave', () => {
+  const brief = [
+    { label: 'Business Type', value: 'Electrical' },
+    { label: 'How It Should Feel', value: 'Not chosen' },
+    { label: 'Sites to Look At', value: 'None given' },
+    { label: 'Tools in Use', value: 'None checked' },
+  ]
+  same(enquiryText({ note: null, brief }), 'Business Type: Electrical', 'the answered question')
+  same(enquiryText({ note: 'Need a site', brief }), 'Need a site', 'a note comes first')
+  same(enquiryText({ note: null, brief: [brief[1]] }), null, 'nothing answered is nothing to show')
 })
 
 check('only people who wrote are in the Inbox', () => {

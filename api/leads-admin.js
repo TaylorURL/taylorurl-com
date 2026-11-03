@@ -81,6 +81,7 @@ const COLUMNS = [
   'website',
   'town',
   'note',
+  'brief',
   'first_seen',
   'last_seen',
   'contacted_at',
@@ -224,7 +225,13 @@ async function read(db, response) {
 
   response.setHeader('Cache-Control', 'private, no-store')
   return response.status(200).json({
-    leads: leads.map(lead => ({ ...lead, said: words.said.get(prospectOf(lead)) ?? null })),
+    leads: leads.map(({ brief, ...lead }) => ({
+      ...lead,
+      said:
+        lead.source === SOURCES.outreachReply
+          ? (words.said.get(prospectOf(lead)) ?? null)
+          : { at: lead.last_seen || lead.first_seen, text: enquiryText({ ...lead, brief }) },
+    })),
     complete: rows.length < LIST_ROWS,
     templates,
   })
@@ -331,18 +338,26 @@ async function sentFromHere(db, leadId) {
   return (data || []).map(sentEntry)
 }
 
+/** The answers a configurator leaves when a question was skipped. */
+const UNANSWERED = /^(?:not chosen|none given|none checked)$/i
+
 /**
  * What an enquiry said, as the door wrote it on the row: the note, or the
- * configurator's answers where it left a brief instead.
+ * configurator's answers where it left a brief instead, without the questions
+ * they skipped.
  */
+export function enquiryText(lead) {
+  if (lead?.note) return lead.note
+  if (!Array.isArray(lead?.brief)) return null
+  const answers = lead.brief
+    .filter(row => row?.label && row?.value && !UNANSWERED.test(String(row.value).trim()))
+    .map(row => `${row.label}: ${row.value}`)
+  return answers.length ? answers.join('\n') : null
+}
+
+/** An enquiry's words as the one message in its conversation. */
 function enquiryEntry(lead) {
-  const brief = Array.isArray(lead.brief)
-    ? lead.brief
-        .filter(row => row?.label && row?.value)
-        .map(row => `${row.label}: ${row.value}`)
-        .join('\n')
-    : ''
-  const body = lead.note || brief
+  const body = enquiryText(lead)
   if (!body) return []
   return [
     {
