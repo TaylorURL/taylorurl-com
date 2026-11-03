@@ -6,9 +6,9 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.3-2f6bff?style=for-the-badge" alt="Version 2026.45.3" />
+<img src="https://img.shields.io/badge/version-2026.45.4-2f6bff?style=for-the-badge" alt="Version 2026.45.4" />
 
-The studio's own site, plus the console clients sign in to while their site is built. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
+The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
 Besides the service pages, portfolio and blog, it has a few free tools (a speed check, a Google presence check, a logo background remover and a QR code generator), the project form at [/start](https://www.taylorurl.com/start), a chat assistant, and a public [status page](https://www.taylorurl.com/status). Every page is prerendered to static HTML by the plugins in `vite/`, which also write the sitemap, RSS feed and llms.txt.
 
@@ -22,7 +22,7 @@ A buyer pays before they have an account, so the browser can't be trusted to rec
 
 Every client site's middleware asks `api/site-status.js` whether to serve. The answer is no only when the client has an invoice unpaid a week past due. It reads Stripe live rather than keeping a copy, and the edge caches it for five minutes. No row, no customer or an exemption all mean serve. I'd rather a site stay up by mistake than go down by mistake.
 
-The console keys every read and write in `api/projects.js` on the caller's verified session. Nothing takes an account id as an argument.
+The console works out who is asking from the session the browser presented, never from an account id in the request. The studio's own screens hold every request to the admin role in `lib/db/clients.js`. A client's screens forward that session to the Supabase function that owns the data and let it answer, so the proxy in `api/` has no second opinion on who is asking.
 
 ## The chat assistant and outreach
 
