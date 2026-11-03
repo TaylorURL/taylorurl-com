@@ -9,7 +9,10 @@
  *
  * Where a check lands:
  *
- *   - An email address: 'emailable', and the send job writes to it.
+ *   - An email address: 'emailable', and the send job writes to it. Where the
+ *     site gave a phone number as well, the company goes on the call list now
+ *     through its row on outreach_prospects, without the address (see
+ *     lib/new-business/mirror.js); the letter puts the address on later.
  *   - A phone number and no address: 'phone_only', and the company is put on
  *     the call list through its row on outreach_prospects.
  *   - Neither: still 'waiting', due at its next week, or 'gave_up' after its
@@ -22,8 +25,9 @@
 
 import { servedHereOr404 } from '../../lib/http/guard.js'
 import { mapWithLimit } from '../../lib/outreach/runtime.js'
-import { mirror, mirroredStages, phoneOnlyRow } from '../../lib/new-business/mirror.js'
+import { mirror, mirroredStages, phoneRow } from '../../lib/new-business/mirror.js'
 import { runNewBusinessJob } from '../../lib/new-business/runtime.js'
+import { suppressed } from '../../lib/outreach/sending/queue.js'
 import { checkLead, nextCheckAt } from '../../lib/new-business/sites.js'
 
 export const config = { maxDuration: 300 }
@@ -103,8 +107,20 @@ export async function work({ db, counts, now = new Date(), get = fetch, clock = 
         email: found.email,
         email_source: found.email_source,
       })
+      // A number as well puts the company on the call list now rather than
+      // after its letter. The mirror carries no address, so outreach's own
+      // sender never reads it; the letter is still this pipeline's to send.
+      // An address on the suppression list is somebody who asked the studio to
+      // stop, and the send job will mark the company so; it is not rung meanwhile.
+      if (found.phone || lead.phone) {
+        const held = await suppressed(db, [String(found.email).toLowerCase()])
+        if (!held.size) {
+          const prospectId = await mirror(db, phoneRow({ ...lead, ...update }))
+          update.prospect_id = prospectId
+        }
+      }
     } else if (found.phone) {
-      const prospectId = await mirror(db, phoneOnlyRow({ ...lead, ...update }))
+      const prospectId = await mirror(db, phoneRow({ ...lead, ...update }))
       Object.assign(update, { stage: 'phone_only', prospect_id: prospectId })
     } else {
       const next = nextCheckAt(lead.formed_on, now)

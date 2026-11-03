@@ -1,77 +1,94 @@
 /**
  * The Call List: the businesses worth ringing, the call backs that are due,
- * and the record of every call.
+ * the day's calls against the day's goal, and the record of every call.
  *
  * It is the owner's list and nobody else's. Every request is held to the admin
  * door, and there is no team behind it: no claims, no presence, no shifts.
  *
- * GET answers one of two views, or with `photos` naming a business, that
- * business's photos off its Google listing.
+ * GET answers the list, or with `photos` naming a business, that business's
+ * photos off its Google listing. The list is one list, in three parts:
  *
- * - `best` (the default): every call back due today or overdue, and every call
- *   a chain has asked for, first; then the businesses never called, in the
- *   order `call_list_page` ranks them, with the rules in `callList.js` taking
- *   out the closed, the chains, the shared numbers, the listings nobody has
- *   reviewed and the ones far busier than their trade. The ranking is the
- *   database's because a business's place is its review count against the
- *   middle count for its own trade, which only the whole set can give. The
- *   page is a page of that ranking with the rules applied, so pages vary in
- *   length.
- * - `new`: the new-business pipeline's phone-only companies - registered with
- *   the state, a site found, no address on it to write to - which that
- *   pipeline mirrors into `outreach_prospects` for this list. They sit near the
- *   foot of the review ranking, having no Google listing, so they are read as
- *   a view of their own, newest registration first.
+ * - `due`: every call back due today or overdue, and every call a chain has
+ *   asked for, oldest first.
+ * - `rows`: the businesses never called, highest score first, a page at a
+ *   time. The map sweep's businesses with no site of their own and every new
+ *   company with a phone number are on it together, scored the same way
+ *   (`callScore.js`), with the rules in `callList.js` taking out the closed,
+ *   the chains, the shared numbers, the Google listings nobody has reviewed
+ *   and the ones far busier than their trade.
+ * - `waiting`: the businesses whose last call reached a front desk. They sit
+ *   below everything fresh until the time the front desk gave comes round,
+ *   when the call back it booked moves them up into `due`.
  *
- * POST records one call: an outcome, a note in the owner's own words, and for
- * Call Back a time. A call that reached somebody becomes a lead. Nothing here
- * sends anything; the point of this section is that a person picks up a phone.
+ * `today` is the calls made since midnight in Central, against the goal.
+ *
+ * The scoring is done here rather than in the database because it is one
+ * module the endpoint and the check both run, so the order on the page is the
+ * order the check worked through by hand. What it reads is held for a few
+ * minutes per instance - the callable set, the trade table, the registration
+ * dates and every listing's trade and site - since none of it moves by the
+ * minute; the calls are read fresh, and so is every business on the page
+ * before it is drawn, so a business that asked to stop is never offered off a
+ * stale read.
+ *
+ * POST records one call: an outcome, a note in the owner's own words, a time
+ * for Call Back and Front Desk, and for Front Desk the owner's name and direct
+ * number where the front desk gave them. A call that reached somebody who
+ * could buy becomes a lead. Nothing here sends anything; the point of this
+ * section is that a person picks up a phone.
  */
 
 import { servedHereOr404 } from '../lib/http/guard.js'
 import { authorizeAdmin, connect } from '../lib/db/clients.js'
-import { readAll, tableMissing } from '../lib/db/rows.js'
+import { countOf, readAll, tableMissing } from '../lib/db/rows.js'
 import { field, uuid } from '../lib/db/fields.js'
-import { TRADE_ALIASES, sharesTrade } from '../lib/outreach/message.js'
 import { SOURCES, SPINE, keepLead } from '../lib/leads/spine.js'
-import { PORTFOLIO_PROJECTS } from '../src/app/data/portfolio.js'
-import { MIRROR_SOURCE, PHONE_ONLY_REASON } from '../lib/new-business/mirror.js'
 import { dayIn, instantOf } from '../lib/time/zone.js'
 import {
+  DAILY_CALL_GOAL,
+  FRONT_DESK,
+  NEW_BUSINESS_SOURCE,
   OFFERED_OUTCOMES,
+  PAST_CALLING,
   callMakesLead,
   defaultCallbackAt,
   dialHref,
   interestIn,
   isCallable,
+  isNewBusiness,
+  outcomeAsksOwner,
   outcomeEnds,
   outcomeTakesCallback,
 } from '../lib/outreach/prospects/calls.js'
-import { indexOf, kept, phoneKey, reasonsFor } from '../lib/outreach/prospects/callList.js'
-import { BOOKING_HOSTS, PLATFORM_HOSTS, PORTAL_HOSTS } from '../lib/outreach/prospects/platforms.js'
+import {
+  atFrontDesk,
+  byOwnerDue,
+  byScore,
+  indexOf,
+  kept,
+  phoneKey,
+  reasonsFor,
+  spokenNumber,
+  tradeMedians,
+} from '../lib/outreach/prospects/callList.js'
+import { factsOf, ownerDigits, scoreOf } from '../lib/outreach/prospects/callScore.js'
 import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePhotos.js'
 
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
 const NEW_LEADS = 'new_business_leads'
+const METRICS = 'call_trade_metrics'
 
 /** The key the map sweep searches with, which also reads a listing's photos. */
 const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY || ''
 
-/** The views, the first of them the default. */
-const VIEWS = Object.freeze(['best', 'new'])
-
-/**
- * How many ranked businesses one page reads before the list's own rules take
- * some out. The rules drop roughly a third of the top of the ranking, so a
- * page of this size leaves a working session's worth.
- */
-const PAGE_TAKE = 150
+/** How many never-called businesses one page of the list carries, after the rules. */
+const PAGE_TAKE = 100
 
 /** The callable set's ceiling, well above the four thousand rows that qualify. */
 const SET_MAX = 6000
 
-/** The columns a business is read with when it is read directly rather than ranked. */
+/** The columns a business is read with. */
 const DETAIL = [
   'id',
   'name',
@@ -82,6 +99,8 @@ const DETAIL = [
   'website',
   'site_kind',
   'stage',
+  'source',
+  'source_ref',
   'rating',
   'rating_count',
   'business_status',
@@ -90,19 +109,32 @@ const DETAIL = [
   'audit_score',
   'call_due_at',
   'call_due_reason',
+  'owner_name',
+  'owner_phone',
+  'owner_source',
 ].join(', ')
 
 /** The columns of a call the history draws. */
 const CALL_COLUMNS = 'id, prospect_id, outcome, note, callback_at, called_at'
 
+/** The columns of every call, which the rules and the measured readings are read from. */
+const TALLY_COLUMNS =
+  'id, prospect_id, outcome, interested, callback_at, called_at, outreach_prospects(phone, trade)'
+
 /** How many ids one `in` filter carries, which keeps the address short. */
 const IDS_AT_ONCE = 100
 
-/** How long the index of every listing's name and number is reused. */
+/** How long the index of every listing's name, number, trade and site is reused. */
 const INDEX_KEPT_MS = 30 * 60 * 1000
+
+/** How long the callable set, the trade table and the registration dates are reused. */
+const POOL_KEPT_MS = 10 * 60 * 1000
 
 /** A note is a person's own sentence, and the column holds this much of one. */
 const NOTE_MAX = 2000
+
+/** An owner's name as a front desk gives it. */
+const OWNER_NAME_MAX = 120
 
 /** How far ahead a call back may be set, which is a year and a refusal past it. */
 const CALLBACK_MAX_DAYS = 365
@@ -124,17 +156,6 @@ const PHOTOS_UNREAD = 'The photos did not load.'
  * addresses are not kept: Google signs them and they expire.
  */
 const PHOTOS_KEPT_MS = 30 * 24 * 60 * 60 * 1000
-
-/**
- * The trades and the towns the studio holds work in, as the ranking asks for
- * them: a trade as the slug the portfolio files work under, a town lowercased.
- */
-const PROOF_TRADES = [...new Set(PORTFOLIO_PROJECTS.flatMap(project => project.trades ?? []))]
-const PROOF_TOWNS = [
-  ...new Set(
-    PORTFOLIO_PROJECTS.map(project => String(project.town ?? '').toLowerCase()).filter(Boolean)
-  ),
-]
 
 /**
  * What a driver said, turned into an answer the console can print. A missing
@@ -162,28 +183,16 @@ function runsOf(values, size) {
   return runs
 }
 
+/** The first instant of today in the studio's own zone, where the day's count starts. */
+export function todayFrom(now = new Date()) {
+  return instantOf(dayIn(now))
+}
+
 /** The first instant of tomorrow in the studio's own zone, which is where "today" ends. */
 export function tomorrowFrom(now = new Date()) {
   const [year, month, day] = dayIn(now).split('-').map(Number)
   const next = new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10)
   return instantOf(next)
-}
-
-// ── Work of ours in its trade or town ─────────────────────────────────────
-
-/**
- * Whether the studio has built for this business's trade or in its town, which
- * the ranking leans on and the row says.
- *
- * Asked the way the letters ask it, through `sharesTrade`, because calling a
- * pest control company's line of work a go-kart track is how that claim breaks.
- */
-function proofOf(row) {
-  if (row.trade && PORTFOLIO_PROJECTS.some(project => sharesTrade(project, row.trade))) {
-    return 'trade'
-  }
-  if (row.town && PROOF_TOWNS.includes(String(row.town).toLowerCase())) return 'town'
-  return null
 }
 
 // ── Reads ─────────────────────────────────────────────────────────────────
@@ -219,41 +228,132 @@ async function rowsById(db, ids) {
 }
 
 /**
- * Every listing's name, number and town, which is what a chain and a shared
- * number are read off. It is the whole table rather than the callable set,
- * because a franchise's other offices mostly have sites of their own. Kept for
- * half an hour per instance: listings arrive by the sweep, not by the minute.
+ * A read held for a while per instance, keyed by the client it was read
+ * through, and let go of if it failed so the next request asks again.
  */
-let listings = null
+function heldFor(keptMs, read) {
+  let held = null
+  return db => {
+    if (held?.db === db && Date.now() - held.at < keptMs) return held.read
+    const reading = read(db)
+    held = { db, at: Date.now(), read: reading }
+    reading.catch(() => {
+      if (held?.read === reading) held = null
+    })
+    return reading
+  }
+}
 
-function listingIndex(db) {
-  if (listings?.db === db && Date.now() - listings.at < INDEX_KEPT_MS) return listings.read
-  const read = readAll(() =>
-    db.from(PROSPECTS).select('name, phone, town', { count: 'exact' }).order('id')
+/**
+ * Every listing's name, number, town, trade and kind of site: a chain and a
+ * shared number are read off the first three, and the part of a trade with a
+ * site of its own off the last two. It is the whole table rather than the
+ * callable set, because a franchise's other offices and a trade's other
+ * businesses mostly have sites of their own.
+ */
+const listingIndex = heldFor(INDEX_KEPT_MS, db =>
+  readAll(() =>
+    db.from(PROSPECTS).select('name, phone, town, trade, site_kind', { count: 'exact' }).order('id')
   ).then(answer => answer.rows)
-  listings = { db, at: Date.now(), read }
-  read.catch(() => {
-    if (listings?.read === read) listings = null
-  })
-  return read
-}
+)
 
-/** The numbers called under any listing, read fresh: the last call is part of it. */
-async function calledNumbers(db) {
+/**
+ * Everything the list could offer, and what scores it that is not on the row:
+ * every business with a number that is not past calling and either has no
+ * site of its own or is a new company, the trade table, and the day each new
+ * company was registered, by its taxpayer number.
+ */
+const callablePool = heldFor(POOL_KEPT_MS, async db => {
+  const [listed, metrics, filed] = await Promise.all([
+    readAll(
+      () =>
+        db
+          .from(PROSPECTS)
+          .select(DETAIL, { count: 'exact' })
+          .not('phone', 'is', null)
+          .or(`site_kind.in.(none,social),source.eq.${NEW_BUSINESS_SOURCE}`)
+          .not('stage', 'in', `(${PAST_CALLING.join(',')})`)
+          .order('id'),
+      { max: SET_MAX }
+    ),
+    db.from(METRICS).select('trade, solo_share, avg_sales'),
+    readAll(() =>
+      db
+        .from(NEW_LEADS)
+        .select('taxpayer_number, formed_on', { count: 'exact' })
+        .not('stage', 'in', '(waiting,gave_up)')
+        .order('id')
+    ),
+  ])
+  if (metrics.error) throw metrics.error
+  return {
+    rows: listed.rows,
+    metrics: metrics.data ?? [],
+    formed: new Map(filed.rows.map(one => [one.taxpayer_number, one.formed_on])),
+  }
+})
+
+/**
+ * Every call on record with the number and trade it went to, read fresh: the
+ * last call is what decides whether a business is still on the list.
+ */
+async function allCalls(db) {
   const { rows } = await readAll(() =>
-    db.from(CALLS).select('id, outreach_prospects(phone)', { count: 'exact' }).order('id')
+    db.from(CALLS).select(TALLY_COLUMNS, { count: 'exact' }).order('id')
   )
-  return rows.map(call => ({ phone: call.outreach_prospects?.phone ?? null }))
+  return rows.map(call => ({
+    id: call.id,
+    prospect_id: call.prospect_id,
+    outcome: call.outcome,
+    interested: call.interested ?? null,
+    callback_at: call.callback_at ?? null,
+    called_at: call.called_at ?? null,
+    phone: call.outreach_prospects?.phone ?? null,
+    trade: call.outreach_prospects?.trade ?? null,
+  }))
 }
 
-/** The index the list's rules are read against. */
-async function listIndex(db) {
-  const [all, called] = await Promise.all([listingIndex(db), calledNumbers(db)])
-  return indexOf(all, called)
+/** Every call recorded since midnight in Central: every row, whatever it came to. */
+function callsToday(db, now = new Date()) {
+  return countOf(
+    db
+      .from(CALLS)
+      .select('id', { count: 'exact', head: true })
+      .gte('called_at', todayFrom(now).toISOString())
+  )
 }
 
-/** One business as the page draws it. */
-function shaped(row, calls, extra = {}) {
+/** The day each new company was registered on, where the row is one. */
+function formedOn(row, formed) {
+  return isNewBusiness(row) ? (formed?.get(row.source_ref) ?? null) : null
+}
+
+/**
+ * Where the owner's name and number came from, as the page names it: a call,
+ * or the pages the owner finder read them off. The finder writes one address,
+ * or two separated by a space where the name and the number were on different
+ * pages; only web addresses are passed on, since they become links.
+ */
+function ownerSource(source) {
+  const said = String(source ?? '').trim()
+  if (!said) return null
+  if (said === 'call') return { call: true, pages: [] }
+  const pages = said.split(/\s+/).filter(page => /^https?:\/\//i.test(page))
+  return pages.length ? { call: false, pages } : null
+}
+
+/**
+ * One business as the page draws it.
+ *
+ * The number to dial is the owner's where one is on file - from a Front Desk
+ * call or the owner finder - and the listing's otherwise; both are drawn. An
+ * owner's number that is the listing's own main line is not the owner's.
+ */
+function shaped(row, calls, { facts, formed, now, due = null } = {}) {
+  const formedDay = formedOn(row, formed)
+  const score = scoreOf({ ...row, formed_on: formedDay }, facts, now)
+  const last = calls[0] ?? null
+  const owner = ownerDigits(row)
   const drawn = {
     id: row.id,
     name: row.name,
@@ -261,7 +361,10 @@ function shaped(row, calls, extra = {}) {
     town: row.town ?? null,
     address: row.address ?? null,
     phone: row.phone,
-    dial: dialHref(row.phone),
+    owner_name: row.owner_name ?? null,
+    owner_phone: owner ? spokenNumber(owner) : null,
+    owner_from: row.owner_name || owner ? ownerSource(row.owner_source) : null,
+    dial: dialHref(owner ?? row.phone),
     website: row.website ?? null,
     site_kind: row.site_kind ?? null,
     email: row.email ?? null,
@@ -269,12 +372,12 @@ function shaped(row, calls, extra = {}) {
     rating_count: row.rating_count ?? null,
     business_status: row.business_status ?? null,
     audit_score: row.audit_score ?? null,
-    trade_median: row.trade_median ?? null,
-    proof: proofOf(row),
-    call_due_reason: extra.due?.kind === 'asked' ? (row.call_due_reason ?? null) : null,
-    new_business: Boolean(extra.newBusiness),
-    formed_on: extra.formedOn ?? null,
-    due: extra.due ?? null,
+    call_due_reason: due?.kind === 'asked' ? (row.call_due_reason ?? null) : null,
+    new_business: isNewBusiness(row),
+    formed_on: formedDay,
+    score: { owner: score.owner, need: score.need, budget: score.budget, total: score.total },
+    due,
+    front_desk: !due && last?.outcome === FRONT_DESK ? { at: last.callback_at ?? null } : null,
     calls: calls.map(call => ({
       id: call.id,
       outcome: call.outcome,
@@ -283,7 +386,7 @@ function shaped(row, calls, extra = {}) {
       called_at: call.called_at ?? null,
     })),
   }
-  drawn.reasons = reasonsFor(drawn)
+  drawn.reasons = reasonsFor({ ...row, ...drawn, score })
   return drawn
 }
 
@@ -293,7 +396,9 @@ function shaped(row, calls, extra = {}) {
  * since. Oldest first, so the most overdue leads.
  *
  * Only the newest call's time counts. A business rung again after a call back
- * was set has been dealt with, and the newer call says what happens next.
+ * was set has been dealt with, and the newer call says what happens next. A
+ * Front Desk call books its call back the same way, so a business waiting on
+ * its owner comes up here on the day the front desk said.
  */
 async function dueList(db, now) {
   const before = tomorrowFrom(now).toISOString()
@@ -343,94 +448,112 @@ async function dueList(db, now) {
     ) {
       owed = { kind: 'asked', at: row.call_due_at }
     }
-    if (owed) due.push(shaped(row, calls, { due: owed }))
+    if (owed) due.push({ row, calls, owed })
   }
-  return due.sort((one, two) => Date.parse(one.due.at) - Date.parse(two.due.at))
+  return due.sort((one, two) => Date.parse(one.owed.at) - Date.parse(two.owed.at))
 }
 
-/** One page of the ranking, with the list's rules applied. */
-async function bestList(db, page, now, index, taken) {
-  const { data, error } = await db.rpc('call_list_page', {
-    p_view: 'list',
-    p_sort: 'best',
-    p_take: PAGE_TAKE,
-    p_page: page,
-    // Never called, and the ranking's own idea of a call back that has come
-    // due, which the rules below drop for already having a call. Call backs
-    // are read by `dueList`, against today rather than against the ranking's
-    // fortnight.
-    p_state: 'fresh',
-    p_now: now.toISOString(),
-    // The readings the score leans on that are not in the database: the trades
-    // and towns the studio holds work in, and the hosts that are a platform
-    // rather than a site of the business's own.
-    p_proof_trades: PROOF_TRADES,
-    p_proof_towns: PROOF_TOWNS,
-    p_trade_aliases: TRADE_ALIASES,
-    p_booking_hosts: BOOKING_HOSTS,
-    p_portal_hosts: PORTAL_HOSTS,
-    p_platform_hosts: PLATFORM_HOSTS,
-    p_max: SET_MAX,
-  })
-  if (error) throw error
+/**
+ * The list under what is due, in its order and with its rules applied: the
+ * businesses never called, best first, then the ones waiting on their owner.
+ *
+ * The rules run over the whole order at once, so a number listed twice is
+ * offered once, under its better-placed listing, on whichever page that is.
+ */
+function ranking(pool, calls, index, taken, dueIds, facts, now) {
+  const history = new Map()
+  for (const call of calls) {
+    if (!history.has(call.prospect_id)) history.set(call.prospect_id, [])
+    history.get(call.prospect_id).push(call)
+  }
+  for (const held of history.values()) {
+    held.sort((one, two) => Date.parse(two.called_at) - Date.parse(one.called_at))
+  }
+  const medians = tradeMedians(pool.rows)
 
-  // The new-business companies have their own view, since the review ranking
-  // has nothing to read them by.
-  const ranked = (data?.rows ?? []).filter(row => row.skip_reason !== PHONE_ONLY_REASON)
-  const rows = kept(ranked, index, taken).map(row => shaped(row, []))
-  return { rows, page: data?.page ?? page, pages: data?.pages ?? page }
-}
+  const fresh = []
+  const waiting = []
+  for (const row of pool.rows) {
+    if (dueIds.has(row.id) || !isCallable(row)) continue
+    const held = {
+      ...row,
+      formed_on: formedOn(row, pool.formed),
+      calls: history.get(row.id) ?? [],
+      trade_median: medians.get(row.trade) ?? null,
+    }
+    if (!held.calls.length) {
+      held.score = scoreOf(held, facts, now)
+      fresh.push(held)
+    } else if (atFrontDesk(held)) {
+      waiting.push(held)
+    }
+  }
+  fresh.sort(byScore)
+  waiting.sort(byOwnerDue)
 
-/** The new-business pipeline's phone-only companies nobody has called, newest first. */
-async function newList(db, index, taken) {
-  const [mirrored, filed] = await Promise.all([
-    db
-      .from(PROSPECTS)
-      .select(DETAIL)
-      .eq('source', MIRROR_SOURCE)
-      .eq('skip_reason', PHONE_ONLY_REASON)
-      .limit(2000),
-    db.from(NEW_LEADS).select('prospect_id, formed_on').eq('stage', 'phone_only').limit(2000),
-  ])
-  if (mirrored.error) throw mirrored.error
-  if (filed.error) throw filed.error
-
-  const formed = new Map((filed.data || []).map(one => [one.prospect_id, one.formed_on]))
-  const callable = (mirrored.data || []).filter(isCallable)
-  const history = await callsFor(
-    db,
-    callable.map(row => row.id)
-  )
-  const candidates = callable
-    .map(row => ({ ...row, calls: history.get(row.id) ?? [] }))
-    .sort(
-      (one, two) =>
-        String(formed.get(two.id) ?? '').localeCompare(String(formed.get(one.id) ?? '')) ||
-        String(one.name).localeCompare(String(two.name))
-    )
-  return kept(candidates, index, taken).map(row =>
-    shaped(row, [], { newBusiness: true, formedOn: formed.get(row.id) ?? null })
-  )
+  const offered = kept([...fresh, ...waiting], index, taken)
+  return {
+    fresh: offered.filter(row => !row.calls.length),
+    waiting: offered.filter(row => row.calls.length),
+  }
 }
 
 /** The list, as the page draws it. */
 export async function list(db, query, now = new Date()) {
-  const view = VIEWS.includes(query.view) ? query.view : VIEWS[0]
-  const page = view === 'best' ? pageOf(query.page) : 1
+  const asked = pageOf(query.page)
+  const [owed, pool, listings, calls, today] = await Promise.all([
+    dueList(db, now),
+    callablePool(db),
+    listingIndex(db),
+    allCalls(db),
+    callsToday(db, now),
+  ])
+  const facts = factsOf({ metrics: pool.metrics, listings, calls })
+  const context = { facts, formed: pool.formed, now }
 
-  const [due, index] = await Promise.all([dueList(db, now), listIndex(db)])
+  const due = owed.map(one => shaped(one.row, one.calls, { ...context, due: one.owed }))
   // A number on the list once is on it once: a call back holds its number, and
   // a second listing of it further down is the same phone ringing.
   const taken = new Set(due.map(row => phoneKey(row.phone)).filter(Boolean))
+  const index = indexOf(listings, calls)
+  const ranked = ranking(pool, calls, index, taken, new Set(due.map(row => row.id)), facts, now)
 
-  if (view === 'new') {
-    const rows = await newList(db, index, taken)
-    return { status: 200, body: { view, due, rows, page: 1, pages: 1 } }
-  }
-  const best = await bestList(db, page, now, index, taken)
+  const pages = Math.max(1, Math.ceil(ranked.fresh.length / PAGE_TAKE))
+  const page = Math.min(asked, pages)
+  const onPage = ranked.fresh.slice((page - 1) * PAGE_TAKE, page * PAGE_TAKE)
+  const waiting = page === 1 ? ranked.waiting : []
+
+  // Read again before drawing: the set above may be minutes old, and a
+  // business that has asked to stop since is not one to put in front of a
+  // phone.
+  const [current, history] = await Promise.all([
+    rowsById(
+      db,
+      [...onPage, ...waiting].map(row => row.id)
+    ),
+    callsFor(
+      db,
+      waiting.map(row => row.id)
+    ),
+  ])
+  const byId = new Map(current.map(row => [row.id, row]))
+  const draw = (rows, withCalls) =>
+    rows.flatMap(row => {
+      const read = byId.get(row.id)
+      if (!read || !isCallable(read)) return []
+      return [shaped(read, withCalls ? (history.get(row.id) ?? []) : [], context)]
+    })
+
   return {
     status: 200,
-    body: { view, due: page === 1 ? due : [], rows: best.rows, page: best.page, pages: best.pages },
+    body: {
+      due: page === 1 ? due : [],
+      rows: draw(onPage, false),
+      waiting: draw(waiting, true),
+      page,
+      pages,
+      today: { calls: today, goal: DAILY_CALL_GOAL },
+    },
   }
 }
 
@@ -454,6 +577,45 @@ function callbackAt(value) {
   return { at: when.toISOString() }
 }
 
+/**
+ * What a Front Desk call learned about the owner, as the columns it is
+ * written to, or the reason it will not be.
+ *
+ * Only Front Desk carries a name or a number; on any other result they are a
+ * form that disagrees with the button it was sent under. A number has to be a
+ * whole one, since it becomes the one the list dials, and it is stored the
+ * way the listing's own number is written. A name or a number nobody gave is
+ * left as it was rather than cleared: a second front desk that would not say
+ * does not unlearn what the first one did. Nor is the listing's own main line
+ * kept as the owner's: it is the number that reached the front desk.
+ *
+ * `listed` is the business's own number, read before this is asked.
+ */
+function ownerAnswer(body, outcome, at, listed) {
+  const name = field(body.owner_name, OWNER_NAME_MAX)
+  const typed = String(body.owner_phone ?? '').trim()
+  if (!outcomeAsksOwner(outcome)) {
+    if (name || typed) {
+      return { error: 'Only a Front Desk call takes the owner’s name or number.' }
+    }
+    return { patch: null }
+  }
+  let phone = null
+  if (typed) {
+    const ten = phoneKey(typed)
+    if (!ten) return { error: 'That direct number is not a full phone number.' }
+    if (ten !== phoneKey(listed)) phone = spokenNumber(ten)
+  }
+  return {
+    patch: {
+      ...(name ? { owner_name: name } : {}),
+      ...(phone ? { owner_phone: phone } : {}),
+      ...(name || phone ? { owner_source: 'call' } : {}),
+      owner_checked_at: at,
+    },
+  }
+}
+
 /** One call recorded against one business. */
 export async function record(db, body, account) {
   const prospectId = uuid(body.id)
@@ -466,12 +628,16 @@ export async function record(db, body, account) {
 
   const callback = callbackAt(body.callback_at)
   if (callback.error) return { status: 400, body: { error: callback.error } }
-  // Only Call Back carries a time. A time on anything else is a form that
-  // disagrees with the button it was sent under, and on an outcome that ends
-  // the list it would be a promise nothing ever reads.
+  // Only Call Back and Front Desk carry a time. A time on anything else is a
+  // form that disagrees with the button it was sent under, and on an outcome
+  // that ends the list it would be a promise nothing ever reads.
   if (callback.at && !outcomeTakesCallback(outcome)) {
-    return { status: 400, body: { error: 'Only a Call Back takes a time.' } }
+    return { status: 400, body: { error: 'Only a Call Back or a Front Desk call takes a time.' } }
   }
+  // Asked here for what the form got wrong, and again below against the
+  // business's own number once it has been read.
+  const asked = ownerAnswer(body, outcome, null, null)
+  if (asked.error) return { status: 400, body: { error: asked.error } }
   // A call back nobody put a clock on is filed a day out rather than refused.
   const ringBack =
     outcomeTakesCallback(outcome) && !callback.at
@@ -484,7 +650,7 @@ export async function record(db, body, account) {
   const found = await db
     .from(PROSPECTS)
     .select(
-      'id, name, phone, email, trade, town, website, site_kind, stage, business_status, call_due_at'
+      'id, name, phone, email, trade, town, website, site_kind, stage, source, business_status, call_due_at, owner_name, owner_phone, owner_source'
     )
     .eq('id', prospectId)
     .maybeSingle()
@@ -492,6 +658,15 @@ export async function record(db, body, account) {
   if (!found.data) return { status: 404, body: { error: 'That business is no longer on file.' } }
   if (!isCallable(found.data)) {
     return { status: 409, body: { error: 'That business is not on the call list.' } }
+  }
+
+  // The owner first and the call second. A call that saved without the number
+  // the front desk gave would ring the front desk again; written this way
+  // round, a refusal saves neither and the same press saves both.
+  const owner = ownerAnswer(body, outcome, new Date().toISOString(), found.data.phone)
+  if (owner.patch) {
+    const { error } = await db.from(PROSPECTS).update(owner.patch).eq('id', prospectId)
+    if (error) return refusal(error, NOT_RECORDED)
   }
 
   const interested = interestIn(outcome)
@@ -511,6 +686,15 @@ export async function record(db, body, account) {
 
   await carry(db, found.data, body, ringBack, interested)
 
+  // The day's count is read back rather than added to, so a call made on
+  // another screen is in it too. The call is saved whatever this says.
+  let today = null
+  try {
+    today = { calls: await callsToday(db), goal: DAILY_CALL_GOAL }
+  } catch (cause) {
+    console.error('calls-admin: the day was not counted: %s', cause?.message || cause)
+  }
+
   return {
     status: 200,
     body: {
@@ -518,7 +702,24 @@ export async function record(db, body, account) {
       call: written.data?.id ?? null,
       called_at: written.data?.called_at ?? null,
       callback_at: ringBack,
+      owner: owner.patch ? ownerAfter(found.data, owner.patch) : null,
+      today,
     },
+  }
+}
+
+/** The owner as the business now has it, in the shape the page draws. */
+function ownerAfter(business, patch) {
+  const held = {
+    phone: business.phone,
+    owner_phone: patch.owner_phone ?? business.owner_phone,
+  }
+  const digits = ownerDigits(held)
+  const name = patch.owner_name ?? business.owner_name ?? null
+  return {
+    name,
+    phone: digits ? spokenNumber(digits) : null,
+    from: name || digits ? ownerSource(patch.owner_source ?? business.owner_source) : null,
   }
 }
 
@@ -526,8 +727,8 @@ export async function record(db, body, account) {
  * A business that wanted this, carried into the lead record.
  *
  * A cold prospect is not a lead. What changes that is a call that reached
- * somebody, which is why a number that rang out carries nothing here and a
- * conversation and a call back both do.
+ * somebody who could buy, which is why a number that rang out carries nothing
+ * here, nor does a front desk, and a conversation and a call back both do.
  *
  * Failure here is swallowed. The call is already on the record and is owed its
  * confirmation; a lead that missed its row is worth less than being told a call
