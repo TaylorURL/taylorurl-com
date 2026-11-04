@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.18-2f6bff?style=for-the-badge" alt="Version 2026.45.18" />
+<img src="https://img.shields.io/badge/version-2026.45.19-2f6bff?style=for-the-badge" alt="Version 2026.45.19" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -32,7 +32,7 @@ The console works out who is asking from the session the browser presented, neve
 
 The assistant runs on my own machine. A serverless function can't hold a thread open, so `api/live-chat.js` meters turns and forwards them. When the machine is down the widget isn't drawn, and a thread that's already open still takes an email address and mails it on.
 
-The outreach decisions moved out into [chainwork](https://github.com/TaylorURL/chainwork), installed as a dependency, so a second site can run them. A chain is one file under `lib/outreach/chains`: the letters, the days between them, what puts a business on it and what takes it off. There are ten, the four the studio has always had and six that fire on something that just happened, like a certificate that expired or a Google listing with no photos. The old paths under `lib/outreach/` are re-exports now, so nothing that imported them had to move.
+The outreach decisions moved out into [chainwork](https://github.com/TaylorURL/chainwork), installed as a dependency, so a second site can run them. A chain is the letters, the days between them, what puts a business on it and what takes it off. There are ten under `lib/outreach/chains`: a file each for the four the studio has always had, and one file holding the six that fire on something that just happened, like a certificate that expired or a Google listing with no photos. The six share a file because they're the same shape, with a different defect read off the row. The old paths under `lib/outreach/` are re-exports now, so nothing that imported them had to move.
 
 The time zone, the held-domain list and the domains I own are installed into the package from here. Those are facts about the studio rather than decisions about outreach.
 
