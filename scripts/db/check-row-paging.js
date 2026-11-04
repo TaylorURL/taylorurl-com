@@ -11,7 +11,7 @@
  * bounds, a short page at the end, and never more rows than were asked for.
  */
 
-import { readAll, PAGE_ROWS } from '../../lib/db/rows.js'
+import { readAll, PAGES_AT_ONCE, PAGE_ROWS } from '../../lib/db/rows.js'
 import { cases, check, finish, same } from '../harness/checks.js'
 
 /**
@@ -137,6 +137,69 @@ check('a refused read raises rather than answering short', async () => {
     raised = cause
   }
   same(raised?.code, '42P01', 'the driver code survives')
+})
+
+/**
+ * A table that answers on a tick rather than at once, and records how many
+ * requests were open together at the busiest moment. A read that asks for
+ * every remaining page in one go shows the page count here; a read that keeps
+ * to a width shows the width.
+ */
+function watched(total, { count = null } = {}) {
+  let open = 0
+  let widest = 0
+  const build = () => ({
+    range(from, to) {
+      open += 1
+      widest = Math.max(widest, open)
+      const rows = []
+      for (let at = from; at <= to && at < total; at += 1) rows.push({ id: at })
+      return new Promise(settle =>
+        setTimeout(() => {
+          open -= 1
+          settle({ data: rows, error: null, count })
+        }, 1)
+      )
+    },
+  })
+  return { build, at: () => widest }
+}
+
+check('a counted set deeper than the width is not all asked for at once', async () => {
+  const total = PAGE_ROWS * 16 + 40
+  const { build, at } = watched(total, { count: total })
+  const { rows, complete } = await readAll(build)
+  same(rows.length, total, 'rows')
+  same(complete, true, 'complete')
+  same(new Set(rows.map(row => row.id)).size, total, 'distinct rows')
+  same(at() <= PAGES_AT_ONCE, true, `pages in flight together (${at()})`)
+})
+
+check('a width of one reads a counted set a page at a time, whole', async () => {
+  const total = PAGE_ROWS * 5 + 3
+  const { build, at } = watched(total, { count: total })
+  const { rows, complete } = await readAll(build, { atOnce: 1 })
+  same(rows.length, total, 'rows')
+  same(complete, true, 'complete')
+  same(at(), 1, 'pages in flight together')
+})
+
+check('a width wider than the set still reads it once and no more', async () => {
+  const { build, calls } = table(2431, { count: 2431 })
+  const { rows, complete } = await readAll(build, { atOnce: 50 })
+  same(rows.length, 2431, 'rows')
+  same(complete, true, 'complete')
+  same(calls.length, 3, 'requests')
+})
+
+check('a count that overstates the set ends the read on the short page', async () => {
+  const { build, calls } = table(1500, { count: 40_000 })
+  const { rows, complete } = await readAll(build)
+  same(rows.length, 1500, 'rows')
+  same(complete, true, 'complete')
+  // The first round of four stops at the short second page rather than
+  // walking the whole overstated count.
+  same(calls.length, 5, 'requests')
 })
 
 await finish()
