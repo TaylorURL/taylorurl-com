@@ -1,14 +1,14 @@
 {
-  "measured": "2026-11-03",
+  "measured": "2026-11-04",
   "readings": {
     "https://baytowngokarts.com": {
       "slug": "speedway-146",
-      "mobile": 99,
+      "mobile": 100,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [98, 99, 100],
-        "desktop": [90, 100, 100, 100, 100]
+        "mobile": [99, 100, 100],
+        "desktop": [100, 100, 100, 100, 100]
       },
       "confirmed": {
         "mobile": false,
@@ -17,11 +17,11 @@
     },
     "https://impressivaprinting.com": {
       "slug": "impressiva-printing",
-      "mobile": 100,
+      "mobile": 99,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [100, 100, 98],
+        "mobile": [99, 99, 98],
         "desktop": [100, 100, 100]
       },
       "confirmed": {
@@ -33,9 +33,9 @@
       "slug": "dickinson-bayou-fleeting",
       "mobile": 98,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [98, 98, 98],
+        "mobile": [98, 100, 98],
         "desktop": [100, 100, 100]
       },
       "confirmed": {
@@ -47,10 +47,10 @@
       "slug": "dylan-jordan-real-estate",
       "mobile": 98,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [98, 98, 98],
-        "desktop": [100, 99, 100]
+        "mobile": [98, 98, 97],
+        "desktop": [100, 100, 100]
       },
       "confirmed": {
         "mobile": false,
@@ -59,11 +59,11 @@
     },
     "https://southeastarbor.com": {
       "slug": "southeast-arbor-care",
-      "mobile": 100,
+      "mobile": 96,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [97, 100, 100],
+        "mobile": [100, 96, 96],
         "desktop": [100, 100, 100]
       },
       "confirmed": {
@@ -73,11 +73,11 @@
     },
     "https://www.tiretracker.app": {
       "slug": "tiretracker",
-      "mobile": 98,
+      "mobile": 100,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [99, 98, 98],
+        "mobile": [100, 100, 97],
         "desktop": [100, 100, 100]
       },
       "confirmed": {
@@ -88,25 +88,25 @@
     "https://deluxfitbyangie.com": {
       "slug": "deluxfit-by-angie",
       "mobile": 98,
-      "desktop": 100,
-      "measured": "2026-11-03",
+      "desktop": 99,
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [98, 96, 98],
-        "desktop": [100, 100, 100]
+        "mobile": [98, 98, 98, 98, 98],
+        "desktop": [99, 100, 99]
       },
       "confirmed": {
-        "mobile": false,
+        "mobile": true,
         "desktop": false
       }
     },
     "https://hollingsheadharbor.com": {
       "slug": "hollingshead-harbor",
-      "mobile": 97,
+      "mobile": 100,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [96, 100, 97],
-        "desktop": [99, 100, 100]
+        "mobile": [100, 99, 100],
+        "desktop": [100, 100, 100]
       },
       "confirmed": {
         "mobile": false,
@@ -115,12 +115,12 @@
     },
     "https://ccscaleservices.com": {
       "slug": "compound-scale-services",
-      "mobile": 100,
+      "mobile": 98,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [100, 100, 99],
-        "desktop": [100, 100, 100]
+        "mobile": [99, 98, 95],
+        "desktop": [99, 100, 100]
       },
       "confirmed": {
         "mobile": false,
@@ -131,10 +131,10 @@
       "slug": "faded-barber-shop",
       "mobile": 99,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [100, 99, 99],
-        "desktop": [100, 100, 98]
+        "mobile": [99, 99, 99],
+        "desktop": [100, 100, 100]
       },
       "confirmed": {
         "mobile": false,
@@ -145,7 +145,7 @@
       "slug": "delux-financial-solutions",
       "mobile": 100,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
         "mobile": [100, 100, 99],
         "desktop": [100, 100, 100]
@@ -157,11 +157,11 @@
     },
     "https://www.setxfootball.org": {
       "slug": "setx-football",
-      "mobile": 100,
+      "mobile": 98,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [100, 98, 100],
+        "mobile": [100, 98, 98],
         "desktop": [100, 100, 100]
       },
       "confirmed": {
@@ -171,11 +171,11 @@
     },
     "https://www.smyrnatools.com": {
       "slug": "smyrna-tools",
-      "mobile": 98,
+      "mobile": 96,
       "desktop": 100,
-      "measured": "2026-11-03",
+      "measured": "2026-11-04",
       "runs": {
-        "mobile": [97, 99],
+        "mobile": [99, 96, 93],
         "desktop": [100, 100, 100]
       },
       "confirmed": {
