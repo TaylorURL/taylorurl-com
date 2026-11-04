@@ -72,6 +72,11 @@
       "permanent": false
     },
     {
+      "source": "/files/:path*",
+      "destination": "https://tqmgd1a7lbizpuyw.public.blob.vercel-storage.com/:path*?download=1",
+      "permanent": false
+    },
+    {
       "source": "/pricing",
       "destination": "/contact",
       "permanent": true

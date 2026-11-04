@@ -26,6 +26,8 @@ Every sheet sells the monthly fee, and some sell an add-on billed by the quarter
 
 Every client site's middleware asks `api/site-status.js` whether to serve. The answer is no only when the client has an invoice unpaid a week past due. It reads Stripe live rather than keeping a copy, and the edge caches it for five minutes. No row, no customer or an exemption all mean serve. I'd rather a site stay up by mistake than go down by mistake.
 
+A file too big to email a client, like print-ready artwork, goes in the `client-files` Blob store, and `/files/<path>` in `vercel.json` hands it out from taylorurl.com as a download. The store is public, so nothing private goes in it.
+
 The console works out who is asking from the session the browser presented, never from an account id in the request. The studio's own screens hold every request to the admin role in `lib/db/clients.js`. A client's screens forward that session to the Supabase function that owns the data and let it answer, so the proxy in `api/` has no second opinion on who is asking.
 
 ## The chat assistant and outreach
