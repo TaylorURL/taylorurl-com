@@ -29,7 +29,7 @@ process.env.SUPABASE_URL = 'https://project.supabase.test'
 process.env.SUPABASE_SERVICE_ROLE_KEY = 'service_role_not_a_real_key'
 process.env.SUPABASE_ANON_KEY = 'anon_not_a_real_key'
 
-const { centsOf, checkoutPlan, linesOf, picked, totals } =
+const { agencyTotals, centsOf, checkoutPlan, lineOf, linesOf, picked, savingsOf, totals } =
   await import('../../src/app/data/checkout/proposal.js')
 const { default: payHandler, proposalFields, stateOf } = await import('../../api/proposal.js')
 const { anchorAfter, laterLines, settleProposal } = await import('../../lib/stripe/proposal.js')
@@ -89,6 +89,79 @@ check('one line that will not read refuses the whole list', () => {
   same(linesOf([...ITEMS, { name: 'Logo', price: '500' }]), null, 'a price as a string')
   same(linesOf([...ITEMS, { name: 'Logo', price: 500, per: 'weekly' }]), null, 'an unknown per')
   same(linesOf('not a list'), null, 'not a list')
+})
+
+/** The Southbelt sheet as the skill saves it now, with what an agency would charge. */
+const ESTIMATED = [
+  { name: 'Website Design', price: 2500, per: 'once', agency: 5000 },
+  {
+    name: 'Monthly Fee',
+    price: 250,
+    per: 'month',
+    extra: 'Hosting, domain and maintenance',
+    agency: 300,
+  },
+]
+const AI = {
+  name: 'AI Integration',
+  price: 100,
+  per: 'month',
+  extra: 'Not counting AI usage',
+  agency: 150,
+  agency_setup: 4000,
+}
+
+check('an agency estimate reads with its line, and one that will not read refuses it', () => {
+  const ai = lineOf(AI)
+  same(ai.agency, 15000, 'the agency’s month, in cents')
+  same(ai.agencySetup, 400000, 'the agency’s setup, in cents')
+  same(ai.cents, 10000, 'the price itself is untouched')
+  const old = lineOf(ITEMS[0])
+  same(old.agency, null, 'a line saved before estimates reads with none')
+  same(old.agencySetup, 0, 'and no setup')
+  same(lineOf({ ...AI, agency: '150' }), null, 'an estimate as a string')
+  same(lineOf({ ...AI, agency: -1 }), null, 'a negative estimate')
+  same(lineOf({ ...AI, agency: undefined }), null, 'a setup with no estimate beside it')
+})
+
+check('the agency totals count the setup once and leave out no line', () => {
+  const rows = agencyTotals(linesOf(ESTIMATED))
+  same(rows[0][0], 'First year', 'totalled like the sheet')
+  same(rows[0][1], 860000, 'first year, as printed: $8,600')
+  same(rows[1][1], 360000, 'each year after, as printed: $3,600')
+  const withAi = agencyTotals(linesOf([...ESTIMATED, AI]))
+  same(withAi[0][1], 860000 + 400000 + 180000, 'the setup and twelve months of AI')
+  same(withAi[1][1], 360000 + 180000, 'the setup is not paid again')
+  same(agencyTotals(linesOf([...ESTIMATED, ITEMS[1]])), null, 'a line with no estimate')
+  same(agencyTotals([]), null, 'no lines')
+})
+
+check('the saving is the agency’s figure less the sheet’s, the way the paper prints it', () => {
+  const saved = savingsOf(linesOf(ESTIMATED))
+  same(saved.first, 310000, 'the first year, as printed: $3,100')
+  same(saved.after, 60000, 'each year after, as printed: $600')
+  const withAi = savingsOf(linesOf([...ESTIMATED, AI]))
+  same(withAi.first, 310000 + 400000 + 180000 - 120000, 'the setup and a year of AI, less mine')
+  same(withAi.after, 60000 + 180000 - 120000, 'a year of AI less mine')
+  same(savingsOf(linesOf([...ESTIMATED, ITEMS[1]])), null, 'a line with no estimate says nothing')
+})
+
+check('an agency estimate is shown and never charged', async () => {
+  const row = profile({ items: ESTIMATED, addons: [AI] })
+  const read = await run({ method: 'GET', query: { p: KEY } }, { row })
+  same(read.sent.body.items[0].agency, 500000, 'the page is sent the estimate')
+  same(read.sent.body.addons[0].agencySetup, 400000, 'and the setup')
+  const { sent, stripe } = await run(
+    { method: 'POST', body: { p: KEY, addons: ['AI Integration'] } },
+    { row }
+  )
+  same(sent.status, 200, 'a checkout opens')
+  const body = new URLSearchParams(stripe.find(call => call.url.includes('checkout')).body)
+  const charged = []
+  for (let at = 0; body.has(`line_items[${at}][quantity]`); at += 1) {
+    charged.push(body.get(`line_items[${at}][price_data][unit_amount]`))
+  }
+  same(charged.join(' '), '250000 25000 10000', 'the site, the fee and AI, at the sheet’s prices')
 })
 
 check('the page totals the sheet the way the paper does', () => {
