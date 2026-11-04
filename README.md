@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.19-2f6bff?style=for-the-badge" alt="Version 2026.45.19" />
+<img src="https://img.shields.io/badge/version-2026.45.20-2f6bff?style=for-the-badge" alt="Version 2026.45.20" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -25,6 +25,8 @@ A proposal is priced in a meeting, not online. The `/proposal` skill prints the 
 Every sheet sells the monthly fee, and some sell an add-on billed by the quarter. Stripe's checkout opens one subscription and refuses a second interval, so the longer lines are charged their first period at the checkout and `lib/stripe/proposal.js` opens them as their own subscription from the webhook, each starting one period on. Nothing is billed twice and nothing is left unbilled. Stripe retries the webhook, so each subscription is opened under a key named after the checkout and a later delivery finds it done.
 
 Every client site's middleware asks `api/site-status.js` whether to serve. The answer is no only when the client has an invoice unpaid a week past due. It reads Stripe live rather than keeping a copy, and the edge caches it for five minutes. No row, no customer or an exemption all mean serve. I'd rather a site stay up by mistake than go down by mistake.
+
+A file too big to email a client, like print-ready artwork, goes in the `client-files` Blob store, and `/files/<path>` in `vercel.json` hands it out from taylorurl.com as a download. The store is public, so nothing private goes in it.
 
 The console works out who is asking from the session the browser presented, never from an account id in the request. The studio's own screens hold every request to the admin role in `lib/db/clients.js`. A client's screens forward that session to the Supabase function that owns the data and let it answer, so the proxy in `api/` has no second opinion on who is asking.
 
