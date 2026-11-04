@@ -5,7 +5,14 @@ import Seo from '@components/Seo'
 import { Button, Container, PhoneButton } from '@components/kit/Kit'
 import { BUTTONS, CARD, TYPE } from '@components/kit/styles'
 import { useAnnounceGround } from '@hooks/theme/useOnDarkBackground'
-import { billingWord, money, PROPOSAL_KEY, totals } from '@data/checkout/proposal'
+import {
+  agencyTotals,
+  billingWord,
+  money,
+  PROPOSAL_KEY,
+  savingsOf,
+  totals,
+} from '@data/checkout/proposal'
 import { payProposal, readProposal } from '@data/checkout/pay'
 
 /** A date the profile holds as `2026-12-02`, as a person reads it. */
@@ -22,7 +29,11 @@ function longDate(iso) {
   })
 }
 
-/** One line of the sheet: its name, how it is billed, and its price. */
+/**
+ * One line of the sheet: its name, how it is billed, what other agencies charge
+ * for it, and its price. The agency figure sits under the name in grey, worded
+ * as theirs, so nobody reads it as the price they are paying.
+ */
 function Line({ line, control }) {
   return (
     <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-4 gap-y-1 py-4">
@@ -34,12 +45,50 @@ function Line({ line, control }) {
             {billingWord(line)}
             {line.extra ? ` · ${line.extra}` : ''}
           </p>
+          {line.agency !== null && line.agency !== undefined && (
+            <p className={`${TYPE.small} mt-0.5 tabular-nums opacity-80`}>
+              Other agencies charge about {money(line.agency)}
+              {line.agencySetup ? ` plus ${money(line.agencySetup)} setup` : ''}
+            </p>
+          )}
         </div>
       </div>
       <p className="text-right text-[16px] font-medium tabular-nums text-ink">
         {money(line.cents)}
       </p>
     </div>
+  )
+}
+
+/** A saving in cents, picked out the way the sheet picks it out. */
+function Amount({ cents }) {
+  return <span className="tabular-nums text-[color:var(--accent)]">{money(cents)}</span>
+}
+
+/**
+ * What going with TaylorURL saves against a typical agency, said as one
+ * sentence, or nothing where there is no saving to say.
+ */
+function Saving({ saved }) {
+  const first = saved?.first > 0
+  const after = saved?.after > 0
+  if (!first && !after) return null
+  return (
+    <p className="mt-4 text-[16px] font-medium text-ink">
+      With TaylorURL you save{' '}
+      {first && (
+        <>
+          <Amount cents={saved.first} /> the first year
+        </>
+      )}
+      {first && after && ' and '}
+      {after && (
+        <>
+          <Amount cents={saved.after} /> {first ? 'every year after' : 'every year after the first'}
+        </>
+      )}
+      , compared with a typical agency.
+    </p>
   )
 }
 
@@ -115,6 +164,14 @@ export default function Pay() {
     [sheet, ticked]
   )
   const sums = useMemo(() => (sheet ? totals([...sheet.items, ...chosen]) : null), [sheet, chosen])
+  const theirs = useMemo(
+    () => (sheet ? agencyTotals([...sheet.items, ...chosen]) : null),
+    [sheet, chosen]
+  )
+  const saved = useMemo(
+    () => (sheet ? savingsOf([...sheet.items, ...chosen]) : null),
+    [sheet, chosen]
+  )
 
   const toggle = name =>
     setTicked(held => {
@@ -201,7 +258,8 @@ export default function Pay() {
           {!reading && (
             <p className={`${TYPE.lead} mt-4`}>
               Prices good until {longDate(sheet.goodUntil)}. Tick any add-ons you want, then pay
-              securely with Stripe.
+              securely with Stripe. Under each item is what other agencies charge for the same work,
+              so you can see what you save; the price on the right is yours.
             </p>
           )}
 
@@ -273,6 +331,22 @@ export default function Pay() {
                     </div>
                   ))}
                 </div>
+                {theirs && (
+                  <div className="mt-5 space-y-2 border-t border-[color:var(--line)] pt-4">
+                    <p className={TYPE.label}>Other agencies charge</p>
+                    {theirs.map(([label, cents]) => (
+                      <div key={label} className="flex items-baseline justify-between gap-4">
+                        <p className={TYPE.small}>{label}</p>
+                        <p className={`${TYPE.small} tabular-nums`}>{money(cents)}</p>
+                      </div>
+                    ))}
+                    <p className={TYPE.small}>
+                      An estimate from published 2026 US agency pricing, for comparison. It is not
+                      your price.
+                    </p>
+                  </div>
+                )}
+                <Saving saved={saved} />
                 <p className={`${TYPE.small} mt-5`}>
                   Today covers every one-time item and the first period of everything recurring. The
                   Monthly Fee and monthly add-ons renew each month
