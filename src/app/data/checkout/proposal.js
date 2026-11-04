@@ -14,6 +14,10 @@
  * refuses anything that is not a whole number of cents rather than rounding it
  * into something plausible: every price on a profile was typed into a chat, and
  * a fraction of a cent there is a typo to be found, not a charge to be guessed.
+ *
+ * Each line can also carry what a typical agency would charge for it, which
+ * the sheet prints beside the price and the page shows the same way. It is
+ * there to be read, never charged: nothing that opens a checkout looks at it.
  */
 
 /**
@@ -60,10 +64,25 @@ export function centsOf(price) {
 }
 
 /**
+ * An agency estimate in dollars as whole cents: null where the line has none,
+ * undefined where it has one that will not read.
+ */
+function estimateOf(price) {
+  if (price === undefined || price === null) return null
+  const cents = centsOf(price)
+  return cents === null ? undefined : cents
+}
+
+/**
  * One line off a profile, as the page and the checkout use it.
  *
+ * `agency` is what a typical agency would charge for the line in the line's
+ * own billing, and `agencySetup` a one-time setup the agency adds on top; a
+ * profile saved before the sheet carried them reads with `agency` null.
+ *
  * @param {unknown} raw A line as the skill saved it.
- * @returns {{name: string, cents: number, per: string, extra: string}|null}
+ * @returns {{name: string, cents: number, per: string, extra: string,
+ *   agency: number|null, agencySetup: number}|null}
  */
 export function lineOf(raw) {
   if (!raw || typeof raw !== 'object') return null
@@ -74,7 +93,11 @@ export function lineOf(raw) {
   const cents = centsOf(raw.price)
   if (cents === null) return null
   const extra = typeof raw.extra === 'string' ? raw.extra.trim().slice(0, 120) : ''
-  return { name, cents, per, extra }
+  const agency = estimateOf(raw.agency)
+  const agencySetup = estimateOf(raw.agency_setup)
+  if (agency === undefined || agencySetup === undefined) return null
+  if (agency === null && agencySetup !== null) return null
+  return { name, cents, per, extra, agency, agencySetup: agencySetup ?? 0 }
 }
 
 /**
@@ -134,6 +157,53 @@ export function totals(lines) {
   }
   if (yearly) return { today, rows: [['Per year', yearly]] }
   return { today, rows: [['Total', once]] }
+}
+
+/**
+ * What a typical agency would charge for the same lines, totalled the way the
+ * sheet totals its own, or null where any line has no estimate: a comparison
+ * that left a line out would make the agency look cheaper than it is.
+ *
+ * @param {Array<{per: string, agency: number|null, agencySetup: number}>} lines
+ * @returns {Array<[string, number]>|null}
+ */
+export function agencyTotals(lines) {
+  const theirs = agencyLines(lines)
+  return theirs ? totals(theirs).rows : null
+}
+
+/** The same lines at what an agency charges, its setups as one one-time line. */
+function agencyLines(lines) {
+  if (!lines.length || lines.some(line => line.agency === null || line.agency === undefined)) {
+    return null
+  }
+  const setups = lines.reduce((sum, line) => sum + (line.agencySetup || 0), 0)
+  const priced = lines.map(line => ({ cents: line.agency, per: line.per }))
+  return setups ? [...priced, { cents: setups, per: 'once' }] : priced
+}
+
+/** The first year and each year after, in cents, whatever shape the totals take. */
+function yearsOf(lines) {
+  const once = lines.filter(line => line.per === 'once').reduce((sum, line) => sum + line.cents, 0)
+  const yearly = lines
+    .filter(line => line.per !== 'once')
+    .reduce((sum, line) => sum + line.cents * PERS[line.per].perYear, 0)
+  return { first: once + yearly, after: yearly }
+}
+
+/**
+ * What these lines save against a typical agency: the first year and each year
+ * after, in cents, or null where the agency figure cannot be totalled.
+ *
+ * @param {Array<{cents: number, per: string, agency: number|null, agencySetup: number}>} lines
+ * @returns {{first: number, after: number}|null}
+ */
+export function savingsOf(lines) {
+  const theirs = agencyLines(lines)
+  if (!theirs) return null
+  const a = yearsOf(theirs)
+  const b = yearsOf(lines)
+  return { first: a.first - b.first, after: a.after - b.after }
 }
 
 /**
