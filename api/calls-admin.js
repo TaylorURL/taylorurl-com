@@ -6,8 +6,12 @@
  * door, and there is no team behind it: no claims, no presence, no shifts.
  *
  * GET answers the list, or with `photos` naming a business, that business's
- * photos off its Google listing. The list is one list, in three parts:
+ * photos off its Google listing. The list is one list, in four parts:
  *
+ * - `engaged`: the businesses that answered the mail and have not been rung
+ *   since - a person opened what the studio sent more than once, or wrote
+ *   back - replies first (`engaged.js`). They are the warmest numbers on the
+ *   list, so they lead it, whatever their site.
  * - `due`: every call back due today or overdue, and every call a chain has
  *   asked for, oldest first.
  * - `rows`: the businesses never called, highest score first, a page at a
@@ -34,9 +38,11 @@
  * stale read.
  *
  * POST records one call: an outcome, a note in the owner's own words, a time
- * for Call Back and Front Desk, and for Front Desk the owner's name and direct
- * number where the front desk gave them. A call that reached somebody who
- * could buy becomes a lead. Nothing here sends anything; the point of this
+ * for Call Back and Front Desk and a follow-up day for Pipeline, and for Front
+ * Desk the owner's name and direct number where the front desk gave them. A
+ * call that reached somebody who could buy becomes a lead, and Pipeline files
+ * that lead in the sales pipeline (`pipeline_at`), which the pipeline routine
+ * on the Pi reads into its own record and report. Nothing here sends anything; the point of this
  * section is that a person picks up a phone.
  */
 
@@ -58,10 +64,19 @@ import {
   interestIn,
   isCallable,
   isNewBusiness,
+  isRingable,
   outcomeAsksOwner,
   outcomeEnds,
+  outcomeFilesPipeline,
   outcomeTakesCallback,
 } from '../lib/outreach/prospects/calls.js'
+import {
+  OPEN_LOOKBACK_DAYS,
+  byEngagement,
+  engagementOf,
+  looksAutomatic,
+} from '../lib/outreach/prospects/engaged.js'
+import { newText, readAutoReply, readOptOut } from '../lib/outreach/sending/replies.js'
 import {
   atFrontDesk,
   byOwnerDue,
@@ -80,6 +95,7 @@ import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePh
 
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
+const MESSAGES = 'outreach_messages'
 const NEW_LEADS = 'new_business_leads'
 const METRICS = 'call_trade_metrics'
 
@@ -113,6 +129,7 @@ const DETAIL = [
   'audit_score',
   'call_due_at',
   'call_due_reason',
+  'replied_at',
   'owner_name',
   'owner_phone',
   'owner_source',
@@ -143,6 +160,15 @@ const LISTING = [
   'registered_on',
   'officer_count',
 ].join(', ')
+
+/** The columns of a sent message an open is read from. */
+const OPEN_COLUMNS = 'id, prospect_id, sent_at, opened_at, last_open_at, open_count'
+
+/** The columns of a reply that say who wrote it and what they said. */
+const REPLY_COLUMNS = 'id, prospect_id, subject, body_text, created_at'
+
+/** The columns of a lead that say the studio has already decided about it. */
+const LEAD_STANDING = 'source_ref, dismissed_at, bought_at'
 
 /** The columns of a call the history draws. */
 const CALL_COLUMNS = 'id, prospect_id, outcome, note, callback_at, called_at'
@@ -423,7 +449,7 @@ function ownerFields(row) {
  * other number the same one-location company is listed under is drawn after
  * them, as another line to try.
  */
-function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) {
+function shaped(row, calls, { facts, formed, companies, now, due = null, engaged = null } = {}) {
   const formedDay = formedOn(row, formed)
   const company = companies?.get(row.id) ?? null
   const score = scoreOf({ ...row, formed_on: formedDay, company }, facts, now)
@@ -453,6 +479,7 @@ function shaped(row, calls, { facts, formed, companies, now, due = null } = {}) 
     formed_on: formedDay,
     score: { owner: score.owner, need: score.need, budget: score.budget, total: score.total },
     due,
+    engaged,
     front_desk: !due && last?.outcome === FRONT_DESK ? { at: last.callback_at ?? null } : null,
     calls: calls.map(call => ({
       id: call.id,
@@ -509,10 +536,13 @@ async function dueList(db, now) {
 
   const due = []
   for (const row of [...chained.values(), ...read]) {
-    // The same door every call goes through: nobody who asked to stop, no
-    // closed business, nothing with no number, however the time was set.
-    if (!isCallable(row)) continue
     const calls = history.get(row.id) ?? []
+    // The same door every call goes through: nobody who asked to stop, no
+    // closed business, nothing with no number, however the time was set. A
+    // business already rung is held only to the floor of that door: it was
+    // offered once, so a call back booked on it is owed even where it came
+    // onto the list by answering the mail rather than by having no site.
+    if (!isCallable(row) && !(calls.length && isRingable(row))) continue
     const last = calls[0] ?? null
     let owed = null
     if (last?.callback_at && sooner(last.callback_at, before) && !outcomeEnds(last.outcome)) {
@@ -527,6 +557,126 @@ async function dueList(db, now) {
     if (owed) due.push({ row, calls, owed })
   }
   return due.sort((one, two) => Date.parse(one.owed.at) - Date.parse(two.owed.at))
+}
+
+/**
+ * The newest reply a person typed to each of these businesses, with what they
+ * said: the opt-outs and the auto-responders are passed over, both the ones
+ * the mailbox reader knew and the ones it did not (`looksAutomatic`).
+ */
+async function repliesFor(db, ids) {
+  const said = new Map()
+  const runs = await Promise.all(
+    runsOf(ids, IDS_AT_ONCE).map(async run => {
+      const { data, error } = await db
+        .from(MESSAGES)
+        .select(REPLY_COLUMNS)
+        .eq('direction', 'inbound')
+        .in('prospect_id', run)
+      if (error) throw error
+      return data || []
+    })
+  )
+  for (const reply of runs.flat()) {
+    const body = String(reply.body_text ?? '')
+    if (readOptOut(body).optOut || readAutoReply(reply.subject, body).auto) continue
+    if (looksAutomatic(reply.subject, body)) continue
+    const held = said.get(reply.prospect_id)
+    if (held && Date.parse(held.at) >= Date.parse(reply.created_at)) continue
+    said.set(reply.prospect_id, { at: reply.created_at, text: newText(body) || body })
+  }
+  return said
+}
+
+/** Where the studio has already decided about each business: ruled out, or a client. */
+async function standingsFor(db, ids) {
+  const held = new Map()
+  const runs = await Promise.all(
+    runsOf(ids, IDS_AT_ONCE).map(async run => {
+      const { data, error } = await db.from(SPINE).select(LEAD_STANDING).in('source_ref', run)
+      if (error) throw error
+      return data || []
+    })
+  )
+  for (const lead of runs.flat()) {
+    const was = held.get(lead.source_ref) ?? { dismissed_at: null, bought_at: null }
+    held.set(lead.source_ref, {
+      dismissed_at: lead.dismissed_at ?? was.dismissed_at,
+      bought_at: lead.bought_at ?? was.bought_at,
+    })
+  }
+  return held
+}
+
+/**
+ * The businesses that answered the mail and have not been dealt with since,
+ * replies first (`byEngagement`).
+ *
+ * Every open in the last month is read and counted as `engaged.js` counts it,
+ * so a business is here for opening more than once as a person rather than
+ * for its mail system fetching the pictures; and every business at `replied`
+ * is here for the reply a person typed, where there is one. Then it is held to
+ * the floor of the call list's door (`isRingable`), and taken off again where
+ * it has been dealt with since: a call made after the latest of its reasons,
+ * a last call that ended it, a lead the owner ruled out after it, or a lead
+ * that bought. A business that opens the mail again after a call comes back
+ * up, because that is a new reason.
+ */
+async function engagedList(db, now) {
+  const since = new Date(now.getTime() - OPEN_LOOKBACK_DAYS * 86_400_000).toISOString()
+  const [opened, replied] = await Promise.all([
+    readAll(() =>
+      db
+        .from(MESSAGES)
+        .select(OPEN_COLUMNS, { count: 'exact' })
+        .eq('direction', 'outbound')
+        .not('opened_at', 'is', null)
+        .gte('last_open_at', since)
+        .order('id')
+    ),
+    db.from(PROSPECTS).select(DETAIL).eq('stage', 'replied').limit(500),
+  ])
+  if (replied.error) throw replied.error
+
+  const mail = new Map()
+  for (const message of opened.rows) {
+    if (!mail.has(message.prospect_id)) mail.set(message.prospect_id, [])
+    mail.get(message.prospect_id).push(message)
+  }
+  const openers = [...mail.keys()].filter(id => engagementOf({ messages: mail.get(id) }))
+  const wrote = new Map((replied.data || []).map(row => [row.id, row]))
+  const read = openers.filter(id => !wrote.has(id))
+  const ids = [...new Set([...wrote.keys(), ...openers])]
+  if (!ids.length) return []
+
+  const [rows, said, history, standing] = await Promise.all([
+    rowsById(db, read),
+    repliesFor(db, [...wrote.keys()]),
+    callsFor(db, ids),
+    standingsFor(db, ids),
+  ])
+
+  const engaged = []
+  for (const row of [...wrote.values(), ...rows]) {
+    if (!isRingable(row)) continue
+    const reply = said.get(row.id) ?? null
+    const found = engagementOf({
+      messages: mail.get(row.id) ?? [],
+      repliedAt: reply ? reply.at : null,
+      reply: reply?.text ?? null,
+    })
+    if (!found) continue
+    const calls = history.get(row.id) ?? []
+    const last = calls[0] ?? null
+    if (last && (outcomeEnds(last.outcome) || Date.parse(last.called_at) >= Date.parse(found.at))) {
+      continue
+    }
+    const decided = standing.get(row.id)
+    if (decided?.bought_at) continue
+    if (decided?.dismissed_at && Date.parse(decided.dismissed_at) >= Date.parse(found.at)) continue
+    engaged.push({ row, calls, engaged: found })
+  }
+  return engaged.sort((one, two) => byEngagement(one.engaged, two.engaged))
 }
 
 /**
@@ -578,7 +728,8 @@ function ranking(pool, calls, index, taken, dueIds, { facts, companies, now }) {
 /** The list, as the page draws it. */
 export async function list(db, query, now = new Date()) {
   const asked = pageOf(query.page)
-  const [owed, pool, listed, calls, today] = await Promise.all([
+  const [answered, owed, pool, listed, calls, today] = await Promise.all([
+    engagedList(db, now),
     dueList(db, now),
     callablePool(db),
     listingIndex(db),
@@ -588,12 +739,26 @@ export async function list(db, query, now = new Date()) {
   const facts = factsOf({ metrics: pool.metrics, listings: listed.rows, calls })
   const context = { facts, formed: pool.formed, companies: listed.companies, now }
 
-  const due = owed.map(one => shaped(one.row, one.calls, { ...context, due: one.owed }))
+  // A business that answered the mail leads the list, carrying the call back
+  // it is owed where it is owed one, so it is drawn once and at the top.
+  const owedBy = new Map(owed.map(one => [one.row.id, one.owed]))
+  const engaged = answered.map(one =>
+    shaped(one.row, one.calls, {
+      ...context,
+      due: owedBy.get(one.row.id) ?? null,
+      engaged: one.engaged,
+    })
+  )
+  const first = new Set(engaged.map(row => row.id))
+  const due = owed
+    .filter(one => !first.has(one.row.id))
+    .map(one => shaped(one.row, one.calls, { ...context, due: one.owed }))
   // A number on the list once is on it once: a call back holds its number, and
   // a second listing of it further down is the same phone ringing.
-  const taken = new Set(due.map(row => phoneKey(row.phone)).filter(Boolean))
+  const taken = new Set([...engaged, ...due].map(row => phoneKey(row.phone)).filter(Boolean))
   const index = indexOf(listed.rows, calls)
-  const ranked = ranking(pool, calls, index, taken, new Set(due.map(row => row.id)), context)
+  const placed = new Set([...first, ...due.map(row => row.id)])
+  const ranked = ranking(pool, calls, index, taken, placed, context)
 
   const pages = Math.max(1, Math.ceil(ranked.fresh.length / PAGE_TAKE))
   const page = Math.min(asked, pages)
@@ -624,6 +789,7 @@ export async function list(db, query, now = new Date()) {
   return {
     status: 200,
     body: {
+      engaged: page === 1 ? engaged : [],
       due: page === 1 ? due : [],
       rows: draw(onPage, false),
       waiting: draw(waiting, true),
@@ -735,25 +901,31 @@ export async function record(db, body, account) {
 
   const callback = callbackAt(body.callback_at)
   if (callback.error) return { status: 400, body: { error: callback.error } }
-  // Only Call Back and Front Desk carry a time. A time on anything else is a
-  // form that disagrees with the button it was sent under, and on an outcome
-  // that ends the list it would be a promise nothing ever reads.
+  // Only Call Back, Front Desk and Pipeline carry a time. A time on anything
+  // else is a form that disagrees with the button it was sent under, and on an
+  // outcome that ends the list it would be a promise nothing ever reads.
   if (callback.at && !outcomeTakesCallback(outcome)) {
-    return { status: 400, body: { error: 'Only a Call Back or a Front Desk call takes a time.' } }
+    return {
+      status: 400,
+      body: { error: 'Only a Call Back, a Front Desk call or Pipeline takes a time.' },
+    }
   }
   // Asked here for what the form got wrong, and again below against the
   // business's own number once it has been read.
   const asked = ownerAnswer(body, outcome, null)
   if (asked.error) return { status: 400, body: { error: asked.error } }
-  // A call back nobody put a clock on is filed a day out rather than refused.
+  // A call back nobody put a clock on is filed a day out rather than refused,
+  // and a pipeline follow-up nobody gave a day is filed a week out.
   const ringBack =
     outcomeTakesCallback(outcome) && !callback.at
-      ? defaultCallbackAt(new Date()).toISOString()
+      ? defaultCallbackAt(new Date(), outcome).toISOString()
       : callback.at
 
-  // The row has to be one this list would actually have offered. Without this
-  // an id copied from anywhere else would write a call against a business that
-  // unsubscribed, which is the one thing this section must not do.
+  // The row has to be one this list could have offered. Without this an id
+  // copied from anywhere else would write a call against a business that
+  // unsubscribed, which is the one thing this section must not do. The floor
+  // of the door is the test (`isRingable`): a business that answered the mail
+  // is offered whatever its site and with its reply open.
   const found = await db
     .from(PROSPECTS)
     .select(
@@ -763,7 +935,7 @@ export async function record(db, body, account) {
     .maybeSingle()
   if (found.error) return refusal(found.error, NOT_RECORDED)
   if (!found.data) return { status: 404, body: { error: 'That business is no longer on file.' } }
-  if (!isCallable(found.data)) {
+  if (!isCallable(found.data) && !isRingable(found.data)) {
     return { status: 409, body: { error: 'That business is not on the call list.' } }
   }
 
@@ -791,7 +963,7 @@ export async function record(db, body, account) {
     .maybeSingle()
   if (written.error) return refusal(written.error, NOT_RECORDED)
 
-  await carry(db, found.data, body, ringBack, interested)
+  const filed = await carry(db, found.data, body, ringBack, interested)
 
   // The day's count is read back rather than added to, so a call made on
   // another screen is in it too. The call is saved whatever this says.
@@ -809,6 +981,7 @@ export async function record(db, body, account) {
       call: written.data?.id ?? null,
       called_at: written.data?.called_at ?? null,
       callback_at: ringBack,
+      pipeline: outcomeFilesPipeline(outcome) ? filed : null,
       owner: owner.patch ? ownerAfter(found.data, owner.patch) : null,
       today,
     },
@@ -835,12 +1008,22 @@ function ownerAfter(business, patch) {
  * somebody who could buy, which is why a number that rang out carries nothing
  * here, nor does a front desk, and a conversation and a call back both do.
  *
+ * Pipeline goes one step further: the lead is stamped `pipeline_at`, which is
+ * what the pipeline routine on the Pi reads to add it to the sales pipeline,
+ * with the follow-up day as its `due_at`. A lead the owner had ruled out is
+ * ruled back in, since pressing Pipeline is the owner saying otherwise.
+ *
  * Failure here is swallowed. The call is already on the record and is owed its
  * confirmation; a lead that missed its row is worth less than being told a call
- * did not save.
+ * did not save. What comes back says whether the lead was filed, so a Pipeline
+ * press that missed the pipeline is said rather than assumed.
+ *
+ * @returns {Promise<boolean>} Whether the lead was kept and stamped.
  */
 async function carry(db, prospect, body, callbackAt, interested) {
-  if (!callMakesLead(String(body.outcome ?? ''), interested)) return
+  const outcome = String(body.outcome ?? '')
+  if (!callMakesLead(outcome, interested)) return false
+  const pipeline = outcomeFilesPipeline(outcome)
 
   try {
     const lead = await keepLead(
@@ -857,21 +1040,28 @@ async function carry(db, prospect, body, callbackAt, interested) {
       },
       db
     )
-    if (!lead) return
+    if (!lead) return false
 
     // Stamped rather than merged: the studio has now spoken to this person,
     // and it owes them a call back on the day that was written down.
+    const at = new Date().toISOString()
     const { error } = await db
       .from(SPINE)
       .update({
-        contacted_at: new Date().toISOString(),
+        contacted_at: at,
         ...(callbackAt ? { due_at: callbackAt } : {}),
-        updated_at: new Date().toISOString(),
+        ...(pipeline ? { pipeline_at: at, dismissed_at: null, dismissed_reason: null } : {}),
+        updated_at: at,
       })
       .eq('id', lead.id)
-    if (error) console.error('calls-admin: the lead was not stamped: %s', error.message)
+    if (error) {
+      console.error('calls-admin: the lead was not stamped: %s', error.message)
+      return false
+    }
+    return true
   } catch (cause) {
     console.error('calls-admin: the lead was not kept: %s', cause?.message || cause)
+    return false
   }
 }
 
