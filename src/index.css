@@ -2889,8 +2889,17 @@
     --field-ring: transparent;
     --field-halo: transparent;
     border-radius: 12px;
-    /* Filled rather than outlined: a step lighter than the card it sits in. */
-    background-color: #262624;
+    /* Filled rather than outlined: a step lighter than the card it sits in.
+       The fill is given as the field ground rather than as a background,
+       because the base rule that grounds every input reads that property
+       with a selector this class cannot outrank. A background set here lost
+       to it on every <input>, which painted name, email and phone the colour
+       of the card they sit on - three boxes nobody could see - while the
+       <textarea>, which that selector does not outrank, kept its fill. The
+       autofill repaint reads the same property, so a field the browser has
+       filled in keeps it too. */
+    --paper-field: #262624;
+    background-color: var(--paper-field);
     box-shadow:
       0 0 0 1px var(--field-ring),
       0 0 0 4px var(--field-halo);
@@ -2905,7 +2914,7 @@
   /* The same step the choice tile darkens its edge to, so a field and a tile in
      one form answer the pointer with one gesture. */
   .field:hover {
-    background-color: #2b2b29;
+    --paper-field: #2b2b29;
   }
 
   .field:focus {
