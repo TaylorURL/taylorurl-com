@@ -97,7 +97,7 @@ const SITE_COLUMNS =
 async function prospectOf(db, id) {
   const { data, error } = await db
     .from('outreach_prospects')
-    .select('id, name, email, town, stage, source, replied_at, bounced_at, contacted_at')
+    .select('id, name, email, phone, town, stage, source, replied_at, bounced_at, contacted_at')
     .eq('id', id)
     .maybeSingle()
   if (error) throw new Error(error.message)
@@ -143,6 +143,7 @@ async function sendOne(db, settings, site, prospect, nth = -1, thread = null) {
     proof: await proofNow(),
     origin: from.origin,
     email: prospect.email,
+    phone: prospect.phone,
   })
   const { data: message, error } = await db
     .from('outreach_messages')

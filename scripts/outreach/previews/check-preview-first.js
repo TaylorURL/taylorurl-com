@@ -2,7 +2,8 @@
  * Renders a preview-first letter set the way the send job does and checks it
  * reads as one person's note: a subject naming the business, the pictures
  * where the letter names them, the preview's address as a link, the offer to
- * drive out and talk, "Thanks, Trenton" over the drawn signature, none of the
+ * drive out and talk, the line saying Trenton will call with the number he
+ * has, "Thanks, Trenton" over the drawn signature, none of the
  * compliment lines that read as a mail merge, and no unsubscribe link or
  * trading line anywhere in either half.
  *
@@ -23,6 +24,8 @@ import {
   previewUrl,
   spokenName,
 } from '../../../lib/outreach/previews.js'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { check, finish, ok, same } from '../../harness/checks.js'
 
 const SLUG = 'cactusjaxroofingconstruction'
@@ -87,12 +90,18 @@ check('a follow-up replies under the subject its thread opened with', () => {
     'a thread opened under the old subject'
   )
 })
-check('every letter ends on the offer to drive out, signed Thanks, Trenton', () => {
+check('every letter offers to drive out, signed Thanks, Trenton', () => {
   for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
     const { text, html } = previewFirstLetter(site, nth, { track: 't' })
-    const signed = `${PREVIEW_OFFER}\n\n${PREVIEW_THANKS}\n\nTrenton Taylor | Owner`
-    ok(text.includes(signed), `letter ${nth} does not close on the offer:\n${text}`)
     ok(html.includes('Thanks,<br>Trenton'), `letter ${nth} is not signed in the html`)
+    const paragraphs = text.split('\n\n')
+    const last = paragraphs[paragraphs.indexOf(PREVIEW_THANKS) - 1]
+    if (nth >= 0) {
+      same(last, PREVIEW_OFFER, `follow-up ${nth + 1} does not close on the offer`)
+    } else {
+      ok(/\bdrive\b/.test(last), `the first letter's close does not offer to drive out:\n${last}`)
+      ok(!text.includes(PREVIEW_OFFER), 'the first letter offers to drive out twice')
+    }
   }
 })
 check('no letter carries a compliment line or a rating', () => {
@@ -189,6 +198,62 @@ check('the letters name the business the way a person would, not as it is filed'
   const text = previewFirstLetter(filed, -1, { track: 't' }).text
   ok(text.includes('Xenos Marine'), text)
   ok(!text.includes('XENOS'), 'the filed name survives')
+})
+check('every first letter says Trenton will call, reads out the number and asks after it', () => {
+  // Enough slugs that each of the three ways of opening is drawn.
+  const openings = new Set()
+  for (const slug of ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i']) {
+    const one = { ...site, slug }
+    const { text, html } = previewFirstLetter(one, -1, { track: 't', phone: '+1 832-555-0142' })
+    openings.add(text.split('\n').find(line => /Trenton/.test(line) && !/^Thanks/.test(line)))
+    for (const half of [text, html]) {
+      ok(/introduce myself/.test(half), `${slug}: no call promised`)
+      ok(half.includes('(832) 555-0142'), `${slug}: the number is not read out`)
+      ok(
+        /\?/.test(half.slice(half.indexOf('(832) 555-0142'))),
+        `${slug}: the number is not asked after`
+      )
+      ok(/let me know/.test(half), `${slug}: nothing says to say if it is wrong`)
+    }
+    ok(
+      text.indexOf('introduce myself') > text.indexOf(previewUrl(slug)),
+      `${slug}: the call comes before the link`
+    )
+    const close = text.split('\n\n').find(paragraph => paragraph.includes('introduce myself'))
+    ok(/\bdrive\b/.test(close), `${slug}: the call and the drive are not one paragraph`)
+    ok(close.includes('(832) 555-0142'), `${slug}: the number is not in the closing paragraph`)
+    ok(
+      /let me know( a better one)?\.$/.test(close),
+      `${slug}: the close does not end on the question`
+    )
+    const bare = previewFirstLetter(one, -1, { track: 't', phone: null }).text
+    ok(/introduce myself/.test(bare), `${slug}: no call promised without a number`)
+    ok(/best number to reach you\?/.test(bare), `${slug}: no number asked for`)
+    ok(
+      !/\(\d{3}\)/.test(bare.slice(0, bare.indexOf(PREVIEW_THANKS))),
+      `${slug}: a number read out that is not on file`
+    )
+    same(
+      previewFirstLetter(one, -1, { track: 't', phone: '555-0142' }).text,
+      bare,
+      `${slug}: a number short of ten digits is read out`
+    )
+  }
+  same(openings.size, 3, 'all three ways of opening')
+  for (const nth of [0, 1, 2]) {
+    const { text } = previewFirstLetter(site, nth, { track: 't', phone: '8325550142' })
+    ok(!/introduce myself/.test(text), `follow-up ${nth + 1} promises the call again`)
+    ok(!text.includes('555-0142'), `follow-up ${nth + 1} reads out the number`)
+  }
+  const sender = readFileSync(
+    join(import.meta.dirname, '../../../api/outreach/previews.js'),
+    'utf8'
+  )
+  ok(
+    /previewFirstLetter\([\s\S]*?phone: prospect\.phone/.test(sender),
+    'the sender hands no number in'
+  )
+  ok(/select\('id, name, email, phone,/.test(sender), 'the sender does not read the number')
 })
 check('the follow-ups fall inside the draft lifetime', () =>
   ok(
