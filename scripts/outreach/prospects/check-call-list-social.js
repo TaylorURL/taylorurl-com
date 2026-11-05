@@ -659,6 +659,7 @@ function termTest(term) {
  * migration reads like.
  */
 function database(tables, { absent = [] } = {}) {
+  const writes = []
   const from = table => {
     const filters = []
     let columns = '*'
@@ -667,10 +668,33 @@ function database(tables, { absent = [] } = {}) {
     let cut = null
     let limit = null
     let single = false
+    let op = 'select'
+    let payload = null
     const builder = {
       select(wanted = '*', options = {}) {
-        columns = wanted
-        head = Boolean(options.head)
+        if (op === 'select') {
+          columns = wanted
+          head = Boolean(options.head)
+        }
+        return builder
+      },
+      insert(values) {
+        op = 'insert'
+        payload = values
+        return builder
+      },
+      update(values) {
+        op = 'update'
+        payload = values
+        return builder
+      },
+      upsert(values) {
+        op = 'upsert'
+        payload = values
+        return builder
+      },
+      delete() {
+        op = 'delete'
         return builder
       },
       eq(column, value) {
@@ -729,6 +753,10 @@ function database(tables, { absent = [] } = {}) {
           error: { code: '42P01', message: `relation "public.${table}" does not exist` },
         }
       }
+      if (op !== 'select') {
+        writes.push({ table, op, payload })
+        return { data: null, error: null }
+      }
       let rows = (tables[table] ?? []).filter(one => filters.every(test => test(one)))
       if (head) return { data: null, error: null, count: rows.length }
       if (order) {
@@ -752,7 +780,7 @@ function database(tables, { absent = [] } = {}) {
     }
     return builder
   }
-  return { from }
+  return { from, writes }
 }
 
 /** A business on the table, callable unless the case says otherwise. */
@@ -823,7 +851,8 @@ const table = () => ({
 
 /** The list as the endpoint answers it, by business. */
 async function offered(over = {}, options = {}) {
-  const answer = await list(database({ ...table(), ...over }, options), {}, NOW)
+  const db = database({ ...table(), ...over }, options)
+  const answer = await list(db, {}, NOW)
   same(answer.status, 200, 'the list answered')
   const rows = [
     ...answer.body.engaged,
@@ -831,7 +860,36 @@ async function offered(over = {}, options = {}) {
     ...answer.body.rows,
     ...answer.body.waiting,
   ]
-  return { answer, rows, by: new Map(rows.map(row => [row.id, row])) }
+  return { answer, rows, writes: db.writes, by: new Map(rows.map(row => [row.id, row])) }
+}
+
+/** A call on the record. */
+const rung = (id, prospect, outcome) => ({
+  id,
+  prospect_id: prospect,
+  outcome,
+  note: null,
+  interested: null,
+  callback_at: null,
+  called_at: '2026-11-03T16:00:00Z',
+})
+
+/** A company's own move toward the studio, as strong as they come. */
+const ASKED = {
+  id: 'r-ask',
+  prospect_id: 'roof',
+  direction: 'inbound',
+  action_type: 'reply',
+  status: 'confirmed',
+  interest: 'purchase',
+  acted_at: '2026-11-04T16:00:00Z',
+  exact_text: 'What would a new site cost us?',
+  summary: null,
+  reaction_kind: null,
+  page_url: null,
+  source_url: null,
+  group_name: null,
+  notes: null,
 }
 
 check('a business carries its own Facebook history, latest first', async () => {
@@ -938,6 +996,129 @@ check('a business that asked to stop is not carried back on by an answer', async
     ],
   })
   same(by.has('roof'), false, 'the business that asked to stop was offered anyway')
+})
+
+// Every flag that takes a business off this list has to go on taking it off
+// however warmly that business engaged. The lift is a multiplier on a score,
+// and a score is only ever read for a row the list's own door already let
+// through - but that is a sentence, and this is the reading. Each of these
+// businesses is given the strongest answer there is and has to stay off.
+
+check('a call that ended it is not undone by the warmest answer on Facebook', async () => {
+  for (const outcome of ['not_interested', 'bad_lead', 'wrong_number', 'booked']) {
+    const { by } = await offered({
+      outreach_calls: [rung('c1', 'roof', outcome)],
+      outreach_social_actions: [ASKED],
+    })
+    same(by.has('roof'), false, `a business whose last call was ${outcome}`)
+  }
+})
+
+check('a conversation already open by mail is not reopened by Facebook', async () => {
+  const { by } = await offered({
+    outreach_prospects: [
+      business('fence', { phone: '(281) 555-0101' }),
+      business('roof', { phone: '(281) 555-0102', trade: 'roofing contractor', stage: 'replied' }),
+    ],
+    outreach_social_actions: [ASKED],
+  })
+  same(by.has('roof'), false, 'a business at the replied stage with a Facebook answer')
+})
+
+check('a business asked for no further contact stays off, answer or no answer', async () => {
+  for (const stage of ['unsubscribed', 'skipped']) {
+    const { by } = await offered({
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        business('roof', { phone: '(281) 555-0102', trade: 'roofing contractor', stage }),
+      ],
+      outreach_social_actions: [ASKED],
+    })
+    same(by.has('roof'), false, `a business at ${stage} with a Facebook answer`)
+  }
+})
+
+// The same thing said once rather than flag by flag, which is the part that
+// holds for a rule nobody here thought to name: the answers move the order and
+// nothing else. Whoever the list offers is whoever it would have offered with
+// the two tables empty.
+check('answering on Facebook changes the order and never the set', async () => {
+  // Every one of these puts the flag on the roofer, which is the business
+  // carrying the answer, so a door opened by the answer would show up as a
+  // business in one set and not the other.
+  const roofer = over =>
+    business('roof', { phone: '(281) 555-0102', trade: 'roofing contractor', ...over })
+  const fixtures = [
+    {},
+    { outreach_calls: [rung('c1', 'roof', 'not_interested')] },
+    { outreach_calls: [rung('c1', 'roof', 'no_answer')] },
+    {
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        roofer({ stage: 'unsubscribed' }),
+      ],
+    },
+    {
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        roofer({ stage: 'skipped' }),
+      ],
+    },
+    {
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        roofer({ stage: 'replied' }),
+      ],
+    },
+    {
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        roofer({ stage: 'bounced' }),
+      ],
+    },
+    {
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        roofer({ business_status: 'CLOSED_PERMANENTLY' }),
+      ],
+    },
+    {
+      outreach_prospects: [
+        business('fence', { phone: '(281) 555-0101' }),
+        roofer({ site_kind: 'own', website: 'https://exampleroof.example' }),
+      ],
+    },
+  ]
+  for (const over of fixtures) {
+    const quiet = await offered({
+      ...over,
+      outreach_social_actions: [],
+      outreach_prospect_facebook_pages: [],
+    })
+    const answered_ = await offered(over)
+    ok(quiet.by.size > 0, `the list offered nobody for ${JSON.stringify(over).slice(0, 60)}`)
+    same(
+      [...answered_.by.keys()].sort().join(','),
+      [...quiet.by.keys()].sort().join(','),
+      `who the list offers for ${JSON.stringify(over).slice(0, 60)}`
+    )
+  }
+})
+
+check('reading the list writes nothing anywhere', async () => {
+  const { writes } = await offered()
+  same(writes.length, 0, `the list wrote ${JSON.stringify(writes)}`)
+})
+
+check('no lead and no pipeline row can come off a social row', () => {
+  const source = read('api/calls-admin.js')
+  const made = source.slice(source.indexOf('async function carry('))
+  ok(made.length > 0, 'the lead path is not in the endpoint')
+  ok(!/SOCIAL|FACEBOOK_PAGES|engaged_back|social/.test(made), 'the lead path reads a social row')
+  ok(
+    /if \(!callMakesLead\(outcome, interested\)\) return false/.test(made),
+    'a lead is no longer gated on what a call came to'
+  )
 })
 
 check('the list still answers where the social tables are not in the database', async () => {
