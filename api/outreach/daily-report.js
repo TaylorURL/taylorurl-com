@@ -24,6 +24,13 @@
  * A new business letter that failed is counted beside that chain only while
  * its lead has had no letter since, so a failure the next run put right drops
  * out of the recap rather than reading as a business missed.
+ *
+ * Under the day's count goes one line on the preview sites: of the businesses
+ * that opened a preview sent this week, how many came to look, beside the same
+ * for last week (lib/outreach/funnel.js, counted the way the Call List's
+ * preview results are). It is a reading beside the day rather than part of
+ * it, so it never makes an empty day worth a letter, and a read of it that
+ * fails costs the recap that line and nothing else.
  */
 
 import { bearerOr401, methodsOr405, servedHereOr404 } from '../../lib/http/guard.js'
@@ -43,6 +50,8 @@ import {
   windowOf,
 } from '../../lib/outreach/daily-report.js'
 import { CHAIN_REGISTRY } from '../../lib/outreach/variants.js'
+import { funnelOf, weeksLine } from '../../lib/outreach/funnel.js'
+import { readFunnel } from '../../lib/outreach/funnel-rows.js'
 
 /**
  * The name of the chain a letter id belongs to, looked up in the registry the
@@ -178,6 +187,20 @@ async function rowsOf(db, date) {
   }
 }
 
+/**
+ * The preview line for the recap, or null where there is none to give: no
+ * preview sent this week or last, or the read behind it failed. A failure is
+ * logged and the recap goes without the line.
+ */
+async function previewsLine(db, now) {
+  try {
+    return weeksLine(funnelOf(await readFunnel(db), { now }))
+  } catch (cause) {
+    console.error('outreach recap: the preview line was left off: %s', cause?.message || cause)
+    return null
+  }
+}
+
 export async function work({ db, counts, now = new Date() }, post = sendNotice) {
   const clock = clockIn(now)
   if (clock.hour !== RECAP_HOUR) {
@@ -190,7 +213,7 @@ export async function work({ db, counts, now = new Date() }, post = sendNotice) 
   if (isEmpty(tally)) {
     return { note: `Nothing was sent or answered on ${today}, so no recap was sent.` }
   }
-  const recap = renderRecap(today, tally)
+  const recap = renderRecap(today, tally, { previews: await previewsLine(db, now) })
   await post(recap, RESEND_API_KEY, { urgent: false })
   counts.changed = 1
   return { note: `The recap for ${today} went to the studio inbox: ${recap.subject}` }

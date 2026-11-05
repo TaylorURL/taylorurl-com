@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.32-2f6bff?style=for-the-badge" alt="Version 2026.45.32" />
+<img src="https://img.shields.io/badge/version-2026.45.33-2f6bff?style=for-the-badge" alt="Version 2026.45.33" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -41,6 +41,8 @@ The time zone, the held-domain list and the domains I own are installed into the
 `api/outreach/send.js` drafts every message but only hands one to a mail server when `sending_enabled` is on in the console and `OUTREACH_SEND_ARMED` is set on the deployment. Either one off and it stays a draft.
 
 The Call List is the phone side. `callScore.js` reads three things off a business before anybody rings it: whether the owner picks up, whether it needs a site, whether it can pay. They get multiplied, so one bad reading sinks a business however well it reads on the other two. Owner and budget start from Census figures for the trade, loaded into a table by `scripts/db/census-trade-metrics.py`. Once a trade has twenty calls somebody picked up, its own pick-up rate replaces the Census figure. `callList.js` drops rows before anybody sees them: a chain, a number shared by three listings, a Google listing with no reviews, anything Google says is closed. Each of those is a call that was already wasted. The businesses that answered the mail lead the list ahead of any score: one that wrote back, that a person opened twice, or that followed the link to its preview site. Replies go first, then the more a business did on its preview site the higher it sits: every visit, minute, page and click counts, and a tap on Make It Yours counts most. A business that only opened comes after every one that looked. `engaged.js` doesn't count an open inside ten minutes of the send, because that one is a mail scanner fetching the picture, or a visit inside two minutes, because that one is a link checker. They get rung whatever site they have, since the sender has already written and been read. A call that turns into a real conversation is filed in the sales pipeline with a follow-up day, and that business is off the list for good. The page counts the day against a goal of fifty.
+
+Beside that count it says whether the preview sites are working: of the businesses sent one, how many a person opened, how many came to look, how long they stayed, what they tapped and who wrote back, by layout family, by the week sent, and before and after the new layouts of 2026-11-05. `lib/outreach/funnel.js` counts it with the same rules as the list, so a scanner's open, a link checker's visit and an auto-reply never count. The 5 PM recap carries one line of it: this week's visited per opened beside last week's.
 
 ## Tests
 

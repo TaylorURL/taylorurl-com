@@ -258,9 +258,22 @@ export default function Start() {
                     <Hint id="email" error={errors.email} />
                   </div>
                   <div>
-                    <label htmlFor="phone" className={FIELD_LABEL}>
-                      {ASKED.phone}
-                    </label>
+                    {/* Optional is said on the label's line rather than under the
+                        box, so the two boxes in the row line up and nothing hangs
+                        below one of them. It stays out of the label itself, which
+                        reads only the question the inbox reports, and reaches a
+                        screen reader through the field's description instead. */}
+                    <div className="flex items-end justify-between gap-3">
+                      <label htmlFor="phone" className={FIELD_LABEL}>
+                        {ASKED.phone}
+                      </label>
+                      <span
+                        id="phone-note"
+                        className="mb-2 text-[13px] leading-[1.4] text-ink-mute"
+                      >
+                        Optional
+                      </span>
+                    </div>
                     <input
                       type="tel"
                       id="phone"
@@ -273,7 +286,7 @@ export default function Start() {
                       className="field"
                       placeholder="(281) 555-0100"
                     />
-                    <Hint id="phone" note="Optional." error={errors.phone} />
+                    <Hint id="phone" error={errors.phone} />
                   </div>
                 </div>
 

@@ -22,6 +22,7 @@ import {
 import { engagedWords, siteWords } from '@lib/outreach/prospects/engaged.js'
 import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
+import { PreviewResults } from './PreviewResults'
 
 /**
  * The Call List: one list for the owner.
@@ -45,7 +46,9 @@ import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
  * to it so far, and the eight results a call can come to; logging one opens
  * the next business. Pipeline is the one for somebody worth seeing again:
  * it asks for a follow-up day and files the business in the sales pipeline. Above it all is the day: how many calls so far against
- * fifty. There is no script on it: the owner asked for the list and the call,
+ * fifty, and beside it whether the preview sites are bringing anybody to look
+ * (`PreviewResults`), with the figures by layout and by week a click away.
+ * There is no script on it: the owner asked for the list and the call,
  * nothing to read out.
  */
 
@@ -712,7 +715,7 @@ function Today({ today, loading }) {
   const made = today?.calls ?? 0
   const goal = today?.goal ?? DAILY_CALL_GOAL
   return (
-    <div className="max-w-[28rem]">
+    <div className="w-full max-w-[28rem]">
       <GoalBar label={dayLine(made, goal)} share={dayShare(made, goal)} loading={loading} />
     </div>
   )
@@ -774,8 +777,12 @@ export default function CallListPage() {
       cols="minmax(20rem, 28rem) minmax(0, 1fr)"
       rows="auto minmax(0, 1fr)"
     >
-      <Area area="today">
+      {/* The day's calls, and beside them whether the preview sites are
+          bringing anybody to look - the reason the businesses at the top of
+          the list are there. */}
+      <Area area="today" className="lg:flex-row lg:items-start lg:justify-between lg:gap-8">
         <Today today={list.today} loading={list.loading} />
+        <PreviewResults token={token} />
       </Area>
 
       <Area area="list">
