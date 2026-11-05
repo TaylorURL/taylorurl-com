@@ -9,6 +9,13 @@
         "definition": "CHECK ((form = ANY (ARRAY['contact'::text, 'start'::text, 'tools'::text])))"
       }
     },
+    "fb_preview_requests": {
+      "status": {
+        "constraint": "fb_preview_requests_status_check",
+        "allows": ["new", "building", "ready", "failed"],
+        "definition": "CHECK ((status = ANY (ARRAY['new'::text, 'building'::text, 'ready'::text, 'failed'::text])))"
+      }
+    },
     "gd_matches": {
       "status": {
         "constraint": "gd_matches_status_check",
@@ -170,6 +177,13 @@
         "definition": "CHECK ((status = ANY (ARRAY['drafted'::text, 'sent'::text, 'failed'::text, 'bounced'::text, 'received'::text])))"
       }
     },
+    "outreach_prospect_facebook_pages": {
+      "verification": {
+        "constraint": "outreach_prospect_facebook_pages_verification_check",
+        "allows": ["verified", "source_linked", "hold", "rejected"],
+        "definition": "CHECK ((verification = ANY (ARRAY['verified'::text, 'source_linked'::text, 'hold'::text, 'rejected'::text])))"
+      }
+    },
     "outreach_prospects": {
       "email_verdict": {
         "constraint": "outreach_prospects_email_verdict_check",
@@ -216,6 +230,33 @@
         "definition": "CHECK ((job = ANY (ARRAY['source'::text, 'enrich'::text, 'audit'::text, 'send'::text, 'watch'::text, 'ramp'::text, 'lawsuits'::text, 'previews'::text, 'texts'::text])))"
       }
     },
+    "outreach_social_actions": {
+      "action_type": {
+        "constraint": "outreach_social_actions_action_type_check",
+        "allows": ["comment", "reply", "dm", "group_post", "page_post", "reaction", "follow"],
+        "definition": "CHECK ((action_type = ANY (ARRAY['comment'::text, 'reply'::text, 'dm'::text, 'group_post'::text, 'page_post'::text, 'reaction'::text, 'follow'::text])))"
+      },
+      "direction": {
+        "constraint": "outreach_social_actions_direction_check",
+        "allows": ["outbound", "inbound"],
+        "definition": "CHECK ((direction = ANY (ARRAY['outbound'::text, 'inbound'::text])))"
+      },
+      "interest": {
+        "constraint": "outreach_social_actions_interest_check",
+        "allows": ["purchase", "conversation", "courtesy"],
+        "definition": "CHECK ((interest = ANY (ARRAY['purchase'::text, 'conversation'::text, 'courtesy'::text])))"
+      },
+      "platform": {
+        "constraint": "outreach_social_actions_platform_check",
+        "allows": ["facebook"],
+        "definition": "CHECK ((platform = ANY (ARRAY['facebook'::text])))"
+      },
+      "status": {
+        "constraint": "outreach_social_actions_status_check",
+        "allows": ["confirmed", "pending", "attempted", "failed"],
+        "definition": "CHECK ((status = ANY (ARRAY['confirmed'::text, 'pending'::text, 'attempted'::text, 'failed'::text])))"
+      }
+    },
     "outreach_texts": {
       "direction": {
         "constraint": "outreach_texts_direction_check",
@@ -233,6 +274,27 @@
         "constraint": "outreach_variants_status_check",
         "allows": ["live", "paused", "draft"],
         "definition": "CHECK ((status = ANY (ARRAY['live'::text, 'paused'::text, 'draft'::text])))"
+      }
+    },
+    "preview_events": {
+      "type": {
+        "constraint": "preview_events_type_check",
+        "allows": [
+          "page",
+          "scroll",
+          "section",
+          "click",
+          "hover",
+          "rage",
+          "dead",
+          "focus",
+          "blur",
+          "submit",
+          "idle",
+          "hidden",
+          "end"
+        ],
+        "definition": "CHECK ((type = ANY (ARRAY['page'::text, 'scroll'::text, 'section'::text, 'click'::text, 'hover'::text, 'rage'::text, 'dead'::text, 'focus'::text, 'blur'::text, 'submit'::text, 'idle'::text, 'hidden'::text, 'end'::text])))"
       }
     },
     "preview_sites": {
@@ -259,6 +321,13 @@
           "recreation"
         ],
         "definition": "CHECK ((industry = ANY (ARRAY['plumbing'::text, 'barber'::text, 'realestate'::text, 'roofing'::text, 'hvac'::text, 'flooring'::text, 'salon'::text, 'fitness'::text, 'printing'::text, 'autorepair'::text, 'professional'::text, 'restaurant'::text, 'recreation'::text])))"
+      }
+    },
+    "preview_views": {
+      "why": {
+        "constraint": "preview_views_why_check",
+        "allows": ["counted", "studio", "automated", "scanner", "too_soon"],
+        "definition": "CHECK ((why = ANY (ARRAY['counted'::text, 'studio'::text, 'automated'::text, 'scanner'::text, 'too_soon'::text])))"
       }
     },
     "profiles": {
@@ -302,6 +371,62 @@
         "constraint": "projects_status_check",
         "allows": ["active", "complete", "cancelled"],
         "definition": "CHECK ((status = ANY (ARRAY['active'::text, 'complete'::text, 'cancelled'::text])))"
+      }
+    },
+    "proposals": {
+      "status": {
+        "constraint": "proposals_status_check",
+        "allows": ["open", "paid"],
+        "definition": "CHECK ((status = ANY (ARRAY['open'::text, 'paid'::text])))"
+      }
+    },
+    "rh_employer_requests": {
+      "kind": {
+        "constraint": "rh_employer_requests_kind_check",
+        "allows": ["claim", "dispute", "missing"],
+        "definition": "CHECK ((kind = ANY (ARRAY['claim'::text, 'dispute'::text, 'missing'::text])))"
+      }
+    },
+    "rh_mail": {
+      "kind": {
+        "constraint": "rh_mail_kind_check",
+        "allows": [
+          "received",
+          "rejected",
+          "limit",
+          "interview-request",
+          "interview-scheduled",
+          "assessment",
+          "offer",
+          "other"
+        ],
+        "definition": "CHECK ((kind = ANY (ARRAY['received'::text, 'rejected'::text, 'limit'::text, 'interview-request'::text, 'interview-scheduled'::text, 'assessment'::text, 'offer'::text, 'other'::text])))"
+      }
+    },
+    "rh_reviews": {
+      "source": {
+        "constraint": "rh_reviews_source_check",
+        "allows": [
+          "site",
+          "blind",
+          "careerbliss",
+          "fairygodboss",
+          "hackernews",
+          "reddit",
+          "glassdoor",
+          "indeed"
+        ],
+        "definition": "CHECK ((source = ANY (ARRAY['site'::text, 'blind'::text, 'careerbliss'::text, 'fairygodboss'::text, 'hackernews'::text, 'reddit'::text, 'glassdoor'::text, 'indeed'::text])))"
+      },
+      "relation": {
+        "constraint": "rh_reviews_relation_check",
+        "allows": ["current", "former"],
+        "definition": "CHECK (((relation IS NULL) OR (relation = ANY (ARRAY['current'::text, 'former'::text]))))"
+      },
+      "status": {
+        "constraint": "rh_reviews_status_check",
+        "allows": ["new", "read", "set_aside"],
+        "definition": "CHECK ((status = ANY (ARRAY['new'::text, 'read'::text, 'set_aside'::text])))"
       }
     },
     "site_members": {
@@ -517,6 +642,26 @@
   },
   "unread": [
     {
+      "table": "call_trade_metrics",
+      "constraint": "call_trade_metrics_avg_sales_check",
+      "definition": "CHECK (((avg_sales IS NULL) OR (avg_sales >= (0)::numeric)))"
+    },
+    {
+      "table": "call_trade_metrics",
+      "constraint": "call_trade_metrics_firms_no_staff_check",
+      "definition": "CHECK ((firms_no_staff >= 0))"
+    },
+    {
+      "table": "call_trade_metrics",
+      "constraint": "call_trade_metrics_firms_with_staff_check",
+      "definition": "CHECK ((firms_with_staff >= 0))"
+    },
+    {
+      "table": "call_trade_metrics",
+      "constraint": "call_trade_metrics_solo_share_check",
+      "definition": "CHECK (((solo_share >= (0)::numeric) AND (solo_share <= (1)::numeric)))"
+    },
+    {
       "table": "client_sites",
       "constraint": "client_sites_domain_check",
       "definition": "CHECK (((domain = lower(domain)) AND (domain !~ '^www\\.'::text)))"
@@ -567,6 +712,11 @@
       "definition": "CHECK (((direction = 'inbound'::text) OR (prospect_id IS NOT NULL)))"
     },
     {
+      "table": "outreach_prospect_facebook_pages",
+      "constraint": "outreach_prospect_facebook_pages_verified_on_a_day",
+      "definition": "CHECK (((verification <> 'verified'::text) OR (verified_at IS NOT NULL)))"
+    },
+    {
       "table": "outreach_prospects",
       "constraint": "outreach_prospects_assignment_has_a_start",
       "definition": "CHECK (((assigned_to IS NULL) = (assigned_at IS NULL)))"
@@ -575,6 +725,11 @@
       "table": "outreach_prospects",
       "constraint": "outreach_prospects_audit_email_is_whole",
       "definition": "CHECK (((audit_emailed_at IS NULL) = (audit_emailed_to IS NULL)))"
+    },
+    {
+      "table": "outreach_prospects",
+      "constraint": "outreach_prospects_officer_count_check",
+      "definition": "CHECK (((officer_count IS NULL) OR (officer_count >= 0)))"
     },
     {
       "table": "outreach_settings",
@@ -595,6 +750,16 @@
       "table": "outreach_settings",
       "constraint": "outreach_settings_text_daily_cap_check",
       "definition": "CHECK (((text_daily_cap >= 0) AND (text_daily_cap <= 200)))"
+    },
+    {
+      "table": "outreach_social_actions",
+      "constraint": "outreach_social_actions_interest_is_inbound",
+      "definition": "CHECK (((interest IS NULL) OR (direction = 'inbound'::text)))"
+    },
+    {
+      "table": "outreach_social_actions",
+      "constraint": "outreach_social_actions_says_what_was_said",
+      "definition": "CHECK (((action_type <> ALL (ARRAY['comment'::text, 'reply'::text, 'dm'::text, 'group_post'::text, 'page_post'::text])) OR (COALESCE(btrim(exact_text), ''::text) <> ''::text) OR (COALESCE(btrim(summary), ''::text) <> ''::text)))"
     },
     {
       "table": "outreach_texts",
@@ -635,6 +800,46 @@
       "table": "project_onboarding",
       "constraint": "project_onboarding_step_named",
       "definition": "CHECK ((step <> ''::text))"
+    },
+    {
+      "table": "proposals",
+      "constraint": "proposals_addons_check",
+      "definition": "CHECK ((jsonb_typeof(addons) = 'array'::text))"
+    },
+    {
+      "table": "proposals",
+      "constraint": "proposals_client_check",
+      "definition": "CHECK (((length(client) >= 1) AND (length(client) <= 160)))"
+    },
+    {
+      "table": "proposals",
+      "constraint": "proposals_items_check",
+      "definition": "CHECK ((jsonb_typeof(items) = 'array'::text))"
+    },
+    {
+      "table": "proposals",
+      "constraint": "proposals_slug_check",
+      "definition": "CHECK ((slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'::text))"
+    },
+    {
+      "table": "proposals",
+      "constraint": "proposals_spec_check",
+      "definition": "CHECK ((jsonb_typeof(spec) = 'object'::text))"
+    },
+    {
+      "table": "rh_reviews",
+      "constraint": "rh_reviews_rating_check",
+      "definition": "CHECK (((rating IS NULL) OR ((rating >= 1) AND (rating <= 5))))"
+    },
+    {
+      "table": "rh_reviews",
+      "constraint": "rh_reviews_role_check",
+      "definition": "CHECK (((role IS NULL) OR (char_length(role) <= 80)))"
+    },
+    {
+      "table": "rh_reviews",
+      "constraint": "rh_reviews_site_answers",
+      "definition": "CHECK (((source <> 'site'::text) OR ((relation IS NOT NULL) AND (recommend IS NOT NULL))))"
     },
     {
       "table": "subscribers",
