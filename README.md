@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.35-2f6bff?style=for-the-badge" alt="Version 2026.45.35" />
+<img src="https://img.shields.io/badge/version-2026.45.36-2f6bff?style=for-the-badge" alt="Version 2026.45.36" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
