@@ -9,9 +9,10 @@
  * photos off its Google listing. The list is one list, in four parts:
  *
  * - `engaged`: the businesses that answered the mail and have not been rung
- *   since - a person opened what the studio sent more than once, or wrote
- *   back - replies first (`engaged.js`). They are the warmest numbers on the
- *   list, so they lead it, whatever their site.
+ *   since - a person opened what the studio sent more than once, followed the
+ *   link to its preview site, or wrote back - replies first, then the more a
+ *   business did on its preview site the higher (`engaged.js`). They are the
+ *   warmest numbers on the list, so they lead it, whatever their site.
  * - `due`: every call back due today or overdue, and every call a chain has
  *   asked for, oldest first.
  * - `rows`: the businesses never called, highest score first, a page at a
@@ -75,6 +76,7 @@ import {
   byEngagement,
   engagementOf,
   looksAutomatic,
+  siteActivity,
 } from '../lib/outreach/prospects/engaged.js'
 import { newText, readAutoReply, readOptOut } from '../lib/outreach/sending/replies.js'
 import {
@@ -96,6 +98,8 @@ import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePh
 const PROSPECTS = 'outreach_prospects'
 const CALLS = 'outreach_calls'
 const MESSAGES = 'outreach_messages'
+const VISITS = 'preview_sessions'
+const VISIT_EVENTS = 'preview_events'
 const NEW_LEADS = 'new_business_leads'
 const METRICS = 'call_trade_metrics'
 
@@ -163,6 +167,13 @@ const LISTING = [
 
 /** The columns of a sent message an open is read from. */
 const OPEN_COLUMNS = 'id, prospect_id, sent_at, opened_at, last_open_at, open_count'
+
+/** The columns of a visit to a preview site that say what a person did there. */
+const VISIT_COLUMNS =
+  'id, prospect_id, started_at, last_seen_at, pages, active_ms, max_scroll, clicks, calls, emails, ctas, form_submits'
+
+/** The kind the preview's tracker gives a tap on Make It Yours. */
+const CLAIM_KIND = 'claim'
 
 /** The columns of a reply that say who wrote it and what they said. */
 const REPLY_COLUMNS = 'id, prospect_id, subject, body_text, created_at'
@@ -609,22 +620,66 @@ async function standingsFor(db, ids) {
 }
 
 /**
+ * When each letter went to each of these businesses, which says which visits
+ * to a preview site came too soon after one to be a person.
+ */
+async function sendsFor(db, ids) {
+  const held = new Map(ids.map(id => [id, []]))
+  const runs = await Promise.all(
+    runsOf(ids, IDS_AT_ONCE).map(async run => {
+      const { data, error } = await db
+        .from(MESSAGES)
+        .select('prospect_id, sent_at')
+        .eq('direction', 'outbound')
+        .not('sent_at', 'is', null)
+        .in('prospect_id', run)
+      if (error) throw error
+      return data || []
+    })
+  )
+  for (const message of runs.flat()) held.get(message.prospect_id)?.push(message.sent_at)
+  return held
+}
+
+/** How many times each of these visits tapped Make It Yours. */
+async function claimsFor(db, ids) {
+  const held = new Map()
+  const runs = await Promise.all(
+    runsOf(ids, IDS_AT_ONCE).map(async run => {
+      const { data, error } = await db
+        .from(VISIT_EVENTS)
+        .select('session_id')
+        .eq('type', 'click')
+        .eq('kind', CLAIM_KIND)
+        .in('session_id', run)
+      if (error) throw error
+      return data || []
+    })
+  )
+  for (const event of runs.flat()) held.set(event.session_id, (held.get(event.session_id) ?? 0) + 1)
+  return held
+}
+
+/**
  * The businesses that answered the mail and have not been dealt with since,
- * replies first (`byEngagement`).
+ * replies first, then the most active on their preview site (`byEngagement`).
  *
  * Every open in the last month is read and counted as `engaged.js` counts it,
  * so a business is here for opening more than once as a person rather than
- * for its mail system fetching the pictures; and every business at `replied`
- * is here for the reply a person typed, where there is one. Then it is held to
+ * for its mail system fetching the pictures; every visit to a preview site in
+ * the last month is read the same way, so a business is here for a person
+ * following the link rather than a link checker the moment the letter landed;
+ * and every business at `replied` is here for the reply a person typed, where
+ * there is one. Then it is held to
  * the floor of the call list's door (`isRingable`), and taken off again where
  * it has been dealt with since: a call made after the latest of its reasons,
  * a last call that ended it, a lead the owner ruled out after it, or a lead
- * that bought. A business that opens the mail again after a call comes back
- * up, because that is a new reason.
+ * that bought. A business that opens the mail or its preview again after a
+ * call comes back up, because that is a new reason.
  */
 async function engagedList(db, now) {
   const since = new Date(now.getTime() - OPEN_LOOKBACK_DAYS * 86_400_000).toISOString()
-  const [opened, replied] = await Promise.all([
+  const [opened, visited, replied] = await Promise.all([
     readAll(() =>
       db
         .from(MESSAGES)
@@ -632,6 +687,14 @@ async function engagedList(db, now) {
         .eq('direction', 'outbound')
         .not('opened_at', 'is', null)
         .gte('last_open_at', since)
+        .order('id')
+    ),
+    readAll(() =>
+      db
+        .from(VISITS)
+        .select(VISIT_COLUMNS, { count: 'exact' })
+        .not('prospect_id', 'is', null)
+        .gte('last_seen_at', since)
         .order('id')
     ),
     db.from(PROSPECTS).select(DETAIL).eq('stage', 'replied').limit(500),
@@ -643,27 +706,45 @@ async function engagedList(db, now) {
     if (!mail.has(message.prospect_id)) mail.set(message.prospect_id, [])
     mail.get(message.prospect_id).push(message)
   }
+  const visits = new Map()
+  for (const visit of visited.rows) {
+    if (!visits.has(visit.prospect_id)) visits.set(visit.prospect_id, [])
+    visits.get(visit.prospect_id).push(visit)
+  }
+  // A business with a visit on file is read whether or not the visit turns
+  // out to be a person's, since that takes the letters' times to say, and they
+  // are read alongside the business rather than a round ahead of it.
   const openers = [...mail.keys()].filter(id => engagementOf({ messages: mail.get(id) }))
   const wrote = new Map((replied.data || []).map(row => [row.id, row]))
-  const read = openers.filter(id => !wrote.has(id))
-  const ids = [...new Set([...wrote.keys(), ...openers])]
+  const read = [...new Set([...openers, ...visits.keys()])].filter(id => !wrote.has(id))
+  const ids = [...new Set([...wrote.keys(), ...read])]
   if (!ids.length) return []
 
-  const [rows, said, history, standing] = await Promise.all([
+  const [rows, said, history, standing, sends, claims] = await Promise.all([
     rowsById(db, read),
     repliesFor(db, [...wrote.keys()]),
     callsFor(db, ids),
     standingsFor(db, ids),
+    sendsFor(db, [...visits.keys()]),
+    claimsFor(
+      db,
+      visited.rows.map(visit => visit.id)
+    ),
   ])
 
   const engaged = []
   for (const row of [...wrote.values(), ...rows]) {
     if (!isRingable(row)) continue
     const reply = said.get(row.id) ?? null
+    const site = siteActivity(
+      (visits.get(row.id) ?? []).map(visit => ({ ...visit, claims: claims.get(visit.id) ?? 0 })),
+      sends.get(row.id) ?? []
+    )
     const found = engagementOf({
       messages: mail.get(row.id) ?? [],
       repliedAt: reply ? reply.at : null,
       reply: reply?.text ?? null,
+      site,
     })
     if (!found) continue
     const calls = history.get(row.id) ?? []
