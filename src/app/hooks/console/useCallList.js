@@ -21,10 +21,17 @@ const NO_RECORD = 'That call could not be saved. Try it again.'
 
 /**
  * A business with the two lists the page reads always present, so a row from
- * an answer that left one off draws as having none rather than throwing.
+ * an answer that left one off draws as having none rather than throwing. The
+ * Facebook history is a null rather than a list, because no history is a
+ * section the card does not draw at all.
  */
 function whole(row) {
-  return { ...row, reasons: row?.reasons ?? [], calls: row?.calls ?? [] }
+  return {
+    ...row,
+    reasons: row?.reasons ?? [],
+    calls: row?.calls ?? [],
+    social: row?.social ?? null,
+  }
 }
 
 /** The first instant of tomorrow in the studio's zone, where "due today" ends. */
