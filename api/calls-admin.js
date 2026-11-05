@@ -29,6 +29,18 @@
  *
  * `today` is the calls made since midnight in Central, against the goal.
  *
+ * Every business on it also carries what has passed between the studio and
+ * that company on Facebook, read off `outreach_social_actions`
+ * (`social.js`): the comments, messages and posts in the words they were
+ * sent in, the follows and reactions a line each, latest first, with the Page
+ * the company was identified by and how well that identity is known. It is
+ * there because the owner is on the phone and wants to know what this company
+ * has already seen from him before he says anything. A company that has
+ * answered on Facebook inside the window also comes up the order, by what its
+ * answer was worth; the studio's own comments and follows move nothing, and
+ * nothing in these two tables puts a business on the list that the list's own
+ * rules would not have offered.
+ *
  * The scoring is done here rather than in the database because it is one
  * module the endpoint and the check both run, so the order on the page is the
  * order the check worked through by hand. What it reads is held for a few
@@ -91,6 +103,11 @@ import {
   tradeMedians,
 } from '../lib/outreach/prospects/callList.js'
 import { factsOf, numbersOf, ownerDigits, scoreOf } from '../lib/outreach/prospects/callScore.js'
+import {
+  SOCIAL_LOOKBACK_DAYS,
+  engageBackOf,
+  socialHistoryOf,
+} from '../lib/outreach/prospects/social.js'
 import { companiesOf } from '../lib/outreach/prospects/companies.js'
 import { bareHost, hostOf } from '../lib/outreach/prospects/platforms.js'
 import { listingPhotos, photoAddresses } from '../lib/outreach/prospects/placePhotos.js'
@@ -102,6 +119,8 @@ const VISITS = 'preview_sessions'
 const VISIT_EVENTS = 'preview_events'
 const NEW_LEADS = 'new_business_leads'
 const METRICS = 'call_trade_metrics'
+const SOCIAL = 'outreach_social_actions'
+const FACEBOOK_PAGES = 'outreach_prospect_facebook_pages'
 
 /** The key the map sweep searches with, which also reads a listing's photos. */
 const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY || ''
@@ -183,6 +202,52 @@ const LEAD_STANDING = 'source_ref, dismissed_at, bought_at'
 
 /** The columns of a call the history draws. */
 const CALL_COLUMNS = 'id, prospect_id, outcome, note, callback_at, called_at'
+
+/** The columns of a Facebook action the card draws. */
+const SOCIAL_COLUMNS = [
+  'id',
+  'prospect_id',
+  'direction',
+  'action_type',
+  'status',
+  'interest',
+  'acted_at',
+  'exact_text',
+  'summary',
+  'reaction_kind',
+  'page_url',
+  'source_url',
+  'group_name',
+  'notes',
+].join(', ')
+
+/**
+ * The columns the ranking needs off a company's own move, which is less than
+ * the card draws: the whole table is read for this and none of the words are
+ * wanted.
+ */
+const ENGAGED_BACK_COLUMNS = 'id, prospect_id, direction, action_type, status, interest, acted_at'
+
+/** The columns of a Facebook Page mapping. */
+const PAGE_COLUMNS =
+  'prospect_id, page_url, page_id, page_name, verification, verified_at, found_at_url, notes, created_at'
+
+/**
+ * The ceiling on the engage-back read, well above the handful of rows the
+ * social routine writes in a quarter. It is stated rather than trusted: the
+ * read covers the whole table and the list it feeds is the order of a day's
+ * calls.
+ */
+const SOCIAL_SET_MAX = 20_000
+
+/**
+ * How many actions one run of a hundred businesses draws, newest first.
+ *
+ * Newest first is what makes the cap safe: the rows it leaves behind are the
+ * oldest, which is also what the card drops when it cuts a long history, so
+ * the cap and the card agree on what gets left out.
+ */
+const SOCIAL_ROWS_AT_ONCE = 2000
 
 /** The columns of every call, which the rules and the measured readings are read from. */
 const TALLY_COLUMNS =
@@ -280,6 +345,108 @@ async function callsFor(db, ids) {
   )
   for (const call of runs.flat()) held.get(call.prospect_id)?.push(call)
   return held
+}
+
+/**
+ * A social read's answer, or nothing where the tables are not in this
+ * database yet.
+ *
+ * The Call List is the owner's phone list and the Facebook history is context
+ * beside it, so a history that will not come back is drawn as no history
+ * rather than taking the numbers off the screen with it. The two tables being
+ * absent is passed over without a word, because that is a deployment standing
+ * ahead of its migration and says nothing about any row. Anything else is
+ * logged, since a read that keeps failing has to be findable.
+ */
+async function socialOrNone(read, what) {
+  try {
+    return await read()
+  } catch (cause) {
+    if (!tableMissing(cause)) {
+      console.error('calls-admin: %s did not come back: %s', what, cause?.message || cause)
+    }
+    return null
+  }
+}
+
+/**
+ * The strongest move each company has made toward the studio on Facebook
+ * lately, across the whole table.
+ *
+ * Read whole rather than for the page being drawn, because this is what the
+ * ranking multiplies by: a company that wrote back has to come up the order
+ * before anybody scrolls to it. It is the inbound rows only, confirmed only,
+ * and only inside the window `social.js` holds them to, so what travels is
+ * the handful of rows that can still lift a score.
+ */
+async function engagedBackBy(db, now) {
+  const since = new Date(now.getTime() - SOCIAL_LOOKBACK_DAYS * 86_400_000).toISOString()
+  const { rows } = await readAll(
+    () =>
+      db
+        .from(SOCIAL)
+        .select(ENGAGED_BACK_COLUMNS, { count: 'exact' })
+        .eq('direction', 'inbound')
+        .eq('status', 'confirmed')
+        .gte('acted_at', since)
+        .order('id'),
+    { max: SOCIAL_SET_MAX }
+  )
+  const own = new Map()
+  for (const row of rows) {
+    if (!own.has(row.prospect_id)) own.set(row.prospect_id, [])
+    own.get(row.prospect_id).push(row)
+  }
+  const found = new Map()
+  for (const [id, moves] of own) {
+    const back = engageBackOf(moves, now)
+    if (back) found.set(id, back)
+  }
+  return found
+}
+
+/**
+ * Each of these businesses' Facebook history as the card draws it: every
+ * action on it latest first, and the Page it was identified by.
+ *
+ * Only the businesses actually on the screen, since this is the part that
+ * carries the words.
+ */
+async function socialFor(db, ids, now) {
+  if (!ids.length) return new Map()
+  const [actions, pages] = await Promise.all([
+    Promise.all(
+      runsOf(ids, IDS_AT_ONCE).map(async run => {
+        const { data, error } = await db
+          .from(SOCIAL)
+          .select(SOCIAL_COLUMNS)
+          .in('prospect_id', run)
+          .order('acted_at', { ascending: false })
+          .limit(SOCIAL_ROWS_AT_ONCE)
+        if (error) throw error
+        return data || []
+      })
+    ),
+    Promise.all(
+      runsOf(ids, IDS_AT_ONCE).map(async run => {
+        const { data, error } = await db
+          .from(FACEBOOK_PAGES)
+          .select(PAGE_COLUMNS)
+          .in('prospect_id', run)
+        if (error) throw error
+        return data || []
+      })
+    ),
+  ])
+  const held = new Map(ids.map(id => [id, { actions: [], pages: [] }]))
+  for (const action of actions.flat()) held.get(action.prospect_id)?.actions.push(action)
+  for (const page of pages.flat()) held.get(page.prospect_id)?.pages.push(page)
+  const drawn = new Map()
+  for (const [id, own] of held) {
+    const history = socialHistoryOf({ ...own, now })
+    if (history) drawn.set(id, history)
+  }
+  return drawn
 }
 
 /** These businesses, read whole. */
@@ -460,10 +627,15 @@ function ownerFields(row) {
  * other number the same one-location company is listed under is drawn after
  * them, as another line to try.
  */
-function shaped(row, calls, { facts, formed, companies, now, due = null, engaged = null } = {}) {
+function shaped(
+  row,
+  calls,
+  { facts, formed, companies, engagedBack, now, due = null, engaged = null } = {}
+) {
   const formedDay = formedOn(row, formed)
   const company = companies?.get(row.id) ?? null
-  const score = scoreOf({ ...row, formed_on: formedDay, company }, facts, now)
+  const back = engagedBack?.get(row.id) ?? null
+  const score = scoreOf({ ...row, formed_on: formedDay, company, engaged_back: back }, facts, now)
   const last = calls[0] ?? null
   const owner = ownerDigits(row)
   const main = phoneKey(row.phone)
@@ -491,6 +663,10 @@ function shaped(row, calls, { facts, formed, companies, now, due = null, engaged
     score: { owner: score.owner, need: score.need, budget: score.budget, total: score.total },
     due,
     engaged,
+    engaged_back: back,
+    // The history itself is read for the businesses actually drawn and put on
+    // the row in `list`, since it is the part that carries the words.
+    social: null,
     front_desk: !due && last?.outcome === FRONT_DESK ? { at: last.callback_at ?? null } : null,
     calls: calls.map(call => ({
       id: call.id,
@@ -767,7 +943,7 @@ async function engagedList(db, now) {
  * The rules run over the whole order at once, so a number listed twice is
  * offered once, under its better-placed listing, on whichever page that is.
  */
-function ranking(pool, calls, index, taken, dueIds, { facts, companies, now }) {
+function ranking(pool, calls, index, taken, dueIds, { facts, companies, engagedBack, now }) {
   const history = new Map()
   for (const call of calls) {
     if (!history.has(call.prospect_id)) history.set(call.prospect_id, [])
@@ -788,6 +964,11 @@ function ranking(pool, calls, index, taken, dueIds, { facts, companies, now }) {
       calls: history.get(row.id) ?? [],
       trade_median: medians.get(row.trade) ?? null,
       company: companies.get(row.id) ?? null,
+      // What the company's own move on Facebook is worth, which is read here
+      // as well as on the drawn row: the order of the whole list is what it
+      // is for, and a lift applied only to the page in front of somebody
+      // would be a lift that never moved anything.
+      engaged_back: engagedBack?.get(row.id) ?? null,
     }
     if (!held.calls.length) {
       held.score = scoreOf(held, facts, now)
@@ -809,16 +990,24 @@ function ranking(pool, calls, index, taken, dueIds, { facts, companies, now }) {
 /** The list, as the page draws it. */
 export async function list(db, query, now = new Date()) {
   const asked = pageOf(query.page)
-  const [answered, owed, pool, listed, calls, today] = await Promise.all([
+  const [answered, owed, pool, listed, calls, today, back] = await Promise.all([
     engagedList(db, now),
     dueList(db, now),
     callablePool(db),
     listingIndex(db),
     allCalls(db),
     callsToday(db, now),
+    socialOrNone(() => engagedBackBy(db, now), 'what companies answered on Facebook'),
   ])
   const facts = factsOf({ metrics: pool.metrics, listings: listed.rows, calls })
-  const context = { facts, formed: pool.formed, companies: listed.companies, now }
+  const engagedBack = back ?? new Map()
+  const context = {
+    facts,
+    formed: pool.formed,
+    companies: listed.companies,
+    engagedBack,
+    now,
+  }
 
   // A business that answered the mail leads the list, carrying the call back
   // it is owed where it is owed one, so it is drawn once and at the top.
@@ -867,13 +1056,35 @@ export async function list(db, query, now = new Date()) {
       return [shaped(read, withCalls ? (history.get(row.id) ?? []) : [], context)]
     })
 
+  const shown = {
+    engaged: page === 1 ? engaged : [],
+    due: page === 1 ? due : [],
+    rows: draw(onPage, false),
+    waiting: draw(waiting, true),
+  }
+
+  // The Facebook history last, for exactly the businesses that came through
+  // every rule above. It is the only read here that carries what was said, and
+  // reading it for the whole callable set in order to draw one page of it
+  // would be four thousand companies' words travelling to show a hundred.
+  const drawn = [
+    ...new Set(
+      Object.values(shown)
+        .flat()
+        .map(row => row.id)
+    ),
+  ]
+  const social = await socialOrNone(() => socialFor(db, drawn, now), 'the Facebook history')
+  const withSocial = rows =>
+    social ? rows.map(row => ({ ...row, social: social.get(row.id) ?? null })) : rows
+
   return {
     status: 200,
     body: {
-      engaged: page === 1 ? engaged : [],
-      due: page === 1 ? due : [],
-      rows: draw(onPage, false),
-      waiting: draw(waiting, true),
+      engaged: withSocial(shown.engaged),
+      due: withSocial(shown.due),
+      rows: withSocial(shown.rows),
+      waiting: withSocial(shown.waiting),
       page,
       pages,
       today: { calls: today, goal: DAILY_CALL_GOAL },

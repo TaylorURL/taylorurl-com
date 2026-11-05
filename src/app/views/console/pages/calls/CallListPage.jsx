@@ -20,6 +20,13 @@ import {
   reviewsOf,
 } from '@lib/outreach/prospects/calls.js'
 import { engagedWords, siteWords } from '@lib/outreach/prospects/engaged.js'
+import {
+  actionWords,
+  isCompactAction,
+  socialWords,
+  statusWords,
+  verificationOf,
+} from '@lib/outreach/prospects/social.js'
 import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
 import { PreviewResults } from './PreviewResults'
@@ -40,8 +47,12 @@ import { PreviewResults } from './PreviewResults'
  * for the time the owner is in. Every row says the business, each number it
  * can be rung on - the owner's own apart from the main line - and its town.
  *
+ * A company that has answered the studio on Facebook sits higher in that
+ * order, by what its answer was worth, and the row says so.
+ *
  * Opening one puts the first number up as one big link to dial - the owner's
- * own where there is one - and the others under it, what is known about the
+ * own where there is one - and the others under it, what has passed with the
+ * company on Facebook in the words it was said in, what is known about the
  * business, every call
  * to it so far, and the eight results a call can come to; logging one opens
  * the next business. Pipeline is the one for somebody worth seeing again:
@@ -121,6 +132,21 @@ function answeredLine(engaged) {
   return at ? `${words}, ${engaged.replied_at ? 'on' : 'last on'} ${onDay(at)}` : words
 }
 
+/**
+ * What has passed with this company on Facebook, in one line for the list:
+ * "Facebook: 2 comments and a like, last on Nov 5, 2026".
+ *
+ * Null where nothing has, and the list draws no line. A company with a Page on
+ * file and nothing done with it yet is null here too: the link belongs on the
+ * card, and a line on the list saying only "Facebook" would read as activity.
+ */
+function facebookLine(social) {
+  const words = socialWords(social)
+  if (!words) return null
+  const at = social?.latest_at
+  return at ? `Facebook: ${words}, last on ${onDay(at)}` : `Facebook: ${words}`
+}
+
 /** When a front desk said the owner is in, said in a line. */
 function deskLine(desk) {
   if (!desk) return null
@@ -139,6 +165,7 @@ function localInput(date) {
 
 function ListRow({ row, open, onOpen }) {
   const answered = answeredLine(row.engaged)
+  const social = facebookLine(row.social)
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
   return (
@@ -161,6 +188,7 @@ function ListRow({ row, open, onOpen }) {
           {[tradeLabel(row.trade), row.town].filter(Boolean).join(' · ') || 'Trade not on file'}
         </span>
         {answered && <span className="text-[12px] text-accent">{answered}</span>}
+        {social && <span className="truncate text-[12px] text-paper-soft">{social}</span>}
         {owed && (
           <span className={`text-[12px] ${owed.late ? 'text-[color:var(--warn)]' : 'text-accent'}`}>
             {owed.text}
@@ -355,6 +383,121 @@ function Photos({ row, token }) {
       </div>
       <Credit photos={shots.photos} />
     </div>
+  )
+}
+
+/** A Facebook address as it reads on screen, without the parts nobody needs. */
+function pageLabel(page) {
+  if (page?.page_name) return page.page_name
+  return String(page?.url ?? '')
+    .replace(/^https?:\/\//i, '')
+    .replace(/^www\./i, '')
+    .replace(/\/$/, '')
+}
+
+/**
+ * The company's Facebook Page, and how far it is known to be theirs.
+ *
+ * The standing is said beside the link every time, including when it is good.
+ * A Page drawn next to a company's phone number is the console saying "this is
+ * them", and a link read off their website is not that: it can point at a
+ * former name, somebody's personal profile, or the agency that built the site.
+ */
+function SocialPage({ page }) {
+  const standing = verificationOf(page.verification)
+  return (
+    <p className="text-[13px] text-ink-paper">
+      <a className="console-link" href={page.url} target="_blank" rel="noreferrer noopener">
+        {pageLabel(page)}
+      </a>
+      {standing && (
+        <span className={standing.confirmed ? 'text-paper-soft' : 'text-[color:var(--warn)]'}>
+          {' · '}
+          {standing.words}
+          {standing.confirmed && page.verified_at ? ` ${onDay(page.verified_at)}` : ''}
+        </span>
+      )}
+    </p>
+  )
+}
+
+/**
+ * One thing done on Facebook, with what was said where anything was.
+ *
+ * A reaction and a follow are a line: "Liked their post · Nov 5, 2026" is the
+ * whole of a like, and twenty of them drawn as cards would bury the one
+ * comment worth reading out. Anything that carried words is drawn with them,
+ * word for word, since reading it out is the use of it. Where the exact
+ * wording was never captured the card says so rather than letting a summary
+ * pass as a quote.
+ */
+function SocialAction({ action }) {
+  const compact = isCompactAction(action.action_type)
+  const standing = statusWords(action)
+  return (
+    <li
+      className={`grid gap-1 rounded-[var(--console-radius-sm)] bg-[color:var(--paper-field)] px-3 ${
+        compact ? 'py-1.5' : 'py-2.5'
+      }`}
+    >
+      <p className={compact ? 'text-[12px] text-paper-soft' : 'text-[13px] text-ink-paper'}>
+        <span className={compact ? '' : 'font-medium'}>{actionWords(action)}</span>
+        <span className="text-paper-soft">
+          {' · '}
+          {onDay(action.acted_at)} at {clock(action.acted_at)}
+        </span>
+        {action.group_name && <span className="text-paper-soft"> · {action.group_name}</span>}
+        {standing && <span className="text-[color:var(--warn)]"> · {standing}</span>}
+      </p>
+      {action.text && (
+        <blockquote className="whitespace-pre-line text-[13px] text-ink-paper">
+          {action.text}
+        </blockquote>
+      )}
+      {action.text && !action.exact && (
+        <p className="text-paper-faint text-[12px]">A summary. The exact wording was not kept.</p>
+      )}
+      {action.notes && <p className="text-[12px] text-paper-soft">{action.notes}</p>}
+      {action.source_url && (
+        <a
+          className="console-link justify-self-start text-[12px]"
+          href={action.source_url}
+          target="_blank"
+          rel="noreferrer noopener"
+        >
+          Open it on Facebook
+        </a>
+      )}
+    </li>
+  )
+}
+
+/**
+ * What has passed with this company on Facebook, latest first.
+ *
+ * Drawn above the calls, because it is what was said before anybody rang. A
+ * company with a Page on file and nothing done with it yet gets the link and a
+ * line saying exactly that: nothing is invented to fill the section, and a
+ * company with neither draws no section at all.
+ */
+function Social({ social }) {
+  return (
+    <section className="grid gap-3">
+      <h3 className={HEAD}>On Facebook</h3>
+      {social.page && <SocialPage page={social.page} />}
+      {social.actions.length ? (
+        <ol className="grid gap-2">
+          {social.actions.map(action => (
+            <SocialAction
+              key={action.id ?? `${action.action_type}-${action.acted_at}`}
+              action={action}
+            />
+          ))}
+        </ol>
+      ) : (
+        <p className="text-[13px] text-paper-soft">Nothing said to them here yet.</p>
+      )}
+    </section>
   )
 }
 
@@ -681,6 +824,8 @@ function Business({ row, token, saving, onLog }) {
               </blockquote>
             </section>
           )}
+
+          {row.social && <Social social={row.social} />}
 
           {row.calls.length > 0 && <History calls={row.calls} />}
 
