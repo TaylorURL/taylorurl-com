@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   COMPANY_LOCATION,
@@ -13,6 +14,7 @@ import { HAS_ACCOUNTS } from '@constants/routes'
 import { BBB_PROFILE_URL } from '@data/reputation/bbb'
 import { Logo } from '@components/kit/Kit'
 import { TYPE } from '@components/kit/styles'
+import { BUILT_YEAR } from '@lib/time/built.js'
 import { dayIn } from '@lib/time/zone.js'
 import { PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
 
@@ -28,7 +30,14 @@ const BASE = 'text-[13px] text-ink-mute transition-colors hover:text-ink'
  * or the speed check finds it where a footer is expected to have it.
  */
 export default function Footer() {
-  const year = Number(dayIn().slice(0, 4))
+  // The year the markup carries, held through the render that adopts it and
+  // given back to a clock once the page is live. The build decided the string
+  // so that both renders write the same one - see `@lib/time/built.js` - and
+  // this is the one moment the two are allowed to differ, so that a tab left
+  // open across New Year's midnight turns the line over without a reload.
+  const [year, setYear] = useState(BUILT_YEAR)
+  useEffect(() => setYear(Number(dayIn().slice(0, 4))), [])
+
   const elsewhere = [
     PUBLISHES_REVIEWS && BBB_PROFILE_URL && { href: BBB_PROFILE_URL, label: 'BBB Accredited' },
     FACEBOOK_URL && { href: FACEBOOK_URL, label: 'Facebook' },
