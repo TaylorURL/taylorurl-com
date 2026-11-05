@@ -1,19 +1,20 @@
 /**
- * Holds the reviews postscript every preview letter closes on to what the
- * networks actually said, and to the letter it is added to.
+ * Holds the postscript the first preview letter closes on to what Trustpilot
+ * actually said, and to the letter it is added to.
  *
- * The line is a claim a stranger is about to go and check, so the failures
- * that matter are the quiet ones: a figure from a reading that never came
- * back, the committed Trustpilot floor quoted as if it were today's, Google
- * named while it holds fewer reviews than Trustpilot, or a link that arrives
- * without the tag that says which letter it came out of. The other half is the
- * letter itself. The postscript may add words and at most two links, and
- * nothing else: no picture, no second open square, no unsubscribe line in a
- * note from Trenton, and no dash, emoji or exclamation mark in either half.
+ * The line sends a stranger to look the studio up, so the failures that
+ * matter are the quiet ones: a profile nobody has reviewed named as if it
+ * were worth a visit, the committed Trustpilot floor read as if it were
+ * today's, a rating quoted at all, a follow-up signing off on the same line
+ * again, or a link that arrives without the tag that says which letter it
+ * came out of. The other half is the letter itself. The postscript may add
+ * words and at most two links to the first letter, and nothing else: no
+ * picture, no second open square, no unsubscribe line in a note from Trenton,
+ * and no dash, emoji or exclamation mark in either half.
  *
- * Trustpilot and Google are both fakes here, driven through every answer the
- * line has a different sentence for, so this runs anywhere and reaches no
- * network.
+ * Trustpilot is a fake here, driven through every answer the line has a
+ * different sentence for, and Google is a fake that must never be asked, so
+ * this runs anywhere and reaches no network.
  *
  *   node scripts/outreach/previews/check-preview-proof.js
  */
@@ -28,7 +29,6 @@ import {
   taggedProfile,
 } from '../../../lib/outreach/proof.js'
 import { BBB_PROFILE_URL } from '../../../src/app/data/reputation/bbb.js'
-import { GOOGLE_PLACE_ID } from '../../../src/app/data/reputation/google.js'
 import {
   TRUSTPILOT_DATA_URL,
   TRUSTPILOT_PROFILE_URL,
@@ -52,38 +52,34 @@ const trustbox = (total, trustScore = 4.3) => {
 }
 
 /**
- * A fetch answering Trustpilot and Google as told. A network handed a number
- * answers that status with no body; one handed an object answers it as JSON.
+ * A fetch answering Trustpilot as told, and counting any question put to
+ * Google, which the line no longer reads. A network handed a number answers
+ * that status with no body; one handed an object answers it as JSON.
  */
-function networks({ trustpilot, google }) {
+function networks({ trustpilot }) {
   const asked = { trustpilot: 0, google: 0 }
   const answer = value =>
     typeof value === 'number'
       ? new Response(null, { status: value })
       : new Response(JSON.stringify(value), { status: 200 })
-  const fetcher = async (url, init = {}) => {
+  const fetcher = async url => {
     if (url === TRUSTPILOT_DATA_URL) {
       asked.trustpilot += 1
       if (trustpilot instanceof Error) throw trustpilot
       return answer(trustpilot)
     }
-    if (url.startsWith('https://places.googleapis.com/v1/places/')) {
+    if (url.startsWith('https://places.googleapis.com/')) {
       asked.google += 1
-      ok(url.endsWith(encodeURIComponent(GOOGLE_PLACE_ID)), `Google was asked about ${url}`)
-      ok(
-        init.headers?.['X-Goog-FieldMask'] === 'rating,userRatingCount',
-        `Google was asked for ${init.headers?.['X-Goog-FieldMask']}`
-      )
-      return answer(google)
+      return answer({ rating: 5, userRatingCount: 99 })
     }
     throw new Error(`a check reached ${url}`)
   }
   return { fetcher, asked }
 }
 
-const read = async (answers, key = 'a-places-key') => {
+const read = async answers => {
   const { fetcher, asked } = networks(answers)
-  const proof = await readProof({ fetchImpl: fetcher, key, now: NOW })
+  const proof = await readProof({ fetchImpl: fetcher, now: NOW })
   return { proof, asked }
 }
 
@@ -94,149 +90,88 @@ const FIRST = { campaign: previewCampaign(-1, PREVIEW_FIRST_DAYS), nth: -1 }
 
 // ── The reading ─────────────────────────────────────────────────────────
 
-check('both networks answering are both read', async () => {
-  const { proof } = await read({
-    trustpilot: trustbox(7),
-    google: { rating: 5, userRatingCount: 2 },
-  })
+check('Trustpilot answering is read, and Google is never asked', async () => {
+  process.env.GOOGLE_PLACES_API_KEY = 'a-places-key'
+  const { proof, asked } = await read({ trustpilot: trustbox(7) })
+  delete process.env.GOOGLE_PLACES_API_KEY
   same(JSON.stringify(proof.trustpilot), '{"rating":4.3,"reviewCount":7}', 'Trustpilot')
-  same(JSON.stringify(proof.google), '{"rating":5,"reviewCount":2}', 'Google')
   ok(proof.bbb === true, 'the accreditation was not held')
+  same(asked.google, 0, 'times Google was asked')
+  ok(!('google' in proof), 'the reading still carries a Google part')
 })
 
 check('a Trustpilot refusal is no reading, not the committed floor', async () => {
   for (const trustpilot of [403, new Error('unreachable'), { businessUnit: {} }]) {
-    const { proof } = await read({ trustpilot, google: { rating: 5, userRatingCount: 2 } })
+    const { proof } = await read({ trustpilot })
     same(proof.trustpilot, null, `Trustpilot answering ${trustpilot}`)
   }
 })
 
-check('a Google refusal, or no key, is no Google reading', async () => {
-  const refused = await read({ trustpilot: trustbox(7), google: 500 })
-  same(refused.proof.google, null, 'Google refusing')
-  const keyless = await read(
-    { trustpilot: trustbox(7), google: { rating: 5, userRatingCount: 9 } },
-    ''
-  )
-  same(keyless.proof.google, null, 'Google with no key')
-  same(keyless.asked.google, 0, 'times Google was asked with no key')
-})
-
-check('a listing Google answers with nothing on is a reading of zero', async () => {
-  const { proof } = await read({ trustpilot: trustbox(7), google: {} })
-  same(JSON.stringify(proof.google), '{"rating":0,"reviewCount":0}', 'Google')
-})
-
-check('a run takes one reading an hour, and a partial one for five minutes', async () => {
-  process.env.GOOGLE_PLACES_API_KEY = 'a-places-key'
-  const whole = networks({ trustpilot: trustbox(7), google: { rating: 5, userRatingCount: 2 } })
+check('a run takes one reading an hour, and a failed one for five minutes', async () => {
+  const whole = networks({ trustpilot: trustbox(7) })
   globalThis.fetch = whole.fetcher
   const start = NOW + 10 * 24 * HOUR_MS
   await proofNow({ now: start })
   await proofNow({ now: start + HOUR_MS - 1 })
-  same(whole.asked.google, 1, 'Google reads inside the hour')
+  same(whole.asked.trustpilot, 1, 'Trustpilot reads inside the hour')
   await proofNow({ now: start + HOUR_MS })
-  same(whole.asked.google, 2, 'Google reads once the hour is up')
+  same(whole.asked.trustpilot, 2, 'Trustpilot reads once the hour is up')
 
-  const partial = networks({ trustpilot: 403, google: { rating: 5, userRatingCount: 2 } })
-  globalThis.fetch = partial.fetcher
+  const failed = networks({ trustpilot: 403 })
+  globalThis.fetch = failed.fetcher
   const later = start + 3 * HOUR_MS
   await proofNow({ now: later })
   await proofNow({ now: later + 4 * 60 * 1000 })
-  same(partial.asked.trustpilot, 1, 'Trustpilot reads inside five minutes of a refusal')
+  same(failed.asked.trustpilot, 1, 'Trustpilot reads inside five minutes of a refusal')
   await proofNow({ now: later + 5 * 60 * 1000 })
-  same(partial.asked.trustpilot, 2, 'Trustpilot reads five minutes after a refusal')
+  same(failed.asked.trustpilot, 2, 'Trustpilot reads five minutes after a refusal')
+  same(whole.asked.google + failed.asked.google, 0, 'times Google was asked')
   globalThis.fetch = OFFLINE
-  delete process.env.GOOGLE_PLACES_API_KEY
 })
 
 // ── The line ────────────────────────────────────────────────────────────
 
-const LIVE = { trustpilot: { rating: 4.3, reviewCount: 7 }, google: null, bbb: true }
+const LIVE = { trustpilot: { rating: 4.3, reviewCount: 7 }, bbb: true }
+const LINE = "P.S. If you want to look me up first, I'm on the BBB and Trustpilot."
 
 check('a live Trustpilot reading and the accreditation make the line', () => {
-  const line = proofLine({ ...LIVE, google: { rating: 5, reviewCount: 2 } }, FIRST)
-  same(
-    sentence(line),
-    'P.S. If you want to look me up first, TaylorURL is BBB accredited and rated 4.3 out of 5 from 7 reviews on Trustpilot.',
-    'the line'
-  )
+  const line = proofLine(LIVE, FIRST)
+  same(sentence(line), LINE, 'the line')
   same(
     links(line)
       .map(part => part.text)
       .join(' | '),
-    'BBB accredited | rated 4.3 out of 5 from 7 reviews on Trustpilot',
+    'BBB | Trustpilot',
     'the linked phrases'
   )
 })
 
-check('Google joins only once it holds more reviews than Trustpilot', () => {
-  const level = proofLine({ ...LIVE, google: { rating: 4.9, reviewCount: 7 } }, FIRST)
-  ok(!/Google/.test(sentence(level)), `Google named at the same count: ${sentence(level)}`)
-  const ahead = proofLine({ ...LIVE, google: { rating: 4.9, reviewCount: 12 } }, FIRST)
-  same(
-    sentence(ahead),
-    'P.S. If you want to look me up first, TaylorURL is BBB accredited, rated 4.9 out of 5 from 12 reviews on Google and 4.3 from 7 reviews on Trustpilot.',
-    'the line with Google ahead'
-  )
-  same(links(ahead).length, 2, 'links with Google ahead, which is said without one')
+check('the line quotes no rating and no count', () => {
+  for (const proof of [LIVE, { ...LIVE, trustpilot: { rating: 5, reviewCount: 1 } }]) {
+    ok(!/\d/.test(sentence(proofLine(proof, FIRST))), sentence(proofLine(proof, FIRST)))
+  }
 })
 
-check('an unread Trustpilot names the profile with no figure, and leaves Google out', () => {
-  const line = proofLine(
-    { trustpilot: null, google: { rating: 4.9, reviewCount: 40 }, bbb: true },
-    FIRST
-  )
-  same(
-    sentence(line),
-    'P.S. If you want to look me up first, TaylorURL is BBB accredited and has reviews on Trustpilot.',
-    'the line'
-  )
-  ok(!/\d/.test(sentence(line)), 'a figure in a line read from nothing')
-})
+check('an unread Trustpilot is still named, since the profile is there', () =>
+  same(sentence(proofLine({ trustpilot: null, bbb: true }, FIRST)), LINE, 'the line')
+)
 
-check('a Trustpilot profile nobody has written on is left out', () => {
-  const alone = proofLine(
-    { trustpilot: { rating: 0, reviewCount: 0 }, google: null, bbb: true },
-    FIRST
-  )
+check('a Trustpilot profile nobody has written on is left out', () =>
   same(
-    sentence(alone),
-    'P.S. If you want to look me up first, TaylorURL is BBB accredited.',
+    sentence(proofLine({ trustpilot: { rating: 0, reviewCount: 0 }, bbb: true }, FIRST)),
+    "P.S. If you want to look me up first, I'm on the BBB.",
     'BBB alone'
   )
-  const google = proofLine(
-    { trustpilot: { rating: 0, reviewCount: 0 }, google: { rating: 5, reviewCount: 3 }, bbb: true },
-    FIRST
-  )
-  same(
-    sentence(google),
-    'P.S. If you want to look me up first, TaylorURL is BBB accredited and rated 5.0 out of 5 from 3 reviews on Google.',
-    'Google over an empty Trustpilot'
-  )
-  ok(!links(google).some(part => part.href.includes('trustpilot')), 'an empty profile linked')
-})
-
-check('one review is one review', () => {
-  const line = proofLine({ ...LIVE, trustpilot: { rating: 5, reviewCount: 1 } }, FIRST)
-  ok(sentence(line).includes('from 1 review on Trustpilot'), sentence(line))
-})
+)
 
 check(
-  'without the accreditation the ratings stand alone, and with nothing there is no line',
+  'without the accreditation Trustpilot stands alone, and with nothing there is no line',
   () => {
+    const alone = "P.S. If you want to look me up first, I'm on Trustpilot."
+    same(sentence(proofLine({ ...LIVE, bbb: false }, FIRST)), alone, 'Trustpilot alone')
+    same(sentence(proofLine({ trustpilot: null, bbb: false }, FIRST)), alone, 'an unread one alone')
     same(
-      sentence(proofLine({ ...LIVE, bbb: false }, FIRST)),
-      'P.S. If you want to look me up first, TaylorURL is rated 4.3 out of 5 from 7 reviews on Trustpilot.',
-      'Trustpilot alone'
-    )
-    same(
-      sentence(proofLine({ trustpilot: null, google: null, bbb: false }, FIRST)),
-      'P.S. If you want to look me up first, TaylorURL has reviews on Trustpilot.',
-      'an unread Trustpilot alone'
-    )
-    same(
-      proofLine({ trustpilot: { rating: 0, reviewCount: 0 }, google: null, bbb: false }, FIRST),
+      proofLine({ trustpilot: { rating: 0, reviewCount: 0 }, bbb: false }, FIRST),
       null,
       'nothing to say'
     )
@@ -244,20 +179,22 @@ check(
   }
 )
 
+check('a follow-up carries no postscript', () => {
+  for (let nth = 0; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
+    const campaign = previewCampaign(nth, PREVIEW_FIRST_DAYS)
+    same(proofLine(LIVE, { campaign, nth }), null, `follow-up ${nth + 1}`)
+  }
+})
+
 check('every link is the profile itself, tagged with the letter it came out of', () => {
-  const line = proofLine(LIVE, { campaign: 'preview-first-day-8', nth: 1 })
-  const hrefs = links(line).map(part => part.href)
-  same(hrefs[0], taggedProfile(BBB_PROFILE_URL, 'preview-first-day-8'), 'the BBB link')
-  same(
-    hrefs[1],
-    taggedProfile(TRUSTPILOT_PROFILE_URL, 'preview-first-day-8'),
-    'the Trustpilot link'
-  )
+  const hrefs = links(proofLine(LIVE, FIRST)).map(part => part.href)
+  same(hrefs[0], taggedProfile(BBB_PROFILE_URL, 'preview-first'), 'the BBB link')
+  same(hrefs[1], taggedProfile(TRUSTPILOT_PROFILE_URL, 'preview-first'), 'the Trustpilot link')
   for (const href of hrefs) {
     const url = new URL(href)
     same(url.searchParams.get('utm_source'), 'preview', `utm_source on ${href}`)
     same(url.searchParams.get('utm_medium'), 'outreach', `utm_medium on ${href}`)
-    same(url.searchParams.get('utm_campaign'), 'preview-first-day-8', `utm_campaign on ${href}`)
+    same(url.searchParams.get('utm_campaign'), 'preview-first', `utm_campaign on ${href}`)
   }
 })
 
@@ -307,9 +244,9 @@ const SITE = {
 }
 const READINGS = [
   LIVE,
-  { ...LIVE, google: { rating: 4.9, reviewCount: 12 } },
-  { trustpilot: null, google: null, bbb: true },
-  { trustpilot: { rating: 0, reviewCount: 0 }, google: null, bbb: true },
+  { trustpilot: null, bbb: true },
+  { trustpilot: { rating: 0, reviewCount: 0 }, bbb: true },
+  { ...LIVE, bbb: false },
 ]
 
 /** Every preview letter there is, drafted with and without a reading. */
@@ -333,29 +270,30 @@ check('a letter drafted without a reading carries no postscript', () => {
   report(BARE.filter(one => /P\.S\./.test(one.letter.text)).map(one => `${one.name} says P.S.`))
 })
 
-check('every letter carries the postscript once in each half, under the signature', () => {
-  const faults = []
-  for (const proof of READINGS) {
-    for (const one of letters(proof)) {
-      const { text, html } = one.letter
-      if (count(text, /P\.S\./g) !== 1)
-        faults.push(`${one.name}: P.S. ${count(text, /P\.S\./g)} times in the text`)
-      if (count(html, /P\.S\./g) !== 1)
-        faults.push(`${one.name}: P.S. ${count(html, /P\.S\./g)} times in the html`)
-      if (html.indexOf('P.S.') < html.indexOf('/images/email/signature.png')) {
-        faults.push(`${one.name}: the postscript sits above the signature`)
-      }
-      const signed = one.personal ? 'Trenton Taylor | Owner' : 'Trenton Taylor\nTaylorURL'
-      if (text.indexOf('P.S.') < text.indexOf(signed)) {
-        faults.push(`${one.name}: the text postscript sits above the signature`)
-      }
-      if (!one.personal && html.indexOf('P.S.') > html.indexOf('Unsubscribe')) {
-        faults.push(`${one.name}: the postscript sits under the way off the list`)
+check(
+  'only the first letter carries the postscript, once in each half, under the signature',
+  () => {
+    const faults = []
+    for (const proof of READINGS) {
+      for (const one of letters(proof)) {
+        const { text, html } = one.letter
+        const owed = one.campaign === 'preview-first' ? 1 : 0
+        if (count(text, /P\.S\./g) !== owed)
+          faults.push(`${one.name}: P.S. ${count(text, /P\.S\./g)} times in the text`)
+        if (count(html, /P\.S\./g) !== owed)
+          faults.push(`${one.name}: P.S. ${count(html, /P\.S\./g)} times in the html`)
+        if (!owed) continue
+        if (html.indexOf('P.S.') < html.indexOf('/images/email/signature.png')) {
+          faults.push(`${one.name}: the postscript sits above the signature`)
+        }
+        if (text.indexOf('P.S.') < text.indexOf('Trenton Taylor | Owner')) {
+          faults.push(`${one.name}: the text postscript sits above the signature`)
+        }
       }
     }
+    report(faults)
   }
-  report(faults)
-})
+)
 
 check('the postscript adds at most two links and nothing else to a letter', () => {
   const faults = []
@@ -364,7 +302,8 @@ check('the postscript adds at most two links and nothing else to a letter', () =
       const bare = BARE[index].letter.html
       const { html } = one.letter
       const added = count(html, /<a\s/g) - count(bare, /<a\s/g)
-      if (added < 1 || added > 2) faults.push(`${one.name}: ${added} links added`)
+      const [least, most] = one.campaign === 'preview-first' ? [1, 2] : [0, 0]
+      if (added < least || added > most) faults.push(`${one.name}: ${added} links added`)
       if (count(html, /<img\s/g) !== count(bare, /<img\s/g))
         faults.push(`${one.name}: a picture added`)
       if (count(html, /api\/outreach\/open/g) !== 1)
@@ -376,15 +315,13 @@ check('the postscript adds at most two links and nothing else to a letter', () =
 
 check('the links in both halves carry the letter they came out of', () => {
   const faults = []
-  for (const one of letters(LIVE)) {
-    const line = proofLine(LIVE, { campaign: one.campaign, nth: -1 })
-    for (const part of links(line)) {
-      if (!one.letter.text.includes(part.href))
-        faults.push(`${one.name}: the text half lacks ${part.href}`)
-      const escaped = part.href.replaceAll('&', '&amp;')
-      if (!one.letter.html.includes(`href="${escaped}"`)) {
-        faults.push(`${one.name}: the html half lacks ${part.href}`)
-      }
+  const one = letters(LIVE)[0]
+  for (const part of links(proofLine(LIVE, FIRST))) {
+    if (!one.letter.text.includes(part.href))
+      faults.push(`${one.name}: the text half lacks ${part.href}`)
+    const escaped = part.href.replaceAll('&', '&amp;')
+    if (!one.letter.html.includes(`href="${escaped}"`)) {
+      faults.push(`${one.name}: the html half lacks ${part.href}`)
     }
   }
   report(faults)
@@ -404,31 +341,15 @@ check('a note from Trenton still carries no unsubscribe link or trading line', (
 
 check('no postscript carries a dash, an emoji or an exclamation mark', () => {
   const faults = []
-  const readings = [
-    ...READINGS,
-    { ...LIVE, bbb: false },
-    { trustpilot: null, google: null, bbb: false },
-  ]
-  for (const proof of readings) {
-    for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
-      const line = proofLine(proof, { campaign: 'preview-first', nth })
-      const words = postscriptText(line)
-      if (/[‒-―−]|\s-\s|--/.test(words)) faults.push(`a dash in: ${words}`)
-      if (/\p{Extended_Pictographic}/u.test(words)) faults.push(`an emoji in: ${words}`)
-      if (words.includes('!')) faults.push(`an exclamation mark in: ${words}`)
-    }
+  for (const proof of [...READINGS, { trustpilot: null, bbb: false }]) {
+    const line = proofLine(proof, FIRST)
+    if (!line) continue
+    const words = postscriptText(line)
+    if (/[‒-―−]|\s-\s|--/.test(words)) faults.push(`a dash in: ${words}`)
+    if (/\p{Extended_Pictographic}/u.test(words)) faults.push(`an emoji in: ${words}`)
+    if (words.includes('!')) faults.push(`an exclamation mark in: ${words}`)
   }
   report(faults)
-})
-
-check('a thread does not open two letters in a row on the same words', () => {
-  const opening = nth => sentence(proofLine(LIVE, { campaign: 'preview-first', nth })).split(',')[0]
-  for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length - 1; nth += 1) {
-    ok(
-      opening(nth) !== opening(nth + 1),
-      `letters ${nth} and ${nth + 1} both open "${opening(nth)}"`
-    )
-  }
 })
 
 // ── The sender ──────────────────────────────────────────────────────────
