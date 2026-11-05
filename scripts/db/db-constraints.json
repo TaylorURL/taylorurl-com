@@ -140,9 +140,10 @@
           "not_interested",
           "wrong_number",
           "booked",
-          "bad_lead"
+          "bad_lead",
+          "pipeline"
         ],
-        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'audit_booked'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text, 'bad_lead'::text])))"
+        "definition": "CHECK ((outcome = ANY (ARRAY['no_answer'::text, 'voicemail'::text, 'gatekeeper'::text, 'spoke'::text, 'callback'::text, 'audit_booked'::text, 'not_interested'::text, 'wrong_number'::text, 'booked'::text, 'bad_lead'::text, 'pipeline'::text])))"
       }
     },
     "outreach_domains": {

@@ -10,20 +10,25 @@ import {
   CALLBACK_LENGTHS,
   CALL_OUTCOMES,
   DAILY_CALL_GOAL,
+  PIPELINE_LENGTHS,
   callBody,
   dayLine,
   dayShare,
+  outcomeFilesPipeline,
   outcomeOf,
   phoneLines,
   reviewsOf,
 } from '@lib/outreach/prospects/calls.js'
+import { engagedWords } from '@lib/outreach/prospects/engaged.js'
 import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
 
 /**
  * The Call List: one list for the owner.
  *
- * Call backs due today or overdue lead it. Then every business worth ringing
+ * The businesses that answered the mail lead it - a person opened what the
+ * studio sent more than once, or wrote back - since they are the ones most
+ * likely to want the call. Call backs due today or overdue come next. Then every business worth ringing
  * that nobody has rung, best first by three scores - will the owner pick up,
  * do they need a site, can they pay - with the closed, the chains, the shared
  * numbers and the listings nobody has reviewed already taken out by the
@@ -35,8 +40,9 @@ import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
  * Opening one puts the first number up as one big link to dial - the owner's
  * own where there is one - and the others under it, what is known about the
  * business, every call
- * to it so far, and the seven results a call can come to; logging one opens
- * the next business. Above it all is the day: how many calls so far against
+ * to it so far, and the eight results a call can come to; logging one opens
+ * the next business. Pipeline is the one for somebody worth seeing again:
+ * it asks for a follow-up day and files the business in the sales pipeline. Above it all is the day: how many calls so far against
  * fifty. There is no script on it: the owner asked for the list and the call,
  * nothing to read out.
  */
@@ -97,6 +103,18 @@ function owedLine(due) {
   return { text: `Call back overdue since ${onDay(at)}`, late: true }
 }
 
+/**
+ * Why a business that answered the mail is at the top, said in a line:
+ * "Opened your emails 4 times, last on Nov 4, 2026" or "Replied to your email
+ * on Oct 30, 2026".
+ */
+function answeredLine(engaged) {
+  const words = engagedWords(engaged)
+  if (!words) return null
+  const at = engaged.replied_at ?? engaged.last_open_at
+  return at ? `${words}, ${engaged.replied_at ? 'on' : 'last on'} ${onDay(at)}` : words
+}
+
 /** When a front desk said the owner is in, said in a line. */
 function deskLine(desk) {
   if (!desk) return null
@@ -114,6 +132,7 @@ function localInput(date) {
 }
 
 function ListRow({ row, open, onOpen }) {
+  const answered = answeredLine(row.engaged)
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
   return (
@@ -135,6 +154,7 @@ function ListRow({ row, open, onOpen }) {
         <span className="text-paper-faint truncate text-[12px]">
           {[tradeLabel(row.trade), row.town].filter(Boolean).join(' · ') || 'Trade not on file'}
         </span>
+        {answered && <span className="text-[12px] text-accent">{answered}</span>}
         {owed && (
           <span className={`text-[12px] ${owed.late ? 'text-[color:var(--warn)]' : 'text-accent'}`}>
             {owed.text}
@@ -146,9 +166,13 @@ function ListRow({ row, open, onOpen }) {
   )
 }
 
-/** The list: what is due first, then what is worth ringing, then what waits on its owner. */
+/**
+ * The list: who answered the mail first, then what is due, then what is worth
+ * ringing, then what waits on its owner.
+ */
 function CallList({ list, openId, onOpen }) {
   const groups = [
+    { key: 'engaged', head: 'Opened or replied: call first', rows: list.engaged },
     { key: 'due', head: 'Callbacks due today', rows: list.due },
     { key: 'rows', head: 'Best to call next', rows: list.rows, more: list.more },
     { key: 'waiting', head: 'Waiting on the owner', rows: list.waiting },
@@ -361,14 +385,25 @@ function History({ calls }) {
 /**
  * A time to ring back: one press for a length, or a date and time typed in.
  * Where `toggles` is set a length is picked rather than saved, and stays
- * pressed until another is.
+ * pressed until another is. `lengths` are the presses offered, and `dayOnly`
+ * asks for a day rather than a day and a time.
  */
-function When({ prompt, hours, at, saving, toggles = false, onHours, onAt }) {
+function When({
+  prompt,
+  hours,
+  at,
+  saving,
+  toggles = false,
+  lengths = CALLBACK_LENGTHS,
+  dayOnly = false,
+  onHours,
+  onAt,
+}) {
   return (
     <>
       <p className="text-[13px] text-paper-soft">{prompt}</p>
       <div className="flex flex-wrap gap-2">
-        {CALLBACK_LENGTHS.map(length => (
+        {lengths.map(length => (
           <button
             key={length.hours}
             type="button"
@@ -382,10 +417,10 @@ function When({ prompt, hours, at, saving, toggles = false, onHours, onAt }) {
         ))}
       </div>
       <input
-        type="datetime-local"
+        type={dayOnly ? 'date' : 'datetime-local'}
         className={`${FIELD} w-auto justify-self-start`}
         value={at}
-        min={localInput(new Date())}
+        min={dayOnly ? localInput(new Date()).slice(0, 10) : localInput(new Date())}
         onChange={event => onAt(event.target.value)}
         aria-label={prompt}
       />
@@ -466,7 +501,38 @@ function FrontDesk({ saving, onSave }) {
   )
 }
 
-/** The seven results, the note, and what Call Back and Front Desk ask for. */
+/**
+ * A follow-up day for the pipeline: a week, two, a month or three in one
+ * press, or a day picked. The follow-up is set for nine in the morning of the
+ * day, which is when the pipeline's calendar puts it.
+ */
+function Pipeline({ saving, onSave }) {
+  const [day, setDay] = useState('')
+  return (
+    <div className="grid gap-3 rounded-[var(--console-radius-sm)] bg-[color:var(--paper-field)] p-3">
+      <When
+        prompt="When should you follow up?"
+        hours={null}
+        at={day}
+        saving={saving}
+        lengths={PIPELINE_LENGTHS}
+        dayOnly
+        onHours={hours => onSave({ hours })}
+        onAt={setDay}
+      />
+      <button
+        type="button"
+        className={`${BUTTON} justify-self-start`}
+        disabled={saving || !day}
+        onClick={() => onSave({ at: new Date(`${day}T09:00`).toISOString() })}
+      >
+        Add to Pipeline
+      </button>
+    </div>
+  )
+}
+
+/** The eight results, the note, and what Call Back, Front Desk and Pipeline ask for. */
 function LogCall({ saving, onLog }) {
   const [note, setNote] = useState('')
   const [asking, setAsking] = useState(null)
@@ -528,6 +594,12 @@ function LogCall({ saving, onLog }) {
           onSave={answered => onLog({ outcome: 'gatekeeper', note, ...answered })}
         />
       )}
+      {asking === 'pipeline' && (
+        <Pipeline
+          saving={saving}
+          onSave={answered => onLog({ outcome: 'pipeline', note, ...answered })}
+        />
+      )}
     </section>
   )
 }
@@ -535,6 +607,7 @@ function LogCall({ saving, onLog }) {
 /** The business that is open: the number, who to ask for, and the call. */
 function Business({ row, token, saving, onLog }) {
   const [photos, setPhotos] = useState(false)
+  const answered = answeredLine(row.engaged)
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
   const [first, ...rest] = phoneLines(row)
@@ -581,6 +654,7 @@ function Business({ row, token, saving, onLog }) {
                 </span>
               </a>
             ))}
+            {answered && <p className="text-[13px] text-accent">{answered}</p>}
             {owed && (
               <p
                 className={`text-[13px] ${owed.late ? 'text-[color:var(--warn)]' : 'text-accent'}`}
@@ -590,6 +664,15 @@ function Business({ row, token, saving, onLog }) {
             )}
             {desk && <p className="text-[13px] text-paper-soft">{desk}</p>}
           </div>
+
+          {row.engaged?.reply && (
+            <section className="grid gap-3">
+              <h3 className={HEAD}>What they wrote</h3>
+              <blockquote className="whitespace-pre-line rounded-[var(--console-radius-sm)] bg-[color:var(--paper-field)] px-3 py-2.5 text-[13px] text-ink-paper">
+                {row.engaged.reply}
+              </blockquote>
+            </section>
+          )}
 
           {row.calls.length > 0 && <History calls={row.calls} />}
 
@@ -639,8 +722,8 @@ export default function CallListPage() {
   const card = useRef(null)
 
   const entries = useMemo(
-    () => [...list.due, ...list.rows, ...list.waiting],
-    [list.due, list.rows, list.waiting]
+    () => [...list.engaged, ...list.due, ...list.rows, ...list.waiting],
+    [list.engaged, list.due, list.rows, list.waiting]
   )
   const open = entries.find(row => row.id === openId) ?? entries[0] ?? null
 
@@ -661,7 +744,16 @@ export default function CallListPage() {
       open
     )
     if (!saved) return
-    toast(`${outcomeOf(outcome)?.label ?? 'Call'} saved for ${open.name}.`, 'success')
+    if (outcomeFilesPipeline(outcome)) {
+      if (saved.pipeline) {
+        const day = saved.callback_at ? ` Follow up ${onDay(saved.callback_at)}.` : ''
+        toast(`${open.name} is in your pipeline.${day}`, 'success')
+      } else {
+        toast(`The call saved, but ${open.name} did not reach the pipeline.`, 'error')
+      }
+    } else {
+      toast(`${outcomeOf(outcome)?.label ?? 'Call'} saved for ${open.name}.`, 'success')
+    }
     const next = entries.slice(index + 1).find(row => row.id !== open.id) ?? null
     if (next) pick(next.id)
     else setOpenId(null)
