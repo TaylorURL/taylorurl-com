@@ -2,7 +2,7 @@ import { useConsole } from '../../lib/context'
 import { TrafficChart } from '../../../analytics/charts'
 import { fullCount } from '../../../analytics/lib/format'
 import { sourceLabel } from '../../../analytics/lib/sources'
-import { visitorsOnNow } from '../../lib/onNow'
+import { visitorGroups } from '../../lib/onNow'
 import {
   ConsolePage,
   EmptyFill,
@@ -21,8 +21,8 @@ import { SiteIcon } from '../../SiteIcon'
 
 /**
  * The one traffic screen a client has, answering "is my site getting
- * visitors": who is on it right now, the page each has open and where each
- * came from, the shape
+ * visitors": who is on it right now, by the page they have open and where
+ * they came from, the shape
  * of the window, the pages carrying it, and where the visitors came from. With
  * more than one site in scope, a short list puts the sites side by side.
  *
@@ -63,15 +63,16 @@ function bySource(referrers) {
 }
 
 /**
- * Who is on right now: one row each, the page they have open on the left and
- * where they came from on the right - the site they found the link on, the
- * tag a link carried where it had no referrer, or Direct for an address typed
- * in or a bookmark. A tagged link's campaign rides beside its source, since it
+ * Who is on right now, put together by the page they have open and where they
+ * came from - the site they found the link on, the tag a link carried where it
+ * had no referrer, or Direct for an address typed in or a bookmark - with how
+ * many are on each. A tagged link's campaign rides beside its source, since it
  * is the rest of the same answer.
  */
 function OnNow({ area }) {
   const { bulk, live, liveLoading, liveNow, liveSites, siteIds } = useConsole()
-  const rows = visitorsOnNow(liveSites, siteIds)
+  const rows = visitorGroups(liveSites, siteIds)
+  const peak = Math.max(1, ...rows.map(row => row.n))
   // A read that failed has not said nobody is here, so it says that it failed
   // and puts no count in the head.
   const failed = Boolean(live.error) && !live.data
@@ -100,16 +101,23 @@ function OnNow({ area }) {
               return (
                 <li
                   key={row.key}
-                  className="flex items-center justify-between gap-3 rounded-[var(--console-radius-sm)] px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out-soft hover:bg-[color:var(--console-row-hover)]"
+                  className="relative flex items-center justify-between gap-3 overflow-hidden rounded-[var(--console-radius-sm)] px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out-soft hover:bg-[color:var(--console-row-hover)]"
                 >
-                  <span className="min-w-0 truncate" title={page}>
+                  <span
+                    aria-hidden="true"
+                    className="absolute inset-y-0 left-0 rounded-[var(--console-radius-sm)] bg-[color:var(--wash-accent)] transition-[width] duration-300 ease-out-soft"
+                    style={{ width: `${Math.max(1.5, (row.n / peak) * 100)}%` }}
+                  />
+                  <span className="relative min-w-0 truncate" title={page}>
                     {page}
                   </span>
-                  <span
-                    className="min-w-0 max-w-[55%] flex-shrink-0 truncate text-right text-paper-soft"
-                    title={`Came from ${from}`}
-                  >
-                    {from}
+                  <span className="relative flex min-w-0 max-w-[60%] flex-shrink-0 items-center gap-3">
+                    <span className="min-w-0 truncate text-paper-soft" title={`Came from ${from}`}>
+                      {from}
+                    </span>
+                    <span className="flex-shrink-0 font-mono tabular-nums text-paper-soft">
+                      {fullCount(row.n)}
+                    </span>
                   </span>
                 </li>
               )
