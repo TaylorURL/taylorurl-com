@@ -1,104 +1,121 @@
 /**
- * Proves the overview's "On the site now" card answers for each visitor: the
- * page they have open and where they came from, newest arrival first, held to
- * the sites in scope.
+ * Proves the overview's "On the site now" card answers for every visitor: one
+ * row for each page and source with how many are on it, the busiest first,
+ * held to the sites in scope.
  *
  * The feed is the live view's own shape, as `analytics_live()` answered it on
- * 2026-11-05, with a referral and a tagged link added beside the direct
- * visits that morning held.
+ * 2026-11-05 - a stack of direct visits on each front page - with a search
+ * arrival under two spellings and a tagged link added beside them.
  *
  *   node scripts/console/check-live-visitors.js
  */
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
-import { visitorsOnNow } from '../../src/app/views/console/lib/onNow.js'
+import { visitorGroups } from '../../src/app/views/console/lib/onNow.js'
 import { check, finish, ok, same } from '../harness/checks.js'
+
+const visit = (ref, path, source, started_at, campaign = null) => ({
+  ref,
+  path,
+  source,
+  campaign,
+  city: 'Dallas',
+  started_at,
+})
 
 const SITES = [
   {
     site_id: 'site-taylorurl',
     name: 'taylorurl.com',
-    live: 3,
+    live: 6,
     visitors: [
-      {
-        ref: '4ec9c1b7',
-        path: '/',
-        source: 'Direct',
-        campaign: null,
-        city: 'Dallas',
-        started_at: '2026-11-05T15:24:59.137Z',
-      },
-      {
-        ref: '7656248d',
-        path: '/pricing',
-        source: 'www.google.com',
-        campaign: null,
-        city: 'Baytown',
-        started_at: '2026-11-05T15:30:06.927Z',
-      },
-      {
-        ref: '3d1c4cb2',
-        path: '/start',
-        source: 'newsletter',
-        campaign: 'november',
-        city: 'Houston',
-        started_at: null,
-      },
+      visit('a1', '/', 'Direct', '2026-11-05T15:24:59.137Z'),
+      visit('a2', '/', 'Direct', '2026-11-05T14:57:41.002Z'),
+      visit('a3', '/', 'Direct', null),
+      visit('a4', '/pricing', 'www.google.com', '2026-11-05T15:10:06.927Z'),
+      visit('a5', '/pricing', 'google.com', '2026-11-05T15:01:00.000Z'),
+      visit('a6', '/start', 'newsletter', null, 'november'),
+    ],
+  },
+  {
+    site_id: 'site-smyrna',
+    name: 'smyrnatools.com',
+    live: 2,
+    visitors: [
+      visit('b1', '/', 'Direct', '2026-11-05T15:21:56.410Z'),
+      visit('b2', '/', 'Direct', '2026-11-04T11:18:38.000Z'),
     ],
   },
   {
     site_id: 'site-rootrise',
     name: 'rootriseholdings.com',
     live: 1,
-    visitors: [
-      {
-        ref: 'be088211',
-        path: '/app/signals',
-        source: 'Direct',
-        campaign: null,
-        city: 'Boston',
-        started_at: '2026-11-05T14:46:07.549Z',
-      },
-    ],
+    visitors: [visit('c1', '/app/signals', 'Direct', '2026-11-05T14:46:07.549Z')],
   },
 ]
 
-check('every visitor on now is a row with the page and where they came from', () => {
-  const rows = visitorsOnNow(SITES, [])
-  same(rows.length, 4, 'one row a visitor, across every site')
+check('visitors on the same page from the same source are one row with a count', () => {
+  const rows = visitorGroups(SITES, [])
   same(
-    rows.map(row => `${row.site}${row.path} ← ${row.source}`).join(' | '),
+    rows.map(row => `${row.site}${row.path} ← ${row.source} × ${row.n}`).join(' | '),
     [
-      'taylorurl.com/pricing ← google.com',
-      'taylorurl.com/ ← Direct',
-      'rootriseholdings.com/app/signals ← Direct',
-      'taylorurl.com/start ← newsletter',
+      'taylorurl.com/ ← Direct × 3',
+      'smyrnatools.com/ ← Direct × 2',
+      'taylorurl.com/pricing ← google.com × 2',
+      'rootriseholdings.com/app/signals ← Direct × 1',
+      'taylorurl.com/start ← newsletter × 1',
     ].join(' | '),
-    'newest arrival first, the unrecorded arrival last, sources named as a reader says them'
+    'the busiest first, then the latest arrival, two spellings of Google as one source'
   )
-  same(rows[3].campaign, 'november', 'a tagged link keeps its campaign')
+  same(
+    rows.reduce((sum, row) => sum + row.n, 0),
+    9,
+    'every visitor is counted once'
+  )
+  same(rows[4].campaign, 'november', 'a tagged link keeps its campaign')
   ok(new Set(rows.map(row => row.key)).size === rows.length, 'two rows share a key')
 })
 
-check('only the sites in scope are listed', () => {
-  const rows = visitorsOnNow(SITES, ['site-rootrise'])
-  same(rows.map(row => row.path).join(','), '/app/signals', 'one site in scope')
-  same(visitorsOnNow([], []).length, 0, 'nobody on')
-  same(visitorsOnNow([{ site_id: 'x', name: 'x.com', live: 0 }], []).length, 0, 'no visitors key')
+check('a campaign and a site each keep their own row', () => {
+  const rows = visitorGroups(
+    [
+      {
+        site_id: 'a',
+        name: 'a.com',
+        visitors: [
+          visit('1', '/', 'facebook', null, 'november'),
+          visit('2', '/', 'facebook', null),
+        ],
+      },
+      { site_id: 'b', name: 'b.com', visitors: [visit('3', '/', 'facebook', null)] },
+    ],
+    []
+  )
+  same(rows.length, 3, 'a tagged link, an untagged one and another site are three rows')
 })
 
-check('the overview card draws each visitor’s source', () => {
+check('only the sites in scope are listed', () => {
+  const rows = visitorGroups(SITES, ['site-rootrise'])
+  same(rows.map(row => `${row.path} × ${row.n}`).join(','), '/app/signals × 1', 'one site in scope')
+  same(visitorGroups([], []).length, 0, 'nobody on')
+  same(visitorGroups([{ site_id: 'x', name: 'x.com', live: 0 }], []).length, 0, 'no visitors key')
+})
+
+check('the overview card draws each group’s source and count', () => {
   const page = readFileSync(
     join(import.meta.dirname, '../../src/app/views/console/pages/traffic/OverviewPage.jsx'),
     'utf8'
   )
   const card = page.slice(page.indexOf('function OnNow('), page.indexOf('function YourSites('))
-  ok(/visitorsOnNow\(liveSites, siteIds\)/.test(card), 'the card does not read the visitors')
+  ok(/visitorGroups\(liveSites, siteIds\)/.test(card), 'the card does not read the visitors')
   ok(/row\.source/.test(card), 'the card does not draw where they came from')
+  ok(/row\.n\b/.test(card), 'the card does not count each row')
   ok(/SkeletonList/.test(card), 'the card draws before the live feed answers')
 })
 
 await finish()
 
-console.log('live visitors: each visitor on now shows the page and where they came from')
+console.log(
+  'live visitors: visitors on now are counted by the page they have open and where they came from'
+)
