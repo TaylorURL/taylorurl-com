@@ -2,7 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { faultFromResponse, faultMessage } from '@utils/faults'
 import { useToast } from '@hooks/chrome/useToast'
 import { dayIn, instantOf } from '@lib/time/zone.js'
-import { DAILY_CALL_GOAL, dialHref, outcomeAsksOwner } from '@lib/outreach/prospects/calls.js'
+import {
+  DAILY_CALL_GOAL,
+  dialHref,
+  outcomeAsksOwner,
+  outcomeEnds,
+} from '@lib/outreach/prospects/calls.js'
 import { readEndpoint, writeEndpoint } from './endpoint'
 import { useAlive } from './useAlive'
 
@@ -35,8 +40,9 @@ function byOwnerDue(one, two) {
 }
 
 /**
- * The Call List: the call backs due today, then the businesses to ring, then
- * the ones waiting on their owner, and the day's calls against its goal.
+ * The Call List: the businesses that answered the mail, the call backs due
+ * today, then the businesses to ring, then the ones waiting on their owner,
+ * and the day's calls against its goal.
  *
  * The never-called part is read a page at a time: `loadMore` adds the next
  * page of the ranking under what is already there.
@@ -44,7 +50,8 @@ function byOwnerDue(one, two) {
  * Recording a call settles the list where it stands rather than reading it
  * again. A call takes its business off the list; a call back due today puts
  * it in the due part, and a Front Desk call whose time is later puts it at the
- * foot with the owner's name and number on it. Nothing else on the list moves,
+ * foot with the owner's name and number on it. A call that ends it - Pipeline
+ * among them - takes the business off and puts it nowhere. Nothing else on the list moves,
  * so the answer is known without a round trip, and the next business is
  * already on screen when the save lands. The day's count comes back with the
  * save.
@@ -80,6 +87,7 @@ export function useCallList({ token }) {
       .then(payload => {
         if (stop || !alive.current) return
         setHeld({
+          engaged: (payload.engaged ?? []).map(whole),
           due: (payload.due ?? []).map(whole),
           rows: (payload.rows ?? []).map(whole),
           waiting: (payload.waiting ?? []).map(whole),
@@ -104,7 +112,9 @@ export function useCallList({ token }) {
       if (!alive.current) return
       setHeld(was => {
         if (!was) return was
-        const seen = new Set([...was.due, ...was.rows, ...was.waiting].map(row => row.id))
+        const seen = new Set(
+          [...was.engaged, ...was.due, ...was.rows, ...was.waiting].map(row => row.id)
+        )
         return {
           ...was,
           rows: [...was.rows, ...(payload.rows ?? []).filter(row => !seen.has(row.id)).map(whole)],
@@ -138,7 +148,10 @@ export function useCallList({ token }) {
             called_at: payload.called_at ?? new Date().toISOString(),
           }
           const back = logged.callback_at ? new Date(logged.callback_at) : null
-          const dueToday = back && back < tomorrow()
+          // An outcome that ends the list carries no call back the list reads:
+          // Pipeline's time is the pipeline's follow-up.
+          const ends = outcomeEnds(call.outcome)
+          const dueToday = !ends && back && back < tomorrow()
           const frontDesk = outcomeAsksOwner(call.outcome)
           const owner = payload.owner ?? null
           const after = {
@@ -158,6 +171,7 @@ export function useCallList({ token }) {
           }
           setHeld(was => {
             if (!was) return was
+            const engaged = was.engaged.filter(row => row.id !== call.id)
             const rows = was.rows.filter(row => row.id !== call.id)
             const due = was.due.filter(row => row.id !== call.id)
             const waiting = was.waiting.filter(row => row.id !== call.id)
@@ -165,18 +179,24 @@ export function useCallList({ token }) {
               due.push({
                 ...after,
                 due: { kind: 'callback', at: logged.callback_at },
+                engaged: null,
                 front_desk: null,
               })
               due.sort((one, two) => Date.parse(one.due.at) - Date.parse(two.due.at))
             } else if (frontDesk) {
-              waiting.push({ ...after, due: null, front_desk: { at: logged.callback_at } })
+              waiting.push({
+                ...after,
+                due: null,
+                engaged: null,
+                front_desk: { at: logged.callback_at },
+              })
               waiting.sort(byOwnerDue)
             }
             const today = payload.today ?? {
               ...was.today,
               calls: (was.today?.calls ?? 0) + 1,
             }
-            return { ...was, rows, due, waiting, today }
+            return { ...was, engaged, rows, due, waiting, today }
           })
         }
         return payload
@@ -191,6 +211,7 @@ export function useCallList({ token }) {
   )
 
   return {
+    engaged: held?.engaged ?? [],
     due: held?.due ?? [],
     rows: held?.rows ?? [],
     waiting: held?.waiting ?? [],

@@ -2,7 +2,7 @@
  * Proves the Call List rings the right businesses, in the right order, and
  * never the one it must not.
  *
- * Five things are held here.
+ * Six things are held here.
  *
  * Who may be rung at all. A business that asked for no further contact asked
  * not to hear from the studio, not merely not to be emailed, and the call list
@@ -28,8 +28,14 @@
  * offered together, call backs first, and a business whose last call reached a
  * front desk waits at the foot until the time the owner is in.
  *
- * What a call records. Seven results; Call Back and Front Desk carry a time;
- * Front Desk writes the owner's name and number on the business; the endpoint
+ * Who answered the mail. A business a person opened the mail at more than
+ * once, or that wrote back, leads the list whatever its site, until a call
+ * deals with it; the mail system's own fetches at the moment a message lands
+ * are not a person, and neither is an auto-responder.
+ *
+ * What a call records. Eight results; Call Back, Front Desk and Pipeline carry
+ * a time; Pipeline files the lead in the sales pipeline; Front Desk writes the
+ * owner's name and number on the business; the endpoint
  * still refuses a call against a business the list would not offer; and the
  * day's count comes back with every save. The endpoint is driven against an
  * in-memory database rather than read.
@@ -56,7 +62,10 @@ import {
   isCallable,
   outcomeAsksOwner,
   outcomeEnds,
+  outcomeFilesPipeline,
   outcomeTakesCallback,
+  PIPELINE_LENGTHS,
+  isRingable,
   pullBand,
   numberLine,
   ownerLabel,
@@ -115,6 +124,15 @@ import {
   phoneOnlyRow,
   phoneRow,
 } from '../../../lib/new-business/mirror.js'
+import {
+  MACHINE_WINDOW_MS,
+  OPENS_TO_CALL,
+  byEngagement,
+  engagedWords,
+  engagementOf,
+  looksAutomatic,
+  personOpens,
+} from '../../../lib/outreach/prospects/engaged.js'
 import { list, record, todayFrom, tomorrowFrom } from '../../../api/calls-admin.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
 
@@ -1149,19 +1167,100 @@ check('every row says why it is there, in plain words', () => {
   same(crowded[0], 'Broken site', 'the chain’s line first')
 })
 
+// ── Who answered the mail ───────────────────────────────────────────────
+
+/** A moment some minutes after another. */
+const after = (at, minutes) => new Date(Date.parse(at) + minutes * 60_000).toISOString()
+
+check('an open is a person’s only once the mail system has had its look', () => {
+  const at = '2026-11-02T13:05:00Z'
+  const fetched = (count, first, last = first) => ({
+    sent_at: at,
+    opened_at: after(at, first),
+    last_open_at: after(at, last),
+    open_count: count,
+  })
+  same(MACHINE_WINDOW_MS, 600_000, 'ten minutes')
+  // Each of these is a message on the live table on 2026-11-04.
+  same(personOpens(fetched(2, 0.1, 0.2)), 0, 'two scanners the moment it landed')
+  same(personOpens(fetched(4, 0.2, 4.4)), 0, 'four fetches inside five minutes')
+  same(personOpens(fetched(5, 1.1, 1275)), 4, 'a scanner, then read four times')
+  same(personOpens(fetched(2, 420.9, 422.3)), 2, 'read twice that evening')
+  same(
+    personOpens({ sent_at: at, opened_at: null, last_open_at: null, open_count: 0 }),
+    0,
+    'unread'
+  )
+})
+
+check('more than one open by a person, or a reply, and the business is rung first', () => {
+  const at = '2026-10-29T15:00:00Z'
+  const read = (first, last, count) => ({
+    sent_at: at,
+    opened_at: after(at, first),
+    last_open_at: after(at, last),
+    open_count: count,
+  })
+  same(OPENS_TO_CALL, 2, 'more than once')
+  same(engagementOf({ messages: [read(600, 600, 1)] }), null, 'once is not enough')
+  same(engagementOf({ messages: [read(0.1, 0.1, 1), read(0.2, 0.2, 1)] }), null, 'two scanners')
+  const twice = engagementOf({ messages: [read(600, 600, 1), read(900, 900, 1)] })
+  same(twice.opens, 2, 'both messages read')
+  same(twice.at, after(at, 900), 'as of the last read')
+  same(engagedWords(twice), 'Opened your emails 2 times', 'said')
+  const wrote = engagementOf({
+    repliedAt: '2026-10-30T12:00:00Z',
+    reply: 'How much  would\nit run?',
+  })
+  same(wrote.reply, 'How much would it run?', 'what they said, on one line')
+  same(engagedWords(wrote), 'Replied to your email', 'said')
+  same(
+    [twice, wrote].sort(byEngagement)[0],
+    wrote,
+    'a reply goes above an open, whatever the dates'
+  )
+})
+
+check('an auto-responder is not a reply, and a person is', () => {
+  // The five replies at `replied` on 2026-11-04: four machines and a person.
+  for (const text of [
+    'You have reached Alta Pest Control after hours!',
+    'Kindred Pest Control\n\nThank you for choosing Kindred Pest Control!',
+    '##- Please type your reply above this line -##\n\nThanks for reaching out to us for some help with MapQuest.com.',
+    'Thanks so much for reaching out. We have received your email and will get back to you as soon as possible.',
+  ]) {
+    ok(looksAutomatic('Re: your site', text), `read as a person: ${text.slice(0, 40)}`)
+  }
+  ok(!looksAutomatic('Re: your site', 'Hello.  I’m in Fort Worth.'), 'a person')
+  ok(
+    !looksAutomatic('Re: your site', 'Thanks for reaching out! What would it cost?'),
+    'a person thanking'
+  )
+})
+
+check('a business that answered the mail may be rung whatever its site', () => {
+  const own = row({ site_kind: 'own', website: 'https://own.example', stage: 'replied' })
+  ok(!isCallable(own), 'not as a stranger')
+  ok(isRingable(own), 'but as somebody who wrote back')
+  ok(!isRingable({ ...own, stage: 'unsubscribed' }), 'never one that asked to stop')
+  ok(!isRingable({ ...own, stage: 'skipped' }), 'nor one skipped')
+  ok(!isRingable({ ...own, phone: '' }), 'nor one with no number')
+  ok(!isRingable({ ...own, business_status: 'CLOSED_PERMANENTLY' }), 'nor one closed')
+})
+
 // ── What a call records ─────────────────────────────────────────────────
 
-check('the seven results offered, in the order they are drawn', () => {
+check('the eight results offered, in the order they are drawn', () => {
   same(
     OFFERED_OUTCOMES.join(','),
-    'spoke,gatekeeper,no_answer,voicemail,callback,not_interested,wrong_number',
+    'spoke,gatekeeper,no_answer,voicemail,callback,pipeline,not_interested,wrong_number',
     'the results'
   )
   same(
     CALL_OUTCOMES.filter(one => one.offered)
       .map(one => one.label)
       .join(', '),
-    'Owner Answered, Front Desk, No Answer, Voicemail, Call Back, Not Interested, Bad Number',
+    'Owner Answered, Front Desk, No Answer, Voicemail, Call Back, Pipeline, Not Interested, Bad Number',
     'the labels'
   )
 })
@@ -1186,6 +1285,16 @@ check('what each result does next', () => {
   }
   ok(outcomeEnds('not_interested') && outcomeEnds('wrong_number'), 'the two that end it')
   ok(!outcomeEnds('gatekeeper'), 'a front desk ends nothing')
+  ok(outcomeTakesCallback('pipeline'), 'Pipeline carries a follow-up day')
+  ok(outcomeEnds('pipeline'), 'and takes the business off the list for good')
+  ok(outcomeFilesPipeline('pipeline'), 'into the pipeline')
+  ok(!outcomeFilesPipeline('callback'), 'which a call back is not')
+  same(interestIn('pipeline'), true, 'somebody who wants it')
+  same(
+    PIPELINE_LENGTHS.map(one => one.hours).join(','),
+    '168,336,720,2160',
+    'a week, two, a month, three months'
+  )
   same(interestIn('not_interested'), false, 'a no')
   same(interestIn('no_answer'), null, 'nobody reached')
   same(interestIn('gatekeeper'), null, 'a front desk says nothing about interest')
@@ -1194,6 +1303,7 @@ check('what each result does next', () => {
 check('a call that reached somebody who could buy becomes a lead, and only that', () => {
   ok(callMakesLead('spoke'), 'a conversation with the owner')
   ok(callMakesLead('callback'), 'a call back')
+  ok(callMakesLead('pipeline'), 'a business filed in the pipeline')
   ok(!callMakesLead('gatekeeper'), 'a front desk')
   ok(!callMakesLead('no_answer') && !callMakesLead('voicemail'), 'nobody reached')
   ok(!callMakesLead('not_interested') && !callMakesLead('wrong_number'), 'a no')
@@ -1786,7 +1896,7 @@ async function callOn(over, body) {
   return { db, answer }
 }
 
-check('only the seven results are recorded', async () => {
+check('only the eight results are recorded', async () => {
   for (const outcome of ['audit_booked', 'booked', 'bad_lead', 'nonsense']) {
     const answer = await record(table(), { id: UUID, outcome }, OWNER)
     same(answer.status, 400, `${outcome} was taken`)
@@ -2019,6 +2129,192 @@ check('nothing is claimed: the business is not handed to anybody', async () => {
   )
 })
 
+// ── Who answered the mail, at the endpoint ──────────────────────────────
+
+/** A message the studio sent, fetched `count` times between `first` and `last` minutes on. */
+const sent = (id, prospect, at, count = 0, first = 0, last = first) => ({
+  id,
+  prospect_id: prospect,
+  direction: 'outbound',
+  sent_at: at,
+  opened_at: count ? after(at, first) : null,
+  last_open_at: count ? after(at, last) : null,
+  open_count: count,
+})
+
+/** A reply on the record. */
+const reply = (id, prospect, at, body_text) => ({
+  id,
+  prospect_id: prospect,
+  direction: 'inbound',
+  subject: 'Re: your site',
+  body_text,
+  created_at: at,
+})
+
+/** A business with a site of its own that the sender has written to. */
+const written = (id, phone, over = {}) =>
+  business(id, {
+    phone,
+    site_kind: 'own',
+    website: `https://${id}.example/`,
+    stage: 'contacted',
+    email: `owner@${id}.example`,
+    ...over,
+  })
+
+function answeredTable() {
+  return database({
+    outreach_prospects: [
+      written('reader', '(281) 300-0001'),
+      written('scanned', '(281) 300-0002'),
+      written('writer', '(281) 300-0003', { stage: 'replied', replied_at: '2026-10-30T15:00:00Z' }),
+      written('robot', '(281) 300-0004', { stage: 'replied', replied_at: '2026-10-31T15:00:00Z' }),
+      written('rung-since', '(281) 300-0005'),
+      written('read-again', '(281) 300-0006'),
+      written('said-no', '(281) 300-0007'),
+      written('stopped-reader', '(281) 300-0008', { stage: 'unsubscribed' }),
+      written('ruled-out', '(281) 300-0009', {
+        stage: 'replied',
+        replied_at: '2026-10-29T15:00:00Z',
+      }),
+      written('long-ago', '(281) 300-0010'),
+      written('owed-reader', '(281) 300-0011'),
+      written('owed-site', '(281) 300-0012'),
+    ],
+    outreach_messages: [
+      sent('m1', 'reader', '2026-10-30T14:00:00Z', 3, 0.1, 600),
+      sent('m2', 'scanned', '2026-11-01T14:00:00Z', 4, 0.1, 2),
+      sent('m3', 'rung-since', '2026-10-28T14:00:00Z', 2, 300, 400),
+      sent('m4', 'read-again', '2026-10-28T14:00:00Z', 2, 300, 4000),
+      sent('m5', 'said-no', '2026-10-28T14:00:00Z', 5, 300, 4000),
+      sent('m6', 'stopped-reader', '2026-10-28T14:00:00Z', 5, 300, 4000),
+      sent('m7', 'long-ago', '2026-09-01T14:00:00Z', 6, 300, 4000),
+      sent('m8', 'owed-reader', '2026-10-28T14:00:00Z', 3, 300, 5000),
+      reply(
+        'r1',
+        'writer',
+        '2026-10-30T15:00:00Z',
+        'How much would that run?\n\nOn Tue, Oct 28, 2026 at 9:00 AM Trenton <t@x.example> wrote:\n> Good morning'
+      ),
+      reply(
+        'r2',
+        'robot',
+        '2026-10-31T15:00:00Z',
+        'You have reached Alta Pest Control after hours!'
+      ),
+      reply('r3', 'ruled-out', '2026-10-29T15:00:00Z', 'Sure, call me.'),
+    ],
+    outreach_calls: [
+      rung('c1', 'rung-since', '2026-10-29T15:00:00Z', { outcome: 'no_answer' }),
+      rung('c2', 'read-again', '2026-10-29T15:00:00Z', { outcome: 'no_answer' }),
+      rung('c3', 'said-no', '2026-10-29T15:00:00Z', { outcome: 'not_interested' }),
+      rung('c4', 'owed-reader', '2026-10-29T15:00:00Z', {
+        outcome: 'callback',
+        callback_at: '2026-11-02T20:00:00+00:00',
+      }),
+      rung('c5', 'owed-site', '2026-10-30T15:00:00Z', {
+        outcome: 'callback',
+        callback_at: '2026-11-02T16:00:00+00:00',
+      }),
+    ],
+    leads: [
+      { id: 'l1', source_ref: 'ruled-out', dismissed_at: '2026-10-30T12:00:00Z', bought_at: null },
+    ],
+    new_business_leads: [],
+    call_trade_metrics: INDUSTRY_TABLE,
+  })
+}
+
+check('the businesses that answered the mail lead the list, replies first', async () => {
+  const answer = await list(answeredTable(), {}, NOW)
+  same(answer.status, 200, 'the status')
+  same(
+    answer.body.engaged.map(one => one.id).join(','),
+    'writer,owed-reader,read-again,reader',
+    'who answered, and in what order'
+  )
+  const [writer, owed, again, reader] = answer.body.engaged
+  same(writer.engaged.reply, 'How much would that run?', 'what they wrote, without the quote')
+  same(writer.reasons[0], 'Replied to your email', 'said first')
+  same(reader.engaged.opens, 2, 'the scanner’s fetch is not counted')
+  same(reader.reasons[0], 'Opened your emails 2 times', 'said first')
+  same(again.calls.length, 1, 'with the call before it')
+  same(owed.due?.kind, 'callback', 'a call back it is owed comes with it')
+  const below = [...answer.body.due, ...answer.body.rows, ...answer.body.waiting].map(one => one.id)
+  for (const id of ['writer', 'owed-reader', 'read-again', 'reader']) {
+    ok(!below.includes(id), `${id} is drawn twice`)
+  }
+  ok(below.includes('owed-site'), 'a call back on a business with a site is still owed')
+})
+
+check('a business is not rung first for a machine, a call since, a no or a stop', async () => {
+  const first = (await list(answeredTable(), {}, NOW)).body.engaged.map(one => one.id)
+  for (const id of [
+    'scanned',
+    'robot',
+    'rung-since',
+    'said-no',
+    'stopped-reader',
+    'ruled-out',
+    'long-ago',
+    'owed-site',
+  ]) {
+    ok(!first.includes(id), `${id} was offered first`)
+  }
+})
+
+check('Pipeline files the lead in the pipeline, a week out when no day is given', async () => {
+  const { db, answer } = await callOn(
+    { site_kind: 'own', website: 'https://writer.example', stage: 'replied' },
+    { outcome: 'pipeline', note: 'Wants a quote in January' }
+  )
+  same(answer.status, 200, 'a business that wrote back can be filed')
+  const call = db.writes.find(one => one.table === 'outreach_calls').row
+  same(call.outcome, 'pipeline', 'the call')
+  const days = (Date.parse(call.callback_at) - Date.now()) / 86_400_000
+  ok(days > 6.99 && days <= 7, `the follow-up lands ${days} days out`)
+  ok(
+    db.rpcs.some(one => one.name === 'lead_record'),
+    'no lead was made'
+  )
+  const stamp = db.writes.find(one => one.table === 'leads' && one.op === 'update').row
+  ok(stamp.pipeline_at, 'not stamped into the pipeline')
+  same(stamp.due_at, call.callback_at, 'with the follow-up day')
+  same(stamp.dismissed_at, null, 'and ruled back in')
+  same(answer.body.pipeline, true, 'the page is told it landed')
+
+  const day = new Date(Date.now() + 30 * 86_400_000).toISOString()
+  const dated = await callOn({}, { outcome: 'pipeline', callback_at: day })
+  same(
+    dated.db.writes.find(one => one.table === 'outreach_calls').row.callback_at,
+    day,
+    'a day given'
+  )
+  const plain = await callOn({}, { outcome: 'callback' })
+  same(plain.answer.body.pipeline, null, 'a call back says nothing about the pipeline')
+  const stamped = plain.db.writes.find(one => one.table === 'leads' && one.op === 'update').row
+  same('pipeline_at' in stamped, false, 'and is not filed in it')
+})
+
+check('a business filed in the pipeline leaves the list', async () => {
+  const db = answeredTable()
+  db.tables.outreach_calls.push(
+    rung('c9', 'reader', '2026-11-02T17:00:00Z', {
+      outcome: 'pipeline',
+      callback_at: '2026-11-09T15:00:00+00:00',
+    })
+  )
+  const answer = await list(db, {}, NOW)
+  const all = [
+    ...answer.body.engaged,
+    ...answer.body.due,
+    ...answer.body.rows,
+    ...answer.body.waiting,
+  ]
+  ok(!all.some(one => one.id === 'reader'), 'a pipeline lead is still on the list')
+})
+
 // ── The page ────────────────────────────────────────────────────────────
 
 check('the page is the owner’s one list and nothing else', () => {
@@ -2049,6 +2345,8 @@ check('the page shows the number and the owner, the day, and the front desk', ()
   ok(!/Ask for \{row\.owner_name\}/.test(page), 'the owner’s name is said twice')
   ok(/GoalBar/.test(page) && /dayLine\(/.test(page), 'the day is not drawn against its goal')
   ok(/Save Front Desk/.test(page), 'Front Desk has nothing to save')
+  ok(/Add to Pipeline/.test(page), 'Pipeline has nothing to save')
+  ok(/engagedWords\(/.test(page), 'the page does not say who answered the mail')
   ok(/Waiting on the owner/.test(page), 'the front desks are not at the foot')
   // Every number on a line of its own in the row - the owner's apart from the
   // main line - and the name beside the number on the button that dials it.
