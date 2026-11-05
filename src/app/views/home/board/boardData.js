@@ -65,6 +65,16 @@ export function clientReview(host) {
 }
 
 /**
+ * Every held review, the named one first and the rest in the order the record
+ * keeps them. The home page moves through these, so it opens on the review it
+ * was chosen to open on and never on one the record merely happens to list first.
+ */
+export function clientReviews(first) {
+  const rest = CLIENT_REVIEW_LIST.filter(entry => entry.displayUrl !== first)
+  return [first, ...rest.map(entry => entry.displayUrl)].map(host => clientReview(host))
+}
+
+/**
  * The opening sentences of a quote. A reader who skims takes one or two
  * sentences of a review, and cutting at the reviewer's own full stops keeps
  * the words theirs.
