@@ -2,6 +2,7 @@ import { useConsole } from '../../lib/context'
 import { TrafficChart } from '../../../analytics/charts'
 import { fullCount } from '../../../analytics/lib/format'
 import { sourceLabel } from '../../../analytics/lib/sources'
+import { visitorsOnNow } from '../../lib/onNow'
 import {
   ConsolePage,
   EmptyFill,
@@ -12,6 +13,7 @@ import {
   RankedList,
   SectionNotice,
   SkeletonBox,
+  SkeletonList,
   SkeletonRows,
 } from '../../ui'
 import { CELL_END, CELL_TIGHT, CHART_HEIGHT, TH_END, TH_TIGHT } from '../../lib/tokens'
@@ -19,7 +21,8 @@ import { SiteIcon } from '../../SiteIcon'
 
 /**
  * The one traffic screen a client has, answering "is my site getting
- * visitors": who is on it right now and which pages they have open, the shape
+ * visitors": who is on it right now, the page each has open and where each
+ * came from, the shape
  * of the window, the pages carrying it, and where the visitors came from. With
  * more than one site in scope, a short list puts the sites side by side.
  *
@@ -41,25 +44,6 @@ const LISTED = 8
 const SITE_CELLS = [CELL_TIGHT, CELL_END, CELL_END]
 
 /**
- * The pages open right now on the sites in scope, busiest first.
- *
- * The scope is read from the set of ids rather than from the window's rows,
- * which empty for the length of every window change and would take the live
- * list with them for no reason the live feed knows about. An empty set is every
- * site the account holds.
- */
-function openPages(liveSites, siteIds) {
-  const held = siteIds.length ? new Set(siteIds) : null
-  return liveSites
-    .filter(entry => !held || held.has(entry.site_id))
-    .flatMap(entry =>
-      (entry.pages || []).map(page => ({ site: entry.name, path: page.path, n: page.n || 0 }))
-    )
-    .filter(row => row.n > 0)
-    .sort((a, b) => b.n - a.n || a.path.localeCompare(b.path))
-}
-
-/**
  * Arrivals by where they came from, named the way a reader says them.
  *
  * Two spellings of one host - `www.google.com` and `google.com` - are one
@@ -78,10 +62,16 @@ function bySource(referrers) {
     .slice(0, LISTED)
 }
 
-/** Who is on right now, and the page each of them has open. */
+/**
+ * Who is on right now: one row each, the page they have open on the left and
+ * where they came from on the right - the site they found the link on, the
+ * tag a link carried where it had no referrer, or Direct for an address typed
+ * in or a bookmark. A tagged link's campaign rides beside its source, since it
+ * is the rest of the same answer.
+ */
 function OnNow({ area }) {
   const { bulk, live, liveLoading, liveNow, liveSites, siteIds } = useConsole()
-  const rows = openPages(liveSites, siteIds)
+  const rows = visitorsOnNow(liveSites, siteIds)
   // A read that failed has not said nobody is here, so it says that it failed
   // and puts no count in the head.
   const failed = Boolean(live.error) && !live.data
@@ -97,16 +87,37 @@ function OnNow({ area }) {
       loading={liveLoading}
     >
       <PanelBody>
-        <RankedList
-          rows={rows}
-          // Two sites' front pages are two rows carrying one path, so across
-          // more than one site the row names the site and the path together.
-          nameOf={row => (bulk ? `${row.site}${row.path}` : row.path)}
-          valueOf={row => row.n}
-          formatValue={fullCount}
-          empty={empty}
-          loading={liveLoading}
-        />
+        {liveLoading ? (
+          <SkeletonList rows={5} />
+        ) : rows.length ? (
+          <ul className="flex flex-col gap-px p-2" aria-label="Visitors on now">
+            {rows.map(row => {
+              // Two sites' front pages are two rows carrying one path, so
+              // across more than one site the row names the site and the path
+              // together.
+              const page = bulk ? `${row.site}${row.path}` : row.path
+              const from = row.campaign ? `${row.source} · ${row.campaign}` : row.source
+              return (
+                <li
+                  key={row.key}
+                  className="flex items-center justify-between gap-3 rounded-[var(--console-radius-sm)] px-3 py-1.5 text-[13px] transition-colors duration-150 ease-out-soft hover:bg-[color:var(--console-row-hover)]"
+                >
+                  <span className="min-w-0 truncate" title={page}>
+                    {page}
+                  </span>
+                  <span
+                    className="min-w-0 max-w-[55%] flex-shrink-0 truncate text-right text-paper-soft"
+                    title={`Came from ${from}`}
+                  >
+                    {from}
+                  </span>
+                </li>
+              )
+            })}
+          </ul>
+        ) : (
+          <p className="px-5 py-10 text-center text-[13px] text-paper-soft">{empty}</p>
+        )}
       </PanelBody>
     </Panel>
   )
