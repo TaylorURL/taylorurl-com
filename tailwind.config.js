@@ -82,6 +82,10 @@ export default {
         // page replacing another are one piece of motion rather than two.
         'fade-in-up': 'fadeInUp 0.25s var(--ease-out-soft) forwards',
         marquee: 'marquee 28s linear infinite',
+        // How long the home page holds one review before the next. The bar
+        // under the quotes fills over this, and the quotes move on when it is
+        // full, so the time a reader is given lives here and nowhere else.
+        'review-hold': 'reviewHold 7s linear forwards',
       },
       keyframes: {
         fadeInUp: {
@@ -91,6 +95,10 @@ export default {
         marquee: {
           '0%': { transform: 'translateX(0)' },
           '100%': { transform: 'translateX(-50%)' },
+        },
+        reviewHold: {
+          '0%': { transform: 'scaleX(0)' },
+          '100%': { transform: 'scaleX(1)' },
         },
       },
     },
