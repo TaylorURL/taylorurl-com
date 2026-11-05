@@ -127,11 +127,14 @@ import {
 import {
   MACHINE_WINDOW_MS,
   OPENS_TO_CALL,
+  SITE_MACHINE_WINDOW_MS,
   byEngagement,
   engagedWords,
   engagementOf,
   looksAutomatic,
   personOpens,
+  siteActivity,
+  siteWords,
 } from '../../../lib/outreach/prospects/engaged.js'
 import { list, record, todayFrom, tomorrowFrom } from '../../../api/calls-admin.js'
 import { cases, check, finish, ok, same } from '../../harness/checks.js'
@@ -1221,6 +1224,129 @@ check('more than one open by a person, or a reply, and the business is rung firs
   )
 })
 
+/** A visit to a preview site, begun `minutes` after `at`, with what it did. */
+const visited = (id, prospect, at, minutes, over = {}) => ({
+  id,
+  prospect_id: prospect,
+  started_at: after(at, minutes),
+  last_seen_at: after(at, minutes + (over.active_ms ?? 0) / 60_000),
+  pages: 1,
+  active_ms: 0,
+  max_scroll: 0,
+  clicks: 0,
+  calls: 0,
+  emails: 0,
+  ctas: 0,
+  form_submits: 0,
+  ...over,
+})
+
+check('a visit to the preview site is a person’s once the link checkers have had theirs', () => {
+  same(SITE_MACHINE_WINDOW_MS, 120_000, 'two minutes')
+  // hightechmachine on the live table on 2026-11-05: two desktop visits 28
+  // and 32 seconds after the letter, then a phone that evening.
+  const sent = '2026-10-26T15:41:54.474Z'
+  const site = siteActivity(
+    [
+      visited('s1', 'p', sent, 0.47, { active_ms: 2164, ctas: 0 }),
+      visited('s2', 'p', sent, 0.53, { active_ms: 2230 }),
+      visited('s3', 'p', sent, 496, { active_ms: 6473, max_scroll: 75, clicks: 1, ctas: 1 }),
+    ],
+    [sent]
+  )
+  same(site.visits, 1, 'only the phone that evening')
+  same(site.scroll, 75, 'how far it read')
+  same(site.buttons, 1, 'the button it tapped')
+  same(site.clicks, 0, 'the tap is a button, not another click')
+  same(
+    siteWords(site),
+    '1 visit, under a minute · read 75% of the way down · tapped a button',
+    'said'
+  )
+  same(
+    siteActivity([visited('s1', 'p', sent, 0.1)], [sent]),
+    null,
+    'a link checker alone is nobody'
+  )
+  // A follow-up is a send too: a visit the moment it lands is the checker's.
+  const later = '2026-10-30T22:05:45.487Z'
+  same(siteActivity([visited('s4', 'p', later, 0.5)], [sent, later]), null, 'after the follow-up')
+  same(siteActivity([visited('s5', 'p', later, 10)], [sent, later]).visits, 1, 'ten minutes on')
+})
+
+check('the more a business does on its preview site, the higher it is rung', () => {
+  const sent = '2026-10-29T15:00:00Z'
+  const glance = siteActivity([visited('g', 'p', sent, 600, { active_ms: 20_000 })], [sent])
+  const read = siteActivity(
+    [
+      visited('r1', 'p', sent, 600, { active_ms: 240_000, max_scroll: 100, pages: 3, clicks: 2 }),
+      visited('r2', 'p', sent, 2000, { active_ms: 60_000 }),
+    ],
+    [sent]
+  )
+  const claimed = siteActivity(
+    [visited('c', 'p', sent, 600, { active_ms: 30_000, clicks: 1, ctas: 1, claims: 1 })],
+    [sent]
+  )
+  ok(read.points > glance.points, 'four minutes over two visits is no more than a glance')
+  ok(claimed.points > read.points, 'Make It Yours is no more than reading')
+  same(
+    siteWords(read),
+    '2 visits, 5 min in all · 4 pages · read to the bottom · 2 clicks',
+    'what it did, said'
+  )
+  same(siteWords(claimed), '1 visit, under a minute · tapped Make It Yours', 'the claim, said')
+  same(
+    siteActivity([visited('t', 'p', sent, 600, { active_ms: 3_600_000 })], [sent]).points,
+    2 + 10,
+    'a tab left open an hour is worth ten minutes'
+  )
+
+  const opens = (first, last, count) => ({
+    sent_at: sent,
+    opened_at: after(sent, first),
+    last_open_at: after(sent, last),
+    open_count: count,
+  })
+  const looked = engagementOf({ site: glance })
+  ok(looked, 'one visit and no open is not on the list')
+  same(looked.at, glance.last_visit_at, 'as of the visit')
+  same(engagedWords(looked), 'Opened your email and visited the preview site', 'said')
+  const both = engagementOf({ messages: [opens(600, 900, 3)], site: read })
+  same(
+    engagedWords(both),
+    'Opened your emails 3 times and visited the preview site 2 times',
+    'said'
+  )
+  const wrote = engagementOf({ repliedAt: '2026-10-30T12:00:00Z', reply: 'Call me', site: read })
+  same(engagedWords(wrote), 'Replied and visited the preview site 2 times', 'said')
+  const opener = engagementOf({ messages: [opens(600, 900000, 9)] })
+  const lone = engagementOf({ repliedAt: '2026-10-29T12:00:00Z', reply: 'Hi' })
+  same(
+    [opener, looked, lone, both, engagementOf({ site: claimed }), wrote]
+      .sort(byEngagement)
+      .map(one => engagedWords(one))
+      .join(' | '),
+    [
+      'Replied and visited the preview site 2 times',
+      'Replied to your email',
+      'Opened your email and visited the preview site',
+      'Opened your emails 3 times and visited the preview site 2 times',
+      'Opened your email and visited the preview site',
+      'Opened your emails 9 times',
+    ].join(' | '),
+    'replies, then the most done on the site, then the openers'
+  )
+  same(
+    [opener, looked, both, engagementOf({ site: claimed })]
+      .sort(byEngagement)
+      .map(one => one.site?.claimed ?? null)
+      .join(','),
+    'true,false,false,',
+    'Make It Yours leads the ones that looked'
+  )
+})
+
 check('an auto-responder is not a reply, and a person is', () => {
   // The five replies at `replied` on 2026-11-04: four machines and a person.
   for (const text of [
@@ -2181,6 +2307,11 @@ function answeredTable() {
       written('long-ago', '(281) 300-0010'),
       written('owed-reader', '(281) 300-0011'),
       written('owed-site', '(281) 300-0012'),
+      written('looker', '(281) 300-0013'),
+      written('glancer', '(281) 300-0014'),
+      written('checked', '(281) 300-0015'),
+      written('looked-again', '(281) 300-0016'),
+      written('looked-before', '(281) 300-0017'),
     ],
     outreach_messages: [
       sent('m1', 'reader', '2026-10-30T14:00:00Z', 3, 0.1, 600),
@@ -2191,6 +2322,11 @@ function answeredTable() {
       sent('m6', 'stopped-reader', '2026-10-28T14:00:00Z', 5, 300, 4000),
       sent('m7', 'long-ago', '2026-09-01T14:00:00Z', 6, 300, 4000),
       sent('m8', 'owed-reader', '2026-10-28T14:00:00Z', 3, 300, 5000),
+      sent('m9', 'looker', '2026-10-30T14:00:00Z'),
+      sent('m10', 'glancer', '2026-10-30T14:00:00Z', 1, 600),
+      sent('m11', 'checked', '2026-10-30T14:00:00Z'),
+      sent('m12', 'looked-again', '2026-10-28T14:00:00Z'),
+      sent('m13', 'looked-before', '2026-10-28T14:00:00Z'),
       reply(
         'r1',
         'writer',
@@ -2217,6 +2353,26 @@ function answeredTable() {
         outcome: 'callback',
         callback_at: '2026-11-02T16:00:00+00:00',
       }),
+      rung('c6', 'looked-again', '2026-10-29T15:00:00Z', { outcome: 'no_answer' }),
+      rung('c7', 'looked-before', '2026-10-29T15:00:00Z', { outcome: 'no_answer' }),
+    ],
+    preview_sessions: [
+      visited('v1', 'looker', '2026-10-30T14:00:00Z', 900, {
+        active_ms: 60_000,
+        clicks: 1,
+        ctas: 1,
+      }),
+      visited('v2', 'glancer', '2026-10-30T14:00:00Z', 700, { active_ms: 15_000, clicks: 1 }),
+      visited('v3', 'checked', '2026-10-30T14:00:00Z', 0.4, { active_ms: 2_000 }),
+      // Looked, was rung, and looked again: a new reason since the call.
+      visited('v4', 'looked-again', '2026-10-28T14:00:00Z', 600, { active_ms: 30_000 }),
+      visited('v5', 'looked-again', '2026-10-28T14:00:00Z', 4500, { active_ms: 120_000 }),
+      // Looked, and was rung after: dealt with.
+      visited('v6', 'looked-before', '2026-10-28T14:00:00Z', 600, { active_ms: 300_000 }),
+    ],
+    preview_events: [
+      { id: 1, session_id: 'v1', type: 'click', kind: 'claim', name: 'Make It Yours' },
+      { id: 2, session_id: 'v2', type: 'click', kind: 'nav', name: 'About' },
     ],
     leads: [
       { id: 'l1', source_ref: 'ruled-out', dismissed_at: '2026-10-30T12:00:00Z', bought_at: null },
@@ -2231,10 +2387,17 @@ check('the businesses that answered the mail lead the list, replies first', asyn
   same(answer.status, 200, 'the status')
   same(
     answer.body.engaged.map(one => one.id).join(','),
-    'writer,owed-reader,read-again,reader',
+    'writer,looker,looked-again,glancer,owed-reader,read-again,reader',
     'who answered, and in what order'
   )
-  const [writer, owed, again, reader] = answer.body.engaged
+  const [writer, looker, lookedAgain, glancer, owed, again, reader] = answer.body.engaged
+  same(looker.engaged.site.claimed, true, 'the tap on Make It Yours is read off its events')
+  same(looker.reasons[0], 'Opened your email and visited the preview site', 'said first')
+  same(lookedAgain.engaged.site.visits, 2, 'both visits counted')
+  same(lookedAgain.calls.length, 1, 'with the call between them')
+  same(glancer.engaged.opens, 1, 'a single open is carried')
+  same(glancer.engaged.site.clicks, 1, 'its click')
+  same(glancer.engaged.site.claimed, false, 'a click on a link is not Make It Yours')
   same(writer.engaged.reply, 'How much would that run?', 'what they wrote, without the quote')
   same(writer.reasons[0], 'Replied to your email', 'said first')
   same(reader.engaged.opens, 2, 'the scanner’s fetch is not counted')
@@ -2242,7 +2405,15 @@ check('the businesses that answered the mail lead the list, replies first', asyn
   same(again.calls.length, 1, 'with the call before it')
   same(owed.due?.kind, 'callback', 'a call back it is owed comes with it')
   const below = [...answer.body.due, ...answer.body.rows, ...answer.body.waiting].map(one => one.id)
-  for (const id of ['writer', 'owed-reader', 'read-again', 'reader']) {
+  for (const id of [
+    'writer',
+    'looker',
+    'looked-again',
+    'glancer',
+    'owed-reader',
+    'read-again',
+    'reader',
+  ]) {
     ok(!below.includes(id), `${id} is drawn twice`)
   }
   ok(below.includes('owed-site'), 'a call back on a business with a site is still owed')
@@ -2259,6 +2430,8 @@ check('a business is not rung first for a machine, a call since, a no or a stop'
     'ruled-out',
     'long-ago',
     'owed-site',
+    'checked',
+    'looked-before',
   ]) {
     ok(!first.includes(id), `${id} was offered first`)
   }
@@ -2347,6 +2520,7 @@ check('the page shows the number and the owner, the day, and the front desk', ()
   ok(/Save Front Desk/.test(page), 'Front Desk has nothing to save')
   ok(/Add to Pipeline/.test(page), 'Pipeline has nothing to save')
   ok(/engagedWords\(/.test(page), 'the page does not say who answered the mail')
+  ok(/siteWords\(/.test(page), 'the page does not say what they did on the preview site')
   ok(/Waiting on the owner/.test(page), 'the front desks are not at the foot')
   // Every number on a line of its own in the row - the owner's apart from the
   // main line - and the name beside the number on the button that dials it.
