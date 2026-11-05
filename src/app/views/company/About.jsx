@@ -25,31 +25,39 @@ const VALUES = ABOUT.values.map(item => ({ title: item.title, body: item.descrip
 const HALF = Math.ceil(VALUES.length / 2)
 
 /**
- * The one face on the site, beside the page's headline.
+ * The one face on the site, beside the page's headline, with who is in it
+ * underneath.
  *
- * The photograph is of two people with Trenton on the right, so the frame is
- * cut to him rather than centred on the pair. It is above the fold, so it is
- * fetched with the document, and it is on the retry ladder because an `<img>`
- * that fails never asks again: an about page introducing a founder beside an
- * empty box is worse than one with no photograph at all.
+ * The photograph is of Trenton and his wife, Whitney, and the line under it
+ * says so, so the frame shows the pair rather than being cut down to him: a
+ * caption naming somebody the crop leaves out reads as a mistake. It is cut to
+ * three by two about the middle, which keeps both faces and trims only the car
+ * windows at either edge. It is above the fold, so it is fetched with the
+ * document, and it is on the retry ladder because an `<img>` that fails never
+ * asks again: an about page introducing a founder beside an empty box is worse
+ * than one with no photograph at all.
  */
 function Photo() {
+  const { alt, caption } = ABOUT.photo ?? {}
   return (
-    <img
-      src={`/images/trenton-taylor-photo-${PHOTO_WIDTHS[1]}.webp`}
-      srcSet={PHOTO_WIDTHS.map(
-        width => `/images/trenton-taylor-photo-${width}.webp ${width}w`
-      ).join(', ')}
-      sizes="(min-width: 1024px) 600px, 100vw"
-      alt={BIO_NAME}
-      width="1200"
-      height="960"
-      loading="eager"
-      decoding="async"
-      fetchPriority="high"
-      className="block aspect-[5/4] h-auto w-full rounded-[16px] bg-[var(--card)] object-cover object-[64%_30%]"
-      {...retryable()}
-    />
+    <figure>
+      <img
+        src={`/images/trenton-taylor-photo-${PHOTO_WIDTHS[1]}.webp`}
+        srcSet={PHOTO_WIDTHS.map(
+          width => `/images/trenton-taylor-photo-${width}.webp ${width}w`
+        ).join(', ')}
+        sizes="(min-width: 1024px) 600px, 100vw"
+        alt={alt ?? BIO_NAME}
+        width="1440"
+        height="786"
+        loading="eager"
+        decoding="async"
+        fetchPriority="high"
+        className="block aspect-[3/2] h-auto w-full rounded-[16px] bg-[var(--card)] object-cover object-center"
+        {...retryable()}
+      />
+      {caption && <figcaption className={`${TYPE.small} mt-3`}>{caption}</figcaption>}
+    </figure>
   )
 }
 

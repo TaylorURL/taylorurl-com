@@ -24,6 +24,15 @@ export const ABOUT_PAGE = {
       'I am Trenton Taylor, a software engineer. I build software to order, repair conversion tracking that reports the wrong numbers, and run outbound email for companies anywhere.',
   },
 
+  // The line under the photograph, in his words. The photo is of him and
+  // Whitney; the dogs are named because they are part of the household a
+  // reader is being introduced to, not because they are in the frame.
+  photo: {
+    alt: 'Trenton Taylor and his wife, Whitney',
+    caption:
+      'That’s me and my wife, Whitney. We also have two German Shepherds, who didn’t make it into the picture.',
+  },
+
   story: {
     eyebrow: 'How It Usually Goes',
     heading: 'Work like this usually goes to a team you never meet.',
