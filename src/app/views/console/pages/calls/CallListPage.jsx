@@ -19,7 +19,7 @@ import {
   phoneLines,
   reviewsOf,
 } from '@lib/outreach/prospects/calls.js'
-import { engagedWords } from '@lib/outreach/prospects/engaged.js'
+import { engagedWords, siteWords } from '@lib/outreach/prospects/engaged.js'
 import { Area, ConsolePage, GoalBar, Panel, PanelBody, SectionNotice, SkeletonList } from '../../ui'
 import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
 
@@ -27,10 +27,12 @@ import { BUTTON, CONTROL_H, FIELD, MONO_LABEL } from '../../lib/tokens'
  * The Call List: one list for the owner.
  *
  * The businesses that answered the mail lead it - a person opened what the
- * studio sent more than once, or wrote back - since they are the ones most
- * likely to want the call. Call backs due today or overdue come next. Then every business worth ringing
- * that nobody has rung, best first by three scores - will the owner pick up,
- * do they need a site, can they pay - with the closed, the chains, the shared
+ * studio sent more than once, followed the link to the preview site, or wrote
+ * back - since they are the ones most likely to want the call; the more one
+ * did on its preview site, the higher it sits. Call backs due today or overdue
+ * come next. Then every business worth ringing that nobody has rung, best
+ * first by three scores - will the owner pick up, do they need a site, can
+ * they pay - with the closed, the chains, the shared
  * numbers and the listings nobody has reviewed already taken out by the
  * endpoint; the new companies registered with the state are in it with the
  * rest. At the foot are the businesses where a front desk answered, waiting
@@ -105,13 +107,14 @@ function owedLine(due) {
 
 /**
  * Why a business that answered the mail is at the top, said in a line:
- * "Opened your emails 4 times, last on Nov 4, 2026" or "Replied to your email
- * on Oct 30, 2026".
+ * "Opened your emails 4 times, last on Nov 4, 2026", "Opened your email and
+ * visited the preview site 2 times, last on Nov 4, 2026" or "Replied to your
+ * email on Oct 30, 2026".
  */
 function answeredLine(engaged) {
   const words = engagedWords(engaged)
   if (!words) return null
-  const at = engaged.replied_at ?? engaged.last_open_at
+  const at = engaged.replied_at ?? engaged.at
   return at ? `${words}, ${engaged.replied_at ? 'on' : 'last on'} ${onDay(at)}` : words
 }
 
@@ -172,7 +175,7 @@ function ListRow({ row, open, onOpen }) {
  */
 function CallList({ list, openId, onOpen }) {
   const groups = [
-    { key: 'engaged', head: 'Opened or replied: call first', rows: list.engaged },
+    { key: 'engaged', head: 'Opened, visited or replied: call first', rows: list.engaged },
     { key: 'due', head: 'Callbacks due today', rows: list.due },
     { key: 'rows', head: 'Best to call next', rows: list.rows, more: list.more },
     { key: 'waiting', head: 'Waiting on the owner', rows: list.waiting },
@@ -608,6 +611,7 @@ function LogCall({ saving, onLog }) {
 function Business({ row, token, saving, onLog }) {
   const [photos, setPhotos] = useState(false)
   const answered = answeredLine(row.engaged)
+  const looked = siteWords(row.engaged?.site)
   const owed = owedLine(row.due)
   const desk = deskLine(row.front_desk)
   const [first, ...rest] = phoneLines(row)
@@ -655,6 +659,7 @@ function Business({ row, token, saving, onLog }) {
               </a>
             ))}
             {answered && <p className="text-[13px] text-accent">{answered}</p>}
+            {looked && <p className="text-[13px] text-paper-soft">On the preview site: {looked}</p>}
             {owed && (
               <p
                 className={`text-[13px] ${owed.late ? 'text-[color:var(--warn)]' : 'text-accent'}`}

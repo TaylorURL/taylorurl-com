@@ -11,11 +11,11 @@ import {
 } from '@components/kit/Kit'
 import { committedStanding } from '@data/reputation/review-standings'
 import { PUBLISHES_REVIEWS } from '../../../../../lib/site/current.js'
-import { Monthly, Quote, TextThread } from './parts'
+import { BbbAccredited, Monthly, QuoteCycle, TextThread } from './parts'
 import {
   MOBILE_SPEED,
   MONTHLY,
-  clientReview,
+  clientReviews,
   clientSite,
   townOf,
   tradeOf,
@@ -62,14 +62,15 @@ function figures() {
  * The point and the way to ask on the first screen, beside one client's live
  * site on a laptop and a phone with the speed it was measured at. Then four
  * figures, three more sites, the three steps, what working together is like,
- * one client in their own words, and the ask again.
+ * the clients in their own words, one review at a time, beside the BBB
+ * accreditation, and the ask again.
  *
  * It replaced a board of about ten boxes on one screen, which said all of this
  * at once and so said none of it first.
  */
 export default function HomeBoard() {
   const featured = clientSite(FEATURED)
-  const review = clientReview(REVIEWED)
+  const reviews = clientReviews(REVIEWED)
 
   return (
     <>
@@ -114,9 +115,9 @@ export default function HomeBoard() {
         </div>
       </Section>
 
-      {review && (
-        <Section label="What a client says">
-          <Quote review={review} />
+      {reviews.length > 0 && (
+        <Section label="What clients say">
+          <QuoteCycle reviews={reviews} aside={PUBLISHES_REVIEWS && <BbbAccredited />} />
         </Section>
       )}
 
