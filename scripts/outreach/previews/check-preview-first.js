@@ -1,8 +1,10 @@
 /**
  * Renders a preview-first letter set the way the send job does and checks it
- * reads as one person's note: the subject it was written with, the pictures
- * where the letter names them, the preview's address as a link, the drawn
- * signature, and no unsubscribe link or trading line anywhere in either half.
+ * reads as one person's note: a subject naming the business, the pictures
+ * where the letter names them, the preview's address as a link, the offer to
+ * drive out and talk, "Thanks, Trenton" over the drawn signature, none of the
+ * compliment lines that read as a mail merge, and no unsubscribe link or
+ * trading line anywhere in either half.
  *
  * The letters are written on the Pi and only rendered here, so the cases also
  * hold the refusals: a row without a full set is not a preview-first row, and
@@ -14,6 +16,8 @@
 import {
   PREVIEW_FIRST_DAYS,
   PREVIEW_LIFETIME_DAYS,
+  PREVIEW_OFFER,
+  PREVIEW_THANKS,
   isPreviewFirst,
   previewFirstLetter,
   previewUrl,
@@ -61,16 +65,56 @@ check('a set missing a follow-up is not a preview-first row', () =>
     'recognised'
   )
 )
-check('the first letter keeps the subject it was written with', () =>
-  same(first.subject, 'Trenton Taylor - TaylorURL', 'subject')
-)
-check('a follow-up replies under the first subject', () =>
+check('the first letter is titled with the business, not the subject the Pi filed', () => {
+  same(first.subject, 'New website for your business', 'a row with no name')
+  const named = { ...site, name: 'GULF BEND ROOFING LLC' }
+  same(
+    previewFirstLetter(named, -1, { track: 't' }).subject,
+    'New website for Gulf Bend Roofing',
+    'a filed name'
+  )
+})
+check('a follow-up replies under the subject its thread opened with', () => {
   same(
     previewFirstLetter(site, 0, { track: 't', prior: { subject: first.subject } }).subject,
-    'Re: Trenton Taylor - TaylorURL',
-    'subject'
+    'Re: New website for your business',
+    'a new thread'
   )
-)
+  same(
+    previewFirstLetter(site, 2, { track: 't', prior: { subject: 'Trenton Taylor - TaylorURL' } })
+      .subject,
+    'Re: Trenton Taylor - TaylorURL',
+    'a thread opened under the old subject'
+  )
+})
+check('every letter ends on the offer to drive out, signed Thanks, Trenton', () => {
+  for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
+    const { text, html } = previewFirstLetter(site, nth, { track: 't' })
+    const signed = `${PREVIEW_OFFER}\n\n${PREVIEW_THANKS}\n\nTrenton Taylor | Owner`
+    ok(text.includes(signed), `letter ${nth} does not close on the offer:\n${text}`)
+    ok(html.includes('Thanks,<br>Trenton'), `letter ${nth} is not signed in the html`)
+  }
+})
+check('no letter carries a compliment line or a rating', () => {
+  const rich = {
+    ...site,
+    name: 'Gulf Bend Roofing',
+    letter: {
+      ...site.letter,
+      first: ['Hi,', 'Family owned since 1987, with a perfect 5.0 from 68 Google reviews.'],
+      facts: ['Founded in 1987.', 'Google rating of 5.0.', '68 Google reviews.'],
+      follow_ups: [
+        site.letter.follow_ups[0],
+        site.letter.follow_ups[1],
+        ['Hi,', 'Good luck with the busy season either way.'],
+      ],
+    },
+  }
+  for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
+    const { text } = previewFirstLetter(rich, nth, { track: 't' })
+    ok(!/1987|years|family|stars|reviews|Good luck/i.test(text), `letter ${nth}:\n${text}`)
+  }
+})
 check('no letter carries an unsubscribe link or the trading line', () => {
   for (let nth = -1; nth < PREVIEW_FIRST_DAYS.length; nth += 1) {
     const letter = previewFirstLetter(site, nth, { track: 't' })
@@ -88,7 +132,24 @@ check('the plain half leaves the pictures out and keeps the address', () => {
 })
 check('a {url} inside a sentence becomes the address', () => {
   const letter = previewFirstLetter(site, 1, { track: 't' })
-  ok(letter.text.includes(`The draft is still up: ${URL}`), letter.text)
+  ok(letter.text.includes(`You can still see it here: ${URL}`), letter.text)
+})
+check('a business with no speed test gets a plain check-in, not the Pi write-up', () => {
+  const { text } = previewFirstLetter(site, 1, { track: 't' })
+  ok(text.includes('I wanted to check in again about the website I built for your business.'), text)
+  ok(!text.includes('The draft is still up'), 'the Pi write-up went out')
+})
+check('a business with a speed test gets both load times and the picture', () => {
+  const timed = {
+    ...site,
+    letter: {
+      ...site.letter,
+      facts: ['Their current site takes 34.9 seconds and the new site 2.9 seconds on mobile.'],
+    },
+  }
+  const { text, html } = previewFirstLetter(timed, 1, { track: 't' })
+  ok(/34\.9 seconds/.test(text) && /\b2\.9\b/.test(text), text)
+  ok(html.includes(IMAGE('speed').src), 'no speed picture')
 })
 check('every letter closes on the drawn signature and the typed one', () => {
   ok(first.html.includes('/images/email/signature.png'), 'no drawn signature')

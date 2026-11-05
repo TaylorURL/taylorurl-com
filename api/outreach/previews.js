@@ -44,11 +44,10 @@
  * mailbox turned away keeps no draft and no failed row, so the routine asks
  * for it again once the mailbox opens; see lib/outreach/sending/mailbox.js.
  *
- * Every letter is drafted with the reviews postscript lib/outreach/proof.js
- * writes, from a reading of Trustpilot and the Google listing taken here
- * (GOOGLE_PLACES_API_KEY) and kept for an hour, so a run sending thirty letters
- * reads each network once. A network that does not answer costs the line its
- * figure, never the letter.
+ * Every letter is drafted with a reading for the postscript lib/outreach/proof.js
+ * writes under the first one, taken from Trustpilot here and kept for an hour,
+ * so a run sending thirty letters reads it once. Trustpilot not answering
+ * costs the line nothing but the check, never the letter.
  */
 
 import { randomUUID } from 'node:crypto'
