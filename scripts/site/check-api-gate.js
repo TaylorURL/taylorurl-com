@@ -165,6 +165,8 @@ const REFUSED_THERE = [
   '/api/payments-admin',
   // The Call List, which writes the studio's own prospect rows and calls.
   '/api/calls-admin',
+  // The Call List's preview results, read with the service role.
+  '/api/previews-admin',
   '/api/speed-check',
   '/api/site-audit',
   // The console's summary proxy. It reads as the collector and is not: the
