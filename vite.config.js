@@ -11,6 +11,26 @@ import reviewSchemaPlugin from './vite/review-schema-plugin.js'
 import siteHeadPlugin from './vite/site-head-plugin.js'
 import siteStaticPlugin from './vite/site-static-plugin.js'
 import { SITE } from './lib/site/current.js'
+import { dayIn } from './lib/time/zone.js'
+
+// The year the legal line at the foot of every page carries.
+//
+// It is stamped here, once, because every route is rendered to markup at build
+// time and adopted by the browser from that markup: a year read from a clock is
+// read from two different clocks, the build container's and the reader's, and a
+// reader whose clock says another year is handed a text node that disagrees
+// with the one in front of it. React answers that by throwing the subtree away
+// and drawing it again, and it files the mismatch as an error against the site.
+//
+// Read in Central, like every other date in this project, so the line turns
+// over at midnight where the company keeps its hours rather than in UTC.
+//
+// Set on the environment as well as defined for the bundle, and for the same
+// reason `process.env.SITE` is: esbuild substitutes the literal into the
+// browser chunk, while the prerender's in-process SSR keeps a real environment
+// read, and this process is the one that renders it. `lib/time/built.js` is
+// what reads it.
+process.env.BUILD_YEAR = dayIn().slice(0, 4)
 
 // Where a local server sends `/api`. The functions only run on Vercel, so on
 // localhost every console screen, the status board and the free tools asked a
@@ -40,6 +60,7 @@ export default defineConfig({
   // process.env.NODE_ENV and ship React's development build to production.
   define: {
     'process.env.SITE': JSON.stringify(process.env.SITE ?? 'taylorurl'),
+    'process.env.BUILD_YEAR': JSON.stringify(process.env.BUILD_YEAR),
   },
   plugins: [
     react(),
