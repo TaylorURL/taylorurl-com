@@ -665,7 +665,7 @@ export const SOCIAL_LINKS = [
   {
     brand: 'facebook',
     label: 'Facebook',
-    href: 'https://www.facebook.com/profile.php?id=61591005089902',
+    href: FACEBOOK_URL,
   },
   {
     brand: 'instagram',

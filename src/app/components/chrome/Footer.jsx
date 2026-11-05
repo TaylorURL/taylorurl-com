@@ -4,15 +4,15 @@ import {
   COMPANY_LOCATION,
   COMPANY_PHONE,
   COMPANY_PHONE_HREF,
-  FACEBOOK_URL,
   FOOTER_COLUMNS,
-  INSTAGRAM_URL,
   LEGAL_LINKS,
+  SOCIAL_LINKS,
   SUPPORT_EMAIL,
 } from '@constants/navigation'
 import { HAS_ACCOUNTS } from '@constants/routes'
 import { BBB_PROFILE_URL } from '@data/reputation/bbb'
 import { Logo } from '@components/kit/Kit'
+import { MarkBbb, MarkFacebook, MarkInstagram } from '@components/marks/brandMarks'
 import { TYPE } from '@components/kit/styles'
 import { BUILT_YEAR } from '@lib/time/built.js'
 import { dayIn } from '@lib/time/zone.js'
@@ -20,6 +20,49 @@ import { PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
 
 const ITEM = 'text-[14px] leading-[1.5] text-ink-soft transition-colors hover:text-ink'
 const BASE = 'text-[13px] text-ink-mute transition-colors hover:text-ink'
+
+/**
+ * The glyph each account in `SOCIAL_LINKS` is drawn with, by its `brand`. An
+ * account with no glyph here is left out rather than drawn as a bare word in a
+ * row of icons.
+ */
+const SOCIAL_MARKS = { facebook: MarkFacebook, instagram: MarkInstagram }
+
+/**
+ * The accounts the business can be followed on, as their own icons.
+ *
+ * A row of network names in the legal line read as more small print, and the
+ * icon is what a reader scanning a footer looks for. Each sits on a round tile
+ * the size a thumb needs, in the muted ink the rest of the footer is set in,
+ * and takes its own network's colour when pointed at - the colour each mark
+ * names for itself through `data-mark`. The name is in the label, so a reader
+ * who is listening still hears where the link goes.
+ */
+function SocialIcons({ className = '' }) {
+  const accounts = SOCIAL_LINKS.filter(link => link.href && SOCIAL_MARKS[link.brand])
+  if (accounts.length === 0) return null
+  return (
+    <ul className={`flex gap-2 ${className}`.trim()} aria-label="Follow along">
+      {accounts.map(link => {
+        const Mark = SOCIAL_MARKS[link.brand]
+        return (
+          <li key={link.brand}>
+            <a
+              href={link.href}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`${SITE.shortName} on ${link.label}`}
+              title={link.label}
+              className="group flex h-11 w-11 items-center justify-center rounded-full bg-ink/[0.06] text-ink-soft transition-colors duration-150 hover:bg-ink/10"
+            >
+              <Mark className="h-[18px] w-[18px] transition-colors duration-150 group-hover:text-[color:var(--mark-brand)]" />
+            </a>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
 
 /**
  * The foot of every page: who this is and how to reach him on the left, every
@@ -38,11 +81,7 @@ export default function Footer() {
   const [year, setYear] = useState(BUILT_YEAR)
   useEffect(() => setYear(Number(dayIn().slice(0, 4))), [])
 
-  const elsewhere = [
-    PUBLISHES_REVIEWS && BBB_PROFILE_URL && { href: BBB_PROFILE_URL, label: 'BBB Accredited' },
-    FACEBOOK_URL && { href: FACEBOOK_URL, label: 'Facebook' },
-    INSTAGRAM_URL && { href: INSTAGRAM_URL, label: 'Instagram' },
-  ].filter(Boolean)
+  const showsBbb = PUBLISHES_REVIEWS && BBB_PROFILE_URL
 
   return (
     <footer className="bg-[var(--card)]">
@@ -69,6 +108,7 @@ export default function Footer() {
               </li>
               <li className="text-ink-mute">{COMPANY_LOCATION}</li>
             </ul>
+            <SocialIcons className="mt-6" />
           </div>
 
           <nav aria-label="Every page" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
@@ -93,14 +133,20 @@ export default function Footer() {
           <p className="text-[13px] text-ink-mute">
             © {year} {SITE.brandName}
           </p>
-          <ul className="flex flex-wrap gap-x-5 gap-y-2">
-            {elsewhere.map(link => (
-              <li key={link.href}>
-                <a href={link.href} target="_blank" rel="noreferrer" className={BASE}>
-                  {link.label}
+          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] leading-[1.5]">
+            {showsBbb && (
+              <li>
+                <a
+                  href={BBB_PROFILE_URL}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={`${BASE} inline-flex items-center gap-1.5`}
+                >
+                  <MarkBbb className="h-3.5 w-3.5" style={{ color: 'var(--bbb-blue)' }} />
+                  BBB Accredited
                 </a>
               </li>
-            ))}
+            )}
             {LEGAL_LINKS.map(link => (
               <li key={link.to}>
                 <Link to={link.to} className={BASE}>
