@@ -2054,6 +2054,44 @@ check('a business the list would not offer takes no call', async () => {
   same((await record(missing, { id: 'x', outcome: 'spoke' }, OWNER)).status, 400, 'not an id')
 })
 
+check('another web or marketing business is offered through no door', async () => {
+  const db = database({
+    outreach_prospects: [
+      business('plain', { phone: '(281) 555-0101' }),
+      business('bayou-web', { name: 'Bayou City Web Design', phone: '(281) 555-0102' }),
+      company('chisholm', { name: 'Chisholm Digital', phone: '(254) 555-0103' }),
+      company('mederos', { name: 'Mederos Marketing Group', phone: '(512) 555-0104' }),
+    ],
+    outreach_calls: [
+      rung('k1', 'mederos', '2026-10-30T15:00:00+00:00', {
+        outcome: 'callback',
+        callback_at: '2026-11-01T15:00:00+00:00',
+      }),
+    ],
+    new_business_leads: [
+      { id: 'l1', taxpayer_number: 'tx-chisholm', formed_on: '2026-10-20', stage: 'phone_only' },
+      { id: 'l2', taxpayer_number: 'tx-mederos', formed_on: '2026-10-21', stage: 'phone_only' },
+    ],
+    call_trade_metrics: INDUSTRY_TABLE,
+    leads: [],
+  })
+  const { body } = await list(db, {}, NOW)
+  const offered = [...body.engaged, ...body.due, ...body.rows, ...body.waiting].map(one => one.id)
+  ok(offered.includes('plain'), 'the barber was not offered')
+  for (const id of ['bayou-web', 'chisholm', 'mederos'])
+    ok(!offered.includes(id), `${id} was offered`)
+  const answer = await record(
+    database({
+      outreach_prospects: [business(UUID, { name: 'Idea Web Agency', trade: null })],
+      outreach_calls: [],
+      leads: [],
+    }),
+    { id: UUID, outcome: 'spoke' },
+    OWNER
+  )
+  same(answer.status, 409, 'a call against a web agency was taken')
+})
+
 check('a new company written to can be rung', async () => {
   const { answer } = await callOn(
     { source: 'new-business', site_kind: 'own', stage: 'contacted', email: 'a@x.example' },
