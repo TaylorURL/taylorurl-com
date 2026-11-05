@@ -35,6 +35,15 @@ const STUDIO_ABOUT = {
       'I am Trenton Taylor, a web designer and developer. I answer the phone, I build the site, and when your hours change you text me.',
   },
 
+  // The line under the photograph, in his words. The photo is of him and
+  // Whitney; the dogs are named because they are part of the household a
+  // reader is being introduced to, not because they are in the frame.
+  photo: {
+    alt: 'Trenton Taylor and his wife, Whitney',
+    caption:
+      'That’s me and my wife, Whitney. We also have two German Shepherds, who didn’t make it into the picture.',
+  },
+
   story: {
     eyebrow: 'My Story',
     heading: 'Baytown shops end up with one of two websites.',
