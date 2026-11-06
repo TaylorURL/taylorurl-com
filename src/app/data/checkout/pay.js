@@ -2,8 +2,8 @@ import { faultFromResponse, faultMessage } from '@utils/faults'
 
 const ENDPOINT = '/api/proposal'
 
-const NOT_READ = 'This proposal could not be opened just now. Try again, or call (281) 862-8687.'
-const NOT_OPENED = 'Checkout could not be opened just now. Try again, or call (281) 862-8687.'
+const NOT_READ = 'This proposal could not be opened just now. Try again, or call (936) 391-1956.'
+const NOT_OPENED = 'Checkout could not be opened just now. Try again, or call (936) 391-1956.'
 
 /**
  * The sheet a pay link opens, as it stands now.

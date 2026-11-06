@@ -319,7 +319,7 @@ check('who converted is set before the conversion, and only where a form holds i
   const fired = []
   recordLead('contact', {
     held: null,
-    person: { name: 'Ada Lovelace', email: ' ADA@Example.COM ', phone: '(281) 862-8687' },
+    person: { name: 'Ada Lovelace', email: ' ADA@Example.COM ', phone: '(936) 391-1956' },
     tag: (...args) => fired.push(args),
   })
   const set = fired.findIndex(call => call[0] === 'set')
@@ -327,7 +327,7 @@ check('who converted is set before the conversion, and only where a form holds i
   same(set < fired.findIndex(call => call[1] === ADS_EVENT), true, 'set before the conversion')
   same(fired[set][1], 'user_data', 'what is set')
   same(fired[set][2].email, 'ada@example.com', 'email')
-  same(fired[set][2].phone_number, '+12818628687', 'phone')
+  same(fired[set][2].phone_number, '+19363911956', 'phone')
   same(fired[set][2].address.last_name, 'Lovelace', 'surname')
 
   const without = []
@@ -342,13 +342,13 @@ check('an identity carries only the fields a form actually holds', () => {
   same(identityOf({ email: 'a@b.com' }).address, undefined, 'address')
   same(identityOf({ email: 'a@b.com' }).phone_number, undefined, 'phone')
   same(identityOf({ name: 'Ada', email: 'a@b.com' }).address, undefined, 'a single name')
-  same(identityOf({ phone: '2818628687' }), null, 'with no email')
+  same(identityOf({ phone: '9363911956' }), null, 'with no email')
   same(identityOf(null), null, 'with no person at all')
 })
 
 check('a number Google could not read is left out rather than guessed at', () => {
-  same(e164('281-862-8687'), '+12818628687', 'ten digits')
-  same(e164('+1 (281) 862-8687'), '+12818628687', 'eleven beginning with a one')
+  same(e164('936-391-1956'), '+19363911956', 'ten digits')
+  same(e164('+1 (936) 391-1956'), '+19363911956', 'eleven beginning with a one')
   for (const wrong of ['', '  ', '5551234', '+44 20 7946 0958', 'call me', null, undefined]) {
     same(e164(wrong), null, `from ${JSON.stringify(wrong)}`)
   }
@@ -393,8 +393,8 @@ check('the enquiry hands over who wrote in', async () => {
   for (const [form, sent, expected] of [
     [
       'contact',
-      { name: 'Ada Lovelace', email: 'ada@example.com', phone: '281-862-8687' },
-      { email: 'ada@example.com', phone_number: '+12818628687', last_name: 'Lovelace' },
+      { name: 'Ada Lovelace', email: 'ada@example.com', phone: '936-391-1956' },
+      { email: 'ada@example.com', phone_number: '+19363911956', last_name: 'Lovelace' },
     ],
     // No phone on this one: the field is optional on three of the four forms,
     // and an identity that invented one would match the wrong person.
