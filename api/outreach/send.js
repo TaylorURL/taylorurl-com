@@ -881,7 +881,7 @@ async function warmShot(db, prospect, letter = null) {
  * @param {string} [waitsAt] Where an unsettled prospect belongs, when it has
  *   already been claimed and cannot be left where it stands.
  */
-async function markAddress(db, prospect, check, waitsAt) {
+export async function markAddress(db, prospect, check, waitsAt) {
   const patch = {
     email_verdict: check.verdict,
     email_check_reason: check.reason,
