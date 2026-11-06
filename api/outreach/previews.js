@@ -74,7 +74,7 @@ import {
 import { proofNow } from '../../lib/outreach/proof.js'
 import { preview as PREVIEW_CHAIN_MANIFEST } from '../../lib/outreach/chains/index.js'
 import { LAWSUIT_SOURCE } from '../../lib/outreach/prospects/lawsuits.js'
-import { deliver, readRoster } from './send.js'
+import { deliver, markAddress, readRoster } from './send.js'
 import {
   noteSent,
   pickSender,
@@ -189,6 +189,10 @@ async function sendOne(db, settings, site, prospect, nth = -1, thread = null) {
       .from('outreach_messages')
       .update({ status: 'failed', error: String(cause?.message || cause).slice(0, 500) })
       .eq('id', message.id)
+    // An address the guard refused is filed by its verdict, as the cold
+    // sender files one, so the business is not offered the same refusal on
+    // every run: an undeliverable one is closed, and barred() then says so.
+    if (cause instanceof Undeliverable) await markAddress(db, prospect, cause)
     // A refusal from the mail server while the outreach catch-up is open ends
     // it for every sender; see lib/outreach/sending/catch-up.js.
     if (!(cause instanceof Undeliverable) && catchUpOf(settings).active) {
@@ -252,7 +256,13 @@ async function sendFirst(db, settings, slug, counts) {
   const missing = await siteMissing(slug)
   if (missing) return { note: `${slug} was not sent: ${missing}` }
 
-  const sent = await sendOne(db, settings, site, prospect)
+  let sent
+  try {
+    sent = await sendOne(db, settings, site, prospect)
+  } catch (cause) {
+    if (!(cause instanceof Undeliverable)) throw cause
+    return { note: `${slug} was not sent: ${cause.message}` }
+  }
   const after = days => new Date(Date.parse(sent.at) + days * DAY_MS).toISOString()
   const filed = await db
     .from('preview_sites')
@@ -370,7 +380,19 @@ async function followUps(db, settings, counts) {
         done.push(`${site.slug} closed: it is not on the draft preview chain`)
         continue
       }
-      done.push(await followUp(db, settings, site, prospect, counts))
+      try {
+        done.push(await followUp(db, settings, site, prospect, counts))
+      } catch (cause) {
+        if (!(cause instanceof Undeliverable)) throw cause
+        // One that could not be settled (a lookup that timed out) stays due
+        // for a later run; one refused outright is closed.
+        if (cause.verdict !== 'undeliverable') {
+          done.push(`${site.slug} put off: ${cause.message}`)
+          continue
+        }
+        await db.from('preview_sites').update({ follow_up_due_at: null }).eq('id', site.id)
+        done.push(`${site.slug} closed: ${cause.message}`)
+      }
     }
   } catch (cause) {
     // The mailbox turned a letter away, or Gmail refused it. Every letter
