@@ -30,12 +30,20 @@ const TIMEOUT_MS = 8000
 /**
  * How long a landed answer is reused for.
  *
- * Shorter than the fastest of the frame's polls - the live view asks every ten
- * seconds, the scoped view every thirty, the overview every minute - so no
- * reader is ever shown figures staler than the interval it asked on. What this
- * collapses is the same question asked twice at once, not the refresh.
+ * Shorter than the fastest of the frame's polls - the scoped view asks every
+ * thirty seconds, the overview every minute - so no reader is ever shown
+ * figures staler than the interval it asked on. What this collapses is the
+ * same question asked twice at once, not the refresh.
+ *
+ * The live view holds nothing past the read in flight. It is asked again the
+ * moment the collector signals that somebody arrived or left, and an answer
+ * held from a moment before the signal is the one answer that read must not
+ * get. Its query costs the database a few milliseconds, so two tabs asking at
+ * once still share the read that is out, and nothing more is saved by keeping
+ * it.
  */
 const HELD_MS = 3000
+const LIVE_HELD_MS = 0
 
 const VIEWS = new Set(['live', 'overview', 'site'])
 
@@ -68,6 +76,7 @@ async function askCollector(url, authorization) {
  * can never be served to somebody who did not authorise it.
  */
 const collector = coalesced(HELD_MS, askCollector)
+const liveCollector = coalesced(LIVE_HELD_MS, askCollector)
 
 export default async function handler(request, response) {
   if (!servedHereOr404(request, response)) return
@@ -94,7 +103,8 @@ export default async function handler(request, response) {
   if (path) url.searchParams.set('path', path)
 
   try {
-    const answer = await collector(`${authorization}\n${url}`, url, authorization)
+    const ask = view === 'live' ? liveCollector : collector
+    const answer = await ask(`${authorization}\n${url}`, url, authorization)
 
     // A refused session is the caller's answer to pass on, not a proxy fault:
     // turning it into a 502 would send the console into a retry loop over a
