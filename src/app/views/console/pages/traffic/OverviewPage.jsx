@@ -1,8 +1,8 @@
 import { useConsole } from '../../lib/context'
 import { TrafficChart } from '../../../analytics/charts'
 import { fullCount } from '../../../analytics/lib/format'
-import { sourceLabel } from '../../../analytics/lib/sources'
 import { visitorGroups } from '../../lib/onNow'
+import { bySource, pageVisitors, topPages } from '../../lib/rankings'
 import {
   ConsolePage,
   EmptyFill,
@@ -35,32 +35,9 @@ import { SiteIcon } from '../../SiteIcon'
  * fills first and keeps answering when the windowed figures do not.
  */
 
-// A ranking holds the head of the list. The tail is a run of single visits that
-// says nothing the first eight have not.
-const LISTED = 8
-
 // The columns of the per-site list, so the placeholder rows hold the cells the
 // head above them holds.
 const SITE_CELLS = [CELL_TIGHT, CELL_END, CELL_END]
-
-/**
- * Arrivals by where they came from, named the way a reader says them.
- *
- * Two spellings of one host - `www.google.com` and `google.com` - are one
- * source to the person reading the list, so they are added together under the
- * name it shows rather than listed twice.
- */
-function bySource(referrers) {
-  const merged = new Map()
-  for (const row of referrers) {
-    const name = sourceLabel(row.source)
-    merged.set(name, (merged.get(name) || 0) + (row.sessions || 0))
-  }
-  return [...merged]
-    .map(([name, sessions]) => ({ name, sessions }))
-    .sort((a, b) => b.sessions - a.sessions || a.name.localeCompare(b.name))
-    .slice(0, LISTED)
-}
 
 /**
  * Who is on right now, put together by the page they have open and where they
@@ -217,9 +194,7 @@ export default function OverviewPage() {
   const series = detail?.series || overview.data?.series || []
   const grain = detail?.grain || overview.data?.grain || 'day'
 
-  const pages = [...(detail?.pages || [])]
-    .sort((a, b) => (b.pageviews || 0) - (a.pageviews || 0))
-    .slice(0, LISTED)
+  const pages = topPages(detail?.pages)
   const sources = bySource(detail?.referrers || [])
 
   return (
@@ -255,12 +230,12 @@ export default function OverviewPage() {
 
       {bulk && <YourSites area="sites" />}
 
-      <Panel area="pages" title="Top pages" aside="by pageviews" busy={loading}>
+      <Panel area="pages" title="Top pages" aside="by visitors" busy={loading}>
         <PanelBody>
           <RankedList
             rows={pages}
             nameOf={page => (bulk ? `${page.site}${page.path}` : page.path)}
-            valueOf={page => page.pageviews || 0}
+            valueOf={pageVisitors}
             formatValue={fullCount}
             empty="No pages were opened in this window."
             loading={loading}
@@ -268,12 +243,12 @@ export default function OverviewPage() {
         </PanelBody>
       </Panel>
 
-      <Panel area="sources" title="Where visitors came from" aside="by sessions" busy={loading}>
+      <Panel area="sources" title="Where visitors came from" aside="by visitors" busy={loading}>
         <PanelBody>
           <RankedList
             rows={sources}
             nameOf={row => row.name}
-            valueOf={row => row.sessions}
+            valueOf={row => row.visitors}
             formatValue={fullCount}
             empty="No arrivals were recorded in this window."
             loading={loading}
