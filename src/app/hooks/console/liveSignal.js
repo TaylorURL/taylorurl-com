@@ -11,6 +11,21 @@
  * stand-in and prove the burst handling and the teardown without a socket.
  */
 
+/**
+ * The page's own clock, reached through a call of its own.
+ *
+ * Safari's `setTimeout` and `clearTimeout` are methods of `window` and refuse a
+ * call whose receiver is anything else, so holding the bare functions on an
+ * object and calling them as `timers.set(...)` throws there: `Can only call
+ * Window.setTimeout on instances of Window`. Calling them plainly inside a
+ * wrapper leaves the receiver the global, which is what both engines want, and
+ * keeps the option injectable for the check.
+ */
+export const pageTimers = {
+  set: (run, ms) => setTimeout(run, ms),
+  clear: id => clearTimeout(id),
+}
+
 /** The topic a site's signal arrives on, as the database names it. */
 export function liveTopic(siteId) {
   return `analytics:live:${siteId}`
@@ -31,7 +46,7 @@ export function liveTopic(siteId) {
  * @returns {() => void} stops listening and leaves every channel
  */
 export function listenForLive(client, siteIds, onSignal, options = {}) {
-  const { settleMs = 300, timers = { set: setTimeout, clear: clearTimeout } } = options
+  const { settleMs = 300, timers = pageTimers } = options
   const ids = [...new Set(siteIds.filter(Boolean))].sort()
   if (!client?.channel || !ids.length) return () => {}
 

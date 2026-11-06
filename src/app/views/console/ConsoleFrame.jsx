@@ -597,7 +597,8 @@ export default function ConsoleFrame() {
       {
         key: 'pageviews',
         label: 'Pageviews',
-        gloss: 'Every page loaded, repeats inside one visit included.',
+        gloss:
+          'Every page a visit opened, each counted once in that visit however often it was reopened.',
         value: compactCount(pageviews),
         caption: perVisitor ? `${perVisitor.toFixed(1)} per visitor` : null,
         window: windowLabel,
