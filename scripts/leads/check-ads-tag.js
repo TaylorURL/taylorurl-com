@@ -199,12 +199,18 @@ const LAYOUT = readFileSync(
 )
 has('the tap listener', LAYOUT, 'counted(window.location.pathname)')
 
-for (const where of ['/console', '/console/project', '/console/onboarding', '/login']) {
+// The status board is under the console and goes with it: it is where the
+// studio watches every site all day, and a tap there is the studio's own.
+for (const where of [
+  '/console',
+  '/console/project',
+  '/console/onboarding',
+  '/console/status',
+  '/login',
+]) {
   is(`a tap on ${where}`, counted(where), false)
 }
-// The status board is the exception the tracker already makes, and it is the
-// right one here too: it is public, and a reader of it has bought nothing.
-for (const where of ['/console/status', '/contact', '/start', '/']) {
+for (const where of ['/contact', '/start', '/']) {
   is(`a tap on ${where}`, counted(where), true)
 }
 

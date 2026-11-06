@@ -222,8 +222,8 @@ export default function Layout() {
   // that already paid for them, on an action expecting one or two events in a
   // month. The rule is not written again here. `counted` is the one the tracker
   // reads off the tag in the head, `check-traffic-ignore.js` holds the two
-  // together, and its exception for the public status board is the same
-  // exception this wants: that page is read by people who have bought nothing.
+  // together. The status board is under the console and goes with it: it is
+  // where the studio watches every site, so a tap there is the studio's own.
   useEffect(() => {
     const tapped = event => {
       const node = event.target

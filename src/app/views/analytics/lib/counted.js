@@ -14,12 +14,12 @@ import { bareDomain } from '../../../utils/domains.js'
  * window is most of a month of reading the studio's own workspace as though it
  * were the site's traffic.
  *
- * So the rule is applied to what is drawn as well as to what is collected. It
- * takes rows out of the page breakdowns and nothing else: the window's totals
- * come from the collector already added up, and a figure this cannot correct
- * is better left alone than quietly made to disagree with the chart above it.
- * The rankings and the table are what named the workspace by path, and they
- * are what this answers for.
+ * The collector now leaves the same paths out of every figure it adds up, the
+ * old rows included, so its answers should hold none of these pages. This is
+ * kept as the second reading over the page breakdowns, for a collector that
+ * has not been told a site's paths: the totals come from the collector already
+ * added up, and a figure this cannot correct is better left alone than quietly
+ * made to disagree with the chart above it.
  *
  * The rows the collector sends are the fifty most read, so dropping fifteen of
  * them leaves thirty-five rather than reaching for the next fifteen. That is
@@ -30,7 +30,7 @@ import { bareDomain } from '../../../utils/domains.js'
  * console hiding pages the tracker is still counting, or counting pages it has
  * stopped filing.
  */
-export const IGNORE_RULE = '/console,/login,!/console/status'
+export const IGNORE_RULE = '/console,/login'
 
 /** A path with its trailing slashes off, so `/console` and `/console/` are one. */
 function bare(where) {
@@ -51,9 +51,10 @@ const excepted = declared.filter(entry => entry.startsWith('!')).map(entry => ba
 /**
  * Whether a path on this site is a visit.
  *
- * An exception wins over the entry it sits under, because it is the narrower of
- * the two statements: `/console` is the workspace, `/console/status` is the
- * board the home page sends readers to by name and is a page like any other.
+ * An exception - an entry marked `!` - wins over the entry it sits under,
+ * because it is the narrower of the two statements. This site declares none:
+ * the status board sits under `/console` and is left out with the rest of it,
+ * since it is where the studio watches every site all day.
  *
  * The hash comes off first. The tracker judges `location.pathname`, which never
  * carries one, while the path it files is the pathname and the hash together,
