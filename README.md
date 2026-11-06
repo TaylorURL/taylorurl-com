@@ -6,7 +6,7 @@ The website for TaylorURL, a one-person web studio in Baytown, Texas.
 
 [taylorurl.com](https://www.taylorurl.com) · [taylor.website](https://taylor.website)
 
-<img src="https://img.shields.io/badge/version-2026.45.42-2f6bff?style=for-the-badge" alt="Version 2026.45.42" />
+<img src="https://img.shields.io/badge/version-2026.45.43-2f6bff?style=for-the-badge" alt="Version 2026.45.43" />
 
 The studio's own site, plus the console where clients read their site's traffic, speed and uptime. The same code also builds [taylor.website](https://taylor.website), a smaller second site for custom software, conversion tracking fixes and outbound email.
 
@@ -29,6 +29,8 @@ Every client site's middleware asks `api/site-status.js` whether to serve. The a
 A file too big to email a client, like print-ready artwork, goes in the `client-files` Blob store, and `/files/<path>` in `vercel.json` hands it out from taylorurl.com as a download. The store is public, so nothing private goes in it.
 
 The console works out who is asking from the session the browser presented, never from an account id in the request. The studio's own screens hold every request to the admin role in `lib/db/clients.js`. A client's screens forward that session to the Supabase function that owns the data and let it answer, so the proxy in `api/` has no second opinion on who is asking.
+
+A visitor is a person, not a tab. The collector files every hit against the browser's own id and a keyed hash of the connection it came from, and either one is enough to say two hits are the same person: a phone and a laptop on the same Wi-Fi, three tabs, or a second browser are counted once. The address is hashed per site and never stored. A visit is that person's run of hits with no half-hour gap, and the same page opened again inside thirty seconds is one view. The live count is people who beat inside the last ninety seconds, and a page that closes says so and leaves the count at once. The database signals the console the moment somebody arrives, moves or leaves, so Online Now and the pages beside it move as it happens; the poll underneath only catches somebody who left without saying so.
 
 ## The chat assistant and outreach
 
