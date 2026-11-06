@@ -30,6 +30,8 @@ A file too big to email a client, like print-ready artwork, goes in the `client-
 
 The console works out who is asking from the session the browser presented, never from an account id in the request. The studio's own screens hold every request to the admin role in `lib/db/clients.js`. A client's screens forward that session to the Supabase function that owns the data and let it answer, so the proxy in `api/` has no second opinion on who is asking.
 
+A visitor is a person, not a tab. The collector files every hit against the browser's own id and a keyed hash of the connection it came from, and either one is enough to say two hits are the same person: a phone and a laptop on the same Wi-Fi, three tabs, or a second browser are counted once. The address is hashed per site and never stored. A visit is that person's run of hits with no half-hour gap, and the same page opened again inside thirty seconds is one view. The live count is people who beat inside the last ninety seconds, and a page that closes says so and leaves the count at once. The database signals the console the moment somebody arrives, moves or leaves, so Online Now and the pages beside it move as it happens; the poll underneath only catches somebody who left without saying so.
+
 ## The chat assistant and outreach
 
 The assistant runs on my own machine. A serverless function can't hold a thread open, so `api/live-chat.js` meters turns and forwards them. When the machine is down the widget isn't drawn, and a thread that's already open still takes an email address and mails it on.

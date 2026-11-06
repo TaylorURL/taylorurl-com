@@ -9,6 +9,7 @@ import { useToast } from '@hooks/chrome/useToast'
 import { faultMessage } from '@utils/faults'
 import { SUPPORT_EMAIL } from '@constants/navigation'
 import { useAnalyticsFeed } from '@hooks/console/useAnalytics'
+import { useLiveSignal } from '@hooks/console/useLiveSignal'
 import { SAMPLE_BUSINESS, usePreviewClient } from '@hooks/console/usePreviewClient'
 import { useSession } from '@hooks/session/useSession'
 import { askWithLadder } from '@hooks/session/readSession'
@@ -35,11 +36,27 @@ import { withCountedPages } from '../analytics/lib/counted'
 // The presence window the collector counts "now" over. The payload states the
 // real one and wins the moment it lands; this is only what the caption reads on
 // the first frame, before there is an answer to read.
-const LIVE_WINDOW_MINUTES = 10
+const LIVE_WINDOW_SECONDS = 90
 
-const LIVE_POLL_MS = 10_000
+// The live view is read again the moment the collector signals that somebody
+// arrived, moved or left. The poll underneath is for what sends no signal:
+// somebody who stopped without saying so, and a socket that dropped.
+const LIVE_POLL_MS = 5_000
 const SITE_POLL_MS = 30_000
 const OVERVIEW_POLL_MS = 60_000
+
+// How soon after a signal the windowed figures may be read again. An arrival
+// moves the visitor and pageview counts too, but those reads cost the database
+// far more than the live one, and a burst of arrivals is one re-read rather
+// than one each.
+const SITE_AFTER_SIGNAL_MS = 10_000
+const OVERVIEW_AFTER_SIGNAL_MS = 30_000
+
+/** The live window as a reader says it: seconds under two minutes, minutes past. */
+function liveWindowLabel(seconds) {
+  const whole = Math.max(1, Math.round(seconds))
+  return whole < 120 ? `last ${whole} seconds` : `last ${Math.round(whole / 60)} minutes`
+}
 
 // What somebody is told when the console could not put their session back and
 // signs them out from under a screen they were reading. The sign-in form is
@@ -258,6 +275,28 @@ export default function ConsoleFrame() {
   if (sites.length) known.current = sites
   const knownSites = sites.length ? sites : known.current
 
+  // Every site the account holds is listened on, not only the ones in scope:
+  // the live feed answers for all of them, and the strip and the sites table
+  // read it whatever the scope.
+  const signalled = useRef({ site: 0, overview: 0 })
+  const onSignal = useCallback(() => {
+    live.refresh()
+    const at = Date.now()
+    if (at - signalled.current.site >= SITE_AFTER_SIGNAL_MS) {
+      signalled.current.site = at
+      site.refresh()
+    }
+    if (at - signalled.current.overview >= OVERVIEW_AFTER_SIGNAL_MS) {
+      signalled.current.overview = at
+      overview.refresh()
+    }
+  }, [live, site, overview])
+  useLiveSignal({
+    siteIds: knownSites.map(row => row.site_id),
+    enabled: Boolean(token),
+    onSignal,
+  })
+
   // What the console picks on its own, before anybody touches the chooser.
   //
   // One site is its own scope: selecting it by hand every visit would be a step
@@ -340,7 +379,10 @@ export default function ConsoleFrame() {
   // rather than written here, so the caption under the count cannot drift away
   // from the window the count was actually taken over - which is what a sentence
   // typed once beside a figure does the first time the window moves.
-  const liveWindowMinutes = Math.round(live.data?.window_minutes ?? LIVE_WINDOW_MINUTES)
+  const liveWindow = liveWindowLabel(
+    live.data?.window_seconds ??
+      (live.data?.window_minutes ? live.data.window_minutes * 60 : LIVE_WINDOW_SECONDS)
+  )
   const liveNow = siteIds.length
     ? liveSites
         .filter(entry => siteIds.includes(entry.site_id))
@@ -514,10 +556,11 @@ export default function ConsoleFrame() {
       {
         key: 'live',
         label: 'Online Now',
-        gloss: 'Anybody whose last hit landed inside the window.',
+        gloss:
+          'People on the site right now, each counted once however many tabs, browsers or devices they have open on one connection.',
         value: String(liveNow),
-        caption: `last ${liveWindowMinutes} minutes`,
-        window: `last ${liveWindowMinutes} minutes`,
+        caption: 'updates as it happens',
+        window: liveWindow,
         tone: liveNow > 0 ? 'accent' : 'plain',
         pulse: liveNow > 0,
         loading: live.loading,
@@ -619,7 +662,7 @@ export default function ConsoleFrame() {
           : null,
       },
     ]
-  }, [grain, live.loading, liveNow, liveWindowMinutes, loading, series, totals, windowLabel])
+  }, [grain, live.loading, liveNow, liveWindow, loading, series, totals, windowLabel])
 
   // Status never waits on the session. It needs none, and the wait is what a
   // crawler and a first paint would otherwise both get instead of the board.

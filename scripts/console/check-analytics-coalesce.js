@@ -92,6 +92,20 @@ check('the hold is shorter than the fastest poll the frame makes', async () => {
   )
 })
 
+check(
+  'the live view is never handed an answer from before the signal that asked for it',
+  async () => {
+    const source = await import('node:fs').then(fs =>
+      fs.readFileSync(new URL('../../api/analytics.js', import.meta.url), 'utf8')
+    )
+    same(Number(/const LIVE_HELD_MS = (\d+)/.exec(source)?.[1]), 0, 'the live hold')
+    ok(
+      /view === 'live' \? liveCollector : collector/.test(source),
+      'the live view is not read through its own zero hold'
+    )
+  }
+)
+
 check('two sessions asking the same question are two reads', async () => {
   const { read, calls } = counted()
   const time = clock()
