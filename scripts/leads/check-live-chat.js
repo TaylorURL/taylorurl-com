@@ -136,7 +136,7 @@ check(contactIn('what does a site cost').email === null, 'an email was invented'
 // The assistant hands out the studio's own number, and a visitor repeating it
 // back is not a lead.
 check(
-  contactIn('is (281) 862-8687 the best number for him?').phone === null,
+  contactIn('is (936) 391-1956 the best number for him?').phone === null,
   "the studio's own number was read as a lead"
 )
 

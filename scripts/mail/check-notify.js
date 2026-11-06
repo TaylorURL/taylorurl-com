@@ -80,7 +80,7 @@ const STUDIO_MASTHEAD = `<tr><td bgcolor="#1f1e1d" style="padding:26px 40px;back
     <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%" style="border-collapse:collapse;width:100%;">
       <tr>
         <td align="left" valign="middle" style="line-height:0;font-size:0;"><img src="https://www.taylorurl.com/images/email/wordmark-on-dark.png" alt="TaylorURL" width="120" height="36" style="display:block;width:120px;height:36px;border:0;outline:none;text-decoration:none;" /></td>
-        <td align="right" valign="middle"><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">TaylorURL LLC</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">Baytown, TX</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">(281) 862-8687</div></td>
+        <td align="right" valign="middle"><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">TaylorURL LLC</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">Baytown, TX</div><div style="font-family:'Geist Mono', Consolas, 'Courier New', Courier, monospace;font-size:10px;letter-spacing:0.16em;text-transform:uppercase;line-height:1.7;color:#b0aea5;">(936) 391-1956</div></td>
       </tr>
     </table>
   </td></tr>`
@@ -680,7 +680,7 @@ async function run(db, project, body) {
   check(!drawn.includes('#1a4ed8'), "a client message drew the studio's accent")
   check(!drawn.includes('TaylorURL LLC'), "a client message carried the studio's annotation")
   check(!drawn.includes('trenton-taylor-email'), 'a client message carried the bio portrait')
-  check(!drawn.includes('(281) 862-8687'), "a client message carried the studio's phone number")
+  check(!drawn.includes('(936) 391-1956'), "a client message carried the studio's phone number")
   check(!drawn.includes('I was a district manager'), 'a client message carried the bio')
   check(!drawn.includes(STUDIO_MASTHEAD), 'a client message opened on the studio masthead')
 
