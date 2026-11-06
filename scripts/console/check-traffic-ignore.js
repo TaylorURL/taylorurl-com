@@ -53,8 +53,8 @@ const PATHS = [
   ['/console/live', false],
   ['/console/outreach', false],
   ['/console/pages', false],
-  ['/console/status', true],
-  ['/console/status/anything', true],
+  ['/console/status', false],
+  ['/console/status/anything', false],
   ['/consoles', true],
   ['/console-guide', true],
   ['/login', false],
@@ -81,7 +81,7 @@ const ACROSS = [
 const kept = countedPages(ACROSS, null).map(row => `${row.site}${row.path}`)
 check(
   kept.join(' ') ===
-    'taylorurl.com/console/status taylorurl.com/work rootriseholdings.com/login tiretracker.app/dashboard deluxfitbyangie.com/admin/bookings',
+    'taylorurl.com/work rootriseholdings.com/login tiretracker.app/dashboard deluxfitbyangie.com/admin/bookings',
   `across the account the table kept: ${kept.join(' ') || 'nothing'}`
 )
 
@@ -94,7 +94,7 @@ const SCOPED = [
 ]
 const ours = countedPages(SCOPED, 'taylorurl.com').map(row => row.path)
 check(
-  ours.join(' ') === '/console/status /work',
+  ours.join(' ') === '/work',
   `scoped to this site the table kept: ${ours.join(' ') || 'nothing'}`
 )
 check(
@@ -116,7 +116,7 @@ const payload = {
 const filtered = withCountedPages(payload, null)
 check(filtered.totals === payload.totals, 'the totals did not survive the filter')
 check(filtered.referrers === payload.referrers, 'the referrers did not survive the filter')
-check(filtered.pages.length === 5, `the filtered payload holds ${filtered.pages.length} pages`)
+check(filtered.pages.length === 4, `the filtered payload holds ${filtered.pages.length} pages`)
 check(withCountedPages(null, null) === null, 'an unanswered read did not stay null')
 const clean = { pages: [{ site: 'taylorurl.com', path: '/work', pageviews: 300 }] }
 check(
