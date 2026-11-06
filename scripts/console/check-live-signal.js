@@ -78,6 +78,51 @@ function clock() {
 
 const settle = () => new Promise(resolve => setTimeout(resolve, 0))
 
+// A turn of the loop that owes nothing to the clock, so a check may stand a
+// different clock up and still let the listener's first join come round.
+const pass = () => new Promise(resolve => setImmediate(resolve))
+
+/**
+ * The page clock as Safari holds it: `setTimeout` and `clearTimeout` are
+ * methods of `window` there and refuse any other receiver, so a bare function
+ * kept on an object and called as `timers.set(...)` throws. The engine's own
+ * brand check, stood up here, which is what makes a receiver fault reproduce
+ * on a runtime that has none. Nothing is scheduled; the waits are run by hand.
+ */
+function asSafari() {
+  const held = { set: globalThis.setTimeout, clear: globalThis.clearTimeout }
+  const pending = new Map()
+  const clock = { pending, cleared: 0 }
+  let next = 1
+  const brand = (name, receiver) => {
+    if (receiver !== undefined && receiver !== null && receiver !== globalThis) {
+      throw new TypeError(`Can only call Window.${name} on instances of Window`)
+    }
+  }
+  globalThis.setTimeout = function (run, ms) {
+    brand('setTimeout', this)
+    const id = next++
+    pending.set(id, { run, ms })
+    return id
+  }
+  globalThis.clearTimeout = function (id) {
+    brand('clearTimeout', this)
+    clock.cleared += 1
+    pending.delete(id)
+  }
+  clock.restore = () => {
+    globalThis.setTimeout = held.set
+    globalThis.clearTimeout = held.clear
+  }
+  clock.runAll = () => {
+    for (const [id, { run }] of [...pending]) {
+      pending.delete(id)
+      run()
+    }
+  }
+  return clock
+}
+
 check('one private channel per site, joined after the session is presented', async () => {
   const client = standIn()
   const stop = listenForLive(client, ['b', 'a', 'a', ''], () => {})
@@ -135,6 +180,45 @@ check('stopping before the session was presented joins nothing', async () => {
   same(client.joined.length, 0, 'a channel was joined after the console stopped listening')
   same(listenForLive(client, [], () => {})(), undefined, 'no sites is nothing to join')
   same(listenForLive(null, ['a'], () => {})(), undefined, 'no client is nothing to join')
+})
+
+check('the clock the console falls back to is one Safari will let it call', async () => {
+  const client = standIn()
+  let reads = 0
+  let refused = null
+  let stop = () => {}
+  // Installed before the listener starts, because the receiver is decided at
+  // the call and the engine checks it there however the function was reached.
+  const safari = asSafari()
+  try {
+    stop = listenForLive(client, ['a'], () => (reads += 1))
+    await pass()
+    await pass()
+    client.joined[0].fire('presence')
+    client.joined[0].fire('presence')
+  } catch (cause) {
+    refused = cause
+  } finally {
+    safari.restore()
+  }
+  ok(!refused, `Safari refused the console's own clock: ${refused?.message}`)
+  same(client.joined.length, 1, 'the site was not joined')
+  same(safari.cleared, 1, 'the second signal did not clear the wait the first had set')
+  same(safari.pending.size, 1, 'one wait for the whole burst')
+  safari.runAll()
+  same(reads, 1, 'the burst did not re-read the live view')
+  stop()
+})
+
+check('no timer function is held on an object to be called as its method', () => {
+  const source = readFileSync(
+    join(import.meta.dirname, '../../src/app/hooks/console/liveSignal.js'),
+    'utf8'
+  )
+  ok(
+    !/:\s*(set|clear)(Timeout|Interval)\b/.test(source),
+    'a bare timer function is held on an object, which Safari refuses to call as a method'
+  )
 })
 
 check('the frame listens on every site it knows and re-reads the live view on a signal', () => {
