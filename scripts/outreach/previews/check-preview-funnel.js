@@ -40,8 +40,8 @@ import { answer } from '../../../api/previews-admin.js'
 
 const at = (base, seconds) => new Date(Date.parse(base) + seconds * 1000).toISOString()
 
-// Thursday 2026-11-05, mid-morning in Texas.
-const NOW = new Date('2026-11-05T16:00:00.000Z')
+// Friday 2026-11-06, mid-morning in Texas.
+const NOW = new Date('2026-11-06T16:00:00.000Z')
 // Monday 2026-10-26 and Monday 2026-11-02, both mid-morning in Texas.
 const LAST_WEEK = '2026-10-26T15:41:54.000Z'
 const THIS_WEEK = '2026-11-02T14:00:00.000Z'
@@ -246,8 +246,8 @@ const ROWS = {
       slug: 'example-roof',
       industry: 'roofing',
       prospect_id: 'p-roof',
-      sent_at: '2026-11-05T19:00:00.000Z',
-      created_at: '2026-11-05T18:30:00.000Z',
+      sent_at: '2026-11-06T03:00:00.000Z',
+      created_at: '2026-11-06T02:40:00.000Z',
       view_count: 0,
     },
   ],
@@ -296,7 +296,7 @@ const ROWS = {
     },
     {
       prospect_id: 'p-roof',
-      sent_at: '2026-11-05T19:00:00.000Z',
+      sent_at: '2026-11-06T03:00:00.000Z',
       opened_at: null,
       last_open_at: null,
       open_count: 0,
