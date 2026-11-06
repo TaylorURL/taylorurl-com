@@ -26,6 +26,7 @@
  */
 import nodemailer from 'nodemailer'
 import { AFTERNOON, atMidAfternoon, settleAddress } from '../send-fixture.js'
+import { checkAddress } from '../../../lib/outreach/prospects/address.js'
 import { asked, filtered, stubDb } from '../database-fixture.js'
 import { installFixtureHeldDomains } from '../held-domains-fixture.js'
 import { cases, check, finish, ok, quietly, raised, same } from '../../harness/checks.js'
@@ -837,6 +838,93 @@ check('the preview follow-ups stop where the mailbox fills, drafting nothing pas
   same(asked(queries, 'insert:outreach_messages').length, 1, 'letters drafted')
   ok(answer.note.includes('s1-preview sent follow-up 1'), answer.note)
 })
+
+// A business whose domain takes no mail. The guard in front of the transport
+// refuses its letter, and the preview job files that as the cold sender does
+// rather than failing the run, so the business is not offered the same
+// refusal every half hour.
+const DEAD = 'info@dead-foundation.example'
+await checkAddress(null, DEAD, { now: AFTERNOON, resolveMx: async () => [] })
+const DEAD_PROSPECT = { ...prospect('p-d', DEAD), source: null }
+
+check(
+  'a preview follow-up to an address that takes no mail closes that preview and goes on',
+  async () => {
+    serverWill(null)
+    const plan = previewsPlan()
+    plan['select:outreach_prospects'] = [
+      { data: onChain(DEAD_PROSPECT), error: null },
+      { data: onChain(B), error: null },
+    ]
+    plan['insert:outreach_messages'] = [
+      { data: { ...letterTo(DEAD), id: 'm-s1' }, error: null },
+      { data: { ...letterTo(B.email), id: 'm-s2' }, error: null },
+    ]
+    const { db, queries } = stubDb(plan)
+    const answer = await runPreviews(db, { method: 'GET' })
+
+    same(answer.status, undefined, 'status')
+    ok(
+      answer.note.includes(
+        's1-preview closed: info@dead-foundation.example did not pass verification: no_mx'
+      ),
+      answer.note
+    )
+    ok(answer.note.includes('s2-preview sent follow-up 1'), answer.note)
+    same(SERVER.attempts.length, 1, 'letters handed to the transport')
+    const marked = asked(queries, 'update:outreach_prospects').filter(q => q.payload?.email_verdict)
+    same(marked.length, 1, 'addresses filed by their verdict')
+    same(marked[0].payload.stage, 'undeliverable', 'the business is closed')
+    same(marked[0].payload.email_check_reason, 'no_mx', 'why')
+    const closed = asked(queries, 'update:preview_sites').filter(
+      q => q.payload?.follow_up_due_at === null
+    )
+    same(closed.length, 1, 'previews closed')
+  }
+)
+
+check(
+  'a first preview letter to an address that takes no mail is answered, not failed',
+  async () => {
+    serverWill(null)
+    const unsent = {
+      ...site('s1', DEAD_PROSPECT.id),
+      message_id: null,
+      sent_at: null,
+      follow_up_due_at: null,
+    }
+    const plan = {
+      'select:preview_sites': { data: unsent, error: null },
+      'select:outreach_prospects': {
+        data: { ...DEAD_PROSPECT, replied_at: null, bounced_at: null },
+        error: null,
+      },
+      'select:suppression': { data: [], error: null },
+      'select:outreach_messages': [{ count: 0, error: null }, ...NO_WEEK],
+      'insert:outreach_messages': { data: { ...letterTo(DEAD), id: 'm-d' }, error: null },
+    }
+    const { db, queries } = stubDb(plan)
+    const realFetch = globalThis.fetch
+    globalThis.fetch = async () =>
+      new Response(`<script>window.__SLUG__ = "s1-preview"</script>`, { status: 200 })
+    let answer
+    try {
+      answer = await runPreviews(db, { method: 'POST', body: { slug: 's1-preview' } })
+    } finally {
+      globalThis.fetch = realFetch
+    }
+    same(answer.status, undefined, 'status')
+    same(
+      answer.note,
+      's1-preview was not sent: info@dead-foundation.example did not pass verification: no_mx',
+      'note'
+    )
+    same(SERVER.attempts.length, 0, 'letters handed to the transport')
+    const marked = asked(queries, 'update:outreach_prospects').filter(q => q.payload?.email_verdict)
+    same(marked.length, 1, 'addresses filed by their verdict')
+    same(marked[0].payload.stage, 'undeliverable', 'the business is closed')
+  }
+)
 
 await finish()
 
