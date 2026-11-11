@@ -318,9 +318,12 @@
           "autorepair",
           "professional",
           "restaurant",
-          "recreation"
+          "recreation",
+          "health",
+          "outdoor",
+          "industrial"
         ],
-        "definition": "CHECK ((industry = ANY (ARRAY['plumbing'::text, 'barber'::text, 'realestate'::text, 'roofing'::text, 'hvac'::text, 'flooring'::text, 'salon'::text, 'fitness'::text, 'printing'::text, 'autorepair'::text, 'professional'::text, 'restaurant'::text, 'recreation'::text])))"
+        "definition": "CHECK ((industry = ANY (ARRAY['plumbing'::text, 'barber'::text, 'realestate'::text, 'roofing'::text, 'hvac'::text, 'flooring'::text, 'salon'::text, 'fitness'::text, 'printing'::text, 'autorepair'::text, 'professional'::text, 'restaurant'::text, 'recreation'::text, 'health'::text, 'outdoor'::text, 'industrial'::text])))"
       }
     },
     "preview_views": {
