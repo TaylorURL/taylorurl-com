@@ -106,7 +106,7 @@ function Example({ example }) {
   return (
     <Section label={`Example: ${project.name}`}>
       <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] lg:gap-16">
-        <div className="max-w-[460px]">
+        <div className="min-w-0">
           <h2 className={TYPE.h2}>{project.name}</h2>
           <p className={`${TYPE.body} mt-3`}>{example.line}</p>
           <div className="mt-6">

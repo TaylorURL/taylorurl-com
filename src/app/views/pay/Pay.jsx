@@ -97,9 +97,9 @@ function Notice({ heading, body }) {
   return (
     <section data-ground="dark" className="glow">
       <Container narrow className="flex min-h-[calc(100dvh-80px)] items-center py-12 sm:py-20">
-        <div className={`${CARD} w-full p-6 sm:p-10`}>
+        <div className={`${CARD} mx-auto w-full max-w-[640px] p-6 sm:p-10`}>
           <h1 className={TYPE.h2}>{heading}</h1>
-          {body && <p className={`${TYPE.body} mt-3 max-w-xl`}>{body}</p>}
+          {body && <p className={`${TYPE.body} mt-3`}>{body}</p>}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <PhoneButton className="w-full sm:w-auto" place="pay" />
             <Button to="/" variant="secondary" className="w-full sm:w-auto">
@@ -249,7 +249,7 @@ export default function Pay() {
   return (
     <>
       {seo}
-      <section data-ground="dark" className="glow pb-16 pt-10 sm:pb-24 sm:pt-16">
+      <section data-ground="dark" className="wa-hero-band pb-16 pt-12 sm:pb-24 sm:pt-20">
         <Container narrow>
           <p className={TYPE.label}>Proposal</p>
           <h1 className={`${TYPE.display} mt-3`}>

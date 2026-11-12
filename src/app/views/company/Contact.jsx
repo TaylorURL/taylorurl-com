@@ -221,7 +221,7 @@ export default function Contact() {
         ]}
       />
 
-      <section className="glow pb-16 pt-10 sm:pb-24 sm:pt-16">
+      <section className="wa-hero-band pb-16 pt-12 sm:pb-24 sm:pt-20">
         <Container className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,36rem)] lg:grid-rows-[auto_1fr] lg:gap-x-16 lg:gap-y-10">
           <div>
             <h1 className={TYPE.display}>{CONTACT.hero.title}</h1>

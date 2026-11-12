@@ -102,6 +102,11 @@
   --blue-hi: #5580ff;
   --link: #8aa6ff;
   --live: #4ade80;
+  /* whatsapp.com's two other grounds, in TaylorURL's colours: its dark slab
+     (#111b21) is the deep near-black here, and its pale green band is the
+     ground with a little of the brand blue mixed in. */
+  --deep: #0b0b0c;
+  --tint: #1a2034;
   --paper-ink: #141413;
   --paper-ink-soft: rgba(20, 20, 19, 0.72);
   --paper-ink-mute: rgba(20, 20, 19, 0.62);
@@ -452,12 +457,15 @@
   /* The bar's height, so anything that sticks or scrolls to a target lands
      under the bar rather than behind it. It matches the h-16 / sm:h-[72px] the
      bar draws itself at. */
-  --nav-height: 4rem;
+  --nav-height: 72px;
 }
 
-@media (min-width: 640px) {
+/* whatsapp.com folds its bar into the burger at 1176px and under, and stands it
+   72-77px tall there (12px above and below its 53px "Download" pill); above
+   that it is 80px. */
+@media (min-width: 1177px) {
   :root {
-    --nav-height: 4.5rem;
+    --nav-height: 80px;
   }
 }
 
@@ -3139,5 +3147,974 @@
       rgba(59, 107, 255, 0.22),
       rgba(59, 107, 255, 0) 70%
     );
+  }
+}
+
+/* ============================================================================
+   THE WHATSAPP.COM SYSTEM, in TaylorURL's colours.
+
+   Studied off the live whatsapp.com and drawn in the Figma file "TaylorURL —
+   WhatsApp-Style Redesign" (https://www.figma.com/design/g9K8x6H6nU12rqQvVNKOkO)
+   before it was built here. The cream ground is TaylorURL's dark ground, the
+   WhatsApp green is the brand blue, its dark slab is --deep and its pale green
+   band is --tint. The structure and the motion are WhatsApp's:
+
+   - an 80px sticky bar the colour of the page, with a hairline that fades in
+     once the page has moved, centred links that underline from the left in the
+     brand colour, a dropdown that rises into a rounded panel, an outlined
+     "Sign In" pill and a filled pill that slides in beside it when the bar is
+     pointed at or the first screen has been scrolled past;
+   - on a phone, a two-line burger that turns into a cross and a full-screen
+     menu whose big links rise in one after another;
+   - a first screen that is one big rounded card inset from the window;
+   - big regular-weight headlines, 18px copy, 32px cards, pill buttons that
+     change colour over a third of a second, chevrons that step right;
+   - sections that rise into view as they are scrolled to.
+   ========================================================================= */
+
+/* ---- The bar ---------------------------------------------------------------
+   whatsapp.com's header, measured frame by frame off the live site (Chrome,
+   1440 wide, Nov 11 2026) and drawn in the Figma file, page "v3 — whatsapp.com
+   1:1", frame "A — Navbar, dropdowns & motion". Every number below is theirs:
+
+   - sticky, the colour of the page, 80px (72px once it folds into the burger
+     at 1176px and under, as whatsapp.com's does); its background
+     and ink change over .33s ease-out;
+   - the links 16px, 40px apart, centred; under each a 1.5px underline that
+     grows from the left, width 0 → 100% over .3s ease-out, 5px under the text;
+   - a dropdown opens on hover with no delay and holds 200ms after the pointer
+     leaves. Its panel goes from opacity 0 / translateY(-5px) / max-height 0 to
+     opacity 1 / translateY(20px) / max-height 800px - max-height over .67s,
+     opacity and transform over .33s, all on cubic-bezier(.2, 0, 0, 1) - so it
+     unrolls downward as it fades and drops in. Its links rise 20px and fade in
+     together .12s behind it (transform .67s, opacity .33s, same curve) and
+     drop back with no delay when it closes. The chevron flips (scaleY(-1))
+     over .3s ease-in-out. The panel hangs 48px left of its trigger, so its
+     words start 8px left of the trigger's. One menu is open at a time, so moving to the
+     next trigger closes the first with its own motion while the next opens;
+   - the pills: a circle 52px wider than the pill rises from below and swells
+     to fill it over 1s on cubic-bezier(.66, 0, .34, 1), and at .5s the fill,
+     border and ink swap over .33s. */
+:root {
+  --wa-curve: cubic-bezier(0.2, 0, 0, 1);
+  --wa-swing: cubic-bezier(0.66, 0, 0.34, 1);
+  --wa-fade: 330ms ease-out;
+  --wa-ease: var(--wa-curve);
+}
+
+.wa-header {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-nav);
+  background-color: var(--paper);
+  color: var(--ink);
+  transition:
+    background-color 0.33s ease-out,
+    color 0.33s ease-out;
+}
+.wa-header::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: rgb(244 243 238 / 12%);
+  opacity: 0;
+  transition: opacity 0.33s ease-out;
+  pointer-events: none;
+}
+.wa-header[data-raised='true']::after,
+.wa-header[data-open='true']::after {
+  opacity: 1;
+}
+.wa-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--nav-height);
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+@media (min-width: 1024px) {
+  .wa-bar {
+    padding: 0 40px;
+  }
+}
+@media (min-width: 1280px) {
+  .wa-bar {
+    padding: 0 60px;
+  }
+}
+.wa-bar-start {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  align-items: center;
+}
+.wa-logo {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 6px;
+}
+/* Folded, the wordmark is centred in the room left between the burger and the
+   pill, as whatsapp.com's is: in the middle of a tablet's bar, and just after
+   the burger on a phone, where the pill takes most of the right. */
+@media (max-width: 1176px) {
+  .wa-bar-start {
+    flex: 1 1 auto;
+    gap: 8px;
+  }
+  .wa-logo {
+    margin: 0 auto;
+  }
+  .wa-actions {
+    flex: 0 0 auto;
+  }
+}
+.wa-links {
+  display: none;
+}
+@media (min-width: 1177px) {
+  .wa-links {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 28px;
+  }
+}
+@media (min-width: 1280px) {
+  .wa-links {
+    gap: 40px;
+  }
+}
+.wa-link {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.2px;
+  color: var(--ink);
+  white-space: nowrap;
+}
+/* whatsapp.com sets its plain links (Privacy, Blog, Apps) at 500 and the
+   dropdown trigger (Features) at 400. */
+a.wa-link {
+  font-weight: 500;
+}
+/* The underline, drawn under the words only. */
+.wa-u {
+  position: relative;
+  display: block;
+}
+.wa-u::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -5px;
+  width: 0;
+  height: 1.5px;
+  background-color: var(--blue);
+  transition: width 0.3s ease-out;
+}
+.wa-link:hover .wa-u::before,
+.wa-link:focus-visible .wa-u::before,
+.wa-link[aria-current='page'] .wa-u::before,
+.wa-link[aria-expanded='true'] .wa-u::before,
+.wa-panel-item:hover .wa-u::before,
+.wa-panel-item:focus-visible .wa-u::before,
+.wa-panel-item[aria-current='page'] .wa-u::before {
+  width: 100%;
+}
+
+/* A dropdown: the trigger, a bridge over the gap under it, and the panel. */
+.wa-drop {
+  position: relative;
+}
+.wa-drop::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -40px;
+  right: -40px;
+  height: 0;
+}
+.wa-drop[data-open='true']::before {
+  height: 64px;
+}
+.wa-trigger-chev {
+  display: grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+}
+.wa-trigger-chev svg {
+  transform-origin: 50% 50%;
+  transition: transform 0.3s ease-in-out;
+}
+.wa-trigger[aria-expanded='true'] .wa-trigger-chev svg {
+  transform: scaleY(-1);
+}
+.wa-panel {
+  position: absolute;
+  top: 100%;
+  /* whatsapp.com hangs the panel off the trigger's left edge, 48px out, so the
+     links' words start 8px left of the trigger's own (40px padding). */
+  left: -48px;
+  z-index: 999;
+  display: flex;
+  /* whatsapp.com's panel is a fixed width and lets a long name wrap. */
+  width: 240px;
+  margin-left: 0;
+  max-height: 0;
+  padding: 18px 24px 18px 40px;
+  overflow: hidden;
+  border-radius: 25px;
+  background-color: var(--card-hi);
+  box-shadow:
+    0 10px 30px 0 rgb(0 0 0 / 45%),
+    0 4px 6px 0 rgb(0 0 0 / 25%);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-5px);
+  transition:
+    max-height 0.67s var(--wa-curve),
+    opacity 0.33s var(--wa-curve),
+    transform 0.33s var(--wa-curve),
+    visibility 0s linear 0.67s;
+}
+.wa-drop[data-open='true'] .wa-panel {
+  max-height: 800px;
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(20px);
+  transition:
+    max-height 0.67s var(--wa-curve),
+    opacity 0.33s var(--wa-curve),
+    transform 0.33s var(--wa-curve),
+    visibility 0s linear 0s;
+}
+.wa-panel-list {
+  display: flex;
+  flex-direction: column;
+}
+.wa-panel-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 19.2px;
+  color: var(--ink);
+}
+/* The rows come in one by one, the way whatsapp.com brings in the rows of its
+   menus (`._au05 *:nth-child(n)`): each starts 20px below where it lands and
+   transparent, and rises and fades in on whatsapp.com's curve (transform .67s,
+   opacity .33s), the bottom row first, .12s behind the panel, and each row
+   above it .04s later, so the list fills from the bottom up. Only the rows move - nothing inside them is offset on its
+   own - so a row arrives whole and the panel's foot is not left padded by
+   boxes still travelling. On close they drop back at once. */
+.wa-panel-list > li {
+  opacity: 0;
+  transform: translateY(20px);
+  transition:
+    opacity 0.33s var(--wa-curve),
+    transform 0.67s var(--wa-curve);
+  transition-delay: 0ms;
+}
+.wa-drop[data-open='true'] .wa-panel-list > li {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: calc(0.12s + var(--i, 0) * 0.04s);
+}
+.wa-panel-in,
+.wa-panel-col {
+  display: block;
+}
+
+.wa-actions {
+  display: flex;
+  flex: 1 1 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+/* Just above the fold the links and the pills run out of room before the
+   wordmark does; a gutter keeps "Contact" off the search. */
+@media (min-width: 1177px) {
+  .wa-actions {
+    padding-left: 24px;
+  }
+}
+.wa-icon {
+  display: flex;
+  height: 40px;
+  width: 40px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  color: var(--ink);
+  transition: background-color 0.33s ease-out;
+}
+.wa-icon:hover {
+  background-color: rgb(244 243 238 / 8%);
+}
+.wa-icon-call {
+  height: 32px;
+  width: 32px;
+  background-color: var(--blue);
+  color: #fff;
+}
+.wa-icon-call:hover {
+  background-color: var(--blue-hi);
+}
+@media (max-width: 1176px) {
+  .wa-actions {
+    gap: 8px;
+  }
+}
+
+/* The phone bar: two lines that cross. whatsapp.com turns each 45° about the
+   middle over a quarter of a second, evenly. */
+.wa-burger {
+  position: relative;
+  display: flex;
+  flex-shrink: 0;
+  height: 32px;
+  width: 32px;
+  align-items: center;
+  justify-content: center;
+}
+@media (min-width: 1177px) {
+  .wa-burger {
+    display: none;
+  }
+  .wa-sheet {
+    display: none;
+  }
+}
+.wa-burger span {
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  width: 20px;
+  height: 1.5px;
+  margin-top: -0.75px;
+  border-radius: 1px;
+  background-color: var(--ink);
+  transition: transform 0.25s linear;
+}
+.wa-burger span:first-child {
+  transform: translateY(-3.5px);
+}
+.wa-burger span:last-child {
+  transform: translateY(3.5px);
+}
+.wa-burger[aria-expanded='true'] span:first-child {
+  transform: translateY(0) rotate(45deg);
+}
+.wa-burger[aria-expanded='true'] span:last-child {
+  transform: translateY(0) rotate(-45deg);
+}
+
+/* The phone menu: it is simply there under the bar, as whatsapp.com's is. */
+.wa-sheet {
+  position: fixed;
+  inset: var(--nav-height) 0 0 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background-color: var(--paper);
+}
+.wa-sheet-view {
+  padding: 0 44px 34px 24px;
+}
+.wa-sheet-row {
+  border-bottom: 1px solid rgb(244 243 238 / 14%);
+}
+.wa-sheet-row:last-child {
+  border-bottom: 0;
+}
+.wa-sheet-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: 28px 0;
+  font-size: 28px;
+  font-weight: 400;
+  line-height: 36px;
+  color: var(--ink);
+  text-align: left;
+}
+.wa-sheet-link[aria-current='page'] {
+  color: var(--blue-hi);
+}
+.wa-sheet-arrow {
+  color: var(--blue-hi);
+}
+/* A group's own view: whatsapp.com swaps the list for the group's links with a
+   way back at the top, fading and sliding in over .4s. */
+.wa-sheet-view-sub {
+  animation: wa-sheet-sub 0.4s var(--wa-curve) both;
+}
+.wa-sheet-back {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 16px;
+  padding: 28px 0;
+  border-bottom: 1px solid rgb(244 243 238 / 14%);
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 36px;
+  color: var(--ink);
+}
+.wa-sheet-back svg {
+  color: var(--blue-hi);
+}
+.wa-sheet-sublist {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 20px;
+}
+.wa-sheet-subitem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 16px;
+  line-height: 19.2px;
+  color: var(--ink);
+}
+.wa-sheet-subitem svg {
+  color: var(--blue-hi);
+}
+.wa-sheet-subitem[aria-current='page'] {
+  color: var(--blue-hi);
+}
+/* The phone menu's rows rise in one after another the moment it opens, as
+   whatsapp.com's full-width menu brings its rows in: 20px up and in from
+   transparent on its curve, .12s in and .04s apart. */
+.wa-rise {
+  animation: wa-rise 0.67s var(--wa-curve) both;
+  animation-delay: calc(0.12s + var(--i, 0) * 0.04s);
+}
+@keyframes wa-rise {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes wa-sheet-sub {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.wa-sheet-foot {
+  margin-top: auto;
+  padding: 0 0 calc(44px + env(safe-area-inset-bottom));
+  background-color: var(--deep);
+}
+.wa-sheet-foot-row {
+  display: flex;
+  justify-content: center;
+  padding: 16px 24px;
+}
+.wa-sheet-foot-pair {
+  gap: 12px;
+  border-top: 1px solid rgb(244 243 238 / 14%);
+}
+.wa-sheet-foot-pair .wa-btn {
+  flex: 1 1 0;
+}
+
+/* ---- Buttons ---------------------------------------------------------------
+   whatsapp.com's pill: 16px/500, radius 50px, a 1px border, the icon 13px after
+   the words. Pointed at, a circle 52px wider than the pill rises from under it
+   and swells to cover it over a full second; half-way through, the pill's own
+   fill, border and ink swap to the circle's over a third of a second, so the
+   pill is left filled when the circle has gone. */
+.wa-btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 13px;
+  max-height: 52px;
+  padding: 16px 28px;
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 16px;
+  white-space: nowrap;
+  transition:
+    color 0.33s linear 0.5s,
+    border-color 0.5s ease-out 0.5s,
+    background-color 0.33s linear 0.5s;
+}
+.wa-btn::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: -26px;
+  right: -26px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--btn-wash);
+  transform: translateY(67px);
+  transition: transform 1s var(--wa-swing);
+  pointer-events: none;
+}
+.wa-btn:hover::after,
+.wa-btn:focus-visible::after {
+  transform: translateY(0) scale(1.5);
+}
+.wa-btn-bar {
+  max-height: 48px;
+  padding: 14px 20px;
+}
+/* Folded, the bar keeps only the filled pill, as whatsapp.com keeps
+   "Download"; "Sign In" moves to the foot of the menu. On the narrowest
+   phones the pill drops its arrow so the wordmark keeps its room. */
+@media (max-width: 1176px) {
+  .wa-btn-bar.wa-btn-outline {
+    display: none;
+  }
+}
+@media (max-width: 399px) {
+  .wa-btn-bar {
+    gap: 0;
+    padding: 14px 18px;
+  }
+  .wa-btn-bar .wa-btn-icon {
+    display: none;
+  }
+}
+.wa-btn-wide {
+  width: 100%;
+  max-width: 342px;
+}
+.wa-btn-icon {
+  flex-shrink: 0;
+}
+.wa-btn-fill {
+  --btn-wash: var(--ink);
+  border-color: var(--blue);
+  background-color: var(--blue);
+  color: #fff;
+}
+.wa-btn-fill:hover,
+.wa-btn-fill:focus-visible {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  color: var(--paper);
+}
+.wa-btn-outline {
+  --btn-wash: var(--ink);
+  border-color: var(--ink);
+  background-color: transparent;
+  color: var(--ink);
+}
+.wa-btn-outline:hover,
+.wa-btn-outline:focus-visible {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  color: var(--paper);
+}
+/* On the blue call-to-action card the filled pill is white and the outline
+   white, so neither disappears into the blue; both fill with the page's ink. */
+.wa-on-blue .wa-btn-fill {
+  --btn-wash: var(--paper);
+  border-color: #fff;
+  background-color: #fff;
+  color: #0d1638;
+}
+.wa-on-blue .wa-btn-fill:hover,
+.wa-on-blue .wa-btn-fill:focus-visible {
+  border-color: var(--paper);
+  background-color: var(--paper);
+  color: #fff;
+}
+.wa-on-blue .wa-btn-outline {
+  --btn-wash: #fff;
+  border-color: #fff;
+  color: #fff;
+}
+.wa-on-blue .wa-btn-outline:hover,
+.wa-on-blue .wa-btn-outline:focus-visible {
+  border-color: #fff;
+  background-color: #fff;
+  color: #0d1638;
+}
+.wa-btn-sm {
+  max-height: 48px;
+  padding: 14px 24px;
+}
+
+/* The pills under their older names, which a few pages still use. */
+.wa-pill {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 50px;
+  transition:
+    color 0.33s linear 0.5s,
+    border-color 0.5s ease-out 0.5s,
+    background-color 0.33s linear 0.5s;
+}
+.wa-pill::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: -26px;
+  right: -26px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--ink);
+  transform: translateY(67px);
+  transition: transform 1s var(--wa-swing);
+  pointer-events: none;
+}
+.wa-pill:hover::after {
+  transform: translateY(0) scale(1.5);
+}
+.wa-pill-primary {
+  border: 1px solid var(--blue);
+  background-color: var(--blue);
+  color: #fff;
+}
+.wa-pill-outline {
+  border: 1px solid var(--ink);
+  color: var(--ink);
+}
+.wa-pill-primary:hover,
+.wa-pill-outline:hover {
+  border-color: var(--ink);
+  background-color: var(--ink);
+  color: var(--paper);
+}
+.wa-chev {
+  flex-shrink: 0;
+}
+
+/* "Learn more": whatsapp.com's text link, 16px/500 with a 2px underline in the
+   brand colour that is always there, the words stepping to the deeper shade
+   when pointed at. */
+.wa-textlink {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 13px;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--ink);
+}
+.wa-textlink-label {
+  position: relative;
+}
+.wa-textlink-label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -6px;
+  height: 2px;
+  background-color: var(--blue);
+}
+.wa-textlink:hover {
+  color: var(--blue-hi);
+}
+
+/* ---- Cards -----------------------------------------------------------------
+   whatsapp.com's cards sit still: a raised ground, 25px corners (15px on a
+   phone) and nothing that moves when pointed at but the pill inside. */
+.wa-card {
+  transition: background-color 0.33s ease-out;
+}
+.wa-faq[open] {
+  background-color: var(--card-hi);
+}
+
+/* ---- The first screen ------------------------------------------------------
+   whatsapp.com's: one card inset 32px from the window (16px on a phone), 25px
+   corners (15px on a phone), 720px tall on a wide screen, its words in the
+   1080px column the rest of the page uses. It arrives as it is - no entrance. */
+/* Every page but the home page opens the way whatsapp.com's sub-pages do
+   (Calling, Download, Privacy): on the plain ground, with no card - the
+   headline, the sentence and the pills at the left and the picture at the
+   right. Only the home page keeps the big rounded card, as whatsapp.com's
+   home does. */
+.wa-hero-card:not(.wa-hero-card-lg) {
+  background: none !important;
+  border-radius: 0 !important;
+}
+.wa-hero-card {
+  background:
+    radial-gradient(90% 120% at 100% 0%, rgb(59 107 255 / 45%) 0%, rgb(59 107 255 / 0%) 60%),
+    radial-gradient(70% 90% at 0% 100%, rgb(59 107 255 / 18%) 0%, rgb(59 107 255 / 0%) 60%),
+    linear-gradient(150deg, #0e1530 0%, #131c3d 60%, #1a2a66 100%);
+}
+.wa-hero-card-lg {
+  background:
+    radial-gradient(80% 110% at 100% 0%, rgb(85 128 255 / 70%) 0%, rgb(59 107 255 / 0%) 62%),
+    radial-gradient(60% 80% at 0% 100%, rgb(59 107 255 / 30%) 0%, rgb(59 107 255 / 0%) 60%),
+    linear-gradient(140deg, #0b122c 0%, #142a80 55%, #2a55e0 100%);
+}
+@media (min-width: 1024px) {
+  .wa-hero-card-lg {
+    min-height: 720px;
+  }
+}
+/* The same card for a first screen a page draws itself - the forms, the tools,
+   the page that was not found - set on the section, inset from the window. */
+.wa-hero-band {
+  margin: 0;
+  border-radius: 0;
+  background: none;
+}
+/* whatsapp.com's frosted panel over its first screen ("Create an account"):
+   black at 40% with an 18px blur and 28px corners. */
+.wa-glass {
+  border-radius: 28px;
+  background-color: rgb(0 0 0 / 40%);
+  -webkit-backdrop-filter: blur(17.8px);
+  backdrop-filter: blur(17.8px);
+}
+
+/* The closing ask: whatsapp.com's bands of colour, in the brand blue. */
+.wa-cta-card {
+  background:
+    radial-gradient(70% 140% at 100% 0%, rgb(120 156 255 / 55%) 0%, rgb(59 107 255 / 0%) 60%),
+    linear-gradient(120deg, #1a3cc0 0%, #2d5cf0 55%, #3b6bff 100%);
+  color: #fff;
+}
+
+/* ---- Bands ----------------------------------------------------------------- */
+.wa-statement .wa-bubble {
+  position: absolute;
+  max-width: 15rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--ink);
+  background: var(--card-hi);
+  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 60%);
+  animation: wa-float 7s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -1.3s);
+}
+.wa-statement .wa-bubble[data-side='out'] {
+  background: var(--blue);
+  color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.wa-statement .wa-bubble[data-side='in'] {
+  border-bottom-left-radius: 4px;
+}
+.wa-bubble:nth-child(1) {
+  left: 6%;
+  top: 12%;
+}
+.wa-bubble:nth-child(2) {
+  right: 8%;
+  top: 8%;
+}
+.wa-bubble:nth-child(3) {
+  left: 12%;
+  bottom: 10%;
+}
+.wa-bubble:nth-child(4) {
+  right: 5%;
+  bottom: 16%;
+}
+.wa-bubble:nth-child(5) {
+  left: 40%;
+  top: 4%;
+}
+.wa-bubble:nth-child(6) {
+  left: 52%;
+  bottom: 4%;
+}
+@media (max-width: 767px) {
+  .wa-bubble:nth-child(n + 5) {
+    display: none;
+  }
+  .wa-statement .wa-bubble {
+    max-width: 11rem;
+    font-size: 12px;
+  }
+  .wa-bubble:nth-child(1) {
+    left: 4%;
+    top: 3%;
+  }
+  .wa-bubble:nth-child(2) {
+    right: 4%;
+    top: 11%;
+  }
+  .wa-bubble:nth-child(3) {
+    left: 4%;
+    bottom: 10%;
+  }
+  .wa-bubble:nth-child(4) {
+    right: 4%;
+    bottom: 3%;
+  }
+}
+@keyframes wa-float {
+  from {
+    transform: translateY(-8px);
+  }
+  to {
+    transform: translateY(8px);
+  }
+}
+
+/* ---- Arrival -------------------------------------------------------------
+   whatsapp.com draws its bands in place: nothing on the page waits for a
+   scroll to appear, so nothing here does either. */
+
+/* ---- The footer ------------------------------------------------------------
+   whatsapp.com never lets a page simply stop on its footer: the band above it
+   carries a 40px border in the footer's colour with a rounded 45px lip drawn
+   over it (`._afht`), so the page curves away into the dark slab. Here the
+   whole page does that - the main column is clipped to rounded lower corners
+   on a ground the footer's colour, so whichever section ends a page, it ends
+   in a curve onto the footer rather than a hard line. */
+.wa-blog-head {
+  padding: 0 20px;
+}
+@media (min-width: 640px) {
+  .wa-blog-head {
+    padding: 0 32px;
+  }
+}
+/* On a wide screen the heading column starts at the page's content edge
+   (the 1200px column's, inset 2rem) and is 340px of words wide however wide
+   the window is, so the words never squeeze into a sliver. */
+@media (min-width: 1024px) {
+  .wa-blog-head {
+    flex: 0 0 auto;
+    box-sizing: content-box;
+    width: 340px;
+    padding: 0 0 0 max(2rem, calc((100vw - 1200px) / 2 + 2rem));
+  }
+}
+.wa-shell {
+  background-color: var(--deep);
+}
+.wa-main {
+  background-color: var(--paper);
+  border-bottom-left-radius: 25px;
+  border-bottom-right-radius: 25px;
+  overflow: clip;
+}
+@media (min-width: 768px) {
+  .wa-main {
+    border-bottom-left-radius: 45px;
+    border-bottom-right-radius: 45px;
+  }
+}
+/* The page is focused after each navigation so the keyboard starts at the
+   content; it is not a control, so it draws no ring. */
+.wa-main:focus,
+.wa-main:focus-visible {
+  outline: none;
+}
+
+[data-wa-footer] {
+  background: var(--deep);
+  color: var(--text);
+}
+[data-wa-footer] a {
+  transition: color 0.33s ease-out;
+}
+.wa-foot-link {
+  display: inline-block;
+}
+.wa-foot-link:hover .wa-u::before,
+.wa-foot-link:focus-visible .wa-u::before {
+  width: 100%;
+}
+.wa-social {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  height: 48px;
+  width: 48px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 9999px;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  transition:
+    color 0.33s linear 0.5s,
+    border-color 0.5s ease-out 0.5s,
+    background-color 0.33s linear 0.5s;
+}
+.wa-social::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  top: 0;
+  left: -26px;
+  right: -26px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background-color: var(--ink);
+  transform: translateY(67px);
+  transition: transform 1s var(--wa-swing);
+  pointer-events: none;
+}
+.wa-social:hover::after {
+  transform: translateY(0) scale(1.5);
+}
+.wa-social:hover {
+  background-color: var(--ink);
+  color: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wa-header,
+  .wa-header::after,
+  .wa-u::before,
+  .wa-trigger-chev svg,
+  .wa-panel,
+  .wa-panel-list > li,
+  .wa-burger span,
+  .wa-btn,
+  .wa-btn::after,
+  .wa-pill,
+  .wa-pill::after,
+  .wa-social,
+  .wa-social::after {
+    transition: none !important;
+  }
+  .wa-sheet-view-sub,
+  .wa-rise,
+  .wa-statement .wa-bubble {
+    animation: none !important;
   }
 }

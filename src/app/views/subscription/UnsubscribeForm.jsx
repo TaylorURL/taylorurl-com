@@ -67,7 +67,7 @@ export default function UnsubscribeForm({ onDone }) {
 
   return (
     // It stands inside the page's own card, so it carries no card of its own.
-    <div className="mt-7 max-w-xl">
+    <div className="mt-7">
       <form onSubmit={handleSubmit} noValidate>
         <label htmlFor={fieldId} className={FIELD_LABEL}>
           Email address

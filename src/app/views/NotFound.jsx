@@ -22,11 +22,11 @@ const DESCRIPTION = IS_SECOND_SITE
  */
 export default function NotFound() {
   return (
-    <section className="glow flex min-h-[calc(100dvh-var(--nav-height,64px))] items-center py-16 sm:py-24">
+    <section className="wa-hero-band flex min-h-[calc(100dvh-var(--nav-height,64px)-2rem)] items-center py-16 sm:py-24">
       <Seo title="Page Not Found" description={DESCRIPTION} path="/404" noIndex />
-      <Container>
+      <Container className="text-center">
         <h1 className={TYPE.display}>Nothing is at this address.</h1>
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
           <Button to="/" className="w-full sm:w-auto">
             Go Home
           </Button>

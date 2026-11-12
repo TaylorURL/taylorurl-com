@@ -103,7 +103,7 @@ export default function About() {
 
       <Section label="My story" className="!pt-6">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] lg:gap-16">
-          <div className="max-w-[640px]">
+          <div className="min-w-0">
             <h2 className={TYPE.h2}>{ABOUT.story.heading}</h2>
             <div className={`${TYPE.body} mt-5 space-y-4 text-[17px]`}>
               {ABOUT.story.paragraphs.map(paragraph => (

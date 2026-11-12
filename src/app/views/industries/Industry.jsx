@@ -215,8 +215,10 @@ export default function Industry() {
       )}
 
       <Section label="Questions">
-        <SectionHead title="Questions" />
-        <Questions items={questions} className="max-w-[860px]" />
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)] lg:gap-14">
+          <h2 className={TYPE.h2}>Questions</h2>
+          <Questions items={questions} />
+        </div>
       </Section>
 
       <Section label="Towns">

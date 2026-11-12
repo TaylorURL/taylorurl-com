@@ -4,51 +4,55 @@
  * place on an edit). Pages that need a size without a whole piece - a heading
  * inside a card, a line of small print - take it from here.
  *
- * The look is "Refined", from the Figma file "TaylorURL — Simpler Redesign",
- * page "Directions — pick one", frame A: the site's own dark ground, made
- * calmer. Geist at a medium weight and modest sizes, warm white type, cards
- * set apart by a lighter fill rather than an outline, pill buttons, one blue.
+ * The look follows whatsapp.com almost one for one, in TaylorURL's colours:
+ * large headlines set in a regular weight and tight leading, 18px body copy,
+ * pill buttons, 32px rounded cards and bands, and a brand underline under every
+ * text link. The frames are in the Figma file "TaylorURL — WhatsApp-Style
+ * Redesign" (https://www.figma.com/design/g9K8x6H6nU12rqQvVNKOkO).
  */
 
 export const TYPE = {
-  /* The home page's headline. */
-  hero: 'text-[42px] font-medium leading-[1.06] tracking-[-0.035em] text-ink sm:text-[56px] lg:text-[68px]',
-  /* Every other page's headline. */
+  /* The home page's headline: whatsapp.com's 80/80 (44/44 on a phone). */
+  hero: 'wa-words text-[44px] font-normal leading-[1] tracking-[-0.02em] text-ink sm:text-[64px] lg:text-[80px]',
+  /* Every other page's headline, on the same scale. */
   display:
-    'text-[38px] font-medium leading-[1.08] tracking-[-0.032em] text-ink sm:text-[48px] lg:text-[54px]',
-  /* A section's heading. */
-  h2: 'text-[28px] font-medium leading-[1.15] tracking-[-0.028em] text-ink sm:text-[32px]',
-  /* A card's or a step's heading. */
-  h3: 'text-[18px] font-medium leading-[1.35] tracking-[-0.012em] text-ink sm:text-[19px]',
-  lead: 'text-[17px] leading-[1.6] text-ink-soft sm:text-[19px]',
-  body: 'text-[16px] leading-[1.65] text-ink-soft',
-  small: 'text-[14px] leading-[1.5] text-ink-mute',
-  /* A short label over a group or a figure. */
-  label: 'text-[13px] font-medium leading-[1.4] text-ink-mute',
+    'wa-words text-[44px] font-normal leading-[1] tracking-[-0.02em] text-ink sm:text-[56px] lg:text-[72px]',
+  /* A section's heading: 60/60, 32/32 on a phone. */
+  h2: 'wa-words text-[32px] font-normal leading-[1] tracking-[-0.015em] text-ink sm:text-[44px] lg:text-[60px]',
+  /* A card's heading: 32/32 on a wide screen, as whatsapp.com's blog cards. */
+  h3: 'text-[24px] font-normal leading-[1] tracking-[-0.01em] text-ink lg:text-[32px]',
+  /* The centred statement under the home page's first screen: 48/48, 24/24. */
+  statement:
+    'wa-words text-[24px] font-normal leading-[1] tracking-[-0.015em] text-ink sm:text-[36px] lg:text-[48px]',
+  lead: 'text-[16px] leading-[22px] text-ink sm:text-[18px] sm:leading-[25px]',
+  body: 'text-[16px] leading-[22px] text-ink-soft sm:text-[18px] sm:leading-[25px]',
+  small: 'text-[16px] leading-[22px] text-ink-mute',
+  /* A short label over a group or a figure: whatsapp.com's 12px footer heads. */
+  label: 'text-[12px] font-normal leading-[1.3] text-ink-mute',
   /* A figure in a stat panel. */
-  figure: 'text-[24px] font-semibold leading-none tracking-[-0.02em] text-ink',
+  figure: 'text-[32px] font-normal leading-none tracking-[-0.015em] text-ink sm:text-[48px]',
 }
 
-const BUTTON =
-  'inline-flex min-h-[48px] items-center justify-center gap-2 rounded-full px-[22px] text-[15px] font-medium leading-none transition-colors duration-150'
+/* whatsapp.com's pill: 16px/500, 16px 28px, radius 50px, a 1px border, and the
+   rising-circle fill when pointed at (in src/index.css under "Buttons"). */
+const BUTTON = 'wa-btn'
 
 export const BUTTONS = {
-  /* The one thing to press. */
-  primary: `${BUTTON} bg-[var(--blue)] text-white hover:bg-[var(--blue-hi)]`,
-  /* The pair's quieter half: a pale filled pill. */
-  secondary: `${BUTTON} bg-white/[0.08] text-ink hover:bg-white/[0.13]`,
+  /* The one thing to press: brand blue, filling with ink when pointed at. */
+  primary: `${BUTTON} wa-btn-fill`,
+  /* The pair's quieter half: an outlined pill. */
+  secondary: `${BUTTON} wa-btn-outline`,
 }
 
 /**
- * A card: one step up from the ground, soft corners, and no outline. The
- * lighter fill is what sets it apart; a white line round every box was the
- * thing that made the page look busy.
+ * A card: one step up from the ground, whatsapp.com's 25px corners (15px on a
+ * phone), no outline.
  */
-export const CARD = 'rounded-[16px] bg-[var(--card)]'
+export const CARD = 'wa-card rounded-[15px] bg-[var(--card)] sm:rounded-[25px]'
 
 /**
  * Body copy for reading: articles, case studies, the legal pages. A narrow
  * column, generous line height, headings that step down from the page title.
  */
 export const PROSE =
-  'text-[17px] leading-[1.75] text-ink-soft [&_a]:text-[color:var(--link)] [&_a]:underline [&_a]:underline-offset-[3px] [&_h2]:mt-12 [&_h2]:text-[24px] [&_h2]:font-medium [&_h2]:leading-[1.3] [&_h2]:tracking-[-0.02em] [&_h2]:text-ink [&_h3]:mt-8 [&_h3]:text-[19px] [&_h3]:font-medium [&_h3]:leading-[1.4] [&_h3]:text-ink [&_li]:mt-2 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mt-4 [&_strong]:font-semibold [&_strong]:text-ink [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_li::marker]:text-ink-mute'
+  'text-[18px] leading-[1.7] text-ink-soft [&_a]:text-ink [&_a]:underline [&_a]:decoration-[color:var(--blue)] [&_a]:decoration-2 [&_a]:underline-offset-[5px] [&_h2]:mt-14 [&_h2]:text-[32px] [&_h2]:font-normal [&_h2]:leading-[1.15] [&_h2]:tracking-[-0.025em] [&_h2]:text-ink [&_h3]:mt-9 [&_h3]:text-[22px] [&_h3]:font-normal [&_h3]:leading-[1.3] [&_h3]:text-ink [&_li]:mt-2 [&_ol]:mt-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_p]:mt-5 [&_strong]:font-medium [&_strong]:text-ink [&_ul]:mt-4 [&_ul]:list-disc [&_ul]:pl-6 [&_li::marker]:text-ink-mute'
