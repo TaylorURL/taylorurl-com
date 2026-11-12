@@ -48,6 +48,14 @@ const API_PROXY = {
 
 export default defineConfig({
   server: { proxy: API_PROXY },
+  // Bundled when the dev server starts rather than discovered on the first
+  // visit to the console. Discovered late, Vite re-bundles mid-session, and a
+  // browser still holding the earlier bundle runs the charts against a second
+  // copy of React: the console then fails with "ReactSharedInternals.H" and the
+  // error screen.
+  optimizeDeps: {
+    include: ['recharts', '@supabase/supabase-js', 'dompurify'],
+  },
   preview: { proxy: API_PROXY },
   // Which site this build is. One tree builds two deployments, and this is the
   // line that makes the key legal in a browser chunk: esbuild substitutes the

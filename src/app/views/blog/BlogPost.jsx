@@ -92,10 +92,10 @@ function Article({ post }) {
 
       <PageIntro title={post.title} lead={post.excerpt} actions={false} />
 
-      {/* The reading column is the narrow measure, held to the left edge the
-          headline above it starts from rather than centred away from it. */}
+      {/* The reading column is the narrow measure, centred under the centred
+          headline above it, as whatsapp.com sets an article. */}
       <Section className="!pt-2" label="Article">
-        <article className="max-w-[720px]">
+        <article className="mx-auto max-w-[720px]">
           <p className={TYPE.small}>
             {post.date} · {post.readTime}
             {series && (

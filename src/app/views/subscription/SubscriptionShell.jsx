@@ -21,9 +21,9 @@ export default function SubscriptionShell({ heading, body, children }) {
   return (
     <section data-ground="dark" className="glow">
       <Container narrow className="flex min-h-[calc(100dvh-80px)] items-center py-12 sm:py-20">
-        <div className={`${CARD} w-full p-6 sm:p-10`}>
+        <div className={`${CARD} mx-auto w-full max-w-[640px] p-6 sm:p-10`}>
           <h1 className={TYPE.h2}>{heading}</h1>
-          {body && <p className={`${TYPE.body} mt-3 max-w-xl`}>{body}</p>}
+          {body && <p className={`${TYPE.body} mt-3`}>{body}</p>}
           {children}
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Button to="/" className="w-full sm:w-auto">

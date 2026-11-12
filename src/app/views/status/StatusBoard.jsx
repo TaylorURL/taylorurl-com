@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { TYPE } from '@components/kit/styles'
 import { Area, ConsolePage } from '../console/ui'
 import { ROW_HEIGHT } from '../console/lib/tokens'
 import { recalledRows, rememberRows } from '../console/lib/rowMemory'
@@ -7,6 +6,18 @@ import { bareDomain, displayDomain } from '@utils/domains'
 import { ago, useNow } from '@hooks/console/useNow'
 import { SiteIcon } from '../console/SiteIcon'
 import { clockIn, ZONE } from '@lib/time/zone.js'
+
+/*
+ * The console's own type sizes. The board used to borrow the public site's
+ * TYPE scale, so when that scale grew to whatsapp.com's big headlines the
+ * console's Status page grew with it. The console keeps its compact sizes.
+ */
+const TYPE = {
+  h3: 'text-[18px] font-medium leading-[1.35] tracking-[-0.012em] text-ink sm:text-[19px]',
+  body: 'text-[16px] leading-[1.65] text-ink-soft',
+  small: 'text-[14px] leading-[1.5] text-ink-mute',
+  figure: 'text-[24px] font-semibold leading-none tracking-[-0.02em] text-ink',
+}
 
 /*
  * The public status board, in the site's "Refined" look: a panel of four

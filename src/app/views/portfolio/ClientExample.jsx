@@ -16,7 +16,7 @@ export default function ClientExample({ project, title, body, more = [], moreTit
   return (
     <Section label={label}>
       <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14">
-        <div className="min-w-0 max-w-[520px]">
+        <div className="min-w-0">
           <h2 className={TYPE.h2}>{title}</h2>
           {body && <p className={`${TYPE.body} mt-4`}>{body}</p>}
           <div className="mt-7 flex flex-wrap gap-x-7 gap-y-3">

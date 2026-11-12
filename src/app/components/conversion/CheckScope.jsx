@@ -16,10 +16,18 @@ import { TYPE } from '@components/kit/styles'
  */
 export default function CheckScope({ title, items, note }) {
   return (
-    <div>
+    // The heading stands to the left of the list on a wide screen and the
+    // list runs in two columns, so the scope fills the width the tool's card
+    // above it does rather than leaving the right of the page empty.
+    <div className="grid gap-x-12 gap-y-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
       <h2 className={TYPE.h3}>{title}</h2>
-      <CheckList items={items} className="mt-5" />
-      {note && <p className={`${TYPE.small} mt-5 max-w-[40rem]`}>{note}</p>}
+      <div>
+        <CheckList
+          items={items}
+          className="sm:grid sm:grid-cols-2 sm:gap-x-10 sm:gap-y-3.5 sm:space-y-0"
+        />
+        {note && <p className={`${TYPE.small} mt-5`}>{note}</p>}
+      </div>
     </div>
   )
 }

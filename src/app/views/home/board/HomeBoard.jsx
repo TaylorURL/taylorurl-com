@@ -1,14 +1,18 @@
 import {
   CallToAction,
   DeviceShowcase,
+  FeatureRow,
   Grid,
   PageIntro,
+  PhoneShot,
   Section,
   SectionHead,
   StatPanel,
+  Statement,
   Steps,
   WorkCard,
 } from '@components/kit/Kit'
+import BlogCarousel from '../BlogCarousel'
 import { committedStanding } from '@data/reputation/review-standings'
 import { PUBLISHES_REVIEWS } from '../../../../../lib/site/current.js'
 import { BbbAccredited, Monthly, QuoteCycle, TextThread } from './parts'
@@ -23,6 +27,8 @@ import {
 } from './boardData'
 
 const FEATURED = 'baytowngokarts.com'
+const FAST = 'southeastarbor.com'
+const FOUND = 'dickinsonbayoufleeting.com'
 const STRIP = ['southeastarbor.com', 'dickinsonbayoufleeting.com', 'faded-barbershop.com']
 const REVIEWED = 'djrxexcellence.com'
 
@@ -42,6 +48,20 @@ const STEPS = [
 ]
 
 /**
+ * The speech bubbles drifting round the statement under the first screen, the
+ * way whatsapp.com floats "Hello!" and "Bonjour" round its own: the kind of
+ * texts that go back and forth once a site is live.
+ */
+const BUBBLES = [
+  'Closing at 3 Friday. Can you put that on the site?',
+  'Done. Your Google hours match too.',
+  'Can we add the new menu?',
+  'It’s live.',
+  'Got three calls off the site this week',
+  'New photos are up.',
+]
+
+/**
  * The figures under the first screen. Each is read from the record that holds
  * it - the speed average from the portfolio, the rating from the standings -
  * and a figure whose record is empty is left out rather than shown as a zero.
@@ -57,19 +77,20 @@ function figures() {
 }
 
 /**
- * The studio's home page.
+ * The studio's home page, laid out after whatsapp.com's.
  *
- * The point and the way to ask on the first screen, beside one client's live
- * site on a laptop and a phone with the speed it was measured at. Then four
- * figures, three more sites, the three steps, what working together is like,
- * the clients in their own words, one review at a time, beside the BBB
- * accreditation, and the ask again.
- *
- * It replaced a board of about ten boxes on one screen, which said all of this
- * at once and so said none of it first.
+ * One big rounded first screen with the offer, the way in and a client's live
+ * site on a laptop and a phone; a centred statement with texts drifting round
+ * it; the four figures; then wide alternating feature rows - fast, found on
+ * Google, changed the same day - each beside a client site on a phone or the
+ * thread it happened in, one of them on the darker slab; the recent work, the
+ * three steps and what the monthly covers; the clients in their own words; the
+ * newest articles sliding sideways on a tinted band; and the ask again.
  */
 export default function HomeBoard() {
   const featured = clientSite(FEATURED)
+  const fast = clientSite(FAST)
+  const found = clientSite(FOUND)
   const reviews = clientReviews(REVIEWED)
 
   return (
@@ -81,12 +102,45 @@ export default function HomeBoard() {
         media={featured && <DeviceShowcase project={featured} eager />}
       />
 
+      <Statement bubbles={BUBBLES}>
+        A fast website, a plan and a price in writing, and one person who answers when you call.
+        That’s how local businesses around Baytown get found.
+      </Statement>
+
       <Section tight className="!pt-0">
         <StatPanel items={figures()} />
       </Section>
 
-      <Section label="Recent work" className="!pt-6">
-        <SectionHead title="Recent work" link={{ to: '/portfolio', label: 'See All Work' }} />
+      <FeatureRow
+        title="Sites that load before they leave"
+        body={`Every site is built by hand and measured on Google’s phone test. The average mobile score across the portfolio is ${MOBILE_SPEED}.`}
+        link={{ to: '/speed-check', label: 'Check your speed' }}
+        media={fast && <PhoneShot project={fast} score />}
+      />
+
+      <FeatureRow
+        deep
+        flip
+        title="Found on Google"
+        accent="Google"
+        body="SEO, a Google Business Profile that matches the site, and ad tracking come with every build, so the calls you get can be traced back to where they came from."
+        link={{ to: '/services', label: 'See what’s included' }}
+        media={found && <PhoneShot project={found} />}
+      />
+
+      <FeatureRow
+        title="Changes, the same day"
+        body="Text me what needs to change. Hours, prices, a new photo: it’s live the same day, and the hosting, backups and updates are handled."
+        link={{ to: '/process', label: 'How it works' }}
+        media={
+          <div className="mx-auto max-w-[460px]">
+            <TextThread />
+          </div>
+        }
+      />
+
+      <Section label="Recent work">
+        <SectionHead title="Recent work" link={{ to: '/portfolio', label: 'See all work' }} />
         <Grid cols={3}>
           {STRIP.map(host => {
             const project = clientSite(host)
@@ -108,12 +162,18 @@ export default function HomeBoard() {
         <Steps items={STEPS} />
       </Section>
 
-      <Section label="After launch">
-        <div className="grid gap-5 md:grid-cols-2">
-          <TextThread />
-          <Monthly items={MONTHLY} />
-        </div>
-      </Section>
+      <FeatureRow
+        flip
+        title="Everything after launch, one price"
+        accent="one price"
+        body="No surprise invoices. Hosting, backups, updates, search work and changes are one line on one bill."
+        link={{ to: '/faq', label: 'Questions' }}
+        media={
+          <div className="mx-auto max-w-[460px]">
+            <Monthly items={MONTHLY} />
+          </div>
+        }
+      />
 
       {reviews.length > 0 && (
         <Section label="What clients say">
@@ -122,6 +182,8 @@ export default function HomeBoard() {
       )}
 
       <CallToAction />
+
+      <BlogCarousel last />
     </>
   )
 }
