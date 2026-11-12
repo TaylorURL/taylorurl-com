@@ -18,8 +18,10 @@ import { BUILT_YEAR } from '@lib/time/built.js'
 import { dayIn } from '@lib/time/zone.js'
 import { PUBLISHES_REVIEWS, SITE } from '../../../../lib/site/current.js'
 
-const ITEM = 'text-[14px] leading-[1.5] text-ink-soft transition-colors hover:text-ink'
-const BASE = 'text-[13px] text-ink-mute transition-colors hover:text-ink'
+// whatsapp.com's footer links: 16/22 on a phone and 18/25 on a wide screen,
+// with the same growing underline the bar's links have.
+const ITEM = 'wa-foot-link text-[16px] leading-[22px] text-ink lg:text-[18px] lg:leading-[25px]'
+const BASE = 'text-[12px] text-ink transition-colors hover:text-[color:var(--blue-hi)]'
 
 /**
  * The glyph each account in `SOCIAL_LINKS` is drawn with, by its `brand`. An
@@ -42,7 +44,7 @@ function SocialIcons({ className = '' }) {
   const accounts = SOCIAL_LINKS.filter(link => link.href && SOCIAL_MARKS[link.brand])
   if (accounts.length === 0) return null
   return (
-    <ul className={`flex gap-2 ${className}`.trim()} aria-label="Follow along">
+    <ul className={`flex gap-3 ${className}`.trim()} aria-label="Follow along">
       {accounts.map(link => {
         const Mark = SOCIAL_MARKS[link.brand]
         return (
@@ -53,9 +55,9 @@ function SocialIcons({ className = '' }) {
               rel="noreferrer"
               aria-label={`${SITE.shortName} on ${link.label}`}
               title={link.label}
-              className="group flex h-11 w-11 items-center justify-center rounded-full bg-ink/[0.06] text-ink-soft transition-colors duration-150 hover:bg-ink/10"
+              className="wa-social"
             >
-              <Mark className="h-[18px] w-[18px] transition-colors duration-150 group-hover:text-[color:var(--mark-brand)]" />
+              <Mark className="h-[17px] w-[17px]" />
             </a>
           </li>
         )
@@ -65,12 +67,14 @@ function SocialIcons({ className = '' }) {
 }
 
 /**
- * The foot of every page: who this is and how to reach him on the left, every
- * page on the site in four short columns, and the legal line under a hairline.
+ * The foot of every page, after whatsapp.com's: a dark slab with the wordmark
+ * at the left and every page on the site in four columns under small headings,
+ * then a hairline, and under it the year, the legal links, the social icons in
+ * outlined circles and the phone number.
  *
- * It is the directory the bar no longer is. The bar names three pages; this
- * names all of them, so a reader who scrolls to the bottom looking for the FAQ
- * or the speed check finds it where a footer is expected to have it.
+ * It is the directory the bar is not. The bar names the main pages; this names
+ * all of them, so a reader who scrolls to the bottom looking for the FAQ or the
+ * speed check finds it where a footer is expected to have it.
  */
 export default function Footer() {
   // The year the markup carries, held through the render that adopts it and
@@ -84,42 +88,47 @@ export default function Footer() {
   const showsBbb = PUBLISHES_REVIEWS && BBB_PROFILE_URL
 
   return (
-    <footer className="bg-[var(--card)]">
-      <div className="mx-auto w-full max-w-[1160px] px-5 pb-10 pt-14 sm:px-8 sm:pt-16">
-        <div className="grid gap-12 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,3fr)] lg:gap-16">
-          <div className="max-w-[320px]">
+    <footer data-wa-footer>
+      <div className="mx-auto w-full max-w-[1128px] px-6 pb-11 pt-14 lg:pt-[96px]">
+        <div className="grid gap-14 lg:grid-cols-[277px_minmax(0,1fr)] lg:gap-0">
+          <div className="max-w-[240px]">
             <Link to="/" aria-label="Home" className="inline-block rounded-md">
               <Logo />
             </Link>
-            <p className={`${TYPE.small} mt-5`}>{SITE.footerBlurb}</p>
-            <ul className="mt-5 space-y-1.5 text-[14px]">
+            <p className={`${TYPE.small} mt-6`}>{SITE.footerBlurb}</p>
+            <ul className="mt-6 space-y-2 text-[15px]">
               <li>
                 <a
                   href={COMPANY_PHONE_HREF}
-                  className="font-medium text-ink hover:text-[color:var(--link)]"
+                  className="font-medium text-ink hover:text-[color:var(--blue-hi)]"
                 >
                   {COMPANY_PHONE}
                 </a>
               </li>
               <li>
-                <a href={`mailto:${SUPPORT_EMAIL}`} className="text-ink-soft hover:text-ink">
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}`}
+                  className="text-ink-soft hover:text-[color:var(--blue-hi)]"
+                >
                   {SUPPORT_EMAIL}
                 </a>
               </li>
               <li className="text-ink-mute">{COMPANY_LOCATION}</li>
             </ul>
-            <SocialIcons className="mt-6" />
           </div>
 
-          <nav aria-label="Every page" className="grid grid-cols-2 gap-x-6 gap-y-10 sm:grid-cols-4">
+          <nav
+            aria-label="Every page"
+            className="grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-4 lg:gap-x-8"
+          >
             {FOOTER_COLUMNS.map(column => (
               <div key={column.head}>
-                <p className="text-[13px] font-medium text-ink">{column.head}</p>
-                <ul className="mt-3.5 space-y-2.5">
+                <p className="text-[12px] text-ink-mute">{column.head}</p>
+                <ul className="mt-[34px] space-y-4 lg:space-y-[18px]">
                   {column.items.map(item => (
                     <li key={item.to}>
                       <Link to={item.to} className={ITEM}>
-                        {item.label}
+                        <span className="wa-u">{item.label}</span>
                       </Link>
                     </li>
                   ))}
@@ -129,39 +138,50 @@ export default function Footer() {
           </nav>
         </div>
 
-        <div className="mt-14 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[13px] text-ink-mute">
-            © {year} {SITE.brandName}
-          </p>
-          <ul className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[13px] leading-[1.5]">
-            {showsBbb && (
-              <li>
-                <a
-                  href={BBB_PROFILE_URL}
-                  target="_blank"
-                  rel="noreferrer"
-                  className={`${BASE} inline-flex items-center gap-1.5`}
-                >
-                  <MarkBbb className="h-3.5 w-3.5" style={{ color: 'var(--bbb-blue)' }} />
-                  BBB Accredited
-                </a>
-              </li>
-            )}
-            {LEGAL_LINKS.map(link => (
-              <li key={link.to}>
-                <Link to={link.to} className={BASE}>
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-            {HAS_ACCOUNTS && (
-              <li>
-                <Link to="/login" className={BASE}>
-                  Client Sign In
-                </Link>
-              </li>
-            )}
-          </ul>
+        <div className="mt-16 flex flex-col gap-8 border-t border-white/[0.14] pt-8 lg:mt-[72px] lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-10">
+            <p className="text-[12px] text-ink">
+              {year} © {SITE.brandName}
+            </p>
+            <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 leading-[1.5]">
+              {showsBbb && (
+                <li>
+                  <a
+                    href={BBB_PROFILE_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`${BASE} inline-flex items-center gap-1.5`}
+                  >
+                    <MarkBbb className="h-3.5 w-3.5" style={{ color: 'var(--bbb-blue)' }} />
+                    BBB Accredited
+                  </a>
+                </li>
+              )}
+              {LEGAL_LINKS.map(link => (
+                <li key={link.to}>
+                  <Link to={link.to} className={BASE}>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+              {HAS_ACCOUNTS && (
+                <li>
+                  <Link to="/login" className={BASE}>
+                    Client Sign In
+                  </Link>
+                </li>
+              )}
+            </ul>
+          </div>
+          <div className="flex items-center gap-6">
+            <SocialIcons />
+            <a
+              href={COMPANY_PHONE_HREF}
+              className="text-[15px] font-medium text-ink hover:text-[color:var(--blue-hi)]"
+            >
+              {COMPANY_PHONE}
+            </a>
+          </div>
         </div>
       </div>
     </footer>

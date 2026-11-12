@@ -168,6 +168,7 @@ export default function Layout() {
   const isAuth = views.includes('Login') || views.includes('Welcome')
   const bare = isConsole || isAuth
   const mainRef = useRef(null)
+  // Bands rise into view as they are scrolled to, after whatsapp.com.
 
   // Whether the served page has been adopted. The two deferred pieces at the
   // foot of this file wait on it.
@@ -275,7 +276,7 @@ export default function Layout() {
   }, [])
 
   return (
-    <div className="min-h-dvh text-ink-paper">
+    <div className={`min-h-dvh text-ink-paper ${bare ? '' : 'wa-shell'}`.trim()}>
       <a
         href="#main-content"
         className="sr-only transition-colors duration-200 ease-out-soft hover:bg-[color:var(--accent-fill-hi)] focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[var(--z-skip)] focus:rounded-[var(--r-control)] focus:bg-[color:var(--accent-fill)] focus:px-4 focus:py-2.5 focus:text-[15px] focus:font-semibold focus:text-[color:var(--on-accent)] focus:shadow-[var(--raise)]"
@@ -283,7 +284,7 @@ export default function Layout() {
         Skip to Main Content
       </a>
       {!bare && <Navigation />}
-      <main id="main-content" ref={mainRef} tabIndex={-1}>
+      <main id="main-content" ref={mainRef} tabIndex={-1} className={bare ? undefined : 'wa-main'}>
         {/* Each page waits inside its own boundary rather than under one above
             the chrome, so a page whose code is still coming down costs the
             page, not the bar and the footer with it. Keyed on the page so a

@@ -22,15 +22,15 @@ import { TYPE } from '@components/kit/styles'
  */
 export function ToolHero({ title, lead, narrow = false, children }) {
   return (
-    <section className="glow pb-14 pt-10 sm:pb-20 sm:pt-16">
+    <section className="wa-hero-band pb-14 pt-12 sm:pb-20 sm:pt-20">
       <Container>
         <div className="max-w-[640px]">
           <h1 className={TYPE.display}>{title}</h1>
           {lead && <p className={`${TYPE.lead} mt-5 max-w-[34rem]`}>{lead}</p>}
         </div>
-        <div className={`mt-10 space-y-10 sm:mt-12 ${narrow ? 'max-w-[760px]' : ''}`}>
-          {children}
-        </div>
+        {/* The tool spans the whole column, narrow or not: a card held to a
+            reading width left the right of a wide screen empty. */}
+        <div className={`mt-10 space-y-10 sm:mt-12 ${narrow ? 'w-full' : ''}`}>{children}</div>
       </Container>
     </section>
   )
@@ -74,7 +74,10 @@ export function ToolNotes({ title, items }) {
   return (
     <Section tight label={title} className="!pt-0">
       <h2 className={TYPE.h3}>{title}</h2>
-      <CheckList items={items} className="mt-6 max-w-[720px]" />
+      <CheckList
+        items={items}
+        className="mt-6 sm:grid sm:grid-cols-2 sm:gap-x-12 sm:gap-y-3.5 sm:space-y-0"
+      />
     </Section>
   )
 }

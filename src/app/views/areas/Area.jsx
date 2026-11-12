@@ -174,7 +174,7 @@ export default function Area() {
         <Section label={`The work in ${area.name}`}>
           <div className="grid gap-6 lg:grid-cols-[minmax(0,0.92fr)_minmax(0,1.08fr)] lg:gap-14">
             <h2 className={TYPE.h2}>{asHeading(profile.local.title)}</h2>
-            <Prose className="max-w-[640px] [&>p:first-child]:mt-0">
+            <Prose className="min-w-0 [&>p:first-child]:mt-0">
               {profile.local.body.map(paragraph => (
                 <p key={paragraph}>{paragraph}</p>
               ))}

@@ -89,9 +89,9 @@ export default function LegalPage({
         media={<FactList items={facts} className="lg:ml-auto lg:max-w-[420px]" />}
       />
 
-      {/* The reading column is the narrow measure, held to the left edge the
-          headline above it starts from rather than centred away from it. */}
-      <Section className="!pt-2" inner="[&>*]:max-w-[720px]">
+      {/* The reading column is the narrow measure, centred in the page so the
+          right of a wide screen is not left empty. */}
+      <Section className="!pt-2" inner="[&>*]:mx-auto [&>*]:max-w-[720px]">
         {/* The document in a reader's own words, ahead of the document in
             its. It is a summary and says so: a reader who acts on it and is
             later held to something it left out has been misled by the page
