@@ -106,7 +106,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dickinson, Texas',
     description:
       'Two five-acre gated waterfront yards on the upper Texas Gulf Coast, let by the month with the shore crew already on them. Monochrome, with the rate and the phone number on every screen, because a phone on one bar out on a dock is what the site has to load on.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-13' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-14' },
     hasStudy: true,
   },
   {
@@ -165,7 +165,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-13' },
+    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-11-14' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-13' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-14' },
     hasStudy: true,
   },
   {
@@ -238,7 +238,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Daisetta, Texas',
     description:
       'Two half-days in Daisetta for kids five to twelve, with no tryouts and no bench. A parent registers, orders the shirts, and pays without being made to create a login first, then signs in later to follow it.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-13' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-14' },
     hasStudy: true,
   },
   {
