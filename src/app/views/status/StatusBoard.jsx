@@ -22,7 +22,7 @@ const TYPE = {
 /*
  * The public status board, in the site's "Refined" look: a panel of four
  * figures, every site as a row in one card with a dot and a word saying whether
- * it answers, and the open and recently fixed issues beside it.
+ * it answers, and the open issues beside it.
  *
  * It only ever renders inside the console, which carries a light palette and a
  * dark one, so every colour here is one of the console's own tokens rather
@@ -90,7 +90,6 @@ const OPEN_ISSUES_SHOWN = 5
 const REMEMBERED = {
   sites: 'taylorurl_status_sites',
   open: 'taylorurl_status_open',
-  fixed: 'taylorurl_status_fixed',
 }
 
 // The board is one company's account of its own sites, so the hour an outage
@@ -245,40 +244,6 @@ function Card({ area, title, aside, className = '', children, foot }) {
   )
 }
 
-function median(values) {
-  if (!values.length) return null
-  const sorted = [...values].sort((a, b) => a - b)
-  const middle = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
-}
-
-function humanizeDuration(ms) {
-  const minutes = Math.round(ms / 60000)
-  if (minutes < 60) return `${Math.max(1, minutes)}m`
-  const hours = minutes / 60
-  if (hours < 24) return `${hours < 10 ? hours.toFixed(1) : Math.round(hours)}h`
-  return `${Math.round(hours / 24)}d`
-}
-
-/**
- * The window's own account of its issues: how many were reported, how many
- * were fixed, and how long a fix typically took.
- */
-function windowReadings(incidents) {
-  let opened = 0
-  let fixed = 0
-  const fixDurations = []
-  for (const incident of incidents) {
-    opened += 1
-    if (incident.status !== 'resolved') continue
-    fixed += 1
-    if (incident.resolved_at) {
-      fixDurations.push(new Date(incident.resolved_at) - new Date(incident.opened_at))
-    }
-  }
-  return { opened, fixed, typicalFix: median(fixDurations) }
-}
-
 /** The four figures across one panel, each waiting for the feed before it says anything. */
 function FigurePanel({ figures, loading }) {
   return (
@@ -309,7 +274,7 @@ function FigurePanel({ figures, loading }) {
 
 /**
  * The status board itself: the four figures, every site the monitor watches,
- * and the open and recently fixed issues.
+ * and the open issues.
  *
  * It is the one section of the console anyone may read, signed in or not, and
  * the two audiences see the same board. The caller supplies the feed and the
@@ -329,13 +294,11 @@ export function StatusBoard({ feed, scope }) {
   const [showAllOpen, setShowAllOpen] = useState(false)
   const siteBody = useRef(null)
   const openBody = useRef(null)
-  const fixedBody = useRef(null)
   // The count is what the monitor currently watches. It moves when a site is
   // taken on rather than with anything a reader does, so a first visit reserves
   // the list it is about to be shown instead of half of it.
   const siteSkeleton = recalledRows(REMEMBERED.sites, 15, ROW_HEIGHT.statusSite)
   const openSkeleton = recalledRows(REMEMBERED.open, 1, ROW_HEIGHT.statusIssue)
-  const fixedSkeleton = recalledRows(REMEMBERED.fixed, 4, ROW_HEIGHT.statusFixed)
 
   const watched = useMemo(
     () =>
@@ -376,33 +339,6 @@ export function StatusBoard({ feed, scope }) {
     )
   }, [data, aliases])
   const openIncidents = useMemo(() => incidents.filter(i => i.status !== 'resolved'), [incidents])
-  // One fault reaches the collector once per browser that hit it, so a single
-  // broken page arrives as several incidents carrying the same sentence and
-  // resolving seconds apart. They are folded into one row against the site and
-  // the summary, keeping the earliest opening and the latest resolution so the
-  // time the fault was actually open is the span across every report of it,
-  // and the count of reports rides along.
-  const resolvedIncidents = useMemo(() => {
-    const folded = new Map()
-    for (const incident of incidents) {
-      if (incident.status !== 'resolved') continue
-      const key = `${incident.site}\u0000${incident.summary}`
-      const held = folded.get(key)
-      if (!held) {
-        folded.set(key, { ...incident, reports: 1 })
-        continue
-      }
-      held.reports += 1
-      if (incident.opened_at < held.opened_at) held.opened_at = incident.opened_at
-      if ((incident.resolved_at || '') > (held.resolved_at || '')) {
-        held.resolved_at = incident.resolved_at
-      }
-    }
-    return [...folded.values()]
-      .sort((a, b) => (b.resolved_at || '').localeCompare(a.resolved_at || ''))
-      .slice(0, 15)
-  }, [incidents])
-  const readings = useMemo(() => windowReadings(incidents), [incidents])
   const visibleOpenIncidents = showAllOpen
     ? openIncidents
     : openIncidents.slice(0, OPEN_ISSUES_SHOWN)
@@ -493,7 +429,6 @@ export function StatusBoard({ feed, scope }) {
     if (loading) return
     rememberRows(REMEMBERED.sites, siteBody.current)
     rememberRows(REMEMBERED.open, openBody.current)
-    rememberRows(REMEMBERED.fixed, fixedBody.current)
   }, [loading, data])
 
   if (unwatched) {
@@ -579,133 +514,63 @@ export function StatusBoard({ feed, scope }) {
         </ul>
       </Card>
 
-      <Area area="issues">
-        <Card
-          title="Open issues"
-          aside={loading || feedDown ? '' : `${openIncidents.length} open`}
-          className="lg:max-h-[55%]"
-          foot={
-            hiddenOpenCount > 0 || showAllOpen ? (
-              <div className="px-5 pb-5 sm:px-6">
-                <button
-                  className="min-h-[44px] cursor-pointer touch-manipulation text-[15px] font-medium text-[color:var(--accent)] transition-colors duration-150 hover:text-ink"
-                  type="button"
-                  onClick={() => setShowAllOpen(open => !open)}
-                  aria-expanded={showAllOpen}
-                >
-                  {showAllOpen ? 'Show Fewer' : `Show ${hiddenOpenCount} More`}
-                </button>
-              </div>
-            ) : null
-          }
-        >
-          {/* An issue is one entry: the site and its state on the first line,
-              what happened under it, and when. */}
-          <ul ref={openBody}>
-            {loading ? (
-              <PlaceholderRows
-                rows={openSkeleton.rows}
-                height={openSkeleton.height}
-                lastHeight={openSkeleton.lastHeight}
-              />
-            ) : feedDown ? (
-              <Quiet>Waiting on the status feed to come back.</Quiet>
-            ) : openIncidents.length ? (
-              visibleOpenIncidents.map(incident => (
-                <li key={incident.id} className="rounded-[12px] px-3 py-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <p className="min-w-0 truncate text-[15px] font-medium text-ink">
-                      {incident.site}
-                    </p>
-                    <StatusChip status={incident.status} />
-                  </div>
-                  <p className="mt-1 text-[14px] text-ink">{incident.title}</p>
-                  <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">
-                    {incident.summary}
+      <Card
+        area="issues"
+        title="Open issues"
+        aside={loading || feedDown ? '' : `${openIncidents.length} open`}
+        foot={
+          hiddenOpenCount > 0 || showAllOpen ? (
+            <div className="px-5 pb-5 sm:px-6">
+              <button
+                className="min-h-[44px] cursor-pointer touch-manipulation text-[15px] font-medium text-[color:var(--accent)] transition-colors duration-150 hover:text-ink"
+                type="button"
+                onClick={() => setShowAllOpen(open => !open)}
+                aria-expanded={showAllOpen}
+              >
+                {showAllOpen ? 'Show Fewer' : `Show ${hiddenOpenCount} More`}
+              </button>
+            </div>
+          ) : null
+        }
+      >
+        {/* An issue is one entry: the site and its state on the first line,
+            what happened under it, and when. */}
+        <ul ref={openBody}>
+          {loading ? (
+            <PlaceholderRows
+              rows={openSkeleton.rows}
+              height={openSkeleton.height}
+              lastHeight={openSkeleton.lastHeight}
+            />
+          ) : feedDown ? (
+            <Quiet>Waiting on the status feed to come back.</Quiet>
+          ) : openIncidents.length ? (
+            visibleOpenIncidents.map(incident => (
+              <li key={incident.id} className="rounded-[12px] px-3 py-3">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="min-w-0 truncate text-[15px] font-medium text-ink">
+                    {incident.site}
                   </p>
-                  <p className={`${TYPE.small} mt-1.5`}>
-                    {formatWhen(incident.opened_at)} · {ago(new Date(incident.opened_at), now)}
-                  </p>
-                  {incident.updates?.length > 1 && (
-                    <p className={`${TYPE.small} mt-1`}>
-                      {formatWhen(incident.updates[incident.updates.length - 1].at)} ·{' '}
-                      {incident.updates[incident.updates.length - 1].text}
-                    </p>
-                  )}
-                </li>
-              ))
-            ) : (
-              <Quiet>Nothing open. New reports show up here as they come in.</Quiet>
-            )}
-          </ul>
-        </Card>
-
-        <Card
-          title="Recently fixed"
-          aside={loading || feedDown ? '' : `Last ${span}`}
-          className="lg:flex-1"
-          foot={
-            <dl className="mx-3 mb-3 grid grid-cols-3 gap-3 rounded-[12px] bg-[color:var(--wash-paper)] px-4 py-3 sm:mx-4 sm:mb-4">
-              {[
-                ['Reported', feedDown ? '—' : String(readings.opened)],
-                ['Fixed', feedDown ? '—' : String(readings.fixed)],
-                [
-                  'Typical fix',
-                  feedDown || readings.typicalFix === null
-                    ? '—'
-                    : humanizeDuration(readings.typicalFix),
-                ],
-              ].map(([label, value]) => (
-                <div key={label} className="min-w-0">
-                  <dt className={TYPE.small}>{label}</dt>
-                  <dd className="mt-0.5 text-[16px] font-medium tabular-nums text-ink">
-                    {loading ? <Placeholder className="h-4 w-10" /> : value}
-                  </dd>
+                  <StatusChip status={incident.status} />
                 </div>
-              ))}
-            </dl>
-          }
-        >
-          {/* The same entry, closed: the site with the hour it was fixed at
-              against it, what was fixed beneath, and how long it stood open. */}
-          <ul ref={fixedBody}>
-            {loading ? (
-              <PlaceholderRows
-                rows={fixedSkeleton.rows}
-                height={fixedSkeleton.height}
-                lastHeight={fixedSkeleton.lastHeight}
-              />
-            ) : feedDown ? (
-              <Quiet>Waiting on the status feed to come back.</Quiet>
-            ) : resolvedIncidents.length ? (
-              resolvedIncidents.map(incident => (
-                <li key={incident.id} className="rounded-[12px] px-3 py-3">
-                  <div className="flex flex-wrap items-baseline justify-between gap-x-3">
-                    <p className="text-[15px] font-medium text-ink">{incident.site}</p>
-                    <p className={`${TYPE.small} ml-auto whitespace-nowrap`}>
-                      {formatWhen(incident.resolved_at || incident.opened_at)}
-                    </p>
-                  </div>
-                  <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">
-                    {incident.summary}
+                <p className="mt-1 text-[14px] text-ink">{incident.title}</p>
+                <p className="mt-1 text-[14px] leading-relaxed text-ink-soft">{incident.summary}</p>
+                <p className={`${TYPE.small} mt-1.5`}>
+                  {formatWhen(incident.opened_at)} · {ago(new Date(incident.opened_at), now)}
+                </p>
+                {incident.updates?.length > 1 && (
+                  <p className={`${TYPE.small} mt-1`}>
+                    {formatWhen(incident.updates[incident.updates.length - 1].at)} ·{' '}
+                    {incident.updates[incident.updates.length - 1].text}
                   </p>
-                  <p className={`${TYPE.small} mt-1.5`}>
-                    {incident.resolved_at
-                      ? `Open for ${ago(
-                          new Date(incident.opened_at),
-                          new Date(incident.resolved_at)
-                        ).replace(' ago', '')}`
-                      : 'Open for —'}
-                    {incident.reports > 1 && ` · ${incident.reports} reports`}
-                  </p>
-                </li>
-              ))
-            ) : (
-              <Quiet>No issues were fixed in this window.</Quiet>
-            )}
-          </ul>
-        </Card>
-      </Area>
+                )}
+              </li>
+            ))
+          ) : (
+            <Quiet>Nothing open. New reports show up here as they come in.</Quiet>
+          )}
+        </ul>
+      </Card>
     </ConsolePage>
   )
 }
