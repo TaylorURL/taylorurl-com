@@ -70,17 +70,13 @@ export const ROW_HEIGHT = {
   // its placeholder is the size of the rows the reader last saw. The open-issue
   // table is nearly always empty, so its figure is that one sentence row.
   //
-  // The site row is one line on tight cells; the fixed row is two, the site
-  // name with the time it was resolved beneath, and averages more because a
-  // summary wraps in its column. Each figure is the measured mean over the
-  // whole table rather than the height of its shortest row. Taking the shorter
-  // one left the placeholder well under the table it stood in for, and
-  // everything below moved down as the feed landed.
-  // Two lines now rather than one: the identity line and the strip's band
-  // under it, measured off the entry itself.
+  // Each figure is the measured mean over the whole table rather than the
+  // height of its shortest row. Taking the shorter one left the placeholder
+  // well under the table it stood in for, and everything below moved down as
+  // the feed landed. The site row is two lines: the identity line and the
+  // strip's band under it, measured off the entry itself.
   statusSite: '73px',
   statusIssue: '100px',
-  statusFixed: '125px',
   // The Server section's routines: a routine's name over one line saying what
   // it does, a badge over its cadence, and a relative time over the clock time
   // in each of the last two columns - so every row is two lines, and a third
