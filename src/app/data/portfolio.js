@@ -91,7 +91,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'A hundred business cards or a ten-foot vinyl banner, off five different presses in one Pasadena shop. Customers upload the artwork, approve the proof, and follow the job through the pipeline the floor runs on.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-19' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-20' },
     hasStudy: true,
   },
   {
@@ -165,7 +165,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Houston, Texas',
     description:
       'Memberships, online coaching, and one-to-one sessions, each priced on a page of its own and sold through a checkout. The client then signs in to the same app for their plan, their nutrition, their bookings, and a thread with the coach.',
-    pagespeed: { mobile: 98, desktop: 99, runs: 3, measured: '2026-11-19' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-20' },
     hasStudy: true,
   },
   {
