@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-18' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-21' },
     hasStudy: true,
   },
   {
@@ -91,7 +91,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Pasadena, Texas',
     description:
       'A hundred business cards or a ten-foot vinyl banner, off five different presses in one Pasadena shop. Customers upload the artwork, approve the proof, and follow the job through the pipeline the floor runs on.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-20' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-21' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-19' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-11-21' },
     hasStudy: true,
   },
   {
@@ -238,7 +238,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Daisetta, Texas',
     description:
       'Two half-days in Daisetta for kids five to twelve, with no tryouts and no bench. A parent registers, orders the shirts, and pays without being made to create a login first, then signs in later to follow it.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-19' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-21' },
     hasStudy: true,
   },
   {
