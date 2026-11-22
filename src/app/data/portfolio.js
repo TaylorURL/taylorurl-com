@@ -77,7 +77,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Five-minute heats, indoor bounce houses, and a party room that seats sixty. The prices sit on one page and the tickets go through a checkout, so a parent planning Saturday can book without calling.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-21' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-22' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-11-21' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-22' },
     hasStudy: true,
   },
   {
@@ -254,7 +254,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 96, desktop: 100, runs: 3, measured: '2026-11-19' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-22' },
     hasStudy: true,
   },
 ]
