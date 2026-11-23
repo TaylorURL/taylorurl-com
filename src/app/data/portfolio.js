@@ -106,7 +106,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Dickinson, Texas',
     description:
       'Two five-acre gated waterfront yards on the upper Texas Gulf Coast, let by the month with the shore crew already on them. Monochrome, with the rate and the phone number on every screen, because a phone on one bar out on a dock is what the site has to load on.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-19' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-23' },
     hasStudy: true,
   },
   {
@@ -150,7 +150,7 @@ export const PORTFOLIO_PROJECTS = [
     alsoIn: ['Houston'],
     description:
       'Recordkeeping for commercial tire shops, built here rather than for a client. A technician logs tire positions, DOT codes, tread depths, photos, and a signature at the roadside, and the fleet customer reads that history in a portal instead of asking for it.',
-    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-22' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-23' },
     hasStudy: true,
   },
   {
@@ -178,7 +178,7 @@ export const PORTFOLIO_PROJECTS = [
     trades: ['marine-services'],
     description:
       'Bulk dry cargo, vessel and barge charter, and a network of thirteen harbors, run by the marine arm of a company family-owned since 1999. The employment application is a page in its own right, because a deckhand fills it in once, on a phone, standing on a dock.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-11-17' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-23' },
     hasStudy: true,
   },
   {
@@ -193,7 +193,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Huffman, Texas',
     description:
       'On-site calibration against certified test weights, repair, and a parts counter for industrial weighing equipment, out of a family-owned shop in Huffman, Texas. Every part carries a page of its own, so a search for a failed load cell lands on the thing itself.',
-    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-11-10' },
+    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-23' },
     hasStudy: true,
   },
   {
@@ -238,7 +238,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Daisetta, Texas',
     description:
       'Two half-days in Daisetta for kids five to twelve, with no tryouts and no bench. A parent registers, orders the shirts, and pays without being made to create a login first, then signs in later to follow it.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-21' },
+    pagespeed: { mobile: 98, desktop: 100, runs: 3, measured: '2026-11-23' },
     hasStudy: true,
   },
   {
@@ -254,7 +254,7 @@ export const PORTFOLIO_PROJECTS = [
     location: 'Baytown, Texas',
     description:
       'Every mixer, tractor, and trailer a concrete producer owns, plus the operators running them and the plant figures they produce, behind one sign-in. The public side of the site is the door and nothing else.',
-    pagespeed: { mobile: 100, desktop: 100, runs: 3, measured: '2026-11-22' },
+    pagespeed: { mobile: 99, desktop: 100, runs: 3, measured: '2026-11-23' },
     hasStudy: true,
   },
 ]
