@@ -187,6 +187,46 @@ export function answering(status) {
 }
 
 /**
+ * Whether a status came from the route to the assistant rather than from the
+ * assistant.
+ *
+ * The knock does not go straight to the door. It crosses the open internet to
+ * an ingress node, which forwards it down a tunnel to a machine in a house, and
+ * when that node cannot reach the house for a moment it does not drop the
+ * connection -- it answers, politely, with a gateway status of its own. That
+ * status is not the assistant saying anything. It is the same lost moment on
+ * the same home route that the second knock exists for, wearing an HTTP status
+ * instead of a socket error, and it has been read as an answer and believed on
+ * the first ask.
+ *
+ * Which is how a no survived four fixes. The resolver was fixed, the widget
+ * learned to ask again, the stale answer was taken away and the branch builds
+ * were told apart, and all four left this: one gateway blip, one knock, the
+ * widget gone from every page, and nothing in the log to say which stage it
+ * was, because a no made of a status never threw and so was never written
+ * down.
+ *
+ * @param {number} status
+ * @returns {boolean}
+ */
+export function fromTheRoute(status) {
+  return status >= 500
+}
+
+/**
+ * A gateway status, in the shape a knock that could not be made arrives in, so
+ * the one caller treats the two the same way without being asked to.
+ *
+ * @param {number} status
+ * @returns {Error}
+ */
+function routeFault(status) {
+  const fault = new Error('the route to the assistant could not reach it')
+  fault.code = `HTTP ${status}`
+  return fault
+}
+
+/**
  * Why a knock or a turn did not arrive, in words that name the stage.
  *
  * `fetch` reports every way a request can fail to leave as the same sentence,
@@ -236,6 +276,10 @@ async function knock() {
       },
       body: '{}',
     })
+    // A gateway answering for a host it could not reach is not an answer, so
+    // it leaves here the way a connection that failed leaves here: as a throw,
+    // which is the only thing the caller knocks twice for.
+    if (fromTheRoute(upstream.status)) throw routeFault(upstream.status)
     return answering(upstream.status)
   } finally {
     clearTimeout(timer)
@@ -254,18 +298,40 @@ async function knock() {
  * lost connections in an afternoon each removed the widget and each arrived as
  * a ticket, with the assistant itself up and answering throughout.
  *
- * Only a knock that threw is repeated. A status is the upstream answering, and
- * asking a door that just said no to say it again buys nothing and doubles what
- * a real outage costs.
+ * Only a knock the assistant answered is taken as the answer. A knock that
+ * could not be made and a gateway answering on the assistant's behalf are both
+ * the route failing rather than the door saying no, and both are knocked on
+ * again; a refused credential is the door itself, and asking it to refuse a
+ * second time buys nothing and doubles what a real outage costs.
  *
  * @returns {Promise<boolean>}
  */
 async function reachable() {
   if (!WIRED) return false
+  return knockedTwice(knock)
+}
 
+/**
+ * The answer the knocks give, with the knocking handed in.
+ *
+ * Separate from `reachable` only so the checks can drive it: the real knock
+ * crosses a socket this repo's checks are not allowed to open, and the rule
+ * worth proving is not how the door is knocked on but which answers are
+ * believed the first time.
+ *
+ * @param {() => Promise<boolean>} knockOn
+ * @returns {Promise<boolean>}
+ */
+export async function knockedTwice(knockOn) {
   for (let ask = 0; ask < REACH_ASKS; ask += 1) {
     try {
-      return await knock()
+      const answered = await knockOn()
+      // The one no that is the assistant's own, and the one this endpoint had
+      // no words for. A knock that failed is logged above; a knock the door
+      // turned away wrote nothing at all, so the log read as a quiet endpoint
+      // on every ticket filed about a widget that had gone.
+      if (!answered) console.error('live-chat: probing: the assistant refused the credential')
+      return answered
     } catch (cause) {
       console.error('live-chat: probing: %s', why(cause))
     }

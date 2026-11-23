@@ -22,7 +22,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { contactIn, leaked, REFUSAL, screen } from '../../lib/live-chat/screen.js'
 import { LIMITS, overCeiling, retryAfter } from '../../lib/live-chat/limits.js'
-import { answering, why } from '../../api/live-chat.js'
+import { answering, fromTheRoute, knockedTwice, why } from '../../api/live-chat.js'
 import { addressesFor } from '../../lib/http/reach.js'
 import { ASK_GAPS_MS, assistantUp } from '../../src/app/data/liveChat.js'
 import { expect as check, finish } from '../harness/checks.js'
@@ -176,6 +176,59 @@ check(!answering(401), 'a rejected bearer secret was read as an assistant that i
 check(!answering(403), 'a forbidden probe was read as an assistant that is up')
 check(!answering(500), 'a broken upstream was read as an assistant that is up')
 check(!answering(502), 'a gateway with nothing behind it was read as an assistant that is up')
+
+// A gateway status is the route to the house failing, not the door answering,
+// so it is told apart from a status the assistant itself produced.
+check(fromTheRoute(500), 'a broken upstream was read as the assistant answering')
+check(fromTheRoute(502), 'a bad gateway was read as the assistant answering')
+check(fromTheRoute(503), 'an unavailable gateway was read as the assistant answering')
+check(fromTheRoute(504), 'a gateway timeout was read as the assistant answering')
+check(!fromTheRoute(400), 'an empty probe was read as the route failing')
+check(!fromTheRoute(401), 'a refused credential was read as the route failing')
+check(!fromTheRoute(200), 'a plain success was read as the route failing')
+
+// And so it is knocked on again. This is the one that four shipped fixes left
+// behind: a single gateway blip on the way to the house took the widget off
+// every page of a visit, because the knock that the second knock exists for
+// had arrived as a status instead of as a failure.
+{
+  const gateway = Object.assign(new Error('the route to the assistant could not reach it'), {
+    code: 'HTTP 502',
+  })
+
+  let knocks = 0
+  const blip = async () => {
+    knocks += 1
+    if (knocks === 1) throw gateway
+    return true
+  }
+  check((await knockedTwice(blip)) === true, 'a gateway blip took the widget off the page')
+  check(knocks === 2, 'a gateway blip was not knocked on again')
+
+  let refusals = 0
+  const refused = async () => {
+    refusals += 1
+    return false
+  }
+  check((await knockedTwice(refused)) === false, 'a refused credential showed the widget')
+  check(refusals === 1, 'a refused credential was asked to refuse twice')
+
+  let gone = 0
+  const unreachable = async () => {
+    gone += 1
+    throw gateway
+  }
+  check(
+    (await knockedTwice(unreachable)) === false,
+    'a route that never answered showed the widget'
+  )
+  check(gone === 2, 'a real outage was knocked on more or fewer than twice')
+
+  check(
+    why(gateway) === 'the route to the assistant could not reach it (HTTP 502)',
+    'a gateway blip would not name itself in the log'
+  )
+}
 
 /* What the widget makes of that answer before it appears on a page. */
 
