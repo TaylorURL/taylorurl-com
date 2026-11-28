@@ -59,8 +59,22 @@ const LIVE_SITE = (process.env.VERCEL_ENV || 'production') === 'production'
 const AGENT_TIMEOUT_MS = 50000
 
 // Nothing is generated behind the reachability probe, so it holds a ceiling a
-// page load can afford rather than the one a turn gets.
-const REACH_TIMEOUT_MS = 3000
+// page load can afford rather than the one a turn gets. What it cannot be is a
+// ceiling shorter than the crossing it pays for. The knock asks the platform's
+// resolver, which answers ENOTFOUND for this name and sends the lookup to a
+// public resolver over HTTPS behind it; then it hands the address to a TLS
+// handshake against an ingress node on the far side of the open internet, and
+// only then does a request leave. Three seconds covered that with nothing to
+// spare, and when it ran out the assistant had already taken the knock in and
+// was answering it: its own log holds 93 broken pipes writing the reply to
+// `{}` -- a 400 it decides in microseconds -- into a socket this end had given
+// up on, against 9,012 knocks that arrived. So the budget was being spent
+// before the request reached the door, the no that followed was this ceiling
+// rather than the assistant, and the widget came off every page of the site on
+// the strength of it. Nine seconds is long enough that only a route genuinely
+// not carrying anything exhausts it; a healthy knock still answers in about
+// four hundred milliseconds and pays none of this.
+const REACH_TIMEOUT_MS = 9000
 
 // How many times the door is knocked on before the answer is taken as no. Two,
 // because the knock crosses to a machine on a home connection and one lost
@@ -68,8 +82,12 @@ const REACH_TIMEOUT_MS = 3000
 const REACH_ASKS = 2
 
 // Between the knocks. Long enough not to land in the same lost moment, short
-// enough to stay inside the page load waiting on the answer.
-const REACH_RETRY_MS = 250
+// enough to stay inside the page load waiting on the answer. A quarter of a
+// second was the first of those in name only: the moment this route loses is
+// measured in seconds, so both knocks landed inside it and the second one was
+// spent proving the first. A second and a half is outside it and still inside
+// the wait.
+const REACH_RETRY_MS = 1500
 
 // How long one reachability answer stands in front of the rest. A minute is
 // short enough that a visitor arriving after the assistant comes back is
